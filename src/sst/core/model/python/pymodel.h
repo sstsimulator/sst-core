@@ -75,6 +75,11 @@ protected:
 public: /* Public, but private.  Called only from Python functions */
     Config* getConfig(void) const { return config; }
 
+    bool setConfigEntryFromModel(const std::string& entryName, const std::string& value)
+    {
+        return setOptionFromModel(entryName, value);
+    }
+
     ConfigGraph* getGraph(void) const { return graph; }
 
     Output* getOutput() const { return output; }
@@ -113,7 +118,7 @@ public: /* Public, but private.  Called only from Python functions */
 
     void addGlobalParameter(const char* set, const char* key, const char* value, bool overwrite)
     {
-        Params::insert_global(set, key, value, overwrite);
+        insertGlobalParameter(set, key, value, overwrite);
     }
 
     UnitAlgebra getElapsedExecutionTime() const;
@@ -137,9 +142,13 @@ public:
     SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS(".xml",".sdl")
 
 
-    SSTXmlModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time)
+    SSTXmlModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time) :
+        SSTModelDescription(config)
     {
-        config->model_options = script_file;
+        // Overwrite model_options.  XML input doesn't allow model
+        // options and we need to set it to the script_file to use as
+        // input to the xmlToPython.py file.
+        setModelOptions(script_file);
 
         actual_model_ =
             new SSTPythonModelDefinition(SST_INSTALL_PREFIX "/libexec/xmlToPython.py", verbosity, config, start_time);

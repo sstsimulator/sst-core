@@ -287,7 +287,10 @@ public:
     void setStatisticParameters(const std::string& statisticName, const Params& params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
 
-    void addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    void                     addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    std::vector<std::string> getParamsLocalKeys() const { return params.getLocalKeys(); }
+    std::vector<std::string> getSubscribedGlobalParamSets() const { return params.getSubscribedGlobalParamSets(); }
+
 
     std::vector<LinkId_t> allLinks() const;
 

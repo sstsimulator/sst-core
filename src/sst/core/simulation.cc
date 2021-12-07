@@ -183,7 +183,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     lastRecvdSignal(0),
     shutdown_mode(SHUTDOWN_CLEAN),
     wireUpFinished(false),
-    runMode(cfg->runMode),
+    runMode(cfg->runMode()),
     currentSimCycle(0),
     endSimCycle(0),
     currentPriority(0),
@@ -197,21 +197,22 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     complete_phase_total_time(0.0)
 {
 
-    sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
+    sim_output.init(cfg->output_core_prefix(), cfg->verbose(), 0, Output::STDOUT);
     output_directory = "";
     Params p;
     // params get passed twice - both the params and a ctor argument
-    direct_interthread = cfg->inter_thread_links;
-    std::string timevortex_type(cfg->timeVortex);
+    direct_interthread = cfg->interthread_links();
+    std::string timevortex_type(cfg->timeVortex());
     if ( direct_interthread && num_ranks.thread > 1 ) timevortex_type = timevortex_type + ".ts";
     timeVortex = factory->Create<TimeVortex>(timevortex_type, p);
     if ( my_rank.thread == 0 ) {
         m_exit = new Exit(num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1);
     }
 
-    if ( strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0 && my_rank.thread == 0 ) {
-        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod.c_str());
-        m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod));
+    if ( cfg->heartbeatPeriod() != "" && my_rank.thread == 0 ) {
+        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod().c_str());
+        m_heartbeat =
+            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod()));
     }
 
     // Need to create the thread sync if there is more than one thread
@@ -221,7 +222,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
 void
 Simulation_impl::setStopAtCycle(Config* cfg)
 {
-    SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle, "StopAction configure");
+    SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
     if ( stopAt != 0 ) {
         StopAction* sa = new StopAction();
         sa->setDeliveryTime(stopAt);

@@ -31,7 +31,6 @@ REENABLE_WARNING
 #include "sst/core/iouse.h"
 #include "sst/core/link.h"
 #include "sst/core/memuse.h"
-#include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
 #include "sst/core/part/sstpart.h"
@@ -111,14 +110,14 @@ dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo& size)
 
     ///////////////////////////////////////////////////////////////////////
     // If the user asks us to dump the partitioned graph.
-    if ( cfg.dump_component_graph_file != "" ) {
-        if ( cfg.verbose ) {
+    if ( cfg.component_partition_file() != "" ) {
+        if ( cfg.verbose() ) {
             g_output.verbose(
                 CALL_INFO, 1, 0, "# Dumping partitioned component graph to %s\n",
-                cfg.dump_component_graph_file.c_str());
+                cfg.component_partition_file().c_str());
         }
 
-        ofstream              graph_file(cfg.dump_component_graph_file.c_str());
+        ofstream              graph_file(cfg.component_partition_file().c_str());
         ConfigComponentMap_t& component_map = graph->getComponentMap();
 
         for ( uint32_t i = 0; i < size.rank; i++ ) {
@@ -142,7 +141,7 @@ dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo& size)
 
         graph_file.close();
 
-        if ( cfg.verbose ) { g_output.verbose(CALL_INFO, 2, 0, "# Dump of partition graph is complete.\n"); }
+        if ( cfg.verbose() ) { g_output.verbose(CALL_INFO, 2, 0, "# Dump of partition graph is complete.\n"); }
     }
 }
 
@@ -179,10 +178,10 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
     std::vector<ConfigGraphOutput*> graphOutputs;
 
     // User asked us to dump the config graph to a file in Python
-    if ( cfg->output_config_graph != "" ) {
+    if ( cfg->output_config_graph() != "" ) {
         // See if we are doing parallel output
-        std::string file_name(cfg->output_config_graph);
-        if ( cfg->parallel_output && world_size.rank != 1 ) {
+        std::string file_name(cfg->output_config_graph());
+        if ( cfg->parallel_output() && world_size.rank != 1 ) {
             // Append rank number to base filename
             file_name = addRankToFileName(file_name, myRank.rank);
         }
@@ -190,15 +189,15 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
     }
 
     // user asked us to dump the config graph in dot graph format
-    if ( cfg->output_dot != "" ) { graphOutputs.push_back(new DotConfigGraphOutput(cfg->output_dot.c_str())); }
+    if ( cfg->output_dot() != "" ) { graphOutputs.push_back(new DotConfigGraphOutput(cfg->output_dot().c_str())); }
 
     // User asked us to dump the config graph in XML format
-    if ( cfg->output_xml != "" ) { graphOutputs.push_back(new XMLConfigGraphOutput(cfg->output_xml.c_str())); }
+    if ( cfg->output_xml() != "" ) { graphOutputs.push_back(new XMLConfigGraphOutput(cfg->output_xml().c_str())); }
 
     // User asked us to dump the config graph in JSON format
-    if ( cfg->output_json != "" ) {
-        std::string file_name(cfg->output_json);
-        if ( cfg->parallel_output ) {
+    if ( cfg->output_json() != "" ) {
+        std::string file_name(cfg->output_json());
+        if ( cfg->parallel_output() ) {
             // Append rank number to base filename
             file_name = addRankToFileName(file_name, myRank.rank);
         }
@@ -206,16 +205,16 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
     }
 
     ConfigGraph* myGraph = graph;
-    // if ( cfg->parallel_output ) {
-    //     // Get a graph that only includes components important to this
-    //     // rank
-    //     myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
-    // }
+    if ( cfg->parallel_output() ) {
+        // Get a graph that only includes components important to this
+        // rank
+        myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
+    }
     for ( size_t i = 0; i < graphOutputs.size(); i++ ) {
         graphOutputs[i]->generate(cfg, myGraph);
         delete graphOutputs[i];
     }
-    // if ( cfg->parallel_output ) delete myGraph;
+    if ( cfg->parallel_output() ) delete myGraph;
 }
 
 typedef struct
@@ -288,8 +287,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 #endif
     barrier.wait();
 
-    if ( info.config->runMode == Simulation::RUN || info.config->runMode == Simulation::BOTH ) {
-        if ( info.config->verbose && 0 == tid ) {
+    if ( info.config->runMode() == Simulation::RUN || info.config->runMode() == Simulation::BOTH ) {
+        if ( info.config->verbose() && 0 == tid ) {
             g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
 
             time_t     the_time = time(nullptr);
@@ -299,15 +298,15 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n", (now->tm_year + 1900),
                 (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
 
-            if ( info.config->stopAfterSec > 0 ) {
-                time_t     stop_time = the_time + info.config->stopAfterSec;
+            if ( info.config->exit_after() > 0 ) {
+                time_t     stop_time = the_time + info.config->exit_after();
                 struct tm* end       = localtime(&stop_time);
                 g_output.verbose(
                     CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
                     (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
 
                 /* Set the alarm */
-                alarm(info.config->stopAfterSec);
+                alarm(info.config->exit_after());
             }
         }
         // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
@@ -406,10 +405,10 @@ main(int argc, char* argv[])
         // Just asked for info, clean exit
         return 0;
     }
-    world_size.thread = cfg.getNumThreads();
+    world_size.thread = cfg.num_threads();
 
-    if ( cfg.parallel_load && world_size.rank != 1 ) {
-        cfg.configFile = addRankToFileName(cfg.configFile, myRank.rank);
+    if ( cfg.parallel_load() && world_size.rank != 1 ) {
+        cfg.configFile_ = addRankToFileName(cfg.configFile(), myRank.rank);
     }
     cfg.checkConfigFile();
 
@@ -422,7 +421,8 @@ main(int argc, char* argv[])
     // Create a map of extensions to the model that supports them
     std::map<std::string, std::string> extension_map;
     for ( auto x : models ) {
-        auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
+        // auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
+        auto extensions = SSTModelDescription::getElementSupportedExtensions(x);
         for ( auto y : extensions ) {
             extension_map[y] = x;
         }
@@ -432,9 +432,9 @@ main(int argc, char* argv[])
 
     double start = sst_get_cpu_time();
 
-    if ( cfg.configFile != "NONE" ) {
+    if ( cfg.configFile() != "NONE" ) {
         // Get the file extension by finding the last .
-        std::string extension = cfg.configFile.substr(cfg.configFile.find_last_of("."));
+        std::string extension = cfg.configFile().substr(cfg.configFile().find_last_of("."));
 
         std::string model_name;
         try {
@@ -445,12 +445,19 @@ main(int argc, char* argv[])
             return -1;
         }
 
-        modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile, cfg.verbose, &cfg, start);
+        // If doing parallel load, make sure this model is parallel capable
+        if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
+            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
+                      << std::endl;
+            return -1;
+        }
+
+        modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile(), cfg.verbose(), &cfg, start);
     }
 
     /* Build objects needed for startup */
     Output::setWorldSize(world_size, myrank);
-    g_output = Output::setDefaultObject(cfg.output_core_prefix, cfg.getVerboseLevel(), 0, Output::STDOUT);
+    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
 
     g_output.verbose(
         CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
@@ -467,7 +474,7 @@ main(int argc, char* argv[])
 
     // Only rank 0 will populate the graph, unless we are using
     // parallel load.  In this case, all ranks will load the graph
-    if ( myRank.rank == 0 || cfg.parallel_load ) {
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
         try {
             graph = modelGen->createConfigGraph();
         }
@@ -478,7 +485,7 @@ main(int argc, char* argv[])
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it, unless we are parallel loading
-    if ( world_size.rank > 1 && !cfg.parallel_load ) {
+    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
         try {
             Comms::broadcast(cfg, 0);
         }
@@ -491,9 +498,9 @@ main(int argc, char* argv[])
 #endif
 
     // Need to initialize TimeLord
-    Simulation_impl::getTimeLord()->init(cfg.timeBase);
+    Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
-    if ( myRank.rank == 0 || cfg.parallel_load ) {
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
         graph->postCreationCleanup();
 
         // Check config graph to see if there are structural errors.
@@ -518,15 +525,15 @@ main(int argc, char* argv[])
     ////// Start Partitioning //////
     double start_part = sst_get_cpu_time();
 
-    if ( !cfg.parallel_load ) {
+    if ( !cfg.parallel_load() ) {
         // Normal partitioning
 
         // If this is a serial job, just use the single partitioner,
         // but the same code path
-        if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner = "sst.single";
+        if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
 
         // Get the partitioner.  Built in partitioners are in the "sst" library.
-        SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
+        SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner(), world_size, myRank, cfg.verbose());
 
         try {
             if ( partitioner->requiresConfigGraph() ) { partitioner->performPartition(graph); }
@@ -601,7 +608,7 @@ main(int argc, char* argv[])
     }
 
     // Check the partitioning to make sure it is sane
-    if ( myRank.rank == 0 || cfg.parallel_load ) {
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
         if ( !graph->checkRanks(world_size) ) {
             g_output.fatal(CALL_INFO, 1, "ERROR: Bad partitioning; partition included unknown ranks.\n");
         }
@@ -627,7 +634,7 @@ main(int argc, char* argv[])
     SimTime_t min_part       = 0xffffffffffffffffl;
     if ( world_size.rank > 1 ) {
         // Check the graph for the minimum latency crossing a partition boundary
-        if ( myRank.rank == 0 || cfg.parallel_load ) {
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
             ConfigComponentMap_t& comps = graph->getComponentMap();
             ConfigLinkMap_t&      links = graph->getLinkMap();
             // Find the minimum latency across a partition
@@ -658,7 +665,7 @@ main(int argc, char* argv[])
     }
     ////// End Calculate Minimum Partitioning //////
 
-    if ( cfg.enable_sig_handling ) {
+    if ( cfg.enable_sig_handling() ) {
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT and TERM...\n");
         setupSignals(0);
     }
@@ -669,7 +676,7 @@ main(int argc, char* argv[])
 
     ////// Broadcast Graph //////
 #ifdef SST_CONFIG_HAVE_MPI
-    if ( world_size.rank > 1 && !cfg.parallel_load ) {
+    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
         try {
             Comms::broadcast(Params::keyMap, 0);
             Comms::broadcast(Params::keyMapReverse, 0);
@@ -728,7 +735,7 @@ main(int argc, char* argv[])
 #endif
     ////// End Broadcast Graph //////
 
-    if ( myRank.rank == 0 || cfg.parallel_output ) { doGraphOutput(&cfg, graph, myRank, world_size); }
+    if ( myRank.rank == 0 || cfg.parallel_output() ) { doGraphOutput(&cfg, graph, myRank, world_size); }
 
 
     // // Print the graph
@@ -855,7 +862,7 @@ main(int argc, char* argv[])
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
 
-    if ( myRank.rank == 0 && (cfg.verbose || cfg.printTimingInfo()) ) {
+    if ( myRank.rank == 0 && (cfg.verbose() || cfg.print_timing()) ) {
         char ua_buffer[256];
         sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
@@ -904,10 +911,12 @@ main(int argc, char* argv[])
     }
 
 #ifdef USE_MEMPOOL
-    if ( cfg.event_dump_file != "" ) {
-        Output out("", 0, 0, Output::FILE, cfg.event_dump_file);
-        if ( cfg.event_dump_file == "STDOUT" || cfg.event_dump_file == "stdout" ) out.setOutputLocation(Output::STDOUT);
-        if ( cfg.event_dump_file == "STDERR" || cfg.event_dump_file == "stderr" ) out.setOutputLocation(Output::STDERR);
+    if ( cfg.event_dump_file() != "" ) {
+        Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
+        if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" )
+            out.setOutputLocation(Output::STDOUT);
+        if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" )
+            out.setOutputLocation(Output::STDERR);
         Activity::printUndeletedActivities("", out, MAX_SIMTIME_T);
     }
 #endif

@@ -32,19 +32,19 @@ DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     const auto linkMap = graph->getLinkMap();
 
     // High detail original SST dot graph output
-    if ( cfg->dot_verbosity >= 10 ) {
+    if ( cfg->dot_verbosity() >= 10 ) {
         fprintf(outputFile, "newrank = true;\n");
         fprintf(outputFile, "node [shape=record];\n");
         // Find the maximum rank which is marked for the graph partitioning
-        for ( uint32_t r = 0; r < cfg->world_size.rank; r++ ) {
+        for ( uint32_t r = 0; r < cfg->num_ranks(); r++ ) {
             fprintf(outputFile, "subgraph cluster_%u {\n", r);
             fprintf(outputFile, "label=\"Rank %u\";\n", r);
-            for ( uint32_t t = 0; t < cfg->world_size.thread; t++ ) {
+            for ( uint32_t t = 0; t < cfg->num_threads(); t++ ) {
                 fprintf(outputFile, "subgraph cluster_%u_%u {\n", r, t);
                 fprintf(outputFile, "label=\"Thread %u\";\n", t);
                 for ( auto compItr : compMap ) {
                     if ( compItr->rank.rank == r && compItr->rank.thread == t ) {
-                        generateDot(compItr, linkMap, cfg->dot_verbosity);
+                        generateDot(compItr, linkMap, cfg->dot_verbosity());
                     }
                 }
                 fprintf(outputFile, "};\n");
@@ -58,14 +58,14 @@ DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
         fprintf(outputFile, "node [shape=record];\ngraph [style=invis];\n\n");
         for ( auto compItr : compMap ) {
             fprintf(outputFile, "subgraph cluster_%" PRIu64 " {\n", compItr->id);
-            generateDot(compItr, linkMap, cfg->dot_verbosity);
+            generateDot(compItr, linkMap, cfg->dot_verbosity());
             fprintf(outputFile, "}\n\n");
         }
     }
 
     fprintf(outputFile, "\n");
     for ( auto linkItr : linkMap ) {
-        generateDot(linkItr, cfg->dot_verbosity);
+        generateDot(linkItr, cfg->dot_verbosity());
     }
     fprintf(outputFile, "\n}\n");
 }

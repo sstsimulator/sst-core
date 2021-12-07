@@ -22,7 +22,7 @@ using namespace SST::Core;
 
 SSTJSONModelDefinition::SSTJSONModelDefinition(
     const std::string& script_file, int verbosity, Config* configObj, double start_time) :
-    SSTModelDescription(),
+    SSTModelDescription(configObj),
     scriptName(script_file),
     output(nullptr),
     config(configObj),
@@ -291,7 +291,7 @@ SSTJSONModelDefinition::discoverProgramOptions(const json& jFile)
 {
     if ( jFile.contains("program_options") ) {
         for ( auto& option : jFile["program_options"].items() ) {
-            config->setConfigEntryFromModel(option.key(), option.value());
+            setOptionFromModel(option.key(), option.value());
         }
     }
 }

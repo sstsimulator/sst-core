@@ -260,9 +260,9 @@ Params::popAllowedKeys()
 
 void
 #ifdef USE_PARAM_WARNINGS
-Params::verifyParam(const key_type& k) const
+Params::verifyKey(const key_type& k) const
 #else
-Params::verifyParam(const key_type& UNUSED(k)) const
+Params::verifyKey(const key_type& UNUSED(k)) const
 #endif
 {
 #ifdef USE_PARAM_WARNINGS
@@ -275,6 +275,12 @@ Params::verifyParam(const key_type& UNUSED(k)) const
     SST::Output outXX("ParamWarning: ", 0, 0, Output::STDERR);
     outXX.output(CALL_INFO, "Warning: Parameter \"%s\" is undocumented.\n", k.c_str());
 #endif
+}
+
+void
+Params::verifyParam(const key_type& k) const
+{
+    verifyKey(k);
 }
 
 const std::string&

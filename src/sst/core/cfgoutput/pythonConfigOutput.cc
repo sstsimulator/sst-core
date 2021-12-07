@@ -32,7 +32,7 @@ PythonConfigGraphOutput::generateParams(const Params& params)
 
     bool firstItem = true;
     // for ( auto& key : params.getKeys() ) {
-    for ( auto& key : params.getLocalKeys() ) {
+    for ( auto& key : getParamsLocalKeys(params) ) {
         char* esParamName = makeEscapeSafe(key.c_str());
         char* esValue     = makeEscapeSafe(params.find<std::string>(key).c_str());
 
@@ -74,7 +74,7 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
         generateParams(comp->params);
         fprintf(outputFile, ")\n");
         // Add global param sets
-        for ( auto x : comp->params.getSubscribedGlobalParamSets() ) {
+        for ( auto x : getSubscribedGlobalParamSets(comp->params) ) {
             fprintf(outputFile, "%s.addGlobalParamSet(\"%s\")\n", objName, x.c_str());
         }
     }
@@ -222,26 +222,28 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     // the order they're defined in the config.cc file.
 
     fprintf(outputFile, "# Define SST Program Options:\n");
-    fprintf(outputFile, "# (These reflect the settings from orininal run and are not necessary in all files)\n");
-    fprintf(outputFile, "sst.setProgramOption(\"verbose\", \"%" PRIu32 "\")\n", cfg->verbose);
-    fprintf(outputFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n", cfg->stopAtCycle.c_str());
-    if ( cfg->print_timing ) fprintf(outputFile, "sst.setProgramOption(\"print-timing-info\", \"true\")\n");
+    fprintf(outputFile, "# (These reflect the settings from original run and are not necessary in all files)\n");
+    fprintf(outputFile, "sst.setProgramOption(\"verbose\", \"%" PRIu32 "\")\n", cfg->verbose());
+    fprintf(outputFile, "sst.setProgramOption(\"stop-at\", \"%s\")\n", cfg->stop_at().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"print-timing-info\", \"%s\")\n", cfg->print_timing() ? "true" : "false");
     // Ignore stopAfter for now
     // fprintf(outputFile, "sst.setProgramOption(\"stopAfter\", \"%" PRIu32 "\")\n", cfg->stopAfterSec);
-    fprintf(outputFile, "sst.setProgramOption(\"heartbeat-period\", \"%s\")\n", cfg->heartbeatPeriod.c_str());
-    fprintf(outputFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
-    fprintf(outputFile, "sst.setProgramOption(\"partitioner\", \"%s\")\n", cfg->partitioner.c_str());
-    fprintf(outputFile, "sst.setProgramOption(\"timeVortex\", \"%s\")\n", cfg->timeVortex.c_str());
-    if ( cfg->inter_thread_links ) fprintf(outputFile, "sst.setProgramOption(\"inter-thread-links\", \"\")\n");
-    fprintf(outputFile, "sst.setProgramOption(\"output-prefix-core\", \"%s\")\n", cfg->output_core_prefix.c_str());
-    fprintf(outputFile, "sst.setProgramOption(\"model-options\", \"%s\")\n\n", cfg->model_options.c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"heartbeat-period\", \"%s\")\n", cfg->heartbeatPeriod().c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase().c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"partitioner\", \"%s\")\n", cfg->partitioner().c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"timeVortex\", \"%s\")\n", cfg->timeVortex().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"interthread-links\", \"%s\")\n",
+        cfg->interthread_links() ? "true" : "false");
+    fprintf(outputFile, "sst.setProgramOption(\"output-prefix-core\", \"%s\")\n", cfg->output_core_prefix().c_str());
 
     // Output the global params
     fprintf(outputFile, "# Define the global parameter sets:\n");
-    std::vector<std::string> global_param_sets = Params::getGlobalParamSetNames();
+    std::vector<std::string> global_param_sets = getGlobalParamSetNames();
     for ( auto& x : global_param_sets ) {
         fprintf(outputFile, "sst.addGlobalParams(\"%s\", {\n", x.c_str());
-        for ( auto y : Params::getGlobalParamSet(x) ) {
+        for ( auto y : getGlobalParamSet(x) ) {
             // If the key is <set_name>, then we can skip since it's
             // just metadata
             if ( y.first != "<set_name>" )
@@ -256,7 +258,7 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 
     auto compMap = graph->getComponentMap();
     for ( auto& comp_itr : compMap ) {
-        generateComponent(comp_itr, cfg->output_partition);
+        generateComponent(comp_itr, cfg->output_partition());
         fprintf(outputFile, "\n");
     }
 
