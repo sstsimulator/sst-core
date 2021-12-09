@@ -128,7 +128,7 @@ class ConfigStatistic : public SST::Core::Serialization::serializable
 public:
     StatisticId_t id; /*!< Unique ID of this statistic */
     Params        params;
-    bool          shared;
+    bool          shared = false;
     std::string   name;
 
     ConfigStatistic(StatisticId_t _id, bool _shared = false, std::string _name = "") :
