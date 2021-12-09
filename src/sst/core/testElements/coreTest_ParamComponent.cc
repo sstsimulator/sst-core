@@ -62,7 +62,53 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
     // Test scoped params
     Params p = params.get_scoped_params("scope");
     p.print_all_params(Simulation::getSimulationOutput());
+
+    // Test array params
+    std::vector<int> array;
+    params.find_array("array_param", array);
+    printf("array = [");
+    bool first = true;
+    for ( auto& i : array ) {
+        if ( first ) {
+            printf(" %d", i);
+            first = false;
+        }
+        else
+            printf(", %d", i);
+    }
+    printf(" ]\n");
+
+    // Test set params
+    std::set<std::string> set;
+    params.find_set<std::string>("set_param", set);
+    printf("set = {");
+    first = true;
+    for ( auto& i : set ) {
+        if ( first ) {
+            printf(" %s", i.c_str());
+            first = false;
+        }
+        else
+            printf(", %s", i.c_str());
+    }
+    printf(" }\n");
+
+    // Test map params
+    std::map<std::string, int> map;
+    params.find_map<std::string, int>("map_param", map);
+    printf("map = {");
+    first = true;
+    for ( auto& i : map ) {
+        if ( first ) {
+            printf(" %s : %d", i.first.c_str(), i.second);
+            first = false;
+        }
+        else
+            printf(", %s: %d", i.first.c_str(), i.second);
+    }
+    printf(" }\n");
 }
+
 
 coreTestParamComponent::coreTestParamComponent() : Component(-1) {}
 
