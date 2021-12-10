@@ -15,7 +15,7 @@
 
 #include "sst/core/event.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 
 namespace SST {
 
@@ -45,6 +45,20 @@ SyncQueue::insert(Activity* activity)
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
+
+#if SST_EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+
+    serializer ser;
+
+    ser.start_sizing();
+
+    ser& activity;
+
+    size_t size = ser.size();
+
+    sim->messageSizeSent += (uint64_t)size;
+#endif
 }
 
 Activity*
@@ -85,6 +99,11 @@ SyncQueue::getData()
     ser& activities;
 
     size_t size = ser.size();
+
+#if SST_EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    sim->messageSizeRecv += (uint64_t)size;
+#endif
 
     if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
         if ( buffer != nullptr ) { delete[] buffer; }

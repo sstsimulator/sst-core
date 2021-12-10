@@ -33,6 +33,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_Module.cc \
 	testElements/coreTest_ParamComponent.h \
 	testElements/coreTest_ParamComponent.cc \
+	testElements/coreTest_PerfComponent.h \
+	testElements/coreTest_PerfComponent.cc \
 	testElements/message_mesh/messageEvent.h \
 	testElements/message_mesh/enclosingComponent.h \
 	testElements/message_mesh/enclosingComponent.cc

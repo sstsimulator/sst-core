@@ -4,6 +4,7 @@
 
 EXTRA_DIST += \
     tests/testsuite_default_Component.py \
+    tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
     tests/testsuite_default_Links.py \
     tests/testsuite_default_SharedObject.py \

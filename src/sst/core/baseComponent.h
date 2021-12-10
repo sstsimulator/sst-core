@@ -253,6 +253,8 @@ protected:
     /** Returns the next Cycle that the TimeConverter would fire */
     Cycle_t getNextClockCycle(TimeConverter* freq);
 
+    void registerClockHandler(Clock::HandlerBase* handler);
+
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
