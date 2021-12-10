@@ -527,7 +527,9 @@ Config::print()
     std::cout << "libpath = " << libpath_ << std::endl;
     std::cout << "addLlibPath = " << addLibPath_ << std::endl;
     std::cout << "runMode = " << runMode_ << std::endl;
+#ifdef USE_MEMPOOL
     std::cout << "event_dump_file = " << event_dump_file_ << std::endl;
+#endif
     std::cout << "print_env" << print_env_ << std::endl;
     std::cout << "enable_sig_handling = " << enable_sig_handling_ << std::endl;
     std::cout << "no_env_config = " << no_env_config_ << std::endl;
