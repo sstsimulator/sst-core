@@ -57,7 +57,7 @@ SyncQueue::insert(Activity* activity)
 
     size_t size = ser.size();
 
-    sim->messageSizeSent += (uint64_t)size;
+    sim->messageXferSize += (uint64_t)size;
 #endif
 }
 
@@ -102,7 +102,7 @@ SyncQueue::getData()
 
 #if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    sim->messageSizeRecv += (uint64_t)size;
+    sim->messageXferSize += (uint64_t)size;
 #endif
 
     if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {

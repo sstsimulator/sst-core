@@ -149,9 +149,9 @@ RankSyncSerialSkip::exchange(void)
         simImpl->rankExchangeCounter++;
 #endif
         // Cast to Header so we can get/fill in data
-        SyncQueue::Header* hdr         = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
         // Simulation_impl::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
-        int                tag         = 1;
+        int                tag = 1;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
             // not big enough, send message that will tell remote side to get larger buffer

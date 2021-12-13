@@ -400,8 +400,7 @@ public:
     std::map<std::string, uint64_t> eventHandlers;
     std::map<std::string, uint64_t> eventRecvCounters;
     std::map<std::string, uint64_t> eventSendCounters;
-    uint64_t                        messageSizeSent = 0;
-    uint64_t                        messageSizeRecv = 0;
+    uint64_t                        messageXferSize = 0;
 #endif
 
 #if SST_SYNC_PROFILING

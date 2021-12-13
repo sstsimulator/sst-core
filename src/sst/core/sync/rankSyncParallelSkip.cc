@@ -406,8 +406,8 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         SST_EVENT_PROFILE_STOP
 
         // Cast to Header so we can get/fill in data
-        SyncQueue::Header* hdr         = reinterpret_cast<SyncQueue::Header*>(send_buffer);
-        int                tag         = 2 * i->second.to_rank.thread;
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        int                tag = 2 * i->second.to_rank.thread;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
             // not big enough, send message that will tell remote side to get larger buffer

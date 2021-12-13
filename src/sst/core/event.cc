@@ -56,7 +56,8 @@ Event::execute(void)
     SST_EVENT_PROFILE_START
 #endif
 
-        (*functor)(this);
+        (*functor)
+    (this);
 
 #if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();

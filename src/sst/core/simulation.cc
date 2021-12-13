@@ -1130,8 +1130,7 @@ Simulation_impl::printPerformanceInfo()
 
     // Rank only information
     fprintf(fp, "Rank Statistics\n");
-    fprintf(fp, "Message size sent: %llu\n", messageSizeSent);
-    fprintf(fp, "Message size recv: %llu\n", messageSizeRecv);
+    fprintf(fp, "Message transfer size : %llu\n", messageXferSize);
     fprintf(fp, "Latency : %llu\n", rankLatency);
     fprintf(fp, "Counter : %llu\n", rankExchangeCounter);
     if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %lluns\n", rankLatency / rankExchangeCounter); }
