@@ -34,6 +34,7 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
+    tests/test_PerfComponent.py \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_PerfComponent.out \
     tests/refFiles/test_DistribComponent_discrete.out \
