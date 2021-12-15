@@ -4,6 +4,7 @@
 
 EXTRA_DIST += \
     tests/testsuite_default_Component.py \
+    tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
     tests/testsuite_default_Links.py \
     tests/testsuite_default_ParamComponent.py \
@@ -34,7 +35,9 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
+    tests/test_PerfComponent.py \
     tests/refFiles/test_Component.out \
+    tests/refFiles/test_PerfComponent.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \
     tests/refFiles/test_DistribComponent_gaussian.out \
