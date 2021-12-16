@@ -163,13 +163,23 @@ do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInf
     sim->prepareLinks(*graph, myRank, min_part);
 }
 
+// Returns the extension, or an empty string if there was no extension
 static std::string
-addRankToFileName(const std::string& file_name, int rank)
+addRankToFileName(std::string& file_name, int rank)
 {
-    int         index = file_name.find_last_of(".");
-    std::string base  = file_name.substr(0, index);
-    std::string ext   = file_name.substr(index);
-    return base + std::to_string(rank) + ext;
+    auto        index = file_name.find_last_of(".");
+    std::string base;
+    std::string ext;
+    // If there is an extension, add it before the extension
+    if ( index != std::string::npos ) {
+        base = file_name.substr(0, index);
+        ext  = file_name.substr(index);
+    }
+    else {
+        base = file_name;
+    }
+    file_name = base + std::to_string(rank) + ext;
+    return ext;
 }
 
 static void
@@ -183,7 +193,10 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
         std::string file_name(cfg->output_config_graph());
         if ( cfg->parallel_output() && world_size.rank != 1 ) {
             // Append rank number to base filename
-            file_name = addRankToFileName(file_name, myRank.rank);
+            std::string ext = addRankToFileName(file_name, myRank.rank);
+            if ( ext != ".py" ) {
+                g_output.fatal(CALL_INFO, 1, "--output-config requires a filename with a .py extension\n");
+            }
         }
         graphOutputs.push_back(new PythonConfigGraphOutput(file_name.c_str()));
     }
@@ -199,7 +212,10 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
         std::string file_name(cfg->output_json());
         if ( cfg->parallel_output() ) {
             // Append rank number to base filename
-            file_name = addRankToFileName(file_name, myRank.rank);
+            std::string ext = addRankToFileName(file_name, myRank.rank);
+            if ( ext != ".json" ) {
+                g_output.fatal(CALL_INFO, 1, "--output-json requires a filename with a .json extension\n");
+            }
         }
         graphOutputs.push_back(new JSONConfigGraphOutput(file_name.c_str()));
     }
@@ -407,9 +423,7 @@ main(int argc, char* argv[])
     }
     world_size.thread = cfg.num_threads();
 
-    if ( cfg.parallel_load() && world_size.rank != 1 ) {
-        cfg.configFile_ = addRankToFileName(cfg.configFile(), myRank.rank);
-    }
+    if ( cfg.parallel_load() && world_size.rank != 1 ) { addRankToFileName(cfg.configFile_, myRank.rank); }
     cfg.checkConfigFile();
 
     // Create the factory.  This may be needed to load an external model definition
