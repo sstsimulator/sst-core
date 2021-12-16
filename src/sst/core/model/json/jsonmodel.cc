@@ -274,15 +274,10 @@ SSTJSONModelDefinition::discoverLinks(const json& jFile)
                     CALL_INFO, 1, "Error finding latency field of %s link component for Link=%s from script: %s\n",
                     sides[i].c_str(), Name.c_str(), scriptName.c_str());
             }
+
+            LinkID = findComponentIdByName(Comp[i]);
+            graph->addLink(LinkID, Name, Port[i], Latency[i], NoCut);
         }
-
-        // -- Add the Left Link
-        LinkID = findComponentIdByName(Comp[0]);
-        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
-
-        // -- Add the Right Link
-        LinkID = findComponentIdByName(Comp[1]);
-        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
     }
 }
 
