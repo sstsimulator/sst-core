@@ -121,29 +121,21 @@ typedef std::mutex Spinlock;
 class Spinlock
 {
     std::atomic_flag latch = ATOMIC_FLAG_INIT;
-    std::thread::id  thread_id;
 
 public:
     Spinlock() {}
 
     inline void lock()
     {
-        if ( thread_id == std::this_thread::get_id() ) printf("DEADLOCK\n");
         while ( latch.test_and_set(std::memory_order_acquire) ) {
             sst_pause();
 #if defined(__PPC64__)
             __sync_synchronize();
 #endif
         }
-        thread_id = std::this_thread::get_id();
-        // std::cout << thread_id << std::endl;
     }
 
-    inline void unlock()
-    {
-        thread_id = std::thread::id();
-        latch.clear(std::memory_order_release);
-    }
+    inline void unlock() { latch.clear(std::memory_order_release); }
 };
 #endif
 
