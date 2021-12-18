@@ -47,6 +47,9 @@ class testcase_Config_input_output(SSTTestCase):
     def test_python_io(self):
         self.configio_test_template("python_io", "6 6", "py", False)
 
+    def test_python_io_comp(self):
+        self.configio_test_template("python_io_comp", "", "py", False, True)
+
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_python_io_parallel(self):
         self.configio_test_template("python_io_parallel", "6 6", "py", True)
@@ -54,13 +57,16 @@ class testcase_Config_input_output(SSTTestCase):
     def test_json_io(self):
         self.configio_test_template("json_io", "6 6", "json", False)
 
+    def test_json_io_comp(self):
+        self.configio_test_template("json_io_comp", "", "json", False, True)
+
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_json_io_parallel(self):
         self.configio_test_template("json_io_parallel", "6 6", "json", True)
 
 #####
 
-    def configio_test_template(self, testtype, model_options, output_type, parallel_io):
+    def configio_test_template(self, testtype, model_options, output_type, parallel_io, use_component_test=False):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
@@ -79,7 +85,11 @@ class testcase_Config_input_output(SSTTestCase):
             options_check = ""
         
         # Set the various file paths
-        sdlfile = "{0}/test_MessageMesh.py".format(testsuitedir)
+        if use_component_test:
+            sdlfile = "{0}/test_Component.py".format(testsuitedir)
+        else:
+            sdlfile = "{0}/test_MessageMesh.py".format(testsuitedir)
+
         #reffile = "{0}/sharedobject_tests/refFiles/test_{1}.out".format(testsuitedir, testtype)
         outfile_ref = "{0}/test_configio_ref_{1}.out".format(outdir, testtype)
         outfile_check = "{0}/test_configio_check_{1}.out".format(outdir, testtype)

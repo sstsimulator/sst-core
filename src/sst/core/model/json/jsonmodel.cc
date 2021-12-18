@@ -22,7 +22,7 @@ using namespace SST::Core;
 
 SSTJSONModelDefinition::SSTJSONModelDefinition(
     const std::string& script_file, int verbosity, Config* configObj, double start_time) :
-    SSTModelDescription(),
+    SSTModelDescription(configObj),
     scriptName(script_file),
     output(nullptr),
     config(configObj),
@@ -274,15 +274,10 @@ SSTJSONModelDefinition::discoverLinks(const json& jFile)
                     CALL_INFO, 1, "Error finding latency field of %s link component for Link=%s from script: %s\n",
                     sides[i].c_str(), Name.c_str(), scriptName.c_str());
             }
+
+            LinkID = findComponentIdByName(Comp[i]);
+            graph->addLink(LinkID, Name, Port[i], Latency[i], NoCut);
         }
-
-        // -- Add the Left Link
-        LinkID = findComponentIdByName(Comp[0]);
-        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
-
-        // -- Add the Right Link
-        LinkID = findComponentIdByName(Comp[1]);
-        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
     }
 }
 
@@ -291,7 +286,7 @@ SSTJSONModelDefinition::discoverProgramOptions(const json& jFile)
 {
     if ( jFile.contains("program_options") ) {
         for ( auto& option : jFile["program_options"].items() ) {
-            config->setConfigEntryFromModel(option.key(), option.value());
+            setOptionFromModel(option.key(), option.value());
         }
     }
 }

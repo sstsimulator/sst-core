@@ -128,7 +128,7 @@ class ConfigStatistic : public SST::Core::Serialization::serializable
 public:
     StatisticId_t id; /*!< Unique ID of this statistic */
     Params        params;
-    bool          shared;
+    bool          shared = false;
     std::string   name;
 
     ConfigStatistic(StatisticId_t _id, bool _shared = false, std::string _name = "") :
@@ -287,7 +287,10 @@ public:
     void setStatisticParameters(const std::string& statisticName, const Params& params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
 
-    void addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    void                     addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    std::vector<std::string> getParamsLocalKeys() const { return params.getLocalKeys(); }
+    std::vector<std::string> getSubscribedGlobalParamSets() const { return params.getSubscribedGlobalParamSets(); }
+
 
     std::vector<LinkId_t> allLinks() const;
 

@@ -31,6 +31,19 @@
 
 namespace SST {
 
+#if SST_EVENT_PROFILING
+#define SST_EVENT_PROFILE_START auto event_profile_start = std::chrono::high_resolution_clock::now();
+#define SST_EVENT_PROFILE_STOP                                                                                    \
+    Simulation_impl* event_profile_simImpl = Simulation_impl::getSimulation();                                    \
+    auto             event_profile_finish  = std::chrono::high_resolution_clock::now();                           \
+    event_profile_simImpl->rankLatency +=                                                                         \
+        std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_finish - event_profile_start).count(); \
+    event_profile_simImpl->rankExchangeCounter++;
+#else
+#define SST_EVENT_PROFILE_START
+#define SST_EVENT_PROFILE_STOP
+#endif
+
 // Static Data Members
 SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 
@@ -172,9 +185,16 @@ RankSyncParallelSkip::exchange_slave(int thread)
 
     // Check the serialize_queue for work.
     comm_send_pair* ser;
+
     while ( serialize_queue.try_remove(ser) ) {
         // Serialize the events
+        // Measures Latency
+        SST_EVENT_PROFILE_START
+
         ser->sbuf = ser->squeue->getData();
+
+        SST_EVENT_PROFILE_STOP
+
         // Send back to master to do MPI send
         send_queue.try_insert(ser);
     }
@@ -253,6 +273,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     // with serialization
     int             my_send_count = send_count;
     comm_send_pair* send;
+
     while ( my_send_count != 0 ) {
         if ( send_queue.try_remove(send) ) {
             my_send_count--;
@@ -280,7 +301,10 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
         }
         else if ( serialize_queue.try_remove(send) ) {
             // Serialize the events
+            SST_EVENT_PROFILE_START
             send->sbuf = send->squeue->getData();
+            SST_EVENT_PROFILE_STOP
+
             // Send back to master to do MPI send
             send_queue.try_insert(send);
         }
@@ -377,10 +401,13 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
 
         // Do all the sends
         // Get the buffer from the syncQueue
-        char*              send_buffer = i->second.squeue->getData();
+        SST_EVENT_PROFILE_START
+        char* send_buffer = i->second.squeue->getData();
+        SST_EVENT_PROFILE_STOP
+
         // Cast to Header so we can get/fill in data
-        SyncQueue::Header* hdr         = reinterpret_cast<SyncQueue::Header*>(send_buffer);
-        int                tag         = 2 * i->second.to_rank.thread;
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        int                tag = 2 * i->second.to_rank.thread;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
             // not big enough, send message that will tell remote side to get larger buffer

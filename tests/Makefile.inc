@@ -4,15 +4,16 @@
 
 EXTRA_DIST += \
     tests/testsuite_default_Component.py \
+    tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
     tests/testsuite_default_Links.py \
+    tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_SharedObject.py \
     tests/testsuite_default_SubComponent.py \
     tests/testsuite_default_UnitAlgebra.py \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
     tests/testsuite_testengine_testing.py \
-    tests/test_ParamComponent.py \
     tests/test_Component.py \
     tests/test_ClockerComponent.py \
     tests/test_DistribComponent_discrete.py \
@@ -22,6 +23,7 @@ EXTRA_DIST += \
     tests/test_LookupTable.py \
     tests/test_LookupTable2.py \
     tests/test_MessageMesh.py \
+    tests/test_ParamComponent.py \
     tests/test_RNGComponent.py \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
@@ -33,11 +35,14 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
+    tests/test_PerfComponent.py \
     tests/refFiles/test_Component.out \
+    tests/refFiles/test_PerfComponent.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \
     tests/refFiles/test_DistribComponent_gaussian.out \
     tests/refFiles/test_LookupTableComponent.out \
+    tests/refFiles/test_ParamComponent.out \
     tests/refFiles/test_MessageGeneratorComponent.out \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \

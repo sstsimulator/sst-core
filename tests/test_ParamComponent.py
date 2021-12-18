@@ -71,3 +71,14 @@ param_c3.addParams({
         "scope.bool" : "no"
 })
 param_c3.addGlobalParamSet("test_set")
+
+# Define the simulation components
+array_param = [ 1, 2, "4", "8" ]
+set_param = { "one", "two", 3, True }
+map_param = { "one" : "1", "two" : 2, "three" : 3, "four" : 4 }
+param_c4 = sst.Component("c4.0", "coreTestElement.coreTestParamComponent")
+param_c4.addParams({
+        "array_param" : array_param,
+        "set_param" : set_param,
+        "map_param" : map_param
+})
