@@ -19,7 +19,8 @@ add_library(
   coreTest_SharedObjectComponent.cc
   coreTest_SubComponent.cc
   coreTest_Module.cc
-  coreTest_ParamComponent.cc)
+  coreTest_ParamComponent.cc
+  coreTest_PerfComponent.cc)
 
 add_subdirectory(message_mesh)
 
