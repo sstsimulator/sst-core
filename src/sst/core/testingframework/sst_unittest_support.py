@@ -339,7 +339,7 @@ def host_os_get_num_cores_on_system():
 ################################################################################
 
 def testing_check_is_scenario_filtering_enabled(scenario_name):
-    """ Detirmine if a scenario filter name is enabled
+    """ Determine if a scenario filter name is enabled
 
         Args:
             scenario_name (str): The scenario filter name to check
@@ -824,6 +824,136 @@ def test_output_get_tmp_dir():
 ################################################################################
 ### Testing Support
 ################################################################################
+
+def testing_parse_stat(line):
+    """ Return a parsed statistic or 'None' if the line does not match one of SST's built in statistic formats
+        
+        Args:
+            line (str): string to parse into a statistic
+
+        Returns:
+            (list) list of [component, sum, sumSq, count, min, max] or 'None' if not a statistic
+    """
+    cons_accum = re.compile(' ([\w.]+)\.(\w+) : Accumulator : Sum.(\w+) = ([\d.]+); SumSQ.\w+ = ([\d.]+); Count.\w+ = ([\d.]+); Min.\w+ = ([\d.]+); Max.\w+ = ([\d.]+);')
+    m = cons_accum.match(line)
+    if m == None:
+        return None
+
+    stat = [m.group(1), m.group(2)]
+    if 'u' in m.group(3) or 'i' in m.group(3):
+        stat.append(int(m.group(4)))
+        stat.append(int(m.group(5)))
+        stat.append(int(m.group(6)))
+        stat.append(int(m.group(7)))
+        stat.append(int(m.group(8)))
+    elif 'f' in m.group(3):
+        stat.append(float(m.group(4)))
+        stat.append(float(m.group(5)))
+        stat.append(float(m.group(6)))
+        stat.append(float(m.group(7)))
+        stat.append(float(m.group(8)))
+    else:
+        return None
+    return stat
+            
+def testing_stat_output_diff(outfile, reffile, ignore_lines=[], tol_stats={}, new_stats=False, filetype=""):
+    """ Perform a diff of statistic outputs with special handling based on arguments
+        This diff is not sensitive to line ordering
+        Because the test framework captures console output, the statistic format is assumed to be Console.
+
+        Args:
+            outfile (str): filename of the output file to check     
+            reffile (str): filename of the reference file to diff against
+            ignore_lines (list): list of strings to ignore in both the ref and output files. 
+                                 Any line that contains one of these strings will be ignored.
+            tol_stats (dictionary): Dictionary mapping a statistic name to a list of tolerances on each field (sum, sumSq, count, min, max).
+                                    A tolerance of 'X' indicates don't care. All values are treated as a +/- on the reference value.
+            new_stats (bool): If true, the diff will ignore any statistics that are present in the outfile but not present in the reffile
+
+        Returns:
+           (bool) True if the diff check passed
+           (list) A list of statistics that diffed with '<' indicating reffile lines and '>' indicating outfile lines
+           (list) A list of non-statistic lines that diffed with '<' indicating reffile lines and '>' indicating outfile lines
+    """
+    # Parse files, ignoring lines in 'ignore_lines'
+    ref_lines = []
+    ref_stats = []
+    out_lines = []
+    out_stats = []
+    with open(reffile, 'r') as fp:
+        lines = fp.read().splitlines()
+        for line in lines:
+            if not any(x in line for x in ignore_lines):
+                stat = testing_parse_stat(line)
+                if stat != None:
+                    ref_stats.append(stat)
+                else:
+                    ref_lines.append(line)
+    
+    # Parse output file, filtering in line
+    with open(outfile, 'r') as fp:
+        lines = fp.read().splitlines()
+        for line in lines:
+            if not any(x in line for x in ignore_lines):
+                stat = testing_parse_stat(line)
+                if stat == None: # Not a statistic
+                    if line not in ref_lines:
+                        out_lines.append(line)
+                    else:
+                        ref_lines.remove(line)
+                    continue
+                
+                # Filter exact match to reference
+                if stat in ref_stats:
+                    ref_stats.remove(stat)
+                    continue
+
+                # Filter new statistics
+                if new_stats and not any((row[0] == stat[0] and row[1] == stat[1]) for row in ref_stats):
+                    continue
+                
+                # Filter on tolerance if possible
+                if stat[1] in tol_stats:
+                    found = False
+                    for s in ref_stats:
+                        if s[0] == stat[0] and s[1] == stat[1]:
+                            rstat = s
+                            found = True
+                            break
+                    
+                    if not found:
+                        out_stats.append(stat)
+                        continue
+                    
+                    diffs = False
+                    tol = tol_stats[stat[1]]
+                    for i, t in enumerate(tol):
+                        if t != 'X' and ((rstat[2+i] - t) > stat[2+i] or (rstat[2+i] + t) < stat[2+i]):
+                            diffs = True
+                            break
+
+                    if diffs:
+                        out_stats.append(stat)
+                    else:
+                        ref_stats.remove(rstat)
+                    continue
+
+                # Not filtered
+                out_stats.append(stat)
+
+    # Combine diffs
+    stat_diffs = [ ['<',x[0],x[1],x[2],x[3],x[4],x[5],x[6]] for x in ref_stats ]
+    stat_diffs += [ ['>',x[0],x[1],x[2],x[3],x[4],x[5],x[6]] for x in out_stats ]
+    
+    line_diffs = [ ['<',x] for x in ref_lines ]
+    line_diffs += [ ['>',x] for x in out_lines ]
+    
+    if len(stat_diffs) > 0 or len(line_diffs) > 0:
+        return False, stat_diffs, line_diffs
+    else:
+        return True, stat_diffs, line_diffs
+    
+###
 
 def testing_compare_diff(test_name, outfile, reffile, ignore_ws=False):
     """ compare 2 files for a diff.
