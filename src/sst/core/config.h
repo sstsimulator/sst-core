@@ -246,6 +246,8 @@ public:
     */
     const std::string& addLibPath() const { return addLibPath_; }
 
+    // Advanced options - Debug
+
     /**
        Run mode to use (Init, Both, Run-only).  Note that Run-only is
        not currently supported because there is not component level
@@ -261,6 +263,12 @@ public:
     */
     const std::string& event_dump_file() const { return event_dump_file_; }
 #endif
+
+    /**
+       Run simulation initialization stages one rank at a time for
+       debug purposes
+     */
+    bool rank_seq_startup() const { return rank_seq_startup_; }
 
     // Advanced options - envrionment
 
@@ -380,16 +388,19 @@ private:
     bool        output_partition_;         /*!< Output paritition info when writing config output */
 
     // Advanced options
-    bool               parallel_load_;     /*!< Load simulation graph in parallel */
-    std::string        timeVortex_;        /*!< TimeVortex implementation to use */
-    bool               interthread_links_; /*!< Use interthread links */
-    std::string        debugFile_;         /*!< File to which debug information should be written */
-    std::string        libpath_;
-    std::string        addLibPath_;
+    bool        parallel_load_;     /*!< Load simulation graph in parallel */
+    std::string timeVortex_;        /*!< TimeVortex implementation to use */
+    bool        interthread_links_; /*!< Use interthread links */
+    std::string debugFile_;         /*!< File to which debug information should be written */
+    std::string libpath_;
+    std::string addLibPath_;
+
+    // Advanced options - debug
     Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */
 #ifdef USE_MEMPOOL
     std::string event_dump_file_; /*!< File to dump undeleted events to */
 #endif
+    bool rank_seq_startup_; /*!< Run simulation initialization phases one rank at a time */
 
     // Advanced options - envrionment
     bool print_env_;           /*!< Print SST environment */
