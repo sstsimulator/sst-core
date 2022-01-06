@@ -234,7 +234,7 @@ class SSTTestCase(unittest.TestCase):
 
     def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
                 other_args="", num_ranks=None, num_threads=None, global_args=None,
-                timeout_sec=60, expected_rc=0, check_sdl_file=True):
+                timeout_sec=120, expected_rc=0, check_sdl_file=True):
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
             timeouts.  On an error or timeout, a SSTTestCase.assert() will be generated
