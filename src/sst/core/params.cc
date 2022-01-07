@@ -122,16 +122,16 @@ Params::print_all_params(Output& out, const std::string& prefix) const
     int level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
-            if ( !map->empty() ) out.output("Local params:\n");
+            if ( !map->empty() ) out.output("%sLocal params:\n", prefix.c_str());
             level++;
         }
         else if ( level == 1 ) {
-            out.output("Global params:\n");
+            out.output("%sGlobal params:\n", prefix.c_str());
             level++;
         }
 
         for ( auto value : *map ) {
-            out.output("%s%s = %s\n", prefix.c_str(), keyMapReverse[value.first].c_str(), value.second.c_str());
+            out.output("%s  %s = %s\n", prefix.c_str(), keyMapReverse[value.first].c_str(), value.second.c_str());
         }
     }
 }
@@ -331,6 +331,9 @@ Params::getKey(const std::string& str)
 void
 Params::addGlobalParamSet(const std::string& set)
 {
+    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(globalLock);
+    if ( global_params.count(set) == 0 ) { global_params[set][0] = set; }
+
     data.push_back(&global_params[set]);
 }
 

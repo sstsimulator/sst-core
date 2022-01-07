@@ -1,76 +1,166 @@
 WARNING: Building component "c0.0" with no links assigned.
-int32_t      value = "2147483647" = 2147483647
-uint32_t     value = "4294967295" = 4294967295
-int64_t      value = "9223372036854775807" = 9223372036854775807
-uint64_t     value = "18446744073709551615" = 18446744073709551615
-bool-true    value = "True" = true
-bool-false   value = "False" = false
-float        value = "1.0101" = 1.010100 = 1.010100e+00
-double       value = "1.3333e-10" = 0.000000 = 1.333300e-10
-string       value = "teststring123"
-Local params:
-string = scope test
-array = [ ]
-set = { }
-map = { }
+Component c0.0:
+  Contents of Params object (0):
+    Local params:
+      bool-true-param = True
+      bool-false-param = False
+      int32t-param = 2147483647
+      uint32t-param = 4294967295
+      int64t-param = 9223372036854775807
+      uint64t-param = 18446744073709551615
+      float-param = 1.0101
+      double-param = 1.3333e-10
+    Global params:
+      <set_name> = test_set
+      bool-true-param = yes
+      bool-false-param = no
+      scope.string = scope test
+      <set_name> = test_set2
+      string-param = teststring123
+  Results of find() calls:
+    int32_t      value = "2147483647" = 2147483647
+    uint32_t     value = "4294967295" = 4294967295
+    int64_t      value = "9223372036854775807" = 9223372036854775807
+    uint64_t     value = "18446744073709551615" = 18446744073709551615
+    bool-true    value = "True" = true
+    bool-false   value = "False" = false
+    float        value = "1.0101" = 1.010100 = 1.010100e+00
+    double       value = "1.3333e-10" = 0.000000 = 1.333300e-10
+    string       value = "teststring123"
+    Scoped Params:
+      Local params:
+        string = scope test
+    array = [ ]
+    set = { }
+    map = { }
+
 WARNING: Building component "c1.0" with no links assigned.
-int32_t      value = "-2147483648" = -2147483648
-uint32_t     value = "0" = 0
-int64_t      value = "-9223372036854775808" = -9223372036854775808
-uint64_t     value = "18446744073709551615" = 18446744073709551615
-bool-true    value = "true" = true
-bool-false   value = "false" = false
-float        value = "1e-15" = 0.000000 = 1.000000e-15
-double       value = "1.3333e-52" = 0.000000 = 1.333300e-52
-string       value = "teststring123"
-Local params:
-string = scope test
-array = [ ]
-set = { }
-map = { }
+Component c1.0:
+  Contents of Params object (1):
+    Local params:
+      bool-true-param = true
+      bool-false-param = false
+      int32t-param = -2147483648
+      uint32t-param = 0
+      int64t-param = -9223372036854775808
+      uint64t-param = 18446744073709551615
+      float-param = 1e-15
+      double-param = 1.3333e-52
+    Global params:
+      <set_name> = test_set
+      bool-true-param = yes
+      bool-false-param = no
+      scope.string = scope test
+      <set_name> = test_set2
+      string-param = teststring123
+  Results of find() calls:
+    int32_t      value = "-2147483648" = -2147483648
+    uint32_t     value = "0" = 0
+    int64_t      value = "-9223372036854775808" = -9223372036854775808
+    uint64_t     value = "18446744073709551615" = 18446744073709551615
+    bool-true    value = "true" = true
+    bool-false   value = "false" = false
+    float        value = "1e-15" = 0.000000 = 1.000000e-15
+    double       value = "1.3333e-52" = 0.000000 = 1.333300e-52
+    string       value = "teststring123"
+    Scoped Params:
+      Local params:
+        string = scope test
+    array = [ ]
+    set = { }
+    map = { }
+
 WARNING: Building component "c2.0" with no links assigned.
-int32_t      value = "2147483647" = 2147483647
-uint32_t     value = "4294967295" = 4294967295
-int64_t      value = "-9223372036854775808" = -9223372036854775808
-uint64_t     value = "18446744073709551615" = 18446744073709551615
-bool-true    value = "1" = true
-bool-false   value = "0" = false
-float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
-double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
-string       value = "teststring456"
-Local params:
-string = scope test
-array = [ ]
-set = { }
-map = { }
+Component c2.0:
+  Contents of Params object (2):
+    Local params:
+      bool-true-param = 1
+      bool-false-param = 0
+      int32t-param = 2147483647
+      uint32t-param = 4294967295
+      int64t-param = -9223372036854775808
+      uint64t-param = 18446744073709551615
+      float-param = -1.0000e-15
+      double-param = -1.33e7
+      string-param = teststring456
+    Global params:
+      <set_name> = test_set
+      bool-true-param = yes
+      bool-false-param = no
+      scope.string = scope test
+      <set_name> = test_set2
+      string-param = teststring123
+  Results of find() calls:
+    int32_t      value = "2147483647" = 2147483647
+    uint32_t     value = "4294967295" = 4294967295
+    int64_t      value = "-9223372036854775808" = -9223372036854775808
+    uint64_t     value = "18446744073709551615" = 18446744073709551615
+    bool-true    value = "1" = true
+    bool-false   value = "0" = false
+    float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
+    double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
+    string       value = "teststring456"
+    Scoped Params:
+      Local params:
+        string = scope test
+    array = [ ]
+    set = { }
+    map = { }
+
 WARNING: Building component "c3.0" with no links assigned.
-int32_t      value = "2147483647" = 2147483647
-uint32_t     value = "4294967295" = 4294967295
-int64_t      value = "-9223372036854775808" = -9223372036854775808
-uint64_t     value = "18446744073709551615" = 18446744073709551615
-bool-true    value = "yes" = true
-bool-false   value = "no" = false
-float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
-double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
-string       value = "teststring456"
-Local params:
-string = scope test
-int32 = 100
-bool = no
-array = [ ]
-set = { }
-map = { }
+Component c3.0:
+  Contents of Params object (3):
+    Local params:
+      int32t-param = 2147483647
+      uint32t-param = 4294967295
+      int64t-param = -9223372036854775808
+      uint64t-param = 18446744073709551615
+      float-param = -1.0000e-15
+      double-param = -1.33e7
+      string-param = teststring456
+      scope.int32 = 100
+      scope.bool = no
+    Global params:
+      <set_name> = test_set
+      bool-true-param = yes
+      bool-false-param = no
+      scope.string = scope test
+      <set_name> = test_set2
+      string-param = teststring123
+  Results of find() calls:
+    int32_t      value = "2147483647" = 2147483647
+    uint32_t     value = "4294967295" = 4294967295
+    int64_t      value = "-9223372036854775808" = -9223372036854775808
+    uint64_t     value = "18446744073709551615" = 18446744073709551615
+    bool-true    value = "yes" = true
+    bool-false   value = "no" = false
+    float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
+    double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
+    string       value = "teststring456"
+    Scoped Params:
+      Local params:
+        string = scope test
+        int32 = 100
+        bool = no
+    array = [ ]
+    set = { }
+    map = { }
+
 WARNING: Building component "c4.0" with no links assigned.
-int32_t      value = "" = 0
-uint32_t     value = "" = 0
-int64_t      value = "" = 0
-uint64_t     value = "" = 0
-bool-true    value = "" = false
-bool-false   value = "" = false
-float        value = "" = 0.000000 = 0.000000e+00
-double       value = "" = 0.000000 = 0.000000e+00
-string       value = ""
-array = [ 1, 2, 4, 8 ]
-set = { 3, True, one, two }
-map = { four : 4, one: 1, three: 3, two: 2 }
+Component c4.0:
+  Results of find() calls:
+    int32_t      value = "" = 0
+    uint32_t     value = "" = 0
+    int64_t      value = "" = 0
+    uint64_t     value = "" = 0
+    bool-true    value = "" = false
+    bool-false   value = "" = false
+    float        value = "" = 0.000000 = 0.000000e+00
+    double       value = "" = 0.000000 = 0.000000e+00
+    string       value = ""
+    Scoped Params:
+    array = [ 1, 2, 4, 8 ]
+    set = { 3, True, one, two }
+    map = { four : 4, one: 1, three: 3, two: 2 }
+
 Simulation is complete, simulated time: 25 us
