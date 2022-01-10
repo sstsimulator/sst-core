@@ -75,9 +75,11 @@ force_rank_sequential_start(const Config& cfg, const RankInfo& myRank, const Ran
     if ( !cfg.rank_seq_startup() || world_size.rank == 1 ) return;
 
     if ( myRank.thread == 0 ) {
+#ifdef SST_CONFIG_HAVE_MPI
         for ( uint32_t i = 0; i < myRank.rank; ++i ) {
             MPI_Barrier(MPI_COMM_WORLD);
         }
+#endif
     }
 }
 
@@ -87,9 +89,11 @@ force_rank_sequential_stop(const Config& cfg, const RankInfo& myRank, const Rank
     if ( !cfg.rank_seq_startup() || world_size.rank == 1 ) return;
 
     if ( myRank.thread == 0 ) {
+#ifdef SST_CONFIG_HAVE_MPI
         for ( uint32_t i = myRank.rank; i < world_size.rank; ++i ) {
             MPI_Barrier(MPI_COMM_WORLD);
         }
+#endif
     }
 }
 
