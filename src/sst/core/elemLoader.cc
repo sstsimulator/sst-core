@@ -81,6 +81,12 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     char* full_path     = new char[PATH_MAX];
     bool  found_element = false;
 
+    // We will keep track of error messages.  In general, we will only
+    // print them if the library completely fails to load. When
+    // verbose is turned on, we will simply print all the
+    // errors/warnings/info whether things succeed or not.
+    std::vector<std::string> error_msgs;
+
     for ( std::string const& next_path : paths ) {
         if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
 
@@ -96,11 +102,22 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 
 #ifdef SST_COMPILE_MACOSX
         if ( nullptr == handle ) {
-            if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
+            if ( verbose ) { printf("SST-DL: Loading failed for %s, error: %s\n", full_path, dlerror()); }
+            else {
+                // Check to see if file exists.  If not, we don't need
+                // to record the error message.
+                struct stat sb;
+                if ( 0 == stat(full_path, &sb) ) {
+                    // File found, record error
+                    error_msgs.emplace_back("SST-DL: Loading failed for ");
+                    error_msgs.back() =
+                        error_msgs.back() + std::string(full_path) + ", error:\n" + std::string(dlerror());
+                }
+            }
         }
 
         // macOS will also allow files to use the dylib extension so this
-        // must also be checked. But only check this is the .so attempt
+        // must also be checked. But only check this if the .so attempt
         // failed first (because we may have had a successful load already)
         // this implies ordering of .so before .dylib in priority.
 
@@ -119,6 +136,17 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 
         if ( nullptr == handle ) {
             if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
+            else {
+                // Check to see if file exists.  If not, we don't need
+                // to record the error message.
+                struct stat sb;
+                if ( 0 == stat(full_path, &sb) ) {
+                    // File found, record error
+                    error_msgs.emplace_back("SST-DL: Loading failed for ");
+                    error_msgs.back() =
+                        error_msgs.back() + std::string(full_path) + ", error: " + std::string(dlerror());
+                }
+            }
         }
         else {
             if ( verbose ) { printf("SST-DL: Load was successful.\n"); }
@@ -142,7 +170,26 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 
     delete[] full_path;
 
-    if ( !found_element ) { err_os << "Error: unable to find \"" << elemlib << "\" element library\n"; }
+    if ( !found_element ) {
+        err_os << "Error: unable to find \"" << elemlib << "\" element library\n";
+        if ( !verbose ) {
+            for ( auto& x : error_msgs ) {
+                err_os << x << std::endl;
+            }
+        }
+    }
+    else {
+        // If we found an element, but have error messages from
+        // loading a file that existed, print that as a warning.
+        if ( !verbose && !error_msgs.empty() ) {
+            err_os << "Warning: library " << elemlib
+                   << " was successfully loaded, but there was a failed attempt at loading a different version of the "
+                      "library before the successful load.  Error message follows:\n";
+            for ( auto& x : error_msgs ) {
+                err_os << x << std::endl;
+            }
+        }
+    }
 
     return;
 }
