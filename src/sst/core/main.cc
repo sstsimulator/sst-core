@@ -68,33 +68,47 @@ static SST::Output g_output;
 
 // Functions to force initialization stages of simulation to execute
 // one rank at a time.  Put force_rank_sequential_start() before the
-// serialized section and force_rank_sequential_stop() after.
+// serialized section and force_rank_sequential_stop() after.  These
+// calls must be used in matching pairs.
 static void
 force_rank_sequential_start(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
 {
-    if ( !cfg.rank_seq_startup() || world_size.rank == 1 ) return;
+    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
 
-    if ( myRank.thread == 0 ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        for ( uint32_t i = 0; i < myRank.rank; ++i ) {
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
+    // Start off all ranks with a barrier so none enter the serialized
+    // region until they are all there
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Rank 0 will proceed immediately.  All others will wait
+    if ( myRank.rank == 0 ) return;
+
+    // Ranks will wait for notice from previous rank before proceeding
+    int32_t buf = 0;
+    MPI_Recv(&buf, 1, MPI_INT32_T, myRank.rank - 1, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 #endif
-    }
 }
 
+
+// Functions to force initialization stages of simulation to execute
+// one rank at a time.  Put force_rank_sequential_start() before the
+// serialized section and force_rank_sequential_stop() after.  These
+// calls must be used in matching pairs.
 static void
 force_rank_sequential_stop(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
 {
-    if ( !cfg.rank_seq_startup() || world_size.rank == 1 ) return;
+    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
 
-    if ( myRank.thread == 0 ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        for ( uint32_t i = myRank.rank; i < world_size.rank; ++i ) {
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
-#endif
+    // After I'm through the serialized region, notify the next
+    // sender, then barrier.  The last rank does not need to do a
+    // send.
+    if ( myRank.rank != world_size.rank - 1 ) {
+        uint32_t buf = 0;
+        MPI_Send(&buf, 1, MPI_INT32_T, myRank.rank + 1, 0, MPI_COMM_WORLD);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 static void
@@ -334,11 +348,13 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     double start_run = sst_get_cpu_time();
     info.build_time  = start_run - start_build;
 
+    force_rank_sequential_stop(*info.config, info.myRank, info.world_size);
+
+    barrier.wait();
+
 #ifdef SST_CONFIG_HAVE_MPI
     if ( tid == 0 && info.world_size.rank > 1 ) { MPI_Barrier(MPI_COMM_WORLD); }
 #endif
-
-    force_rank_sequential_stop(*info.config, info.myRank, info.world_size);
 
     barrier.wait();
 
