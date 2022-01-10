@@ -168,9 +168,15 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
         }
     }
 
+    // no components exist in this rank
+    if ( const_cast<ConfigComponentMap_t&>(compMap).size() == 0 ) { outputJson["components"]; }
+
     for ( const auto& compItr : compMap ) {
         outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition() });
     }
+
+    // no links exist in this rank
+    if ( const_cast<ConfigLinkMap_t&>(linkMap).size() == 0 ) { outputJson["links"]; }
 
     for ( const auto& linkItr : linkMap ) {
         outputJson["links"].push_back(LinkConfPair { linkItr, graph });
