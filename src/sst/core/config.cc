@@ -402,6 +402,8 @@ public:
         return true;
     }
 
+    // Advanced options - debug
+
     // run mode
     bool setRunMode(const std::string& arg)
     {
@@ -427,6 +429,13 @@ public:
         return true;
     }
 #endif
+
+    // rank sequentional startup
+    bool forceRankSeqStartup()
+    {
+        cfg.rank_seq_startup_ = true;
+        return true;
+    }
 
 
     // Advanced options - environment
@@ -530,6 +539,7 @@ Config::print()
 #ifdef USE_MEMPOOL
     std::cout << "event_dump_file = " << event_dump_file_ << std::endl;
 #endif
+    std::cout << "rank_seq_startup_ " << rank_seq_startup_ << std::endl;
     std::cout << "print_env" << print_env_ << std::endl;
     std::cout << "enable_sig_handling = " << enable_sig_handling_ << std::endl;
     std::cout << "no_env_config = " << no_env_config_ << std::endl;
@@ -582,10 +592,13 @@ Config::Config(RankInfo rank_info) : Config()
     debugFile_         = "/dev/null";
     libpath_           = SST_INSTALL_PREFIX "/lib/sst";
     addLibPath_        = "";
-    runMode_           = Simulation::BOTH;
+
+    // Advanced Options - Debug
+    runMode_ = Simulation::BOTH;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file_ = "";
 #endif
+    rank_seq_startup_ = false;
 
     // Advanced Options- environment
     print_env_           = false;
@@ -849,6 +862,9 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)", &ConfigHelper::setLibPath, true),
     DEF_ARG(
         "add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)", &ConfigHelper::addLibPath, true),
+
+    /* Advanced Features - Debug */
+    DEF_SECTION_HEADING("Advanced Options - Debug"),
     DEF_ARG("run-mode", 0, "MODE", "Set run mode [ init | run | both (default)]", &ConfigHelper::setRunMode, true),
 #ifdef USE_MEMPOOL
     DEF_ARG(
@@ -857,6 +873,10 @@ static const struct sstLongOpts_s sstOptions[] = {
         "to output to console)",
         &ConfigHelper::setWriteUndeleted, true),
 #endif
+    DEF_FLAG(
+        "force-rank-seq-startup", 0,
+        "Force startup phases of simulation to execute one rank at a time for debug purposes",
+        &ConfigHelper::forceRankSeqStartup),
 
     /* Advanced Features - Environment Setup/Reporting */
     DEF_SECTION_HEADING("Advanced Options - Environment Setup/Reporting"),

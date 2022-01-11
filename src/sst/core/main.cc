@@ -65,6 +65,52 @@ using namespace SST;
 
 static SST::Output g_output;
 
+
+// Functions to force initialization stages of simulation to execute
+// one rank at a time.  Put force_rank_sequential_start() before the
+// serialized section and force_rank_sequential_stop() after.  These
+// calls must be used in matching pairs.
+static void
+force_rank_sequential_start(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
+{
+    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
+
+#ifdef SST_CONFIG_HAVE_MPI
+    // Start off all ranks with a barrier so none enter the serialized
+    // region until they are all there
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Rank 0 will proceed immediately.  All others will wait
+    if ( myRank.rank == 0 ) return;
+
+    // Ranks will wait for notice from previous rank before proceeding
+    int32_t buf = 0;
+    MPI_Recv(&buf, 1, MPI_INT32_T, myRank.rank - 1, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+#endif
+}
+
+
+// Functions to force initialization stages of simulation to execute
+// one rank at a time.  Put force_rank_sequential_start() before the
+// serialized section and force_rank_sequential_stop() after.  These
+// calls must be used in matching pairs.
+static void
+force_rank_sequential_stop(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
+{
+    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
+
+#ifdef SST_CONFIG_HAVE_MPI
+    // After I'm through the serialized region, notify the next
+    // sender, then barrier.  The last rank does not need to do a
+    // send.
+    if ( myRank.rank != world_size.rank - 1 ) {
+        uint32_t buf = 0;
+        MPI_Send(&buf, 1, MPI_INT32_T, myRank.rank + 1, 0, MPI_COMM_WORLD);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+#endif
+}
+
 static void
 SimulationSigHandler(int sig)
 {
@@ -277,6 +323,10 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     barrier.wait();
 
+    force_rank_sequential_start(*info.config, info.myRank, info.world_size);
+
+    barrier.wait();
+
     // Perform the wireup.  Do this one thread at a time for now.  If
     // this ever changes, then need to put in some serialization into
     // performWireUp.
@@ -298,9 +348,14 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     double start_run = sst_get_cpu_time();
     info.build_time  = start_run - start_build;
 
+    force_rank_sequential_stop(*info.config, info.myRank, info.world_size);
+
+    barrier.wait();
+
 #ifdef SST_CONFIG_HAVE_MPI
     if ( tid == 0 && info.world_size.rank > 1 ) { MPI_Barrier(MPI_COMM_WORLD); }
 #endif
+
     barrier.wait();
 
     if ( info.config->runMode() == Simulation::RUN || info.config->runMode() == Simulation::BOTH ) {
@@ -442,7 +497,14 @@ main(int argc, char* argv[])
         }
     }
 
+
+    // Create the model generator
     SSTModelDescription* modelGen = nullptr;
+
+    // Get the memory before we create the graph
+    const uint64_t pre_graph_create_rss = maxGlobalMemSize();
+
+    force_rank_sequential_start(cfg, myRank, world_size);
 
     double start = sst_get_cpu_time();
 
@@ -477,9 +539,6 @@ main(int argc, char* argv[])
         CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
         world_size.rank, world_size.thread);
 
-    // Get the memory before we create the graph
-    const uint64_t pre_graph_create_rss = maxGlobalMemSize();
-
     ////// Start ConfigGraph Creation //////
     ConfigGraph* graph = nullptr;
 
@@ -496,6 +555,8 @@ main(int argc, char* argv[])
             g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
         }
     }
+
+    force_rank_sequential_stop(cfg, myRank, world_size);
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it, unless we are parallel loading

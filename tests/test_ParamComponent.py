@@ -2,7 +2,6 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "25us")
 
 global_params = {
@@ -11,7 +10,6 @@ global_params = {
     "scope.string" : "scope test"
     }
 
-sst.addGlobalParam("test_set","string-param","teststring123")
 sst.addGlobalParams("test_set",global_params)
 
 # Define the simulation components
@@ -27,6 +25,7 @@ param_c0.addParams({
 	"double-param" : 1.3333e-10
 })
 param_c0.addGlobalParamSet("test_set")
+param_c0.addGlobalParamSet("test_set2")
 
 # Define the simulation components
 param_c1 = sst.Component("c1.0", "coreTestElement.coreTestParamComponent")
@@ -41,6 +40,7 @@ param_c1.addParams({
 	"double-param" : 1.3333e-52
 })
 param_c1.addGlobalParamSet("test_set")
+param_c1.addGlobalParamSet("test_set2")
 
 # Define the simulation components
 param_c2 = sst.Component("c2.0", "coreTestElement.coreTestParamComponent")
@@ -56,6 +56,7 @@ param_c2.addParams({
 	"string-param" : "teststring456"
 })
 param_c2.addGlobalParamSet("test_set")
+param_c2.addGlobalParamSet("test_set2")
 
 # Define the simulation components
 param_c3 = sst.Component("c3.0", "coreTestElement.coreTestParamComponent")
@@ -71,6 +72,7 @@ param_c3.addParams({
         "scope.bool" : "no"
 })
 param_c3.addGlobalParamSet("test_set")
+param_c3.addGlobalParamSet("test_set2")
 
 # Define the simulation components
 array_param = [ 1, 2, "4", "8" ]
@@ -82,3 +84,5 @@ param_c4.addParams({
         "set_param" : set_param,
         "map_param" : map_param
 })
+
+sst.addGlobalParam("test_set2","string-param","teststring123")
