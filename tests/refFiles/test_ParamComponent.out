@@ -1,10 +1,12 @@
+# Some formatting has been changed to test the filters from
+# testing_compare_filtered_diff
 WARNING: Building component "c0.0" with no links assigned.
 Component c0.0:
   Contents of Params object (0):
     Local params:
-      bool-true-param = True
-      bool-false-param = False
-      int32t-param = 2147483647
+      bool-true-param =   True
+      bool-false-param =	False
+      int32t-param =     2147483647
       uint32t-param = 4294967295
       int64t-param = 9223372036854775807
       uint64t-param = 18446744073709551615

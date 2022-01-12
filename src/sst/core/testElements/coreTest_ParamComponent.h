@@ -62,6 +62,7 @@ public:
     )
 
     coreTestParamComponent(SST::ComponentId_t id, SST::Params& params);
+    ~coreTestParamComponent() {}
     void setup() {}
     void finish() {}
 

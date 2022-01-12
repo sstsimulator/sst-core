@@ -55,6 +55,8 @@ class testcase_ParamComponent(SSTTestCase):
         self.run_sst(sdlfile, outfile)
 
         # Perform the test
-        cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
+        filter1 = StartsWithFilter("WARNING: No components are")
+        filter2 = StartsWithFilter("#")
+        ws_filter = IgnoreWhiteSpaceFilter()
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2, ws_filter])
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-
