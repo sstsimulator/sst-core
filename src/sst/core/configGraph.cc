@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <regex>
 #include <string.h>
 
 using namespace std;
@@ -29,6 +30,48 @@ using namespace std;
 namespace SST {
 
 // static bool zero_latency_warning = false;
+
+// Functions to check component and link names
+static int   bad_comp_name_count = 0;
+static int   bad_link_name_count = 0;
+static regex valid_name_regex =
+    regex("((([_][a-zA-Z0-9])|[a-zA-Z])[_a-zA-Z0-9]*)(.(([_][a-zA-Z0-9])|[a-zA-Z])[_a-zA-Z0-9]*)*");
+
+static const int max_invalid_name_prints = 10;
+
+bool
+checkForValidComponentName(const std::string& name)
+{
+    if ( regex_match(name, valid_name_regex) ) return true;
+    if ( bad_comp_name_count < max_invalid_name_prints ) {
+        printf("WARNING: Component name '%s' is not valid\n", name.c_str());
+        bad_comp_name_count++;
+    }
+    else if ( bad_comp_name_count == max_invalid_name_prints ) {
+        printf(
+            "WARNING: Number of invalid component names exceeds limit of %d, no more messages will be printed\n",
+            max_invalid_name_prints);
+        bad_comp_name_count++;
+    }
+    return false;
+}
+
+bool
+checkForValidLinkName(const std::string& name)
+{
+    if ( regex_match(name, valid_name_regex) ) return true;
+    if ( bad_link_name_count < max_invalid_name_prints ) {
+        printf("WARNING: Link name '%s' is not valid\n", name.c_str());
+        bad_link_name_count++;
+    }
+    else if ( bad_link_name_count == max_invalid_name_prints ) {
+        printf(
+            "WARNING: Number of invalid link names exceeds limit of %d, no more messages will be printed\n",
+            max_invalid_name_prints);
+        bad_link_name_count++;
+    }
+    return false;
+}
 
 void
 ConfigLink::updateLatencies(TimeLord* timeLord)
@@ -683,22 +726,9 @@ ConfigGraph::checkForStructuralErrors()
 }
 
 ComponentId_t
-ConfigGraph::addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank)
-{
-    ComponentId_t cid = nextComponentId++;
-    comps.insert(new ConfigComponent(cid, this, name, type, weight, rank));
-
-    auto ret = compsByName.insert(std::make_pair(name, cid));
-    // Check to see if the name has already been used
-    if ( !ret.second ) {
-        output.fatal(CALL_INFO, 1, "ERROR: trying to add Component with name that already exists: %s\n", name.c_str());
-    }
-    return cid;
-}
-
-ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
+    checkForValidComponentName(name);
     ComponentId_t cid = nextComponentId++;
     comps.insert(new ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
 
@@ -745,6 +775,7 @@ ConfigGraph::addLink(
     ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str,
     bool no_cut)
 {
+    checkForValidLinkName(link_name);
     auto link_name_it = link_names.find(link_name);
 
     // Because we are using references, we need to initialize in a
