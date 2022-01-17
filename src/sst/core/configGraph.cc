@@ -22,7 +22,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <regex>
 #include <string.h>
 
 using namespace std;
@@ -103,11 +102,11 @@ checkComponentOrLinkName(const std::string& name)
     return valid;
 }
 
-bool
+void
 checkForValidComponentName(const std::string& name)
 {
     // if ( regex_match(name, valid_name_regex) ) return true;
-    if ( checkComponentOrLinkName(name) ) return true;
+    if ( checkComponentOrLinkName(name) ) return;
     if ( bad_comp_name_count < max_invalid_name_prints ) {
         printf("WARNING: Component name '%s' is not valid\n", name.c_str());
         bad_comp_name_count++;
@@ -118,7 +117,6 @@ checkForValidComponentName(const std::string& name)
             max_invalid_name_prints);
         bad_comp_name_count++;
     }
-    return false;
 }
 
 bool
