@@ -6,601 +6,601 @@ sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "25us")
 
 # Define the simulation components
-comp_c0_0 = sst.Component("c0.0", "coreTestElement.coreTestComponent")
+comp_c0_0 = sst.Component("c0_0", "coreTestElement.coreTestComponent")
 comp_c0_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_0 = sst.Component("c1.0", "coreTestElement.coreTestComponent")
+comp_c1_0 = sst.Component("c1_0", "coreTestElement.coreTestComponent")
 comp_c1_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_0 = sst.Component("c2.0", "coreTestElement.coreTestComponent")
+comp_c2_0 = sst.Component("c2_0", "coreTestElement.coreTestComponent")
 comp_c2_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_0 = sst.Component("c3.0", "coreTestElement.coreTestComponent")
+comp_c3_0 = sst.Component("c3_0", "coreTestElement.coreTestComponent")
 comp_c3_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_0 = sst.Component("c4.0", "coreTestElement.coreTestComponent")
+comp_c4_0 = sst.Component("c4_0", "coreTestElement.coreTestComponent")
 comp_c4_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_0 = sst.Component("c5.0", "coreTestElement.coreTestComponent")
+comp_c5_0 = sst.Component("c5_0", "coreTestElement.coreTestComponent")
 comp_c5_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_0 = sst.Component("c6.0", "coreTestElement.coreTestComponent")
+comp_c6_0 = sst.Component("c6_0", "coreTestElement.coreTestComponent")
 comp_c6_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_0 = sst.Component("c7.0", "coreTestElement.coreTestComponent")
+comp_c7_0 = sst.Component("c7_0", "coreTestElement.coreTestComponent")
 comp_c7_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_0 = sst.Component("c8.0", "coreTestElement.coreTestComponent")
+comp_c8_0 = sst.Component("c8_0", "coreTestElement.coreTestComponent")
 comp_c8_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_0 = sst.Component("c9.0", "coreTestElement.coreTestComponent")
+comp_c9_0 = sst.Component("c9_0", "coreTestElement.coreTestComponent")
 comp_c9_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_1 = sst.Component("c0.1", "coreTestElement.coreTestComponent")
+comp_c0_1 = sst.Component("c0_1", "coreTestElement.coreTestComponent")
 comp_c0_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_1 = sst.Component("c1.1", "coreTestElement.coreTestComponent")
+comp_c1_1 = sst.Component("c1_1", "coreTestElement.coreTestComponent")
 comp_c1_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_1 = sst.Component("c2.1", "coreTestElement.coreTestComponent")
+comp_c2_1 = sst.Component("c2_1", "coreTestElement.coreTestComponent")
 comp_c2_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_1 = sst.Component("c3.1", "coreTestElement.coreTestComponent")
+comp_c3_1 = sst.Component("c3_1", "coreTestElement.coreTestComponent")
 comp_c3_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_1 = sst.Component("c4.1", "coreTestElement.coreTestComponent")
+comp_c4_1 = sst.Component("c4_1", "coreTestElement.coreTestComponent")
 comp_c4_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_1 = sst.Component("c5.1", "coreTestElement.coreTestComponent")
+comp_c5_1 = sst.Component("c5_1", "coreTestElement.coreTestComponent")
 comp_c5_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_1 = sst.Component("c6.1", "coreTestElement.coreTestComponent")
+comp_c6_1 = sst.Component("c6_1", "coreTestElement.coreTestComponent")
 comp_c6_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_1 = sst.Component("c7.1", "coreTestElement.coreTestComponent")
+comp_c7_1 = sst.Component("c7_1", "coreTestElement.coreTestComponent")
 comp_c7_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_1 = sst.Component("c8.1", "coreTestElement.coreTestComponent")
+comp_c8_1 = sst.Component("c8_1", "coreTestElement.coreTestComponent")
 comp_c8_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_1 = sst.Component("c9.1", "coreTestElement.coreTestComponent")
+comp_c9_1 = sst.Component("c9_1", "coreTestElement.coreTestComponent")
 comp_c9_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_2 = sst.Component("c0.2", "coreTestElement.coreTestComponent")
+comp_c0_2 = sst.Component("c0_2", "coreTestElement.coreTestComponent")
 comp_c0_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_2 = sst.Component("c1.2", "coreTestElement.coreTestComponent")
+comp_c1_2 = sst.Component("c1_2", "coreTestElement.coreTestComponent")
 comp_c1_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_2 = sst.Component("c2.2", "coreTestElement.coreTestComponent")
+comp_c2_2 = sst.Component("c2_2", "coreTestElement.coreTestComponent")
 comp_c2_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_2 = sst.Component("c3.2", "coreTestElement.coreTestComponent")
+comp_c3_2 = sst.Component("c3_2", "coreTestElement.coreTestComponent")
 comp_c3_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_2 = sst.Component("c4.2", "coreTestElement.coreTestComponent")
+comp_c4_2 = sst.Component("c4_2", "coreTestElement.coreTestComponent")
 comp_c4_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_2 = sst.Component("c5.2", "coreTestElement.coreTestComponent")
+comp_c5_2 = sst.Component("c5_2", "coreTestElement.coreTestComponent")
 comp_c5_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_2 = sst.Component("c6.2", "coreTestElement.coreTestComponent")
+comp_c6_2 = sst.Component("c6_2", "coreTestElement.coreTestComponent")
 comp_c6_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_2 = sst.Component("c7.2", "coreTestElement.coreTestComponent")
+comp_c7_2 = sst.Component("c7_2", "coreTestElement.coreTestComponent")
 comp_c7_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_2 = sst.Component("c8.2", "coreTestElement.coreTestComponent")
+comp_c8_2 = sst.Component("c8_2", "coreTestElement.coreTestComponent")
 comp_c8_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_2 = sst.Component("c9.2", "coreTestElement.coreTestComponent")
+comp_c9_2 = sst.Component("c9_2", "coreTestElement.coreTestComponent")
 comp_c9_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_3 = sst.Component("c0.3", "coreTestElement.coreTestComponent")
+comp_c0_3 = sst.Component("c0_3", "coreTestElement.coreTestComponent")
 comp_c0_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_3 = sst.Component("c1.3", "coreTestElement.coreTestComponent")
+comp_c1_3 = sst.Component("c1_3", "coreTestElement.coreTestComponent")
 comp_c1_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_3 = sst.Component("c2.3", "coreTestElement.coreTestComponent")
+comp_c2_3 = sst.Component("c2_3", "coreTestElement.coreTestComponent")
 comp_c2_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_3 = sst.Component("c3.3", "coreTestElement.coreTestComponent")
+comp_c3_3 = sst.Component("c3_3", "coreTestElement.coreTestComponent")
 comp_c3_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_3 = sst.Component("c4.3", "coreTestElement.coreTestComponent")
+comp_c4_3 = sst.Component("c4_3", "coreTestElement.coreTestComponent")
 comp_c4_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_3 = sst.Component("c5.3", "coreTestElement.coreTestComponent")
+comp_c5_3 = sst.Component("c5_3", "coreTestElement.coreTestComponent")
 comp_c5_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_3 = sst.Component("c6.3", "coreTestElement.coreTestComponent")
+comp_c6_3 = sst.Component("c6_3", "coreTestElement.coreTestComponent")
 comp_c6_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_3 = sst.Component("c7.3", "coreTestElement.coreTestComponent")
+comp_c7_3 = sst.Component("c7_3", "coreTestElement.coreTestComponent")
 comp_c7_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_3 = sst.Component("c8.3", "coreTestElement.coreTestComponent")
+comp_c8_3 = sst.Component("c8_3", "coreTestElement.coreTestComponent")
 comp_c8_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_3 = sst.Component("c9.3", "coreTestElement.coreTestComponent")
+comp_c9_3 = sst.Component("c9_3", "coreTestElement.coreTestComponent")
 comp_c9_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_4 = sst.Component("c0.4", "coreTestElement.coreTestComponent")
+comp_c0_4 = sst.Component("c0_4", "coreTestElement.coreTestComponent")
 comp_c0_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_4 = sst.Component("c1.4", "coreTestElement.coreTestComponent")
+comp_c1_4 = sst.Component("c1_4", "coreTestElement.coreTestComponent")
 comp_c1_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_4 = sst.Component("c2.4", "coreTestElement.coreTestComponent")
+comp_c2_4 = sst.Component("c2_4", "coreTestElement.coreTestComponent")
 comp_c2_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_4 = sst.Component("c3.4", "coreTestElement.coreTestComponent")
+comp_c3_4 = sst.Component("c3_4", "coreTestElement.coreTestComponent")
 comp_c3_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_4 = sst.Component("c4.4", "coreTestElement.coreTestComponent")
+comp_c4_4 = sst.Component("c4_4", "coreTestElement.coreTestComponent")
 comp_c4_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_4 = sst.Component("c5.4", "coreTestElement.coreTestComponent")
+comp_c5_4 = sst.Component("c5_4", "coreTestElement.coreTestComponent")
 comp_c5_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_4 = sst.Component("c6.4", "coreTestElement.coreTestComponent")
+comp_c6_4 = sst.Component("c6_4", "coreTestElement.coreTestComponent")
 comp_c6_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_4 = sst.Component("c7.4", "coreTestElement.coreTestComponent")
+comp_c7_4 = sst.Component("c7_4", "coreTestElement.coreTestComponent")
 comp_c7_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_4 = sst.Component("c8.4", "coreTestElement.coreTestComponent")
+comp_c8_4 = sst.Component("c8_4", "coreTestElement.coreTestComponent")
 comp_c8_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_4 = sst.Component("c9.4", "coreTestElement.coreTestComponent")
+comp_c9_4 = sst.Component("c9_4", "coreTestElement.coreTestComponent")
 comp_c9_4.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_5 = sst.Component("c0.5", "coreTestElement.coreTestComponent")
+comp_c0_5 = sst.Component("c0_5", "coreTestElement.coreTestComponent")
 comp_c0_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_5 = sst.Component("c1.5", "coreTestElement.coreTestComponent")
+comp_c1_5 = sst.Component("c1_5", "coreTestElement.coreTestComponent")
 comp_c1_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_5 = sst.Component("c2.5", "coreTestElement.coreTestComponent")
+comp_c2_5 = sst.Component("c2_5", "coreTestElement.coreTestComponent")
 comp_c2_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_5 = sst.Component("c3.5", "coreTestElement.coreTestComponent")
+comp_c3_5 = sst.Component("c3_5", "coreTestElement.coreTestComponent")
 comp_c3_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_5 = sst.Component("c4.5", "coreTestElement.coreTestComponent")
+comp_c4_5 = sst.Component("c4_5", "coreTestElement.coreTestComponent")
 comp_c4_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_5 = sst.Component("c5.5", "coreTestElement.coreTestComponent")
+comp_c5_5 = sst.Component("c5_5", "coreTestElement.coreTestComponent")
 comp_c5_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_5 = sst.Component("c6.5", "coreTestElement.coreTestComponent")
+comp_c6_5 = sst.Component("c6_5", "coreTestElement.coreTestComponent")
 comp_c6_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_5 = sst.Component("c7.5", "coreTestElement.coreTestComponent")
+comp_c7_5 = sst.Component("c7_5", "coreTestElement.coreTestComponent")
 comp_c7_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_5 = sst.Component("c8.5", "coreTestElement.coreTestComponent")
+comp_c8_5 = sst.Component("c8_5", "coreTestElement.coreTestComponent")
 comp_c8_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_5 = sst.Component("c9.5", "coreTestElement.coreTestComponent")
+comp_c9_5 = sst.Component("c9_5", "coreTestElement.coreTestComponent")
 comp_c9_5.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_6 = sst.Component("c0.6", "coreTestElement.coreTestComponent")
+comp_c0_6 = sst.Component("c0_6", "coreTestElement.coreTestComponent")
 comp_c0_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_6 = sst.Component("c1.6", "coreTestElement.coreTestComponent")
+comp_c1_6 = sst.Component("c1_6", "coreTestElement.coreTestComponent")
 comp_c1_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_6 = sst.Component("c2.6", "coreTestElement.coreTestComponent")
+comp_c2_6 = sst.Component("c2_6", "coreTestElement.coreTestComponent")
 comp_c2_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_6 = sst.Component("c3.6", "coreTestElement.coreTestComponent")
+comp_c3_6 = sst.Component("c3_6", "coreTestElement.coreTestComponent")
 comp_c3_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_6 = sst.Component("c4.6", "coreTestElement.coreTestComponent")
+comp_c4_6 = sst.Component("c4_6", "coreTestElement.coreTestComponent")
 comp_c4_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_6 = sst.Component("c5.6", "coreTestElement.coreTestComponent")
+comp_c5_6 = sst.Component("c5_6", "coreTestElement.coreTestComponent")
 comp_c5_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_6 = sst.Component("c6.6", "coreTestElement.coreTestComponent")
+comp_c6_6 = sst.Component("c6_6", "coreTestElement.coreTestComponent")
 comp_c6_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_6 = sst.Component("c7.6", "coreTestElement.coreTestComponent")
+comp_c7_6 = sst.Component("c7_6", "coreTestElement.coreTestComponent")
 comp_c7_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_6 = sst.Component("c8.6", "coreTestElement.coreTestComponent")
+comp_c8_6 = sst.Component("c8_6", "coreTestElement.coreTestComponent")
 comp_c8_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_6 = sst.Component("c9.6", "coreTestElement.coreTestComponent")
+comp_c9_6 = sst.Component("c9_6", "coreTestElement.coreTestComponent")
 comp_c9_6.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_7 = sst.Component("c0.7", "coreTestElement.coreTestComponent")
+comp_c0_7 = sst.Component("c0_7", "coreTestElement.coreTestComponent")
 comp_c0_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_7 = sst.Component("c1.7", "coreTestElement.coreTestComponent")
+comp_c1_7 = sst.Component("c1_7", "coreTestElement.coreTestComponent")
 comp_c1_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_7 = sst.Component("c2.7", "coreTestElement.coreTestComponent")
+comp_c2_7 = sst.Component("c2_7", "coreTestElement.coreTestComponent")
 comp_c2_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_7 = sst.Component("c3.7", "coreTestElement.coreTestComponent")
+comp_c3_7 = sst.Component("c3_7", "coreTestElement.coreTestComponent")
 comp_c3_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_7 = sst.Component("c4.7", "coreTestElement.coreTestComponent")
+comp_c4_7 = sst.Component("c4_7", "coreTestElement.coreTestComponent")
 comp_c4_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_7 = sst.Component("c5.7", "coreTestElement.coreTestComponent")
+comp_c5_7 = sst.Component("c5_7", "coreTestElement.coreTestComponent")
 comp_c5_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_7 = sst.Component("c6.7", "coreTestElement.coreTestComponent")
+comp_c6_7 = sst.Component("c6_7", "coreTestElement.coreTestComponent")
 comp_c6_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_7 = sst.Component("c7.7", "coreTestElement.coreTestComponent")
+comp_c7_7 = sst.Component("c7_7", "coreTestElement.coreTestComponent")
 comp_c7_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_7 = sst.Component("c8.7", "coreTestElement.coreTestComponent")
+comp_c8_7 = sst.Component("c8_7", "coreTestElement.coreTestComponent")
 comp_c8_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_7 = sst.Component("c9.7", "coreTestElement.coreTestComponent")
+comp_c9_7 = sst.Component("c9_7", "coreTestElement.coreTestComponent")
 comp_c9_7.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_8 = sst.Component("c0.8", "coreTestElement.coreTestComponent")
+comp_c0_8 = sst.Component("c0_8", "coreTestElement.coreTestComponent")
 comp_c0_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_8 = sst.Component("c1.8", "coreTestElement.coreTestComponent")
+comp_c1_8 = sst.Component("c1_8", "coreTestElement.coreTestComponent")
 comp_c1_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_8 = sst.Component("c2.8", "coreTestElement.coreTestComponent")
+comp_c2_8 = sst.Component("c2_8", "coreTestElement.coreTestComponent")
 comp_c2_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_8 = sst.Component("c3.8", "coreTestElement.coreTestComponent")
+comp_c3_8 = sst.Component("c3_8", "coreTestElement.coreTestComponent")
 comp_c3_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_8 = sst.Component("c4.8", "coreTestElement.coreTestComponent")
+comp_c4_8 = sst.Component("c4_8", "coreTestElement.coreTestComponent")
 comp_c4_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_8 = sst.Component("c5.8", "coreTestElement.coreTestComponent")
+comp_c5_8 = sst.Component("c5_8", "coreTestElement.coreTestComponent")
 comp_c5_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_8 = sst.Component("c6.8", "coreTestElement.coreTestComponent")
+comp_c6_8 = sst.Component("c6_8", "coreTestElement.coreTestComponent")
 comp_c6_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_8 = sst.Component("c7.8", "coreTestElement.coreTestComponent")
+comp_c7_8 = sst.Component("c7_8", "coreTestElement.coreTestComponent")
 comp_c7_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_8 = sst.Component("c8.8", "coreTestElement.coreTestComponent")
+comp_c8_8 = sst.Component("c8_8", "coreTestElement.coreTestComponent")
 comp_c8_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_8 = sst.Component("c9.8", "coreTestElement.coreTestComponent")
+comp_c9_8 = sst.Component("c9_8", "coreTestElement.coreTestComponent")
 comp_c9_8.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_9 = sst.Component("c0.9", "coreTestElement.coreTestComponent")
+comp_c0_9 = sst.Component("c0_9", "coreTestElement.coreTestComponent")
 comp_c0_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_9 = sst.Component("c1.9", "coreTestElement.coreTestComponent")
+comp_c1_9 = sst.Component("c1_9", "coreTestElement.coreTestComponent")
 comp_c1_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_9 = sst.Component("c2.9", "coreTestElement.coreTestComponent")
+comp_c2_9 = sst.Component("c2_9", "coreTestElement.coreTestComponent")
 comp_c2_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_9 = sst.Component("c3.9", "coreTestElement.coreTestComponent")
+comp_c3_9 = sst.Component("c3_9", "coreTestElement.coreTestComponent")
 comp_c3_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c4_9 = sst.Component("c4.9", "coreTestElement.coreTestComponent")
+comp_c4_9 = sst.Component("c4_9", "coreTestElement.coreTestComponent")
 comp_c4_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c5_9 = sst.Component("c5.9", "coreTestElement.coreTestComponent")
+comp_c5_9 = sst.Component("c5_9", "coreTestElement.coreTestComponent")
 comp_c5_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c6_9 = sst.Component("c6.9", "coreTestElement.coreTestComponent")
+comp_c6_9 = sst.Component("c6_9", "coreTestElement.coreTestComponent")
 comp_c6_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c7_9 = sst.Component("c7.9", "coreTestElement.coreTestComponent")
+comp_c7_9 = sst.Component("c7_9", "coreTestElement.coreTestComponent")
 comp_c7_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c8_9 = sst.Component("c8.9", "coreTestElement.coreTestComponent")
+comp_c8_9 = sst.Component("c8_9", "coreTestElement.coreTestComponent")
 comp_c8_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c9_9 = sst.Component("c9.9", "coreTestElement.coreTestComponent")
+comp_c9_9 = sst.Component("c9_9", "coreTestElement.coreTestComponent")
 comp_c9_9.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
