@@ -1039,7 +1039,7 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
             outfile (str): Path to the output file
             reffile (str): Path to the reference file
             sort (bool): If True, lines from files will be sorted before diffing
-            filters (list): List of ilters to apply to the lines of
+            filters (list): List of filters to apply to the lines of
               the output and reference files.  Filters will be applied
               in order, but will break early if any filter returns None
 

@@ -413,8 +413,6 @@ public:
     bool checkRanks(RankInfo ranks);
 
     // API for programmatic initialization
-    /** Create a new component with weight and rank */
-    ComponentId_t addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank);
     /** Create a new component */
     ComponentId_t addComponent(const std::string& name, const std::string& type);
 

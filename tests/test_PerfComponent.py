@@ -6,97 +6,97 @@ sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "10us")
 
 # Define the simulation components
-comp_c0_0 = sst.Component("c0.0", "coreTestElement.coreTestPerfComponent")
+comp_c0_0 = sst.Component("c0_0", "coreTestElement.coreTestPerfComponent")
 comp_c0_0.addParams({
       "workPerCycle" : """5000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_0 = sst.Component("c1.0", "coreTestElement.coreTestPerfComponent")
+comp_c1_0 = sst.Component("c1_0", "coreTestElement.coreTestPerfComponent")
 comp_c1_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_0 = sst.Component("c2.0", "coreTestElement.coreTestPerfComponent")
+comp_c2_0 = sst.Component("c2_0", "coreTestElement.coreTestPerfComponent")
 comp_c2_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_0 = sst.Component("c3.0", "coreTestElement.coreTestPerfComponent")
+comp_c3_0 = sst.Component("c3_0", "coreTestElement.coreTestPerfComponent")
 comp_c3_0.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_1 = sst.Component("c0.1", "coreTestElement.coreTestPerfComponent")
+comp_c0_1 = sst.Component("c0_1", "coreTestElement.coreTestPerfComponent")
 comp_c0_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_1 = sst.Component("c1.1", "coreTestElement.coreTestPerfComponent")
+comp_c1_1 = sst.Component("c1_1", "coreTestElement.coreTestPerfComponent")
 comp_c1_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_1 = sst.Component("c2.1", "coreTestElement.coreTestPerfComponent")
+comp_c2_1 = sst.Component("c2_1", "coreTestElement.coreTestPerfComponent")
 comp_c2_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_1 = sst.Component("c3.1", "coreTestElement.coreTestPerfComponent")
+comp_c3_1 = sst.Component("c3_1", "coreTestElement.coreTestPerfComponent")
 comp_c3_1.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_2 = sst.Component("c0.2", "coreTestElement.coreTestPerfComponent")
+comp_c0_2 = sst.Component("c0_2", "coreTestElement.coreTestPerfComponent")
 comp_c0_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_2 = sst.Component("c1.2", "coreTestElement.coreTestPerfComponent")
+comp_c1_2 = sst.Component("c1_2", "coreTestElement.coreTestPerfComponent")
 comp_c1_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_2 = sst.Component("c2.2", "coreTestElement.coreTestPerfComponent")
+comp_c2_2 = sst.Component("c2_2", "coreTestElement.coreTestPerfComponent")
 comp_c2_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_2 = sst.Component("c3.2", "coreTestElement.coreTestPerfComponent")
+comp_c3_2 = sst.Component("c3_2", "coreTestElement.coreTestPerfComponent")
 comp_c3_2.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c0_3 = sst.Component("c0.3", "coreTestElement.coreTestPerfComponent")
+comp_c0_3 = sst.Component("c0_3", "coreTestElement.coreTestPerfComponent")
 comp_c0_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c1_3 = sst.Component("c1.3", "coreTestElement.coreTestPerfComponent")
+comp_c1_3 = sst.Component("c1_3", "coreTestElement.coreTestPerfComponent")
 comp_c1_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c2_3 = sst.Component("c2.3", "coreTestElement.coreTestPerfComponent")
+comp_c2_3 = sst.Component("c2_3", "coreTestElement.coreTestPerfComponent")
 comp_c2_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",
       "commFreq" : """1000"""
 })
-comp_c3_3 = sst.Component("c3.3", "coreTestElement.coreTestPerfComponent")
+comp_c3_3 = sst.Component("c3_3", "coreTestElement.coreTestPerfComponent")
 comp_c3_3.addParams({
       "workPerCycle" : """1000""",
       "commSize" : """100""",

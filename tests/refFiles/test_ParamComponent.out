@@ -1,7 +1,7 @@
 # Some formatting has been changed to test the filters from
 # testing_compare_filtered_diff
-WARNING: Building component "c0.0" with no links assigned.
-Component c0.0:
+WARNING: Building component "c0" with no links assigned.
+Component c0:
   Contents of Params object (0):
     Local params:
       bool-true-param =   True
@@ -36,8 +36,8 @@ Component c0.0:
     set = { }
     map = { }
 
-WARNING: Building component "c1.0" with no links assigned.
-Component c1.0:
+WARNING: Building component "c1" with no links assigned.
+Component c1:
   Contents of Params object (1):
     Local params:
       bool-true-param = true
@@ -72,8 +72,8 @@ Component c1.0:
     set = { }
     map = { }
 
-WARNING: Building component "c2.0" with no links assigned.
-Component c2.0:
+WARNING: Building component "c2" with no links assigned.
+Component c2:
   Contents of Params object (2):
     Local params:
       bool-true-param = 1
@@ -109,8 +109,8 @@ Component c2.0:
     set = { }
     map = { }
 
-WARNING: Building component "c3.0" with no links assigned.
-Component c3.0:
+WARNING: Building component "c3" with no links assigned.
+Component c3:
   Contents of Params object (3):
     Local params:
       int32t-param = 2147483647
@@ -148,8 +148,8 @@ Component c3.0:
     set = { }
     map = { }
 
-WARNING: Building component "c4.0" with no links assigned.
-Component c4.0:
+WARNING: Building component "c4" with no links assigned.
+Component c4:
   Results of find() calls:
     int32_t      value = "" = 0
     uint32_t     value = "" = 0
