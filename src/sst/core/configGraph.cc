@@ -17,6 +17,7 @@
 #include "sst/core/config.h"
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
+#include "sst/core/namecheck.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeLord.h"
 
@@ -32,81 +33,13 @@ namespace {
 // Functions to check component and link names
 int bad_comp_name_count = 0;
 int bad_link_name_count = 0;
-// regex valid_name_regex =
-//     regex("((([_][a-zA-Z0-9])|[a-zA-Z])[_a-zA-Z0-9]*)(.(([_][a-zA-Z0-9])|[a-zA-Z])[_a-zA-Z0-9]*)*");
 
 const int max_invalid_name_prints = 10;
-
-// Regex doesn't work on all our supported compilers, so here's a
-// state machine implementation of the check.
-bool
-checkComponentOrLinkName(const std::string& name)
-{
-    // Name can start with letter or underscore, but not two
-    // underscores.  Name cannot be consist of only an underscore.
-    // There can also be a '.' in the name, but each segment on either
-    // side of the dot must be a valid name in and of itself.  Name
-    // cannot end with a dot.
-
-    // Here is a three state state machine to check:
-
-    // State 0: start of name, including immediately after a dot.
-    // Will transition to state 1 on an underscore, to state 2
-    // otherwise.
-
-    // State 1: only used after an opening underscore to ensure that
-    // the next character is either a number or letter.  Will
-    // transition to state 2.
-
-    // State 2: middle of word.  Underscores, numbers, letters and
-    // dots are valid.  Will transition back to state 0 when it finds
-    // a dot.
-
-    int  state = 0;
-    bool valid = false;
-
-    for ( const auto& c : name ) {
-        switch ( state ) {
-        case 0:
-            // Start of a name.  Must be underscore or letter
-            if ( c == '_' ) {
-                state = 1;
-                valid = false; // Can't end after opening underscore
-                break;
-            }
-            if ( !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') ) return false;
-            state = 2;
-            valid = true;
-            break;
-        case 1:
-            // First character was an underscore, so now we can only
-            // have letters or numbers
-            if ( !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') ) return false;
-            state = 2;
-            valid = true;
-            break;
-        case 2:
-            // Middle of word.  Letters, numbers, underscores and dot valid
-            if ( c == '.' ) {
-                state = 0;
-                valid = false; // can't end after a dot
-                break;
-            }
-            if ( !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != '_' )
-                return false;
-            state = 2;
-            valid = true;
-            break;
-        }
-    }
-    return valid;
-}
 
 void
 checkForValidComponentName(const std::string& name)
 {
-    // if ( regex_match(name, valid_name_regex) ) return true;
-    if ( checkComponentOrLinkName(name) ) return;
+    if ( SST::NameCheck::isComponentNameValid(name) ) return;
     if ( bad_comp_name_count < max_invalid_name_prints ) {
         printf("WARNING: Component name '%s' is not valid\n", name.c_str());
         bad_comp_name_count++;
@@ -119,11 +52,10 @@ checkForValidComponentName(const std::string& name)
     }
 }
 
-bool
+void
 checkForValidLinkName(const std::string& name)
 {
-    // if ( regex_match(name, valid_name_regex) ) return true;
-    if ( checkComponentOrLinkName(name) ) return true;
+    if ( SST::NameCheck::isLinkNameValid(name) ) return;
     if ( bad_link_name_count < max_invalid_name_prints ) {
         printf("WARNING: Link name '%s' is not valid\n", name.c_str());
         bad_link_name_count++;
@@ -134,7 +66,6 @@ checkForValidLinkName(const std::string& name)
             max_invalid_name_prints);
         bad_link_name_count++;
     }
-    return false;
 }
 } // anonymous namespace
 

@@ -15,6 +15,7 @@
 
 #include "sst/core/component.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/namecheck.h"
 #include "sst/core/part/sstpart.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
@@ -37,6 +38,74 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+namespace {
+
+template <class BaseType>
+void
+checkForValidParamNames(const std::string& libname)
+{
+    auto* lib = SST::ELI::InfoDatabase::getLibrary<BaseType>(libname);
+    if ( lib ) {
+        const auto& info_map = lib->getMap();
+        for ( auto& x : info_map ) {
+            const std::string comp_name(x.first);
+            const auto&       param_map = x.second->getValidParams();
+            for ( auto& param : param_map ) {
+                if ( !SST::NameCheck::isParamNameValid(param.name) ) {
+                    printf(
+                        "WARNING: Element %s.%s has parameter with an invalid name: %s\n", libname.c_str(),
+                        comp_name.c_str(), param.name);
+                }
+            }
+        }
+    }
+}
+
+template <class BaseType>
+void
+checkForValidPortNames(const std::string& libname)
+{
+    auto* lib = SST::ELI::InfoDatabase::getLibrary<BaseType>(libname);
+    if ( lib ) {
+        const auto& info_map = lib->getMap();
+        for ( auto& x : info_map ) {
+            const std::string comp_name(x.first);
+            const auto&       port_map = x.second->getValidPorts();
+            for ( auto& port : port_map ) {
+                if ( !SST::NameCheck::isPortNameValid(port.name) ) {
+                    printf(
+                        "WARNING: Element %s.%s has port with an invalid name: %s\n", libname.c_str(),
+                        comp_name.c_str(), port.name);
+                }
+            }
+        }
+    }
+}
+
+template <class BaseType>
+void
+checkForValidSlotNames(const std::string& libname)
+{
+    auto* lib = SST::ELI::InfoDatabase::getLibrary<BaseType>(libname);
+    if ( lib ) {
+        const auto& info_map = lib->getMap();
+        for ( auto& x : info_map ) {
+            const std::string comp_name(x.first);
+            const auto&       slot_map = x.second->getSubComponentSlots();
+            for ( auto& slot : slot_map ) {
+                if ( !SST::NameCheck::isSlotNameValid(slot.name) ) {
+                    printf(
+                        "WARNING: Element %s.%s has slot with an invalid name: %s\n", libname.c_str(),
+                        comp_name.c_str(), slot.name);
+                }
+            }
+        }
+    }
+}
+
+
+} // namespace
 
 namespace SST {
 
@@ -72,6 +141,7 @@ ElemLoader::ElemLoader(const std::string& searchPaths) :
 }
 
 ElemLoader::~ElemLoader() {}
+
 
 void
 ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
@@ -190,6 +260,15 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
             }
         }
     }
+
+    // Need to check the element library to make sure names of params,
+    // etc. are valid
+    checkForValidParamNames<Component>(elemlib);
+    checkForValidPortNames<Component>(elemlib);
+    checkForValidSlotNames<Component>(elemlib);
+    checkForValidParamNames<SubComponent>(elemlib);
+    checkForValidPortNames<SubComponent>(elemlib);
+    checkForValidSlotNames<SubComponent>(elemlib);
 
     return;
 }
