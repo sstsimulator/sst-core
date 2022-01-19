@@ -4,28 +4,28 @@ WARNING: Building component "c0" with no links assigned.
 Component c0:
   Contents of Params object (0):
     Local params:
-      bool-true-param =   True
-      bool-false-param =	False
-      int32t-param =     2147483647
-      uint32t-param = 4294967295
-      int64t-param = 9223372036854775807
-      uint64t-param = 18446744073709551615
-      float-param = 1.0101
-      double-param = 1.3333e-10
+      bool_true_param =   True
+      bool_false_param =	False
+      int32t_param =     2147483647
+      uint32t_param = 4294967295
+      int64t_param = 9223372036854775807
+      uint64t_param = 18446744073709551615
+      float_param = 1.0101
+      double_param = 1.3333e-10
     Global params:
       <set_name> = test_set
-      bool-true-param = yes
-      bool-false-param = no
+      bool_true_param = yes
+      bool_false_param = no
       scope.string = scope test
       <set_name> = test_set2
-      string-param = teststring123
+      string_param = teststring123
   Results of find() calls:
     int32_t      value = "2147483647" = 2147483647
     uint32_t     value = "4294967295" = 4294967295
     int64_t      value = "9223372036854775807" = 9223372036854775807
     uint64_t     value = "18446744073709551615" = 18446744073709551615
-    bool-true    value = "True" = true
-    bool-false   value = "False" = false
+    bool_true    value = "True" = true
+    bool_false   value = "False" = false
     float        value = "1.0101" = 1.010100 = 1.010100e+00
     double       value = "1.3333e-10" = 0.000000 = 1.333300e-10
     string       value = "teststring123"
@@ -40,28 +40,28 @@ WARNING: Building component "c1" with no links assigned.
 Component c1:
   Contents of Params object (1):
     Local params:
-      bool-true-param = true
-      bool-false-param = false
-      int32t-param = -2147483648
-      uint32t-param = 0
-      int64t-param = -9223372036854775808
-      uint64t-param = 18446744073709551615
-      float-param = 1e-15
-      double-param = 1.3333e-52
+      bool_true_param = true
+      bool_false_param = false
+      int32t_param = -2147483648
+      uint32t_param = 0
+      int64t_param = -9223372036854775808
+      uint64t_param = 18446744073709551615
+      float_param = 1e-15
+      double_param = 1.3333e-52
     Global params:
       <set_name> = test_set
-      bool-true-param = yes
-      bool-false-param = no
+      bool_true_param = yes
+      bool_false_param = no
       scope.string = scope test
       <set_name> = test_set2
-      string-param = teststring123
+      string_param = teststring123
   Results of find() calls:
     int32_t      value = "-2147483648" = -2147483648
     uint32_t     value = "0" = 0
     int64_t      value = "-9223372036854775808" = -9223372036854775808
     uint64_t     value = "18446744073709551615" = 18446744073709551615
-    bool-true    value = "true" = true
-    bool-false   value = "false" = false
+    bool_true    value = "true" = true
+    bool_false   value = "false" = false
     float        value = "1e-15" = 0.000000 = 1.000000e-15
     double       value = "1.3333e-52" = 0.000000 = 1.333300e-52
     string       value = "teststring123"
@@ -76,29 +76,29 @@ WARNING: Building component "c2" with no links assigned.
 Component c2:
   Contents of Params object (2):
     Local params:
-      bool-true-param = 1
-      bool-false-param = 0
-      int32t-param = 2147483647
-      uint32t-param = 4294967295
-      int64t-param = -9223372036854775808
-      uint64t-param = 18446744073709551615
-      float-param = -1.0000e-15
-      double-param = -1.33e7
-      string-param = teststring456
+      bool_true_param = 1
+      bool_false_param = 0
+      int32t_param = 2147483647
+      uint32t_param = 4294967295
+      int64t_param = -9223372036854775808
+      uint64t_param = 18446744073709551615
+      float_param = -1.0000e-15
+      double_param = -1.33e7
+      string_param = teststring456
     Global params:
       <set_name> = test_set
-      bool-true-param = yes
-      bool-false-param = no
+      bool_true_param = yes
+      bool_false_param = no
       scope.string = scope test
       <set_name> = test_set2
-      string-param = teststring123
+      string_param = teststring123
   Results of find() calls:
     int32_t      value = "2147483647" = 2147483647
     uint32_t     value = "4294967295" = 4294967295
     int64_t      value = "-9223372036854775808" = -9223372036854775808
     uint64_t     value = "18446744073709551615" = 18446744073709551615
-    bool-true    value = "1" = true
-    bool-false   value = "0" = false
+    bool_true    value = "1" = true
+    bool_false   value = "0" = false
     float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
     double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
     string       value = "teststring456"
@@ -113,29 +113,29 @@ WARNING: Building component "c3" with no links assigned.
 Component c3:
   Contents of Params object (3):
     Local params:
-      int32t-param = 2147483647
-      uint32t-param = 4294967295
-      int64t-param = -9223372036854775808
-      uint64t-param = 18446744073709551615
-      float-param = -1.0000e-15
-      double-param = -1.33e7
-      string-param = teststring456
+      int32t_param = 2147483647
+      uint32t_param = 4294967295
+      int64t_param = -9223372036854775808
+      uint64t_param = 18446744073709551615
+      float_param = -1.0000e-15
+      double_param = -1.33e7
+      string_param = teststring456
       scope.int32 = 100
       scope.bool = no
     Global params:
       <set_name> = test_set
-      bool-true-param = yes
-      bool-false-param = no
+      bool_true_param = yes
+      bool_false_param = no
       scope.string = scope test
       <set_name> = test_set2
-      string-param = teststring123
+      string_param = teststring123
   Results of find() calls:
     int32_t      value = "2147483647" = 2147483647
     uint32_t     value = "4294967295" = 4294967295
     int64_t      value = "-9223372036854775808" = -9223372036854775808
     uint64_t     value = "18446744073709551615" = 18446744073709551615
-    bool-true    value = "yes" = true
-    bool-false   value = "no" = false
+    bool_true    value = "yes" = true
+    bool_false   value = "no" = false
     float        value = "-1.0000e-15" = -0.000000 = -1.000000e-15
     double       value = "-1.33e7" = -13300000.000000 = -1.330000e+07
     string       value = "teststring456"
@@ -155,8 +155,8 @@ Component c4:
     uint32_t     value = "" = 0
     int64_t      value = "" = 0
     uint64_t     value = "" = 0
-    bool-true    value = "" = false
-    bool-false   value = "" = false
+    bool_true    value = "" = false
+    bool_false   value = "" = false
     float        value = "" = 0.000000 = 0.000000e+00
     double       value = "" = 0.000000 = 0.000000e+00
     string       value = ""
