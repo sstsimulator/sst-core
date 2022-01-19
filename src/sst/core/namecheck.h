@@ -38,7 +38,7 @@ class NameCheck
        valid, if false, using %d will result in a failed check
 
        @param allow_dot If true, a dot ('.') can be used in the name,
-       if falise, using a dot will result in a failed check
+       if false, using a dot will result in a failed check
 
        @return true if name is valid, false otherwise
     */
