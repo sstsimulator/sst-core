@@ -35,15 +35,15 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "int32t-param",  "Check for integer values", "-1" },
-        { "uint32t-param",  "Check for integer values", "0" },
-        { "int64t-param",  "Check for integer values", "-1" },
-        { "uint64t-param",  "Check for integer values", "0" },
-        { "bool-true-param",  "Check for bool values", "true" },
-        { "bool-false-param",  "Check for bool values", "false" },
-        { "float-param",  "Check for float values", "1.0" },
-        { "double-param",  "Check for double values", "1.0" },
-        { "string-param",  "Check for string values",  "test" },
+        { "int32t_param",  "Check for integer values", "-1" },
+        { "uint32t_param",  "Check for integer values", "0" },
+        { "int64t_param",  "Check for integer values", "-1" },
+        { "uint64t_param",  "Check for integer values", "0" },
+        { "bool_true_param",  "Check for bool values", "true" },
+        { "bool_false_param",  "Check for bool values", "false" },
+        { "float_param",  "Check for float values", "1.0" },
+        { "double_param",  "Check for double values", "1.0" },
+        { "string_param",  "Check for string values",  "test" },
         { "scope.int32", "Check scoped params", "-1" },
         { "scope.bool", "Check scoped params", "true" },
         { "scope.string", "Check scoped params", "test" }

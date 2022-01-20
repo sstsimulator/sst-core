@@ -35,39 +35,39 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
 
     out.output("  Results of find() calls:\n");
 
-    const std::string i32v_str = params.find<std::string>("int32t-param");
-    const int32_t     i32v     = params.find<int32_t>("int32t-param");
+    const std::string i32v_str = params.find<std::string>("int32t_param");
+    const int32_t     i32v     = params.find<int32_t>("int32t_param");
     out.output("    int32_t      value = \"%s\" = %" PRId32 "\n", i32v_str.c_str(), i32v);
 
-    const std::string u32v_str = params.find<std::string>("uint32t-param");
-    const uint32_t    u32v     = params.find<uint32_t>("uint32t-param");
+    const std::string u32v_str = params.find<std::string>("uint32t_param");
+    const uint32_t    u32v     = params.find<uint32_t>("uint32t_param");
     out.output("    uint32_t     value = \"%s\" = %" PRIu32 "\n", u32v_str.c_str(), u32v);
 
-    const std::string i64v_str = params.find<std::string>("int64t-param");
-    const int64_t     i64v     = params.find<int64_t>("int64t-param");
+    const std::string i64v_str = params.find<std::string>("int64t_param");
+    const int64_t     i64v     = params.find<int64_t>("int64t_param");
     out.output("    int64_t      value = \"%s\" = %" PRId64 "\n", i64v_str.c_str(), i64v);
 
-    const std::string u64v_str = params.find<std::string>("uint64t-param");
-    const uint64_t    u64v     = params.find<uint64_t>("uint64t-param");
+    const std::string u64v_str = params.find<std::string>("uint64t_param");
+    const uint64_t    u64v     = params.find<uint64_t>("uint64t_param");
     out.output("    uint64_t     value = \"%s\" = %" PRIu64 "\n", u64v_str.c_str(), u64v);
 
-    const std::string btruev_str = params.find<std::string>("bool-true-param");
-    const bool        btruev     = params.find<bool>("bool-true-param");
-    out.output("    bool-true    value = \"%s\" = %s\n", btruev_str.c_str(), (btruev ? "true" : "false"));
+    const std::string btruev_str = params.find<std::string>("bool_true_param");
+    const bool        btruev     = params.find<bool>("bool_true_param");
+    out.output("    bool_true    value = \"%s\" = %s\n", btruev_str.c_str(), (btruev ? "true" : "false"));
 
-    const std::string bfalsev_str = params.find<std::string>("bool-false-param");
-    const bool        bfalsev     = params.find<bool>("bool-false-param");
-    out.output("    bool-false   value = \"%s\" = %s\n", bfalsev_str.c_str(), (bfalsev ? "true" : "false"));
+    const std::string bfalsev_str = params.find<std::string>("bool_false_param");
+    const bool        bfalsev     = params.find<bool>("bool_false_param");
+    out.output("    bool_false   value = \"%s\" = %s\n", bfalsev_str.c_str(), (bfalsev ? "true" : "false"));
 
-    const std::string f32v_str = params.find<std::string>("float-param");
-    const float       f32v     = params.find<float>("float-param");
+    const std::string f32v_str = params.find<std::string>("float_param");
+    const float       f32v     = params.find<float>("float_param");
     out.output("    float        value = \"%s\" = %f = %e\n", f32v_str.c_str(), f32v, f32v);
 
-    const std::string f64v_str = params.find<std::string>("double-param");
-    const double      f64v     = params.find<double>("double-param");
+    const std::string f64v_str = params.find<std::string>("double_param");
+    const double      f64v     = params.find<double>("double_param");
     out.output("    double       value = \"%s\" = %lf = %e\n", f64v_str.c_str(), f64v, f64v);
 
-    const std::string strv = params.find<std::string>("string-param");
+    const std::string strv = params.find<std::string>("string_param");
     out.output("    string       value = \"%s\"\n", strv.c_str());
 
     // Test scoped params

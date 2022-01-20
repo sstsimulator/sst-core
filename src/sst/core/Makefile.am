@@ -49,6 +49,7 @@ nobase_dist_sst_HEADERS = \
 	memuse.h \
 	iouse.h \
 	module.h \
+	namecheck.h \
 	objectComms.h \
 	oneshot.h \
 	output.h \
@@ -180,6 +181,7 @@ sst_core_sources = \
 	initQueue.cc \
 	link.cc \
 	memuse.cc \
+	namecheck.cc \
 	oneshot.cc \
 	output.cc \
 	params.cc \
