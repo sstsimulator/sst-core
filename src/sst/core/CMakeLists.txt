@@ -53,6 +53,7 @@ add_library(
   initQueue.cc
   link.cc
   memuse.cc
+  namecheck.cc
   oneshot.cc
   output.cc
   params.cc
@@ -121,6 +122,7 @@ set(SSTHeaders
     mempool.h
     memuse.h
     module.h
+    namecheck.h
     objectComms.h
     oneshot.h
     output.h
