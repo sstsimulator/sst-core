@@ -142,6 +142,9 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
 {
     TimeConverter* tcRet = Simulation_impl::getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
 
+    // Register this clock handler with the performance counters
+    Simulation_impl::getSimulation()->registerClockHandler(my_info->id, handler->getId());
+
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
@@ -167,12 +170,6 @@ void
 BaseComponent::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler)
 {
     Simulation_impl::getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
-}
-
-void
-BaseComponent::registerClockHandler(Clock::HandlerBase* handler)
-{
-    Simulation_impl::getSimulation()->registerClockHandler(my_info->id, handler->getId());
 }
 
 TimeConverter*
