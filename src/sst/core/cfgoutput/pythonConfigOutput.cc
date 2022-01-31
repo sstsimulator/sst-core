@@ -107,14 +107,14 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
     UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
 
     for ( auto linkID : comp->links ) {
-        const ConfigLink& link       = getGraph()->getLinkMap()[linkID];
-        int               idx        = link.component[0] == comp->id ? 0 : 1;
-        SimTime_t         latency    = link.latency[idx];
+        const ConfigLink* link       = getGraph()->getLinkMap()[linkID];
+        int               idx        = link->component[0] == comp->id ? 0 : 1;
+        SimTime_t         latency    = link->latency[idx];
         auto              tmp        = tb * latency;
-        std::string       latencyStr = link.latency_str[idx];
-        char*             esPortName = makeEscapeSafe(link.port[idx].c_str());
+        std::string       latencyStr = link->latency_str[idx];
+        char*             esPortName = makeEscapeSafe(link->port[idx].c_str());
 
-        const std::string& linkName = getLinkObject(linkID, link.no_cut);
+        const std::string& linkName = getLinkObject(linkID, link->no_cut);
         fprintf(
             outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n", objName, linkName.c_str(), esPortName,
             tmp.toStringBestSI().c_str());

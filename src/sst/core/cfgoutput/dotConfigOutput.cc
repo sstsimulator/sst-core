@@ -88,9 +88,9 @@ DotConfigGraphOutput::generateDot(
         int j = comp->links.size();
         if ( j != 0 ) { fprintf(outputFile, " |\n"); }
         for ( LinkId_t i : comp->links ) {
-            const ConfigLink& link = linkMap[i];
-            const int         port = (link.component[0] == comp->id) ? 0 : 1;
-            fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
+            const ConfigLink* link = linkMap[i];
+            const int         port = (link->component[0] == comp->id) ? 0 : 1;
+            fprintf(outputFile, "<%s> Port: %s", link->port[port].c_str(), link->port[port].c_str());
             if ( j > 1 ) { fprintf(outputFile, " |\n"); }
             j--;
         }
@@ -106,9 +106,9 @@ DotConfigGraphOutput::generateDot(
             int j = sc->links.size();
             if ( j != 0 ) { fprintf(outputFile, " |\n"); }
             for ( LinkId_t i : sc->links ) {
-                const ConfigLink& link = linkMap[i];
-                const int         port = (link.component[0] == sc->id) ? 0 : 1;
-                fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
+                const ConfigLink* link = linkMap[i];
+                const int         port = (link->component[0] == sc->id) ? 0 : 1;
+                fprintf(outputFile, "<%s> Port: %s", link->port[port].c_str(), link->port[port].c_str());
                 if ( j > 1 ) { fprintf(outputFile, " |\n"); }
                 j--;
             }
@@ -119,27 +119,27 @@ DotConfigGraphOutput::generateDot(
 }
 
 void
-DotConfigGraphOutput::generateDot(const ConfigLink& link, const uint32_t dot_verbosity) const
+DotConfigGraphOutput::generateDot(const ConfigLink* link, const uint32_t dot_verbosity) const
 {
 
-    int minLatIdx = (link.latency[0] <= link.latency[1]) ? 0 : 1;
+    int minLatIdx = (link->latency[0] <= link->latency[1]) ? 0 : 1;
     // Link name and latency displayed. Connected to specific port on component
     if ( dot_verbosity >= 8 ) {
         fprintf(
-            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n", link.component[0],
-            link.port[0].c_str(), link.component[1], link.port[1].c_str(), link.name.c_str(),
-            link.latency_str[minLatIdx].c_str());
+            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n", link->component[0],
+            link->port[0].c_str(), link->component[1], link->port[1].c_str(), link->name.c_str(),
+            link->latency_str[minLatIdx].c_str());
 
         // No link name or latency. Connected to specific port on component
     }
     else if ( dot_verbosity >= 6 ) {
         fprintf(
-            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\"\n", link.component[0], link.port[0].c_str(),
-            link.component[1], link.port[1].c_str());
+            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\"\n", link->component[0], link->port[0].c_str(),
+            link->component[1], link->port[1].c_str());
 
         // No link name or latency. Connected to component NOT port
     }
     else {
-        fprintf(outputFile, "%" PRIu64 " -- %" PRIu64 "\n", link.component[0], link.component[1]);
+        fprintf(outputFile, "%" PRIu64 " -- %" PRIu64 "\n", link->component[0], link->component[1]);
     }
 }
