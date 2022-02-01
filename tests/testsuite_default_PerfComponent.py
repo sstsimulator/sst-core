@@ -70,18 +70,24 @@ class testcase_PerfComponent(SSTTestCase):
                 self.assertTrue(False, "Output file {0} does not exist".format(perfdata_out))
             
             targetComponentFound = False
+            foundClockHandler = False
+            foundClockRuntime = False
             success = False
             with open(perfdata_sav, 'r') as file:
                 f = file.read()
 
             lines = f.split('\n')
             for line in lines:
-                if targetComponentFound and ("Clock Handler Runtime:" in line):
-                    if (float(line.split()[3].split('s')[0]) > 0):
-                        success = True
-                if "Component Name c0.0" in line:
+                if foundClockHandler:
+                    if (float(line.split()[2].split('s')[0]) > 0):
+                        foundClockRuntime = True
+                    foundClockHandler = False
+                if ("Clock Handlers" in line):
+                    foundClockHandler = True
+                if "Component c0_0" in line:
                     targetComponentFound = True
-                
+              
+            success = targetComponentFound and foundClockRuntime
             self.assertTrue(success, "Performance output file {0} does not contain expected value".format(perfdata_sav))
 
             

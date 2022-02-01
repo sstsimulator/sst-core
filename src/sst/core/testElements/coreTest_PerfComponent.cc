@@ -76,7 +76,6 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
     // set our clock
     auto clockHandler = new Clock::Handler<coreTestPerfComponent>(this, &coreTestPerfComponent::clockTic);
     registerClock("1GHz", clockHandler);
-    registerClockHandler(clockHandler);
 }
 
 coreTestPerfComponent::~coreTestPerfComponent()
