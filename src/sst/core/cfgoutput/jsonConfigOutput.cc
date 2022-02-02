@@ -43,7 +43,7 @@ struct SubCompWrapper
 
 struct LinkConfPair
 {
-    SST::ConfigLink const&  link;
+    SST::ConfigLink const*  link;
     SST::ConfigGraph const* graph;
 };
 
@@ -123,17 +123,17 @@ to_json(json::ordered_json& j, LinkConfPair const& pair)
     auto const* graph = pair.graph;
 
     // These accesses into compMap are not checked
-    if ( link.no_cut )
-        j = json::ordered_json { { "name", link.name }, { "noCut", true } };
+    if ( link->no_cut )
+        j = json::ordered_json { { "name", link->name }, { "noCut", true } };
     else
-        j = json::ordered_json { { "name", link.name } };
+        j = json::ordered_json { { "name", link->name } };
 
-    j["left"]["component"]  = graph->findComponent(link.component[0])->getFullName();
-    j["left"]["port"]       = link.port[0];
-    j["left"]["latency"]    = link.latency_str[0];
-    j["right"]["component"] = graph->findComponent(link.component[1])->getFullName();
-    j["right"]["port"]      = link.port[1];
-    j["right"]["latency"]   = link.latency_str[1];
+    j["left"]["component"]  = graph->findComponent(link->component[0])->getFullName();
+    j["left"]["port"]       = link->port[0];
+    j["left"]["latency"]    = link->latency_str[0];
+    j["right"]["component"] = graph->findComponent(link->component[1])->getFullName();
+    j["right"]["port"]      = link->port[1];
+    j["right"]["latency"]   = link->latency_str[1];
 }
 
 } // namespace

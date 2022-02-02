@@ -27,7 +27,7 @@ public:
 
 protected:
     void generateDot(const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity) const;
-    void generateDot(const ConfigLink& link, const uint32_t dot_verbosity) const;
+    void generateDot(const ConfigLink* link, const uint32_t dot_verbosity) const;
 };
 
 } // namespace Core

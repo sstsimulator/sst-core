@@ -266,6 +266,19 @@ public:
     size_t size() { return data.size(); }
 };
 
+
+/**
+   Exception that is thrown by SparseVectorMap::filter() if the
+   filtering object returns an object that returns a different value
+   from the key() function than what was passed into the filter.
+ */
+class bad_filtered_key_error : public std::runtime_error
+{
+public:
+    bad_filtered_key_error(const std::string& what_arg) : runtime_error(what_arg) {}
+};
+
+
 /**
    Class that stores data in a vector, but can access the data similar
    to a map.  The data structure is O(log n) on reads, but is O(n) to
@@ -508,6 +521,50 @@ public:
        @return number of items
      */
     size_t size() { return data.size(); }
+
+
+    /**
+       Function to filter the contents of the SparseVectorMap.  Takes
+       an object with an overloaded operator() function that takes as
+       argument the current item.  The funtion returns the object that
+       should take the place of this object (value returned by key()
+       function must be same for both objects), or returns nullptr if
+       the object should be deleted.  When an item is deleted, the
+       size of the map reduces by 1.
+
+       @param filt Filter object to use for filtering contents of map
+
+       @exception bad_filtered_key_error filter returned an object that
+       didn't return the same value on a call to key() as the original
+       object in the map.
+    */
+    template <typename filterT>
+    void filter(filterT& filt)
+    {
+        int write_ptr = 0;
+        for ( size_t i = 0; i < data.size(); ++i ) {
+            auto key        = data[i]->key();
+            data[write_ptr] = filt(data[i]);
+            if ( data[write_ptr] != nullptr ) {
+                // Make sure the keys match
+                if ( UNLIKELY(data[write_ptr]->key() != key) ) {
+                    // No recovering from this, just need to error out
+                    throw bad_filtered_key_error(
+                        "ERROR: Filter object passed to SparseVectorMap::filter returned an object that had a "
+                        "different value of key() than what was passed into the filter.  The filter object must return "
+                        "either an object with the same value of key(), or nullptr if the object should be removed.");
+                }
+                write_ptr++;
+            }
+        }
+        // Need to shorten vector if items were removed.  The
+        // write_ptr will be at the index with the first nullptr from
+        // the filter, and tells us where to cut things off.  So,
+        // simply call resize() on the vector with write_ptr as the
+        // new size.
+        data.resize(write_ptr);
+        data.shrink_to_fit();
+    }
 };
 
 /**

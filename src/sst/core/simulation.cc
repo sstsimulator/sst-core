@@ -280,10 +280,10 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         ConfigLinkMap_t      links = graph.getLinkMap();
         // Find the minimum latency across a partition
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
-            ConfigLink& clink = *iter;
+            ConfigLink* clink = *iter;
             RankInfo    rank[2];
-            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
-            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
             // We only care about links that are on my rank, but
             // different threads
 
@@ -298,19 +298,19 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
             // rank, but on different threads.  Therefore, they
             // contribute to the interThreadMinLatency.
             cross_thread_links++;
-            if ( clink.getMinLatency() < interThreadMinLatency ) { interThreadMinLatency = clink.getMinLatency(); }
+            if ( clink->getMinLatency() < interThreadMinLatency ) { interThreadMinLatency = clink->getMinLatency(); }
 
             // Now check only those latencies that directly impact this
             // thread.  Keep track of minimum latency for each other
             // thread separately
             if ( rank[0].thread == my_rank.thread ) {
-                if ( clink.getMinLatency() < interThreadLatencies[rank[1].thread] ) {
-                    interThreadLatencies[rank[1].thread] = clink.getMinLatency();
+                if ( clink->getMinLatency() < interThreadLatencies[rank[1].thread] ) {
+                    interThreadLatencies[rank[1].thread] = clink->getMinLatency();
                 }
             }
             else if ( rank[1].thread == my_rank.thread ) {
-                if ( clink.getMinLatency() < interThreadLatencies[rank[0].thread] ) {
-                    interThreadLatencies[rank[0].thread] = clink.getMinLatency();
+                if ( clink->getMinLatency() < interThreadLatencies[rank[0].thread] ) {
+                    interThreadLatencies[rank[0].thread] = clink->getMinLatency();
                 }
             }
         }
@@ -346,10 +346,10 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
     for ( ConfigLinkMap_t::iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
-        ConfigLink& clink = *iter;
+        ConfigLink* clink = *iter;
         RankInfo    rank[2];
-        rank[0] = graph.comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
-        rank[1] = graph.comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
+        rank[0] = graph.comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+        rank[1] = graph.comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -358,40 +358,40 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         // Same rank, same thread
         else if ( rank[0] == rank[1] ) {
             // Check to see if this is loopback link
-            if ( clink.component[0] == clink.component[1] && clink.port[0] == clink.port[1] ) {
+            if ( clink->component[0] == clink->component[1] && clink->port[0] == clink->port[1] ) {
                 // This is a loopback, so there is only one link
                 Link* link = new SelfLink();
-                link->setLatency(clink.latency[0]);
+                link->setLatency(clink->latency[0]);
 
                 // Add this link to the appropriate LinkMap
-                ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
+                ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
                 }
-                cinfo->getLinkMap()->insertLink(clink.port[0], link);
+                cinfo->getLinkMap()->insertLink(clink->port[0], link);
             }
             else {
                 // Create a LinkPair to represent this link
-                LinkPair lp(clink.remote_tag); // in this case remote_tag == id
+                LinkPair lp(clink->remote_tag); // in this case remote_tag == id
 
-                lp.getLeft()->setLatency(clink.latency[0]);
-                lp.getRight()->setLatency(clink.latency[1]);
+                lp.getLeft()->setLatency(clink->latency[0]);
+                lp.getRight()->setLatency(clink->latency[1]);
 
                 // Add this link to the appropriate LinkMap
-                ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
+                ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
                 }
-                cinfo->getLinkMap()->insertLink(clink.port[0], lp.getLeft());
+                cinfo->getLinkMap()->insertLink(clink->port[0], lp.getLeft());
 
-                cinfo = compInfoMap.getByID(clink.component[1]);
+                cinfo = compInfoMap.getByID(clink->component[1]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
                 }
-                cinfo->getLinkMap()->insertLink(clink.port[1], lp.getRight());
+                cinfo->getLinkMap()->insertLink(clink->port[1], lp.getRight());
             }
         }
         // If we are on same rank, different threads and we are doing
@@ -408,27 +408,27 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 remote = 0;
             }
 
-            Link* link = new Link(clink.id);
-            link->setLatency(clink.latency[local]);
-            if ( cross_thread_links.find(clink.id) != cross_thread_links.end() ) {
+            Link* link = new Link(clink->id);
+            link->setLatency(clink->latency[local]);
+            if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
                 // The other side already initialized.  Hook them
                 // together as a pair.
-                Link* other_link      = cross_thread_links[clink.id];
+                Link* other_link      = cross_thread_links[clink->id];
                 link->pair_link       = other_link;
                 other_link->pair_link = link;
                 // Remove entry from map
-                cross_thread_links.erase(clink.id);
+                cross_thread_links.erase(clink->id);
             }
             else {
                 // Nothing to do until the other side is created.
                 // Just add myself to the map so the other side can
                 // find me later.
-                cross_thread_links[clink.id] = link;
+                cross_thread_links[clink->id] = link;
             }
 
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
             if ( cinfo == nullptr ) { sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map."); }
-            cinfo->getLinkMap()->insertLink(clink.port[local], link);
+            cinfo->getLinkMap()->insertLink(clink->port[local], link);
         }
         // If the components are not in the same thread, then the
         // SyncManager will handle things
@@ -444,19 +444,19 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
 
             // Create a LinkPair to represent this link
-            LinkPair lp(clink.remote_tag);
+            LinkPair lp(clink->remote_tag);
 
-            lp.getLeft()->setLatency(clink.latency[local]);
+            lp.getLeft()->setLatency(clink->latency[local]);
             lp.getRight()->setLatency(0);
             lp.getRight()->setDefaultTimeBase(minPartToTC(1));
 
             // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
             if ( cinfo == nullptr ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
             }
-            cinfo->getLinkMap()->insertLink(clink.port[local], lp.getLeft());
+            cinfo->getLinkMap()->insertLink(clink->port[local], lp.getLeft());
 
             // Need to register with both of the syncs (the ones for
             // both local and remote thread)
@@ -464,7 +464,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             // For local, just register link with threadSync object so
             // it can map link_id to link*
             ActivityQueue* sync_q =
-                syncManager->registerLink(rank[remote], rank[local], clink.remote_tag, lp.getRight());
+                syncManager->registerLink(rank[remote], rank[local], clink->remote_tag, lp.getRight());
 
             lp.getLeft()->send_queue = sync_q;
             lp.getRight()->setAsSyncLink();
@@ -899,13 +899,17 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
     return registerClock(tcFreq, handler, priority);
 }
 
+#if SST_PERFORMANCE_INSTRUMENTING
 void
 Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t handler)
 {
-#if SST_PERFORMANCE_INSTRUMENTING
     handler_mapping.insert(std::pair<SST::HandlerId_t, SST::ComponentId_t>(handler, id));
-#endif
 }
+#else
+void
+Simulation_impl::registerClockHandler(SST::ComponentId_t UNUSED(id), SST::HandlerId_t UNUSED(handler))
+{}
+#endif
 
 TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)

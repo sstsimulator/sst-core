@@ -229,10 +229,27 @@ addRankToFileName(std::string& file_name, int rank)
 }
 
 static void
-doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
+doSerialOnlyGraphOutput(SST::Config* cfg, ConfigGraph* graph)
 {
-    std::vector<ConfigGraphOutput*> graphOutputs;
+    // See if user asked us to dump the config graph in dot graph format
+    if ( cfg->output_dot() != "" ) {
+        DotConfigGraphOutput out(cfg->output_dot().c_str());
+        out.generate(cfg, graph);
+    }
 
+    // See if user asked us to dump the config graph in XML format
+    if ( cfg->output_xml() != "" ) {
+        XMLConfigGraphOutput out(cfg->output_xml().c_str());
+        out.generate(cfg, graph);
+    }
+}
+
+// This should only be called once in main().  Either before or after
+// graph broadcast depending on if parallel_load is turned on or not.
+// If on, call it after graph broadcast, if off, call it before.
+static void
+doParallelCapableGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
+{
     // User asked us to dump the config graph to a file in Python
     if ( cfg->output_config_graph() != "" ) {
         // See if we are doing parallel output
@@ -244,14 +261,9 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
                 g_output.fatal(CALL_INFO, 1, "--output-config requires a filename with a .py extension\n");
             }
         }
-        graphOutputs.push_back(new PythonConfigGraphOutput(file_name.c_str()));
+        PythonConfigGraphOutput out(file_name.c_str());
+        out.generate(cfg, graph);
     }
-
-    // user asked us to dump the config graph in dot graph format
-    if ( cfg->output_dot() != "" ) { graphOutputs.push_back(new DotConfigGraphOutput(cfg->output_dot().c_str())); }
-
-    // User asked us to dump the config graph in XML format
-    if ( cfg->output_xml() != "" ) { graphOutputs.push_back(new XMLConfigGraphOutput(cfg->output_xml().c_str())); }
 
     // User asked us to dump the config graph in JSON format
     if ( cfg->output_json() != "" ) {
@@ -263,20 +275,9 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
                 g_output.fatal(CALL_INFO, 1, "--output-json requires a filename with a .json extension\n");
             }
         }
-        graphOutputs.push_back(new JSONConfigGraphOutput(file_name.c_str()));
+        JSONConfigGraphOutput out(file_name.c_str());
+        out.generate(cfg, graph);
     }
-
-    ConfigGraph* myGraph = graph;
-    if ( cfg->parallel_output() ) {
-        // Get a graph that only includes components important to this
-        // rank
-        myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
-    }
-    for ( size_t i = 0; i < graphOutputs.size(); i++ ) {
-        graphOutputs[i]->generate(cfg, myGraph);
-        delete graphOutputs[i];
-    }
-    if ( cfg->parallel_output() ) delete myGraph;
 }
 
 typedef struct
@@ -647,16 +648,16 @@ main(int argc, char* argv[])
         ConfigComponentMap_t& comps = graph->getComponentMap();
         ConfigLinkMap_t&      links = graph->getLinkMap();
         for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
-            ConfigLink& clink = *iter;
+            ConfigLink* clink = *iter;
             RankInfo    rank[2];
-            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
-            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
             if ( rank[0].rank == rank[1].rank || (rank[0].rank != myRank.rank && rank[1].rank != myRank.rank) )
                 continue;
 
             // Found link that goes from my rank to another one.  Get
             // the name and generate the hash
-            const char* key  = clink.name.c_str();
+            const char* key  = clink->name.c_str();
             int         len  = ::strlen(key);
             uint32_t    hash = 0;
             for ( int i = 0; i < len; ++i ) {
@@ -678,7 +679,7 @@ main(int argc, char* argv[])
                     CALL_INFO, 1, "ERROR: Found clash in hashes for two link names that cross rank partitions.\n");
             }
 
-            clink.remote_tag = hash;
+            clink->remote_tag = hash;
         }
     }
 
@@ -714,12 +715,12 @@ main(int argc, char* argv[])
             ConfigLinkMap_t&      links = graph->getLinkMap();
             // Find the minimum latency across a partition
             for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
-                ConfigLink& clink = *iter;
+                ConfigLink* clink = *iter;
                 RankInfo    rank[2];
-                rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
-                rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
+                rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+                rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
                 if ( rank[0].rank == rank[1].rank ) continue;
-                if ( clink.getMinLatency() < local_min_part ) { local_min_part = clink.getMinLatency(); }
+                if ( clink->getMinLatency() < local_min_part ) { local_min_part = clink->getMinLatency(); }
             }
         }
 #ifdef SST_CONFIG_HAVE_MPI
@@ -749,6 +750,13 @@ main(int argc, char* argv[])
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
     }
 
+    ////// Write out the graph, if requested //////
+    if ( myRank.rank == 0 ) {
+        doSerialOnlyGraphOutput(&cfg, graph);
+
+        if ( !cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
+    }
+
     ////// Broadcast Graph //////
 #ifdef SST_CONFIG_HAVE_MPI
     if ( world_size.rank > 1 && !cfg.parallel_load() ) {
@@ -773,7 +781,8 @@ main(int argc, char* argv[])
 
                 // Need to send the your_ranks set and the proper
                 // subgraph for further distribution
-                ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
                 int          dest       = *your_ranks.begin();
                 Comms::send(dest, 0, your_ranks);
                 Comms::send(dest, 0, *your_graph);
@@ -794,8 +803,15 @@ main(int argc, char* argv[])
                 your_ranks.insert(mid, my_ranks.end());
                 my_ranks.erase(mid, my_ranks.end());
 
-                ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                uint32_t     dest       = *your_ranks.begin();
+                // // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                // ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
+                ConfigGraph* your_graph;
+                if ( myRank.rank == 0 )
+                    your_graph = graph->splitGraph(my_ranks, your_ranks);
+                else
+                    your_graph = graph->getSubGraph(your_ranks);
+
+                uint32_t dest = *your_ranks.begin();
 
                 Comms::send(dest, 0, your_ranks);
                 Comms::send(dest, 0, *your_graph);
@@ -810,7 +826,7 @@ main(int argc, char* argv[])
 #endif
     ////// End Broadcast Graph //////
 
-    if ( myRank.rank == 0 || cfg.parallel_output() ) { doGraphOutput(&cfg, graph, myRank, world_size); }
+    if ( cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
 
 
     // // Print the graph
