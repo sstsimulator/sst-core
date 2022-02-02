@@ -71,15 +71,15 @@ XMLConfigGraphOutput::generateXML(
 
 void
 XMLConfigGraphOutput::generateXML(
-    const std::string& indent, const ConfigLink& link, const ConfigComponentMap_t& compMap) const
+    const std::string& indent, const ConfigLink* link, const ConfigComponentMap_t& compMap) const
 {
 
-    const ConfigComponent* link_left  = compMap[link.component[0]];
-    const ConfigComponent* link_right = compMap[link.component[1]];
+    const ConfigComponent* link_left  = compMap[link->component[0]];
+    const ConfigComponent* link_right = compMap[link->component[1]];
 
     fprintf(
         outputFile,
         "%s<link id=\"%s\" name=\"%s\"\n%s%sleft=\"%s\" right=\"%s\"\n%s%sleftport=\"%s\" rightport=\"%s\"/>\n",
-        indent.c_str(), link.name.c_str(), link.name.c_str(), indent.c_str(), "   ", link_left->name.c_str(),
-        link_right->name.c_str(), indent.c_str(), "   ", link.port[0].c_str(), link.port[1].c_str());
+        indent.c_str(), link->name.c_str(), link->name.c_str(), indent.c_str(), "   ", link_left->name.c_str(),
+        link_right->name.c_str(), indent.c_str(), "   ", link->port[0].c_str(), link->port[1].c_str());
 }

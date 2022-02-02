@@ -46,7 +46,7 @@ class ConfigLink : public SST::Core::Serialization::serializable
 {
 public:
     LinkId_t      id;             /*!< ID of this link */
-    LinkId_t      remote_tag;     /*!< Tag used to ensure remote events are delivered correctly ID of this link */
+    LinkId_t      remote_tag;     /*!< Tag used \to ensure remote events are delivered correctly ID of this link */
     std::string   name;           /*!< Name of this link */
     ComponentId_t component[2];   /*!< IDs of the connected components */
     std::string   port[2];        /*!< Names of the connected ports */
@@ -212,7 +212,7 @@ public:
     ImplementSerializable(SST::ConfigStatOutput)
 };
 
-typedef SparseVectorMap<LinkId_t, ConfigLink> ConfigLinkMap_t;
+typedef SparseVectorMap<LinkId_t, ConfigLink*> ConfigLinkMap_t;
 
 /** Represents the configuration of a generic component */
 class ConfigComponent : public SST::Core::Serialization::serializable
@@ -239,8 +239,8 @@ public:
     std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
     uint16_t nextSubID;  /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
-    bool     visited;    /*! Used when traversing graph to indicate component was visited already */
     uint16_t nextStatID; /*!< Next statID to use for children */
+    bool     visited;    /*! Used when traversing graph to indicate component was visited already */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
@@ -293,6 +293,10 @@ public:
 
 
     std::vector<LinkId_t> allLinks() const;
+
+    // Gets all the links to return, then clears links from self and
+    // all subcomponents.  Used when splitting graphs.
+    std::vector<LinkId_t> clearAllLinks();
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -480,6 +484,8 @@ public:
     ConfigGraph* getSubGraph(uint32_t start_rank, uint32_t end_rank);
     ConfigGraph* getSubGraph(const std::set<uint32_t>& rank_set);
 
+    ConfigGraph* splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<uint32_t>& new_rank_set);
+
     PartitionGraph* getPartitionGraph();
     PartitionGraph* getCollapsedPartitionGraph();
     void            annotateRanks(PartitionGraph* graph);
@@ -519,6 +525,23 @@ private:
     uint8_t                       statLoadLevel;
 
     ImplementSerializable(SST::ConfigGraph)
+
+    // Filter class
+    class GraphFilter
+    {
+        ConfigGraph*              ograph;
+        ConfigGraph*              ngraph;
+        const std::set<uint32_t>& oset;
+        const std::set<uint32_t>& nset;
+
+    public:
+        GraphFilter(
+            ConfigGraph* original_graph, ConfigGraph* new_graph, const std::set<uint32_t>& original_rank_set,
+            const std::set<uint32_t>& new_rank_set);
+
+        ConfigLink*      operator()(ConfigLink* link);
+        ConfigComponent* operator()(ConfigComponent* comp);
+    };
 };
 
 class PartitionComponent
