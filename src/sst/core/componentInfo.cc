@@ -243,20 +243,16 @@ ComponentInfo::findSubComponent(const std::string& slot, int slot_num)
     return nullptr;
 }
 
-std::vector<LinkId_t>
-ComponentInfo::getAllLinkIds() const
+bool
+ComponentInfo::hasLinks() const
 {
-    std::vector<LinkId_t> res;
-    if ( nullptr != link_map ) {
-        for ( auto& l : link_map->getLinkMap() ) {
-            res.push_back(l.second->id);
-        }
-    }
+    // If we find any links, return true.  Otherwise return false
+    if ( !link_map->empty() ) return true;
+
     for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.second.getAllLinkIds();
-        res.insert(res.end(), s.begin(), s.end());
+        if ( sc.second.hasLinks() ) return true;
     }
-    return res;
+    return false;
 }
 
 } // namespace SST

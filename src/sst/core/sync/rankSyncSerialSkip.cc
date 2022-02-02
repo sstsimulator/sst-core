@@ -66,7 +66,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
 
 ActivityQueue*
 RankSyncSerialSkip::registerLink(
-    const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), LinkId_t link_id, Link* link)
+    const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), LinkId_t remote_tag, Link* link)
 {
     SyncQueue* queue;
     if ( comm_map.count(to_rank.rank) == 0 ) {
@@ -79,7 +79,7 @@ RankSyncSerialSkip::registerLink(
         queue = comm_map[to_rank.rank].squeue;
     }
 
-    link_map[link_id] = link;
+    link_map[remote_tag] = link;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif
@@ -213,7 +213,7 @@ RankSyncSerialSkip::exchange(void)
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
             Event*               ev   = static_cast<Event*>(activities[j]);
-            link_map_t::iterator link = link_map.find(ev->getLinkId());
+            link_map_t::iterator link = link_map.find(ev->getTag());
             if ( link == link_map.end() ) {
                 Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
             }
@@ -324,7 +324,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
             Event*               ev   = static_cast<Event*>(activities[j]);
-            link_map_t::iterator link = link_map.find(ev->getLinkId());
+            link_map_t::iterator link = link_map.find(ev->getTag());
             if ( link == link_map.end() ) {
                 Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
             }

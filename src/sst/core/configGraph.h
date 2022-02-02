@@ -46,14 +46,16 @@ class ConfigLink : public SST::Core::Serialization::serializable
 {
 public:
     LinkId_t      id;             /*!< ID of this link */
-    LinkId_t      remote_tag;     /*!< Tag used \to ensure remote events are delivered correctly ID of this link */
+    LinkId_t      remote_tag;     /*!< Tag used to ensure remote events are delivered on correct link */
     std::string   name;           /*!< Name of this link */
     ComponentId_t component[2];   /*!< IDs of the connected components */
     std::string   port[2];        /*!< Names of the connected ports */
     SimTime_t     latency[2];     /*!< Latency from each side */
     std::string   latency_str[2]; /*!< Temp string holding latency */
-    int           current_ref;    /*!< Number of components currently referring to this Link */
-    bool          no_cut;         /*!< If set to true, partitioner will not make a cut through this Link */
+
+    LinkId_t order;  /*!< Number of components currently referring to this Link.  After graph construction, it will
+                       be repurposed to hold the enforce_order value */
+    bool     no_cut; /*!< If set to true, partitioner will not make a cut through this Link */
 
     // inline const std::string& key() const { return name; }
     inline LinkId_t key() const { return id; }
@@ -94,7 +96,7 @@ public:
         ser& latency[1];
         ser& latency_str[0];
         ser& latency_str[1];
-        ser& current_ref;
+        ser& order;
     }
 
     ImplementSerializable(SST::ConfigLink)
@@ -103,7 +105,7 @@ private:
     friend class ConfigGraph;
     ConfigLink(LinkId_t id) : id(id), remote_tag(id), no_cut(false)
     {
-        current_ref = 0;
+        order = 0;
 
         // Initialize the component data items
         component[0] = ULONG_MAX;
@@ -112,8 +114,8 @@ private:
 
     ConfigLink(LinkId_t id, const std::string& n) : id(id), remote_tag(id), no_cut(false)
     {
-        current_ref = 0;
-        name        = n;
+        order = 0;
+        name  = n;
 
         // Initialize the component data items
         component[0] = ULONG_MAX;

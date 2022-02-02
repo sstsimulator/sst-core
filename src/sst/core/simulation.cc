@@ -360,7 +360,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             // Check to see if this is loopback link
             if ( clink->component[0] == clink->component[1] && clink->port[0] == clink->port[1] ) {
                 // This is a loopback, so there is only one link
-                Link* link = new SelfLink();
+                Link* link      = new Link(clink->order);
+                link->pair_link = link;
                 link->setLatency(clink->latency[0]);
 
                 // Add this link to the appropriate LinkMap
@@ -373,7 +374,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
             else {
                 // Create a LinkPair to represent this link
-                LinkPair lp(clink->remote_tag); // in this case remote_tag == id
+                LinkPair lp(clink->order);
 
                 lp.getLeft()->setLatency(clink->latency[0]);
                 lp.getRight()->setLatency(clink->latency[1]);
@@ -408,7 +409,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 remote = 0;
             }
 
-            Link* link = new Link(clink->id);
+            Link* link = new Link(clink->order);
             link->setLatency(clink->latency[local]);
             if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
                 // The other side already initialized.  Hook them
@@ -444,7 +445,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
 
             // Create a LinkPair to represent this link
-            LinkPair lp(clink->remote_tag);
+            LinkPair lp(clink->order, clink->remote_tag);
 
             lp.getLeft()->setLatency(clink->latency[local]);
             lp.getRight()->setLatency(0);
@@ -489,9 +490,8 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
             Component* tmp;
 
             // Check to make sure there are any entries in the component's LinkMap
-            // TODO:  IS this still a valid warning?  Subcomponents may be the link owners
             ComponentInfo* cinfo = compInfoMap.getByID(ccomp->id);
-            if ( cinfo->getAllLinkIds().empty() ) {
+            if ( !cinfo->hasLinks() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n", ccomp->name.c_str());
             }
 
