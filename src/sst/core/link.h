@@ -41,12 +41,23 @@ public:
     friend class SyncManager;
     friend class ComponentInfo;
 
-    /** Create a new link with a given ID */
+    /** Create a new link with a given tag
+
+        The tag is used for two different things depending on where
+        this link sends data:
+
+        If it sends it to a Sync object, then it represents the
+        remote_tag used to lookup the correct link on the other side.
+
+        If it sends to a TimeVortex (or DirectLinkQueue), it is the
+        value used for enforce_link_order (if that feature is
+        enabled).
+     */
 #if !SST_BUILDING_CORE
-    Link(LinkId_t id) __attribute__((
+    Link(LinkId_t tag) __attribute__((
         deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12.")));
 #else
-    Link(LinkId_t id);
+    Link(LinkId_t tag);
 #endif
 
     virtual ~Link();
@@ -162,7 +173,7 @@ public:
     /** Return the ID of this link
      * @return the unique ID for this link
      */
-    LinkId_t getId() { return id; }
+    LinkId_t getId() { return tag; }
 
     /** Send data during the init() or complete() phase.
      * @param data event to send
@@ -257,7 +268,7 @@ private:
     SimTime_t& current_time;
     Type_t     type;
     Mode_t     mode;
-    LinkId_t   id;
+    LinkId_t   tag;
 
     Link(const Link& l);
 

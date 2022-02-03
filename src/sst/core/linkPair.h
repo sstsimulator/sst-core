@@ -23,17 +23,33 @@ namespace SST {
 class LinkPair
 {
 public:
-    /** Create a new LinkPair with specified ID */
+    /** Create a new LinkPair.  This is used when the endpoints are in the same partition. */
 #if !SST_BUILDING_CORE
-    LinkPair(LinkId_t id) __attribute__((
+    LinkPair(LinkId_t order) __attribute__((
         deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12."))) :
 #else
-    LinkPair(LinkId_t id) :
+    LinkPair(LinkId_t order) :
 #endif
-        left(new Link(id)),
-        right(new Link(id))
+        left(new Link(order)),
+        right(new Link(order))
     {
-        my_id = id;
+        my_id = order;
+
+        left->pair_link  = right;
+        right->pair_link = left;
+    }
+
+    /** Create a new LinkPair.  This is used when the endpoints are in different partitions. */
+#if !SST_BUILDING_CORE
+    LinkPair(LinkId_t order, LinkId_t remote_tag) __attribute__((
+        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12."))) :
+#else
+    LinkPair(LinkId_t order, LinkId_t remote_tag) :
+#endif
+        left(new Link(remote_tag)),
+        right(new Link(order))
+    {
+        my_id = order;
 
         left->pair_link  = right;
         right->pair_link = left;
@@ -47,17 +63,18 @@ public:
     virtual ~LinkPair() {}
 #endif
 
-    /** return the ID of the LinkPair */
-#if !SST_BUILDING_CORE
-    LinkId_t getId() __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-#else
-    LinkId_t getId()
-    {
-#endif
-        return my_id;
-    }
+    //     /** return the ID of the LinkPair */
+    // #if !SST_BUILDING_CORE
+    //     LinkId_t getId() __attribute__((
+    //         deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in
+    //         SST 12.")))
+    //     {
+    // #else
+    //     LinkId_t getId()
+    //     {
+    // #endif
+    //         return my_id;
+    //     }
 
     /** Return the Left Link */
 #if !SST_BUILDING_CORE

@@ -32,7 +32,7 @@ public:
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
+         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, Link* link) override;
     void execute(int thread) override;
 
     /** Cause an exchange of Untimed Data to occur */

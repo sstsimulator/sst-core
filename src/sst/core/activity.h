@@ -65,7 +65,7 @@ public:
         /** Compare based off pointers */
         inline bool operator()(const Activity* lhs, const Activity* rhs) const
         {
-            if ( lhs->priority == rhs->priority ) { return lhs->enforce_link_order < rhs->enforce_link_order; }
+            if ( lhs->priority == rhs->priority ) { return lhs->order_tag < rhs->order_tag; }
             else {
                 return lhs->priority < rhs->priority;
             }
@@ -74,7 +74,7 @@ public:
         /** Compare based off references */
         inline bool operator()(const Activity& lhs, const Activity& rhs) const
         {
-            if ( lhs.priority == rhs.priority ) { return lhs.enforce_link_order < rhs.enforce_link_order; }
+            if ( lhs.priority == rhs.priority ) { return lhs.order_tag < rhs.order_tag; }
             else {
                 return lhs.priority < rhs.priority;
             }
@@ -91,11 +91,9 @@ public:
         inline bool operator()(const Activity* lhs, const Activity* rhs) const
         {
             if ( lhs->priority == rhs->priority ) {
-                if ( lhs->enforce_link_order == rhs->enforce_link_order ) {
-                    return lhs->queue_order > rhs->queue_order;
-                }
+                if ( lhs->order_tag == rhs->order_tag ) { return lhs->queue_order > rhs->queue_order; }
                 else {
-                    return lhs->enforce_link_order > rhs->enforce_link_order;
+                    return lhs->order_tag > rhs->order_tag;
                 }
             }
             else {
@@ -107,9 +105,9 @@ public:
         inline bool operator()(const Activity& lhs, const Activity& rhs) const
         {
             if ( lhs.priority == rhs.priority ) {
-                if ( lhs.enforce_link_order == rhs.enforce_link_order ) { return lhs.queue_order > rhs.queue_order; }
+                if ( lhs.order_tag == rhs.order_tag ) { return lhs.queue_order > rhs.queue_order; }
                 else {
-                    return lhs.enforce_link_order > rhs.enforce_link_order;
+                    return lhs.order_tag > rhs.order_tag;
                 }
             }
             else {
@@ -128,7 +126,7 @@ public:
             if ( lhs->delivery_time == rhs->delivery_time ) {
                 if ( lhs->priority == rhs->priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
-                    return lhs->enforce_link_order < rhs->enforce_link_order;
+                    return lhs->order_tag < rhs->order_tag;
                 }
                 else {
                     return lhs->priority < rhs->priority;
@@ -145,7 +143,7 @@ public:
             if ( lhs.delivery_time == rhs.delivery_time ) {
                 if ( lhs.priority == rhs.priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
-                    return lhs.enforce_link_order < rhs.enforce_link_order;
+                    return lhs.order_tag < rhs.order_tag;
                 }
                 else {
                     return lhs.priority < rhs.priority;
@@ -166,12 +164,12 @@ public:
         {
             if ( lhs->delivery_time == rhs->delivery_time ) {
                 if ( lhs->priority == rhs->priority ) {
-                    if ( lhs->enforce_link_order == rhs->enforce_link_order ) {
+                    if ( lhs->order_tag == rhs->order_tag ) {
                         /* TODO:  Handle 64-bit wrap-around */
                         return lhs->queue_order > rhs->queue_order;
                     }
                     else {
-                        return lhs->enforce_link_order > rhs->enforce_link_order;
+                        return lhs->order_tag > rhs->order_tag;
                     }
                 }
                 else {
@@ -188,11 +186,9 @@ public:
         {
             if ( lhs.delivery_time == rhs.delivery_time ) {
                 if ( lhs.priority == rhs.priority ) {
-                    if ( lhs.enforce_link_order == rhs.enforce_link_order ) {
-                        return lhs.queue_order > rhs.queue_order;
-                    }
+                    if ( lhs.order_tag == rhs.order_tag ) { return lhs.queue_order > rhs.queue_order; }
                     else {
-                        return lhs.enforce_link_order > rhs.enforce_link_order;
+                        return lhs.order_tag > rhs.order_tag;
                     }
                 }
                 else {
@@ -476,7 +472,7 @@ public:
     // void serialize_order(serializer &ser);
 
 
-    int32_t getEnforceLinkOrder() { return enforce_link_order; }
+    uint32_t getOrderTag() { return order_tag; }
 
 protected:
     /** Set the priority of the Activity */
@@ -491,12 +487,12 @@ protected:
         ser& delivery_time;
         ser& priority;
 #ifdef SST_ENFORCE_EVENT_ORDERING
-        ser& enforce_link_order;
+        ser& order_tag;
 #endif
     }
 
 #ifdef SST_ENFORCE_EVENT_ORDERING
-    int32_t enforce_link_order;
+    uint32_t order_tag;
 #endif
 
 private:
