@@ -27,7 +27,7 @@
 
 namespace SST {
 
-Link::Link(LinkId_t id) :
+Link::Link(LinkId_t tag) :
     send_queue(nullptr),
     pair_rFunctor(nullptr),
     // defaultTimeBase( nullptr ),
@@ -36,7 +36,7 @@ Link::Link(LinkId_t id) :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    id(id)
+    tag(tag)
 {}
 
 Link::Link() :
@@ -47,7 +47,7 @@ Link::Link() :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    id(-1)
+    tag(-1)
 {}
 
 Link::~Link()
@@ -172,7 +172,7 @@ Link::send_impl(SimTime_t delay, Event* event)
 
     if ( event == nullptr ) { event = new NullEvent(); }
     event->setDeliveryTime(cycle);
-    event->setDeliveryInfo(id, pair_rFunctor);
+    event->setDeliveryInfo(tag, pair_rFunctor);
 
 #if __SST_DEBUG_EVENT_TRACKING__
     event->addSendComponent(comp, ctype, port);
@@ -218,7 +218,7 @@ Link::sendUntimedData(Event* data)
     Simulation_impl::getSimulation()->untimed_msg_count++;
     data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
     // Ignored if not hooked to sync queue
-    data->setDeliveryLink(id, pair_link);
+    data->setDeliveryLink(tag, pair_link);
 
     send_queue->insert(data);
 #if __SST_DEBUG_EVENT_TRACKING__

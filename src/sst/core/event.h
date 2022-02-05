@@ -78,29 +78,42 @@ public:
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();
 
-    inline void setDeliveryInfo(LinkId_t id, HandlerBase* f)
+    /**
+       This sets the information needed to get the event properly
+       delivered for the next step of transfer.
+
+       For links that don't go to a sync object, the tag is
+       used as the order_tag field when that support is
+       enabled.  If enforce_event_ordering is off, then the field does
+       nothing.
+
+       For links that are going to a sync, the tag is the
+       remote_tag that will be used to look up the corresponding link
+       on the other rank.
+     */
+    inline void setDeliveryInfo(LinkId_t tag, HandlerBase* f)
     {
 #ifdef SST_ENFORCE_EVENT_ORDERING
-        enforce_link_order = id;
+        order_tag = tag;
 #else
-        link_id = id;
+        this->tag = tag;
 #endif
         functor = f;
     }
 
     /** Sets the link id used for delivery.  For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline void setDeliveryLink(LinkId_t id, Link* link) __attribute__((
+    inline void setDeliveryLink(LinkId_t tag, Link* link) __attribute__((
         deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
     {
 #else
-    inline void setDeliveryLink(LinkId_t id, Link* link)
+    inline void setDeliveryLink(LinkId_t tag, Link* link)
     {
 #endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
-        enforce_link_order = id;
+        order_tag = tag;
 #else
-        link_id = id;
+        this->tag = tag;
 #endif
         delivery_link = link;
     }
@@ -131,17 +144,17 @@ public:
 
     /** Gets the link id associated with this event.  For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline LinkId_t getLinkId(void) const __attribute__((
+    inline LinkId_t getTag(void) const __attribute__((
         deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
     {
 #else
-    inline LinkId_t getLinkId(void) const
+    inline LinkId_t getTag(void) const
     {
 #endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
-        return enforce_link_order;
+        return order_tag;
 #else
-        return link_id;
+        return tag;
 #endif
     }
 
@@ -184,7 +197,7 @@ public:
     {
         Activity::serialize_order(ser);
 #ifndef SST_ENFORCE_EVENT_ORDERING
-        ser& link_id;
+        ser& tag;
 #endif
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         ser& first_comp;
@@ -209,9 +222,22 @@ protected:
 private:
     static std::atomic<uint64_t> id_counter;
     // If SST_ENFORCE_EVENT_ORDERING is turned on, then we'll use
-    // Activity::enforce_link_order as the link_id
+    // Activity::order_tag as the tag.
+
+    // The tag is used for two things:
+    //
+    // As the remote_tag for events that cross partitions.  This is
+    // used to look up the corect link in the other rank (MPI/thread)
+    //
+    // As the data used for enforcing link ordering for all other
+    // events (when that feature is on).
+    //
+    // For events that cross a rank boundary, the first link that
+    // sends it to the RankSync, will put in the remote_tag, and the
+    // link on the other rank that sends it to the TimeVortex will put
+    // in the enforce_event_ordering data.
 #ifndef SST_ENFORCE_EVENT_ORDERING
-    LinkId_t link_id;
+    LinkId_t tag;
 #endif
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

@@ -82,7 +82,7 @@ ThreadSyncSimpleSkip::before()
         std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
             Event* ev   = static_cast<Event*>(vec[j]);
-            auto   link = link_map.find(ev->getLinkId());
+            auto   link = link_map.find(ev->getTag());
             if ( link == link_map.end() ) {
                 Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
             }
@@ -128,7 +128,7 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
         std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
             Event* ev   = static_cast<Event*>(vec[j]);
-            auto   link = link_map.find(ev->getLinkId());
+            auto   link = link_map.find(ev->getTag());
             if ( link == link_map.end() ) {
                 Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
             }

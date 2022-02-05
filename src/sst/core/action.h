@@ -29,7 +29,7 @@ public:
     Action()
     {
 #ifdef SST_ENFORCE_EVENT_ORDERING
-        enforce_link_order = 0;
+        order_tag = 0;
 #endif
     }
     ~Action() {}

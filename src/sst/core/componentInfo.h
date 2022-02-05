@@ -211,9 +211,9 @@ public:
     // inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
     inline std::map<ComponentId_t, ComponentInfo>& getSubComponents() { return subComponents; }
 
-    ComponentInfo*        findSubComponent(const std::string& slot, int slot_num);
-    ComponentInfo*        findSubComponent(ComponentId_t id);
-    std::vector<LinkId_t> getAllLinkIds() const;
+    ComponentInfo* findSubComponent(const std::string& slot, int slot_num);
+    ComponentInfo* findSubComponent(ComponentId_t id);
+    bool           hasLinks() const;
 
     uint8_t getStatisticLoadLevel() { return statLoadLevel; }
 
