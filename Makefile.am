@@ -13,11 +13,11 @@ EXTRA_DIST = \
 	autogen.sh \
 	CONTRIBUTING.md \
 	scripts/clang-format-test.sh \
-	INSTALL \
-	ISSUES \
-	LICENSE \
-	PLATFORMS \
+	INSTALL.md \
+	ISSUES.md \
+	LICENSE.md \
+	PLATFORMS.md \
 	README.md \
-	VERSION
+	VERSION.md
 
 include tests/Makefile.inc
