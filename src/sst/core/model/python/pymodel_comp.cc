@@ -374,7 +374,7 @@ static PyObject*
 compSetStatisticLoadLevel(PyObject* self, PyObject* args)
 {
     int              argOK             = 0;
-    uint8_t          loadLevel         = STATISTICLOADLEVELUNINITIALIZED;
+    int              loadLevel         = STATISTICLOADLEVELUNINITIALIZED;
     ConfigComponent* c                 = getComp(self);
     int              apply_to_children = 0;
 
@@ -387,6 +387,7 @@ compSetStatisticLoadLevel(PyObject* self, PyObject* args)
     else {
         return nullptr;
     }
+
     return SST_ConvertToPythonLong(0);
 }
 

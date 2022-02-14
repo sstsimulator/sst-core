@@ -315,6 +315,7 @@ public:
         ser& enabledAllStats;
         ser& statistics;
         ser& enabledAllStats;
+        ser& allStatConfig;
         ser& statLoadLevel;
         ser& subComponents;
         ser& coords;

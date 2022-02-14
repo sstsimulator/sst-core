@@ -22,27 +22,14 @@
 namespace SST {
 namespace Statistics {
 
-/**
-    \class StatisticOutputTxt
 
-    The class for statistics output to a text file.
-*/
-class StatisticOutputTxt : public StatisticFieldsOutput
+class StatisticOutputTextBase : public StatisticFieldsOutput
 {
 public:
-    SST_ELI_REGISTER_DERIVED(
-      StatisticOutput,
-      StatisticOutputTxt,
-      "sst",
-      "statoutputtxt",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Output directly to console screen"
-   )
-
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTxt(Params& outputParameters);
+    StatisticOutputTextBase(Params& outputParameters);
 
 protected:
     /** Perform a check of provided parameters
@@ -92,7 +79,13 @@ protected:
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
-    StatisticOutputTxt() { ; } // For serialization
+    StatisticOutputTextBase() { ; }
+
+    bool m_outputTopHeader;
+    bool m_outputInlineHeader;
+    bool m_outputSimTime;
+    bool m_outputRank;
+    bool m_useCompression;
 
 private:
     bool openFile();
@@ -106,11 +99,165 @@ private:
     FILE*       m_hFile;
     std::string m_outputBuffer;
     std::string m_FilePath;
-    bool        m_outputTopHeader;
-    bool        m_outputInlineHeader;
-    bool        m_outputSimTime;
-    bool        m_outputRank;
-    bool        m_useCompression;
+
+    /**
+       Returns whether or not this outputter outputs to a file
+    */
+    virtual bool outputsToFile() = 0;
+
+    /**
+       Returns whether or not this outputter supports compression.
+       Only checked if the class also writes to a file
+    */
+    virtual bool supportsCompression() = 0;
+
+    /**
+       Function that gets the end of the first line of help message
+    */
+    virtual std::string getUsageInfo() = 0;
+
+    /**
+       Returns a prefix that will start each new output entry
+    */
+    virtual std::string getStartOutputPrefix() = 0;
+
+    /**
+       These functions return the default value for the associated
+       flags. These are implemented by the child class so that each
+       final class can control how the defaults work.
+     */
+    virtual bool getOutputTopHeaderDefault()    = 0;
+    virtual bool getOutputInlineHeaderDefault() = 0;
+    virtual bool getOutputSimTimeDefault()      = 0;
+    virtual bool getOutputRankDefault()         = 0;
+
+    virtual std::string getDefaultFileName() { return ""; }
+};
+
+
+/**
+    \class StatisticOutputTxt
+
+    The class for statistics output to a text file.
+*/
+class StatisticOutputTxt : public StatisticOutputTextBase
+{
+public:
+    SST_ELI_REGISTER_DERIVED(
+      StatisticOutput,
+      StatisticOutputTxt,
+      "sst",
+      "statoutputtxt",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Output to text file"
+   )
+
+    /** Construct a StatOutputTxt
+     * @param outputParameters - Parameters used for this Statistic Output
+     */
+    StatisticOutputTxt(Params& outputParameters);
+
+protected:
+    StatisticOutputTxt() { ; } // For serialization
+
+private:
+    /**
+       Returns whether or not this outputter outputs to a file
+    */
+    bool outputsToFile() override { return true; }
+
+    /**
+       Returns whether or not this outputter supports compression.
+       Only checked if the class also writes to a file
+    */
+    bool supportsCompression() override
+    {
+#ifdef HAVE_LIBZ
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    /**
+       Function that gets the end of the first line of help message
+    */
+    std::string getUsageInfo() override { return "a text file"; }
+
+    /**
+       Returns a prefix that will start each new output entry
+    */
+    std::string getStartOutputPrefix() override { return ""; }
+
+    /**
+       These functions return the default value for the associated
+       flags. These are implemented by the child class so that each
+       final class can control how the defaults work.
+     */
+    bool getOutputTopHeaderDefault() override { return false; }
+    bool getOutputInlineHeaderDefault() override { return true; }
+    bool getOutputSimTimeDefault() override { return true; }
+    bool getOutputRankDefault() override { return true; }
+
+    std::string getDefaultFileName() override { return "./StatisticOutput.txt"; }
+};
+
+/**
+    \class StatisticOutputConsole
+
+    The class for statistics output to the console.
+*/
+class StatisticOutputConsole : public StatisticOutputTextBase
+{
+public:
+    SST_ELI_REGISTER_DERIVED(
+      StatisticOutput,
+      StatisticOutputConsole,
+      "sst",
+      "statoutputconsole",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Output to console"
+   )
+
+    /** Construct a StatOutputTxt
+     * @param outputParameters - Parameters used for this Statistic Output
+     */
+    StatisticOutputConsole(Params& outputParameters);
+
+protected:
+    StatisticOutputConsole() { ; } // For serialization
+
+private:
+    /**
+       Returns whether or not this outputter outputs to a file
+    */
+    bool outputsToFile() override { return false; }
+
+    /**
+       Returns whether or not this outputter supports compression.
+       Only checked if the class also writes to a file
+    */
+    bool supportsCompression() override { return false; }
+
+    /**
+       Function that gets the end of the first line of help message
+    */
+    std::string getUsageInfo() override { return "the console"; }
+
+    /**
+       Returns a prefix that will start each new output entry
+    */
+    std::string getStartOutputPrefix() override { return " "; }
+
+    /**
+       These functions return the default value for the associated
+       flags. These are implemented by the child class so that each
+       final class can control how the defaults work.
+     */
+    bool getOutputTopHeaderDefault() override { return false; }
+    bool getOutputInlineHeaderDefault() override { return true; }
+    bool getOutputSimTimeDefault() override { return false; }
+    bool getOutputRankDefault() override { return false; }
 };
 
 } // namespace Statistics
