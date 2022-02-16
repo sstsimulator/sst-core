@@ -8,10 +8,6 @@ import sst
 # as need be to see the operation of the various commands
 ########################################################################
 
-# Define SST core options
-sst.setProgramOption("timebase", "1 ps")
-sst.setProgramOption("stopAtCycle", "200ns")
-
 ########################################################################
 ########################################################################
 
@@ -20,12 +16,12 @@ sst.setProgramOption("stopAtCycle", "200ns")
 sst.setStatisticLoadLevel(7)
 
 # Set the desired Statistic Output (sst.statOutputConsole is default)
-#sst.setStatisticOutput("sst.statOutputConsole")
-#sst.setStatisticOutput("sst.statOutputTXT", {"filepath" : "./TestOutput.txt"
-#                                            })
-sst.setStatisticOutput("sst.statOutputCSV", {"filepath" : "./TestOutput.csv",
-			                                 "separator" : ", "
+sst.setStatisticOutput("sst.statOutputConsole")
+sst.setStatisticOutput("sst.statOutputTXT", {"filepath" : "./TestOutput.txt"
                                             })
+#sst.setStatisticOutput("sst.statOutputCSV", {"filepath" : "./TestOutput.csv",
+#			                                 "separator" : ", "
+#                                            })
 
 #sst.setStatisticOutputOptions({"outputtopheader" : "1",
 #                               "outputinlineheader" : "1",
@@ -45,15 +41,14 @@ sst.setStatisticOutput("sst.statOutputCSV", {"filepath" : "./TestOutput.csv",
 # RANK 0 Component + Statistic Enables
 
 # Define the simulation components
-StatExample0 = sst.Component("simpleStatisticsTest0", "coreTestElement.simpleStatisticsComponent")
-StatExample0.setRank(0)
+StatExample0 = sst.Component("simpleStatisticsTest0", "coreTestElement.StatisticsComponent.int")
 
 # Set Component Parameters
 StatExample0.addParams({
-      "rng" : """marsaglia""",
-      "count" : """100""",   # Change For number of 1ns clocks
-      "seed_w" : """1447""",
-      "seed_z" : """1053"""
+      "rng" : "marsaglia",
+      "count" : "100",   # Change For number of 1ns clocks
+      "seed_w" : "1447",
+      "seed_z" : "1053"
 })
 
 ## # Enable ALL Statistics for the Component to output at end of sim
@@ -92,7 +87,7 @@ StatExample0.addParams({
 # Enable Individual Statistics for the Component with separate rates
 StatExample0.enableStatistics([
       "stat1_U32"], {
-      "type":"sst.HistogramStatistic",
+      "type" : "sst.AccumulatorStatistic",
       "minvalue" : "10",
       "binwidth" : "10",
       "numbins"  : "41",
@@ -101,7 +96,7 @@ StatExample0.enableStatistics([
 
 StatExample0.enableStatistics([
       "stat2_U64"], {
-      "type":"sst.HistogramStatistic",
+      "type" : "sst.AccumulatorStatistic",
       "minvalue" : "1000",
       "binwidth" : "1000",
       "numbins"  : "17",
@@ -110,7 +105,7 @@ StatExample0.enableStatistics([
 
 StatExample0.enableStatistics([
       "stat3_I32"], {
-      "type":"sst.HistogramStatistic",
+      "type" : "sst.AccumulatorStatistic",
       "minvalue" : "-200",
       "binwidth" : "50",
       "numbins"  : "8",
@@ -119,26 +114,13 @@ StatExample0.enableStatistics([
 
 StatExample0.enableStatistics([
       "stat4_I64"], {
-      "type":"sst.HistogramStatistic",
+      "type" : "sst.AccumulatorStatistic",
       "minvalue" : "-9000",
       "binwidth" : "1000",
       "numbins"  : "18",
       "IncludeOutOfBounds" : "1",
       "rate":"50 ns"})
 
-StatExample0.enableStatistics([
-      "stat5_U32"], {
-      "type":"sst.AccumulatorStatistic",
-      "rate":"5 ns"
-      })
-
-StatExample0.enableStatistics([
-      "stat6_U64"], {
-      "type":"sst.AccumulatorStatistic",
-      "rate":"10 ns",
-      "startat":"35ns",
-      "stopat":"65ns"
-      })
 
 ########################################################################
 ########################################################################

@@ -30,7 +30,6 @@
 #include <tuple>
 
 // Statistic Output Objects
-#include "sst/core/statapi/statoutputconsole.h"
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/statapi/statoutputjson.h"
 #include "sst/core/statapi/statoutputtxt.h"

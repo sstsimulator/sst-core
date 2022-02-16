@@ -19,23 +19,14 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
-{
-    m_useCompression = outputParameters.find<bool>("compressed");
-    // Announce this output object's name
-    Output out       = Simulation::getSimulationOutput();
-    out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n", m_useCompression ? "Compressed" : "");
-    setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
-}
+StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) : StatisticFieldsOutput(outputParameters) {}
 
 bool
-StatisticOutputTxt::checkOutputParameters()
+StatisticOutputTextBase::checkOutputParameters()
 {
-    bool        foundKey;
-    std::string topHeaderFlag;
-    std::string inlineHeaderFlag;
-    std::string simTimeFlag;
-    std::string rankFlag;
+    bool foundKey;
+
+    const Params& params = getOutputParameters();
 
     // Review the output parameters and make sure they are correct, and
     // also setup internal variables
@@ -43,37 +34,42 @@ StatisticOutputTxt::checkOutputParameters()
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
     if ( true == foundKey ) { return false; }
-    m_FilePath           = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.txt");
-    topHeaderFlag        = getOutputParameters().find<std::string>("outputtopheader", "0");
-    inlineHeaderFlag     = getOutputParameters().find<std::string>("outputinlineheader", "1");
-    simTimeFlag          = getOutputParameters().find<std::string>("outputsimtime", "1");
-    rankFlag             = getOutputParameters().find<std::string>("outputrank", "1");
-    m_outputTopHeader    = ("1" == topHeaderFlag);
-    m_outputInlineHeader = ("1" == inlineHeaderFlag);
-    m_outputSimTime      = ("1" == simTimeFlag);
-    m_outputRank         = ("1" == rankFlag);
+    m_outputTopHeader    = params.find<bool>("outputtopheader", getOutputTopHeaderDefault());
+    m_outputInlineHeader = params.find<bool>("outputinlineheader", getOutputInlineHeaderDefault());
+    m_outputSimTime      = params.find<bool>("outputsimtime", getOutputSimTimeDefault());
+    m_outputRank         = params.find<bool>("outputrank", getOutputRankDefault());
 
-    // Get the parameters
-    m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.txt");
+    m_useCompression = false;
 
-    // Perform some checking on the parameters
-    if ( 0 == m_FilePath.length() ) {
-        // Filepath is zero length
-        return false;
+    if ( outputsToFile() ) {
+        m_FilePath = params.find<std::string>("filepath", getDefaultFileName());
+
+        // Perform some checking on the parameters
+        if ( 0 == m_FilePath.length() ) {
+            // Filepath is zero length
+            return false;
+        }
+
+        if ( supportsCompression() ) { m_useCompression = params.find<bool>("compressed", false); }
     }
 
     return true;
 }
 
 void
-StatisticOutputTxt::printUsage()
+StatisticOutputTextBase::printUsage()
 {
     // Display how to use this output object
     Output out("", 0, 0, Output::STDOUT);
-    out.output(" : Usage - Sends all statistic output to a Text File.\n");
+    out.output(" : Usage - Sends all statistic output to %s.\n", getUsageInfo().c_str());
     out.output(" : Parameters:\n");
     out.output(" : help = Force Statistic Output to display usage\n");
-    out.output(" : filePath = <Path to .txt file> - Default is ./StatisticOutput.txt\n");
+    if ( outputsToFile() ) {
+        out.output(" : filePath = <Path to file> - Default is %s\n", getDefaultFileName().c_str());
+        if ( supportsCompression() ) {
+            out.output(" : compressed = <0|1> - Compresses output file when enabled - Default is 0\n");
+        }
+    }
     out.output(" : outputtopheader = <0|1> - Output Header at Top - Default is 0\n");
     out.output(" : outputinlineheader = <0|1>  - Output Header inline - Default is 1\n");
     out.output(" : outputsimtime = 0 | 1 - Output Simulation Time - Default is 1\n");
@@ -81,7 +77,7 @@ StatisticOutputTxt::printUsage()
 }
 
 void
-StatisticOutputTxt::startOfSimulation()
+StatisticOutputTextBase::startOfSimulation()
 {
     StatisticFieldInfo*        statField;
     FieldInfoArray_t::iterator it_v;
@@ -106,7 +102,7 @@ StatisticOutputTxt::startOfSimulation()
     // Open the finalized filename
     if ( !openFile() ) return;
 
-    // Output a Top Header is requested to do so
+    // Output a Top Header if requested
     if ( true == m_outputTopHeader ) {
         // Add a Simulation Component to the front
         m_outputBuffer = "Component.Statistic";
@@ -143,19 +139,21 @@ StatisticOutputTxt::startOfSimulation()
 }
 
 void
-StatisticOutputTxt::endOfSimulation()
+StatisticOutputTextBase::endOfSimulation()
 {
     // Close the file
     closeFile();
 }
 
+
 void
-StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
+StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
 {
     char buffer[256];
 
     // Starting Output
-    m_outputBuffer.clear();
+    // m_outputBuffer.clear();
+    m_outputBuffer = getStartOutputPrefix();
 
     m_outputBuffer += statistic->getFullStatName();
     m_outputBuffer += " : ";
@@ -189,14 +187,15 @@ StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
 }
 
 void
-StatisticOutputTxt::implStopOutputEntries()
+StatisticOutputTextBase::implStopOutputEntries()
 {
     // Done with Output
     print("%s\n", m_outputBuffer.c_str());
 }
 
+
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -216,7 +215,7 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
 }
 
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -236,7 +235,7 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
 }
 
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -256,7 +255,7 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
 }
 
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -276,7 +275,7 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
 }
 
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, float data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -296,7 +295,7 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
 }
 
 void
-StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
+StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, double data)
 {
     char                buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -315,9 +314,15 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
     }
 }
 
+
 bool
-StatisticOutputTxt::openFile(void)
+StatisticOutputTextBase::openFile(void)
 {
+    if ( !outputsToFile() ) {
+        m_hFile = stdout;
+        return true;
+    }
+
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
@@ -349,8 +354,9 @@ StatisticOutputTxt::openFile(void)
 }
 
 void
-StatisticOutputTxt::closeFile(void)
+StatisticOutputTextBase::closeFile(void)
 {
+    if ( !outputsToFile() ) return;
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
         gzclose(m_gzFile);
@@ -362,7 +368,7 @@ StatisticOutputTxt::closeFile(void)
 }
 
 int
-StatisticOutputTxt::print(const char* fmt, ...)
+StatisticOutputTextBase::print(const char* fmt, ...)
 {
     int     res = 0;
     va_list args;
@@ -405,6 +411,24 @@ StatisticOutputTxt::print(const char* fmt, ...)
     }
     return res;
 }
+
+StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
+{
+    // Announce this output object's name
+    Output out = Simulation::getSimulationOutput();
+    out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n", m_useCompression ? "Compressed" : "");
+    setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
+}
+
+
+StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
+{
+    // Announce this output object's name
+    Output out = Simulation::getSimulationOutput();
+    out.verbose(CALL_INFO, 1, 0, " : StatisticOutputConsole enabled...\n");
+    setStatisticOutputName("StatisticOutputConsole");
+}
+
 
 } // namespace Statistics
 } // namespace SST

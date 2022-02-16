@@ -604,29 +604,31 @@ BaseComponent::configureCollectionMode(
 Statistics::StatisticBase*
 BaseComponent::createStatistic(
     Params& cpp_params, const Params& python_params, const std::string& name, const std::string& subId,
-    StatCreateFunction fxn)
+    bool check_load_level, StatCreateFunction fxn)
 {
     auto* engine = Statistics::StatisticProcessingEngine::getInstance();
 
-    uint8_t my_load_level = getStatisticLoadLevel();
-    uint8_t stat_load_level =
-        my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
-    if ( stat_load_level == 0 ) {
-        Simulation_impl::getSimulationOutput().verbose(
-            CALL_INFO, 1, 0,
-            " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
-            name.c_str());
-        return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
-    }
+    if ( check_load_level ) {
+        uint8_t my_load_level = getStatisticLoadLevel();
+        uint8_t stat_load_level =
+            my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
+        if ( stat_load_level == 0 ) {
+            Simulation_impl::getSimulationOutput().verbose(
+                CALL_INFO, 1, 0,
+                " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
+                name.c_str());
+            return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
+        }
 
-    uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
-    if ( stat_enable_level > stat_load_level ) {
-        Simulation_impl::getSimulationOutput().verbose(
-            CALL_INFO, 1, 0,
-            " Warning: Load Level %d is too low to enable Statistic '%s' "
-            "with Enable Level %d, statistic will not be enabled...\n",
-            int(stat_load_level), name.c_str(), int(stat_enable_level));
-        return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
+        uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
+        if ( stat_enable_level > stat_load_level ) {
+            Simulation_impl::getSimulationOutput().verbose(
+                CALL_INFO, 1, 0,
+                " Warning: Load Level %d is too low to enable Statistic '%s' "
+                "with Enable Level %d, statistic will not be enabled...\n",
+                int(stat_load_level), name.c_str(), int(stat_enable_level));
+            return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
+        }
     }
 
     // this is enabled
@@ -651,7 +653,7 @@ BaseComponent::createEnabledAllStatistic(
     }
 
     // a matching statistic was not found
-    auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, std::move(fxn));
+    auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, true, std::move(fxn));
     m_enabledAllStats[name][statSubId] = stat;
     return stat;
 }
@@ -678,7 +680,7 @@ BaseComponent::createExplicitlyEnabledStatistic(
         if ( iter != m_explicitlyEnabledSharedStats.end() ) { return iter->second; }
         else {
             // no subid
-            auto* stat                         = createStatistic(params, cfg.params, cfg.name, "", std::move(fxn));
+            auto* stat = createStatistic(params, cfg.params, cfg.name, "", false, std::move(fxn));
             m_explicitlyEnabledSharedStats[id] = stat;
             return stat;
         }
@@ -695,7 +697,7 @@ BaseComponent::createExplicitlyEnabledStatistic(
             }
         }
         // stat does not exist yet
-        auto* stat = createStatistic(params, cfg.params, name, statSubId, std::move(fxn));
+        auto* stat = createStatistic(params, cfg.params, name, statSubId, false, std::move(fxn));
         m_explicitlyEnabledUniqueStats[id][name][statSubId] = stat;
         return stat;
     }
