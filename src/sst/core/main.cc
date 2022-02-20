@@ -787,6 +787,7 @@ main(int argc, char* argv[])
                 Comms::send(dest, 0, your_ranks);
                 Comms::send(dest, 0, *your_graph);
                 your_ranks.clear();
+                delete your_graph;
             }
             else {
                 Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
@@ -804,12 +805,7 @@ main(int argc, char* argv[])
                 my_ranks.erase(mid, my_ranks.end());
 
                 // // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                // ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
-                ConfigGraph* your_graph;
-                if ( myRank.rank == 0 )
-                    your_graph = graph->splitGraph(my_ranks, your_ranks);
-                else
-                    your_graph = graph->getSubGraph(your_ranks);
+                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
 
                 uint32_t dest = *your_ranks.begin();
 
@@ -824,25 +820,12 @@ main(int argc, char* argv[])
         }
     }
 #endif
-    ////// End Broadcast Graph //////
 
+    ////// End Broadcast Graph //////
     if ( cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
 
 
-    // // Print the graph
-    // if ( myRank.rank == 0 ) {
-    //     std::cout << "Rank 0 graph:" << std::endl;
-    //     graph->print(std::cout);
-    // }
-    // Simulation_impl::barrier.wait();
-    // if ( myRank.rank == 1 ) {
-    //     std::cout << "Rank 1 graph:" << std::endl;
-    //     graph->print(std::cout);
-    // }
-    // Simulation_impl::barrier.wait();
-
     ///// Set up StatisticEngine /////
-
     SST::Statistics::StatisticProcessingEngine::init(graph);
 
     ///// End Set up StatisticEngine /////

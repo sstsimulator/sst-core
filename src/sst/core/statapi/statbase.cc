@@ -18,7 +18,6 @@
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/stathistogram.h"
 #include "sst/core/statapi/statnull.h"
-#include "sst/core/statapi/statoutputconsole.h"
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/statapi/statoutputjson.h"
 #include "sst/core/statapi/statoutputtxt.h"
@@ -37,8 +36,7 @@ StatisticBase::StatisticBase(
 
     initializeProperties();
 
-    m_resetCountOnOutput = statParams.find<bool>("resetOnRead", false);
-    m_clearDataOnOutput  = statParams.find<bool>("resetOnRead", false);
+    m_clearDataOnOutput = statParams.find<bool>("resetOnOutput", false);
 }
 
 const std::vector<ElementInfoParam>&
@@ -74,6 +72,7 @@ void
 StatisticBase::incrementCollectionCount(uint64_t increment)
 {
     m_currentCollectionCount += increment;
+    m_outputCollectionCount += increment;
     checkEventForOutput();
 }
 
@@ -81,13 +80,14 @@ void
 StatisticBase::setCollectionCount(uint64_t newCount)
 {
     m_currentCollectionCount = newCount;
+    m_outputCollectionCount  = newCount;
     checkEventForOutput();
 }
 
 void
 StatisticBase::resetCollectionCount()
 {
-    m_currentCollectionCount = 0;
+    m_outputCollectionCount = 0;
 }
 
 void
@@ -126,6 +126,7 @@ StatisticBase::initializeProperties()
     m_statEnabled              = true;
     m_outputEnabled            = true;
     m_currentCollectionCount   = 0;
+    m_outputCollectionCount    = 0;
     m_collectionCountLimit     = 100;
     m_resetCountOnOutput       = false;
     m_clearDataOnOutput        = false;
@@ -142,7 +143,7 @@ StatisticBase::initializeProperties()
 void
 StatisticBase::checkEventForOutput()
 {
-    if ( (m_registeredCollectionMode == STAT_MODE_COUNT) && (m_currentCollectionCount >= m_collectionCountLimit) &&
+    if ( (m_registeredCollectionMode == STAT_MODE_COUNT) && (m_outputCollectionCount >= m_collectionCountLimit) &&
          (1 <= m_collectionCountLimit) ) {
         // Dont output if CountLimit is zero
         StatisticProcessingEngine::getInstance()->performStatisticOutput(this);

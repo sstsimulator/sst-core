@@ -183,6 +183,10 @@ ConfigComponent::print(std::ostream& os) const
     os << std::endl;
     os << "  Params:" << std::endl;
     params.print_all_params(os, "    ");
+    os << "  statLoadLevel = " << (uint32_t)statLoadLevel << std::endl;
+    os << "  enabledAllStats = " << enabledAllStats << std::endl;
+    os << "    Params:" << std::endl;
+    allStatConfig.params.print_all_params(os, "      ");
     os << "  Statistics:" << std::endl;
     for ( auto& pair : enabledStatNames ) {
         os << "    " << pair.first << std::endl;
@@ -211,6 +215,7 @@ ConfigComponent::cloneWithoutLinks(ConfigGraph* new_graph) const
     ret->statistics       = statistics;
     ret->enabledStatNames = enabledStatNames;
     ret->enabledAllStats  = enabledAllStats;
+    ret->allStatConfig    = allStatConfig;
     ret->coords           = coords;
     ret->nextSubID        = nextSubID;
     ret->graph            = new_graph;
@@ -356,7 +361,6 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
             sc->enableStatistic(statisticName, params, true);
         }
     }
-
     StatisticId_t stat_id;
     if ( statisticName == STATALLFLAG ) {
         // Special sentinel id for enable all

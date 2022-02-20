@@ -1,0 +1,500 @@
+WARNING: Building component "StatGlobal0" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1046, m_w = 1440
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGlobal1" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1047, m_w = 1441
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic0" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1053, m_w = 1447
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic1" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1054, m_w = 1448
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic2" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1055, m_w = 1449
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic3" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1056, m_w = 1450
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic4" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1057, m_w = 1451
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic5" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1058, m_w = 1452
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic6" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1059, m_w = 1453
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic7" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1060, m_w = 1454
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic8" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1061, m_w = 1455
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic9" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1062, m_w = 1456
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatBasic10" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatType0" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatType1" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatType2" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatObjComp0" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1064, m_w = 1458
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatObjComp1" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1065, m_w = 1459
+REGISTER CLOCK #1 at 1 ns
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1034; SumSQ.u32 = 343326; Count.u64 = 5; Min.u32 = 2; Max.u32 = 376; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1115; SumSQ.u32 = 302501; Count.u64 = 5; Min.u32 = 112; Max.u32 = 358; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 6000; Sum.u32 = 1290; SumSQ.u32 = 344048; Count.u64 = 6; Min.u32 = 19; Max.u32 = 361; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 6000; Sum.u32 = 1067; SumSQ.u32 = 313423; Count.u64 = 6; Min.u32 = 3; Max.u32 = 377; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 7000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 7000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 8000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 8000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 8000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 8000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 8000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 8000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 9000; Sum.u32 = 2300; SumSQ.u32 = 676666; Count.u64 = 9; Min.u32 = 141; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 9000; Sum.i32 = -900; SumSQ.i32 = 153622; Count.u64 = 9; Min.i32 = -208; Max.i32 = 13; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 9000; Sum.u32 = 1179; SumSQ.u32 = 335817; Count.u64 = 9; Min.u32 = 11; Max.u32 = 409; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 9000; Sum.i32 = 62; SumSQ.i32 = 96820; Count.u64 = 9; Min.i32 = -197; Max.i32 = 207; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 10000; Sum.u64 = 74090; SumSQ.u64 = 922123244; Count.u64 = 10; Min.u64 = 597; Max.u64 = 18135; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 10000; Sum.u64 = 93640; SumSQ.u64 = 1210492610; Count.u64 = 10; Min.u64 = 1850; Max.u64 = 18310; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 10000; Sum.u32 = 1543; SumSQ.u32 = 433691; Count.u64 = 10; Min.u32 = 2; Max.u32 = 376; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 10000; Sum.u32 = 2345; SumSQ.u32 = 653347; Count.u64 = 10; Min.u32 = 82; Max.u32 = 362; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 11000; Sum.u64 = 119852; SumSQ.u64 = 1569266132; Count.u64 = 11; Min.u64 = 764; Max.u64 = 17380; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 11000; Sum.u64 = 125187; SumSQ.u64 = 1699663351; Count.u64 = 11; Min.u64 = 1599; Max.u64 = 18262; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 12000; Sum.u32 = 2745; SumSQ.u32 = 723463; Count.u64 = 12; Min.u32 = 19; Max.u32 = 361; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 12000; Sum.u32 = 2268; SumSQ.u32 = 611558; Count.u64 = 12; Min.u32 = 3; Max.u32 = 377; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 12000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 12000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 14000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 14000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 15000; Sum.u32 = 2556; SumSQ.u32 = 669402; Count.u64 = 15; Min.u32 = 2; Max.u32 = 376; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 15000; Sum.u32 = 3035; SumSQ.u32 = 781265; Count.u64 = 15; Min.u32 = 39; Max.u32 = 362; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 16000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 16000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 16000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 16000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 16000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 16000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 16000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 16000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 16000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 16000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 17000; Sum.f64 = 9513.015707; SumSQ.f64 = 6513824.206790; Count.u64 = 17; Min.f64 = 127.958510; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 17000; Sum.f64 = 14768.265708; SumSQ.f64 = 8487485.423916; Count.u64 = 34; Min.f64 = 7.004999; Max.f64 = 898.115478; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 3921; SumSQ.u32 = 1108143; Count.u64 = 18; Min.u32 = 19; Max.u32 = 418; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 4614; SumSQ.u32 = 1417534; Count.u64 = 18; Min.u32 = 66; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 18000; Sum.i32 = -737; SumSQ.i32 = 304687; Count.u64 = 18; Min.i32 = -208; Max.i32 = 198; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 3752; SumSQ.u32 = 1067916; Count.u64 = 18; Min.u32 = 3; Max.u32 = 418; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 3393; SumSQ.u32 = 1033865; Count.u64 = 18; Min.u32 = 11; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 18000; Sum.i32 = -473; SumSQ.i32 = 198009; Count.u64 = 18; Min.i32 = -197; Max.i32 = 207; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 2848; SumSQ.u32 = 683816; Count.u64 = 20; Min.u32 = 22; Max.u32 = 399; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 20000; Sum.i32 = 86; SumSQ.i32 = 159900; Count.u64 = 20; Min.i32 = -147; Max.i32 = 208; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 3786; SumSQ.u32 = 886820; Count.u64 = 20; Min.u32 = 12; Max.u32 = 360; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 20000; Sum.i32 = 1793; SumSQ.i32 = 352839; Count.u64 = 20; Min.i32 = -148; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 4080; SumSQ.u32 = 1221740; Count.u64 = 20; Min.u32 = 3; Max.u32 = 415; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 20000; Sum.u64 = 193206; SumSQ.u64 = 2269253556; Count.u64 = 20; Min.u64 = 1371; Max.u64 = 18068; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 20000; Sum.f32 = 10008.867188; SumSQ.f32 = 6729315.500000; Count.u64 = 20; Min.f32 = 32.204533; Max.f32 = 980.887878; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 20000; Sum.f32 = 10008.867188; SumSQ.f32 = 6729315.500000; Count.u64 = 20; Min.f32 = 32.204533; Max.f32 = 980.887878; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 20000; Sum.f32 = 10008.867188; SumSQ.f32 = 6729315.500000; Count.u64 = 20; Min.f32 = 32.204533; Max.f32 = 980.887878; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 20000; Sum.f64 = 12564.773484; SumSQ.f64 = 9126549.787616; Count.u64 = 20; Min.f64 = 189.609323; Max.f64 = 986.971473; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 20000; Sum.u64 = 60663; SumSQ.u64 = 533573251; Count.u64 = 10; Min.u64 = 706; Max.u64 = 12505; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 20000; Sum.u64 = 83718; SumSQ.u64 = 870057880; Count.u64 = 10; Min.u64 = 781; Max.u64 = 14429; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 3921; SumSQ.u32 = 1099167; Count.u64 = 20; Min.u32 = 2; Max.u32 = 386; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 3997; SumSQ.u32 = 1063039; Count.u64 = 20; Min.u32 = 39; Max.u32 = 412; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 21000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 21000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 22000; Sum.u64 = 87468; SumSQ.u64 = 964315444; Count.u64 = 11; Min.u64 = 289; Max.u64 = 17765; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 22000; Sum.u64 = 81027; SumSQ.u64 = 848937845; Count.u64 = 11; Min.u64 = 928; Max.u64 = 15491; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 24000; Sum.u32 = 5097; SumSQ.u32 = 1461725; Count.u64 = 24; Min.u32 = 19; Max.u32 = 424; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 24000; Sum.u32 = 5147; SumSQ.u32 = 1474327; Count.u64 = 24; Min.u32 = 3; Max.u32 = 418; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 24000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 24000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 24000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 24000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 24000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 24000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 24000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 24000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic9.stat1_U32.1 : Accumulator : SimTime = 25000; Sum.u32 = 5617; SumSQ.u32 = 1623209; Count.u64 = 25; Min.u32 = 6; Max.u32 = 414; 
+ StatBasic9.stat2_U64.2 : Accumulator : SimTime = 25000; Sum.u64 = 228537; SumSQ.u64 = 2796611493; Count.u64 = 25; Min.u64 = 1193; Max.u64 = 17579; 
+ StatBasic9.stat3_I32.3 : Accumulator : SimTime = 25000; Sum.i32 = -639; SumSQ.i32 = 426059; Count.u64 = 25; Min.i32 = -206; Max.i32 = 183; 
+ StatBasic9.stat4_I64.4 : Accumulator : SimTime = 25000; Sum.i64 = 1609; SumSQ.i64 = 660487811; Count.u64 = 25; Min.i64 = -7873; Max.i64 = 8738; 
+ StatBasic10.stat1_U32.1 : Accumulator : SimTime = 25000; Sum.u32 = 4174; SumSQ.u32 = 1021068; Count.u64 = 25; Min.u32 = 23; Max.u32 = 421; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 25000; Sum.u32 = 4675; SumSQ.u32 = 1255569; Count.u64 = 25; Min.u32 = 2; Max.u32 = 386; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 25000; Sum.u32 = 5749; SumSQ.u32 = 1694377; Count.u64 = 25; Min.u32 = 39; Max.u32 = 415; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 27000; Sum.u32 = 6789; SumSQ.u32 = 2044705; Count.u64 = 27; Min.u32 = 2; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 27000; Sum.i32 = -715; SumSQ.i32 = 445053; Count.u64 = 27; Min.i32 = -208; Max.i32 = 204; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 27000; Sum.u32 = 5024; SumSQ.u32 = 1503048; Count.u64 = 27; Min.u32 = 11; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 27000; Sum.i32 = -476; SumSQ.i32 = 373154; Count.u64 = 27; Min.i32 = -197; Max.i32 = 207; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 28000; Sum.i32 = -454; SumSQ.i32 = 69796; Count.u64 = 3; Min.i32 = -172; Max.i32 = -126; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 28000; Sum.i32 = 333; SumSQ.i32 = 73709; Count.u64 = 3; Min.i32 = -45; Max.i32 = 200; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 30000; Sum.u32 = 6281; SumSQ.u32 = 1807111; Count.u64 = 30; Min.u32 = 19; Max.u32 = 424; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 30000; Sum.u32 = 6889; SumSQ.u32 = 2080027; Count.u64 = 30; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 30000; Sum.u64 = 97083; SumSQ.u64 = 1137126077; Count.u64 = 10; Min.u64 = 920; Max.u64 = 15755; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 30000; Sum.u64 = 75244; SumSQ.u64 = 920462086; Count.u64 = 10; Min.u64 = 1322; Max.u64 = 17239; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 30000; Sum.u32 = 6149; SumSQ.u32 = 1736239; Count.u64 = 30; Min.u32 = 2; Max.u32 = 386; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 30000; Sum.u32 = 6554; SumSQ.u32 = 1883240; Count.u64 = 30; Min.u32 = 24; Max.u32 = 415; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 92334; SumSQ.u64 = 1291424300; Count.u64 = 7; Min.u64 = 7885; Max.u64 = 17371; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 32000; Sum.i64 = 16925; SumSQ.i64 = 229255021; Count.u64 = 7; Min.i64 = -5723; Max.i64 = 8382; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 50012; SumSQ.u64 = 503236394; Count.u64 = 7; Min.u64 = 1285; Max.u64 = 14583; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 32000; Sum.i64 = -2071; SumSQ.i64 = 125263489; Count.u64 = 7; Min.i64 = -5146; Max.i64 = 7628; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 32000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 32000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 32000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 32000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 33000; Sum.u64 = 96736; SumSQ.u64 = 1243559678; Count.u64 = 11; Min.u64 = 110; Max.u64 = 18189; 
+ StatBasic1.stat3_I32.3 : Accumulator : SimTime = 33000; Sum.i32 = -282; SumSQ.i32 = 133196; Count.u64 = 8; Min.i32 = -209; Max.i32 = 142; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 33000; Sum.u64 = 102702; SumSQ.u64 = 1290922584; Count.u64 = 11; Min.u64 = 1481; Max.u64 = 15905; 
+ StatBasic5.stat3_I32.3 : Accumulator : SimTime = 33000; Sum.i32 = -166; SumSQ.i32 = 155990; Count.u64 = 8; Min.i32 = -197; Max.i32 = 159; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 34000; Sum.f64 = 19538.341190; SumSQ.f64 = 14060074.680498; Count.u64 = 34; Min.f64 = 91.702411; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 34000; Sum.f64 = 29399.973587; SumSQ.f64 = 17214778.876699; Count.u64 = 68; Min.f64 = 7.004999; Max.f64 = 912.819521; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 35000; Sum.i32 = -762; SumSQ.i32 = 140748; Count.u64 = 10; Min.i32 = -172; Max.i32 = 89; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 35000; Sum.i32 = 347; SumSQ.i32 = 160619; Count.u64 = 10; Min.i32 = -124; Max.i32 = 200; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 35000; Sum.u32 = 7366; SumSQ.u32 = 2132930; Count.u64 = 35; Min.u32 = 2; Max.u32 = 420; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 35000; Sum.u32 = 7801; SumSQ.u32 = 2269095; Count.u64 = 35; Min.u32 = 24; Max.u32 = 415; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 36000; Sum.u32 = 8550; SumSQ.u32 = 2667940; Count.u64 = 36; Min.u32 = 19; Max.u32 = 424; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 36000; Sum.u32 = 8302; SumSQ.u32 = 2429868; Count.u64 = 36; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 36000; Sum.i32 = -491; SumSQ.i32 = 603315; Count.u64 = 36; Min.i32 = -208; Max.i32 = 204; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 36000; Sum.u32 = 8716; SumSQ.u32 = 2699406; Count.u64 = 36; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 36000; Sum.u32 = 6983; SumSQ.u32 = 1991483; Count.u64 = 36; Min.u32 = 11; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 36000; Sum.i32 = -1361; SumSQ.i32 = 536705; Count.u64 = 36; Min.i32 = -207; Max.i32 = 207; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 36000; Sum.i64 = -6135; SumSQ.i64 = 37638225; Count.u64 = 1; Min.i64 = -6135; Max.i64 = -6135; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 36000; Sum.i64 = -6789; SumSQ.i64 = 46090521; Count.u64 = 1; Min.i64 = -6789; Max.i64 = -6789; 
+ StatBasic3.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 118925; SumSQ.u64 = 1513080877; Count.u64 = 13; Min.u64 = 101; Max.u64 = 18343; 
+ StatBasic3.stat4_I64.4 : Accumulator : SimTime = 38000; Sum.i64 = 20400; SumSQ.i64 = 322663646; Count.u64 = 13; Min.i64 = -6626; Max.i64 = 9048; 
+ StatBasic7.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 140016; SumSQ.u64 = 1785120822; Count.u64 = 13; Min.u64 = 2101; Max.u64 = 17962; 
+ StatBasic7.stat4_I64.4 : Accumulator : SimTime = 38000; Sum.i64 = 9505; SumSQ.i64 = 470879403; Count.u64 = 13; Min.i64 = -8221; Max.i64 = 8226; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7233; SumSQ.u32 = 1849743; Count.u64 = 40; Min.u32 = 22; Max.u32 = 399; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 40000; Sum.i32 = 378; SumSQ.i32 = 420788; Count.u64 = 40; Min.i32 = -211; Max.i32 = 209; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7897; SumSQ.u32 = 1984671; Count.u64 = 40; Min.u32 = 12; Max.u32 = 424; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 40000; Sum.i32 = 1043; SumSQ.i32 = 650671; Count.u64 = 40; Min.i32 = -179; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 8063; SumSQ.u32 = 2383369; Count.u64 = 40; Min.u32 = 3; Max.u32 = 416; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 40000; Sum.u64 = 369029; SumSQ.u64 = 4314625263; Count.u64 = 40; Min.u64 = 512; Max.u64 = 18068; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 40000; Sum.f32 = 19690.707031; SumSQ.f32 = 13485016.000000; Count.u64 = 40; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 40000; Sum.f32 = 19690.707031; SumSQ.f32 = 13485016.000000; Count.u64 = 40; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 40000; Sum.f32 = 19690.707031; SumSQ.f32 = 13485016.000000; Count.u64 = 40; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 40000; Sum.f64 = 24104.831870; SumSQ.f64 = 17013517.956320; Count.u64 = 40; Min.f64 = 141.809469; Max.f64 = 986.971473; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 40000; Sum.u64 = 73086; SumSQ.u64 = 833314612; Count.u64 = 10; Min.u64 = 505; Max.u64 = 17447; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 40000; Sum.u64 = 85085; SumSQ.u64 = 1171288767; Count.u64 = 10; Min.u64 = 1341; Max.u64 = 17227; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 40000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 40000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 40000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 40000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 8196; SumSQ.u32 = 2330160; Count.u64 = 40; Min.u32 = 2; Max.u32 = 420; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 8805; SumSQ.u32 = 2512037; Count.u64 = 40; Min.u32 = 24; Max.u32 = 415; 
+ StatBasic1.stat3_I32.3 : Accumulator : SimTime = 41000; Sum.i32 = -379; SumSQ.i32 = 308235; Count.u64 = 16; Min.i32 = -212; Max.i32 = 154; 
+ StatBasic5.stat3_I32.3 : Accumulator : SimTime = 41000; Sum.i32 = -842; SumSQ.i32 = 282724; Count.u64 = 16; Min.i32 = -197; Max.i32 = 159; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 42000; Sum.u32 = 10047; SumSQ.u32 = 3170761; Count.u64 = 42; Min.u32 = 19; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 42000; Sum.u32 = 9752; SumSQ.u32 = 2932124; Count.u64 = 42; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 42000; Sum.i32 = -839; SumSQ.i32 = 235547; Count.u64 = 17; Min.i32 = -176; Max.i32 = 177; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 42000; Sum.i32 = 336; SumSQ.i32 = 274412; Count.u64 = 17; Min.i32 = -137; Max.i32 = 200; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 44000; Sum.u64 = 137545; SumSQ.u64 = 1853553153; Count.u64 = 11; Min.u64 = 4365; Max.u64 = 17258; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 44000; Sum.u64 = 94595; SumSQ.u64 = 1053356803; Count.u64 = 11; Min.u64 = 2479; Max.u64 = 16097; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 45000; Sum.u32 = 9994; SumSQ.u32 = 2962848; Count.u64 = 45; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 45000; Sum.i32 = -923; SumSQ.i32 = 710639; Count.u64 = 45; Min.i32 = -208; Max.i32 = 204; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 45000; Sum.u32 = 9289; SumSQ.u32 = 2672589; Count.u64 = 45; Min.u32 = 11; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 45000; Sum.i32 = -1230; SumSQ.i32 = 672456; Count.u64 = 45; Min.i32 = -207; Max.i32 = 207; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 45000; Sum.u32 = 9066; SumSQ.u32 = 2571646; Count.u64 = 45; Min.u32 = 2; Max.u32 = 420; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 45000; Sum.u32 = 10072; SumSQ.u32 = 2903740; Count.u64 = 45; Min.u32 = 24; Max.u32 = 423; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 48000; Sum.u32 = 11337; SumSQ.u32 = 3527989; Count.u64 = 48; Min.u32 = 11; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 48000; Sum.u32 = 11202; SumSQ.u32 = 3378392; Count.u64 = 48; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 48000; Sum.u64 = 127380; SumSQ.u64 = 1448288860; Count.u64 = 16; Min.u64 = 303; Max.u64 = 18057; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 3313; SumSQ.i64 = 615148795; Count.u64 = 16; Min.i64 = -9192; Max.i64 = 8684; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 48000; Sum.u64 = 196285; SumSQ.u64 = 2732226207; Count.u64 = 16; Min.u64 = 2275; Max.u64 = 17730; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = -19136; SumSQ.i64 = 536101308; Count.u64 = 16; Min.i64 = -7689; Max.i64 = 8517; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 22969; SumSQ.i64 = 165755379; Count.u64 = 12; Min.i64 = -3447; Max.i64 = 8133; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 27245; SumSQ.i64 = 385762573; Count.u64 = 12; Min.i64 = -7113; Max.i64 = 8843; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 48000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 48000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 48000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 48000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 48000; Sum.i32 = 0; SumSQ.i32 = 0; Count.u64 = 0; Min.i32 = 0; Max.i32 = 0; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic1.stat3_I32.3 : Accumulator : SimTime = 49000; Sum.i32 = -889; SumSQ.i32 = 388791; Count.u64 = 24; Min.i32 = -212; Max.i32 = 154; 
+ StatBasic1.stat4_I64.4 : Accumulator : SimTime = 49000; Sum.i64 = -25149; SumSQ.i64 = 517381441; Count.u64 = 14; Min.i64 = -8986; Max.i64 = 8891; 
+ StatBasic5.stat3_I32.3 : Accumulator : SimTime = 49000; Sum.i32 = -177; SumSQ.i32 = 438995; Count.u64 = 24; Min.i32 = -197; Max.i32 = 211; 
+ StatBasic5.stat4_I64.4 : Accumulator : SimTime = 49000; Sum.i64 = 6173; SumSQ.i64 = 401873843; Count.u64 = 14; Min.i64 = -7746; Max.i64 = 8637; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 49000; Sum.i32 = -809; SumSQ.i32 = 327855; Count.u64 = 24; Min.i32 = -176; Max.i32 = 178; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 49000; Sum.i32 = 66; SumSQ.i32 = 424244; Count.u64 = 24; Min.i32 = -209; Max.i32 = 200; 
+ StatBasic9.stat1_U32.1 : Accumulator : SimTime = 50000; Sum.u32 = 11186; SumSQ.u32 = 3286694; Count.u64 = 50; Min.u32 = 0; Max.u32 = 416; 
+ StatBasic9.stat2_U64.2 : Accumulator : SimTime = 50000; Sum.u64 = 432297; SumSQ.u64 = 5306955307; Count.u64 = 50; Min.u64 = 438; Max.u64 = 17912; 
+ StatBasic9.stat3_I32.3 : Accumulator : SimTime = 50000; Sum.i32 = -736; SumSQ.i32 = 713448; Count.u64 = 50; Min.i32 = -206; Max.i32 = 209; 
+ StatBasic9.stat4_I64.4 : Accumulator : SimTime = 50000; Sum.i64 = -19662; SumSQ.i64 = 1464436806; Count.u64 = 50; Min.i64 = -7902; Max.i64 = 8738; 
+ StatBasic10.stat1_U32.1 : Accumulator : SimTime = 50000; Sum.u32 = 9299; SumSQ.u32 = 2427129; Count.u64 = 50; Min.u32 = 10; Max.u32 = 421; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 50000; Sum.u64 = 108112; SumSQ.u64 = 1663239656; Count.u64 = 10; Min.u64 = 12; Max.u64 = 18150; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 50000; Sum.u64 = 72083; SumSQ.u64 = 651791967; Count.u64 = 10; Min.u64 = 2386; Max.u64 = 13817; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 50000; Sum.u32 = 10175; SumSQ.u32 = 2847881; Count.u64 = 50; Min.u32 = 2; Max.u32 = 420; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 50000; Sum.u32 = 10979; SumSQ.u32 = 3141011; Count.u64 = 50; Min.u32 = 24; Max.u32 = 423; 
+ StatBasic3.stat2_U64.2 : Accumulator : SimTime = 51000; Sum.u64 = 126389; SumSQ.u64 = 1482491073; Count.u64 = 13; Min.u64 = 187; Max.u64 = 16027; 
+ StatBasic3.stat4_I64.4 : Accumulator : SimTime = 51000; Sum.i64 = -16167; SumSQ.i64 = 346998035; Count.u64 = 13; Min.i64 = -8062; Max.i64 = 8939; 
+ StatBasic7.stat2_U64.2 : Accumulator : SimTime = 51000; Sum.u64 = 102132; SumSQ.u64 = 1234761528; Count.u64 = 13; Min.u64 = 330; Max.u64 = 17224; 
+ StatBasic7.stat4_I64.4 : Accumulator : SimTime = 51000; Sum.i64 = 12227; SumSQ.i64 = 284553741; Count.u64 = 13; Min.i64 = -5453; Max.i64 = 8335; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 51000; Sum.f64 = 26914.986017; SumSQ.f64 = 18371459.555891; Count.u64 = 51; Min.f64 = 91.702411; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 51000; Sum.f64 = 44539.250475; SumSQ.f64 = 25758958.935143; Count.u64 = 102; Min.f64 = 7.004999; Max.f64 = 974.368582; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 54000; Sum.u32 = 12531; SumSQ.u32 = 3807913; Count.u64 = 54; Min.u32 = 11; Max.u32 = 426; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 54000; Sum.u32 = 12120; SumSQ.u32 = 3519068; Count.u64 = 54; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 54000; Sum.i32 = -1106; SumSQ.i32 = 791132; Count.u64 = 54; Min.i32 = -208; Max.i32 = 204; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 54000; Sum.u32 = 12138; SumSQ.u32 = 3620420; Count.u64 = 54; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 54000; Sum.u32 = 10867; SumSQ.u32 = 3052577; Count.u64 = 54; Min.u32 = 2; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 54000; Sum.i32 = -1366; SumSQ.i32 = 823488; Count.u64 = 54; Min.i32 = -207; Max.i32 = 207; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 55000; Sum.u64 = 89533; SumSQ.u64 = 866615103; Count.u64 = 11; Min.u64 = 2485; Max.u64 = 14312; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 55000; Sum.u64 = 81733; SumSQ.u64 = 892158643; Count.u64 = 11; Min.u64 = 1398; Max.u64 = 16008; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 55000; Sum.u32 = 11225; SumSQ.u32 = 3132165; Count.u64 = 55; Min.u32 = 2; Max.u32 = 420; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 55000; Sum.u32 = 12311; SumSQ.u32 = 3527903; Count.u64 = 55; Min.u32 = 24; Max.u32 = 423; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 56000; Sum.u32 = 1254; SumSQ.u32 = 363254; Count.u64 = 6; Min.u32 = 26; Max.u32 = 374; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 56000; Sum.u64 = 46051; SumSQ.u64 = 438083031; Count.u64 = 6; Min.u64 = 784; Max.u64 = 11796; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 56000; Sum.u32 = 1139; SumSQ.u32 = 359291; Count.u64 = 6; Min.u32 = 31; Max.u32 = 415; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 56000; Sum.u64 = 51950; SumSQ.u64 = 557787504; Count.u64 = 6; Min.u64 = 4959; Max.u64 = 15200; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 56000; Sum.i32 = -274; SumSQ.i32 = 79970; Count.u64 = 6; Min.i32 = -190; Max.i32 = 118; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 56000; Sum.i64 = 11978; SumSQ.i64 = 234838356; Count.u64 = 6; Min.i64 = -9173; Max.i64 = 8145; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 56000; Sum.i32 = -465; SumSQ.i32 = 476753; Count.u64 = 31; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 56000; Sum.i32 = 264; SumSQ.i32 = 463384; Count.u64 = 31; Min.i32 = -209; Max.i32 = 200; 
+ StatBasic1.stat3_I32.3 : Accumulator : SimTime = 57000; Sum.i32 = -1423; SumSQ.i32 = 569767; Count.u64 = 32; Min.i32 = -212; Max.i32 = 154; 
+ StatBasic5.stat3_I32.3 : Accumulator : SimTime = 57000; Sum.i32 = 103; SumSQ.i32 = 540565; Count.u64 = 32; Min.i32 = -197; Max.i32 = 211; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13595; SumSQ.u32 = 4125183; Count.u64 = 60; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13196; SumSQ.u32 = 3841648; Count.u64 = 60; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13171; SumSQ.u32 = 3850275; Count.u64 = 60; Min.u32 = 5; Max.u32 = 411; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 60000; Sum.i32 = -274; SumSQ.i32 = 705156; Count.u64 = 60; Min.i32 = -211; Max.i32 = 209; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13057; SumSQ.u32 = 3696729; Count.u64 = 60; Min.u32 = 12; Max.u32 = 429; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 60000; Sum.i32 = 667; SumSQ.i32 = 903669; Count.u64 = 60; Min.i32 = -185; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 12288; SumSQ.u32 = 3478448; Count.u64 = 60; Min.u32 = 3; Max.u32 = 422; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 60000; Sum.u64 = 546015; SumSQ.u64 = 6447289571; Count.u64 = 60; Min.u64 = 492; Max.u64 = 18141; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 60000; Sum.f32 = 28944.082031; SumSQ.f32 = 19143114.000000; Count.u64 = 60; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 60000; Sum.f32 = 28944.082031; SumSQ.f32 = 19143114.000000; Count.u64 = 60; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 60000; Sum.f32 = 28944.082031; SumSQ.f32 = 19143114.000000; Count.u64 = 60; Min.f32 = 32.204533; Max.f32 = 991.777710; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 60000; Sum.f64 = 34036.381771; SumSQ.f64 = 23402162.799084; Count.u64 = 60; Min.f64 = 19.207948; Max.f64 = 986.971473; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 60000; Sum.i64 = -21167; SumSQ.i64 = 306586861; Count.u64 = 12; Min.i64 = -7311; Max.i64 = 7141; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 60000; Sum.i64 = 1491; SumSQ.i64 = 257944781; Count.u64 = 12; Min.i64 = -5675; Max.i64 = 8901; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 60000; Sum.u64 = 110666; SumSQ.u64 = 1647812900; Count.u64 = 10; Min.u64 = 683; Max.u64 = 18394; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 60000; Sum.u64 = 112418; SumSQ.u64 = 1625684832; Count.u64 = 10; Min.u64 = 5; Max.u64 = 17966; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 12570; SumSQ.u32 = 3601502; Count.u64 = 60; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13259; SumSQ.u32 = 3821919; Count.u64 = 60; Min.u32 = 9; Max.u32 = 423; 
+ StatBasic1.stat4_I64.4 : Accumulator : SimTime = 63000; Sum.i64 = 24765; SumSQ.i64 = 439699337; Count.u64 = 14; Min.i64 = -8826; Max.i64 = 7674; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 63000; Sum.u32 = 13803; SumSQ.u32 = 3969323; Count.u64 = 63; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 63000; Sum.i32 = -1191; SumSQ.i32 = 924949; Count.u64 = 63; Min.i32 = -208; Max.i32 = 207; 
+ StatBasic5.stat4_I64.4 : Accumulator : SimTime = 63000; Sum.i64 = -2271; SumSQ.i64 = 399509111; Count.u64 = 14; Min.i64 = -7778; Max.i64 = 7908; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 63000; Sum.u32 = 13129; SumSQ.u32 = 3751097; Count.u64 = 63; Min.u32 = 2; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 63000; Sum.i32 = -834; SumSQ.i32 = 959128; Count.u64 = 63; Min.i32 = -207; Max.i32 = 207; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 63000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 63000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 104763; SumSQ.u64 = 1331200839; Count.u64 = 12; Min.u64 = 292; Max.u64 = 17553; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 64000; Sum.i64 = -9838; SumSQ.i64 = 365388098; Count.u64 = 12; Min.i64 = -6910; Max.i64 = 6915; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 123461; SumSQ.u64 = 1560118953; Count.u64 = 12; Min.u64 = 907; Max.u64 = 17536; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 64000; Sum.i64 = -13940; SumSQ.i64 = 492992052; Count.u64 = 12; Min.i64 = -8969; Max.i64 = 8710; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 64000; Sum.u32 = 3107; SumSQ.u32 = 992425; Count.u64 = 14; Min.u32 = 18; Max.u32 = 401; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 157124; SumSQ.u64 = 2054102916; Count.u64 = 14; Min.u64 = 784; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 64000; Sum.u32 = 2873; SumSQ.u32 = 853567; Count.u64 = 14; Min.u32 = 18; Max.u32 = 415; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 121275; SumSQ.u64 = 1385165133; Count.u64 = 14; Min.u64 = 631; Max.u64 = 17964; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 64000; Sum.i32 = -833; SumSQ.i32 = 189669; Count.u64 = 14; Min.i32 = -210; Max.i32 = 118; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 64000; Sum.i64 = 25380; SumSQ.i64 = 363474430; Count.u64 = 14; Min.i64 = -9173; Max.i64 = 8145; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 65000; Sum.u32 = 13858; SumSQ.u32 = 4018652; Count.u64 = 65; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 65000; Sum.u32 = 14469; SumSQ.u32 = 4172979; Count.u64 = 65; Min.u32 = 9; Max.u32 = 423; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 66000; Sum.u32 = 14777; SumSQ.u32 = 4488365; Count.u64 = 66; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 66000; Sum.u64 = 89895; SumSQ.u64 = 1090068775; Count.u64 = 11; Min.u64 = 454; Max.u64 = 17020; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 66000; Sum.u32 = 14766; SumSQ.u32 = 4345756; Count.u64 = 66; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 66000; Sum.u64 = 112581; SumSQ.u64 = 1329980677; Count.u64 = 11; Min.u64 = 5023; Max.u64 = 17994; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 68000; Sum.f64 = 36006.800379; SumSQ.f64 = 24619337.957006; Count.u64 = 68; Min.f64 = 51.186468; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 68000; Sum.f64 = 61485.267256; SumSQ.f64 = 36823273.785855; Count.u64 = 136; Min.f64 = 7.004999; Max.f64 = 987.278337; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 70000; Sum.u64 = 87612; SumSQ.u64 = 946031142; Count.u64 = 10; Min.u64 = 2126; Max.u64 = 15597; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 70000; Sum.u64 = 63470; SumSQ.u64 = 534910524; Count.u64 = 10; Min.u64 = 783; Max.u64 = 12108; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 70000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 70000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 70000; Sum.u32 = 14996; SumSQ.u32 = 4324258; Count.u64 = 70; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 70000; Sum.u32 = 14750; SumSQ.u32 = 4206738; Count.u64 = 70; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 15724; SumSQ.u32 = 4679936; Count.u64 = 72; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 15068; SumSQ.u32 = 4271822; Count.u64 = 72; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 72000; Sum.i32 = -1369; SumSQ.i32 = 1088557; Count.u64 = 72; Min.i32 = -208; Max.i32 = 207; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 16212; SumSQ.u32 = 4789386; Count.u64 = 72; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 15057; SumSQ.u32 = 4233057; Count.u64 = 72; Min.u32 = 2; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 72000; Sum.i32 = -711; SumSQ.i32 = 1076849; Count.u64 = 72; Min.i32 = -207; Max.i32 = 207; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 72000; Sum.i64 = 6657; SumSQ.i64 = 156227071; Count.u64 = 10; Min.i64 = -4445; Max.i64 = 8279; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 72000; Sum.i64 = 501; SumSQ.i64 = 289949189; Count.u64 = 10; Min.i64 = -8996; Max.i64 = 6667; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 4646; SumSQ.u32 = 1376430; Count.u64 = 22; Min.u32 = 18; Max.u32 = 401; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 72000; Sum.u64 = 239545; SumSQ.u64 = 3127407301; Count.u64 = 22; Min.u64 = 784; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 72000; Sum.u32 = 5006; SumSQ.u32 = 1562404; Count.u64 = 22; Min.u32 = 4; Max.u32 = 416; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 72000; Sum.u64 = 207870; SumSQ.u64 = 2627061398; Count.u64 = 22; Min.u64 = 631; Max.u64 = 17964; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 72000; Sum.i32 = -693; SumSQ.i32 = 280589; Count.u64 = 22; Min.i32 = -210; Max.i32 = 201; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 72000; Sum.i64 = 3852; SumSQ.i64 = 556596750; Count.u64 = 22; Min.i64 = -9173; Max.i64 = 8145; 
+ StatBasic9.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 16237; SumSQ.u32 = 4637323; Count.u64 = 75; Min.u32 = 0; Max.u32 = 416; 
+ StatBasic9.stat2_U64.2 : Accumulator : SimTime = 75000; Sum.u64 = 693124; SumSQ.u64 = 8766036464; Count.u64 = 75; Min.u64 = 438; Max.u64 = 18361; 
+ StatBasic9.stat3_I32.3 : Accumulator : SimTime = 75000; Sum.i32 = -584; SumSQ.i32 = 1175516; Count.u64 = 75; Min.i32 = -213; Max.i32 = 209; 
+ StatBasic9.stat4_I64.4 : Accumulator : SimTime = 75000; Sum.i64 = -26000; SumSQ.i64 = 1918927732; Count.u64 = 75; Min.i64 = -8771; Max.i64 = 8738; 
+ StatBasic10.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 14038; SumSQ.u32 = 3794754; Count.u64 = 75; Min.u32 = 10; Max.u32 = 426; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 15829; SumSQ.u32 = 4562285; Count.u64 = 75; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 15691; SumSQ.u32 = 4496853; Count.u64 = 75; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 77000; Sum.u64 = 92153; SumSQ.u64 = 1026593329; Count.u64 = 11; Min.u64 = 519; Max.u64 = 15783; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 77000; Sum.u64 = 89037; SumSQ.u64 = 982468099; Count.u64 = 11; Min.u64 = 123; Max.u64 = 16173; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 77000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 77000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 78000; Sum.u32 = 17141; SumSQ.u32 = 5074859; Count.u64 = 78; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 78000; Sum.u32 = 17902; SumSQ.u32 = 5287298; Count.u64 = 78; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 16755; SumSQ.u32 = 4683977; Count.u64 = 80; Min.u32 = 5; Max.u32 = 411; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 80000; Sum.i32 = -227; SumSQ.i32 = 985783; Count.u64 = 80; Min.i32 = -211; Max.i32 = 209; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 18211; SumSQ.u32 = 5177315; Count.u64 = 80; Min.u32 = 12; Max.u32 = 429; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 80000; Sum.i32 = -329; SumSQ.i32 = 1195911; Count.u64 = 80; Min.i32 = -205; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 16856; SumSQ.u32 = 4818118; Count.u64 = 80; Min.u32 = 3; Max.u32 = 422; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 741587; SumSQ.u64 = 8850121829; Count.u64 = 80; Min.u64 = 492; Max.u64 = 18141; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 80000; Sum.f32 = 38320.277344; SumSQ.f32 = 25604938.000000; Count.u64 = 80; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 80000; Sum.f32 = 38320.277344; SumSQ.f32 = 25604938.000000; Count.u64 = 80; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 80000; Sum.f32 = 38320.277344; SumSQ.f32 = 25604938.000000; Count.u64 = 80; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 80000; Sum.f64 = 44920.943663; SumSQ.f64 = 30945900.109154; Count.u64 = 80; Min.f64 = 10.698435; Max.f64 = 986.971473; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 80000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 80000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 111398; SumSQ.u64 = 1374246982; Count.u64 = 10; Min.u64 = 4257; Max.u64 = 15935; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 87704; SumSQ.u64 = 921998120; Count.u64 = 10; Min.u64 = 3579; Max.u64 = 18110; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 6404; SumSQ.u32 = 1854414; Count.u64 = 30; Min.u32 = 18; Max.u32 = 401; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 293284; SumSQ.u64 = 3680794608; Count.u64 = 30; Min.u64 = 784; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 6495; SumSQ.u32 = 1965013; Count.u64 = 30; Min.u32 = 4; Max.u32 = 416; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 280594; SumSQ.u64 = 3468602710; Count.u64 = 30; Min.u64 = 631; Max.u64 = 17964; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 80000; Sum.i32 = -283; SumSQ.i32 = 453771; Count.u64 = 30; Min.i32 = -210; Max.i32 = 201; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 80000; Sum.i64 = 23196; SumSQ.i64 = 810886310; Count.u64 = 30; Min.i64 = -9173; Max.i64 = 8382; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 17165; SumSQ.u32 = 4979851; Count.u64 = 80; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 16768; SumSQ.u32 = 4790640; Count.u64 = 80; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 81000; Sum.u32 = 17388; SumSQ.u32 = 4989548; Count.u64 = 81; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 81000; Sum.i32 = -2106; SumSQ.i32 = 1273674; Count.u64 = 81; Min.i32 = -210; Max.i32 = 207; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 81000; Sum.u32 = 16162; SumSQ.u32 = 4458874; Count.u64 = 81; Min.u32 = 1; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 81000; Sum.i32 = -1215; SumSQ.i32 = 1275543; Count.u64 = 81; Min.i32 = -211; Max.i32 = 207; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 84000; Sum.u32 = 18727; SumSQ.u32 = 5623039; Count.u64 = 84; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 84000; Sum.u32 = 19183; SumSQ.u32 = 5594353; Count.u64 = 84; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 84000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 84000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 84000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 84000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 85000; Sum.f64 = 44477.247584; SumSQ.f64 = 30255216.699193; Count.u64 = 85; Min.f64 = 1.528175; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 85000; Sum.f64 = 82908.103434; SumSQ.f64 = 52912007.573483; Count.u64 = 170; Min.f64 = 7.004999; Max.f64 = 1002.258493; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 85000; Sum.u32 = 18215; SumSQ.u32 = 5265009; Count.u64 = 85; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 85000; Sum.u32 = 17686; SumSQ.u32 = 5003762; Count.u64 = 85; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 88000; Sum.u64 = 75294; SumSQ.u64 = 759941428; Count.u64 = 11; Min.u64 = 315; Max.u64 = 14943; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 88000; Sum.u64 = 102715; SumSQ.u64 = 1124002067; Count.u64 = 11; Min.u64 = 1533; Max.u64 = 15525; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 88000; Sum.u32 = 8828; SumSQ.u32 = 2644196; Count.u64 = 38; Min.u32 = 18; Max.u32 = 429; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 88000; Sum.u64 = 358994; SumSQ.u64 = 4492192864; Count.u64 = 38; Min.u64 = 784; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 88000; Sum.u32 = 8441; SumSQ.u32 = 2570327; Count.u64 = 38; Min.u32 = 4; Max.u32 = 416; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 88000; Sum.u64 = 372751; SumSQ.u64 = 4719462263; Count.u64 = 38; Min.u64 = 631; Max.u64 = 18268; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 88000; Sum.i32 = -188; SumSQ.i32 = 612808; Count.u64 = 38; Min.i32 = -210; Max.i32 = 201; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 88000; Sum.i64 = 47540; SumSQ.i64 = 975954184; Count.u64 = 38; Min.i64 = -9173; Max.i64 = 8382; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 19786; SumSQ.u32 = 5902714; Count.u64 = 90; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 18966; SumSQ.u32 = 5441404; Count.u64 = 90; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 90000; Sum.i32 = -1815; SumSQ.i32 = 1335781; Count.u64 = 90; Min.i32 = -210; Max.i32 = 207; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 20099; SumSQ.u32 = 5824699; Count.u64 = 90; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 18000; SumSQ.u32 = 4910358; Count.u64 = 90; Min.u32 = 1; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 90000; Sum.i32 = -1377; SumSQ.i32 = 1499305; Count.u64 = 90; Min.i32 = -211; Max.i32 = 207; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 90000; Sum.u64 = 79347; SumSQ.u64 = 833793931; Count.u64 = 10; Min.u64 = 1972; Max.u64 = 17312; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 90000; Sum.u64 = 90430; SumSQ.u64 = 1034556904; Count.u64 = 10; Min.u64 = 618; Max.u64 = 16507; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 19765; SumSQ.u32 = 5790333; Count.u64 = 90; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 19022; SumSQ.u32 = 5445274; Count.u64 = 90; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 91000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 91000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 20679; SumSQ.u32 = 5998209; Count.u64 = 95; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 20110; SumSQ.u32 = 5738016; Count.u64 = 95; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 21605; SumSQ.u32 = 6545649; Count.u64 = 96; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 20811; SumSQ.u32 = 5927155; Count.u64 = 96; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 96000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 96000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 10990; SumSQ.u32 = 3318472; Count.u64 = 46; Min.u32 = 18; Max.u32 = 429; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 96000; Sum.u64 = 420319; SumSQ.u64 = 5227642717; Count.u64 = 46; Min.u64 = 155; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 9907; SumSQ.u32 = 2922037; Count.u64 = 46; Min.u32 = 4; Max.u32 = 416; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 96000; Sum.u64 = 436893; SumSQ.u64 = 5316379291; Count.u64 = 46; Min.u64 = 631; Max.u64 = 18268; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 96000; Sum.i32 = -708; SumSQ.i32 = 779546; Count.u64 = 46; Min.i32 = -210; Max.i32 = 201; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 33537; SumSQ.i64 = 1275048859; Count.u64 = 46; Min.i64 = -9173; Max.i64 = 8382; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 98000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 98000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 99000; Sum.u64 = 96400; SumSQ.u64 = 1250004698; Count.u64 = 11; Min.u64 = 456; Max.u64 = 16833; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 99000; Sum.u32 = 20401; SumSQ.u32 = 5845681; Count.u64 = 99; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 99000; Sum.i32 = -1457; SumSQ.i32 = 1439711; Count.u64 = 99; Min.i32 = -210; Max.i32 = 208; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 99000; Sum.u64 = 81241; SumSQ.u64 = 674376355; Count.u64 = 11; Min.u64 = 3469; Max.u64 = 11834; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 99000; Sum.u32 = 19703; SumSQ.u32 = 5364647; Count.u64 = 99; Min.u32 = 1; Max.u32 = 414; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 99000; Sum.i32 = -809; SumSQ.i32 = 1639265; Count.u64 = 99; Min.i32 = -211; Max.i32 = 207; 
+ StatBasic9.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 21197; SumSQ.u32 = 5947691; Count.u64 = 100; Min.u32 = 0; Max.u32 = 416; 
+ StatBasic9.stat2_U64.2 : Accumulator : SimTime = 100000; Sum.u64 = 901300; SumSQ.u64 = 11285863456; Count.u64 = 100; Min.u64 = 368; Max.u64 = 18361; 
+ StatBasic9.stat3_I32.3 : Accumulator : SimTime = 100000; Sum.i32 = 362; SumSQ.i32 = 1583018; Count.u64 = 100; Min.i32 = -213; Max.i32 = 209; 
+ StatBasic9.stat4_I64.4 : Accumulator : SimTime = 100000; Sum.i64 = -32295; SumSQ.i64 = 2624745579; Count.u64 = 100; Min.i64 = -9019; Max.i64 = 8738; 
+ StatBasic10.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 20119; SumSQ.u32 = 5647383; Count.u64 = 100; Min.u32 = 4; Max.u32 = 426; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 20884; SumSQ.u32 = 5858014; Count.u64 = 100; Min.u32 = 5; Max.u32 = 411; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 100000; Sum.i32 = -400; SumSQ.i32 = 1208420; Count.u64 = 100; Min.i32 = -211; Max.i32 = 209; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 23163; SumSQ.u32 = 6596549; Count.u64 = 100; Min.u32 = 12; Max.u32 = 429; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 100000; Sum.i32 = -1066; SumSQ.i32 = 1466138; Count.u64 = 100; Min.i32 = -210; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 19840; SumSQ.u32 = 5565520; Count.u64 = 100; Min.u32 = 2; Max.u32 = 425; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 100000; Sum.u64 = 925792; SumSQ.u64 = 11158188218; Count.u64 = 100; Min.u64 = 345; Max.u64 = 18335; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 100000; Sum.f32 = 51347.210938; SumSQ.f32 = 35348184.000000; Count.u64 = 100; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 100000; Sum.f32 = 51347.210938; SumSQ.f32 = 35348184.000000; Count.u64 = 100; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 100000; Sum.f32 = 51347.210938; SumSQ.f32 = 35348184.000000; Count.u64 = 100; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 100000; Sum.f64 = 56170.463279; SumSQ.f64 = 38652157.208446; Count.u64 = 100; Min.f64 = 10.698435; Max.f64 = 987.071161; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 100000; Sum.u64 = 95860; SumSQ.u64 = 1194275472; Count.u64 = 10; Min.u64 = 121; Max.u64 = 17873; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 100000; Sum.u64 = 65760; SumSQ.u64 = 809526334; Count.u64 = 10; Min.u64 = 254; Max.u64 = 17000; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 21739; SumSQ.u32 = 6255483; Count.u64 = 100; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 21738; SumSQ.u32 = 6306166; Count.u64 = 100; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic1.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 22686; SumSQ.u32 = 6853854; Count.u64 = 101; Min.u32 = 3; Max.u32 = 426; 
+ StatBasic1.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 15758; SumSQ.u64 = 159118804; Count.u64 = 2; Min.u64 = 3698; Max.u64 = 12060; 
+ StatBasic1.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -1378; SumSQ.i32 = 587524; Count.u64 = 35; Min.i32 = -212; Max.i32 = 154; 
+ StatBasic1.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 6832; SumSQ.i64 = 147883188; Count.u64 = 7; Min.i64 = -7005; Max.i64 = 8459; 
+ StatBasic3.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 21062; SumSQ.u32 = 6074654; Count.u64 = 101; Min.u32 = 0; Max.u32 = 427; 
+ StatBasic3.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 70413; SumSQ.u64 = 889113985; Count.u64 = 9; Min.u64 = 463; Max.u64 = 15782; 
+ StatBasic3.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -1607; SumSQ.i32 = 1454659; Count.u64 = 101; Min.i32 = -210; Max.i32 = 208; 
+ StatBasic3.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 14494; SumSQ.i64 = 292320228; Count.u64 = 9; Min.i64 = -8821; Max.i64 = 8868; 
+ StatBasic5.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 22132; SumSQ.u32 = 6338272; Count.u64 = 101; Min.u32 = 3; Max.u32 = 427; 
+ StatBasic5.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 13955; SumSQ.u64 = 98536877; Count.u64 = 2; Min.u64 = 6214; Max.u64 = 7741; 
+ StatBasic5.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = 189; SumSQ.i32 = 549195; Count.u64 = 35; Min.i32 = -197; Max.i32 = 211; 
+ StatBasic5.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = -14220; SumSQ.i64 = 187958902; Count.u64 = 7; Min.i64 = -7001; Max.i64 = 5124; 
+ StatBasic7.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 19775; SumSQ.u32 = 5367887; Count.u64 = 101; Min.u32 = 1; Max.u32 = 414; 
+ StatBasic7.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 60270; SumSQ.u64 = 598752446; Count.u64 = 9; Min.u64 = 466; Max.u64 = 14931; 
+ StatBasic7.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -658; SumSQ.i32 = 1683178; Count.u64 = 101; Min.i32 = -211; Max.i32 = 207; 
+ StatBasic7.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = -6592; SumSQ.i64 = 212190380; Count.u64 = 9; Min.i64 = -7345; Max.i64 = 8286; 
+ StatBasic0.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 21876; SumSQ.u32 = 6274252; Count.u64 = 101; Min.u32 = 2; Max.u32 = 429; 
+ StatBasic4.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 22100; SumSQ.u32 = 6437210; Count.u64 = 101; Min.u32 = 0; Max.u32 = 423; 
+ StatBasic0.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
+ StatBasic4.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 11664; SumSQ.u32 = 3454370; Count.u64 = 51; Min.u32 = 2; Max.u32 = 429; 
+ StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 442846; SumSQ.u64 = 5527892444; Count.u64 = 51; Min.u64 = 155; Max.u64 = 18422; 
+ StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 10817; SumSQ.u32 = 3202177; Count.u64 = 51; Min.u32 = 0; Max.u32 = 416; 
+ StatGlobal1.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 484192; SumSQ.u64 = 5839297154; Count.u64 = 51; Min.u64 = 631; Max.u64 = 18268; 
+ StatGlobal1.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -668; SumSQ.i32 = 836096; Count.u64 = 51; Min.i32 = -210; Max.i32 = 201; 
+ StatGlobal1.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 42199; SumSQ.i64 = 1360845285; Count.u64 = 51; Min.i64 = -9173; Max.i64 = 8382; 
+ StatBasic0.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 14444; SumSQ.u64 = 208629136; Count.u64 = 1; Min.u64 = 14444; Max.u64 = 14444; 
+ StatBasic4.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 13421; SumSQ.u64 = 180123241; Count.u64 = 1; Min.u64 = 13421; Max.u64 = 13421; 
+ StatBasic0.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic4.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic2.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic2.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic6.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
+ StatBasic6.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatObjComp0.statobj0 : Accumulator : SimTime = 101000; Sum.f64 = 51439.852985; SumSQ.f64 = 34793837.071369; Count.u64 = 101; Min.f64 = 1.528175; Max.f64 = 994.775331; 
+ StatObjComp1.statobj1 : Accumulator : SimTime = 101000; Sum.f64 = 100319.740555; SumSQ.f64 = 63746671.564526; Count.u64 = 202; Min.f64 = 7.004999; Max.f64 = 1002.258493; 
+ StatBasic2.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 20919; SumSQ.u32 = 5859239; Count.u64 = 101; Min.u32 = 5; Max.u32 = 411; 
+ StatBasic2.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -399; SumSQ.i32 = 1208421; Count.u64 = 101; Min.i32 = -211; Max.i32 = 209; 
+ StatBasic6.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 23542; SumSQ.u32 = 6740190; Count.u64 = 101; Min.u32 = 12; Max.u32 = 429; 
+ StatBasic6.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = -999; SumSQ.i32 = 1470627; Count.u64 = 101; Min.i32 = -210; Max.i32 = 214; 
+ StatBasic8.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 20117; SumSQ.u32 = 5642249; Count.u64 = 101; Min.u32 = 2; Max.u32 = 425; 
+ StatBasic8.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 943256; SumSQ.u64 = 11463179514; Count.u64 = 101; Min.u64 = 345; Max.u64 = 18335; 
+ StatType0.stat1_F32.1 : Accumulator : SimTime = 101000; Sum.f32 = 52210.410156; SumSQ.f32 = 36093296.000000; Count.u64 = 101; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType1.stat1_F32.1 : Accumulator : SimTime = 101000; Sum.f32 = 52210.410156; SumSQ.f32 = 36093296.000000; Count.u64 = 101; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat1_F32.1 : Accumulator : SimTime = 101000; Sum.f32 = 52210.410156; SumSQ.f32 = 36093296.000000; Count.u64 = 101; Min.f32 = 20.909016; Max.f32 = 991.777710; 
+ StatType2.stat2_F64.2 : Accumulator : SimTime = 101000; Sum.f64 = 56971.127803; SumSQ.f64 = 39293220.887972; Count.u64 = 101; Min.f64 = 10.698435; Max.f64 = 987.071161; 
+ StatBasic9.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 21578; SumSQ.u32 = 6092852; Count.u64 = 101; Min.u32 = 0; Max.u32 = 416; 
+ StatBasic9.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 908018; SumSQ.u64 = 11330994980; Count.u64 = 101; Min.u64 = 368; Max.u64 = 18361; 
+ StatBasic9.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = 498; SumSQ.i32 = 1601514; Count.u64 = 101; Min.i32 = -213; Max.i32 = 209; 
+ StatBasic9.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = -39836; SumSQ.i64 = 2681612260; Count.u64 = 101; Min.i64 = -9019; Max.i64 = 8738; 
+ StatBasic10.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 20294; SumSQ.u32 = 5678008; Count.u64 = 101; Min.u32 = 4; Max.u32 = 426; 
+Simulation is complete, simulated time: 101 ns

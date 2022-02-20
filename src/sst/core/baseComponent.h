@@ -287,7 +287,6 @@ protected:
     Statistics::Statistic<T>*
     createStatistic(SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
     {
-
         /* I would prefer to avoid this std::function with dynamic cast,
          * but the code is just a lot cleaner and avoids many unnecessary template instantiations
          * doing it this way. At some point in the future, we would need to clean up
@@ -300,7 +299,7 @@ protected:
             return engine->createStatistic<T>(comp, type, name, subId, params);
         };
 
-        // We follow two distinct paths depending on if it is enable all, verus explicitly enabled
+        // We follow two distinct paths depending on if it is enable all, versus explicitly enabled
         // Enable all is "scoped" to the (sub)component
         // Explicitly enabled stats are assigned component-unique IDs and can be shared across subcomponents
         // so creation and management happens in the parent component
@@ -682,7 +681,7 @@ private:
      */
     Statistics::StatisticBase* createStatistic(
         SST::Params& cpp_params, const SST::Params& python_params, const std::string& name,
-        const std::string& statSubId, StatCreateFunction create);
+        const std::string& statSubId, bool check_load_level, StatCreateFunction create);
 
     Statistics::StatisticBase* createEnabledAllStatistic(
         SST::Params& params, const std::string& name, const std::string& statSubId, StatCreateFunction create);

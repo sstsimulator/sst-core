@@ -273,6 +273,7 @@ private:
     Params                          m_statParams;
     StatMode_t                      m_registeredCollectionMode;
     uint64_t                        m_currentCollectionCount;
+    uint64_t                        m_outputCollectionCount;
     uint64_t                        m_collectionCountLimit;
     StatisticFieldInfo::fieldType_t m_statDataType;
 
