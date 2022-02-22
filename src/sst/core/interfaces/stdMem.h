@@ -274,7 +274,7 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID: " << id << ", Type: Read, Flags: [" << getFlagString() << "] PhysAddr: 0x" << std::hex << pAddr
+            str << "ID: " << id << ", Type: Read, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr
                 << ", VirtAddr: 0x" << vAddr;
             str << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec
                 << tid;
@@ -797,7 +797,7 @@ public:
 
         virtual Request* makeResponse() override { return new WriteResp(id, pDst, size, flags, vDst, iPtr, tid); }
 
-        virtual bool needsResponse() override { return posted; }
+        virtual bool needsResponse() override { return !posted; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
