@@ -3,6 +3,7 @@
 **/.deps/
 **/.dirstamp
 **/Makefile.in
+**~
 *.o
 .libs/
 .deps/
@@ -25,7 +26,8 @@ src/sst/core/sst-register
 src/sst/SST-*.pc
 src/sst/core/sst_config.h
 src/sst/core/sst_config.h.in
-src/sst/core/sst_config.h.in~
+src/sst/core/sst-test-core
+src/sst/core/sst-test-elements
 stamp-h1
 src/sst/sstsimulator.conf
 build_info.h
@@ -39,3 +41,4 @@ libtool
 *.pyc
 *.lo
 *.la
+sst_test_outputs/
