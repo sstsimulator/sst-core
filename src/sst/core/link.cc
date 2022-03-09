@@ -29,8 +29,7 @@ namespace SST {
 
 Link::Link(LinkId_t tag) :
     send_queue(nullptr),
-    pair_rFunctor(nullptr),
-    // defaultTimeBase( nullptr ),
+    delivery_info(0),
     defaultTimeBase(0),
     latency(1),
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
@@ -40,8 +39,7 @@ Link::Link(LinkId_t tag) :
 {}
 
 Link::Link() :
-    pair_rFunctor(nullptr),
-    // defaultTimeBase( nullptr ),
+    delivery_info(0),
     defaultTimeBase(0),
     latency(1),
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
@@ -52,7 +50,14 @@ Link::Link() :
 
 Link::~Link()
 {
-    if ( pair_rFunctor != nullptr ) delete pair_rFunctor;
+    // Check to see if my pair_link is nullptr.  If not, let the other
+    // link know I've been deleted
+    if ( pair_link != nullptr ) {
+        pair_link->pair_link = nullptr;
+        // If my pair link is a SYNC link,
+        // also need to delete it because no one else has a pointer to.
+        if ( SYNC == pair_link->type ) delete pair_link;
+    }
 }
 
 void
@@ -72,6 +77,11 @@ Link::finalizeConfiguration()
     else if ( POLL == type ) {
         pair_link->send_queue = new PollingLinkQueue();
     }
+
+    // If my pair link is a SYNC link, also need to call
+    // finalizeConfiguration on it since no one else has a pointer to
+    // it
+    if ( SYNC == pair_link->type ) pair_link->finalizeConfiguration();
 }
 
 void
@@ -87,6 +97,10 @@ Link::prepareForComplete()
     if ( POLL == type ) { delete pair_link->send_queue; }
 
     pair_link->send_queue = nullptr;
+
+    // If my pair link is a SYNC link, also need to call
+    // finalizeConfiguration on it
+    if ( SYNC == pair_link->type ) pair_link->prepareForComplete();
 }
 
 void
@@ -137,7 +151,7 @@ Link::setFunctor(Event::HandlerBase* functor)
     }
 
     type                     = HANDLER;
-    pair_link->pair_rFunctor = functor;
+    pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
 }
 
 void
@@ -149,8 +163,8 @@ Link::replaceFunctor(Event::HandlerBase* functor)
     }
 
     type = HANDLER;
-    if ( pair_link->pair_rFunctor ) delete pair_link->pair_rFunctor;
-    pair_link->pair_rFunctor = functor;
+    if ( pair_link->delivery_info ) delete reinterpret_cast<Link*>(pair_link->delivery_info);
+    pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
 }
 
 void
@@ -172,7 +186,7 @@ Link::send_impl(SimTime_t delay, Event* event)
 
     if ( event == nullptr ) { event = new NullEvent(); }
     event->setDeliveryTime(cycle);
-    event->setDeliveryInfo(tag, pair_rFunctor);
+    event->setDeliveryInfo(tag, delivery_info);
 
 #if __SST_DEBUG_EVENT_TRACKING__
     event->addSendComponent(comp, ctype, port);
@@ -217,8 +231,7 @@ Link::sendUntimedData(Event* data)
     if ( send_queue == nullptr ) { send_queue = new InitQueue(); }
     Simulation_impl::getSimulation()->untimed_msg_count++;
     data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
-    // Ignored if not hooked to sync queue
-    data->setDeliveryLink(tag, pair_link);
+    data->setDeliveryInfo(tag, delivery_info);
 
     send_queue->insert(data);
 #if __SST_DEBUG_EVENT_TRACKING__

@@ -465,7 +465,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             // For local, just register link with threadSync object so
             // it can map link_id to link*
             ActivityQueue* sync_q =
-                syncManager->registerLink(rank[remote], rank[local], clink->remote_tag, lp.getRight());
+                syncManager->registerLink(rank[remote], rank[local], clink->remote_tag, clink->name, lp.getRight());
 
             lp.getLeft()->send_queue = sync_q;
             lp.getRight()->setAsSyncLink();

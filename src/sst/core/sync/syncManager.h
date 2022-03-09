@@ -61,6 +61,8 @@ protected:
 
     void sendUntimedData_sync(Link* link, Event* data) { link->sendUntimedData_sync(data); }
 
+    void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
+
 private:
 };
 
@@ -83,8 +85,8 @@ public:
     TimeConverter* getMaxPeriod() { return max_period; }
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual void           registerLink(LinkId_t link_id, Link* link) = 0;
-    virtual ActivityQueue* getQueueForThread(int tid)                 = 0;
+    virtual void           registerLink(const std::string& name, Link* link)                = 0;
+    virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
 
 protected:
     SimTime_t      nextSyncTime;
@@ -95,6 +97,8 @@ protected:
     void prepareForCompleteInt(Link* link) { link->prepareForComplete(); }
 
     void sendUntimedData_sync(Link* link, Event* data) { link->sendUntimedData_sync(data); }
+
+    void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
 
 private:
 };
@@ -108,8 +112,9 @@ public:
     virtual ~SyncManager();
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link);
-    void           execute(void) override;
+    ActivityQueue* registerLink(
+        const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, const std::string& name, Link* link);
+    void execute(void) override;
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkUntimedData(std::atomic<int>& msg_count);

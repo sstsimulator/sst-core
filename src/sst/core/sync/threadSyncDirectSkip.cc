@@ -54,11 +54,11 @@ ThreadSyncDirectSkip::~ThreadSyncDirectSkip()
             CALL_INFO, 1, 0, "ThreadSyncDirectSkip total wait time: %lg seconds.\n", totalWaitTime);
 }
 
-ActivityQueue*
-ThreadSyncDirectSkip::getQueueForThread(int UNUSED(tid))
-{
-    return nullptr;
-}
+// ActivityQueue*
+// ThreadSyncDirectSkip::getQueueForThread(int UNUSED(tid))
+// {
+//     return nullptr;
+// }
 
 void
 ThreadSyncDirectSkip::after()

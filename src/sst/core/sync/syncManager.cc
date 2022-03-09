@@ -100,8 +100,11 @@ public:
     void prepareForComplete() override {}
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
-    ActivityQueue* getQueueForThread(int UNUSED(tid)) override { return nullptr; }
+    void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
+    ActivityQueue* registerRemoteLink(int UNUSED(tid), const std::string& UNUSED(name), Link* UNUSED(link)) override
+    {
+        return nullptr;
+    }
 };
 
 SyncManager::SyncManager(
@@ -158,7 +161,8 @@ SyncManager::~SyncManager() {}
 
 /** Register a Link which this Sync Object is responsible for */
 ActivityQueue*
-SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, Link* link)
+SyncManager::registerLink(
+    const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, const std::string& name, Link* link)
 {
     if ( to_rank == from_rank ) {
         return nullptr; // This should never happen
@@ -170,11 +174,11 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
         // side of the link
 
         // For the local ThreadSync, just need to register the link
-        threadSync->registerLink(remote_tag, link);
+        threadSync->registerLink(name, link);
 
         // Need to get target queue from the remote ThreadSync
         ThreadSync* remoteSync = Simulation_impl::instanceVec[to_rank.thread]->syncManager->threadSync;
-        return remoteSync->getQueueForThread(from_rank.thread);
+        return remoteSync->registerRemoteLink(from_rank.thread, name, link);
     }
     else {
         // Different rank.  Send info onto the RankSync

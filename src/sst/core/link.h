@@ -167,7 +167,7 @@ public:
     inline void deliverEvent(Event* event) const
     {
 #endif
-        (*pair_rFunctor)(event);
+        (*reinterpret_cast<Event::HandlerBase*>(delivery_info))(event);
     }
 
     /** Return the ID of this link
@@ -223,6 +223,11 @@ protected:
 
     void setAsSyncLink() { type = SYNC; }
 
+    /**
+       Set the delivery_info for the link
+     */
+    void setDeliveryInfo(uintptr_t info) { delivery_info = info; }
+
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
      * TimeConverter. I.e. the total delay is the link's delay + the
@@ -243,10 +248,15 @@ protected:
     /** Queue of events to be received by the owning component */
     ActivityQueue* send_queue;
 
-    /** Receive functor. This functor is set when the link is connected.
-      Determines what the receiver wants to be called
+    /** Holds the delivery information.  This is stored as a
+      uintptr_t, but is actually a pointer converted using
+      reinterpret_cast.  For links connected to a
+      Component/SubComponent, this holds a pointer to the delivery
+      functor.  For links connected to a Sync object, this holds a
+      pointer to the remote link to send the event on after
+      synchronization.
     */
-    Event::HandlerBase* pair_rFunctor;
+    uintptr_t delivery_info;
 
     /** Timebase used if no other timebase is specified. Used to specify
       the units for added delays when sending, such as in

@@ -56,8 +56,8 @@ Event::execute(void)
     SST_EVENT_PROFILE_START
 #endif
 
-        (*functor)
-    (this);
+        (*reinterpret_cast<HandlerBase*>(delivery_info))
+        (this);
 
 #if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
@@ -104,7 +104,7 @@ Event::generateUniqueId()
 void
 NullEvent::execute(void)
 {
-    (*functor)(nullptr);
+    (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
     delete this;
 }
 

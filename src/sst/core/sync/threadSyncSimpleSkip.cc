@@ -62,34 +62,52 @@ ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 }
 
 void
-ThreadSyncSimpleSkip::registerLink(LinkId_t link_id, Link* link)
+ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
 {
-    link_map[link_id] = link;
+    auto iter = link_map.find(name);
+    if ( iter == link_map.end() ) {
+        // I have initialized first, so just put the name and link in
+        // the map
+        link_map[name] = link;
+    }
+    else {
+        // I already have the remote info, so initialize the link data
+        Link* remote_link = iter->second;
+        setLinkDeliveryInfo(link, reinterpret_cast<uintptr_t>(remote_link));
+        link_map.erase(iter);
+    }
 }
 
 ActivityQueue*
-ThreadSyncSimpleSkip::getQueueForThread(int tid)
+ThreadSyncSimpleSkip::registerRemoteLink(int tid, const std::string& name, Link* link)
 {
+    auto iter = link_map.find(name);
+    if ( iter == link_map.end() ) {
+        // I have initialized first, so just put the name and link in
+        // the map
+        link_map[name] = link;
+    }
+    else {
+        // I already have the local info, so initialize the link data
+        Link* local_link = iter->second;
+        setLinkDeliveryInfo(local_link, reinterpret_cast<uintptr_t>(link));
+        link_map.erase(iter);
+    }
     return queues[tid];
 }
 
 void
 ThreadSyncSimpleSkip::before()
 {
+    SimTime_t current_cycle = sim->getCurrentSimCycle();
     // Empty all the queues and send events on the links
     for ( size_t i = 0; i < queues.size(); i++ ) {
         ThreadSyncQueue*        queue = queues[i];
         std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event* ev   = static_cast<Event*>(vec[j]);
-            auto   link = link_map.find(ev->getTag());
-            if ( link == link_map.end() ) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
-            }
-            else {
-                SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
-                link->second->send(delay, ev);
-            }
+            Event*    ev    = static_cast<Event*>(vec[j]);
+            SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+            ev->getDeliveryLink()->send(delay, ev);
         }
         queue->clear();
     }
@@ -127,14 +145,8 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
         ThreadSyncQueue*        queue = queues[i];
         std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event* ev   = static_cast<Event*>(vec[j]);
-            auto   link = link_map.find(ev->getTag());
-            if ( link == link_map.end() ) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
-            }
-            else {
-                sendUntimedData_sync(link->second, ev);
-            }
+            Event* ev = static_cast<Event*>(vec[j]);
+            sendUntimedData_sync(ev->getDeliveryLink(), ev);
         }
         queue->clear();
     }
