@@ -86,7 +86,6 @@ add_library(
   statapi/statgroup.cc
   statapi/statoutput.cc
   statapi/statfieldinfo.cc
-  statapi/statoutputconsole.cc
   statapi/statoutputtxt.cc
   statapi/statoutputcsv.cc
   statapi/statoutputjson.cc
