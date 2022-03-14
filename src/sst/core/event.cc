@@ -57,7 +57,7 @@ Event::execute(void)
 #endif
 
         (*reinterpret_cast<HandlerBase*>(delivery_info))
-        (this);
+    (this);
 
 #if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();

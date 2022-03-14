@@ -39,7 +39,7 @@ public:
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, Link* link) override;
+         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) override;
     void execute(int thread) override;
 
     /** Cause an exchange of Untimed Data to occur */
@@ -83,7 +83,8 @@ private:
 
     typedef std::map<RankInfo, comm_send_pair> comm_send_map_t;
     typedef std::map<RankInfo, comm_recv_pair> comm_recv_map_t;
-    typedef std::map<LinkId_t, Link*>          link_map_t;
+    // typedef std::map<LinkId_t, Link*>          link_map_t;
+    typedef std::map<std::string, uintptr_t>   link_map_t;
 
     // TimeConverter* period;
     comm_send_map_t comm_send_map;

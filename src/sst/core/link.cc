@@ -32,6 +32,7 @@ Link::Link(LinkId_t tag) :
     delivery_info(0),
     defaultTimeBase(0),
     latency(1),
+    pair_link(nullptr),
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
@@ -39,9 +40,11 @@ Link::Link(LinkId_t tag) :
 {}
 
 Link::Link() :
+    send_queue(nullptr),
     delivery_info(0),
     defaultTimeBase(0),
     latency(1),
+    pair_link(nullptr),
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
@@ -52,7 +55,7 @@ Link::~Link()
 {
     // Check to see if my pair_link is nullptr.  If not, let the other
     // link know I've been deleted
-    if ( pair_link != nullptr ) {
+    if ( pair_link != nullptr && pair_link != this ) {
         pair_link->pair_link = nullptr;
         // If my pair link is a SYNC link,
         // also need to delete it because no one else has a pointer to.

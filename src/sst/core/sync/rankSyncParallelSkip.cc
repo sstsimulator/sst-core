@@ -50,7 +50,7 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 ///// RankSyncParallelSkip class /////
 
 RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UNUSED(minPartTC)) :
-    RankSync(),
+    RankSync(num_ranks),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
     send_count(0),
@@ -80,11 +80,6 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
     }
     comm_recv_map.clear();
 
-    for ( link_map_t::iterator i = link_map.begin(); i != link_map.end(); ++i ) {
-        delete i->second;
-    }
-    link_map.clear();
-
     delete[] recv_count;
     delete[] link_send_queue;
 
@@ -95,7 +90,8 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
 }
 
 ActivityQueue*
-RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, Link* link)
+RankSyncParallelSkip::registerLink(
+    const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
 {
     // For sends, we track the remote rank and thread ID
     SyncQueue* queue;
@@ -121,7 +117,7 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
         comm_recv_map[remote_rank_local_thread].local_size   = 4096;
     }
 
-    link_map[remote_tag] = link;
+    link_maps[to_rank.rank][name] = reinterpret_cast<uintptr_t>(link);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif
@@ -131,10 +127,6 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
 void
 RankSyncParallelSkip::finalizeLinkConfigurations()
 {
-    for ( link_map_t::iterator i = link_map.begin(); i != link_map.end(); ++i ) {
-        finalizeConfiguration(i->second);
-    }
-
     // Set the size of the BoundedQueue that is the work queue for
     // serializations
     deserialize_queue.initialize(comm_recv_map.size());
@@ -144,11 +136,7 @@ RankSyncParallelSkip::finalizeLinkConfigurations()
 
 void
 RankSyncParallelSkip::prepareForComplete()
-{
-    for ( link_map_t::iterator i = link_map.begin(); i != link_map.end(); ++i ) {
-        prepareForCompleteInt(i->second);
-    }
-}
+{}
 
 uint64_t
 RankSyncParallelSkip::getDataSize() const
@@ -220,16 +208,9 @@ RankSyncParallelSkip::exchange_slave(int thread)
             my_recv_count--;
 
             for ( size_t i = 0; i < recv->activity_vec.size(); i++ ) {
-                Event*               ev   = static_cast<Event*>(recv->activity_vec[i]);
-                link_map_t::iterator link = link_map.find(ev->getTag());
-                if ( link == link_map.end() ) {
-                    Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
-                }
-                else {
-                    // Need to figure out what the "delay" is for this event.
-                    SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-                    link->second->send(delay, ev);
-                }
+                Event*    ev    = static_cast<Event*>(recv->activity_vec[i]);
+                SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+                ev->getDeliveryLink()->send(delay, ev);
             }
             recv->activity_vec.clear();
         }
@@ -459,14 +440,8 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
 
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
-            Event*               ev   = static_cast<Event*>(activities[j]);
-            link_map_t::iterator link = link_map.find(ev->getTag());
-            if ( link == link_map.end() ) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
-            }
-            else {
-                sendUntimedData_sync(link->second, ev);
-            }
+            Event* ev = static_cast<Event*>(activities[j]);
+            sendUntimedData_sync(ev->getDeliveryLink(), ev);
         }
     }
 

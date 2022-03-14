@@ -14,6 +14,7 @@
 #include "sst/core/sync/syncManager.h"
 
 #include "sst/core/exit.h"
+#include "sst/core/objectComms.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
@@ -43,12 +44,12 @@ SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
 class EmptyRankSync : public RankSync
 {
 public:
-    EmptyRankSync() { nextSyncTime = MAX_SIMTIME_T; }
+    EmptyRankSync(const RankInfo& num_ranks) : RankSync(num_ranks) { nextSyncTime = MAX_SIMTIME_T; }
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue* registerLink(
-        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id),
+        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), const std::string& UNUSED(name),
         Link* UNUSED(link)) override
     {
         return nullptr;
@@ -107,6 +108,51 @@ public:
     }
 };
 
+void
+RankSync::exchangeLinkInfo(uint32_t my_rank)
+{
+    // For now, we will simply have rank 0 exchange with everyone and
+    // then rank 1, etc.  Will look to optimize later (more
+    // parallelism in ranks sending)
+
+    // Need to exchange with each partner.  For those with lower
+    // ranks, I will recv first, then send.  For those with higher
+    // ranks, I will send first, then recv.
+    for ( uint32_t i = 0; i < my_rank; ++i ) {
+        // I'm the high rank, so recv is first
+        // std::map<std::string, uintptr_t> data;
+        std::vector<std::pair<std::string, uintptr_t>> data;
+
+        Comms::recv(i, 0, data);
+        Comms::send(i, 0, link_maps[i]);
+
+        // Process the data
+        for ( auto x : data ) {
+            Link* link = reinterpret_cast<Link*>(link_maps[i][x.first]);
+            link->pair_link->setDeliveryInfo(x.second);
+        }
+        data.clear();
+        link_maps[i].clear();
+    }
+
+    for ( uint32_t i = my_rank + 1; i < num_ranks.rank; ++i ) {
+        // I'm the low rank, so send it first
+        // std::map<std::string, uintptr_t> data;
+        std::vector<std::pair<std::string, uintptr_t>> data;
+
+        Comms::send(i, 0, link_maps[i]);
+        Comms::recv(i, 0, data);
+
+        // Process the data
+        for ( auto x : data ) {
+            Link* link = reinterpret_cast<Link*>(link_maps[i][x.first]);
+            link->pair_link->setDeliveryInfo(x.second);
+        }
+        data.clear();
+        link_maps[i].clear();
+    }
+}
+
 SyncManager::SyncManager(
     const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
     const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
@@ -126,13 +172,13 @@ SyncManager::SyncManager(
             b.resize(num_ranks.thread);
         }
         if ( min_part != MAX_SIMTIME_T ) {
-            if ( num_ranks.thread == 1 ) { rankSync = new RankSyncSerialSkip(/*num_ranks,*/ minPartTC); }
+            if ( num_ranks.thread == 1 ) { rankSync = new RankSyncSerialSkip(num_ranks, minPartTC); }
             else {
                 rankSync = new RankSyncParallelSkip(num_ranks, minPartTC);
             }
         }
         else {
-            rankSync = new EmptyRankSync();
+            rankSync = new EmptyRankSync(num_ranks);
         }
     }
 
@@ -161,8 +207,7 @@ SyncManager::~SyncManager() {}
 
 /** Register a Link which this Sync Object is responsible for */
 ActivityQueue*
-SyncManager::registerLink(
-    const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, const std::string& name, Link* link)
+SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
 {
     if ( to_rank == from_rank ) {
         return nullptr; // This should never happen
@@ -182,8 +227,14 @@ SyncManager::registerLink(
     }
     else {
         // Different rank.  Send info onto the RankSync
-        return rankSync->registerLink(to_rank, from_rank, remote_tag, link);
+        return rankSync->registerLink(to_rank, from_rank, name, link);
     }
+}
+
+void
+SyncManager::exchangeLinkInfo()
+{
+    rankSync->exchangeLinkInfo(rank.rank);
 }
 
 void
@@ -210,7 +261,6 @@ SyncManager::execute(void)
         // flushed into their respective TimeVortices.  We need to do
         // this to enable any skip ahead optimizations.
         threadSync->before();
-        // trace.getOutput().output(CALL_INFO, "Complete threadSync->before()\n");
 
         // Need to make sure everyone has made it through the mutex
         // and the min time computation is complete
@@ -281,7 +331,6 @@ SyncManager::execute(void)
 void
 SyncManager::exchangeLinkUntimedData(std::atomic<int>& msg_count)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     LinkUntimedBarrier[0].wait();
     threadSync->processLinkUntimedData();
     LinkUntimedBarrier[1].wait();

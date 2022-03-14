@@ -169,8 +169,9 @@ public:
      */
     void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
-    int prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
-    int performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
+    int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
+    int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
+    void exchangeLinkInfo();
 
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
     void setStopAtCycle(Config* cfg);

@@ -46,7 +46,6 @@ class ConfigLink : public SST::Core::Serialization::serializable
 {
 public:
     LinkId_t      id;             /*!< ID of this link */
-    LinkId_t      remote_tag;     /*!< Tag used to ensure remote events are delivered on correct link */
     std::string   name;           /*!< Name of this link */
     ComponentId_t component[2];   /*!< IDs of the connected components */
     std::string   port[2];        /*!< Names of the connected ports */
@@ -71,7 +70,6 @@ public:
     void print(std::ostream& os) const
     {
         os << "Link " << name << " (id = " << id << ")" << std::endl;
-        os << "  remote_tag = " << remote_tag << std::endl;
         os << "  component[0] = " << component[0] << std::endl;
         os << "  port[0] = " << port[0] << std::endl;
         os << "  latency[0] = " << latency[0] << std::endl;
@@ -86,7 +84,6 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         ser& id;
-        ser& remote_tag;
         ser& name;
         ser& component[0];
         ser& component[1];
@@ -103,7 +100,7 @@ public:
 
 private:
     friend class ConfigGraph;
-    ConfigLink(LinkId_t id) : id(id), remote_tag(id), no_cut(false)
+    ConfigLink(LinkId_t id) : id(id), no_cut(false)
     {
         order = 0;
 
@@ -112,7 +109,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    ConfigLink(LinkId_t id, const std::string& n) : id(id), remote_tag(id), no_cut(false)
+    ConfigLink(LinkId_t id, const std::string& n) : id(id), no_cut(false)
     {
         order = 0;
         name  = n;

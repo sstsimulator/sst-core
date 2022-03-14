@@ -198,8 +198,8 @@ public:
         Activity::serialize_order(ser);
 #ifndef SST_ENFORCE_EVENT_ORDERING
         ser& tag;
-        ser& delivery_info;
 #endif
+        ser& delivery_info;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         ser& first_comp;
         ser& first_type;
