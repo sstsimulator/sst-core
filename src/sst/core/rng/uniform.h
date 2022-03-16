@@ -36,7 +36,11 @@ public:
         Creates an uniform distribution with a specific number of bins
         \param probsCount Number of probability bins in this distribution
     */
-    UniformDistribution(const uint32_t probsCount) : RandomDistribution(), probCount(probsCount), deleteDistrib(true)
+    UniformDistribution(const uint32_t probsCount) :
+        RandomDistribution(),
+        deleteDistrib(true),
+        probCount(probsCount),
+        probPerBin(1)
     {
 
         if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
@@ -52,8 +56,9 @@ public:
     */
     UniformDistribution(const uint32_t probsCount, SST::RNG::Random* baseDist) :
         RandomDistribution(),
+        deleteDistrib(false),
         probCount(probsCount),
-        deleteDistrib(false)
+        probPerBin(1)
     {
 
         if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
