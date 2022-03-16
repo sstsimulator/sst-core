@@ -119,7 +119,7 @@ Link::finalizeConfiguration()
 {
     mode = RUN;
     if ( SYNC == type ) {
-        // No configuraiton changes to be made
+        // No configuration changes to be made
         return;
     }
 
@@ -147,7 +147,7 @@ Link::prepareForComplete()
     mode = COMPLETE;
 
     if ( SYNC == type ) {
-        // No configuraiton changes to be made
+        // No configuration changes to be made
         return;
     }
 
