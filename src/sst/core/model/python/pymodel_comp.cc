@@ -380,7 +380,7 @@ compSetStatisticLoadLevel(PyObject* self, PyObject* args)
 
     PyErr_Clear();
 
-    argOK     = PyArg_ParseTuple(args, "H|i", &loadLevel, &apply_to_children);
+    argOK     = PyArg_ParseTuple(args, "i|i", &loadLevel, &apply_to_children);
     loadLevel = loadLevel & 0xff;
 
     if ( argOK ) { c->setStatisticLoadLevel(loadLevel, apply_to_children); }
