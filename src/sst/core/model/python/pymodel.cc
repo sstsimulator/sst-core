@@ -316,6 +316,7 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->num_ranks()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->num_threads()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonBool(cfg->parallel_load()));
 
     const char* runModeStr = "UNKNOWN";
     switch ( cfg->runMode() ) {
@@ -371,6 +372,16 @@ getSSTMPIWorldSize(PyObject* UNUSED(self), PyObject* UNUSED(args))
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 #endif
     return SST_ConvertToPythonLong(ranks);
+}
+
+static PyObject*
+getSSTMyMPIRank(PyObject* UNUSED(self), PyObject* UNUSED(args))
+{
+    int myrank = 0;
+#ifdef SST_CONFIG_HAVE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#endif
+    return SST_ConvertToPythonLong(myrank);
 }
 
 static PyObject*
@@ -843,6 +854,7 @@ static PyMethodDef sstModuleMethods[] = {
     { "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
     { "getMPIRankCount", getSSTMPIWorldSize, METH_NOARGS,
       "Gets the number of MPI ranks currently being used to run SST" },
+    { "getMyMPIRank", getSSTMyMPIRank, METH_NOARGS, "Gets the SST MPI rank the script is running on" },
     { "getThreadCount", getSSTThreadCount, METH_NOARGS,
       "Gets the number of MPI ranks currently being used to run SST" },
     { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },

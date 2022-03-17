@@ -131,13 +131,6 @@ public:
     uint32_t exit_after() const { return exit_after_; }
 
     /**
-       Core timebase to use as the atomic time unit for the
-       simulation.  It is usually best to just leave this at the
-       default (1ps)
-    */
-    const std::string& timeBase() const { return timeBase_; }
-
-    /**
        Partitioner to use for parallel simualations
     */
     const std::string& partitioner() const { return partitioner_; }
@@ -213,11 +206,26 @@ public:
     // Advanced options
 
     /**
+       Core timebase to use as the atomic time unit for the
+       simulation.  It is usually best to just leave this at the
+       default (1ps)
+    */
+    const std::string& timeBase() const { return timeBase_; }
+
+    /**
        Controls whether graph constuction will be done in parallel.
        If it is, then the SDL file name is modified to add the rank
-       number to the file name right before the file extension.
+       number to the file name right before the file extension, if
+       parallel_load_mode_multi is true.
     */
     bool parallel_load() const { return parallel_load_; }
+
+    /**
+       If graph constuction will be done in parallel, will use a
+       file per rank if true, and the same file for each rank if
+       false.
+    */
+    bool parallel_load_mode_multi() const { return parallel_load_mode_multi_; }
 
     /**
        TimeVortex implementation to use
@@ -303,7 +311,6 @@ public:
         ser& print_timing_;
         ser& stop_at_;
         ser& exit_after_;
-        ser& timeBase_;
         ser& partitioner_;
         ser& heartbeatPeriod_;
         ser& output_directory_;
@@ -319,7 +326,9 @@ public:
         ser& component_partition_file_;
         ser& output_partition_;
 
+        ser& timeBase_;
         ser& parallel_load_;
+        ser& parallel_load_mode_multi_;
         ser& timeVortex_;
         ser& interthread_links_;
         ser& debugFile_;
@@ -369,7 +378,6 @@ private:
     bool        print_timing_;       /*!< Print SST timing information */
     std::string stop_at_;            /*!< When to stop the simulation */
     uint32_t    exit_after_;         /*!< When (wall-time) to stop the simulation */
-    std::string timeBase_;           /*!< Timebase of simulation */
     std::string partitioner_;        /*!< Partitioner to use */
     std::string heartbeatPeriod_;    /*!< Sets the heartbeat period for the simulation */
     std::string output_directory_;   /*!< Output directory to dump all files to */
@@ -388,10 +396,12 @@ private:
     bool        output_partition_;         /*!< Output paritition info when writing config output */
 
     // Advanced options
-    bool        parallel_load_;     /*!< Load simulation graph in parallel */
-    std::string timeVortex_;        /*!< TimeVortex implementation to use */
-    bool        interthread_links_; /*!< Use interthread links */
-    std::string debugFile_;         /*!< File to which debug information should be written */
+    std::string timeBase_;                 /*!< Timebase of simulation */
+    bool        parallel_load_;            /*!< Load simulation graph in parallel */
+    bool        parallel_load_mode_multi_; /*!< If true, load using multiple files */
+    std::string timeVortex_;               /*!< TimeVortex implementation to use */
+    bool        interthread_links_;        /*!< Use interthread links */
+    std::string debugFile_;                /*!< File to which debug information should be written */
     std::string libpath_;
     std::string addLibPath_;
 

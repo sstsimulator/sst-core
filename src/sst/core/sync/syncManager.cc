@@ -128,7 +128,14 @@ RankSync::exchangeLinkInfo(uint32_t my_rank)
 
         // Process the data
         for ( auto x : data ) {
-            Link* link = reinterpret_cast<Link*>(link_maps[i][x.first]);
+            auto it = link_maps[i].find(x.first);
+            if ( it == link_maps[i].end() ) {
+                // No matching link found
+                Simulation_impl::getSimulationOutput().output(
+                    "WARNING: Unmatched link found in rank link exchange: %s (from rank %d to rank %d)\n",
+                    x.first.c_str(), i, my_rank);
+            }
+            Link* link = reinterpret_cast<Link*>(it->second);
             link->pair_link->setDeliveryInfo(x.second);
         }
         data.clear();
@@ -145,7 +152,14 @@ RankSync::exchangeLinkInfo(uint32_t my_rank)
 
         // Process the data
         for ( auto x : data ) {
-            Link* link = reinterpret_cast<Link*>(link_maps[i][x.first]);
+            auto it = link_maps[i].find(x.first);
+            if ( it == link_maps[i].end() ) {
+                // No matching link found
+                Simulation_impl::getSimulationOutput().output(
+                    "WARNING: Unmatched link found in rank link exchange: %s (from rank %d to rank %d)\n",
+                    x.first.c_str(), i, my_rank);
+            }
+            Link* link = reinterpret_cast<Link*>(it->second);
             link->pair_link->setDeliveryInfo(x.second);
         }
         data.clear();

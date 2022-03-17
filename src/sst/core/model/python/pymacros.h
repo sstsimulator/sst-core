@@ -23,6 +23,7 @@ REENABLE_WARNING
 #if PY_MAJOR_VERSION >= 3
 #define SST_PY_OBJ_HEAD              PyVarObject_HEAD_INIT(nullptr, 0)
 #define SST_ConvertToPythonLong(x)   PyLong_FromLong(x)
+#define SST_ConvertToPythonBool(x)   PyBool_FromLong(x)
 #define SST_ConvertToCppLong(x)      PyLong_AsLong(x)
 #define SST_ConvertToPythonString(x) PyUnicode_FromString(x)
 #define SST_ConvertToCppString(x)    PyUnicode_AsUTF8(x)
