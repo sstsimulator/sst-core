@@ -62,6 +62,7 @@ REENABLE_WARNING
 #define Py_TYPE(ob)                  (((PyObject*)(ob))->ob_type)
 #define SST_PY_OBJ_HEAD              PyVarObject_HEAD_INIT(nullptr, 0)
 #define SST_ConvertToPythonLong(x)   PyInt_FromLong(x)
+#define SST_ConvertToPythonBool(x)   PyBool_FromLong(x)
 #define SST_ConvertToCppLong(x)      PyInt_AsLong(x)
 #define SST_ConvertToPythonString(x) PyString_FromString(x)
 #define SST_ConvertToCppString(x)    PyString_AsString(x)
