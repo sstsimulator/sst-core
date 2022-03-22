@@ -210,7 +210,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
             for ( size_t i = 0; i < recv->activity_vec.size(); i++ ) {
                 Event*    ev    = static_cast<Event*>(recv->activity_vec[i]);
                 SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-                ev->getDeliveryLink()->send(delay, ev);
+                getDeliveryLink(ev)->send(delay, ev);
             }
             recv->activity_vec.clear();
         }
@@ -441,7 +441,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
             Event* ev = static_cast<Event*>(activities[j]);
-            sendUntimedData_sync(ev->getDeliveryLink(), ev);
+            sendUntimedData_sync(getDeliveryLink(ev), ev);
         }
     }
 

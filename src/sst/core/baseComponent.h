@@ -37,8 +37,6 @@ class Link;
 class LinkMap;
 class Module;
 class Params;
-class SharedRegion;
-class SharedRegionMerger;
 class Simulation_impl;
 class SubComponent;
 class SubComponentSlotInfo;
@@ -63,12 +61,6 @@ protected:
 
 public:
     BaseComponent(ComponentId_t id);
-    BaseComponent()
-        __attribute__((deprecated("The BaseComponent default constructor is deprecated and will be removed in SST 13.  "
-                                  "Default constructors for Components are no longer supported.")))
-    {
-        my_info = nullptr;
-    }
     virtual ~BaseComponent();
 
     const std::string& getType() const { return my_info->getType(); }
@@ -747,14 +739,6 @@ protected:
     const TimeConverter* getDefaultTimeBase() const { return my_info->defaultTimeBase; }
 
     bool doesSubComponentExist(const std::string& type);
-
-    /** Find a lookup table */
-    SharedRegion* getLocalSharedRegion(const std::string& key, size_t size)
-        __attribute__((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed "
-                                  "in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
-    SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger* merger = nullptr)
-        __attribute__((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed "
-                                  "in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
 
     /* Get the Simulation */
     Simulation* getSimulation() const;

@@ -172,54 +172,6 @@ Params::getKeys() const
 }
 
 Params
-Params::find_scoped_params(const std::string& prefix, const char* delims) const
-{
-    int    num_delims = ::strlen(delims);
-    Params ret;
-    ret.enableVerify(false);
-    for ( auto map : data ) {
-        for ( auto value : *map ) {
-            auto&       fullKeyName = keyMapReverse[value.first];
-            std::string key         = fullKeyName.substr(0, prefix.length());
-            auto        start       = prefix.length();
-            if ( key == prefix ) {
-                char next         = fullKeyName[start];
-                bool delimMatches = false;
-                for ( int i = 0; i < num_delims; ++i ) {
-                    if ( next == delims[i] ) {
-                        delimMatches = true;
-                        break;
-                    }
-                }
-                if ( delimMatches ) { ret.insert(keyMapReverse[value.first].substr(start + 1), value.second); }
-            }
-        }
-    }
-
-    ret.allowedKeys = allowedKeys;
-    ret.enableVerify(verify_enabled);
-    return ret;
-}
-
-Params
-Params::find_prefix_params(const std::string& prefix) const
-{
-    Params ret;
-    ret.enableVerify(false);
-
-    for ( auto map : data ) {
-        for ( auto value : *map ) {
-            std::string key = keyMapReverse[value.first].substr(0, prefix.length());
-            if ( key == prefix ) { ret.insert(keyMapReverse[value.first].substr(prefix.length()), value.second); }
-        }
-    }
-    ret.allowedKeys = allowedKeys;
-    ret.enableVerify(verify_enabled);
-
-    return ret;
-}
-
-Params
 Params::get_scoped_params(const std::string& scope) const
 {
     Params ret;
