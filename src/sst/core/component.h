@@ -90,11 +90,6 @@ public:
 
 protected:
     friend class SubComponent;
-
-    Component() __attribute__((deprecated("The Component default constructor is deprecated and will be removed in SST "
-                                          "13.  Default constructors for Components are no longer supported."))) :
-        BaseComponent(-1)
-    {}
 };
 
 } // namespace SST

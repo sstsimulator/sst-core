@@ -819,17 +819,6 @@ public:
      */
     Params get_scoped_params(const std::string& scope) const;
 
-    /** Returns a new parameter object with parameters that match
-     * the specified prefix.
-     */
-    Params find_prefix_params(const std::string& prefix) const __attribute__((deprecated(
-        "Params::find_prefix_params() is deprecated and will be removed in SST 12. Please use the new "
-        "Params::get_scoped_params() function.  As of SST 12, only a \".\" will be allowed as a scoping delimiter.")));
-
-    Params find_scoped_params(const std::string& scope, const char* delims = ".:") const __attribute__((deprecated(
-        "Params::find_scoped_params() is deprecated and will be removed in SST 12. Please use the new "
-        "Params::get_scoped_params() function.  As of SST 12, only a \".\" will be allowed as a scoping delimiter.")));
-
     /**
      * Search the container for a particular key.  This will search
      * both local and global params.
@@ -850,13 +839,6 @@ public:
      */
     void popAllowedKeys();
 
-    /**
-     * @param k   Key to check for validity
-     * @return    True if the key is considered allowed
-     */
-    void verifyParam(const key_type& k) const __attribute__((
-        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 13.")));
-
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Params)
 
@@ -867,6 +849,12 @@ private:
     friend class SST::ConfigComponent;
     friend class SST::Core::ConfigGraphOutput;
     friend class SST::SSTModelDescription;
+
+    /**
+     * @param k   Key to check for validity
+     * @return    True if the key is considered allowed
+     */
+    void verifyParam(const key_type& k) const;
 
     /**
      * Adds a global param set to be looked at in this Params object

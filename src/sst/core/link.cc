@@ -82,8 +82,8 @@ Link::finalizeConfiguration()
     }
 
     // If my pair link is a SYNC link, also need to call
-    // finalizeConfiguration on it since no one else has a pointer to
-    // it
+    // finalizeConfiguration() on it since no one else has a pointer
+    // to it
     if ( SYNC == pair_link->type ) pair_link->finalizeConfiguration();
 }
 
@@ -102,7 +102,7 @@ Link::prepareForComplete()
     pair_link->send_queue = nullptr;
 
     // If my pair link is a SYNC link, also need to call
-    // finalizeConfiguration on it
+    // prepareForComplete() on it
     if ( SYNC == pair_link->type ) pair_link->prepareForComplete();
 }
 

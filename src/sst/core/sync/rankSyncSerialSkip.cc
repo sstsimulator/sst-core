@@ -201,7 +201,7 @@ RankSyncSerialSkip::exchange(void)
 
             Event*    ev    = static_cast<Event*>(activities[j]);
             SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-            ev->getDeliveryLink()->send(delay, ev);
+            getDeliveryLink(ev)->send(delay, ev);
         }
 
         activities.clear();
@@ -304,7 +304,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
             Event* ev = static_cast<Event*>(activities[j]);
-            sendUntimedData_sync(ev->getDeliveryLink(), ev);
+            sendUntimedData_sync(getDeliveryLink(ev), ev);
         }
     }
 

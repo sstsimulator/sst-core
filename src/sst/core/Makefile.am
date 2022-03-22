@@ -43,8 +43,6 @@ nobase_dist_sst_HEADERS = \
 	heartbeat.h \
 	initQueue.h \
 	link.h \
-	linkMap.h \
-	linkPair.h \
 	mempool.h \
 	memuse.h \
 	iouse.h \
@@ -65,8 +63,6 @@ nobase_dist_sst_HEADERS = \
 	stopAction.h \
 	stringize.h \
 	subcomponent.h \
-	sharedRegion.h \
-	sharedRegionImpl.h \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
@@ -179,6 +175,8 @@ sst_core_sources = \
 	heartbeat.cc \
 	initQueue.cc \
 	link.cc \
+	linkMap.h \
+	linkPair.h \
 	memuse.cc \
 	namecheck.cc \
 	oneshot.cc \
@@ -187,7 +185,6 @@ sst_core_sources = \
 	pollingLinkQueue.cc \
 	simulation.cc \
 	subcomponent.cc \
-	sharedRegion.cc \
 	timeLord.cc \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \

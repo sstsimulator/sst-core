@@ -107,7 +107,7 @@ ThreadSyncSimpleSkip::before()
         for ( size_t j = 0; j < vec.size(); j++ ) {
             Event*    ev    = static_cast<Event*>(vec[j]);
             SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-            ev->getDeliveryLink()->send(delay, ev);
+            getDeliveryLink(ev)->send(delay, ev);
         }
         queue->clear();
     }
@@ -146,7 +146,7 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
         std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
             Event* ev = static_cast<Event*>(vec[j]);
-            sendUntimedData_sync(ev->getDeliveryLink(), ev);
+            sendUntimedData_sync(getDeliveryLink(ev), ev);
         }
         queue->clear();
     }

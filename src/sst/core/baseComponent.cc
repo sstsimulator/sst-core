@@ -18,7 +18,6 @@
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
-#include "sst/core/sharedRegion.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/subcomponent.h"
@@ -524,20 +523,6 @@ bool
 BaseComponent::doesSubComponentExist(const std::string& type)
 {
     return Factory::getFactory()->doesSubComponentExist(type);
-}
-
-SharedRegion*
-BaseComponent::getLocalSharedRegion(const std::string& key, size_t size)
-{
-    SharedRegionManager* mgr = Simulation::getSharedRegionManager();
-    return mgr->getLocalSharedRegion(key, size);
-}
-
-SharedRegion*
-BaseComponent::getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger* merger)
-{
-    SharedRegionManager* mgr = Simulation::getSharedRegionManager();
-    return mgr->getGlobalSharedRegion(key, size, merger);
 }
 
 Simulation*

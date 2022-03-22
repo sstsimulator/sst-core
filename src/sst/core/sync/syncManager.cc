@@ -109,8 +109,10 @@ public:
 };
 
 void
-RankSync::exchangeLinkInfo(uint32_t my_rank)
+RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 {
+    // Function will not compile if MPI is not configured
+#ifdef SST_CONFIG_HAVE_MPI
     // For now, we will simply have rank 0 exchange with everyone and
     // then rank 1, etc.  Will look to optimize later (more
     // parallelism in ranks sending)
@@ -165,6 +167,7 @@ RankSync::exchangeLinkInfo(uint32_t my_rank)
         data.clear();
         link_maps[i].clear();
     }
+#endif
 }
 
 SyncManager::SyncManager(

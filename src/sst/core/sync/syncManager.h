@@ -65,7 +65,9 @@ protected:
 
     void sendUntimedData_sync(Link* link, Event* data) { link->sendUntimedData_sync(data); }
 
-    void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
+    inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
+
+    inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
 
 private:
 };
@@ -102,7 +104,9 @@ protected:
 
     void sendUntimedData_sync(Link* link, Event* data) { link->sendUntimedData_sync(data); }
 
-    void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
+    inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
+
+    inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
 
 private:
 };

@@ -23,6 +23,9 @@
 namespace SST {
 
 class Link;
+class NullEvent;
+class RankSync;
+class ThreadSync;
 
 /**
  * Base class for Events - Items sent across links to communicate between
@@ -70,93 +73,10 @@ public:
         last_comp  = "";
 #endif
     }
-    virtual ~Event() = 0;
-
-    /** Cause this event to fire */
-    void execute(void) override;
+    virtual ~Event();
 
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();
-
-    /**
-       This sets the information needed to get the event properly
-       delivered for the next step of transfer.
-
-       For links that don't go to a sync object, the tag is
-       used as the order_tag field when that support is
-       enabled.  If enforce_event_ordering is off, then the field does
-       nothing.
-
-       For links that are going to a sync, the tag is the
-       remote_tag that will be used to look up the corresponding link
-       on the other rank.
-     */
-    inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
-    {
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        order_tag = tag;
-#else
-        this->tag = tag;
-#endif
-        this->delivery_info = delivery_info;
-    }
-
-    /** Sets the link id used for delivery.  For use by SST Core only */
-#if !SST_BUILDING_CORE
-    inline void setDeliveryLink(LinkId_t tag, Link* link) __attribute__((
-        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-#else
-    inline void setDeliveryLink(LinkId_t tag, Link* link)
-    {
-#endif
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        order_tag = tag;
-#else
-        this->tag = tag;
-#endif
-        delivery_link = link;
-    }
-
-    /** Gets the link id used for delivery.  For use by SST Core only */
-#if !SST_BUILDING_CORE
-    inline Link* getDeliveryLink() __attribute__((
-        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-#else
-    inline Link* getDeliveryLink()
-    {
-#endif
-        return reinterpret_cast<Link*>(delivery_info);
-    }
-
-    /** For use by SST Core only */
-#if !SST_BUILDING_CORE
-    inline void setRemoteEvent() __attribute__((
-        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-#else
-    inline void setRemoteEvent()
-    {
-#endif
-        delivery_link = nullptr;
-    }
-
-    /** Gets the link id associated with this event.  For use by SST Core only */
-#if !SST_BUILDING_CORE
-    inline LinkId_t getTag(void) const __attribute__((
-        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-#else
-    inline LinkId_t getTag(void) const
-    {
-#endif
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        return order_tag;
-#else
-        return tag;
-#endif
-    }
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -211,8 +131,58 @@ public:
     }
 
 protected:
-    /** Link used for delivery */
-    Link* delivery_link;
+    /**
+     * Generates an ID that is unique across ranks, components and events.
+     */
+    id_type generateUniqueId();
+
+
+private:
+    friend class Link;
+    friend class NullEvent;
+    friend class RankSync;
+    friend class ThreadSync;
+
+
+    /** Cause this event to fire */
+    void execute(void) override;
+
+    /**
+       This sets the information needed to get the event properly
+       delivered for the next step of transfer.
+
+       For links that don't go to a sync object, the tag is
+       used as the order_tag field when that support is
+       enabled.  If enforce_event_ordering is off, then the field does
+       nothing.
+
+       For links that are going to a sync, the tag is the
+       remote_tag that will be used to look up the corresponding link
+       on the other rank.
+     */
+    inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
+    {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        order_tag = tag;
+#else
+        this->tag = tag;
+#endif
+        this->delivery_info = delivery_info;
+    }
+
+    /** Gets the link id used for delivery.  For use by SST Core only */
+    inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
+
+    /** Gets the link id associated with this event.  For use by SST Core only */
+    inline LinkId_t getTag(void) const
+    {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        return order_tag;
+#else
+        return tag;
+#endif
+    }
+
 
     /** Holds the delivery information.  This is stored as a
       uintptr_t, but is actually a pointer converted using
@@ -223,11 +193,6 @@ protected:
       after synchronization.
     */
     uintptr_t delivery_info;
-
-    /**
-     * Generates an ID that is unique across ranks, components and events.
-     */
-    id_type generateUniqueId();
 
 private:
     static std::atomic<uint64_t> id_counter;
