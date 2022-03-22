@@ -213,15 +213,6 @@ public:
     }
 
 
-    // timebase
-    bool setTimebase(const std::string& arg)
-    {
-        // TODO: Error checking.  Need to wait until UnitAlgebra
-        // switches to exceptions on errors instead of calling abort
-        cfg.timeBase_ = arg;
-        return true;
-    }
-
     // partitioner
     bool setPartitioner(const std::string& arg)
     {
@@ -346,6 +337,31 @@ public:
 
     // parallel load
 #ifdef SST_CONFIG_HAVE_MPI
+    bool enableParallelLoadMode(const std::string& arg)
+    {
+        // If this is only a one rank job, then we can ignore
+        if ( cfg.world_size_.rank == 1 ) return true;
+
+        std::string arg_lower(arg);
+        std::locale loc;
+        for ( auto& ch : arg_lower )
+            ch = std::tolower(ch, loc);
+
+        if ( arg_lower == "single" )
+            cfg.parallel_load_mode_multi_ = false;
+        else if ( arg_lower == "multi" )
+            cfg.parallel_load_mode_multi_ = true;
+        else {
+            fprintf(
+                stderr, "Invalid option '%s' passed to --parallel-load.  Valid options are SINGLE and MULTI.\n",
+                arg.c_str());
+            return false;
+        }
+
+        cfg.parallel_load_ = true;
+        return true;
+    }
+
     bool enableParallelLoad()
     {
         // If this is only a one rank job, then we can ignore
@@ -357,6 +373,15 @@ public:
 #endif
 
     // Advanced options
+
+    // timebase
+    bool setTimebase(const std::string& arg)
+    {
+        // TODO: Error checking.  Need to wait until UnitAlgebra
+        // switches to exceptions on errors instead of calling abort
+        cfg.timeBase_ = arg;
+        return true;
+    }
 
     // timevortex
     bool setTimeVortex(const std::string& arg)
@@ -516,7 +541,6 @@ Config::print()
     std::cout << "print_timing = " << print_timing_ << std::endl;
     std::cout << "stop_at = " << stop_at_ << std::endl;
     std::cout << "exit_after = " << exit_after_ << std::endl;
-    std::cout << "timeBase = " << timeBase_ << std::endl;
     std::cout << "partitioner = " << partitioner_ << std::endl;
     std::cout << "heartbeatPeriod = " << heartbeatPeriod_ << std::endl;
     std::cout << "output_directory = " << output_directory_ << std::endl;
@@ -529,6 +553,7 @@ Config::print()
     std::cout << "dot_verbosity = " << dot_verbosity_ << std::endl;
     std::cout << "component_partition_file = " << component_partition_file_ << std::endl;
     std::cout << "output_partition = " << output_partition_ << std::endl;
+    std::cout << "timeBase = " << timeBase_ << std::endl;
     std::cout << "parallel_load = " << parallel_load_ << std::endl;
     std::cout << "timeVortex = " << timeVortex_ << std::endl;
     std::cout << "interthread_links = " << interthread_links_ << std::endl;
@@ -557,7 +582,6 @@ Config::Config(RankInfo rank_info) : Config()
     print_timing_      = false;
     stop_at_           = "0 ns";
     exit_after_        = 0;
-    timeBase_          = "1 ps";
     partitioner_       = "sst.linear";
     heartbeatPeriod_   = "";
 
@@ -586,12 +610,14 @@ Config::Config(RankInfo rank_info) : Config()
     output_partition_         = false;
 
     // Advance Options
-    parallel_load_     = false;
-    timeVortex_        = "sst.timevortex.priority_queue";
-    interthread_links_ = false;
-    debugFile_         = "/dev/null";
-    libpath_           = SST_INSTALL_PREFIX "/lib/sst";
-    addLibPath_        = "";
+    timeBase_                 = "1 ps";
+    parallel_load_            = false;
+    parallel_load_mode_multi_ = true;
+    timeVortex_               = "sst.timevortex.priority_queue";
+    interthread_links_        = false;
+    debugFile_                = "/dev/null";
+    libpath_                  = SST_INSTALL_PREFIX "/lib/sst";
+    addLibPath_               = "";
 
     // Advanced Options - Debug
     runMode_ = Simulation::BOTH;
@@ -793,9 +819,6 @@ static const struct sstLongOpts_s sstOptions[] = {
         "instead",
         &ConfigHelper::setStopAfter, true),
     DEF_ARG(
-        "timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
-        &ConfigHelper::setTimebase, true),
-    DEF_ARG(
         "partitioner", 0, "PARTITIONER", "Select the partitioner to be used. <lib.partitionerName>",
         &ConfigHelper::setPartitioner, true),
     DEF_ARG(
@@ -847,10 +870,17 @@ static const struct sstLongOpts_s sstOptions[] = {
 
     /* Advanced Features */
     DEF_SECTION_HEADING("Advanced Options"),
+    DEF_ARG(
+        "timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
+        &ConfigHelper::setTimebase, true),
 #ifdef SST_CONFIG_HAVE_MPI
-    DEF_FLAG(
-        "parallel-load", 0, "Enable parallel loading of configuration. This option is ignored for single rank jobs.",
-        &ConfigHelper::enableParallelLoad),
+    DEF_ARG_OPTVAL(
+        "parallel-load", 0, "MODE",
+        "Enable parallel loading of configuration. This option is ignored for single rank jobs.  Optional mode "
+        "parameters are SINGLE and MULTI (default).  If SINGLE is specified, the same file will be passed to all MPI "
+        "ranks.  If MULTI is specified, each MPI rank is required to have it's own file to load. Note, not all input "
+        "formats support both types of file loading.",
+        &ConfigHelper::enableParallelLoad, &ConfigHelper::enableParallelLoadMode, false),
 #endif
     DEF_ARG(
         "timeVortex", 0, "MODULE", "Select TimeVortex implementation <lib.timevortex>", &ConfigHelper::setTimeVortex,

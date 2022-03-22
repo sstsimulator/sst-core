@@ -56,7 +56,7 @@ Event::execute(void)
     SST_EVENT_PROFILE_START
 #endif
 
-        (*functor)
+        (*reinterpret_cast<HandlerBase*>(delivery_info))
     (this);
 
 #if SST_EVENT_PROFILING
@@ -104,7 +104,7 @@ Event::generateUniqueId()
 void
 NullEvent::execute(void)
 {
-    (*functor)(nullptr);
+    (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
     delete this;
 }
 

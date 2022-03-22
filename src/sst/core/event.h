@@ -91,14 +91,14 @@ public:
        remote_tag that will be used to look up the corresponding link
        on the other rank.
      */
-    inline void setDeliveryInfo(LinkId_t tag, HandlerBase* f)
+    inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
     {
 #ifdef SST_ENFORCE_EVENT_ORDERING
         order_tag = tag;
 #else
         this->tag = tag;
 #endif
-        functor = f;
+        this->delivery_info = delivery_info;
     }
 
     /** Sets the link id used for delivery.  For use by SST Core only */
@@ -127,7 +127,7 @@ public:
     inline Link* getDeliveryLink()
     {
 #endif
-        return delivery_link;
+        return reinterpret_cast<Link*>(delivery_info);
     }
 
     /** For use by SST Core only */
@@ -199,6 +199,7 @@ public:
 #ifndef SST_ENFORCE_EVENT_ORDERING
         ser& tag;
 #endif
+        ser& delivery_info;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         ser& first_comp;
         ser& first_type;
@@ -211,8 +212,17 @@ public:
 
 protected:
     /** Link used for delivery */
-    Link*        delivery_link;
-    HandlerBase* functor;
+    Link* delivery_link;
+
+    /** Holds the delivery information.  This is stored as a
+      uintptr_t, but is actually a pointer converted using
+      reinterpret_cast.  For events send on links connected to a
+      Component/SubComponent, this holds a pointer to the delivery
+      functor.  For events sent on links connected to a Sync object,
+      this holds a pointer to the remote link to send the event on
+      after synchronization.
+    */
+    uintptr_t delivery_info;
 
     /**
      * Generates an ID that is unique across ranks, components and events.

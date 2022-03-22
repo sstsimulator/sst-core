@@ -445,7 +445,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
 
             // Create a LinkPair to represent this link
-            LinkPair lp(clink->order, clink->remote_tag);
+            LinkPair lp(clink->order);
 
             lp.getLeft()->setLatency(clink->latency[local]);
             lp.getRight()->setLatency(0);
@@ -464,8 +464,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             // For local, just register link with threadSync object so
             // it can map link_id to link*
-            ActivityQueue* sync_q =
-                syncManager->registerLink(rank[remote], rank[local], clink->remote_tag, lp.getRight());
+            ActivityQueue* sync_q = syncManager->registerLink(rank[remote], rank[local], clink->name, lp.getRight());
 
             lp.getLeft()->send_queue = sync_q;
             lp.getRight()->setAsSyncLink();
@@ -507,6 +506,12 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;
     return 0;
+}
+
+void
+Simulation_impl::exchangeLinkInfo()
+{
+    syncManager->exchangeLinkInfo();
 }
 
 void

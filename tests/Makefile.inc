@@ -24,6 +24,7 @@ EXTRA_DIST += \
     tests/test_LookupTable2.py \
     tests/test_MessageMesh.py \
     tests/test_ParamComponent.py \
+    tests/test_ParallelLoad.py \
     tests/test_RNGComponent.py \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
