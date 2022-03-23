@@ -51,8 +51,11 @@ public:
     SimTime_t getNextSyncTime() override { return nextSyncTime - 1; }
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
-    ActivityQueue* getQueueForThread(int tid) override;
+    void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
+    ActivityQueue* registerRemoteLink(int UNUSED(id), const std::string& UNUSED(name), Link* UNUSED(link)) override
+    {
+        return nullptr;
+    }
 
     uint64_t getDataSize() const;
 

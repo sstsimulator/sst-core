@@ -24,14 +24,7 @@ class LinkPair
 {
 public:
     /** Create a new LinkPair.  This is used when the endpoints are in the same partition. */
-#if !SST_BUILDING_CORE
-    LinkPair(LinkId_t order) __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12."))) :
-#else
-    LinkPair(LinkId_t order) :
-#endif
-        left(new Link(order)),
-        right(new Link(order))
+    LinkPair(LinkId_t order) : left(new Link(order)), right(new Link(order))
     {
         my_id = order;
 
@@ -40,14 +33,7 @@ public:
     }
 
     /** Create a new LinkPair.  This is used when the endpoints are in different partitions. */
-#if !SST_BUILDING_CORE
-    LinkPair(LinkId_t order, LinkId_t remote_tag) __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12."))) :
-#else
-    LinkPair(LinkId_t order, LinkId_t remote_tag) :
-#endif
-        left(new Link(remote_tag)),
-        right(new Link(order))
+    LinkPair(LinkId_t order, LinkId_t remote_tag) : left(new Link(remote_tag)), right(new Link(order))
     {
         my_id = order;
 
@@ -55,47 +41,13 @@ public:
         right->pair_link = left;
     }
 
-#if !SST_BUILDING_CORE
-    virtual ~LinkPair() __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {}
-#else
     virtual ~LinkPair() {}
-#endif
-
-    //     /** return the ID of the LinkPair */
-    // #if !SST_BUILDING_CORE
-    //     LinkId_t getId() __attribute__((
-    //         deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in
-    //         SST 12.")))
-    //     {
-    // #else
-    //     LinkId_t getId()
-    //     {
-    // #endif
-    //         return my_id;
-    //     }
 
     /** Return the Left Link */
-#if !SST_BUILDING_CORE
-    inline Link* getLeft() __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-        return left;
-    }
-#else
     inline Link* getLeft() { return left; }
-#endif
+
     /** Return the Right Link */
-#if !SST_BUILDING_CORE
-    inline Link* getRight() __attribute__((
-        deprecated("LinkPair class was not intended to be used outside of SST Core and will be removed in SST 12.")))
-    {
-        return right;
-    }
-#else
     inline Link* getRight() { return right; }
-#endif
 
 private:
     Link* left;

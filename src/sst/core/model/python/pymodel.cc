@@ -316,6 +316,7 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->num_ranks()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->num_threads()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonBool(cfg->parallel_load()));
 
     const char* runModeStr = "UNKNOWN";
     switch ( cfg->runMode() ) {
@@ -371,6 +372,16 @@ getSSTMPIWorldSize(PyObject* UNUSED(self), PyObject* UNUSED(args))
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 #endif
     return SST_ConvertToPythonLong(ranks);
+}
+
+static PyObject*
+getSSTMyMPIRank(PyObject* UNUSED(self), PyObject* UNUSED(args))
+{
+    int myrank = 0;
+#ifdef SST_CONFIG_HAVE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#endif
+    return SST_ConvertToPythonLong(myrank);
 }
 
 static PyObject*
@@ -453,7 +464,7 @@ setStatisticLoadLevel(PyObject* UNUSED(self), PyObject* arg)
 {
     PyErr_Clear();
 
-    uint8_t loadLevel = SST_ConvertToCppLong(arg);
+    uint32_t loadLevel = SST_ConvertToCppLong(arg);
     if ( PyErr_Occurred() ) {
         PyErr_Print();
         exit(-1);
@@ -710,7 +721,7 @@ setStatisticLoadLevelForComponentName(PyObject* UNUSED(self), PyObject* args)
     PyErr_Clear();
 
     // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "sH|i", &compName, &level, &apply_to_children);
+    argOK = PyArg_ParseTuple(args, "si|i", &compName, &level, &apply_to_children);
 
     if ( argOK ) {
         // Get the component
@@ -742,15 +753,15 @@ setStatisticLoadLevelForComponentType(
 static PyObject*
 setStatisticLoadLevelForComponentType(PyObject* UNUSED(self), PyObject* args)
 {
-    int     argOK             = 0;
-    char*   compType          = nullptr;
-    uint8_t level             = STATISTICLOADLEVELUNINITIALIZED;
-    int     apply_to_children = 0;
+    int   argOK             = 0;
+    char* compType          = nullptr;
+    int   level             = STATISTICLOADLEVELUNINITIALIZED;
+    int   apply_to_children = 0;
 
     PyErr_Clear();
 
     // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "sH|i", &compType, &level, &apply_to_children);
+    argOK = PyArg_ParseTuple(args, "si|i", &compType, &level, &apply_to_children);
 
     if ( argOK ) {
         bool is_all_types = std::string(compType) == STATALLFLAG;
@@ -843,6 +854,7 @@ static PyMethodDef sstModuleMethods[] = {
     { "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
     { "getMPIRankCount", getSSTMPIWorldSize, METH_NOARGS,
       "Gets the number of MPI ranks currently being used to run SST" },
+    { "getMyMPIRank", getSSTMyMPIRank, METH_NOARGS, "Gets the SST MPI rank the script is running on" },
     { "getThreadCount", getSSTThreadCount, METH_NOARGS,
       "Gets the number of MPI ranks currently being used to run SST" },
     { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },

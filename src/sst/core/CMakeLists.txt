@@ -61,7 +61,6 @@ add_library(
   simulation.cc
   ssthandler.cc
   subcomponent.cc
-  sharedRegion.cc
   timeLord.cc
   uninitializedQueue.cc
   unitAlgebra.cc
@@ -129,8 +128,6 @@ set(SSTHeaders
     pollingLinkQueue.h
     profile.h
     rankInfo.h
-    sharedRegion.h
-    sharedRegionImpl.h
     simulation.h
     sparseVectorMap.h
     ssthandler.h

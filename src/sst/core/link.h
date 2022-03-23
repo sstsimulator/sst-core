@@ -20,10 +20,11 @@ namespace SST {
 
 #define _LINK_DBG(fmt, args...) __DBG(DBG_LINK, Link, fmt, ##args)
 
+class ActivityQueue;
+class BaseComponent;
 class TimeConverter;
 class LinkPair;
 class Simulation_impl;
-class ActivityQueue;
 
 class UnitAlgebra;
 
@@ -40,25 +41,6 @@ public:
     friend class Simulation_impl;
     friend class SyncManager;
     friend class ComponentInfo;
-
-    /** Create a new link with a given tag
-
-        The tag is used for two different things depending on where
-        this link sends data:
-
-        If it sends it to a Sync object, then it represents the
-        remote_tag used to lookup the correct link on the other side.
-
-        If it sends to a TimeVortex (or DirectLinkQueue), it is the
-        value used for enforce_link_order (if that feature is
-        enabled).
-     */
-#if !SST_BUILDING_CORE
-    Link(LinkId_t tag) __attribute__((
-        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12.")));
-#else
-    Link(LinkId_t tag);
-#endif
 
     virtual ~Link();
 
@@ -98,14 +80,6 @@ public:
      * @param functor Functor to call when message is delivered
      */
     void replaceFunctor(Event::HandlerBase* functor);
-
-    /** Specifies that this link has no callback, and is poll-based only */
-#if !SST_BUILDING_CORE
-    void setPolling() __attribute__((
-        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12.")));
-#else
-    void        setPolling();
-#endif
 
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
@@ -157,18 +131,6 @@ public:
      * @return the default Time Base for this link
      */
     const TimeConverter* getDefaultTimeBase() const;
-
-    /** Causes an event to be delivered to the registered callback */
-#if !SST_BUILDING_CORE
-    inline void deliverEvent(Event* event) const __attribute__((
-        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12.")))
-    {
-#else
-    inline void deliverEvent(Event* event) const
-    {
-#endif
-        (*pair_rFunctor)(event);
-    }
 
     /** Return the ID of this link
      * @return the unique ID for this link
@@ -223,6 +185,11 @@ protected:
 
     void setAsSyncLink() { type = SYNC; }
 
+    /**
+       Set the delivery_info for the link
+     */
+    void setDeliveryInfo(uintptr_t info) { delivery_info = info; }
+
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
      * TimeConverter. I.e. the total delay is the link's delay + the
@@ -243,10 +210,15 @@ protected:
     /** Queue of events to be received by the owning component */
     ActivityQueue* send_queue;
 
-    /** Receive functor. This functor is set when the link is connected.
-      Determines what the receiver wants to be called
+    /** Holds the delivery information.  This is stored as a
+      uintptr_t, but is actually a pointer converted using
+      reinterpret_cast.  For links connected to a
+      Component/SubComponent, this holds a pointer to the delivery
+      functor.  For links connected to a Sync object, this holds a
+      pointer to the remote link to send the event on after
+      synchronization.
     */
-    Event::HandlerBase* pair_rFunctor;
+    uintptr_t delivery_info;
 
     /** Timebase used if no other timebase is specified. Used to specify
       the units for added delays when sending, such as in
@@ -265,12 +237,34 @@ protected:
     Link* pair_link;
 
 private:
+    friend class BaseComponent;
+
     SimTime_t& current_time;
     Type_t     type;
     Mode_t     mode;
     LinkId_t   tag;
 
+    /** Create a new link with a given tag
+
+        The tag is used for two different things depending on where
+        this link sends data:
+
+        If it sends it to a Sync object, then it represents the
+        remote_tag used to lookup the correct link on the other side.
+
+        If it sends to a TimeVortex (or DirectLinkQueue), it is the
+        value used for enforce_link_order (if that feature is
+        enabled).
+     */
+    Link(LinkId_t tag);
+
     Link(const Link& l);
+
+    /** Specifies that this link has no callback, and is poll-based only */
+    void setPolling();
+
+    /** Causes an event to be delivered to the registered callback */
+    inline void deliverEvent(Event* event) const { (*reinterpret_cast<Event::HandlerBase*>(delivery_info))(event); }
 
     /** Set minimum link latency */
     void setLatency(Cycle_t lat);

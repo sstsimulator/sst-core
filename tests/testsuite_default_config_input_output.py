@@ -64,6 +64,26 @@ class testcase_Config_input_output(SSTTestCase):
     def test_json_io_parallel(self):
         self.configio_test_template("json_io_parallel", "6 6", "json", True)
 
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_python_single_parallel_load(self):
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        output_config = "{0}/test_configio_python_single_parallel_load.py".format(outdir)
+
+        sdlfile = "{0}/test_ParallelLoad.py".format(testsuitedir)
+
+        outfile_ref = "{0}/test_configio_ref_single_paralell_load.out".format(outdir)
+        outfile_check = "{0}/test_configio_check_single_parallel_load.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile_ref)
+        self.run_sst(sdlfile, outfile_check, other_args="--parallel-load=SINGLE")
+
+        # Perform the test
+        cmp_result = testing_compare_sorted_diff("check_single_parallel_load", outfile_ref, outfile_check)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile_ref, outfile_check))
+
 #####
 
     def configio_test_template(self, testtype, model_options, output_type, parallel_io, use_component_test=False):

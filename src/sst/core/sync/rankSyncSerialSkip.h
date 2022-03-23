@@ -27,12 +27,12 @@ class RankSyncSerialSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncSerialSkip(TimeConverter* minPartTC);
+    RankSyncSerialSkip(RankInfo num_ranks, TimeConverter* minPartTC);
     virtual ~RankSyncSerialSkip();
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t remote_tag, Link* link) override;
+         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) override;
     void execute(int thread) override;
 
     /** Cause an exchange of Untimed Data to occur */
@@ -60,8 +60,8 @@ private:
         uint32_t   remote_size;
     };
 
-    typedef std::map<int, comm_pair>  comm_map_t;
-    typedef std::map<LinkId_t, Link*> link_map_t;
+    typedef std::map<int, comm_pair>         comm_map_t;
+    typedef std::map<std::string, uintptr_t> link_map_t;
 
     // TimeConverter* period;
     comm_map_t comm_map;

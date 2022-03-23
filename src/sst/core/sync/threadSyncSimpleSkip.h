@@ -49,24 +49,29 @@ public:
     void prepareForComplete() override;
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(LinkId_t link_id, Link* link) override;
-    ActivityQueue* getQueueForThread(int tid) override;
+    void           registerLink(const std::string& name, Link* link) override;
+    ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) override;
 
     uint64_t getDataSize() const;
 
     // static void disable() { disabled = true; barrier.disable(); }
 
 private:
-    std::vector<ThreadSyncQueue*>       queues;
-    std::unordered_map<LinkId_t, Link*> link_map;
-    SimTime_t                           my_max_period;
-    int                                 num_threads;
-    int                                 thread;
-    static SimTime_t                    localMinimumNextActivityTime;
-    Simulation_impl*                    sim;
-    static Core::ThreadSafe::Barrier    barrier[3];
-    double                              totalWaitTime;
-    bool                                single_rank;
+    // Stores the links until they can be intialized with the right
+    // remote data.  It will hold whichever thread registers the link
+    // first and will be removed after the second thread registers and
+    // the link is properly initialized with the remote data.
+    std::unordered_map<std::string, Link*> link_map;
+
+    std::vector<ThreadSyncQueue*>    queues;
+    SimTime_t                        my_max_period;
+    int                              num_threads;
+    int                              thread;
+    static SimTime_t                 localMinimumNextActivityTime;
+    Simulation_impl*                 sim;
+    static Core::ThreadSafe::Barrier barrier[3];
+    double                           totalWaitTime;
+    bool                             single_rank;
 };
 
 } // namespace SST

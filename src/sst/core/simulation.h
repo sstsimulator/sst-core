@@ -26,7 +26,6 @@ namespace SST {
 
 class Output;
 class TimeLord;
-class SharedRegionManager;
 
 /**
  * Main control class for a SST Simulation.
@@ -49,18 +48,6 @@ public:
 
     /** Return a pointer to the singleton instance of the Simulation */
     static Simulation* getSimulation();
-
-    /**
-     * Returns the Simulation's SharedRegionManager
-     */
-
-#if !SST_BUILDING_CORE
-    static SharedRegionManager* getSharedRegionManager()
-        __attribute__((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed "
-                                  "in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
-#else
-    static SharedRegionManager* getSharedRegionManager();
-#endif
 
     /** Return the TimeLord associated with this Simulation */
     static TimeLord* getTimeLord(void);
