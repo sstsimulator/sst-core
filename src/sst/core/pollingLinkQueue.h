@@ -34,7 +34,7 @@ public:
     Activity* front() override;
 
 private:
-    std::multiset<Activity*, Activity::less_time> data;
+    std::multiset<Activity*, Activity::less<true, false, false>> data;
 };
 
 } // namespace SST

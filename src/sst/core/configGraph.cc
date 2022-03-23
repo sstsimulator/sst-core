@@ -700,20 +700,11 @@ ConfigGraph::postCreationCleanup()
         link->updateLatencies(timeLord);
     }
 
-    // If enforce event ordering is enabled, need to set the
-    // order_tag field, which will repurpose the order field
-    // since it is not used after graph creation.
-#ifdef SST_ENFORCE_EVENT_ORDERING
     LinkId_t count = 1;
-#endif
     for ( auto& it : link_names ) {
         ConfigLink* link = links[it.second];
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        link->order = count;
+        link->order      = count;
         count++;
-#else
-        link->order = link->id;
-#endif
     }
 }
 
