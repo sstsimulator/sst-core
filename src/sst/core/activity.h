@@ -38,8 +38,6 @@
 #define FINALEVENTPRIORITY     98
 #define EXITPRIORITY           99
 
-#define SST_ENFORCE_EVENT_ORDERING
-
 extern int main(int argc, char** argv);
 
 namespace SST {
@@ -48,275 +46,97 @@ namespace SST {
 class Activity : public SST::Core::Serialization::serializable
 {
 public:
-    Activity() {}
+    Activity() : delivery_time(0), priority_order(0), queue_order(0) {}
     virtual ~Activity() {}
+
+    /**
+       Class to use as the less than operator for STL functions or
+       sorting algorithms.  If a template parameter is set to true,
+       then that variable will be included in the comparison.  The
+       parameters are: T - delivery time, P - priority and order tag,
+       Q - queue order.
+     */
+    template <bool T, bool P, bool Q>
+    class less
+    {
+    public:
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        {
+            if ( T && lhs->delivery_time != rhs->delivery_time ) return lhs->delivery_time < rhs->delivery_time;
+            if ( P && lhs->priority_order != rhs->priority_order ) return lhs->priority_order < rhs->priority_order;
+            return Q && lhs->queue_order < rhs->queue_order;
+        }
+
+        // // Version without branching.  Still need to test to see if
+        // // this is faster than the above implementation for "real"
+        // // simulations.  For the sst-benchmark, the above is slightly
+        // // faster.  Uses the bitwise operator because there are no
+        // // early outs.  For bools, this is logically equivalent to the
+        // // logical operators
+        // inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        // {
+        //     return ( T & lhs->delivery_time < rhs->delivery_time ) |
+        //         (P & lhs->delivery_time == rhs->delivery_time & lhs->priority_order < rhs->priority_order) |
+        //         (Q & lhs->delivery_time == rhs->delivery_time & lhs->priority_order == rhs->priority_order &
+        //         lhs->queue_order < rhs->queue_order);
+        // }
+
+        // // Version without ifs, but with early outs in the logic.
+        // inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        // {
+        //     return ( T && lhs->delivery_time < rhs->delivery_time ) |
+        //         (P && lhs->delivery_time == rhs->delivery_time && lhs->priority_order < rhs->priority_order) |
+        //         (Q && lhs->delivery_time == rhs->delivery_time && lhs->priority_order == rhs->priority_order &&
+        //         lhs->queue_order < rhs->queue_order);
+        // }
+    };
+
+    /**
+       Class to use as the greater than operator for STL functions or
+       sorting algorithms (used if you want to sort opposite the
+       natural soring order).  If a template parameter is set to true,
+       then that variable will be included in the comparison.  The
+       parameters are: T - delivery time, P - priority and order tag,
+       Q - queue order.
+     */
+    template <bool T, bool P, bool Q>
+    class greater
+    {
+    public:
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        {
+            if ( T && lhs->delivery_time != rhs->delivery_time ) return lhs->delivery_time > rhs->delivery_time;
+            if ( P && lhs->priority_order != rhs->priority_order ) return lhs->priority_order > rhs->priority_order;
+            return Q && lhs->queue_order > rhs->queue_order;
+        }
+
+        // // Version without branching.  Still need to test to see if
+        // // this is faster than the above implementation for "real"
+        // // simulations.  For the sst-benchmark, the above is slightly
+        // // faster.  Uses the bitwise operator because there are no
+        // // early outs.  For bools, this is logically equivalent to the
+        // // logical operators
+        // inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        // {
+        //     return ( T & lhs->delivery_time > rhs->delivery_time ) |
+        //         (P & lhs->delivery_time == rhs->delivery_time & lhs->priority_order > rhs->priority_order) |
+        //         (Q & lhs->delivery_time == rhs->delivery_time & lhs->priority_order == rhs->priority_order &
+        //         lhs->queue_order > rhs->queue_order);
+        // }
+
+        // // Version without ifs, but with early outs in the logic.
+        // inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        // {
+        //     return ( T && lhs->delivery_time > rhs->delivery_time ) |
+        //         (P && lhs->delivery_time == rhs->delivery_time && lhs->priority_order > rhs->priority_order) |
+        //         (Q && lhs->delivery_time == rhs->delivery_time && lhs->priority_order == rhs->priority_order &&
+        //         lhs->queue_order > rhs->queue_order);
+        // }
+    };
+
 
     /** Function which will be called when the time for this Activity comes to pass. */
     virtual void execute(void) = 0;
-
-#ifdef SST_ENFORCE_EVENT_ORDERING
-
-    /** To use with STL container classes. */
-
-    /** For use when you have already binned by time */
-    class less_priority_order
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->priority == rhs->priority ) { return lhs->order_tag < rhs->order_tag; }
-            else {
-                return lhs->priority < rhs->priority;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.priority == rhs.priority ) { return lhs.order_tag < rhs.order_tag; }
-            else {
-                return lhs.priority < rhs.priority;
-            }
-        }
-    };
-
-    /** To use with STL priority queues, that order in reverse. */
-
-    /** For use when you have already binned by time */
-    class pq_less_priority_order
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->priority == rhs->priority ) {
-                if ( lhs->order_tag == rhs->order_tag ) { return lhs->queue_order > rhs->queue_order; }
-                else {
-                    return lhs->order_tag > rhs->order_tag;
-                }
-            }
-            else {
-                return lhs->priority > rhs->priority;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.priority == rhs.priority ) {
-                if ( lhs.order_tag == rhs.order_tag ) { return lhs.queue_order > rhs.queue_order; }
-                else {
-                    return lhs.order_tag > rhs.order_tag;
-                }
-            }
-            else {
-                return lhs.priority > rhs.priority;
-            }
-        }
-    };
-
-    /** To use with STL container classes. */
-    class less_time_priority_order
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->delivery_time == rhs->delivery_time ) {
-                if ( lhs->priority == rhs->priority ) {
-                    /* TODO:  Handle 64-bit wrap-around */
-                    return lhs->order_tag < rhs->order_tag;
-                }
-                else {
-                    return lhs->priority < rhs->priority;
-                }
-            }
-            else {
-                return lhs->delivery_time < rhs->delivery_time;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.delivery_time == rhs.delivery_time ) {
-                if ( lhs.priority == rhs.priority ) {
-                    /* TODO:  Handle 64-bit wrap-around */
-                    return lhs.order_tag < rhs.order_tag;
-                }
-                else {
-                    return lhs.priority < rhs.priority;
-                }
-            }
-            else {
-                return lhs.delivery_time < rhs.delivery_time;
-            }
-        }
-    };
-
-    /** To use with STL priority queues, that order in reverse. */
-    class pq_less_time_priority_order
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->delivery_time == rhs->delivery_time ) {
-                if ( lhs->priority == rhs->priority ) {
-                    if ( lhs->order_tag == rhs->order_tag ) {
-                        /* TODO:  Handle 64-bit wrap-around */
-                        return lhs->queue_order > rhs->queue_order;
-                    }
-                    else {
-                        return lhs->order_tag > rhs->order_tag;
-                    }
-                }
-                else {
-                    return lhs->priority > rhs->priority;
-                }
-            }
-            else {
-                return lhs->delivery_time > rhs->delivery_time;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.delivery_time == rhs.delivery_time ) {
-                if ( lhs.priority == rhs.priority ) {
-                    if ( lhs.order_tag == rhs.order_tag ) { return lhs.queue_order > rhs.queue_order; }
-                    else {
-                        return lhs.order_tag > rhs.order_tag;
-                    }
-                }
-                else {
-                    return lhs.priority > rhs.priority;
-                }
-            }
-            else {
-                return lhs.delivery_time > rhs.delivery_time;
-            }
-        }
-    };
-
-#endif
-
-    /** Comparator class to use with STL container classes. */
-
-    /** For use when you have already binned by time */
-    class less_priority
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) { return lhs->priority < rhs->priority; }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) { return lhs.priority < rhs.priority; }
-    };
-
-    /** To use with STL priority queues, that order in reverse. */
-    class pq_less_priority
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->priority == rhs->priority ) { return lhs->queue_order > rhs->queue_order; }
-            else {
-                return lhs->priority > rhs->priority;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.priority == rhs.priority ) { return lhs.queue_order > rhs.queue_order; }
-            else {
-                return lhs.priority > rhs.priority;
-            }
-        }
-    };
-
-    /** Comparator class to use with STL container classes. */
-    class less_time_priority
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs)
-        {
-            if ( lhs->delivery_time == rhs->delivery_time )
-                return lhs->priority < rhs->priority;
-            else
-                return lhs->delivery_time < rhs->delivery_time;
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs)
-        {
-            if ( lhs.delivery_time == rhs.delivery_time )
-                return lhs.priority < rhs.priority;
-            else
-                return lhs.delivery_time < rhs.delivery_time;
-        }
-    };
-
-    /** To use with STL priority queues, that order in reverse. */
-    class pq_less_time_priority
-    {
-    public:
-        /** Compare based off pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            if ( lhs->delivery_time == rhs->delivery_time ) {
-                if ( lhs->priority == rhs->priority ) {
-                    /* TODO:  Handle 64-bit wrap-around */
-                    return lhs->queue_order > rhs->queue_order;
-                }
-                else {
-                    return lhs->priority > rhs->priority;
-                }
-            }
-            else {
-                return lhs->delivery_time > rhs->delivery_time;
-            }
-        }
-
-        /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            if ( lhs.delivery_time == rhs.delivery_time ) {
-                if ( lhs.priority == rhs.priority ) {
-                    /* TODO:  Handle 64-bit wrap-around */
-                    return lhs.queue_order > rhs.queue_order;
-                }
-                else {
-                    return lhs.priority > rhs.priority;
-                }
-            }
-            else {
-                return lhs.delivery_time > rhs.delivery_time;
-            }
-        }
-    };
-
-    /** Comparator class to use with STL container classes. */
-    class less_time
-    {
-    public:
-        /** Compare pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) const
-        {
-            return lhs->delivery_time < rhs->delivery_time;
-        }
-
-        /** Compare references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) const
-        {
-            return lhs.delivery_time < rhs.delivery_time;
-        }
-    };
 
     /** Set the time for which this Activity should be delivered */
     inline void setDeliveryTime(SimTime_t time) { delivery_time = time; }
@@ -325,14 +145,16 @@ public:
     inline SimTime_t getDeliveryTime() const { return delivery_time; }
 
     /** Return the Priority of this Activity */
-    inline int getPriority() const { return priority; }
+    inline int getPriority() const { return (int)(priority_order >> 32); }
 
-    std::string getDeliveryTimeInfo() const
-    {
-        std::stringstream buf;
-        buf << "time: " << delivery_time << ", priority: " << priority;
-        return buf.str();
-    }
+    /** Sets the order tag */
+    inline void setOrderTag(uint32_t tag) { priority_order = (priority_order & 0xFFFFFFFF00000000ul) | (uint64_t)tag; }
+
+    /** Return the order tag associated with this activity */
+    inline uint32_t getOrderTag() const { return (uint32_t)(priority_order & 0xFFFFFFFFul); }
+
+    /** Returns the queue order associated with this activity */
+    inline uint64_t getQueueOrder() const { return queue_order; }
 
     /** Get a string represenation of the event.  The default version
      * will just use the name of the class, retrieved through the
@@ -363,12 +185,67 @@ public:
     virtual void printTrackingInfo(const std::string& header, Output& out) const {}
 #endif
 
-    /** Set a new Queue order */
-    void setQueueOrder(uint64_t order) { queue_order = order; }
+protected:
+    /** Set the priority of the Activity */
+    void setPriority(uint64_t priority) { priority_order = (priority_order & 0x00000000FFFFFFFFul) | (priority << 32); }
 
-    uint64_t getQueueOrder() { return queue_order; }
+    /**
+       Gets the delivery time info as a string.  To be used in
+       inherited classes if they'd like to overwrite the default print
+       or toString()
+     */
+    std::string getDeliveryTimeInfo() const
+    {
+        std::stringstream buf;
+        buf << "time: " << delivery_time << ", priority: " << getPriority() << ", order tag: " << getOrderTag()
+            << ", queue order: " << getQueueOrder();
+        return buf.str();
+    }
+
+    // Function used by derived classes to serialize data members.
+    // This class is not serializable, because not all class that
+    // inherit from it need to be serializable.
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& delivery_time;
+        ser& priority_order;
+        ser& queue_order;
+    }
+    ImplementVirtualSerializable(SST::Activity)
+
+
+        /** Set a new Queue order */
+        void setQueueOrder(uint64_t order)
+    {
+        queue_order = order;
+    }
+
+private:
+    // Data members
+    SimTime_t delivery_time;
+    // This will hold both the priority (high bits) and the link order
+    // (low_bits)
+    uint64_t  priority_order;
+    // Used for TimeVortex implementations that don't naturally keep
+    // the insertion order
+    uint64_t  queue_order;
+
 
 #ifdef USE_MEMPOOL
+    friend int ::main(int argc, char** argv);
+    /* Defined in event.cc */
+    typedef Core::MemPool* PoolData_t;
+    struct PoolInfo_t
+    {
+        std::thread::id tid;
+        size_t          size;
+        Core::MemPool*  pool;
+        PoolInfo_t(std::thread::id tid, size_t size, Core::MemPool* pool) : tid(tid), size(size), pool(pool) {}
+    };
+    static std::mutex              poolMutex;
+    static std::vector<PoolInfo_t> memPools;
+
+public:
     /** Allocates memory from a memory pool for a new Activity */
     void* operator new(std::size_t size) noexcept
     {
@@ -467,54 +344,6 @@ public:
     }
 
 #endif
-
-    // /* Serializable interface methods */
-    // void serialize_order(serializer &ser);
-
-
-    uint32_t getOrderTag() { return order_tag; }
-
-protected:
-    /** Set the priority of the Activity */
-    void setPriority(int priority) { this->priority = priority; }
-
-    // Function used by derived classes to serialize data members.
-    // This class is not serializable, because not all class that
-    // inherit from it need to be serializable.
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        ser& queue_order;
-        ser& delivery_time;
-        ser& priority;
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        ser& order_tag;
-#endif
-    }
-
-#ifdef SST_ENFORCE_EVENT_ORDERING
-    uint32_t order_tag;
-#endif
-
-private:
-    uint64_t  queue_order;
-    SimTime_t delivery_time;
-    int       priority;
-#ifdef USE_MEMPOOL
-    friend int ::main(int argc, char** argv);
-    /* Defined in event.cc */
-    typedef Core::MemPool* PoolData_t;
-    struct PoolInfo_t
-    {
-        std::thread::id tid;
-        size_t          size;
-        Core::MemPool*  pool;
-        PoolInfo_t(std::thread::id tid, size_t size, Core::MemPool* pool) : tid(tid), size(size), pool(pool) {}
-    };
-    static std::mutex              poolMutex;
-    static std::vector<PoolInfo_t> memPools;
-#endif
-
-    ImplementVirtualSerializable(SST::Activity)
 };
 
 } // namespace SST

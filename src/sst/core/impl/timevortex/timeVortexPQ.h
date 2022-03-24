@@ -50,16 +50,17 @@ public:
     uint64_t getMaxDepth() const override { return max_depth; }
 
 private:
-#ifdef SST_ENFORCE_EVENT_ORDERING
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority_order> dataType_t;
-#else
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority> dataType_t;
-#endif
+    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>> dataType_t;
+
+    // Data
     dataType_t data;
     uint64_t   insertOrder;
 
+    // Stats about usage
+    uint64_t max_depth;
+
+    // Need current depth to be atomic if we are thread safe
     typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type current_depth;
-    uint64_t                                                             max_depth;
 
     CACHE_ALIGNED(SST::Core::ThreadSafe::Spinlock, slock);
 };

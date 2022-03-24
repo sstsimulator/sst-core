@@ -116,9 +116,6 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Activity::serialize_order(ser);
-#ifndef SST_ENFORCE_EVENT_ORDERING
-        ser& tag;
-#endif
         ser& delivery_info;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         ser& first_comp;
@@ -151,22 +148,17 @@ private:
        This sets the information needed to get the event properly
        delivered for the next step of transfer.
 
-       For links that don't go to a sync object, the tag is
-       used as the order_tag field when that support is
-       enabled.  If enforce_event_ordering is off, then the field does
-       nothing.
+       The tag is used to deterministically sort the events and is
+       based off of the sorted link names.  This field is unused for
+       events sent across link connected to sync objects.
 
-       For links that are going to a sync, the tag is the
-       remote_tag that will be used to look up the corresponding link
-       on the other rank.
+       For links that are going to a sync, the delivery_info is used
+       on the remote side to send the event on the proper link.  For
+       local links, delivery_info contains the delivery functor.
      */
     inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
     {
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        order_tag = tag;
-#else
-        this->tag = tag;
-#endif
+        setOrderTag(tag);
         this->delivery_info = delivery_info;
     }
 
@@ -174,14 +166,7 @@ private:
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
-    inline LinkId_t getTag(void) const
-    {
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        return order_tag;
-#else
-        return tag;
-#endif
-    }
+    inline LinkId_t getTag(void) const { return getOrderTag(); }
 
 
     /** Holds the delivery information.  This is stored as a
@@ -196,24 +181,6 @@ private:
 
 private:
     static std::atomic<uint64_t> id_counter;
-    // If SST_ENFORCE_EVENT_ORDERING is turned on, then we'll use
-    // Activity::order_tag as the tag.
-
-    // The tag is used for two things:
-    //
-    // As the remote_tag for events that cross partitions.  This is
-    // used to look up the corect link in the other rank (MPI/thread)
-    //
-    // As the data used for enforcing link ordering for all other
-    // events (when that feature is on).
-    //
-    // For events that cross a rank boundary, the first link that
-    // sends it to the RankSync, will put in the remote_tag, and the
-    // link on the other rank that sends it to the TimeVortex will put
-    // in the enforce_event_ordering data.
-#ifndef SST_ENFORCE_EVENT_ORDERING
-    LinkId_t tag;
-#endif
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string first_comp;
