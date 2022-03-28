@@ -24,8 +24,8 @@ template <bool TS>
 TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
     TimeVortex(),
     insertOrder(0),
-    current_depth(0),
-    max_depth(0)
+    max_depth(0),
+    current_depth(0)
 {}
 
 template <bool TS>
