@@ -26,12 +26,7 @@ namespace SST {
 class Action : public Activity
 {
 public:
-    Action()
-    {
-#ifdef SST_ENFORCE_EVENT_ORDERING
-        order_tag = 0;
-#endif
-    }
+    Action() {}
     ~Action() {}
 
 protected:

@@ -19,8 +19,7 @@ PollingLinkQueue::PollingLinkQueue() : ActivityQueue() {}
 PollingLinkQueue::~PollingLinkQueue()
 {
     // Need to delete any events left in the queue
-    std::multiset<Activity*, Activity::less_time>::iterator it;
-    for ( it = data.begin(); it != data.end(); ++it ) {
+    for ( auto it = data.begin(); it != data.end(); ++it ) {
         delete *it;
     }
     data.clear();
@@ -48,8 +47,8 @@ Activity*
 PollingLinkQueue::pop()
 {
     if ( data.size() == 0 ) return nullptr;
-    std::multiset<Activity*, Activity::less_time>::iterator it      = data.begin();
-    Activity*                                               ret_val = (*it);
+    auto      it      = data.begin();
+    Activity* ret_val = (*it);
     data.erase(it);
     return ret_val;
 }

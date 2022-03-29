@@ -22,11 +22,9 @@
 namespace SST {
 namespace IMPL {
 
-#ifdef SST_ENFORCE_EVENT_ORDERING
-static Activity::pq_less_priority_order my_less;
-#else
-static Activity::pq_less_priority my_less;
-#endif
+// We sort backwards so we can work from the bottom of the vector
+// (faster delete)
+static Activity::greater<true, true, true> my_less;
 
 // Sort only happens in one thread
 template <bool TS>

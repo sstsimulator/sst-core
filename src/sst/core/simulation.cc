@@ -672,8 +672,6 @@ Simulation_impl::run()
         periodicCounter++;
 #endif
 
-        // printf("%d: Activity at %" PRIu64 "\n",my_rank.rank,currentSimCycle);
-
         if ( UNLIKELY(0 != lastRecvdSignal) ) {
             switch ( lastRecvdSignal ) {
             case SIGUSR1:

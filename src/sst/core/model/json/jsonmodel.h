@@ -14,8 +14,6 @@
 #ifndef SST_CORE_MODEL_JSON_JSONMODEL_H
 #define SST_CORE_MODEL_JSON_JSONMODEL_H
 
-#include "sst_config.h"
-
 #include "sst/core/component.h"
 #include "sst/core/config.h"
 #include "sst/core/configGraph.h"
