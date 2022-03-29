@@ -1,13 +1,13 @@
-/*
- *  This file is part of SST/macroscale:
- *               The macroscale architecture simulator from the SST suite.
- *  Copyright (c) 2009-2021 NTESS.
- *  This software is distributed under the BSD License.
- *  Under the terms of Contract DE-NA0003525 with NTESS,
- *  the U.S. Government retains certain rights in this software.
- *  For more information, see the LICENSE file in the top
- *  SST/macroscale directory.
- */
+// Copyright 2009-2022 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
+// Government retains certain rights in this software.
+//
+// Copyright (c) 2009-2022, NTESS
+// All rights reserved.
+//
+// This file is part of the SST software package. For license
+// information, see the LICENSE file in the top level directory of the
+// distribution.
 
 #ifndef SST_CORE_SERIALIZATION_SERIALIZABLE_H
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H

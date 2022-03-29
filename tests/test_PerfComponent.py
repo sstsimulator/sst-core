@@ -1,106 +1,114 @@
-# Automatically generated SST Python input
+# Copyright 2009-2022 NTESS. Under the terms
+# of Contract DE-NA0003525 with NTESS, the U.S.
+# Government retains certain rights in this software.
+#
+# Copyright (c) 2009-2022, NTESS
+# All rights reserved.
+#
+# This file is part of the SST software package. For license
+# information, see the LICENSE file in the top level directory of the
+# distribution.
 import sst
 
 # Define SST core options
-sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "10us")
 
 # Define the simulation components
 comp_c0_0 = sst.Component("c0_0", "coreTestElement.coreTestPerfComponent")
 comp_c0_0.addParams({
-      "workPerCycle" : """5000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "5000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c1_0 = sst.Component("c1_0", "coreTestElement.coreTestPerfComponent")
 comp_c1_0.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c2_0 = sst.Component("c2_0", "coreTestElement.coreTestPerfComponent")
 comp_c2_0.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c3_0 = sst.Component("c3_0", "coreTestElement.coreTestPerfComponent")
 comp_c3_0.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c0_1 = sst.Component("c0_1", "coreTestElement.coreTestPerfComponent")
 comp_c0_1.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c1_1 = sst.Component("c1_1", "coreTestElement.coreTestPerfComponent")
 comp_c1_1.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c2_1 = sst.Component("c2_1", "coreTestElement.coreTestPerfComponent")
 comp_c2_1.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c3_1 = sst.Component("c3_1", "coreTestElement.coreTestPerfComponent")
 comp_c3_1.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c0_2 = sst.Component("c0_2", "coreTestElement.coreTestPerfComponent")
 comp_c0_2.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c1_2 = sst.Component("c1_2", "coreTestElement.coreTestPerfComponent")
 comp_c1_2.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c2_2 = sst.Component("c2_2", "coreTestElement.coreTestPerfComponent")
 comp_c2_2.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c3_2 = sst.Component("c3_2", "coreTestElement.coreTestPerfComponent")
 comp_c3_2.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c0_3 = sst.Component("c0_3", "coreTestElement.coreTestPerfComponent")
 comp_c0_3.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c1_3 = sst.Component("c1_3", "coreTestElement.coreTestPerfComponent")
 comp_c1_3.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c2_3 = sst.Component("c2_3", "coreTestElement.coreTestPerfComponent")
 comp_c2_3.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 comp_c3_3 = sst.Component("c3_3", "coreTestElement.coreTestPerfComponent")
 comp_c3_3.addParams({
-      "workPerCycle" : """1000""",
-      "commSize" : """100""",
-      "commFreq" : """1000"""
+      "workPerCycle" : "1000",
+      "commSize" : "100",
+      "commFreq" : "1000"
 })
 
 # Define the simulation links
@@ -168,4 +176,3 @@ link_s_31_32 = sst.Link("link_s_31_32")
 link_s_31_32.connect( (comp_c1_3, "Elink", "10000ps"), (comp_c2_3, "Wlink", "10000ps") )
 link_s_32_33 = sst.Link("link_s_32_33")
 link_s_32_33.connect( (comp_c2_3, "Elink", "10000ps"), (comp_c3_3, "Wlink", "10000ps") )
-# End of generated output.
