@@ -1,6 +1,6 @@
 # SST-CORE share/ CMake
 #
-# Copyright 2009-2021 National Technology and Engineering Solutions of Sandia,
+# Copyright 2009-2022 National Technology and Engineering Solutions of Sandia,
 # LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
 # retains certain rights in this software.
 #
