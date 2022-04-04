@@ -18,7 +18,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
 #include "sst/core/namecheck.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
 
 #include <algorithm>
@@ -82,7 +82,7 @@ ConfigLink::updateLatencies(TimeLord* timeLord)
     //     if ( !zero_latency_warning ) {
     //         Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a
     //         latency of %s\n",
-    //                                           Simulation::getTimeLord()->getTimeBase().toStringBestSI().c_str());
+    //                                           Simulation_impl::getTimeLord()->getTimeBase().toStringBestSI().c_str());
     //         zero_latency_warning = true;
     //     }
     // }
@@ -92,7 +92,7 @@ ConfigLink::updateLatencies(TimeLord* timeLord)
     //     if ( !zero_latency_warning ) {
     //         Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a
     //         latency of %s\n",
-    //                                           Simulation::getTimeLord()->getTimeBase().toStringBestSI().c_str());
+    //                                           Simulation_impl::getTimeLord()->getTimeBase().toStringBestSI().c_str());
     //         zero_latency_warning = true;
     //     }
     // }
@@ -695,7 +695,7 @@ ConfigGraph::checkRanks(RankInfo ranks)
 void
 ConfigGraph::postCreationCleanup()
 {
-    TimeLord* timeLord = Simulation::getTimeLord();
+    TimeLord* timeLord = Simulation_impl::getTimeLord();
     for ( ConfigLink* link : getLinkMap() ) {
         link->updateLatencies(timeLord);
     }

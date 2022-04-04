@@ -14,7 +14,7 @@
 #include "sst/core/statapi/statoutput.h"
 
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"
 
@@ -73,7 +73,7 @@ StatisticFieldsOutput::addFieldToLists(const char* fieldName, fieldType_t fieldT
         fieldHandle_t       id                    = iter->second;
         StatisticFieldInfo* ExistingStatFieldInfo = m_outputFieldInfoArray[id];
         if ( ExistingStatFieldInfo->getFieldType() != fieldType ) {
-            Simulation::getSimulationOutput().fatal(
+            Simulation_impl::getSimulationOutput().fatal(
                 CALL_INFO, 1, "StatisticOutput %s registering the same column (%s) with two different types",
                 getStatisticOutputName().c_str(), fieldName);
         }
@@ -110,42 +110,42 @@ StatisticFieldsOutput::getRegisteredField(fieldHandle_t fieldHandle)
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support double output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support float output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int32_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint32_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int64_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
 {
-    Simulation::getSimulationOutput().fatal(
+    Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint64_t output", getStatisticOutputName().c_str());
 }
 

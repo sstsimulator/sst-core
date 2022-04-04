@@ -93,6 +93,9 @@ public:
     UnitAlgebra getElapsedSimTime() const override;
 
     /** Return the end simulation time as a time */
+    UnitAlgebra getEndSimTime() const override;
+
+    /** Return the end simulation time as a time */
     UnitAlgebra getFinalSimTime() const override;
 
     /** Get this instance's parallel rank */
@@ -112,6 +115,11 @@ public:
      *  @param name fully qualified libraryName.EventName
      */
     virtual void requireEvent(const std::string& name) override;
+
+    /** Signifies that a library is required for this simulation.
+     *  @param name Name of the library
+     */
+    virtual void requireLibrary(const std::string& name) override;
 
     /** Causes the current status of the simulation to be printed to stderr.
      * @param fullStatus - if true, call printStatus() on all components as well

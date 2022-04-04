@@ -65,7 +65,7 @@ public:
     int initialize(const std::string& obj_name, verify_type v_type = FE_VERIFY)
     {
         if ( data ) {
-            Simulation::getSimulationOutput().fatal(
+            Private::getSimulationOutput().fatal(
                 CALL_INFO, 1, "ERROR: called initialize() of SharedMap %s more than once\n", obj_name.c_str());
         }
 
@@ -179,7 +179,7 @@ public:
     inline void write(const keyT& key, const valT& value)
     {
         if ( published ) {
-            Simulation::getSimulationOutput().fatal(
+            Private::getSimulationOutput().fatal(
                 CALL_INFO, 1, "ERROR: write to SharedMap %s after publish() was called\n", data->getName().c_str());
         }
         return data->write(key, value);
@@ -237,7 +237,7 @@ private:
 
         Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
-            if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getSimulation()->getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
         ~Data() { delete change_set; }
@@ -245,7 +245,7 @@ private:
         void setVerify(verify_type v_type)
         {
             if ( v_type != verify && verify != VERIFY_UNINITIALIZED ) {
-                Simulation::getSimulationOutput().fatal(
+                Private::getSimulationOutput().fatal(
                     CALL_INFO, 1, "ERROR: Two different verify_types specified for SharedMap %s\n", name.c_str());
             }
             verify = v_type;
@@ -263,7 +263,7 @@ private:
             if ( !success.second ) {
                 // Wrote to a key that already existed
                 if ( verify != NO_VERIFY && value != success.first->second ) {
-                    Simulation::getSimulationOutput().fatal(
+                    Private::getSimulationOutput().fatal(
                         CALL_INFO, 1, "ERROR: wrote two different values to same key in SharedMap %s\n", name.c_str());
                 }
             }

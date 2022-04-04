@@ -14,7 +14,7 @@
 #include "sst/core/statapi/statfieldinfo.h"
 
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
 namespace SST {
@@ -51,7 +51,7 @@ StatisticFieldTypeBase::getField(fieldType_t id)
 {
     auto iter = fields_->find(id);
     if ( iter == fields_->end() ) {
-        Simulation::getSimulationOutput().fatal(CALL_INFO, 1, "Invalid Field ID: %d", int(id));
+        Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Invalid Field ID: %d", int(id));
     }
     return iter->second;
 }
@@ -67,7 +67,7 @@ void
 StatisticFieldTypeBase::checkRegisterConflict(const char* oldName, const char* newName)
 {
     if ( oldName && ::strcmp(oldName, newName) ) {
-        Simulation::getSimulationOutput().fatal(
+        Simulation_impl::getSimulationOutput().fatal(
             CALL_INFO, 1, "Conflicting names registered for field: %s != %s", oldName, newName);
     }
 }

@@ -12,6 +12,7 @@
 #ifndef SST_CORE_SHARED_SHAREDOBJECT_H
 #define SST_CORE_SHARED_SHAREDOBJECT_H
 
+#include "sst/core/output.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
@@ -23,6 +24,11 @@ namespace SST {
 class Simulation_impl;
 
 namespace Shared {
+
+namespace Private {
+Output&     getSimulationOutput();
+Simulation* getSimulation();
+} // namespace Private
 
 // NOTE: The classes in this header file are not part of the public
 // API and can change at any time
@@ -130,7 +136,7 @@ protected:
     inline void check_lock_for_write(const std::string& obj)
     {
         if ( locked ) {
-            Simulation::getSimulationOutput().fatal(
+            Private::getSimulationOutput().fatal(
                 CALL_INFO_LONG, 1, "ERROR: attempt to write to %s %s after init phase\n", obj.c_str(), name.c_str());
         }
     }
@@ -225,7 +231,7 @@ public:
         // SharedData object.
         std::lock_guard<std::mutex> lock(mtx);
         if ( locked ) {
-            Simulation::getSimulationOutput().fatal(
+            Private::getSimulationOutput().fatal(
                 CALL_INFO, 1, "Attempting to initialize SharedObject %s after the init() phase\n", name.c_str());
         }
         auto obj = shared_data.find(name);
@@ -240,7 +246,7 @@ public:
         auto obj_cast = dynamic_cast<T*>(obj->second);
 
         if ( obj_cast == nullptr ) {
-            Simulation::getSimulationOutput().fatal(
+            Private::getSimulationOutput().fatal(
                 CALL_INFO, 1, "ERROR: Shared object %s requested with two different types\n", name.c_str());
         }
 

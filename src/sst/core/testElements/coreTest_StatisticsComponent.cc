@@ -27,7 +27,7 @@ using namespace SST::CoreTestStatisticsComponent;
 
 StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params) :
     Component(id),
-    output(Simulation::getSimulation()->getSimulationOutput())
+    output(getSimulationOutput())
 {
     // Get runtime parameters from the input file (.py),
     // these will set the random number generation.
@@ -94,10 +94,7 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
     //    stat1_U32->delayCollection("10 ns");
 }
 
-StatisticsComponentInt::StatisticsComponentInt() :
-    Component(-1),
-    output(Simulation::getSimulation()->getSimulationOutput())
-{}
+StatisticsComponentInt::StatisticsComponentInt() : Component(-1), output(getSimulationOutput()) {}
 
 bool
 StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
@@ -138,7 +135,7 @@ StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
 
 StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& params) :
     Component(id),
-    output(Simulation::getSimulation()->getSimulationOutput())
+    output(getSimulationOutput())
 {
     // Get runtime parameters from the input file (.py),
     // these will set the random number generation.
@@ -189,10 +186,7 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
     stat3_F64 = registerStatistic<double>("stat3_F64", "3");
 }
 
-StatisticsComponentFloat::StatisticsComponentFloat() :
-    Component(-1),
-    output(Simulation::getSimulation()->getSimulationOutput())
-{}
+StatisticsComponentFloat::StatisticsComponentFloat() : Component(-1), output(getSimulationOutput()) {}
 
 bool
 StatisticsComponentFloat::Clock1Tick(Cycle_t UNUSED(CycleNum))

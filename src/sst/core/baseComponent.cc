@@ -368,6 +368,12 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
     return configureLink(name, handler);
 }
 
+UnitAlgebra
+BaseComponent::getCoreTimeBase() const
+{
+    return Simulation_impl::getSimulation()->getTimeLord()->getTimeBase();
+}
+
 SimTime_t
 BaseComponent::getCurrentSimCycle() const
 {
@@ -384,6 +390,18 @@ UnitAlgebra
 BaseComponent::getElapsedSimTime() const
 {
     return Simulation_impl::getSimulation()->getElapsedSimTime();
+}
+
+SimTime_t
+BaseComponent::getEndSimCycle() const
+{
+    return Simulation_impl::getSimulation()->getEndSimCycle();
+}
+
+UnitAlgebra
+BaseComponent::getEndSimTime() const
+{
+    return Simulation_impl::getSimulation()->getEndSimTime();
 }
 
 UnitAlgebra
@@ -438,6 +456,54 @@ SimTime_t
 BaseComponent::getCurrentSimTimeMilli() const
 {
     return getCurrentSimTime(Simulation_impl::getTimeLord()->getMilli());
+}
+
+double
+BaseComponent::getRunPhaseElapsedRealTime() const
+{
+    return Simulation_impl::getSimulation()->getRunPhaseElapsedRealTime();
+}
+
+double
+BaseComponent::getInitPhaseElapsedRealTime() const
+{
+    return Simulation_impl::getSimulation()->getInitPhaseElapsedRealTime();
+}
+
+double
+BaseComponent::getCompletePhaseElapsedRealTime() const
+{
+    return Simulation_impl::getSimulation()->getCompletePhaseElapsedRealTime();
+}
+
+bool
+BaseComponent::isSimulationRunModeInit() const
+{
+    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::INIT;
+}
+
+bool
+BaseComponent::isSimulationRunModeRun() const
+{
+    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::RUN;
+}
+
+bool
+BaseComponent::isSimulationRunModeBoth() const
+{
+    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::BOTH;
+}
+
+std::string&
+BaseComponent::getOutputDirectory() const
+{
+    return Simulation_impl::getSimulation()->getOutputDirectory();
+}
+
+void
+BaseComponent::requireLibrary(const std::string& name)
+{
+    Simulation_impl::getSimulation()->requireLibrary(name);
 }
 
 bool

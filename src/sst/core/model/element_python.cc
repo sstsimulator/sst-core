@@ -17,7 +17,7 @@
 
 // Python header files
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
@@ -89,7 +89,7 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
 #else
     stream << exc_name << ": " << PyString_AsString(PyObject_Str(val)) << "\n";
 #endif
-    Simulation::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
+    Simulation_impl::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
 }
 
 SSTElementPythonModuleCode*
@@ -160,7 +160,7 @@ SSTElementPythonModule::load()
     if ( primary_code_module != nullptr ) return primary_code_module->load(nullptr);
 
     if ( primary_module == nullptr ) {
-        Simulation::getSimulationOutput().fatal(
+        Simulation_impl::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule: Primary module not set.  Use addPrimaryModule().\n");
     }
     PyObject* code = Py_CompileString(primary_module, pylibrary.c_str(), Py_file_input);
@@ -204,7 +204,7 @@ SSTElementPythonModule::createPrimaryModule(char* code, const std::string& filen
         primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, code, filename);
     }
     else {
-        Simulation::getSimulationOutput().fatal(
+        Simulation_impl::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
     }
     return primary_code_module;
@@ -217,7 +217,7 @@ SSTElementPythonModule::createPrimaryModule()
         primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, empty_code, "empty_module");
     }
     else {
-        Simulation::getSimulationOutput().fatal(
+        Simulation_impl::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
     }
     return primary_code_module;

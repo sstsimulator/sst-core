@@ -24,7 +24,7 @@ namespace CoreTestParamComponent {
 
 coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params) : Component(id)
 {
-    Output& out = Simulation::getSimulationOutput();
+    Output& out = getSimulationOutput();
     out.output("Component %s:\n", getName().c_str());
     if ( !params.contains("set_param") ) {
         // Sets in python are not ordered so we can't compare the raw

@@ -18,10 +18,26 @@
 #include "sst/core/shared/sharedArray.h"
 #include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedSet.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
 namespace SST {
 namespace Shared {
+
+namespace Private {
+Output&
+getSimulationOutput()
+{
+    return Simulation_impl::getSimulationOutput();
+}
+
+Simulation*
+getSimulation()
+{
+    return Simulation_impl::getSimulation();
+}
+
+} // namespace Private
 
 SharedObjectDataManager SharedObject::manager;
 std::mutex              SharedObjectDataManager::mtx;
@@ -35,8 +51,8 @@ SharedObjectDataManager::updateState(bool finalize)
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Exchange data between ranks
-    if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
-        int                                 myRank = Simulation::getSimulation()->getRank().rank;
+    if ( Simulation_impl::getSimulation()->getNumRanks().rank > 1 ) {
+        int                                 myRank = Simulation_impl::getSimulation()->getRank().rank;
         // Create a vector off all my changesets
         std::vector<SharedObjectChangeSet*> myChanges;
 
