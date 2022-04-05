@@ -109,20 +109,28 @@ public:
      */
     virtual void printStatus(Output& UNUSED(out)) { return; }
 
+    /** Get the core timebase */
+    UnitAlgebra getCoreTimeBase() const;
     /** Return the current simulation time as a cycle count*/
     SimTime_t   getCurrentSimCycle() const;
     /** Return the current priority */
     int         getCurrentPriority() const;
     /** Return the elapsed simulation time as a time */
     UnitAlgebra getElapsedSimTime() const;
+    /** Return the end simulation time as a cycle count*/
+    SimTime_t   getEndSimCycle() const;
     /** Return the end simulation time as a time */
-    UnitAlgebra getFinalSimTime() const;
+    UnitAlgebra getEndSimTime() const;
+    /** Return the end simulation time as a time */
+    UnitAlgebra getFinalSimTime() const
+        __attribute__((deprecated("getFinalSimTime() has been deprecated and will be removed in SST 13.  It has been "
+                                  "replaced by getEndSimTime().")));
     /** Get this instance's parallel rank */
-    RankInfo    getRank() const;
+    RankInfo getRank() const;
     /** Get the number of parallel ranks in the simulation */
-    RankInfo    getNumRanks() const;
+    RankInfo getNumRanks() const;
     /** Return the base simulation Output class instance */
-    Output&     getSimulationOutput() const;
+    Output&  getSimulationOutput() const;
 
     /** return the time since the simulation began in units specified by
         the parameter.
@@ -141,7 +149,69 @@ public:
     /** Utility function to return the time since the simulation began in milliseconds */
     SimTime_t getCurrentSimTimeMilli() const;
 
+    /** Get the amount of real-time spent executing the run phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the run phase
+     */
+    double getRunPhaseElapsedRealTime() const;
+
+    /** Get the amount of real-time spent executing the init phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the init phase
+     */
+    double getInitPhaseElapsedRealTime() const;
+
+    /** Get the amount of real-time spent executing the complete phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the complete phase
+     */
+    double getCompletePhaseElapsedRealTime() const;
+
+
 protected:
+    /** Check to see if the run mode was set to INIT
+        @return true if simulation run mode is set to INIT
+     */
+    bool isSimulationRunModeInit() const;
+
+    /** Check to see if the run mode was set to RUN
+        @return true if simulation run mode is set to RUN
+     */
+    bool isSimulationRunModeRun() const;
+
+    /** Check to see if the run mode was set to BOTH
+        @return true if simulation run mode is set to BOTH
+     */
+    bool isSimulationRunModeBoth() const;
+
+    /** Returns the output directory of the simulation
+     *  @return Directory in which simulation outputs should be
+     *  placed.  Returns empty string if output directory not set by
+     *  user.
+     */
+    std::string& getOutputDirectory() const;
+
+    /** Signifies that a library is required for this simulation.
+     *  Causes the Factory to verify that the required library is
+     *  loaded.
+     *
+     *  NOTE: This function should rarely be required, as most
+     *  dependencies are automatically detected in the simulator core.
+     *  However, if the component uses an event from another library
+     *  that is not wholly defined in a header file, this call may be
+     *  required to ensure that all the code from the event is loaded.
+     *  Similarly, if you use a class from another library that does
+     *  not have ELI information, this call may also be required to
+     *  make sure all dependencies are loaded.
+     *
+     *  @param name Name of library this BaseComponent depends on
+     */
+    void requireLibrary(const std::string& name);
+
+
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string& name) const;
 
@@ -443,7 +513,7 @@ protected:
 protected:
     // When you direct load, the ComponentExtension does not need any
     // ELI information and if it has any, it will be ignored.  The
-    // extension will be loaded as if it were part of the part
+    // extension will be loaded as if it were part of the parent
     // BaseComponent and will share all that components ELI
     // information.
     template <class T, class... ARGS>

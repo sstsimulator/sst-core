@@ -56,7 +56,7 @@ Exit::refInc(ComponentId_t id, uint32_t thread)
 {
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find(id) != m_idSet.end() ) {
-        // CompMap_t comp_map = Simulation::getSimulation()->getComponentMap();
+        // CompMap_t comp_map = Simulation_impl::getSimulation()->getComponentMap();
         // bool found_in_map = false;
 
         // for(CompMap_t::iterator comp_map_itr = comp_map.begin();
@@ -71,7 +71,7 @@ Exit::refInc(ComponentId_t id, uint32_t thread)
 
         // if(found_in_map) {
         //     _DBG( Exit, "component (%s) multiple increment\n",
-        //           Simulation::getSimulation()->getComponent(id)->getName().c_str() );
+        //           Simulation_impl::getSimulation()->getComponent(id)->getName().c_str() );
         // } else {
         //     _DBG( Exit, "component in construction increments exit multiple times.\n" );
         // }
@@ -91,14 +91,14 @@ Exit::refDec(ComponentId_t id, uint32_t thread)
 {
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find(id) == m_idSet.end() ) {
-        Simulation::getSimulation()->getSimulationOutput().verbose(
+        Simulation_impl::getSimulation()->getSimulationOutput().verbose(
             CALL_INFO, 1, 1, "component (%s) multiple decrement\n",
             Simulation_impl::getSimulation()->getComponent(id)->getName().c_str());
         return true;
     }
 
     if ( m_refCount == 0 ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "refCount is already 0\n");
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "refCount is already 0\n");
         return true;
     }
 
@@ -108,13 +108,13 @@ Exit::refDec(ComponentId_t id, uint32_t thread)
     --m_thread_counts[thread];
 
     if ( single_rank && num_threads == 1 && m_refCount == 0 ) {
-        end_time             = Simulation::getSimulation()->getCurrentSimCycle();
+        end_time             = Simulation_impl::getSimulation()->getCurrentSimCycle();
         Simulation_impl* sim = Simulation_impl::getSimulation();
         // sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
         sim->insertActivity(sim->getCurrentSimCycle() + 1, this);
     }
     else if ( m_thread_counts[thread] == 0 ) {
-        SimTime_t end_time_new = Simulation::getSimulation()->getCurrentSimCycle();
+        SimTime_t end_time_new = Simulation_impl::getSimulation()->getCurrentSimCycle();
         if ( end_time_new > end_time ) end_time = end_time_new;
         if ( Simulation_impl::getSimulation()->isIndependentThread() ) {
             // Need to exit just this thread, so we'll need to use a
@@ -138,7 +138,7 @@ Exit::execute()
 {
     check();
 
-    SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + m_period->getFactor();
+    SimTime_t next = Simulation_impl::getSimulation()->getCurrentSimCycle() + m_period->getFactor();
     Simulation_impl::getSimulation()->insertActivity(next, this);
 }
 
@@ -183,7 +183,7 @@ Exit::check()
     //     // there is no way to know if the Exit object is deleted in the
     //     // TimeVortex or not, so we just make sure it is always deleted
     //     // there.
-    //     Simulation *sim = Simulation::getSimulation();
+    //     Simulation *sim = Simulation_impl::getSimulation();
     //     SimTime_t next = sim->getCurrentSimCycle() +
     //         m_period->getFactor();
     //     sim->insertActivity( next, this );

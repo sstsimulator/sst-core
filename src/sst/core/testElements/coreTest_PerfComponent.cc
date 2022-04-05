@@ -37,15 +37,10 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
 
     // get parameters
     workPerCycle = params.find<int64_t>("workPerCycle", 0, found);
-    if ( !found ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n");
-    }
+    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n"); }
 
     commFreq = params.find<int64_t>("commFreq", 0, found);
-    if ( !found ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, -1, "couldn't find communication frequency\n");
-    }
+    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find communication frequency\n"); }
 
     commSize = params.find<int64_t>("commSize", 16);
 

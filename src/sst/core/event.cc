@@ -88,7 +88,7 @@ Event::execute(void)
 Event*
 Event::clone()
 {
-    Simulation::getSimulation()->getSimulationOutput().fatal(
+    Simulation_impl::getSimulation()->getSimulationOutput().fatal(
         CALL_INFO, 1,
         "Called clone() on an Event that doesn't"
         " implement it.");
@@ -98,7 +98,7 @@ Event::clone()
 Event::id_type
 Event::generateUniqueId()
 {
-    return std::make_pair(id_counter++, Simulation::getSimulation()->getRank().rank);
+    return std::make_pair(id_counter++, Simulation_impl::getSimulation()->getRank().rank);
 }
 
 void

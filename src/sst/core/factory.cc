@@ -20,7 +20,7 @@
 #include "sst/core/model/element_python.h"
 #include "sst/core/params.h"
 #include "sst/core/part/sstpart.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -390,7 +390,7 @@ Module*
 Factory::CreateModule(const std::string& type, Params& params)
 {
     if ( "" == type ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1,
             "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
     }

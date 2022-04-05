@@ -107,7 +107,7 @@ OneShot::execute(void)
     HandlerList_t*        ptrHandlerList;
 
     // Figure out the current sim time
-    SimTime_t currentEventTime = Simulation::getSimulation()->getCurrentSimCycle();
+    SimTime_t currentEventTime = Simulation_impl::getSimulation()->getCurrentSimCycle();
 
     if ( m_HandlerVectorMap.back().first != currentEventTime ) {
         // This shouldn't happen, but if we're not at the right time,

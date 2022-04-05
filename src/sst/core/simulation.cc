@@ -91,6 +91,12 @@ Simulation_impl::getElapsedSimTime() const
 }
 
 UnitAlgebra
+Simulation_impl::getEndSimTime() const
+{
+    return timeLord.getTimeBase() * getEndSimCycle();
+}
+
+UnitAlgebra
 Simulation_impl::getFinalSimTime() const
 {
     return timeLord.getTimeBase() * getEndSimCycle();
@@ -189,9 +195,8 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     complete_phase_start_time(0.0),
     complete_phase_total_time(0.0)
 {
-
     sim_output.init(cfg->output_core_prefix(), cfg->verbose(), 0, Output::STDOUT);
-    output_directory = "";
+    output_directory = cfg->output_directory();
     Params p;
     // params get passed twice - both the params and a ctor argument
     direct_interthread = cfg->interthread_links();
@@ -233,6 +238,12 @@ void
 Simulation_impl::requireEvent(const std::string& name)
 {
     factory->RequireEvent(name);
+}
+
+void
+Simulation_impl::requireLibrary(const std::string& name)
+{
+    factory->requireLibrary(name);
 }
 
 SimTime_t

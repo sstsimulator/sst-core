@@ -135,7 +135,7 @@ Link::addSendLatency(SimTime_t cycles, TimeConverter* timebase)
 void
 Link::addRecvLatency(int cycles, const std::string& timebase)
 {
-    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
+    SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
     pair_link->latency += (cycles * tb);
 }
 
@@ -149,7 +149,7 @@ void
 Link::setFunctor(Event::HandlerBase* functor)
 {
     if ( UNLIKELY(type == POLL) ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call setFunctor on a Polling Link\n");
     }
 
@@ -161,7 +161,7 @@ void
 Link::replaceFunctor(Event::HandlerBase* functor)
 {
     if ( UNLIKELY(type == POLL) ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call replaceFunctor on a Polling Link\n");
     }
 
@@ -175,13 +175,13 @@ Link::send_impl(SimTime_t delay, Event* event)
 {
     if ( RUN != mode ) {
         if ( INIT == mode ) {
-            Simulation::getSimulation()->getSimulationOutput().fatal(
+            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
                 CALL_INFO, 1,
                 "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before "
                 "setup.\n");
         }
         else if ( COMPLETE == mode ) {
-            Simulation::getSimulation()->getSimulationOutput().fatal(
+            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
                 CALL_INFO, 1, "ERROR: Trying to call send or recv during complete phase.");
         }
     }
@@ -205,12 +205,12 @@ Link::recv()
 {
     // Check to make sure this is a polling link
     if ( UNLIKELY(type != POLL) ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
     }
 
     Event*      event      = nullptr;
-    Simulation* simulation = Simulation::getSimulation();
+    Simulation* simulation = Simulation_impl::getSimulation();
 
     if ( !pair_link->send_queue->empty() ) {
         Activity* activity = pair_link->send_queue->front();
@@ -226,7 +226,7 @@ void
 Link::sendUntimedData(Event* data)
 {
     if ( RUN == mode ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1,
             "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
     }
