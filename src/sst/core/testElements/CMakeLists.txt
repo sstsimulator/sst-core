@@ -18,6 +18,7 @@ add_library(
   coreTest_ClockerComponent.cc
   coreTest_DistribComponent.cc
   coreTest_RNGComponent.cc
+  coreTest_Serialization.cc
   coreTest_StatisticsComponent.cc
   coreTest_Links.cc
   coreTest_MessageGeneratorComponent.cc

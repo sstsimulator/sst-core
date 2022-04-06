@@ -76,7 +76,7 @@ void
 ConfigLink::updateLatencies(TimeLord* timeLord)
 {
     // Need to clean up some elements before we can test for zero latency
-    latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__);
+    if ( order >= 1 ) { latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__); }
     // if ( latency[0] == 0 ) {
     //     latency[0] = 1;
     //     if ( !zero_latency_warning ) {
@@ -86,7 +86,7 @@ ConfigLink::updateLatencies(TimeLord* timeLord)
     //         zero_latency_warning = true;
     //     }
     // }
-    latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
+    if ( order >= 2 ) { latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__); }
     // if ( latency[1] == 0 ) {
     //     latency[1] = 1;
     //     if ( !zero_latency_warning ) {

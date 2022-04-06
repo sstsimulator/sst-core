@@ -286,7 +286,8 @@ class SSTTestCase(unittest.TestCase):
             check_param_type("global_args", global_args, str)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
-        check_param_type("expected_rc", expected_rc, int)
+        if expected_rc is not None:
+            check_param_type("expected_rc", expected_rc, int)
 
         # Make sure sdl file is exists and is a file, if check_sdl_file flag is True
         if check_sdl_file:
@@ -361,8 +362,9 @@ class SSTTestCase(unittest.TestCase):
         # Look for runtime error conditions
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
-        err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
-        self.assertEqual(rtn.result(), expected_rc, err_str)
+        if expected_rc:
+            err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
+            self.assertEqual(rtn.result(), expected_rc, err_str)
 
         # Return the command used to launch SST
         return oscmd

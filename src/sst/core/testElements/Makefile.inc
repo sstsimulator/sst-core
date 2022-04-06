@@ -25,6 +25,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_Message.h \
 	testElements/coreTest_MessageGeneratorComponent.h \
 	testElements/coreTest_MessageGeneratorComponent.cc \
+	testElements/coreTest_Serialization.h \
+	testElements/coreTest_Serialization.cc \
 	testElements/coreTest_SharedObjectComponent.h \
 	testElements/coreTest_SharedObjectComponent.cc \
 	testElements/coreTest_SubComponent.h \
