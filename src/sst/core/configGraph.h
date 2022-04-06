@@ -398,13 +398,16 @@ public:
         }
     }
 
-    ConfigGraph() : output(Output::getDefaultObject()), nextComponentId(0)
+    ConfigGraph() : nextComponentId(0)
     {
         links.clear();
         comps.clear();
         // Init the statistic output settings
         statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
         statOutputs.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
+        // Output is only used for warnings or fatal that should go to stderr
+        Output& o = Output::getDefaultObject();
+        output.init(o.getPrefix(), o.getVerboseLevel(), o.getVerboseMask(), Output::STDERR);
     }
 
     size_t getNumComponents() { return comps.data.size(); }
@@ -510,7 +513,7 @@ private:
     friend class Simulation_impl;
     friend class SSTSDLModelDefinition;
 
-    Output& output;
+    Output output;
 
     ComponentId_t nextComponentId;
 

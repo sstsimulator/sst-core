@@ -11,6 +11,9 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 
+import os
+import filecmp
+
 from sst_unittest import *
 from sst_unittest_support import *
 
@@ -32,7 +35,7 @@ def initializeTestModule_SingleInstance(class_inst):
 
 ################################################################################
 
-class testcase_Links(SSTTestCase):
+class testcase_StatisticComponent(SSTTestCase):
 
     def initializeClass(self, testName):
         super(type(self), self).initializeClass(testName)
@@ -50,33 +53,18 @@ class testcase_Links(SSTTestCase):
 
 #####
 
-    def test_Links(self):
-        self.component_test_template("basic")
+    def test_Serialization(self):
 
-    def test_Links_dangling(self):
-        self.component_test_template("dangling", "--model-options=dangling", 1)
-
-    def test_Links_wrong_port(self):
-        self.component_test_template("wrong_port", "--model-options=wrong_port", 1)
-
-#####
-
-    def component_test_template(self, testtype, extra_args="", rc=0):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        if rc == 0: ext = "out"
-        else: ext = "err"
-        sdlfile = "{0}/test_Links.py".format(testsuitedir)
-        reffile = "{0}/refFiles/test_Links_{1}.out".format(testsuitedir,testtype)
-        outfile = "{0}/test_Links_{1}.{2}".format(outdir,testtype,ext)
+        sdlfile = "{0}/test_Serialization.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_Serialization.out".format(testsuitedir)
+        outfile = "{0}/test_Serialization.out".format(outdir)
 
-        self.run_sst(sdlfile, outfile, other_args=extra_args, expected_rc=rc)
+        self.run_sst(sdlfile, outfile)
 
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")
-        filter2 = IgnoreAllAfterFilter("SST Fatal")
-        # Do fitered diff.  Sort only when we are expecting success
-        cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), outfile, reffile, rc == 0, [filter1, filter2])
+        cmp_result = testing_compare_filtered_diff("serialization", outfile, reffile, True, [filter1])
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-

@@ -973,7 +973,10 @@ class LineFilter:
         Returns:
             (bool) Filtered line or None if line should be removed
     """
-    def filter(line):
+    def filter(self, line):
+        pass
+
+    def reset(self):
         pass
 
 
@@ -995,6 +998,33 @@ class StartsWithFilter(LineFilter):
         check_param_type("line", line, str)
 
         if ( line.startswith(self._prefix) ):
+            return None
+        return line
+
+class IgnoreAllAfterFilter(LineFilter):
+    """ Filters out any line that starts with a specified string and all lines after it
+    """
+    def __init__(self, prefix):
+        self._prefix = prefix;
+        self._found = False
+
+    def reset(self):
+        self._found = False
+
+    def filter(self, line):
+        """ Checks to see if the line starts with the prefix specified in constructor
+
+            Args:
+                line (str): Line to check
+
+            Returns:
+                line if line does not start with the prefix and None if it does
+        """
+        check_param_type("line", line, str)
+
+        if self._found: return None
+        if ( line.startswith(self._prefix) ):
+            self._found = True
             return None
         return line
 
@@ -1066,6 +1096,8 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
 
     # Read in the output file and optionally sort it
     with open(outfile) as fp:
+        for filter in filters:
+            filter.reset()
         out_lines = []
         for line in fp:
             filt_line = line
@@ -1083,6 +1115,8 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
 
     # Read in the reference file and optionally sort it
     with open(reffile) as fp:
+        for filter in filters:
+            filter.reset()
         ref_lines = []
         for line in fp:
             filt_line = line

@@ -1,0 +1,2 @@
+WARNING:  Found dangling link: link_0.  It is connected on one side to component c1.
+FATAL:  SST Core: Structure errors found in the ConfigGraph.

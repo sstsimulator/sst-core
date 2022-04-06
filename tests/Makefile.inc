@@ -13,6 +13,7 @@ EXTRA_DIST += \
     tests/testsuite_default_UnitAlgebra.py \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
+    tests/testsuite_default_Serialization.py \
     tests/testsuite_testengine_testing.py \
     tests/test_Component.py \
     tests/test_ClockerComponent.py \
@@ -29,6 +30,7 @@ EXTRA_DIST += \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
     tests/test_RNGComponent_xorshift.py \
+    tests/test_Serialization.py \
     tests/test_SharedObject.py \
     tests/test_StatisticsComponent.py \
     tests/test_Links.py \
@@ -49,7 +51,10 @@ EXTRA_DIST += \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \
     tests/refFiles/test_StatisticsComponent.out \
-    tests/refFiles/test_Links.out \
+    tests/refFiles/test_Links_basic.out \
+    tests/refFiles/test_Links_dangling.out \
+    tests/refFiles/test_Links_wrong_port.out \
+    tests/refFiles/test_Serialization.out \
     tests/refFiles/test_SubComponent_2.out \
     tests/refFiles/test_SubComponent.out \
     tests/refFiles/test_UnitAlgebra.out \
