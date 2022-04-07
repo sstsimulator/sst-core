@@ -1,7 +1,11 @@
 README for coreTestElement
 -------------------------------
 
-The coreTestElement provides SST-Core Specific Testing Element designed to
-test out specific functions of the Core:
+The coreTestElement provides SST-Core Specific Testing Elements
+designed to test out specific functions of the Core.
+
+NOTE: These should not be used as examples on how to write elements
+for normal SST simulations.  For examples, please see
+sst/elements/simpleElementExample.
 
 

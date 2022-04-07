@@ -83,32 +83,7 @@ EXTRA_DIST += \
     tests/subcomponent_tests/refFiles/test_sc_ua.out \
     tests/subcomponent_tests/refFiles/test_sc_uu.out
 
-deprecated_EXTRA_DIST = \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2nl.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_n2l.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_n.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2l.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2nn.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_n2n.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2n2l.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2n.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_nl.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_2n2n.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_l.py \
-    tests/subcomponent_tests/legacy/test_sc_legacy_nn.py \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2l.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2n.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2n2l.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2n2n.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2nl.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_2nn.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_l.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_n.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_n2l.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_n2n.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_nl.out \
-    tests/subcomponent_tests/legacy/refFiles/test_sc_legacy_nn.out
-
+deprecated_EXTRA_DIST =
 
 if !SST_ENABLE_PREVIEW_BUILD
 EXTRA_DIST += $(deprecated_EXTRA_DIST)

@@ -20,7 +20,7 @@
 #include "sst/core/testElements/coreTest_Serialization.h"
 
 #include "sst/core/link.h"
-#include "sst/core/objectComms.h"
+#include "sst/core/objectSerialization.h"
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/rng.h"
 #include "sst/core/warnmacros.h"
