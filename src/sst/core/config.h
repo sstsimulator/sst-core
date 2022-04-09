@@ -170,14 +170,6 @@ public:
     */
     bool parallel_output() const { return parallel_output_; }
 
-    /**
-       File to output xml formatted config graph to (empty string means no
-       output)
-
-       @deprecated Does not support all of the current SST
-       configuration features
-    */
-    const std::string& output_xml() const { return output_xml_; }
 
     // Graph output
 
@@ -319,7 +311,6 @@ public:
         ser& output_config_graph_;
         ser& output_json_;
         ser& parallel_output_;
-        ser& output_xml_;
 
         ser& output_dot_;
         ser& dot_verbosity_;
@@ -387,7 +378,6 @@ private:
     std::string output_config_graph_; /*!< File to dump configuration graph */
     std::string output_json_;         /*!< File to dump JSON output */
     bool        parallel_output_;     /*!< Output simulation graph in parallel */
-    std::string output_xml_;          /*!< File to dump XML output */
 
     // Graph output
     std::string output_dot_;               /*!< File to dump dot output */
