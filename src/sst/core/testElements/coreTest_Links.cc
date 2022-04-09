@@ -66,7 +66,7 @@ coreTestLinks::~coreTestLinks() {}
 void
 coreTestLinks::handleEvent(Event* ev, std::string from)
 {
-    Simulation::getSimulationOutput().output(
+    getSimulationOutput().output(
         "%d: received event at: %" PRIu64 " ns on link %s\n", my_id, getCurrentSimTimeNano(), from.c_str());
     delete ev;
     recv_count++;

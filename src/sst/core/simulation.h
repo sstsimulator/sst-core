@@ -47,13 +47,19 @@ public:
     /********* Public Static API ************/
 
     /** Return a pointer to the singleton instance of the Simulation */
-    static Simulation* getSimulation();
+    static Simulation* getSimulation()
+        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
+                                  "element base classes.  The APIs will be removed in SST 13.")));
 
     /** Return the TimeLord associated with this Simulation */
-    static TimeLord* getTimeLord(void);
+    static TimeLord* getTimeLord(void)
+        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
+                                  "element base classes.  The APIs will be removed in SST 13.")));
 
     /** Return the base simulation Output class instance */
-    static Output& getSimulationOutput();
+    static Output& getSimulationOutput()
+        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
+                                  "element base classes.  The APIs will be removed in SST 13.")));
 
     /********* Public API ************/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
@@ -72,7 +78,12 @@ public:
     virtual UnitAlgebra getElapsedSimTime() const = 0;
 
     /** Return the end simulation time as a time */
-    virtual UnitAlgebra getFinalSimTime() const = 0;
+    virtual UnitAlgebra getEndSimTime() const = 0;
+
+    /** Return the end simulation time as a time */
+    virtual UnitAlgebra getFinalSimTime() const
+        __attribute__((deprecated("getFinalSimTime() has been deprecated and will be removed in SST 13.  It has been "
+                                  "replaced by getEndSimTime()."))) = 0;
 
     /** Get this instance's parallel rank */
     virtual RankInfo getRank() const = 0;
@@ -89,7 +100,13 @@ public:
      *  Causes the Factory to verify that the required event type can be found.
      *  @param name fully qualified libraryName.EventName
      */
-    virtual void requireEvent(const std::string& name) = 0;
+    virtual void requireEvent(const std::string& name) __attribute__((deprecated(
+        "requireEvent() has been deprecated in favor or requireLibrary() and will be removed in SST 13."))) = 0;
+
+    /** Signifies that a library is required for this simulation.
+     *  @param name Name of the library
+     */
+    virtual void requireLibrary(const std::string& name) = 0;
 
     /** Causes the current status of the simulation to be printed to stderr.
      * @param fullStatus - if true, call printStatus() on all components as well

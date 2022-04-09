@@ -13,7 +13,7 @@
 
 #include "sst/core/statapi/statoutputcsv.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
 namespace SST {
@@ -23,7 +23,7 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) : StatisticFiel
 {
     m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
-    Output& out      = Simulation::getSimulationOutput();
+    Output& out      = Simulation_impl::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCSV enabled...\n");
     setStatisticOutputName("StatisticOutputCSV");
 }
@@ -89,8 +89,8 @@ StatisticOutputCSV::startOfSimulation()
     FieldInfoArray_t::iterator it_v;
 
     // Set Filename with Rank if Num Ranks > 1
-    if ( 1 < Simulation::getSimulation()->getNumRanks().rank ) {
-        int         rank    = Simulation::getSimulation()->getRank().rank;
+    if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
+        int         rank    = Simulation_impl::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
 
         // Search for any extension
@@ -206,14 +206,14 @@ StatisticOutputCSV::implStopOutputEntries()
     // Done with Output, Send a line of data to the file
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
-        print("%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+        print("%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
         print("%s", m_Separator.c_str());
     }
 
     // Done with Output, Send a line of data to the file
     if ( true == m_outputRank ) {
         // Add the Simulation Time to the front
-        print("%d", Simulation::getSimulation()->getRank().rank);
+        print("%d", Simulation_impl::getSimulation()->getRank().rank);
         print("%s", m_Separator.c_str());
     }
 
@@ -282,7 +282,7 @@ StatisticOutputCSV::openFile(void)
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
-            Output out = Simulation::getSimulation()->getSimulationOutput();
+            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
@@ -296,7 +296,7 @@ StatisticOutputCSV::openFile(void)
         m_hFile = fopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
-            Output out = Simulation::getSimulation()->getSimulationOutput();
+            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));

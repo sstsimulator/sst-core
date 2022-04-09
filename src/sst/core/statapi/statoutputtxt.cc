@@ -13,7 +13,7 @@
 
 #include "sst/core/statapi/statoutputtxt.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
 namespace SST {
@@ -83,8 +83,8 @@ StatisticOutputTextBase::startOfSimulation()
     FieldInfoArray_t::iterator it_v;
 
     // Set Filename with Rank if Num Ranks > 1
-    if ( 1 < Simulation::getSimulation()->getNumRanks().rank ) {
-        int         rank    = Simulation::getSimulation()->getRank().rank;
+    if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
+        int         rank    = Simulation_impl::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
 
         // Search for any extension
@@ -162,10 +162,10 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "SimTime = %" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+            sprintf(buffer, "SimTime = %" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
         }
         else {
-            sprintf(buffer, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+            sprintf(buffer, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
         }
 
         m_outputBuffer += buffer;
@@ -175,10 +175,10 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputRank ) {
         // Add the Rank to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "Rank = %d", Simulation::getSimulation()->getRank().rank);
+            sprintf(buffer, "Rank = %d", Simulation_impl::getSimulation()->getRank().rank);
         }
         else {
-            sprintf(buffer, "%d", Simulation::getSimulation()->getRank().rank);
+            sprintf(buffer, "%d", Simulation_impl::getSimulation()->getRank().rank);
         }
 
         m_outputBuffer += buffer;
@@ -328,7 +328,7 @@ StatisticOutputTextBase::openFile(void)
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
-            Output out = Simulation::getSimulation()->getSimulationOutput();
+            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
@@ -342,7 +342,7 @@ StatisticOutputTextBase::openFile(void)
         m_hFile = fopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
-            Output out = Simulation::getSimulation()->getSimulationOutput();
+            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
@@ -415,7 +415,7 @@ StatisticOutputTextBase::print(const char* fmt, ...)
 StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation::getSimulationOutput();
+    Output out = Simulation_impl::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n", m_useCompression ? "Compressed" : "");
     setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
 }
@@ -424,7 +424,7 @@ StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutp
 StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation::getSimulationOutput();
+    Output out = Simulation_impl::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputConsole enabled...\n");
     setStatisticOutputName("StatisticOutputConsole");
 }
