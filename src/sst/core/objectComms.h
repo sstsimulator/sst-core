@@ -12,7 +12,7 @@
 #ifndef SST_CORE_OBJECTCOMMS_H
 #define SST_CORE_OBJECTCOMMS_H
 
-#include "sst/core/serialization/serializer.h"
+#include "sst/core/objectSerialization.h"
 #include "sst/core/warnmacros.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -27,84 +27,6 @@ REENABLE_WARNING
 namespace SST {
 
 namespace Comms {
-
-template <typename dataType>
-std::vector<char>
-serialize(dataType& data)
-{
-    SST::Core::Serialization::serializer ser;
-
-    ser.start_sizing();
-    ser& data;
-
-    size_t size = ser.size();
-
-    std::vector<char> buffer;
-    buffer.resize(size);
-
-    ser.start_packing(buffer.data(), size);
-    ser& data;
-
-    return buffer;
-}
-
-// template <typename dataType>
-// std::vector<char> serialize(dataType* data)
-// {
-//     SST::Core::Serialization::serializer ser;
-
-//     std::cout << typeid(data).name() << std::endl;
-//     ser.start_sizing();
-//     ser & data;
-
-//     ser.start_sizing();
-//     ser & data;
-
-//     int size = ser.size();
-//     std::cout << "serialize size = " << size << std::endl;
-
-//     std::vector<char> buffer;
-//     buffer.resize(size);
-
-//     ser.start_packing(buffer.data(),size);
-//     ser & data;
-
-//     return buffer;
-// }
-
-template <typename dataType>
-dataType*
-deserialize(std::vector<char>& buffer)
-{
-    dataType* tgt = nullptr;
-
-    SST::Core::Serialization::serializer ser;
-
-    ser.start_unpacking(buffer.data(), buffer.size());
-    ser& tgt;
-
-    return tgt;
-}
-
-template <typename dataType>
-void
-deserialize(std::vector<char>& buffer, dataType& tgt)
-{
-    SST::Core::Serialization::serializer ser;
-
-    ser.start_unpacking(buffer.data(), buffer.size());
-    ser& tgt;
-}
-
-template <typename dataType>
-void
-deserialize(char* buffer, int blen, dataType& tgt)
-{
-    SST::Core::Serialization::serializer ser;
-
-    ser.start_unpacking(buffer, blen);
-    ser& tgt;
-}
 
 #ifdef SST_CONFIG_HAVE_MPI
 template <typename dataType>

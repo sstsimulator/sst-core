@@ -54,7 +54,6 @@ REENABLE_WARNING
 #include "sst/core/cfgoutput/dotConfigOutput.h"
 #include "sst/core/cfgoutput/jsonConfigOutput.h"
 #include "sst/core/cfgoutput/pythonConfigOutput.h"
-#include "sst/core/cfgoutput/xmlConfigOutput.h"
 #include "sst/core/configGraphOutput.h"
 #include "sst/core/eli/elementinfo.h"
 
@@ -234,12 +233,6 @@ doSerialOnlyGraphOutput(SST::Config* cfg, ConfigGraph* graph)
     // See if user asked us to dump the config graph in dot graph format
     if ( cfg->output_dot() != "" ) {
         DotConfigGraphOutput out(cfg->output_dot().c_str());
-        out.generate(cfg, graph);
-    }
-
-    // See if user asked us to dump the config graph in XML format
-    if ( cfg->output_xml() != "" ) {
-        XMLConfigGraphOutput out(cfg->output_xml().c_str());
         out.generate(cfg, graph);
     }
 }

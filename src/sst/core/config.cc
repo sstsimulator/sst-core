@@ -291,13 +291,6 @@ public:
     }
 #endif
 
-    // output config xml
-    bool setWriteXML(const std::string& arg)
-    {
-        cfg.output_xml_ = arg;
-        return true;
-    }
-
 
     // Graph output
 
@@ -548,7 +541,6 @@ Config::print()
     std::cout << "output_config_graph = " << output_config_graph_ << std::endl;
     std::cout << "output_json = " << output_json_ << std::endl;
     std::cout << "parallel_output = " << parallel_output_ << std::endl;
-    std::cout << "output_xml = " << output_xml_ << std::endl;
     std::cout << "output_dot = " << output_dot_ << std::endl;
     std::cout << "dot_verbosity = " << dot_verbosity_ << std::endl;
     std::cout << "component_partition_file = " << component_partition_file_ << std::endl;
@@ -601,7 +593,6 @@ Config::Config(RankInfo rank_info) : Config()
     output_config_graph_ = "";
     output_json_         = "";
     parallel_output_     = false;
-    output_xml_          = "";
 
     // Graph output
     output_dot_               = "";
@@ -850,9 +841,6 @@ static const struct sstLongOpts_s sstOptions[] = {
         "and/or --output-json).  Note: this will also cause partition info to be output if set to true.",
         &ConfigHelper::enableParallelOutput, &ConfigHelper::enableParallelOutputArg, true),
 #endif
-    DEF_ARG(
-        "output-xml", 0, "FILE", "[DEPRECATED] File to write SST configuration graph (in XML format)",
-        &ConfigHelper::setWriteXML, true),
 
     /* Configuration Output */
     DEF_SECTION_HEADING("Graph Output Options (for outputting graph information for visualization or inspection)"),
@@ -1195,8 +1183,6 @@ Config::parseCmdLine(int argc, char* argv[])
     }
 
     if ( output_dot_.size() > 0 && isFileNameOnly(output_dot_) ) { output_dot_.insert(0, output_directory_); }
-
-    if ( output_xml_.size() > 0 && isFileNameOnly(output_xml_) ) { output_xml_.insert(0, output_directory_); }
 
     if ( output_json_.size() > 0 && isFileNameOnly(output_json_) ) { output_json_.insert(0, output_directory_); }
 

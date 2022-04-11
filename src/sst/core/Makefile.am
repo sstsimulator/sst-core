@@ -48,7 +48,6 @@ nobase_dist_sst_HEADERS = \
 	iouse.h \
 	module.h \
 	namecheck.h \
-	objectComms.h \
 	oneshot.h \
 	output.h \
 	params.h \
@@ -217,6 +216,8 @@ sst_core_sources = \
 	statapi/statbase.cc \
 	cputimer.cc \
 	iouse.cc \
+	objectComms.h \
+	objectSerialization.h \
 	simulation_impl.h
 
 bin_PROGRAMS = sst sst-info sst-config sst-register
