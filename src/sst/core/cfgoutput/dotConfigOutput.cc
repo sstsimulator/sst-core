@@ -72,8 +72,15 @@ DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 
 void
 DotConfigGraphOutput::generateDot(
+    const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity) const
+{
+    generateDot(comp, linkMap, dot_verbosity, nullptr);
+}
+
+void
+DotConfigGraphOutput::generateDot(
     const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity,
-    const ConfigComponent* parent = nullptr) const
+    const ConfigComponent* parent) const
 {
 
     // Display component type
@@ -106,7 +113,7 @@ DotConfigGraphOutput::generateDot(
     // Display subComponents
     if ( dot_verbosity >= 4 ) {
         for ( auto& sc : comp->subComponents ) {
-            generateDot(sc, sc->links, dot_verbosity, comp);
+            generateDot(sc, linkMap, dot_verbosity, comp);
         }
     }
 }
