@@ -9,3 +9,8 @@ build:core:
     - cmake --build build -j $(nproc)
     - cmake --install build
     - core-install/bin/sst-test-core
+  artifacts:
+    when: on_failure
+    paths:
+        - sst_test_outputs/run_data/**
+    expire_in: 1 week

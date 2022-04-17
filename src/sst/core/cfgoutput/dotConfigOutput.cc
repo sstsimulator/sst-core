@@ -74,13 +74,23 @@ void
 DotConfigGraphOutput::generateDot(
     const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity) const
 {
+    generateDot(comp, linkMap, dot_verbosity, nullptr);
+}
+
+void
+DotConfigGraphOutput::generateDot(
+    const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity,
+    const ConfigComponent* parent) const
+{
 
     // Display component type
-    if ( dot_verbosity >= 2 ) {
-        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s\\n%s", comp->id, comp->name.c_str(), comp->type.c_str());
-    }
+    if ( parent ) { fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> ", comp->id); }
     else {
-        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s", comp->id, comp->name.c_str());
+        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> ", comp->id);
+    }
+    if ( dot_verbosity >= 2 ) { fprintf(outputFile, "%s\\n%s", comp->name.c_str(), comp->type.c_str()); }
+    else {
+        fprintf(outputFile, "%s", comp->name.c_str());
     }
 
     // Display ports
@@ -96,24 +106,14 @@ DotConfigGraphOutput::generateDot(
         }
     }
     fprintf(outputFile, "}\"];\n\n");
+    if ( parent ) {
+        fprintf(outputFile, "%" PRIu64 ":\"main\" -- %" PRIu64 ":\"main\" [style=dotted];\n\n", comp->id, parent->id);
+    }
 
     // Display subComponents
     if ( dot_verbosity >= 4 ) {
         for ( auto& sc : comp->subComponents ) {
-            fprintf(
-                outputFile, "%" PRIu64 " [color=gray,label=\"{<main> %s\\n%s", sc->id, sc->name.c_str(),
-                sc->type.c_str());
-            int j = sc->links.size();
-            if ( j != 0 ) { fprintf(outputFile, " |\n"); }
-            for ( LinkId_t i : sc->links ) {
-                const ConfigLink* link = linkMap[i];
-                const int         port = (link->component[0] == sc->id) ? 0 : 1;
-                fprintf(outputFile, "<%s> Port: %s", link->port[port].c_str(), link->port[port].c_str());
-                if ( j > 1 ) { fprintf(outputFile, " |\n"); }
-                j--;
-            }
-            fprintf(outputFile, "}\"];\n");
-            fprintf(outputFile, "%" PRIu64 ":\"main\" -- %" PRIu64 ":\"main\" [style=dotted];\n\n", comp->id, sc->id);
+            generateDot(sc, linkMap, dot_verbosity, comp);
         }
     }
 }
