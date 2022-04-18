@@ -21,6 +21,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <stdexcept>
 
 namespace SST {
 
@@ -71,27 +72,41 @@ TimeLord::getTimeConverter(const UnitAlgebra& ts)
         uaFactor         = temp.invert() / period;
     }
     else {
-        abort.fatal(
-            CALL_INFO, 1,
+        throw std::invalid_argument(
             "Error:  TimeConverter creation requires "
-            "a time unit (s or Hz), %s was passed to call\n",
-            ts.toString().c_str());
+            "a time unit (s or Hz), " +
+            ts.toStringBestSI() + " was passed to call");
+        // abort.fatal(
+        //     CALL_INFO, 1,
+        //     "Error:  TimeConverter creation requires "
+        //     "a time unit (s or Hz), %s was passed to call\n",
+        //     ts.toString().c_str());
     }
     // Check to see if number is too big or too small
     if ( uaFactor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error:  Attempting to get TimeConverter for a time (%s) "
-            "which is too large for the timebase (%s)\n",
-            ts.toStringBestSI().c_str(), timeBase.toStringBestSI().c_str());
+        throw std::overflow_error(
+            "Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
+            ") "
+            "which is too large for the timebase (" +
+            timeBase.toStringBestSI() + ")");
+        // abort.fatal(
+        //     CALL_INFO, 1,
+        //     "Error:  Attempting to get TimeConverter for a time (%s) "
+        //     "which is too large for the timebase (%s)\n",
+        //     ts.toStringBestSI().c_str(), timeBase.toStringBestSI().c_str());
     }
     // Check to see if period is too short (0 is special cased to not fail)
     if ( uaFactor.getValue() < 1 && uaFactor.getValue() != 0 ) {
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error:  Attempting to get TimeConverter for a time (%s) "
-            "which has too small of a period to be represented by the timebase (%s)\n",
-            ts.toStringBestSI().c_str(), timeBase.toStringBestSI().c_str());
+        throw std::underflow_error(
+            "Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
+            ") "
+            "which has too small of a period to be represented by the timebase (" +
+            timeBase.toStringBestSI() + ")");
+        // abort.fatal(
+        //     CALL_INFO, 1,
+        //     "Error:  Attempting to get TimeConverter for a time (%s) "
+        //     "which has too small of a period to be represented by the timebase (%s)\n",
+        //     ts.toStringBestSI().c_str(), timeBase.toStringBestSI().c_str());
     }
     simCycles         = uaFactor.getRoundedValue();
     TimeConverter* tc = getTimeConverter(simCycles);
@@ -105,9 +120,32 @@ TimeLord::init(const std::string& _timeBaseString)
     timeBaseString = _timeBaseString;
     timeBase       = UnitAlgebra(timeBaseString);
 
-    nano  = getTimeConverter("1ns");
-    micro = getTimeConverter("1us");
-    milli = getTimeConverter("1ms");
+    try {
+        nano = getTimeConverter("1ns");
+    }
+    catch ( std::underflow_error& e ) {
+        // This means that the core timebase is too big to represent
+        // this time. Just set it to nulllptr
+        nano = nullptr;
+    }
+
+    try {
+        micro = getTimeConverter("1us");
+    }
+    catch ( std::underflow_error& e ) {
+        // This means that the core timebase is too big to represent
+        // this time. Just set it to nulllptr
+        micro = nullptr;
+    }
+
+    try {
+        milli = getTimeConverter("1ms");
+    }
+    catch ( std::underflow_error& e ) {
+        // This means that the core timebase is too big to represent
+        // this time. Just set it to nulllptr
+        milli = nullptr;
+    }
 }
 
 TimeLord::~TimeLord()

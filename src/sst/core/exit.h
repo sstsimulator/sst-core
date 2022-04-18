@@ -36,7 +36,6 @@ public:
     /**
      * Create a new ExitEvent
      * @param sim - Simulation Object
-     * @param period - Period upon which to check for exit status
      * @param single_rank - True if there are no parallel ranks
      *
      *  Exit needs to register a handler during constructor time, which
@@ -47,7 +46,7 @@ public:
      * pointers" rule.  However, it still needs to follow the "classes
      * shouldn't contain pointers back to Simulation" rule.
      */
-    Exit(int num_threads, TimeConverter* period, bool single_rank);
+    Exit(int num_threads, bool single_rank);
     ~Exit();
 
     /** Increment Reference Count for a given Component ID */
@@ -84,7 +83,6 @@ private:
     unsigned int                      m_refCount;
     unsigned int*                     m_thread_counts;
     unsigned int                      global_count;
-    TimeConverter*                    m_period;
     std::unordered_set<ComponentId_t> m_idSet;
     SimTime_t                         end_time;
 

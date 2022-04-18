@@ -143,11 +143,11 @@ public:
     SimTime_t        getCurrentSimTime(const std::string& base) const;
 
     /** Utility function to return the time since the simulation began in nanoseconds */
-    SimTime_t getCurrentSimTimeNano() const;
+    inline SimTime_t getCurrentSimTimeNano() const { return getCurrentSimTime("1 ns"); }
     /** Utility function to return the time since the simulation began in microseconds */
-    SimTime_t getCurrentSimTimeMicro() const;
+    inline SimTime_t getCurrentSimTimeMicro() const { return getCurrentSimTime("1 us"); }
     /** Utility function to return the time since the simulation began in milliseconds */
-    SimTime_t getCurrentSimTimeMilli() const;
+    inline SimTime_t getCurrentSimTimeMilli() const { return getCurrentSimTime("1 ms"); }
 
     /** Get the amount of real-time spent executing the run phase of
      * the simulation.
@@ -327,10 +327,6 @@ protected:
 
     TimeConverter* getTimeConverter(const std::string& base) const;
     TimeConverter* getTimeConverter(const UnitAlgebra& base) const;
-
-    TimeConverter* getTimeConverterNano() const;
-    TimeConverter* getTimeConverterMicro() const;
-    TimeConverter* getTimeConverterMilli() const;
 
     bool isStatisticShared(const std::string& statName, bool include_me = false)
     {
@@ -717,6 +713,8 @@ protected:
         __attribute__((format(printf, 7, 8)));
 
 private:
+    SimTime_t processCurrentTimeWithUnderflowedBase(const std::string& base) const;
+
     void
     configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name);
 
