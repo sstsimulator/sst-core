@@ -197,24 +197,6 @@ BaseComponent::getTimeConverter(const UnitAlgebra& base) const
     return Simulation_impl::getTimeLord()->getTimeConverter(base);
 }
 
-TimeConverter*
-BaseComponent::getTimeConverterNano() const
-{
-    return Simulation_impl::getTimeLord()->getNano();
-}
-
-TimeConverter*
-BaseComponent::getTimeConverterMicro() const
-{
-    return Simulation_impl::getTimeLord()->getMicro();
-}
-
-TimeConverter*
-BaseComponent::getTimeConverterMilli() const
-{
-    return Simulation_impl::getTimeLord()->getMilli();
-}
-
 bool
 BaseComponent::isPortConnected(const std::string& name) const
 {
@@ -435,27 +417,39 @@ BaseComponent::getCurrentSimTime(TimeConverter* tc) const
 }
 
 SimTime_t
+BaseComponent::processCurrentTimeWithUnderflowedBase(const std::string& base) const
+{
+    // Use UnitAlgebra to compute because core timebase was too big to
+    // represent the requested units
+    UnitAlgebra uabase(base);
+    UnitAlgebra curr_time = Simulation_impl::getSimulation()->getElapsedSimTime();
+
+    UnitAlgebra result = curr_time / uabase;
+
+    auto value = result.getValue();
+    if ( value > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
+        throw std::overflow_error(
+            "Error:  Current time (" + curr_time.toStringBestSI() +
+            ") is too large to fit into a 64-bit integer when using requested base (" + base + ")");
+    }
+
+    return value.toUnsignedLong();
+}
+
+SimTime_t
 BaseComponent::getCurrentSimTime(const std::string& base) const
 {
-    return getCurrentSimTime(Simulation_impl::getTimeLord()->getTimeConverter(base));
-}
+    SimTime_t ret;
+    try {
+        TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
+        ret               = getCurrentSimTime(tc);
+    }
+    catch ( std::underflow_error& e ) {
+        // base is too small for the core timebase, fall back to using UnitAlgebra
+        ret = processCurrentTimeWithUnderflowedBase(base);
+    }
 
-SimTime_t
-BaseComponent::getCurrentSimTimeNano() const
-{
-    return getCurrentSimTime(Simulation_impl::getTimeLord()->getNano());
-}
-
-SimTime_t
-BaseComponent::getCurrentSimTimeMicro() const
-{
-    return getCurrentSimTime(Simulation_impl::getTimeLord()->getMicro());
-}
-
-SimTime_t
-BaseComponent::getCurrentSimTimeMilli() const
-{
-    return getCurrentSimTime(Simulation_impl::getTimeLord()->getMilli());
+    return ret;
 }
 
 double

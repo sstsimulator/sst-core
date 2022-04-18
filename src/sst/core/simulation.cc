@@ -203,9 +203,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     std::string timevortex_type(cfg->timeVortex());
     if ( direct_interthread && num_ranks.thread > 1 ) timevortex_type = timevortex_type + ".ts";
     timeVortex = factory->Create<TimeVortex>(timevortex_type, p);
-    if ( my_rank.thread == 0 ) {
-        m_exit = new Exit(num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1);
-    }
+    if ( my_rank.thread == 0 ) { m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1); }
 
     if ( cfg->heartbeatPeriod() != "" && my_rank.thread == 0 ) {
         sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod().c_str());

@@ -23,18 +23,16 @@ REENABLE_WARNING
 #include "sst/core/component.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/stopAction.h"
-#include "sst/core/timeConverter.h"
 
 using SST::Core::ThreadSafe::Spinlock;
 
 namespace SST {
 
-Exit::Exit(int num_threads, TimeConverter* period, bool single_rank) :
+Exit::Exit(int num_threads, bool single_rank) :
     Action(),
     //     m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
     num_threads(num_threads),
     m_refCount(0),
-    m_period(period),
     end_time(0),
     single_rank(single_rank)
 {
@@ -43,7 +41,6 @@ Exit::Exit(int num_threads, TimeConverter* period, bool single_rank) :
     for ( int i = 0; i < num_threads; i++ ) {
         m_thread_counts[i] = 0;
     }
-    // if (!single_rank) sim->insertActivity( period->getFactor(), this );
 }
 
 Exit::~Exit()
@@ -110,7 +107,6 @@ Exit::refDec(ComponentId_t id, uint32_t thread)
     if ( single_rank && num_threads == 1 && m_refCount == 0 ) {
         end_time             = Simulation_impl::getSimulation()->getCurrentSimCycle();
         Simulation_impl* sim = Simulation_impl::getSimulation();
-        // sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
         sim->insertActivity(sim->getCurrentSimCycle() + 1, this);
     }
     else if ( m_thread_counts[thread] == 0 ) {
@@ -138,8 +134,9 @@ Exit::execute()
 {
     check();
 
-    SimTime_t next = Simulation_impl::getSimulation()->getCurrentSimCycle() + m_period->getFactor();
-    Simulation_impl::getSimulation()->insertActivity(next, this);
+    // Only gets put into queue once, no need to reschedule
+    // SimTime_t next = Simulation_impl::getSimulation()->getCurrentSimCycle() + m_period->getFactor();
+    // Simulation_impl::getSimulation()->insertActivity(next, this);
 }
 
 SimTime_t
@@ -185,7 +182,6 @@ Exit::check()
     //     // there.
     //     Simulation *sim = Simulation_impl::getSimulation();
     //     SimTime_t next = sim->getCurrentSimCycle() +
-    //         m_period->getFactor();
     //     sim->insertActivity( next, this );
     // }
 }
