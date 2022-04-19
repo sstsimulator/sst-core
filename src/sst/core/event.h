@@ -191,7 +191,7 @@ private:
     std::string last_port;
 #endif
 
-    ImplementVirtualSerializable(SST::Action)
+    ImplementVirtualSerializable(SST::Event)
 };
 
 /**
