@@ -31,13 +31,11 @@ class CoreTestModuleExample : public SST::Module
 public:
     CoreTestModuleExample(SST::Params& params);
 
-    SST_ELI_REGISTER_MODULE(
-        CoreTestModuleExample,
-        "coreTestElement",
-        "CoreTestModule",
-        SST_ELI_ELEMENT_VERSION(1, 0, 0),
-        "CoreTest module to demonstrate interface.",
-        "SST::CoreTestModule::CoreTestModuleInterface")
+    SST_ELI_REGISTER_MODULE_API(SST::CoreTestModule::CoreTestModuleExample)
+
+    SST_ELI_REGISTER_MODULE_DERIVED(
+        CoreTestModuleExample, "coreTestElement", "CoreTestModule", SST_ELI_ELEMENT_VERSION(1, 0, 0),
+        "CoreTest module to demonstrate interface.", SST::CoreTestModule::CoreTestModuleExample)
 
     SST_ELI_DOCUMENT_PARAMS(
         {"modulename", "Name to give this module", ""},

@@ -27,6 +27,28 @@
 
 namespace SST {
 
+/**
+ * Null Event.  Used when nullptr is passed into any of the send
+ * functions.  On delivery, it will delete itself and return nullptr.
+ */
+
+class NullEvent : public Event
+{
+public:
+    NullEvent() : Event() {}
+    ~NullEvent() {}
+
+    void execute(void) override
+    {
+        (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
+        delete this;
+    }
+
+private:
+    ImplementSerializable(SST::NullEvent)
+};
+
+
 Link::Link(LinkId_t tag) :
     send_queue(nullptr),
     delivery_info(0),

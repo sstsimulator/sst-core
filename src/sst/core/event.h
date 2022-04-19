@@ -195,19 +195,18 @@ private:
 };
 
 /**
- * Null Event.  Does nothing.
+ * Empty Event.  Does nothing.
  */
-class NullEvent : public Event, public SST::Core::Serialization::serializable_type<NullEvent>
+class EmptyEvent : public Event
 {
 public:
-    NullEvent() : Event() {}
-    ~NullEvent() {}
-
-    void execute(void) override;
+    EmptyEvent() : Event() {}
+    ~EmptyEvent() {}
 
 private:
-    ImplementSerializable(SST::NullEvent)
+    ImplementSerializable(SST::EmptyEvent)
 };
+
 } // namespace SST
 
 #endif // SST_CORE_EVENT_H
