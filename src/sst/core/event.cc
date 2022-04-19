@@ -101,13 +101,6 @@ Event::generateUniqueId()
     return std::make_pair(id_counter++, Simulation_impl::getSimulation()->getRank().rank);
 }
 
-void
-NullEvent::execute(void)
-{
-    (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
-    delete this;
-}
-
 #ifdef USE_MEMPOOL
 std::mutex                        Activity::poolMutex;
 std::vector<Activity::PoolInfo_t> Activity::memPools;

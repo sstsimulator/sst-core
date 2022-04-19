@@ -491,7 +491,9 @@ protected:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of module, or nullptr on failure.
      */
-    Module* loadModule(const std::string& type, Params& params);
+    Module* loadModule(const std::string& type, Params& params)
+        __attribute__((deprecated("This version of loadModule() has been deprecated.  Please use the new templated "
+                                  "version that uses Module APIs")));
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
