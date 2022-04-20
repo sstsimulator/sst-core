@@ -292,6 +292,7 @@ public:
     }
 };
 
+
 } // namespace SST
 
 #endif // SST_CORE_LINK_H
