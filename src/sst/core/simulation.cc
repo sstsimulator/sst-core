@@ -253,7 +253,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     }
 
     interThreadMinLatency  = MAX_SIMTIME_T;
-    int cross_thread_links = 0;
+    int num_cross_thread_links = 0;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
         ConfigComponentMap_t comps = graph.getComponentMap();
@@ -277,7 +277,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
             // At this point, we know that both endpoints are on this
             // rank, but on different threads.  Therefore, they
             // contribute to the interThreadMinLatency.
-            cross_thread_links++;
+            num_cross_thread_links++;
             if ( clink->getMinLatency() < interThreadMinLatency ) { interThreadMinLatency = clink->getMinLatency(); }
 
             // Now check only those latencies that directly impact this
@@ -312,7 +312,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
-    if ( min_part == MAX_SIMTIME_T && cross_thread_links == 0 ) { independent = true; }
+    if ( min_part == MAX_SIMTIME_T && num_cross_thread_links == 0 ) { independent = true; }
     else {
         independent = false;
     }
