@@ -12,6 +12,9 @@
 #ifndef SST_CORE_RNG_SSTRNG_H
 #define SST_CORE_RNG_SSTRNG_H
 
+#warning \
+    "sst/core/rng/sstrng.h is deprecated and will be removed in SST 13.  Please use the equivalent functionality in sst/core/rng/rng.h"
+
 #include "sst/core/rng/rng.h"
 
 #include <stdint.h>

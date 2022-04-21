@@ -17,7 +17,7 @@
 #define SST_CORE_CORETEST_STATISTICSCOMPONENT_H
 
 #include "sst/core/component.h"
-#include "sst/core/rng/sstrng.h"
+#include "sst/core/rng/rng.h"
 
 using namespace SST;
 using namespace SST::RNG;
@@ -75,7 +75,7 @@ private:
 
     virtual bool Clock1Tick(SST::Cycle_t);
 
-    SSTRandom*  rng;
+    Random*     rng;
     std::string rng_type;
     int         rng_max_count;
     int         rng_count;
@@ -134,7 +134,7 @@ private:
 
     virtual bool Clock1Tick(SST::Cycle_t);
 
-    SSTRandom*  rng;
+    Random*     rng;
     std::string rng_type;
     int         rng_max_count;
     int         rng_count;

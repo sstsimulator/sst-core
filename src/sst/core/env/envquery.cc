@@ -158,9 +158,9 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
     char* homeConfigPath = (char*)malloc(sizeof(char) * PATH_MAX);
     char* userHome       = getenv("HOME");
 
-    if ( nullptr == userHome ) { sprintf(homeConfigPath, "~/.sst/sstsimulator.conf"); }
+    if ( nullptr == userHome ) { snprintf(homeConfigPath, PATH_MAX, "~/.sst/sstsimulator.conf"); }
     else {
-        sprintf(homeConfigPath, "%s/.sst/sstsimulator.conf", userHome);
+        snprintf(homeConfigPath, PATH_MAX, "%s/.sst/sstsimulator.conf", userHome);
     }
 
     const std::string homeConfigPathStr(homeConfigPath);

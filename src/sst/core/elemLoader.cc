@@ -160,9 +160,11 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     for ( std::string const& next_path : paths ) {
         if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
 
-        if ( next_path.back() == '/' ) { sprintf(full_path, "%slib%s.so", next_path.c_str(), elemlib.c_str()); }
+        if ( next_path.back() == '/' ) {
+            snprintf(full_path, PATH_MAX, "%slib%s.so", next_path.c_str(), elemlib.c_str());
+        }
         else {
-            sprintf(full_path, "%s/lib%s.so", next_path.c_str(), elemlib.c_str());
+            snprintf(full_path, PATH_MAX, "%s/lib%s.so", next_path.c_str(), elemlib.c_str());
         }
 
         if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
@@ -192,9 +194,11 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
         // this implies ordering of .so before .dylib in priority.
 
         if ( nullptr == handle ) {
-            if ( next_path.back() == '/' ) { sprintf(full_path, "%slib%s.dylib", next_path.c_str(), elemlib.c_str()); }
+            if ( next_path.back() == '/' ) {
+                snprintf(full_path, PATH_MAX, "%slib%s.dylib", next_path.c_str(), elemlib.c_str());
+            }
             else {
-                sprintf(full_path, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
+                snprintf(full_path, PATH_MAX, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
             }
 
             if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }

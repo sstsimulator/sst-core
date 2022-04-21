@@ -15,6 +15,7 @@
 
 #include "sst/core/component.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
@@ -92,19 +93,19 @@ SimulatorHeartbeat::execute(void)
 #endif
 
     if ( rank == 0 ) {
-        char ua_buffer[256];
+        std::string ua_str;
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
-        UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
+        ua_str = format_string("%" PRIu64 "B", global_max_sync_data_size);
+        UnitAlgebra global_max_sync_data_size_ua(ua_str);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
-        UnitAlgebra global_sync_data_size_ua(ua_buffer);
+        ua_str = format_string("%" PRIu64 "B", global_sync_data_size);
+        UnitAlgebra global_sync_data_size_ua(ua_str);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
-        UnitAlgebra max_mempool_size_ua(ua_buffer);
+        ua_str = format_string("%" PRIu64 "B", max_mempool_size);
+        UnitAlgebra max_mempool_size_ua(ua_str);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
-        UnitAlgebra global_mempool_size_ua(ua_buffer);
+        ua_str = format_string("%" PRIu64 "B", global_mempool_size);
+        UnitAlgebra global_mempool_size_ua(ua_str);
 
         sim_output.output("\tMax mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());
         sim_output.output("\tGlobal mempool usage:            %s\n", global_mempool_size_ua.toStringBestSI().c_str());

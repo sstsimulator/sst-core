@@ -54,14 +54,14 @@ main(int argc, char* argv[])
     }
 
     // Check for configuration file
-    sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
+    snprintf(cfgPath, PATH_MAX, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
     FILE* cfgFile = fopen(cfgPath, "r+");
     if ( nullptr == cfgFile ) {
         char* envHome = getenv("HOME");
 
-        if ( nullptr == envHome ) { sprintf(cfgPath, "~/.sst/sstsimulator.conf"); }
+        if ( nullptr == envHome ) { snprintf(cfgPath, PATH_MAX, "~/.sst/sstsimulator.conf"); }
         else {
-            sprintf(cfgPath, "%s/.sst/sstsimulator.conf", envHome);
+            snprintf(cfgPath, PATH_MAX, "%s/.sst/sstsimulator.conf", envHome);
         }
 
         cfgFile = fopen(cfgPath, "r+");

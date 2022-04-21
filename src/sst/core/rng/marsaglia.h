@@ -19,8 +19,6 @@
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "sstrng.h"
-
 #define MARSAGLIA_UINT32_MAX 4294967295U
 #define MARSAGLIA_UINT64_MAX 18446744073709551615ULL
 #define MARSAGLIA_INT32_MAX  2147483647L
