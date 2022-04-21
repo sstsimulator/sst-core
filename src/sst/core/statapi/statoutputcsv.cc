@@ -91,7 +91,7 @@ StatisticOutputCSV::startOfSimulation()
     // Set Filename with Rank if Num Ranks > 1
     if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
         int         rank    = Simulation_impl::getSimulation()->getRank().rank;
-        std::string rankstr = "_" + SST::to_string(rank);
+        std::string rankstr = "_" + std::to_string(rank);
 
         // Search for any extension
         size_t index = m_FilePath.find_last_of(".");
@@ -229,48 +229,48 @@ StatisticOutputCSV::implStopOutputEntries()
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRId32, data);
+    std::string buffer;
+    buffer                           = format_string("%" PRId32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRIu32, data);
+    std::string buffer;
+    buffer                           = format_string("%" PRIu32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRId64, data);
+    std::string buffer;
+    buffer                           = format_string("%" PRId64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRIu64, data);
+    std::string buffer;
+    buffer                           = format_string("%" PRIu64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, float data)
 {
-    char buffer[256];
-    sprintf(buffer, "%f", data);
+    std::string buffer;
+    buffer                           = format_string("%f", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
 void
 StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, double data)
 {
-    char buffer[256];
-    sprintf(buffer, "%f", data);
+    std::string buffer;
+    buffer                           = format_string("%f", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 

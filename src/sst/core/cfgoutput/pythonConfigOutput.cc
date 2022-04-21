@@ -57,7 +57,7 @@ PythonConfigGraphOutput::getLinkObject(LinkId_t id, bool no_cut)
 {
     if ( linkMap.find(id) == linkMap.end() ) {
         char tmp[8 + 8 + 1];
-        sprintf(tmp, "link_id_%08" PRIx32, id);
+        snprintf(tmp, 8 + 8 + 1, "link_id_%08" PRIx32, id);
         fprintf(outputFile, "%s = sst.Link(\"%s\")\n", tmp, tmp);
         if ( no_cut ) fprintf(outputFile, "%s.setNoCut()\n", tmp);
         linkMap[id] = tmp;
@@ -130,8 +130,9 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
 void
 PythonConfigGraphOutput::generateSubComponent(const char* owner, const ConfigComponent* comp)
 {
-    char* combName = (char*)calloc(1, strlen(owner) + strlen("_subcomp_") + 1);
-    sprintf(combName, "%s%s", owner, "_subcomp_");
+    size_t slen     = strlen(owner) + strlen("_subcomp_") + 1;
+    char*  combName = (char*)calloc(1, slen);
+    snprintf(combName, slen, "%s%s", owner, "_subcomp_");
     char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
     char* esCompName = makeEscapeSafe(comp->name.c_str());
 
@@ -333,33 +334,39 @@ PythonConfigGraphOutput::makePythonSafeWithPrefix(const std::string& name, const
     if ( nameLength > 0 && isdigit(name.at(0)) ) {
         if ( name.size() > prefix.size() ) {
             if ( name.substr(0, prefix.size()) == prefix ) {
-                buffer = (char*)malloc(sizeof(char) * (name.size() + 3));
-                sprintf(buffer, "s_%s", name.c_str());
+                size_t slen = name.size() + 3;
+                buffer      = (char*)malloc(sizeof(char) * slen);
+                snprintf(buffer, slen, "s_%s", name.c_str());
             }
             else {
-                buffer = (char*)malloc(sizeof(char) * (name.size() + prefix.size() + 3));
-                sprintf(buffer, "%ss_%s", prefix.c_str(), name.c_str());
+                size_t slen = name.size() + prefix.size() + 3;
+                buffer      = (char*)malloc(sizeof(char) * slen);
+                snprintf(buffer, slen, "%ss_%s", prefix.c_str(), name.c_str());
             }
         }
         else {
-            buffer = (char*)malloc(sizeof(char) * (name.size() + prefix.size() + 3));
-            sprintf(buffer, "%ss_%s", prefix.c_str(), name.c_str());
+            size_t slen = name.size() + prefix.size() + 3;
+            buffer      = (char*)malloc(sizeof(char) * slen);
+            snprintf(buffer, slen, "%ss_%s", prefix.c_str(), name.c_str());
         }
     }
     else {
         if ( name.size() > prefix.size() ) {
             if ( name.substr(0, prefix.size()) == prefix ) {
-                buffer = (char*)malloc(sizeof(char) * (name.size() + 3));
-                sprintf(buffer, "%s", name.c_str());
+                size_t slen = name.size() + 3;
+                buffer      = (char*)malloc(sizeof(char) * slen);
+                snprintf(buffer, slen, "%s", name.c_str());
             }
             else {
-                buffer = (char*)malloc(sizeof(char) * (prefix.size() + name.size() + 1));
-                sprintf(buffer, "%s%s", prefix.c_str(), name.c_str());
+                size_t slen = prefix.size() + name.size() + 1;
+                buffer      = (char*)malloc(sizeof(char) * slen);
+                snprintf(buffer, slen, "%s%s", prefix.c_str(), name.c_str());
             }
         }
         else {
-            buffer = (char*)malloc(sizeof(char) * (prefix.size() + name.size() + 1));
-            sprintf(buffer, "%s%s", prefix.c_str(), name.c_str());
+            size_t slen = prefix.size() + name.size() + 1;
+            buffer      = (char*)malloc(sizeof(char) * slen);
+            snprintf(buffer, slen, "%s%s", prefix.c_str(), name.c_str());
         }
     }
 
@@ -435,8 +442,9 @@ PythonConfigGraphOutput::makeEscapeSafe(const std::string& input) const
         }
     }
 
-    char* escapedBuffer = (char*)malloc(sizeof(char) * (1 + escapedInput.size()));
-    sprintf(escapedBuffer, "%s", escapedInput.c_str());
+    size_t slen          = 1 + escapedInput.size();
+    char*  escapedBuffer = (char*)malloc(sizeof(char) * slen);
+    snprintf(escapedBuffer, slen, "%s", escapedInput.c_str());
 
     return escapedBuffer;
 }

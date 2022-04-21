@@ -85,7 +85,7 @@ StatisticOutputTextBase::startOfSimulation()
     // Set Filename with Rank if Num Ranks > 1
     if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
         int         rank    = Simulation_impl::getSimulation()->getRank().rank;
-        std::string rankstr = "_" + SST::to_string(rank);
+        std::string rankstr = "_" + std::to_string(rank);
 
         // Search for any extension
         size_t index = m_FilePath.find_last_of(".");
@@ -149,7 +149,7 @@ StatisticOutputTextBase::endOfSimulation()
 void
 StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
 {
-    char buffer[256];
+    std::string buffer;
 
     // Starting Output
     // m_outputBuffer.clear();
@@ -162,10 +162,10 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "SimTime = %" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
+            buffer = format_string("SimTime = %" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
         }
         else {
-            sprintf(buffer, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
+            buffer = format_string("%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
         }
 
         m_outputBuffer += buffer;
@@ -175,10 +175,10 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputRank ) {
         // Add the Rank to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "Rank = %d", Simulation_impl::getSimulation()->getRank().rank);
+            buffer = format_string("Rank = %d", Simulation_impl::getSimulation()->getRank().rank);
         }
         else {
-            sprintf(buffer, "%d", Simulation_impl::getSimulation()->getRank().rank);
+            buffer = format_string("%d", Simulation_impl::getSimulation()->getRank().rank);
         }
 
         m_outputBuffer += buffer;
@@ -197,17 +197,17 @@ StatisticOutputTextBase::implStopOutputEntries()
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRId32, data);
+            buffer = format_string("%" PRId32, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -217,17 +217,17 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int32_t data)
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRIu32, data);
+            buffer = format_string("%" PRIu32, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -237,17 +237,17 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint32_t data)
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRId64, data);
+            buffer = format_string("%" PRId64, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -257,17 +257,17 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, int64_t data)
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRIu64, data);
+            buffer = format_string("%" PRIu64, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -277,17 +277,17 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, uint64_t data)
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, float data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%f", data);
+            buffer = format_string("%f", data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -297,17 +297,17 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, float data)
 void
 StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, double data)
 {
-    char                buffer[256];
+    std::string         buffer;
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+            buffer = format_string("%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%f", data);
+            buffer = format_string("%f", data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";

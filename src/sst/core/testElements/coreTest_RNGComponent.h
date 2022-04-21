@@ -17,7 +17,7 @@
 #define SST_CORE_CORETEST_RNGCOMPONENT_H
 
 #include "sst/core/component.h"
-#include "sst/core/rng/sstrng.h"
+#include "sst/core/rng/rng.h"
 
 using namespace SST;
 using namespace SST::RNG;
@@ -72,7 +72,7 @@ private:
     virtual bool tick(SST::Cycle_t);
 
     Output*     output;
-    SSTRandom*  rng;
+    Random*     rng;
     std::string rng_type;
     int         rng_max_count;
     int         rng_count;

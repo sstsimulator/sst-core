@@ -1081,8 +1081,9 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     const int argc = argv_vector.size();
 
     for ( int i = 0; i < argc; ++i ) {
-        argv[i] = (char*)malloc(sizeof(char) * argv_vector[i].size() + 1);
-        sprintf(argv[i], "%s", argv_vector[i].c_str());
+        size_t slen = argv_vector[i].size() + 1;
+        argv[i]     = (char*)malloc(sizeof(char) * slen);
+        snprintf(argv[i], slen, "%s", argv_vector[i].c_str());
     }
 
     // Init the model

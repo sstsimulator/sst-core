@@ -90,13 +90,14 @@ bool coreTestLookupTableComponent::tick(SST::Cycle_t)
     bool                done    = false;
     static const size_t nPerRow = 8;
     if ( tableSize > 0 ) {
-        char   buffer[nPerRow * 5 + 1] = { 0 };
-        size_t nitems                  = std::min(nPerRow, tableSize);
+        size_t slen         = nPerRow * 5 + 1;
+        char   buffer[slen] = { 0 };
+        size_t nitems       = std::min(nPerRow, tableSize);
         for ( size_t i = 0; i < nitems; i++ ) {
             char tbuf[6] = { 0 };
-            sprintf(tbuf, "0x%02x ", *table++);
+            snprintf(tbuf, 6, "0x%02x ", *table++);
             tableSize--;
-            strcat(buffer, tbuf);
+            strncat(buffer, tbuf, slen);
         }
         out.output(CALL_INFO, "%s\n", buffer);
     }

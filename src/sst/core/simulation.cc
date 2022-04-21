@@ -650,14 +650,14 @@ Simulation_impl::run()
     // Tell the Statistics Engine that the simulation is beginning
     if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
 
-    std::string header = SST::to_string(my_rank.rank);
+    std::string header = std::to_string(my_rank.rank);
     header += ", ";
-    header += SST::to_string(my_rank.thread);
+    header += std::to_string(my_rank.thread);
     header += ":  ";
 
 #if SST_PERFORMANCE_INSTRUMENTING
-    std::string filename = "rank_" + SST::to_string(my_rank.rank);
-    filename += "_thread_" + SST::to_string(my_rank.thread);
+    std::string filename = "rank_" + std::to_string(my_rank.rank);
+    filename += "_thread_" + std::to_string(my_rank.thread);
     fp = fopen(filename.c_str(), "w");
 #endif
 

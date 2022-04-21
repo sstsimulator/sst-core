@@ -24,6 +24,7 @@
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/stringize.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -279,12 +280,11 @@ compSetSubComponent(PyObject* self, PyObject* args)
         return subObj;
     }
 
-    char errMsg[1024] = { 0 };
-    snprintf(
-        errMsg, sizeof(errMsg) - 1,
+    std::string errMsg = format_string(
         "Failed to create subcomponent %s on %s.  Already attached a subcomponent at that slot name and number?\n",
         name, c->name.c_str());
-    PyErr_SetString(PyExc_RuntimeError, errMsg);
+
+    PyErr_SetString(PyExc_RuntimeError, errMsg.c_str());
     return nullptr;
 }
 
@@ -495,9 +495,8 @@ compCreateStatistic(PyObject* self, PyObject* args)
 
     ConfigStatistic* cs = comp->createStatistic();
     if ( cs == nullptr ) {
-        char errMsg[1024] = { 0 };
-        snprintf(errMsg, sizeof(errMsg) - 1, "Failed to create statistic '%s' on '%s'", name, comp->name.c_str());
-        PyErr_SetString(PyExc_RuntimeError, errMsg);
+        std::string errMsg = format_string("Failed to create statistic '%s' on '%s'", name, comp->name.c_str());
+        PyErr_SetString(PyExc_RuntimeError, errMsg.c_str());
         return nullptr;
     }
 

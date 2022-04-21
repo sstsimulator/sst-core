@@ -183,6 +183,7 @@ sst_core_sources = \
 	params.cc \
 	pollingLinkQueue.cc \
 	simulation.cc \
+	stringize.cc \
 	subcomponent.cc \
 	timeLord.cc \
 	uninitializedQueue.cc \

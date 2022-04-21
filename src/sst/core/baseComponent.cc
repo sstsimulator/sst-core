@@ -20,6 +20,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statoutput.h"
+#include "sst/core/stringize.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
@@ -530,15 +531,15 @@ BaseComponent::vfatal(
         parent    = parent->parent_info;
     }
 
-    char new_format[256];
+    std::string new_format;
 
-    snprintf(
-        new_format, 256, "\nElement name: %s,  type: %s (full type tree: %s)\n%s", name.c_str(), type.c_str(),
-        type_tree.c_str(), format);
+    new_format = format_string(
+        "\nElement name: %s,  type: %s (full type tree: %s)\n%s", name.c_str(), type.c_str(), type_tree.c_str(),
+        format);
 
-    char buf[512];
-    vsnprintf(buf, 512, new_format, arg);
-    abort.fatal(line, file, func, exit_code, "%s", buf);
+    std::string buf;
+    buf = format_string(new_format.c_str(), arg);
+    abort.fatal(line, file, func, exit_code, "%s", buf.c_str());
 }
 
 void

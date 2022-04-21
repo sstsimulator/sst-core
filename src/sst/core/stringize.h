@@ -14,69 +14,59 @@
 
 #include <cctype>
 #include <cinttypes>
+#include <cstdarg>
+#include <cstdio>
 #include <string>
 #include <strings.h>
 
 namespace SST {
 
-inline std::string
-to_string(double val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(double val)
 {
-    char buffer[256];
-    sprintf(buffer, "%f", val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
-inline std::string
-to_string(float val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(float val)
 {
-    char buffer[256];
-    sprintf(buffer, "%f", val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
-inline std::string
-to_string(int32_t val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(int32_t val)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRId32, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
-inline std::string
-to_string(int64_t val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(int64_t val)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRId64, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
-inline std::string
-to_string(uint32_t val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(uint32_t val)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRIu32, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
-inline std::string
-to_string(uint64_t val)
+__attribute__((deprecated(
+    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
+    string
+    to_string(uint64_t val)
 {
-    char buffer[256];
-    sprintf(buffer, "%" PRIu64, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
+    return std::to_string(val);
 };
 
 inline bool
@@ -227,6 +217,73 @@ private:
     std::string::const_iterator first, last;
     TokenizerFunc               f;
 };
+
+
+/**
+   Creates a string using a vprintf like function call.  This function
+   uses a dynamically allocated char array of size max_length to
+   create the buffer to intialize the string.
+
+   @param max_length Maximum length of string.  Anything past
+   max_length will be truncated (null terminator is included in the
+   length)
+
+   @param format printf-like format string
+
+   @param args va_list containing variable length argument list
+
+   @return formatted string, potentially truncated at length max_length - 1
+ */
+std::string vformat_string(size_t max_length, const char* format, va_list args);
+
+/**
+   Creates a string using a printf like function call.  This function
+   uses a compile time allocated char array of length 256 to create
+   the buffer to intialize the string.  If this is not long enough, it
+   will dynamically allocate an array that is just big enough to
+   create the buffer to initialize the string.  No truncation will
+   occur.
+
+   @param format printf-like format string
+
+   @param args va_list containing variable length argument list
+
+   @return formatted string
+ */
+std::string vformat_string(const char* format, va_list args);
+
+/**
+   Creates a string using a printf like function call.  This function
+   uses a dynamically allocated char array of size max_length to
+   create the buffer to intialize the string.
+
+   @param max_length Maximum length of string.  Anything past
+   max_length will be truncated (null terminator is included in the
+   length)
+
+   @param format printf-like format string
+
+   @param ... arguments for format string
+
+   @return formatted string, potentially truncated at length max_length - 1
+ */
+std::string format_string(size_t max_length, const char* format, ...) __attribute__((format(printf, 2, 3)));
+
+/**
+   Creates a string using a printf like function call.  This function
+   uses a compile time allocated char array of length 256 to create
+   the buffer to intialize the string.  If this is not long enough, it
+   will dynamically allocate an array that is just big enough to
+   create the buffer to initialize the string.  No truncation will
+   occur.
+
+   @param format printf-like format string
+
+   @param ... arguments for format string
+
+   @return formatted string
+ */
+std::string format_string(const char* format, ...) __attribute__((format(printf, 1, 2)));
 
 } // namespace SST
 

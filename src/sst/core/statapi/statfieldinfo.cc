@@ -42,7 +42,7 @@ StatisticFieldInfo::getFieldUniqueName() const
 {
     std::string strRtn;
     strRtn = getFieldName() + ".";
-    strRtn += SST::to_string(getFieldType());
+    strRtn += std::to_string(getFieldType());
     return strRtn;
 }
 

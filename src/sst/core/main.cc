@@ -37,6 +37,7 @@ REENABLE_WARNING
 #include "sst/core/rankInfo.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statengine.h"
+#include "sst/core/stringize.h"
 #include "sst/core/threadsafe.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
@@ -889,23 +890,23 @@ main(int argc, char* argv[])
     const uint64_t global_max_io_out = maxOutputOperations();
 
     if ( myRank.rank == 0 && (cfg.verbose() || cfg.print_timing()) ) {
-        char ua_buffer[256];
-        sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
+        std::string ua_buffer;
+        ua_buffer = format_string("%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "KB", global_max_rss);
+        ua_buffer = format_string("%" PRIu64 "KB", global_max_rss);
         UnitAlgebra global_rss_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
+        ua_buffer = format_string("%" PRIu64 "B", global_max_sync_data_size);
         UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
+        ua_buffer = format_string("%" PRIu64 "B", global_sync_data_size);
         UnitAlgebra global_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
+        ua_buffer = format_string("%" PRIu64 "B", max_mempool_size);
         UnitAlgebra max_mempool_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
+        ua_buffer = format_string("%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
 
         g_output.output("\n");

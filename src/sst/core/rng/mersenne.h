@@ -17,8 +17,6 @@
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "sstrng.h"
-
 #define MERSENNE_UINT32_MAX 4294967295U
 #define MERSENNE_UINT64_MAX 18446744073709551615ULL
 #define MERSENNE_INT32_MAX  2147483647L
