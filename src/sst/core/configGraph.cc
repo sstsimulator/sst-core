@@ -1088,9 +1088,7 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     // in one graph and the other may get a ghost.
     ConfigGraph* other;
 
-    if ( oset.count(comp->rank.rank) ) {
-        other = ngraph;
-    }
+    if ( oset.count(comp->rank.rank) ) { other = ngraph; }
     else {
         // Need to move comp to ngraph
         comp->graph = ngraph;
