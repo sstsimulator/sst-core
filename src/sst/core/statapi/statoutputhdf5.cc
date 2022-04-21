@@ -15,6 +15,7 @@
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"
 #include "sst/core/warnmacros.h"
@@ -30,7 +31,7 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     m_currentDataSet(nullptr)
 {
     // Announce this output object's name
-    Output& out = Simulation::getSimulationOutput();
+    Output& out = Simulation_impl::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputHDF5 enabled...\n");
     setStatisticOutputName("StatisticOutputHDF5");
 }
@@ -215,7 +216,7 @@ StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase* UNUSED(stat))
     for ( StatData_u& i : currentData ) {
         memset(&i, '\0', sizeof(i));
     }
-    currentData[0].u64 = Simulation::getSimulation()->getCurrentSimCycle();
+    currentData[0].u64 = Simulation_impl::getSimulation()->getCurrentSimCycle();
 }
 
 StatisticOutputHDF5::StatData_u&
@@ -495,7 +496,7 @@ StatisticOutputHDF5::GroupInfo::startNewGroupEntry()
     H5::DataSpace fspace = timeDataSet->getSpace();
     H5::DataSpace memSpace(1, dims);
     fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
-    uint64_t currTime = Simulation::getSimulation()->getCurrentSimCycle();
+    uint64_t currTime = Simulation_impl::getSimulation()->getCurrentSimCycle();
     timeDataSet->write(&currTime, H5::PredType::NATIVE_UINT64, memSpace, fspace);
 }
 

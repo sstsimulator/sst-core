@@ -401,14 +401,11 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         // direct_interthread links
         else if ( (rank[0].rank == rank[1].rank) && direct_interthread ) {
             int local;
-            int remote;
             if ( rank[0] == myRank ) {
                 local  = 0;
-                remote = 1;
             }
             else {
                 local  = 1;
-                remote = 0;
             }
 
             Link* link = new Link(clink->order);

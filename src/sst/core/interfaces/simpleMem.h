@@ -14,6 +14,11 @@
 #ifndef SST_CORE_INTERFACES_SIMPLEMEM_H
 #define SST_CORE_INTERFACES_SIMPLEMEM_H
 
+// DEPRECATION NOTICE
+// This interface is deprecated and will be removed in SST 13.
+// The StandardMem interface (stdMem.h) provides an expanded set of functionality.
+// Please use StandardMem instead.
+
 #include "sst/core/link.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
@@ -36,7 +41,7 @@ namespace Interfaces {
 /**
  * Simplified, generic interface to Memory models
  */
-class SimpleMem : public SubComponent
+class __attribute__((deprecated("The SimpleMem interface is deprecated in favor of the StandardMem interface (sst/core/interfaces/stdMem.h). Please switch interfaces. This interface will be removed in SST 13."))) SimpleMem : public SubComponent
 {
 public:
     class Request; // Needed for HandlerBase definition
@@ -65,8 +70,11 @@ public:
      */
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<void, Request*, false, classT, dataT>;
-
+    
+    DISABLE_WARN_DEPRECATED_DECLARATION
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,TimeConverter*,HandlerBase*)
+    REENABLE_WARNING
+    
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
 
