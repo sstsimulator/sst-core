@@ -29,7 +29,7 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
     if ( !params.contains("set_param") ) {
         // Sets in python are not ordered so we can't compare the raw
         // string in the set parameters
-        out.output("  Contents of Params object (%llu):\n", id);
+        out.output("  Contents of Params object (%" PRIu64 "):\n", id);
         params.print_all_params(out, "    ");
     }
 

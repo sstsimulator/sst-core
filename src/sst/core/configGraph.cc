@@ -1086,19 +1086,14 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
 
     // Not a ghost component, which means the whole thing will end up
     // in one graph and the other may get a ghost.
-    ConfigGraph* real;
     ConfigGraph* other;
 
-    if ( oset.count(comp->rank.rank) ) {
-        real  = ograph;
-        other = ngraph;
-    }
+    if ( oset.count(comp->rank.rank) ) { other = ngraph; }
     else {
         // Need to move comp to ngraph
         comp->graph = ngraph;
         ngraph->comps.insert(comp);
 
-        real  = ngraph;
         other = ograph;
     }
 
