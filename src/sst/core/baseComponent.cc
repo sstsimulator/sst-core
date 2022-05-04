@@ -453,6 +453,32 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
     return ret;
 }
 
+
+SimTime_t
+BaseComponent::getCurrentSimTimeNano() const
+{
+    TimeConverter* tc = Simulation_impl::getTimeLord()->getNano();
+    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    return getCurrentSimTime("1 ns");
+}
+
+SimTime_t
+BaseComponent::getCurrentSimTimeMicro() const
+{
+    TimeConverter* tc = Simulation_impl::getTimeLord()->getMicro();
+    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    return getCurrentSimTime("1 us");
+}
+
+SimTime_t
+BaseComponent::getCurrentSimTimeMilli() const
+{
+    TimeConverter* tc = Simulation_impl::getTimeLord()->getMilli();
+    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    return getCurrentSimTime("1 ms");
+}
+
+
 double
 BaseComponent::getRunPhaseElapsedRealTime() const
 {
