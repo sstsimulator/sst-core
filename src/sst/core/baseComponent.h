@@ -143,11 +143,11 @@ public:
     SimTime_t        getCurrentSimTime(const std::string& base) const;
 
     /** Utility function to return the time since the simulation began in nanoseconds */
-    inline SimTime_t getCurrentSimTimeNano() const { return getCurrentSimTime("1 ns"); }
+    SimTime_t getCurrentSimTimeNano() const;
     /** Utility function to return the time since the simulation began in microseconds */
-    inline SimTime_t getCurrentSimTimeMicro() const { return getCurrentSimTime("1 us"); }
+    SimTime_t getCurrentSimTimeMicro() const;
     /** Utility function to return the time since the simulation began in milliseconds */
-    inline SimTime_t getCurrentSimTimeMilli() const { return getCurrentSimTime("1 ms"); }
+    SimTime_t getCurrentSimTimeMilli() const;
 
     /** Get the amount of real-time spent executing the run phase of
      * the simulation.
