@@ -67,13 +67,6 @@ protected:
     double        start_time;
 
 private:
-#define SST_MODEL_JSON_NAME_IDX            0
-#define SST_MODEL_JSON_COMPONENTID_IDX     1
-#define SST_MODEL_JSON_CONFIGCOMPONENT_IDX 2
-
-    typedef std::vector<std::tuple<std::string, ComponentId_t, ConfigComponent*>> CompTuple;
-    CompTuple                                                                     configGraphTuple;
-
     void          recursiveSubcomponent(ConfigComponent* Parent, const nlohmann::basic_json<>& compArray);
     void          discoverProgramOptions(const json& jFile);
     void          discoverComponents(const json& jFile);

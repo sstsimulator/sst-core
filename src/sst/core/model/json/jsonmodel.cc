@@ -42,7 +42,6 @@ SSTJSONModelDefinition::SSTJSONModelDefinition(
 
 SSTJSONModelDefinition::~SSTJSONModelDefinition()
 {
-    configGraphTuple.clear();
     delete output;
 }
 
@@ -64,15 +63,7 @@ SSTJSONModelDefinition::findComponentIdByName(const std::string& Name)
         return Id;
     }
 
-    for ( CompTuple::const_iterator i = configGraphTuple.begin(); i != configGraphTuple.end(); ++i ) {
-        if ( Comp == std::get<SST_MODEL_JSON_CONFIGCOMPONENT_IDX>(*i) ) {
-            return std::get<SST_MODEL_JSON_COMPONENTID_IDX>(*i);
-        }
-    }
-
-    // if we make it here, nothing was found
-    output->fatal(CALL_INFO, 1, "Error finding component ID by name (no ID found): %s\n", Name.c_str());
-    return Id;
+    return Comp->id;
 }
 
 void
@@ -115,8 +106,6 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
         // add the subcomponent
         Comp = Parent->addSubComponent(Name, Type, Slot);
         Id   = Comp->id;
-
-        configGraphTuple.push_back(std::tuple<std::string, ComponentId_t, ConfigComponent*>(Name, Id, Comp));
 
         // read all the parameters
         if ( subArray.contains("params") ) {
@@ -173,7 +162,6 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
         Id = graph->addComponent(Name, Type);
 
         Comp = graph->findComponent(Id);
-        configGraphTuple.push_back(std::tuple<std::string, ComponentId_t, ConfigComponent*>(Name, Id, Comp));
 
         // read all the parameters
         if ( compArray.contains("params") ) {
