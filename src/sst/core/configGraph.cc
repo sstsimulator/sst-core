@@ -20,6 +20,7 @@
 #include "sst/core/namecheck.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
+#include "sst/core/warnmacros.h"
 
 #include <algorithm>
 #include <fstream>
