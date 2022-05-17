@@ -30,7 +30,7 @@ mkdir build && cd build
 make install 
 ```
 
-##### Ubuntu 20.04
+##### Ubuntu 20.04/22.04
 
 ```sh
 DEBIAN_FRONTEND=noninteractive sudo apt install openmpi-bin openmpi-common libtool libtool-bin autoconf python3 python3-dev automake build-essential git 
