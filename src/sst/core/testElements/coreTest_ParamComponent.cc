@@ -19,6 +19,8 @@
 
 #include "sst/core/testElements/coreTest_ParamComponent.h"
 
+#include <cinttypes> // PRIu64...
+
 namespace SST {
 namespace CoreTestParamComponent {
 

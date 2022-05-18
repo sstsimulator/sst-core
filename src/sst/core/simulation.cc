@@ -35,6 +35,7 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cinttypes> // PRI...
 #include <utility>
 
 #define SST_SIMTIME_MAX 0xffffffffffffffff
@@ -1054,7 +1055,7 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "Clock Handlers\n");
     if ( handler_mapping.empty() ) {
         for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
-            fprintf(fp, "%llu runtime: %.6f\n", it->first, (double)it->second / 1e9);
+            fprintf(fp, "%u runtime: %.6f\n", it->first, (double)it->second / 1e9);
         }
     }
     else {
@@ -1076,10 +1077,10 @@ Simulation_impl::printPerformanceInfo()
             }
 
             fprintf(fp, "Component Name %s\n", (*iter)->getName().c_str());
-            fprintf(fp, "Clock Handler Counter: %llu\n", counters);
+            fprintf(fp, "Clock Handler Counter: %" PRIu64 "\n", counters);
             fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
             if ( counters != 0 ) {
-                fprintf(fp, "Clock Handler Average: %llu%s\n\n", exec_time / counters, clockResolution.c_str());
+                fprintf(fp, "Clock Handler Average: %" PRIu64 "%s\n\n", exec_time / counters, clockResolution.c_str());
             }
             else {
                 fprintf(fp, "Clock Handler Average: 0%s\n\n", clockResolution.c_str());
@@ -1098,16 +1099,18 @@ Simulation_impl::printPerformanceInfo()
         auto eventSend = eventSendCounters.find(it->first.c_str());
         auto eventRecv = eventRecvCounters.find(it->first.c_str());
         if ( eventSend != eventSendCounters.end() ) {
-            fprintf(fp, "Messages Sent within rank: %llu\n", eventSend->second);
+            fprintf(fp, "Messages Sent within rank: %" PRIu64 "\n", eventSend->second);
         }
-        if ( eventRecv != eventRecvCounters.end() ) { fprintf(fp, "Messages Recv: %llu\n", eventRecv->second); }
+        if ( eventRecv != eventRecvCounters.end() ) { fprintf(fp, "Messages Recv: %" PRIu64 "\n", eventRecv->second); }
 
         // Look up runtimes for event handler
         auto eventTime = eventHandlers.find(it->first.c_str());
         if ( eventTime != eventHandlers.end() ) {
             fprintf(fp, "Time spent on message: %.6fs\n", (double)eventTime->second / clockDivisor);
             if ( it->second != 0 ) {
-                fprintf(fp, "Average message time: %llu%s\n", eventTime->second / it->second, clockResolution.c_str());
+                fprintf(
+                    fp, "Average message time: %" PRIu64 "%s\n", eventTime->second / it->second,
+                    clockResolution.c_str());
             }
             else {
                 fprintf(fp, "Average message time: 0%s\n", clockResolution.c_str());
@@ -1117,10 +1120,10 @@ Simulation_impl::printPerformanceInfo()
 
     // Rank only information
     fprintf(fp, "Rank Statistics\n");
-    fprintf(fp, "Message transfer size : %llu\n", messageXferSize);
-    fprintf(fp, "Latency : %llu\n", rankLatency);
-    fprintf(fp, "Counter : %llu\n", rankExchangeCounter);
-    if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %lluns\n", rankLatency / rankExchangeCounter); }
+    fprintf(fp, "Message transfer size : %" PRIu64 "\n", messageXferSize);
+    fprintf(fp, "Latency : %" PRIu64 "\n", rankLatency);
+    fprintf(fp, "Counter : %" PRIu64 "\n", rankExchangeCounter);
+    if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %" PRIu64 "ns\n", rankLatency / rankExchangeCounter); }
     else {
         fprintf(fp, "Avg : 0\n");
     }
