@@ -96,7 +96,10 @@ Link::finalizeConfiguration()
 
     // If we have a queue, it means we ended up having init events
     // sent.  No need to keep the initQueue around
-    if ( nullptr == pair_link->send_queue ) { delete pair_link->send_queue; }
+    if ( nullptr != pair_link->send_queue ) {
+        delete pair_link->send_queue;
+        pair_link->send_queue = nullptr;
+    }
 
     if ( HANDLER == type ) { pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex(); }
     else if ( POLL == type ) {
