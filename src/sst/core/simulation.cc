@@ -23,6 +23,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/output.h"
+#include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
@@ -135,6 +136,10 @@ Simulation_impl::~Simulation_impl()
     // Clear out Components
     compInfoMap.clear();
 
+    // Clean up the profile tools
+    for ( auto x : profile_tools )
+        delete x.second;
+
     // // Delete any remaining links.  This should never happen now, but
     // // when we add an API to have components build subcomponents, user
     // // error could cause LinkMaps to be left.
@@ -164,6 +169,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec.resize(num_ranks.thread);
     instanceVec[my_rank.thread] = instance;
+    instance->intializeDefaultProfileTools(config->enabledProfiling());
     return instance;
 }
 
@@ -1067,6 +1073,83 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     runBarrier.resize(nthr);
     exitBarrier.resize(nthr);
     finishBarrier.resize(nthr);
+}
+
+
+void
+Simulation_impl::intializeDefaultProfileTools(const std::string& config)
+{
+    // Need to parse the profile string.  Format is:
+    // point=type(key=value,key=value); point=type(...)
+
+    // type is optional.  If not specified, a default will be used.  Params are optional.
+
+    // First split on semicolon
+    std::vector<std::string> tokens;
+    SST::tokenize(tokens, config, ";", true);
+
+    for ( auto& x : tokens ) {
+        // Need to get the profile point name, type and params
+        std::string point;
+        std::string type;
+        std::string param_str;
+
+        auto start = 0;
+        auto end   = x.find(":");
+        point      = x.substr(start, end - start);
+        trim(point);
+        if ( end != std::string::npos ) {
+            // type was specifed, get it
+            start = end + 1;
+            end   = x.find("(", start);
+            type  = x.substr(start, end - start);
+            trim(type);
+            if ( end != std::string::npos ) {
+                // Get the params
+                start     = end + 1;
+                end       = x.find(")", start);
+                param_str = x.substr(start, end - start);
+                trim(param_str);
+            }
+        }
+
+        Params params;
+        if ( param_str.length() > 0 ) {
+            std::vector<std::string> pairs;
+            SST::tokenize(pairs, param_str, ",", true);
+            for ( auto& y : pairs ) {
+                std::vector<std::string> kv;
+                SST::tokenize(kv, y, "=", true);
+                params.insert(kv[0], kv[1]);
+            }
+        }
+
+        // Initialize the point
+        if ( point == "" ) {
+            // Do nothing
+        }
+        else if ( point == "event" ) {
+            if ( type == "" ) type = "sst.profile.handler.event.time.high_resolution";
+            SST::HandlerProfileToolAPI* tool =
+                Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
+                    type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
+        }
+        else {
+            // FATAL
+            sim_output.fatal(
+                CALL_INFO_LONG, 1, "ERROR: Unknown profiling point specified with --enable-profiling: %s\n",
+                point.c_str());
+        }
+    }
+}
+
+void
+Simulation_impl::printProfilingInfo(FILE* fp)
+{
+    for ( auto tool : profile_tools ) {
+        tool.second->outputData(fp);
+    }
 }
 
 #if SST_PERFORMANCE_INSTRUMENTING

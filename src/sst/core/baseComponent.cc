@@ -18,6 +18,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
+#include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/stringize.h"
@@ -277,6 +278,19 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         if ( handler == nullptr ) { tmp->setPolling(); }
         else {
             tmp->setFunctor(handler);
+
+            // Check to see if there is a profile tool installed
+            auto* tool = Simulation_impl::getSimulation()->getProfileTool<Profile::EventHandlerProfileTool>(
+                SST_PROFILE_TOOL_EVENT);
+            if ( tool != nullptr ) {
+                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
+
+                // Add the receive profiler to the handler
+                if ( tool->profileReceives() ) handler->addProfileTool(tool, mdata);
+
+                // Add the send profiler to the link
+                if ( tool->profileSends() ) tmp->addProfileTool(tool, mdata);
+            }
         }
         if ( nullptr != time_base )
             tmp->setDefaultTimeBase(time_base);

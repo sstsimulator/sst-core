@@ -50,7 +50,7 @@ public:
     /**
        Base handler for request handling.
      */
-    using HandlerBase = SSTHandlerBase<void, Request*, false>;
+    using HandlerBase = SSTHandlerBase<void, Request*>;
 
     /**
        Used to create handlers for request handling.  The callback
@@ -71,7 +71,7 @@ public:
          new SimpleMem::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Request*, false, classT, dataT>;
+    using Handler = SSTHandler<void, Request*, classT, dataT>;
 
     DISABLE_WARN_DEPRECATED_DECLARATION
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,TimeConverter*,HandlerBase*)

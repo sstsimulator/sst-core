@@ -420,6 +420,20 @@ public:
         return true;
     }
 
+    // Advanced options - profiling
+    bool enableProfiling(const std::string& arg)
+    {
+        cfg.enabled_profiling_ = arg;
+        return true;
+    }
+
+    bool setProfilingOutput(const std::string& arg)
+    {
+        cfg.profiling_output_ = arg;
+        return true;
+    }
+
+
     // Advanced options - debug
 
     // run mode
@@ -552,6 +566,8 @@ Config::print()
     std::cout << "debugFile = " << debugFile_ << std::endl;
     std::cout << "libpath = " << libpath_ << std::endl;
     std::cout << "addLlibPath = " << addLibPath_ << std::endl;
+    std::cout << "enabled_profiling = " << enabled_profiling_ << std::endl;
+    std::cout << "profiling_output = " << profiling_output_ << std::endl;
     std::cout << "runMode = " << runMode_ << std::endl;
 #ifdef USE_MEMPOOL
     std::cout << "event_dump_file = " << event_dump_file_ << std::endl;
@@ -610,6 +626,10 @@ Config::Config(RankInfo rank_info) : Config()
     libpath_                  = SST_INSTALL_PREFIX "/lib/sst";
     addLibPath_               = "";
 
+    // Advance Options - Profiling
+    enabled_profiling_ = "";
+    profiling_output_  = "stdout";
+
     // Advanced Options - Debug
     runMode_ = Simulation::BOTH;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -617,7 +637,7 @@ Config::Config(RankInfo rank_info) : Config()
 #endif
     rank_seq_startup_ = false;
 
-    // Advanced Options- environment
+    // Advanced Options - environment
     print_env_           = false;
     enable_sig_handling_ = true;
     no_env_config_       = false;
@@ -880,6 +900,17 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)", &ConfigHelper::setLibPath, true),
     DEF_ARG(
         "add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)", &ConfigHelper::addLibPath, true),
+
+    /* Advanced Features - Profiling */
+    DEF_SECTION_HEADING("Advanced Options - Profiling (EXPERIMENTAL)"),
+    DEF_ARG(
+        "enable-profiling", 0, "POINTS",
+        "Enables default profiling for the specified points.  Argument is a semicolon separated list specifying the "
+        "points to enable.",
+        &ConfigHelper::enableProfiling, true),
+    DEF_ARG(
+        "profiling-output", 0, "FILE", "Set output location for profiling data [stdout (default) or a filename]",
+        &ConfigHelper::setProfilingOutput, true),
 
     /* Advanced Features - Debug */
     DEF_SECTION_HEADING("Advanced Options - Debug"),

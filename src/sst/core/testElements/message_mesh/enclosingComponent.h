@@ -40,7 +40,7 @@ public:
     /**
        Base handler for event delivery.
      */
-    using HandlerBase = SSTHandlerBase<void, Event*, false>;
+    using HandlerBase = SSTHandlerBase<void, Event*>;
 
     /**
        Used to create handlers to notify the component when a message
@@ -62,7 +62,7 @@ public:
          new PortInterface::Handler<classname, dataT>(this, &classname::function_name, data)
     */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Event*, false, classT, dataT>;
+    using Handler = SSTHandler<void, Event*, classT, dataT>;
 
     virtual void setNotifyOnReceive(HandlerBase* functor) { rFunctor = functor; }
 

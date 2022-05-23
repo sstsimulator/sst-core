@@ -35,7 +35,7 @@ public:
     /**
        Base handler for OneShot callbacks.
      */
-    using HandlerBase = SSTHandlerBaseNoArgs<void, false>;
+    using HandlerBase = SSTHandlerBaseNoArgs<void>;
 
     /**
        Used to create handlers for clock.  The callback function is
@@ -56,7 +56,7 @@ public:
          new OneShot::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandlerNoArgs<void, classT, false, dataT>;
+    using Handler = SSTHandlerNoArgs<void, classT, dataT>;
 
 
     /////////////////////////////////////////////////

@@ -18,6 +18,7 @@
 #include "sst/core/componentInfo.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/output.h"
+#include "sst/core/profile/profiletool.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
@@ -32,6 +33,11 @@
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);
+
+// #defines for the various default profile tools
+#define SST_PROFILE_TOOL_EVENT        1
+#define SST_PROFILE_TOOL_CLOCK        2
+#define SST_PROFILE_TOOL_CUSTOM_START 3
 
 namespace SST {
 
@@ -198,6 +204,8 @@ public:
     void finish();
 
     bool isIndependentThread() { return independent; }
+
+    void printProfilingInfo(FILE* fp);
 
     void printPerformanceInfo();
 
@@ -391,6 +399,29 @@ public:
     static Output   sim_output;
 
     /** Performance Tracking Information **/
+
+    void intializeDefaultProfileTools(const std::string& config);
+
+    std::unordered_map<uint64_t, SST::Profile::ProfileTool*> profile_tools;
+
+    template <typename T>
+    T* getProfileTool(uint64_t id)
+    {
+        try {
+            SST::Profile::ProfileTool* val = profile_tools.at(id);
+            T*                         ret = dynamic_cast<T*>(val);
+            if ( !ret ) {
+                //  Not the right type, fatal
+                Output::getDefaultObject().fatal(
+                    CALL_INFO_LONG, 1, "INTERNAL ERROR: wrong type of profiling tool found\n");
+            }
+            return ret;
+        }
+        catch ( std::out_of_range& e ) {
+            // Not there, return nullptr
+            return nullptr;
+        }
+    }
 
 #if SST_PERFORMANCE_INSTRUMENTING
     FILE*                                          fp;

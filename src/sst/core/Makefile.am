@@ -53,6 +53,8 @@ nobase_dist_sst_HEADERS = \
 	params.h \
 	pollingLinkQueue.h \
 	profile.h \
+	profile/profiletool.h \
+	profile/eventHandlerProfileTool.h \
 	rankInfo.h \
 	simulation.h \
 	sparseVectorMap.h \
@@ -182,6 +184,8 @@ sst_core_sources = \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
+	profile/profiletool.cc \
+	profile/eventHandlerProfileTool.cc \
 	simulation.cc \
 	stringize.cc \
 	subcomponent.cc \
