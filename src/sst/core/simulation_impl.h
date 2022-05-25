@@ -307,17 +307,6 @@ public:
     /** Return the Statistic Processing Engine associated with this Simulation */
     Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
 
-#if SST_EVENT_PROFILING
-private:
-    typedef std::map<std::string, uint64_t> eventCounter_t;
-    void incrementEventCounter(const std::string& component, Simulation_impl::eventCounter_t& counters);
-
-public:
-    void incrementEventCounters(const std::string& sendComponent, const std::string& recvComponent);
-    void incrementEventHandlerTime(const std::string& component, uint64_t count);
-#endif
-
-    // private:
 
     friend class Link;
     friend class Action;
@@ -423,6 +412,7 @@ public:
         }
     }
 
+
 #if SST_PERFORMANCE_INSTRUMENTING
     FILE*                                          fp;
     std::map<SST::HandlerId_t, SST::ComponentId_t> handler_mapping;
@@ -444,20 +434,32 @@ public:
     std::map<SST::HandlerId_t, uint64_t> clockCounters;
 #endif
 
+
 #if SST_EVENT_PROFILING
-    uint64_t       rankLatency         = 0;
-    uint64_t       rankExchangeCounter = 0;
-    eventCounter_t eventHandlers;
-    eventCounter_t eventRecvCounters;
-    eventCounter_t eventSendCounters;
-    uint64_t       messageXferSize = 0;
+    uint64_t rankLatency     = 0; // Serialization time
+    // eventCounter_t eventHandlers;
+    // eventCounter_t eventRecvCounters;
+    // eventCounter_t eventSendCounters;
+    uint64_t messageXferSize = 0;
+
+    uint64_t rankExchangeBytes   = 0; // Serialization size
+    uint64_t rankExchangeEvents  = 0; // Serialized events
+    uint64_t rankExchangeCounter = 0; // Num rank peer exchanges
+
+
+    // Profiling functions
+    void incrementSerialCounters(uint64_t count);
+    void incrementExchangeCounters(uint64_t events, uint64_t bytes);
+
 #endif
 
 #if SST_SYNC_PROFILING
-    uint64_t syncCounter     = 0;
-    uint64_t rankSyncTime    = 0;
-    uint64_t threadSyncTime  = 0;
-    uint64_t rankSyncCounter = 0;
+    uint64_t rankSyncCounter   = 0; // Num. of rank syncs
+    uint64_t rankSyncTime      = 0; // Total time rank syncing, in ns
+    uint64_t threadSyncCounter = 0; // Num. of thread syncs
+    uint64_t threadSyncTime    = 0; // Total time thread syncing, in ns
+                                    // Does not include thread syncs as part of rank syncs
+    void     incrementSyncTime(bool rankSync, uint64_t count);
 #endif
 
 #if SST_HIGH_RESOLUTION_CLOCK

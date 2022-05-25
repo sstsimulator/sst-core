@@ -966,8 +966,8 @@ main(int argc, char* argv[])
         g_output.output("Approx. Global Max RSS Size:     %s\n", global_rss_ua.toStringBestSI().c_str());
         g_output.output("Max Local Page Faults:           %" PRIu64 " faults\n", local_max_pf);
         g_output.output("Global Page Faults:              %" PRIu64 " faults\n", global_pf);
-        g_output.output("Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_in);
-        g_output.output("Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_out);
+        g_output.output("Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_out);
+        g_output.output("Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_in);
         g_output.output("Max mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());
         g_output.output("Global mempool usage:            %s\n", global_mempool_size_ua.toStringBestSI().c_str());
         g_output.output("Global active activities:        %" PRIu64 " activities\n", global_active_activities);

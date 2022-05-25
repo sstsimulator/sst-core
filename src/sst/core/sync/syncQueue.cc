@@ -17,6 +17,16 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
 
+#if SST_EVENT_PROFILING
+#define SST_EVENT_PROFILE_SIZE(events, bytes)                    \
+    do {                                                         \
+        Simulation_impl* sim = Simulation_impl::getSimulation(); \
+        sim->incrementExchangeCounters(events, bytes);           \
+    } while ( 0 );
+#else
+#define SST_EVENT_PROFILE_SIZE(events, bytes)
+#endif
+
 namespace SST {
 
 using namespace Core::ThreadSafe;
@@ -45,20 +55,6 @@ SyncQueue::insert(Activity* activity)
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
-
-#if SST_EVENT_PROFILING
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-
-    serializer ser;
-
-    ser.start_sizing();
-
-    ser& activity;
-
-    size_t size = ser.size();
-
-    sim->messageXferSize += (uint64_t)size;
-#endif
 }
 
 Activity*
@@ -100,10 +96,7 @@ SyncQueue::getData()
 
     size_t size = ser.size();
 
-#if SST_EVENT_PROFILING
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    sim->messageXferSize += (uint64_t)size;
-#endif
+    SST_EVENT_PROFILE_SIZE(activities.size(), size)
 
     if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
         if ( buffer != nullptr ) { delete[] buffer; }

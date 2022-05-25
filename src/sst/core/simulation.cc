@@ -36,6 +36,7 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cinttypes>
 #include <utility>
 
 #define SST_SIMTIME_MAX 0xffffffffffffffff
@@ -640,14 +641,6 @@ Simulation_impl::run()
         }
     }
 
-#if SST_EVENT_PROFILING
-    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-        eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-        eventSendCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-    }
-#endif
-
     // Tell the Statistics Engine that the simulation is beginning
     if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
 
@@ -1012,32 +1005,36 @@ Simulation_impl::getStatisticsProcessingEngine(void) const
 
 #if SST_EVENT_PROFILING
 void
-Simulation_impl::incrementEventCounter(const std::string& component, Simulation_impl::eventCounter_t& counters)
+Simulation_impl::incrementSerialCounters(uint64_t count)
 {
-    auto counter = counters.find(component);
-    if ( counter != counters.end() ) { counter->second++; }
-    else {
-        if ( component != "" ) { counters.insert(std::make_pair(component, 1)); }
-    }
+    rankLatency += count;
+    ++rankExchangeCounter;
 }
 
 void
-Simulation_impl::incrementEventCounters(const std::string& sendComponent, const std::string& recvComponent)
+Simulation_impl::incrementExchangeCounters(uint64_t events, uint64_t bytes)
 {
-    incrementEventCounter(sendComponent, eventSendCounters);
-    incrementEventCounter(recvComponent, eventRecvCounters);
+    rankExchangeEvents += events;
+    rankExchangeBytes += bytes;
 }
+#endif // SST_EVENT_PROFILING
 
+
+#if SST_SYNC_PROFILING
 void
-Simulation_impl::incrementEventHandlerTime(const std::string& component, uint64_t count)
+Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
 {
-    auto timer = eventHandlers.find(component);
-    if ( timer != eventHandlers.end() ) { timer->second += count; }
+    if ( rankSync ) {
+        ++rankSyncCounter;
+        rankSyncTime += count;
+    }
     else {
-        eventHandlers.insert(std::make_pair(component, count));
+        ++threadSyncCounter;
+        threadSyncTime += count;
     }
 }
-#endif
+#endif // SST_SYNC_PROFILING
+
 
 // Function to allow for easy serialization of threads while debugging
 // code
@@ -1166,7 +1163,7 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "Clock Handlers\n");
     if ( handler_mapping.empty() ) {
         for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
-            fprintf(fp, "%llu runtime: %.6f\n", it->first, (double)it->second / 1e9);
+            fprintf(fp, "%" PRIu64 " runtime: %.6f\n", it->first, (double)it->second / 1e9);
         }
     }
     else {
@@ -1188,10 +1185,10 @@ Simulation_impl::printPerformanceInfo()
             }
 
             fprintf(fp, "Component Name %s\n", (*iter)->getName().c_str());
-            fprintf(fp, "Clock Handler Counter: %llu\n", counters);
+            fprintf(fp, "Clock Handler Counter: %" PRIu64 "\n", counters);
             fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
             if ( counters != 0 ) {
-                fprintf(fp, "Clock Handler Average: %llu%s\n\n", exec_time / counters, clockResolution.c_str());
+                fprintf(fp, "Clock Handler Average: %" PRIu64 "%s\n\n", exec_time / counters, clockResolution.c_str());
             }
             else {
                 fprintf(fp, "Clock Handler Average: 0%s\n\n", clockResolution.c_str());
@@ -1199,57 +1196,53 @@ Simulation_impl::printPerformanceInfo()
         }
     }
     fprintf(fp, "\n");
-#endif
+#endif // SST_CLOCK_PROFILING
 
 #if SST_EVENT_PROFILING
-    fprintf(fp, "Communication Counters\n");
-    for ( auto it = eventHandlers.begin(); it != eventHandlers.end(); ++it ) {
-        fprintf(fp, "Component %s\n", it->first.c_str());
-
-        // Look up event send and receive counters
-        auto eventSend = eventSendCounters.find(it->first.c_str());
-        auto eventRecv = eventRecvCounters.find(it->first.c_str());
-        if ( eventSend != eventSendCounters.end() ) {
-            fprintf(fp, "Messages Sent within rank: %llu\n", eventSend->second);
-        }
-        if ( eventRecv != eventRecvCounters.end() ) { fprintf(fp, "Messages Recv: %llu\n", eventRecv->second); }
-
-        // Look up runtimes for event handler
-        auto eventTime = eventHandlers.find(it->first.c_str());
-        if ( eventTime != eventHandlers.end() ) {
-            fprintf(fp, "Time spent on message: %.6fs\n", (double)eventTime->second / clockDivisor);
-            if ( it->second != 0 ) {
-                fprintf(fp, "Average message time: %llu%s\n", eventTime->second / it->second, clockResolution.c_str());
-            }
-            else {
-                fprintf(fp, "Average message time: 0%s\n", clockResolution.c_str());
-            }
-        }
-    }
-
     // Rank only information
-    fprintf(fp, "Rank Statistics\n");
-    fprintf(fp, "Message transfer size : %llu\n", messageXferSize);
-    fprintf(fp, "Latency : %llu\n", rankLatency);
-    fprintf(fp, "Counter : %llu\n", rankExchangeCounter);
-    if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %lluns\n", rankLatency / rankExchangeCounter); }
-    else {
-        fprintf(fp, "Avg : 0\n");
-    }
-    fprintf(fp, "\n");
-#endif
+    fprintf(fp, "Serialization Information:\n");
+    fprintf(fp, "Rank total serialization time: %" PRIu64 " %s\n", rankLatency, clockResolution.c_str());
+    fprintf(fp, "Rank pairwise sync count: %" PRIu64 "\n", rankExchangeCounter);
+    fprintf(fp, "Rank total events sent: %" PRIu64 "\n", rankExchangeEvents);
+    fprintf(fp, "Rank total bytes sent: %" PRIu64 "\n", rankExchangeBytes);
+    fprintf(
+        fp, "Rank average sync serialization time: %.6f %s/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
+    fprintf(
+        fp, "Rank average sync bytes sent: %.6f bytes/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeCounter));
+    fprintf(
+        fp, "Rank average sync serialization time: %.6f %s/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
+    fprintf(
+        fp, "Rank average event bytes sent: %.6f bytes/event\n",
+        (rankExchangeEvents == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeEvents));
+#endif // SST_EVENT_PROFILING
 
 #if SST_SYNC_PROFILING
-    fprintf(fp, "Synchronization Information\n");
-    fprintf(fp, "Thread Sync time: %.6fs\n", (double)threadSyncTime / clockDivisor);
-    fprintf(fp, "Rank Sync time: %.6fs\n", (double)rankSyncTime / clockDivisor);
-    fprintf(fp, "Sync Counter: %llu\n", syncCounter);
-    if ( syncCounter != 0 ) {
-        fprintf(
-            fp, "Average Sync Time: %llu%s\n", (threadSyncTime + rankSyncTime) / syncCounter, clockResolution.c_str());
-    }
+    fprintf(fp, "Synchronization Information:\n");
+    fprintf(fp, "Thread-only sync (apart from Rank syncs):\n");
+    fprintf(fp, "Thread-sync count: %" PRIu64 "\n", threadSyncCounter);
+    fprintf(fp, "Thread-sync total execution time: %.6f s\n", (double)threadSyncTime / clockDivisor);
+    fprintf(
+        fp, "Thread-sync average execution time: %.6f %s/sync\n",
+        (threadSyncCounter == 0.0 ? 0.0 : (double)threadSyncTime / threadSyncCounter), clockResolution.c_str());
+    fprintf(fp, "Rank Sync (including associated thread syncs):\n");
+    fprintf(fp, "Rank sync count: %" PRIu64 "\n", rankSyncCounter);
+    fprintf(fp, "Rank sync total execution time: %.6f s\n", (double)rankSyncTime / clockDivisor);
+    fprintf(
+        fp, "Rank sync average execution time: %.6f %s/sync\n",
+        (rankSyncCounter == 0.0 ? 0.0 : (double)rankSyncTime / rankSyncCounter), clockResolution.c_str());
+    fprintf(fp, "All sync count:  %" PRIu64 "\n", threadSyncCounter + rankSyncCounter);
+    fprintf(fp, "All sync execution time: %.6f s\n", (double)(threadSyncTime + rankSyncTime) / clockDivisor);
+    fprintf(
+        fp, "All sync average execution time: %.6f %s/sync\n",
+        ((threadSyncCounter + rankSyncCounter) == 0
+             ? 0.0
+             : (double)(threadSyncTime + rankSyncTime) / (threadSyncCounter + rankSyncCounter)),
+        clockResolution.c_str());
     fprintf(fp, "\n");
-#endif
+#endif // SST_SYNC_PROFILING
 }
 #endif
 
