@@ -23,6 +23,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/output.h"
+#include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
@@ -881,26 +882,9 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
     return registerClock(tcFreq, handler, priority);
 }
 
-#if SST_PERFORMANCE_INSTRUMENTING
-void
-Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t handler)
-{
-    handler_mapping.insert(std::pair<SST::HandlerId_t, SST::ComponentId_t>(handler, id));
-}
-#else
-void
-Simulation_impl::registerClockHandler(SST::ComponentId_t UNUSED(id), SST::HandlerId_t UNUSED(handler))
-{}
-#endif
-
 TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
-#if SST_CLOCK_PROFILING
-    SST::HandlerId_t handlerID = handler->getId();
-    clockHandlers.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
-    clockCounters.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
-#endif
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
         Clock* ce        = new Clock(tcFreq, priority);
@@ -1147,6 +1131,13 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
                     type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
             profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
         }
+        else if ( point == "clock" ) {
+            if ( type == "" ) type = "sst.profile.handler.clock.time.high_resolution";
+            SST::HandlerProfileToolAPI* tool =
+                Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
+                    type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_CLOCK] = tool;
+        }
         else {
             // FATAL
             sim_output.fatal(
@@ -1172,46 +1163,8 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "///Print at %.6fs\n", (double)runtime / clockDivisor);
 #endif
 
-// Iterate through components and find all handlers mapped to that component
-// If handler mapping is not populated, prints out raw clock handler times
-#if SST_CLOCK_PROFILING
-    fprintf(fp, "Clock Handlers\n");
-    if ( handler_mapping.empty() ) {
-        for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
-            fprintf(fp, "%" PRIu64 " runtime: %.6f\n", it->first, (double)it->second / 1e9);
-        }
-    }
-    else {
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            uint64_t exec_time = 0;
-            uint64_t counters  = 0;
-
-            // Go through all the clock handler to component id mappings
-            // Each component may have multiple clock handlers
-            for ( auto it = handler_mapping.cbegin(); it != handler_mapping.cend(); ++it ) {
-                // If this clock handler is mapped to a component
-                if ( (*iter)->getID() == it->second ) {
-                    auto handlerIterator = clockHandlers.find(it->first);
-                    if ( handlerIterator != clockHandlers.end() ) { exec_time += handlerIterator->second; }
-
-                    auto counterIterator = clockCounters.find(it->first);
-                    if ( counterIterator != clockCounters.end() ) { counters += counterIterator->second; }
-                }
-            }
-
-            fprintf(fp, "Component Name %s\n", (*iter)->getName().c_str());
-            fprintf(fp, "Clock Handler Counter: %" PRIu64 "\n", counters);
-            fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
-            if ( counters != 0 ) {
-                fprintf(fp, "Clock Handler Average: %" PRIu64 "%s\n\n", exec_time / counters, clockResolution.c_str());
-            }
-            else {
-                fprintf(fp, "Clock Handler Average: 0%s\n\n", clockResolution.c_str());
-            }
-        }
-    }
-    fprintf(fp, "\n");
-#endif // SST_CLOCK_PROFILING
+    // Iterate through components and find all handlers mapped to that component
+    // If handler mapping is not populated, prints out raw clock handler times
 
 #if SST_EVENT_PROFILING
     // Rank only information

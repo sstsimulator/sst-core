@@ -291,8 +291,6 @@ public:
 
     TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
 
-    void registerClockHandler(SST::ComponentId_t id, HandlerId_t handler);
-
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
 
@@ -391,7 +389,7 @@ public:
 
     void intializeDefaultProfileTools(const std::string& config);
 
-    std::unordered_map<uint64_t, SST::Profile::ProfileTool*> profile_tools;
+    std::map<uint64_t, SST::Profile::ProfileTool*> profile_tools;
 
     template <typename T>
     T* getProfileTool(uint64_t id)
@@ -402,7 +400,7 @@ public:
             if ( !ret ) {
                 //  Not the right type, fatal
                 Output::getDefaultObject().fatal(
-                    CALL_INFO_LONG, 1, "INTERNAL ERROR: wrong type of profiling tool found\n");
+                    CALL_INFO_LONG, 1, "INTERNAL ERROR: wrong type of profiling tool found (id = %" PRIu64 ")\n", id);
             }
             return ret;
         }
@@ -414,8 +412,7 @@ public:
 
 
 #if SST_PERFORMANCE_INSTRUMENTING
-    FILE*                                          fp;
-    std::map<SST::HandlerId_t, SST::ComponentId_t> handler_mapping;
+    FILE* fp;
 #endif
 
 #if SST_PERIODIC_PRINT
@@ -427,11 +424,6 @@ public:
     uint64_t       runtime = 0;
     struct timeval start, end, diff;
     struct timeval sumstart, sumend, sumdiff;
-#endif
-
-#if SST_CLOCK_PROFILING
-    std::map<SST::HandlerId_t, uint64_t> clockHandlers;
-    std::map<SST::HandlerId_t, uint64_t> clockCounters;
 #endif
 
 

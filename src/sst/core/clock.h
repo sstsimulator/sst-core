@@ -100,6 +100,24 @@ private:
     NotSerializable(SST::Clock)
 };
 
+
+class ClockHandlerMetaData : public HandlerMetaData
+{
+public:
+    const ComponentId_t comp_id;
+    const std::string   comp_name;
+    const std::string   comp_type;
+
+    ClockHandlerMetaData(ComponentId_t id, const std::string& cname, const std::string& ctype) :
+        comp_id(id),
+        comp_name(cname),
+        comp_type(ctype)
+    {}
+
+    ~ClockHandlerMetaData() {}
+};
+
+
 } // namespace SST
 
 #endif // SST_CORE_CLOCK_H

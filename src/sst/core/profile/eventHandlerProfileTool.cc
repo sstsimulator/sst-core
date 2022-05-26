@@ -133,13 +133,15 @@ EventHandlerProfileToolTime<T>::outputData(FILE* fp)
 {
     fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
     fprintf(fp, "Name");
-    if ( profile_receives_ ) fprintf(fp, ", recv count, recv time (s)");
+    if ( profile_receives_ ) fprintf(fp, ", recv count, recv time (s), avg. recv time (ns)");
     if ( profile_sends_ ) fprintf(fp, ", send count");
     fprintf(fp, "\n");
     for ( auto& x : times_ ) {
         fprintf(fp, "%s", x.first.c_str());
         if ( profile_receives_ )
-            fprintf(fp, ", %" PRIu64 ", %lf", x.second.recv_count, ((double)x.second.recv_time) / 1000000000.0);
+            fprintf(
+                fp, ", %" PRIu64 ", %lf, %" PRIu64, x.second.recv_count, ((double)x.second.recv_time) / 1000000000.0,
+                x.second.recv_count == 0 ? 0 : x.second.recv_time / x.second.recv_count);
         if ( profile_sends_ ) fprintf(fp, ", %" PRIu64, x.second.send_count);
         fprintf(fp, "\n");
     }

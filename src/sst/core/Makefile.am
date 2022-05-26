@@ -54,6 +54,7 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	profile.h \
 	profile/profiletool.h \
+	profile/clockHandlerProfileTool.h \
 	profile/eventHandlerProfileTool.h \
 	rankInfo.h \
 	simulation.h \
@@ -185,6 +186,7 @@ sst_core_sources = \
 	params.cc \
 	pollingLinkQueue.cc \
 	profile/profiletool.cc \
+	profile/clockHandlerProfileTool.cc \
 	profile/eventHandlerProfileTool.cc \
 	simulation.cc \
 	stringize.cc \
