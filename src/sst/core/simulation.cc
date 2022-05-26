@@ -1103,8 +1103,18 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
             trim(type);
             if ( end != std::string::npos ) {
                 // Get the params
-                start     = end + 1;
-                end       = x.find(")", start);
+                start = end + 1;
+                end   = x.find(")", start);
+                if ( end == std::string::npos ) {
+                    sim_output.fatal(
+                        CALL_INFO_LONG, 1,
+                        "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
+                        "semi-colon "
+                        "separated list where each item specified details for a given profiling point using the "
+                        "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
+                        "specified if a type is supplied.  Type is also optional and a default type will be used if "
+                        "not specified.\n");
+                }
                 param_str = x.substr(start, end - start);
                 trim(param_str);
             }
@@ -1117,6 +1127,11 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
             for ( auto& y : pairs ) {
                 std::vector<std::string> kv;
                 SST::tokenize(kv, y, "=", true);
+                if ( kv.size() < 2 ) {
+                    sim_output.fatal(
+                        CALL_INFO_LONG, 1, "ERROR: Invalid format for params (%s), format should be key=value\n",
+                        y.c_str());
+                }
                 params.insert(kv[0], kv[1]);
             }
         }

@@ -41,7 +41,7 @@ EventHandlerProfileTool::EventHandlerProfileTool(ProfileToolId_t id, const std::
 
     track_ports_ = params.find<bool>("track_ports", "false");
 
-    profile_sends_    = params.find<bool>("profile_sends", "true");
+    profile_sends_    = params.find<bool>("profile_sends", "false");
     profile_receives_ = params.find<bool>("profile_receives", "true");
 }
 
@@ -180,7 +180,7 @@ public:
     )
 
     EventHandlerProfileToolTimeSteady(ProfileToolId_t id, const std::string& name, Params& params) :
-        EventHandlerProfileToolTime<std::chrono::high_resolution_clock>(id, name, params)
+        EventHandlerProfileToolTime<std::chrono::steady_clock>(id, name, params)
     {}
 
     ~EventHandlerProfileToolTimeSteady() {}

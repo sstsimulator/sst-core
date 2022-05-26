@@ -182,8 +182,6 @@ public:
     template <class T, class... ARGS>
     T* CreateProfileTool(const std::string& type, ARGS... args)
     {
-
-        // Check to see if this can be loaded with new API or if we have to fallback to old
         return Factory::getFactory()->Create<T>(type, args...);
     }
 

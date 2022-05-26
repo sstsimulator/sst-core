@@ -58,30 +58,22 @@ public:
 // passed from the caller (ending with SSTHandlerNoArgs), and one that has
 // a single item passed from the caller (SSTHandler).
 
-// You can also optionally add unique handler ID generation to
-// specific handler types.  This is done by passing true for the
-// createIdT template parameter.  When this is done, each handler of
-// that type that gets created will be assigned a unique id, which can
-// be accessed by getId().  This is primarily for use in the core so
-// that there is a unique identifier that can be used to store
-// handlers in maps, etc.
-
 // These classes provide the full functionality of the handlers and
 // can be added to a class with the "using" keyword, as follows (a
 // class can use any type name they'd like in place of HandlerBase and
 // Handler, though those names are preferred for consistency):
 
-// using HandlerBase = SSTHandlerBase<return_type_of_callback, arg_type_of_callback, true/false>;
+// using HandlerBase = SSTHandlerBase<return_type_of_callback, arg_type_of_callback>;
 
 // template <typename classT, typename dataT = void>
-// using Handler = SSTHandler<return_type_of_callback, arg_type_of_callback, true/false, classT, dataT>;
+// using Handler = SSTHandler<return_type_of_callback, arg_type_of_callback, classT, dataT>;
 
 // Or:
 
-// using HandlerBase = SSTHandlerBaseNoArgs<return_type_of_callback, true/false>;
+// using HandlerBase = SSTHandlerBaseNoArgs<return_type_of_callback>;
 
 // template <return_type_of_callback, typename classT, typename dataT = void>
-// using Handler = SSTHandlerNoArgs<return_type_of_callback, true/false, classT, dataT>;
+// using Handler = SSTHandlerNoArgs<return_type_of_callback, classT, dataT>;
 
 // The handlers are then instanced as follows:
 
@@ -93,9 +85,6 @@ public:
 
 
 /// Functor classes for Event handling
-
-/// Handler with 1 argument to callback from caller
-
 
 class SSTHandlerBaseProfile
 {
@@ -173,6 +162,8 @@ public:
     }
 };
 
+
+/// Handlers with 1 handler defined argument to callback from caller
 template <typename returnT, typename argT>
 class SSTHandlerBase : public SSTHandlerBaseProfile
 {
@@ -271,7 +262,7 @@ public:
 };
 
 
-/// Handler with no arguments to callback from caller
+/// Handlers with no arguments to callback from caller
 template <typename returnT>
 class SSTHandlerBaseNoArgs : public SSTHandlerBaseProfile
 {
