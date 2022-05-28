@@ -1004,6 +1004,35 @@ Simulation_impl::getStatisticsProcessingEngine(void) const
     return Statistics::StatisticProcessingEngine::getInstance();
 }
 
+#if SST_EVENT_PROFILING
+void
+Simulation_impl::incrementEventCounter(const std::string& component, Simulation_impl::eventCounter_t& counters)
+{
+    auto counter = counters.find(component);
+    if ( counter != counters.end() ) { counter->second++; }
+    else {
+        if ( component != "" ) { counters.insert(std::make_pair(component, 1)); }
+    }
+}
+
+void
+Simulation_impl::incrementEventCounters(const std::string& sendComponent, const std::string& recvComponent)
+{
+    incrementEventCounter(sendComponent, eventSendCounters);
+    incrementEventCounter(recvComponent, eventRecvCounters);
+}
+
+void
+Simulation_impl::incrementEventHandlerTime(const std::string& component, uint64_t count)
+{
+    auto timer = eventHandlers.find(component);
+    if ( timer != eventHandlers.end() ) { timer->second += count; }
+    else {
+        eventHandlers.insert(std::make_pair(component, count));
+    }
+}
+#endif
+
 // Function to allow for easy serialization of threads while debugging
 // code
 void
