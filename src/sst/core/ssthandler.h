@@ -131,6 +131,8 @@ protected:
 
 
 public:
+    SSTHandlerBaseProfile() : profile_tools(nullptr) {}
+
     virtual ~SSTHandlerBaseProfile()
     {
         if ( profile_tools ) delete profile_tools;
