@@ -430,9 +430,6 @@ public:
 
 #if SST_EVENT_PROFILING
     uint64_t rankLatency     = 0; // Serialization time
-    // eventCounter_t eventHandlers;
-    // eventCounter_t eventRecvCounters;
-    // eventCounter_t eventSendCounters;
     uint64_t messageXferSize = 0;
 
     uint64_t rankExchangeBytes   = 0; // Serialization size

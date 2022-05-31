@@ -30,13 +30,10 @@ class SyncProfileTool : public ProfileTool
 public:
     SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(SST::Profile::SyncProfileTool, SST::Profile::ProfileTool, Params&)
 
+    // Still to enable the level param in the class
     SST_ELI_DOCUMENT_PARAMS(
         // { "level", "Level at which to track profile (global, type, component, subcomponent)", "component" },
-        // { "track_ports",  "Controls whether to track by individual ports", "false" },
-        // { "profile_sends",  "Controls whether sends are profiled (due to location of profiling point in the code, turning on send profiling will incur relatively high overhead)", "false" },
-        // { "profile_receives",  "Controls whether receives are profiled", "true" },
     )
-
     // enum class Profile_Level { Global, Type, Component, Subcomponent };
 
     SyncProfileTool(ProfileToolId_t id, const std::string& name, Params& params);
