@@ -56,6 +56,7 @@ nobase_dist_sst_HEADERS = \
 	profile/profiletool.h \
 	profile/clockHandlerProfileTool.h \
 	profile/eventHandlerProfileTool.h \
+	profile/syncProfileTool.h \
 	rankInfo.h \
 	simulation.h \
 	sparseVectorMap.h \
@@ -188,6 +189,7 @@ sst_core_sources = \
 	profile/profiletool.cc \
 	profile/clockHandlerProfileTool.cc \
 	profile/eventHandlerProfileTool.cc \
+	profile/syncProfileTool.cc \
 	simulation.cc \
 	stringize.cc \
 	subcomponent.cc \

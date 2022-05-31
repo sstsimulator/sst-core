@@ -25,6 +25,7 @@
 #include "sst/core/output.h"
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
@@ -330,6 +331,15 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     // Exit and Heartbeat actions.
     syncManager =
         new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+
+    // Check to see if the SyncManager profile tool is installed
+    auto* tool = getProfileTool<Profile::SyncProfileTool>(SST_PROFILE_TOOL_SYNC);
+
+    if ( tool != nullptr ) {
+        // Add the receive profiler to the handler
+        syncManager->addProfileTool(tool);
+    }
+
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
@@ -1126,17 +1136,21 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
         }
         else if ( point == "event" ) {
             if ( type == "" ) type = "sst.profile.handler.event.time.high_resolution";
-            SST::HandlerProfileToolAPI* tool =
-                Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
-                    type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
+                type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
             profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
         }
         else if ( point == "clock" ) {
             if ( type == "" ) type = "sst.profile.handler.clock.time.high_resolution";
-            SST::HandlerProfileToolAPI* tool =
-                Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
-                    type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
+                type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
             profile_tools[SST_PROFILE_TOOL_CLOCK] = tool;
+        }
+        else if ( point == "sync" ) {
+            if ( type == "" ) type = "sst.profile.sync.time.high_resolution";
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::SyncProfileTool>(
+                type, SST_PROFILE_TOOL_SYNC, "Default SYNC Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_SYNC] = tool;
         }
         else {
             // FATAL
@@ -1150,8 +1164,18 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
 void
 Simulation_impl::printProfilingInfo(FILE* fp)
 {
+    if ( fp == stdout && profile_tools.size() != 0 && my_rank.rank == 0 && my_rank.thread == 0 ) {
+        fprintf(fp, "\n------------------------------------------------------------\n");
+        fprintf(fp, "Profiling Output:\n");
+    }
+    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n", my_rank.rank, my_rank.thread);
     for ( auto tool : profile_tools ) {
+        fprintf(fp, "\n");
         tool.second->outputData(fp);
+    }
+    if ( fp == stdout && profile_tools.size() != 0 && my_rank.rank == num_ranks.rank - 1 &&
+         my_rank.thread == num_ranks.thread - 1 ) {
+        fprintf(fp, "------------------------------------------------------------\n");
     }
 }
 

@@ -37,7 +37,8 @@ extern int main(int argc, char** argv);
 // #defines for the various default profile tools
 #define SST_PROFILE_TOOL_EVENT        1
 #define SST_PROFILE_TOOL_CLOCK        2
-#define SST_PROFILE_TOOL_CUSTOM_START 3
+#define SST_PROFILE_TOOL_SYNC         3
+#define SST_PROFILE_TOOL_CUSTOM_START 4
 
 namespace SST {
 

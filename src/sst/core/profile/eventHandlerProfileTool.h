@@ -12,6 +12,7 @@
 #ifndef SST_CORE_PROFILE_EVENTHANDLERPROFILETOOL_H
 #define SST_CORE_PROFILE_EVENTHANDLERPROFILETOOL_H
 
+#include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"

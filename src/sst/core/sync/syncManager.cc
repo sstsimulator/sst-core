@@ -15,6 +15,7 @@
 
 #include "sst/core/exit.h"
 #include "sst/core/objectComms.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
@@ -206,6 +207,35 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 #endif
 }
 
+// Class used to hold the list of profile tools installed in the SyncManager
+class SyncProfileToolList
+{
+public:
+    SyncProfileToolList() {}
+
+    void syncManagerStart()
+    {
+        for ( auto* x : tools )
+            x->syncManagerStart();
+    }
+
+    void syncManagerEnd()
+    {
+        for ( auto* x : tools )
+            x->syncManagerEnd();
+    }
+
+    /**
+       Adds a profile tool the the list and registers this handler
+       with the profile tool
+    */
+    void addProfileTool(Profile::SyncProfileTool* tool) { tools.push_back(tool); }
+
+private:
+    std::vector<Profile::SyncProfileTool*> tools;
+};
+
+
 SyncManager::SyncManager(
     const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
     const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
@@ -295,6 +325,9 @@ SyncManager::execute(void)
 {
 
     SST_SYNC_PROFILE_START
+
+    if ( profile_tools ) profile_tools->syncManagerStart();
+
     switch ( next_sync_type ) {
     case RANK:
         // Need to make sure all threads have reached the sync to
@@ -343,6 +376,8 @@ SyncManager::execute(void)
     }
     computeNextInsert();
     RankExecBarrier[5].wait();
+
+    if ( profile_tools ) profile_tools->syncManagerEnd();
 
     SST_SYNC_PROFILE_STOP
 }
@@ -405,6 +440,13 @@ uint64_t
 SyncManager::getDataSize() const
 {
     return rankSync->getDataSize();
+}
+
+void
+SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
+{
+    if ( !profile_tools ) profile_tools = new SyncProfileToolList();
+    profile_tools->addProfileTool(tool);
 }
 
 } // namespace SST
