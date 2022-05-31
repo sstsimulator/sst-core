@@ -1164,17 +1164,27 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
 void
 Simulation_impl::printProfilingInfo(FILE* fp)
 {
-    if ( fp == stdout && profile_tools.size() != 0 && my_rank.rank == 0 && my_rank.thread == 0 ) {
+    // If no profile tools are installed, return without doing
+    // anything
+    if ( profile_tools.size() == 0 ) return;
+
+    // Print out a header if printing to stdout
+    if ( fp == stdout != 0 && my_rank.rank == 0 && my_rank.thread == 0 ) {
         fprintf(fp, "\n------------------------------------------------------------\n");
         fprintf(fp, "Profiling Output:\n");
     }
+
+    // Print the rank and thread.  Profiling output is serialized
+    // through both ranks and threads.
     fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n", my_rank.rank, my_rank.thread);
+
     for ( auto tool : profile_tools ) {
         fprintf(fp, "\n");
         tool.second->outputData(fp);
     }
-    if ( fp == stdout && profile_tools.size() != 0 && my_rank.rank == num_ranks.rank - 1 &&
-         my_rank.thread == num_ranks.thread - 1 ) {
+
+    // Print footer if printing on stdout
+    if ( fp == stdout && my_rank.rank == num_ranks.rank - 1 && my_rank.thread == num_ranks.thread - 1 ) {
         fprintf(fp, "------------------------------------------------------------\n");
     }
 }
