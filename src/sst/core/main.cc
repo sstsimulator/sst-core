@@ -69,11 +69,13 @@ static SST::Output g_output;
 // Functions to force initialization stages of simulation to execute
 // one rank at a time.  Put force_rank_sequential_start() before the
 // serialized section and force_rank_sequential_stop() after.  These
-// calls must be used in matching pairs.
+// calls must be used in matching pairs.  It should also be followed
+// by a barrier if there are multiple threads running at the time of
+// the call.
 static void
-force_rank_sequential_start(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
+force_rank_sequential_start(bool enable, const RankInfo& myRank, const RankInfo& world_size)
 {
-    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
+    if ( !enable || world_size.rank == 1 || myRank.thread != 0 ) return;
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Start off all ranks with a barrier so none enter the serialized
@@ -95,9 +97,9 @@ force_rank_sequential_start(const Config& cfg, const RankInfo& myRank, const Ran
 // serialized section and force_rank_sequential_stop() after.  These
 // calls must be used in matching pairs.
 static void
-force_rank_sequential_stop(const Config& cfg, const RankInfo& myRank, const RankInfo& world_size)
+force_rank_sequential_stop(bool enable, const RankInfo& myRank, const RankInfo& world_size)
 {
-    if ( !cfg.rank_seq_startup() || world_size.rank == 1 || myRank.thread != 0 ) return;
+    if ( !enable || world_size.rank == 1 || myRank.thread != 0 ) return;
 
 #ifdef SST_CONFIG_HAVE_MPI
     // After I'm through the serialized region, notify the next
@@ -318,7 +320,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     barrier.wait();
 
-    force_rank_sequential_start(*info.config, info.myRank, info.world_size);
+    force_rank_sequential_start(info.config->rank_seq_startup(), info.myRank, info.world_size);
 
     barrier.wait();
 
@@ -340,7 +342,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         delete info.graph;
     }
 
-    force_rank_sequential_stop(*info.config, info.myRank, info.world_size);
+    force_rank_sequential_stop(info.config->rank_seq_startup(), info.myRank, info.world_size);
 
     barrier.wait();
 
@@ -442,6 +444,47 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     info.max_tv_depth     = sim->getTimeVortexMaxDepth();
     info.current_tv_depth = sim->getTimeVortexCurrentDepth();
 
+    // Print the profiling info.  For threads, we will serialize
+    // writing and for ranks we will use different files, unless we
+    // are writing to console, in which case we will serialize the
+    // output as well.
+    FILE*       fp   = nullptr;
+    std::string file = info.config->profilingOutput();
+    if ( file == "stdout" ) {
+        // Output to the console, so we will force both rank and
+        // thread output to be sequential
+        force_rank_sequential_start(info.world_size.rank > 1, info.myRank, info.world_size);
+
+        for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
+            if ( i == info.myRank.thread ) { sim->printProfilingInfo(stdout); }
+            barrier.wait();
+        }
+
+        force_rank_sequential_stop(info.world_size.rank > 1, info.myRank, info.world_size);
+        barrier.wait();
+    }
+    else {
+        // Output to file
+        if ( info.world_size.rank > 1 ) { addRankToFileName(file, info.myRank.rank); }
+
+        // First thread will open a new file
+        std::string mode;
+        // Thread 0 will open a new file, all others will append
+        if ( info.myRank.thread == 0 )
+            mode = "w";
+        else
+            mode = "a";
+
+        for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
+            if ( i == info.myRank.thread ) {
+                fp = fopen(file.c_str(), mode.c_str());
+                sim->printProfilingInfo(fp);
+                fclose(fp);
+            }
+            barrier.wait();
+        }
+    }
+
     delete sim;
 }
 
@@ -505,7 +548,7 @@ main(int argc, char* argv[])
     // Get the memory before we create the graph
     const uint64_t pre_graph_create_rss = maxGlobalMemSize();
 
-    force_rank_sequential_start(cfg, myRank, world_size);
+    force_rank_sequential_start(cfg.rank_seq_startup(), myRank, world_size);
 
     double start = sst_get_cpu_time();
 
@@ -557,7 +600,7 @@ main(int argc, char* argv[])
         }
     }
 
-    force_rank_sequential_stop(cfg, myRank, world_size);
+    force_rank_sequential_stop(cfg.rank_seq_startup(), myRank, world_size);
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it, unless we are parallel loading
@@ -923,8 +966,8 @@ main(int argc, char* argv[])
         g_output.output("Approx. Global Max RSS Size:     %s\n", global_rss_ua.toStringBestSI().c_str());
         g_output.output("Max Local Page Faults:           %" PRIu64 " faults\n", local_max_pf);
         g_output.output("Global Page Faults:              %" PRIu64 " faults\n", global_pf);
-        g_output.output("Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_in);
-        g_output.output("Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_out);
+        g_output.output("Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_out);
+        g_output.output("Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_in);
         g_output.output("Max mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());
         g_output.output("Global mempool usage:            %s\n", global_mempool_size_ua.toStringBestSI().c_str());
         g_output.output("Global active activities:        %" PRIu64 " activities\n", global_active_activities);

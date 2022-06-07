@@ -15,6 +15,7 @@
 
 #include "sst/core/exit.h"
 #include "sst/core/objectComms.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
@@ -23,6 +24,8 @@
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
+
+#include <sys/time.h>
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -40,6 +43,40 @@ RankSync*                 SyncManager::rankSync = nullptr;
 Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
 SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
+
+#if SST_SYNC_PROFILING
+
+#if SST_HIGH_RESOLUTION_CLOCK
+#define SST_SYNC_PROFILE_START                                  \
+    auto sim                = Simulation_impl::getSimulation(); \
+    auto last_sync_type     = next_sync_type;                   \
+    auto sync_profile_start = std::chrono::high_resolution_clock::now();
+
+#define SST_SYNC_PROFILE_STOP                                                                                 \
+    auto sync_profile_stop = std::chrono::high_resolution_clock::now();                                       \
+    auto sync_profile_count =                                                                                 \
+        std::chrono::duration_cast<std::chrono::nanoseconds>(sync_profile_stop - sync_profile_start).count(); \
+    sim->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
+
+#else
+#define SST_SYNC_PROFILE_START                                               \
+    auto           sim            = Simulation_impl::getSimulation();        \
+    auto           last_sync_type = next_sync_type;                          \
+    struct timeval sync_profile_stop, sync_profile_start, sync_profile_diff; \
+    gettimeofday(&sync_profile_start, NULL);
+
+#define SST_SYNC_PROFILE_STOP                                                               \
+    gettimeofday(&sync_profile_stop, NULL);                                                 \
+    timersub(&sync_profile_stop, &sync_profile_start, &sync_profile_diff);                  \
+    auto sync_profile_count = (sync_profile_diff.tv_usec + sync_profile_diff.tv_sec * 1e6); \
+    sim->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
+
+#endif // SST_HIGH_RESOLUTION_CLOCK
+
+#else // SST_SYNC_PROFILING
+#define SST_SYNC_PROFILE_START
+#define SST_SYNC_PROFILE_STOP
+#endif // SST_SYNC_PROFILING
 
 class EmptyRankSync : public RankSync
 {
@@ -170,6 +207,35 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 #endif
 }
 
+// Class used to hold the list of profile tools installed in the SyncManager
+class SyncProfileToolList
+{
+public:
+    SyncProfileToolList() {}
+
+    void syncManagerStart()
+    {
+        for ( auto* x : tools )
+            x->syncManagerStart();
+    }
+
+    void syncManagerEnd()
+    {
+        for ( auto* x : tools )
+            x->syncManagerEnd();
+    }
+
+    /**
+       Adds a profile tool the the list and registers this handler
+       with the profile tool
+    */
+    void addProfileTool(Profile::SyncProfileTool* tool) { tools.push_back(tool); }
+
+private:
+    std::vector<Profile::SyncProfileTool*> tools;
+};
+
+
 SyncManager::SyncManager(
     const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
     const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
@@ -257,14 +323,10 @@ SyncManager::exchangeLinkInfo()
 void
 SyncManager::execute(void)
 {
-#if SST_SYNC_PROFILING
-#if SST_HIGH_RESOLUTION_CLOCK
-    auto start = std::chrono::high_resolution_clock::now();
-#else
-    struct timeval syncStart, syncEnd, syncDiff;
-    gettimeofday(&syncStart, NULL);
-#endif
-#endif
+
+    SST_SYNC_PROFILE_START
+
+    if ( profile_tools ) profile_tools->syncManagerStart();
 
     switch ( next_sync_type ) {
     case RANK:
@@ -312,36 +374,12 @@ SyncManager::execute(void)
     default:
         break;
     }
-#if SST_SYNC_PROFILING
-    SyncManager::sync_type_t last_sync_type = next_sync_type;
-#endif
     computeNextInsert();
     RankExecBarrier[5].wait();
 
-#if SST_SYNC_PROFILING
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-#if SST_HIGH_RESOLUTION_CLOCK
-    auto finish = std::chrono::high_resolution_clock::now();
+    if ( profile_tools ) profile_tools->syncManagerEnd();
 
-    // Differentiate between rank and thread synchronization overhead
-    if ( last_sync_type == RANK ) {
-        sim->rankSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-    }
-    else {
-        sim->threadSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-    }
-#else
-    gettimeofday(&syncEnd, NULL);
-    timersub(&syncEnd, &syncStart, &syncDiff);
-
-    // Differentiate between rank and thread synchronization overhead
-    if ( last_sync_type == RANK )
-        sim->rankSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
-    else
-        sim->threadSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
-#endif
-    sim->syncCounter++;
-#endif
+    SST_SYNC_PROFILE_STOP
 }
 
 /** Cause an exchange of Untimed Data to occur */
@@ -402,6 +440,13 @@ uint64_t
 SyncManager::getDataSize() const
 {
     return rankSync->getDataSize();
+}
+
+void
+SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
+{
+    if ( !profile_tools ) profile_tools = new SyncProfileToolList();
+    profile_tools->addProfileTool(tool);
 }
 
 } // namespace SST

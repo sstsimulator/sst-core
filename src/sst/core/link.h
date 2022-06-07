@@ -27,6 +27,11 @@ class LinkPair;
 class Simulation_impl;
 
 class UnitAlgebra;
+class LinkSendProfileToolList;
+
+namespace Profile {
+class EventHandlerProfileTool;
+}
 
 /** Link between two components. Carries events */
 class alignas(64) Link
@@ -42,7 +47,7 @@ public:
     friend class SyncManager;
     friend class ComponentInfo;
 
-    virtual ~Link();
+    ~Link();
 
     /** Set additional Latency to be added to events being sent out of this link
      * @param cycles Number of Cycles to be added
@@ -272,6 +277,11 @@ private:
     void sendUntimedData_sync(Event* data);
     void finalizeConfiguration();
     void prepareForComplete();
+
+    void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata);
+
+
+    LinkSendProfileToolList* profile_tools;
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

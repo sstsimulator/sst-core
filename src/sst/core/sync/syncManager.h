@@ -29,6 +29,11 @@ class Simulation_impl;
 class ThreadSyncQueue;
 class TimeConverter;
 
+class SyncProfileToolList;
+namespace Profile {
+class SyncProfileTool;
+}
+
 class RankSync
 {
 public:
@@ -135,6 +140,8 @@ public:
 
     uint64_t getDataSize() const;
 
+    void addProfileTool(Profile::SyncProfileTool* tool);
+
 private:
     enum sync_type_t { RANK, THREAD };
 
@@ -153,6 +160,8 @@ private:
 
     sync_type_t next_sync_type;
     SimTime_t   min_part;
+
+    SyncProfileToolList* profile_tools = nullptr;
 
     void computeNextInsert();
 

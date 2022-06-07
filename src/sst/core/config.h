@@ -246,6 +246,18 @@ public:
     */
     const std::string& addLibPath() const { return addLibPath_; }
 
+    // Advanced options - Profiling
+
+    /**
+       Profiling points to turn on
+     */
+    const std::string& enabledProfiling() const { return enabled_profiling_; }
+
+    /**
+       Profiling points to turn on
+     */
+    const std::string& profilingOutput() const { return profiling_output_; }
+
     // Advanced options - Debug
 
     /**
@@ -325,6 +337,8 @@ public:
         ser& debugFile_;
         ser& libpath_;
         ser& addLibPath_;
+        ser& enabled_profiling_;
+        ser& profiling_output_;
         ser& runMode_;
 
         ser& print_env_;
@@ -394,6 +408,10 @@ private:
     std::string debugFile_;                /*!< File to which debug information should be written */
     std::string libpath_;
     std::string addLibPath_;
+
+    // Advanced options - profiling
+    std::string enabled_profiling_; /*!< Enabled default profiling points */
+    std::string profiling_output_;  /*!< Location to write profiling data */
 
     // Advanced options - debug
     Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */

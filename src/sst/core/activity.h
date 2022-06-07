@@ -182,7 +182,7 @@ public:
     }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-    virtual void printTrackingInfo(const std::string& header, Output& out) const {}
+    virtual void printTrackingInfo(const std::string& UNUSED(header), Output& UNUSED(out)) const {}
 #endif
 
 protected:

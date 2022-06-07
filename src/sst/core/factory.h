@@ -179,6 +179,12 @@ public:
         return nullptr;
     }
 
+    template <class T, class... ARGS>
+    T* CreateProfileTool(const std::string& type, ARGS... args)
+    {
+        return Factory::getFactory()->Create<T>(type, args...);
+    }
+
     /**
      * General function to create a given base class.  This version
      * should be used if a Params object is being passed in and you
