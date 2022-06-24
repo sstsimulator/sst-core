@@ -18,6 +18,8 @@
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
+#include "sst/core/profile/clockHandlerProfileTool.h"
+#include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/stringize.h"
@@ -114,6 +116,17 @@ BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handle
 {
     TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
+    // Check to see if there is a profile tool installed
+    auto* tool =
+        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+
+    if ( tool != nullptr ) {
+        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
+
+        // Add the receive profiler to the handler
+        handler->addProfileTool(tool, mdata);
+    }
+
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
@@ -127,6 +140,17 @@ TimeConverter*
 BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll)
 {
     TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
+
+    // Check to see if there is a profile tool installed
+    auto* tool =
+        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+
+    if ( tool != nullptr ) {
+        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
+
+        // Add the receive profiler to the handler
+        handler->addProfileTool(tool, mdata);
+    }
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -142,8 +166,16 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
 {
     TimeConverter* tcRet = Simulation_impl::getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
 
-    // Register this clock handler with the performance counters
-    Simulation_impl::getSimulation()->registerClockHandler(my_info->id, handler->getId());
+    // Check to see if there is a profile tool installed
+    auto* tool =
+        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+
+    if ( tool != nullptr ) {
+        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
+
+        // Add the receive profiler to the handler
+        handler->addProfileTool(tool, mdata);
+    }
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -277,6 +309,19 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         if ( handler == nullptr ) { tmp->setPolling(); }
         else {
             tmp->setFunctor(handler);
+
+            // Check to see if there is a profile tool installed
+            auto* tool = Simulation_impl::getSimulation()->getProfileTool<Profile::EventHandlerProfileTool>(
+                SST_PROFILE_TOOL_EVENT);
+            if ( tool != nullptr ) {
+                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
+
+                // Add the receive profiler to the handler
+                if ( tool->profileReceives() ) handler->addProfileTool(tool, mdata);
+
+                // Add the send profiler to the link
+                if ( tool->profileSends() ) tmp->addProfileTool(tool, mdata);
+            }
         }
         if ( nullptr != time_base )
             tmp->setDefaultTimeBase(time_base);

@@ -14,9 +14,12 @@
 #include "sst/core/link.h"
 
 #include "sst/core/event.h"
+#include "sst/core/factory.h"
 #include "sst/core/initQueue.h"
 #include "sst/core/pollingLinkQueue.h"
+#include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/ssthandler.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
@@ -49,6 +52,28 @@ private:
 };
 
 
+class LinkSendProfileToolList
+{
+public:
+    LinkSendProfileToolList() {}
+
+    inline void eventSent(Event* ev)
+    {
+        for ( auto& x : tools ) {
+            x.first->eventSent(x.second, ev);
+        }
+    }
+
+    void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata)
+    {
+        auto key = tool->registerHandler(mdata);
+        tools.push_back(std::make_pair(tool, key));
+    }
+
+private:
+    std::vector<std::pair<SST::Profile::EventHandlerProfileTool*, uintptr_t>> tools;
+};
+
 Link::Link(LinkId_t tag) :
     send_queue(nullptr),
     delivery_info(0),
@@ -58,7 +83,8 @@ Link::Link(LinkId_t tag) :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    tag(tag)
+    tag(tag),
+    profile_tools(nullptr)
 {}
 
 Link::Link() :
@@ -70,7 +96,8 @@ Link::Link() :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    tag(-1)
+    tag(-1),
+    profile_tools(nullptr)
 {}
 
 Link::~Link()
@@ -83,6 +110,8 @@ Link::~Link()
         // also need to delete it because no one else has a pointer to.
         if ( SYNC == pair_link->type ) delete pair_link;
     }
+
+    if ( profile_tools ) delete profile_tools;
 }
 
 void
@@ -96,7 +125,10 @@ Link::finalizeConfiguration()
 
     // If we have a queue, it means we ended up having init events
     // sent.  No need to keep the initQueue around
-    if ( nullptr == pair_link->send_queue ) { delete pair_link->send_queue; }
+    if ( nullptr == pair_link->send_queue ) {
+        delete pair_link->send_queue;
+        pair_link->send_queue = nullptr;
+    }
 
     if ( HANDLER == type ) { pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex(); }
     else if ( POLL == type ) {
@@ -188,7 +220,11 @@ Link::replaceFunctor(Event::HandlerBase* functor)
     }
 
     type = HANDLER;
-    if ( pair_link->delivery_info ) delete reinterpret_cast<Link*>(pair_link->delivery_info);
+    if ( pair_link->delivery_info ) {
+        auto* handler = reinterpret_cast<Event::HandlerBase*>(pair_link->delivery_info);
+        functor->transferProfilingInfo(handler);
+        delete handler;
+    }
     pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
 }
 
@@ -218,6 +254,7 @@ Link::send_impl(SimTime_t delay, Event* event)
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 
+    if ( profile_tools ) profile_tools->eventSent(event);
     send_queue->insert(event);
 }
 
@@ -312,5 +349,13 @@ Link::getDefaultTimeBase() const
     if ( defaultTimeBase == 0 ) return nullptr;
     return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
 }
+
+void
+Link::addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata)
+{
+    if ( !profile_tools ) profile_tools = new LinkSendProfileToolList();
+    profile_tools->addProfileTool(tool, mdata);
+}
+
 
 } // namespace SST

@@ -37,7 +37,7 @@ public:
     /**
        Base handler for event delivery.
      */
-    using HandlerBase = SSTHandlerBase<void, Event*, false>;
+    using HandlerBase = SSTHandlerBase<void, Event*>;
 
     /**
        Used to create handlers for event delivery.  The callback
@@ -58,7 +58,7 @@ public:
          new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Event*, false, classT, dataT>;
+    using Handler = SSTHandler<void, Event*, classT, dataT>;
 
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
@@ -205,6 +205,25 @@ public:
 
 private:
     ImplementSerializable(SST::EmptyEvent)
+};
+
+class EventHandlerMetaData : public HandlerMetaData
+{
+public:
+    const ComponentId_t comp_id;
+    const std::string   comp_name;
+    const std::string   comp_type;
+    const std::string   port_name;
+
+    EventHandlerMetaData(
+        ComponentId_t id, const std::string& cname, const std::string& ctype, const std::string& pname) :
+        comp_id(id),
+        comp_name(cname),
+        comp_type(ctype),
+        port_name(pname)
+    {}
+
+    ~EventHandlerMetaData() {}
 };
 
 } // namespace SST

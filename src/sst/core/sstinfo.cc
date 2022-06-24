@@ -425,6 +425,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<Module>(os, enableFullElementOutput);
     // outputHumanReadable(); events
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
+    outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

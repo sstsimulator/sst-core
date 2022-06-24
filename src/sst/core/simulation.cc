@@ -23,6 +23,9 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/output.h"
+#include "sst/core/profile/clockHandlerProfileTool.h"
+#include "sst/core/profile/eventHandlerProfileTool.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
@@ -35,6 +38,7 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cinttypes>
 #include <utility>
 
 #define SST_SIMTIME_MAX 0xffffffffffffffff
@@ -135,6 +139,10 @@ Simulation_impl::~Simulation_impl()
     // Clear out Components
     compInfoMap.clear();
 
+    // Clean up the profile tools
+    for ( auto x : profile_tools )
+        delete x.second;
+
     // // Delete any remaining links.  This should never happen now, but
     // // when we add an API to have components build subcomponents, user
     // // error could cause LinkMaps to be left.
@@ -164,6 +172,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec.resize(num_ranks.thread);
     instanceVec[my_rank.thread] = instance;
+    instance->intializeDefaultProfileTools(config->enabledProfiling());
     return instance;
 }
 
@@ -322,6 +331,15 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     // Exit and Heartbeat actions.
     syncManager =
         new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+
+    // Check to see if the SyncManager profile tool is installed
+    auto* tool = getProfileTool<Profile::SyncProfileTool>(SST_PROFILE_TOOL_SYNC);
+
+    if ( tool != nullptr ) {
+        // Add the receive profiler to the handler
+        syncManager->addProfileTool(tool);
+    }
+
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
@@ -634,14 +652,6 @@ Simulation_impl::run()
         }
     }
 
-#if SST_EVENT_PROFILING
-    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-        eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-        eventSendCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
-    }
-#endif
-
     // Tell the Statistics Engine that the simulation is beginning
     if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
 
@@ -882,26 +892,9 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
     return registerClock(tcFreq, handler, priority);
 }
 
-#if SST_PERFORMANCE_INSTRUMENTING
-void
-Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t handler)
-{
-    handler_mapping.insert(std::pair<SST::HandlerId_t, SST::ComponentId_t>(handler, id));
-}
-#else
-void
-Simulation_impl::registerClockHandler(SST::ComponentId_t UNUSED(id), SST::HandlerId_t UNUSED(handler))
-{}
-#endif
-
 TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
-#if SST_CLOCK_PROFILING
-    SST::HandlerId_t handlerID = handler->getId();
-    clockHandlers.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
-    clockCounters.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
-#endif
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
         Clock* ce        = new Clock(tcFreq, priority);
@@ -1006,32 +999,36 @@ Simulation_impl::getStatisticsProcessingEngine(void) const
 
 #if SST_EVENT_PROFILING
 void
-Simulation_impl::incrementEventCounter(const std::string& component, Simulation_impl::eventCounter_t& counters)
+Simulation_impl::incrementSerialCounters(uint64_t count)
 {
-    auto counter = counters.find(component);
-    if ( counter != counters.end() ) { counter->second++; }
-    else {
-        if ( component != "" ) { counters.insert(std::make_pair(component, 1)); }
-    }
+    rankLatency += count;
+    ++rankExchangeCounter;
 }
 
 void
-Simulation_impl::incrementEventCounters(const std::string& sendComponent, const std::string& recvComponent)
+Simulation_impl::incrementExchangeCounters(uint64_t events, uint64_t bytes)
 {
-    incrementEventCounter(sendComponent, eventSendCounters);
-    incrementEventCounter(recvComponent, eventRecvCounters);
+    rankExchangeEvents += events;
+    rankExchangeBytes += bytes;
 }
+#endif // SST_EVENT_PROFILING
 
+
+#if SST_SYNC_PROFILING
 void
-Simulation_impl::incrementEventHandlerTime(const std::string& component, uint64_t count)
+Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
 {
-    auto timer = eventHandlers.find(component);
-    if ( timer != eventHandlers.end() ) { timer->second += count; }
+    if ( rankSync ) {
+        ++rankSyncCounter;
+        rankSyncTime += count;
+    }
     else {
-        eventHandlers.insert(std::make_pair(component, count));
+        ++threadSyncCounter;
+        threadSyncTime += count;
     }
 }
-#endif
+#endif // SST_SYNC_PROFILING
+
 
 // Function to allow for easy serialization of threads while debugging
 // code
@@ -1069,6 +1066,129 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     finishBarrier.resize(nthr);
 }
 
+
+void
+Simulation_impl::intializeDefaultProfileTools(const std::string& config)
+{
+    // Need to parse the profile string.  Format is:
+    // point=type(key=value,key=value); point=type(...)
+
+    // type is optional.  If not specified, a default will be used.  Params are optional.
+
+    // First split on semicolon
+    std::vector<std::string> tokens;
+    SST::tokenize(tokens, config, ";", true);
+
+    for ( auto& x : tokens ) {
+        // Need to get the profile point name, type and params
+        std::string point;
+        std::string type;
+        std::string param_str;
+
+        auto start = 0;
+        auto end   = x.find(":");
+        point      = x.substr(start, end - start);
+        trim(point);
+        if ( end != std::string::npos ) {
+            // type was specifed, get it
+            start = end + 1;
+            end   = x.find("(", start);
+            type  = x.substr(start, end - start);
+            trim(type);
+            if ( end != std::string::npos ) {
+                // Get the params
+                start = end + 1;
+                end   = x.find(")", start);
+                if ( end == std::string::npos ) {
+                    sim_output.fatal(
+                        CALL_INFO_LONG, 1,
+                        "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
+                        "semi-colon "
+                        "separated list where each item specified details for a given profiling point using the "
+                        "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
+                        "specified if a type is supplied.  Type is also optional and a default type will be used if "
+                        "not specified.\n");
+                }
+                param_str = x.substr(start, end - start);
+                trim(param_str);
+            }
+        }
+
+        Params params;
+        if ( param_str.length() > 0 ) {
+            std::vector<std::string> pairs;
+            SST::tokenize(pairs, param_str, ",", true);
+            for ( auto& y : pairs ) {
+                std::vector<std::string> kv;
+                SST::tokenize(kv, y, "=", true);
+                if ( kv.size() < 2 ) {
+                    sim_output.fatal(
+                        CALL_INFO_LONG, 1, "ERROR: Invalid format for params (%s), format should be key=value\n",
+                        y.c_str());
+                }
+                params.insert(kv[0], kv[1]);
+            }
+        }
+
+        // Initialize the point
+        if ( point == "" ) {
+            // Do nothing
+        }
+        else if ( point == "event" ) {
+            if ( type == "" ) type = "sst.profile.handler.event.time.high_resolution";
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
+                type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
+        }
+        else if ( point == "clock" ) {
+            if ( type == "" ) type = "sst.profile.handler.clock.time.high_resolution";
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
+                type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_CLOCK] = tool;
+        }
+        else if ( point == "sync" ) {
+            if ( type == "" ) type = "sst.profile.sync.time.high_resolution";
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::SyncProfileTool>(
+                type, SST_PROFILE_TOOL_SYNC, "Default SYNC Profile Tool", params);
+            profile_tools[SST_PROFILE_TOOL_SYNC] = tool;
+        }
+        else {
+            // FATAL
+            sim_output.fatal(
+                CALL_INFO_LONG, 1, "ERROR: Unknown profiling point specified with --enable-profiling: %s\n",
+                point.c_str());
+        }
+    }
+}
+
+void
+Simulation_impl::printProfilingInfo(FILE* fp)
+{
+    // If no profile tools are installed, return without doing
+    // anything
+    if ( profile_tools.size() == 0 ) return;
+
+    // Print out a header if printing to stdout
+    if ( fp == stdout != 0 && my_rank.rank == 0 && my_rank.thread == 0 ) {
+        fprintf(fp, "\n------------------------------------------------------------\n");
+        fprintf(fp, "Profiling Output:\n");
+    }
+
+    // Print the rank and thread.  Profiling output is serialized
+    // through both ranks and threads.
+    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n", my_rank.rank, my_rank.thread);
+
+    for ( auto tool : profile_tools ) {
+        fprintf(fp, "\n");
+        tool.second->outputData(fp);
+    }
+
+    // Print footer if printing on stdout
+    if ( fp == stdout && my_rank.rank == num_ranks.rank - 1 && my_rank.thread == num_ranks.thread - 1 ) {
+        fprintf(fp, "------------------------------------------------------------\n");
+    }
+}
+
 #if SST_PERFORMANCE_INSTRUMENTING
 void
 Simulation_impl::printPerformanceInfo()
@@ -1077,96 +1197,54 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "///Print at %.6fs\n", (double)runtime / clockDivisor);
 #endif
 
-// Iterate through components and find all handlers mapped to that component
-// If handler mapping is not populated, prints out raw clock handler times
-#if SST_CLOCK_PROFILING
-    fprintf(fp, "Clock Handlers\n");
-    if ( handler_mapping.empty() ) {
-        for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
-            fprintf(fp, "%llu runtime: %.6f\n", it->first, (double)it->second / 1e9);
-        }
-    }
-    else {
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            uint64_t exec_time = 0;
-            uint64_t counters  = 0;
-
-            // Go through all the clock handler to component id mappings
-            // Each component may have multiple clock handlers
-            for ( auto it = handler_mapping.cbegin(); it != handler_mapping.cend(); ++it ) {
-                // If this clock handler is mapped to a component
-                if ( (*iter)->getID() == it->second ) {
-                    auto handlerIterator = clockHandlers.find(it->first);
-                    if ( handlerIterator != clockHandlers.end() ) { exec_time += handlerIterator->second; }
-
-                    auto counterIterator = clockCounters.find(it->first);
-                    if ( counterIterator != clockCounters.end() ) { counters += counterIterator->second; }
-                }
-            }
-
-            fprintf(fp, "Component Name %s\n", (*iter)->getName().c_str());
-            fprintf(fp, "Clock Handler Counter: %llu\n", counters);
-            fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
-            if ( counters != 0 ) {
-                fprintf(fp, "Clock Handler Average: %llu%s\n\n", exec_time / counters, clockResolution.c_str());
-            }
-            else {
-                fprintf(fp, "Clock Handler Average: 0%s\n\n", clockResolution.c_str());
-            }
-        }
-    }
-    fprintf(fp, "\n");
-#endif
+    // Iterate through components and find all handlers mapped to that component
+    // If handler mapping is not populated, prints out raw clock handler times
 
 #if SST_EVENT_PROFILING
-    fprintf(fp, "Communication Counters\n");
-    for ( auto it = eventHandlers.begin(); it != eventHandlers.end(); ++it ) {
-        fprintf(fp, "Component %s\n", it->first.c_str());
-
-        // Look up event send and receive counters
-        auto eventSend = eventSendCounters.find(it->first.c_str());
-        auto eventRecv = eventRecvCounters.find(it->first.c_str());
-        if ( eventSend != eventSendCounters.end() ) {
-            fprintf(fp, "Messages Sent within rank: %llu\n", eventSend->second);
-        }
-        if ( eventRecv != eventRecvCounters.end() ) { fprintf(fp, "Messages Recv: %llu\n", eventRecv->second); }
-
-        // Look up runtimes for event handler
-        auto eventTime = eventHandlers.find(it->first.c_str());
-        if ( eventTime != eventHandlers.end() ) {
-            fprintf(fp, "Time spent on message: %.6fs\n", (double)eventTime->second / clockDivisor);
-            if ( it->second != 0 ) {
-                fprintf(fp, "Average message time: %llu%s\n", eventTime->second / it->second, clockResolution.c_str());
-            }
-            else {
-                fprintf(fp, "Average message time: 0%s\n", clockResolution.c_str());
-            }
-        }
-    }
-
     // Rank only information
-    fprintf(fp, "Rank Statistics\n");
-    fprintf(fp, "Message transfer size : %llu\n", messageXferSize);
-    fprintf(fp, "Latency : %llu\n", rankLatency);
-    fprintf(fp, "Counter : %llu\n", rankExchangeCounter);
-    if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %lluns\n", rankLatency / rankExchangeCounter); }
-    else {
-        fprintf(fp, "Avg : 0\n");
-    }
-    fprintf(fp, "\n");
-#endif
+    fprintf(fp, "Serialization Information:\n");
+    fprintf(fp, "Rank total serialization time: %" PRIu64 " %s\n", rankLatency, clockResolution.c_str());
+    fprintf(fp, "Rank pairwise sync count: %" PRIu64 "\n", rankExchangeCounter);
+    fprintf(fp, "Rank total events sent: %" PRIu64 "\n", rankExchangeEvents);
+    fprintf(fp, "Rank total bytes sent: %" PRIu64 "\n", rankExchangeBytes);
+    fprintf(
+        fp, "Rank average sync serialization time: %.6f %s/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
+    fprintf(
+        fp, "Rank average sync bytes sent: %.6f bytes/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeCounter));
+    fprintf(
+        fp, "Rank average sync serialization time: %.6f %s/sync\n",
+        (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
+    fprintf(
+        fp, "Rank average event bytes sent: %.6f bytes/event\n",
+        (rankExchangeEvents == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeEvents));
+#endif // SST_EVENT_PROFILING
 
 #if SST_SYNC_PROFILING
-    fprintf(fp, "Synchronization Information\n");
-    fprintf(fp, "Thread Sync time: %.6fs\n", (double)threadSyncTime / clockDivisor);
-    fprintf(fp, "Rank Sync time: %.6fs\n", (double)rankSyncTime / clockDivisor);
-    fprintf(fp, "Sync Counter: %llu\n", syncCounter);
-    if ( syncCounter != 0 ) {
-        fprintf(
-            fp, "Average Sync Time: %llu%s\n", (threadSyncTime + rankSyncTime) / syncCounter, clockResolution.c_str());
-    }
+    fprintf(fp, "Synchronization Information:\n");
+    fprintf(fp, "Thread-only sync (apart from Rank syncs):\n");
+    fprintf(fp, "Thread-sync count: %" PRIu64 "\n", threadSyncCounter);
+    fprintf(fp, "Thread-sync total execution time: %.6f s\n", (double)threadSyncTime / clockDivisor);
+    fprintf(
+        fp, "Thread-sync average execution time: %.6f %s/sync\n",
+        (threadSyncCounter == 0.0 ? 0.0 : (double)threadSyncTime / threadSyncCounter), clockResolution.c_str());
+    fprintf(fp, "Rank Sync (including associated thread syncs):\n");
+    fprintf(fp, "Rank sync count: %" PRIu64 "\n", rankSyncCounter);
+    fprintf(fp, "Rank sync total execution time: %.6f s\n", (double)rankSyncTime / clockDivisor);
+    fprintf(
+        fp, "Rank sync average execution time: %.6f %s/sync\n",
+        (rankSyncCounter == 0.0 ? 0.0 : (double)rankSyncTime / rankSyncCounter), clockResolution.c_str());
+    fprintf(fp, "All sync count:  %" PRIu64 "\n", threadSyncCounter + rankSyncCounter);
+    fprintf(fp, "All sync execution time: %.6f s\n", (double)(threadSyncTime + rankSyncTime) / clockDivisor);
+    fprintf(
+        fp, "All sync average execution time: %.6f %s/sync\n",
+        ((threadSyncCounter + rankSyncCounter) == 0
+             ? 0.0
+             : (double)(threadSyncTime + rankSyncTime) / (threadSyncCounter + rankSyncCounter)),
+        clockResolution.c_str());
     fprintf(fp, "\n");
-#endif
+#endif // SST_SYNC_PROFILING
 }
 #endif
 

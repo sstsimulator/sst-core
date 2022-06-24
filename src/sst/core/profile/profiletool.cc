@@ -11,20 +11,16 @@
 
 #include "sst_config.h"
 
-#include "sst/core/ssthandler.h"
+#include "sst/core/profile/profiletool.h"
 
 #include "sst/core/sst_types.h"
 
 #include <atomic>
-#include <cstdio>
 
 namespace SST {
+namespace Profile {
 
-std::atomic<HandlerId_t> SSTHandlerBaseProfile::HandlerProfileToolList::id_counter(1);
+ProfileTool::ProfileTool(ProfileToolId_t id, const std::string& name) : my_id(id), name(name) {}
 
-SSTHandlerBaseProfile::HandlerProfileToolList::HandlerProfileToolList()
-{
-    my_id = id_counter.fetch_add(1);
-}
-
+} // namespace Profile
 } // namespace SST

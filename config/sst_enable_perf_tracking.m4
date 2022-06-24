@@ -13,6 +13,8 @@ AC_DEFUN([SST_ENABLE_PERF_TRACKING], [
                [EXPERIMENTAL Tracks clock handler execution time and counters])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_EVENT_PROFILING], [1],
                [EXPERIMENTAL Tracks event and communication time and counters])])
+   AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_SYNC_PROFILING], [1],
+                [EXPERIMENTAL Tracks synchronization time and count])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERIODIC_PRINT], [0],
                [EXPERIMENTAL Periodically prints performance information to files])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERIODIC_PRINT_THRESHOLD], [10000],

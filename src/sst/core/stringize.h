@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <string>
 #include <strings.h>
+#include <vector>
 
 namespace SST {
 
@@ -90,6 +91,26 @@ trim(std::string& s)
     if ( start != 0 ) { s.replace(s.begin(), s.begin() + (start), ""); }
     auto end = s.find_last_not_of(" \t\n\r\v\f");
     if ( end != s.size() - 1 ) { s.replace(s.begin() + end + 1, s.end(), ""); }
+}
+
+inline void
+tokenize(std::vector<std::string>& output, const std::string& input, const std::string& delim, bool trim_ws = false)
+{
+    size_t start = 0;
+    size_t end   = input.find(delim);
+
+    std::string token;
+    while ( end != std::string::npos ) {
+        token = input.substr(start, end - start);
+        if ( trim_ws ) trim(token);
+        output.push_back(token);
+        start = end + delim.length();
+        end   = input.find(delim, start);
+    }
+
+    token = input.substr(start, end);
+    if ( trim_ws ) trim(token);
+    output.push_back(token);
 }
 
 struct char_delimiter

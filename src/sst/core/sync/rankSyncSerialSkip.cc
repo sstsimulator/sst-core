@@ -32,6 +32,20 @@ REENABLE_WARNING
 #define UNUSED_WO_MPI(x) UNUSED(x)
 #endif
 
+#if SST_EVENT_PROFILING
+#define SST_EVENT_PROFILE_START auto event_profile_start = std::chrono::high_resolution_clock::now();
+
+#define SST_EVENT_PROFILE_STOP                                                                                  \
+    auto event_profile_stop = std::chrono::high_resolution_clock::now();                                        \
+    auto event_profile_count =                                                                                  \
+        std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_stop - event_profile_start).count(); \
+    sim->incrementSerialCounters(event_profile_count);
+#else
+#define SST_EVENT_PROFILE_START
+#define SST_EVENT_PROFILE_STOP
+#endif
+
+
 namespace SST {
 
 // Static Data Members
@@ -117,24 +131,18 @@ RankSyncSerialSkip::exchange(void)
     int         sreq_count = 0;
     int         rreq_count = 0;
 
-#if SST_EVENT_PROFILING
-    Simulation_impl* simImpl = Simulation_impl::getSimulation();
-#endif
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
 
-// Do all the sends
-// Get the buffer from the syncQueue
-#if SST_EVENT_PROFILING
-        // Measures Latency
-        auto start = std::chrono::high_resolution_clock::now();
-#endif
+        SST_EVENT_PROFILE_START
+
+        // Do all the sends
+        // Get the buffer from the syncQueue
         char* send_buffer = i->second.squeue->getData();
-#if SST_EVENT_PROFILING
-        auto finish = std::chrono::high_resolution_clock::now();
-        simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        simImpl->rankExchangeCounter++;
-#endif
+
+        SST_EVENT_PROFILE_STOP
+
         // Cast to Header so we can get/fill in data
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
         // Simulation_impl::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
@@ -160,8 +168,7 @@ RankSyncSerialSkip::exchange(void)
     }
 
     // Wait for all sends and recvs to complete
-    Simulation* sim           = Simulation_impl::getSimulation();
-    SimTime_t   current_cycle = sim->getCurrentSimCycle();
+    SimTime_t current_cycle = sim->getCurrentSimCycle();
 
     auto waitStart = SST::Core::Profile::now();
     MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
