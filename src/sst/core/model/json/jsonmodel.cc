@@ -71,7 +71,6 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
 {
     std::string      Name;
     std::string      Type;
-    ComponentId_t    Id;
     ConfigComponent* Comp = nullptr;
     int              Slot = 0;
 
@@ -105,7 +104,6 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
 
         // add the subcomponent
         Comp = Parent->addSubComponent(Name, Type, Slot);
-        Id   = Comp->id;
 
         // read all the parameters
         if ( subArray.contains("params") ) {
