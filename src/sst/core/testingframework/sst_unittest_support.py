@@ -1028,6 +1028,7 @@ class IgnoreAllAfterFilter(LineFilter):
             return None
         return line
 
+
 class IgnoreWhiteSpaceFilter(LineFilter):
     """Converts any stream of whitespace (space or tabs) to a single
     space.  Newlines are not filtered.
@@ -1059,6 +1060,30 @@ class IgnoreWhiteSpaceFilter(LineFilter):
                 ws_stream = False
 
         return filtered_line
+
+class RemoveRegexFromLineFilter(LineFilter):
+    """Filters out portions of line that match the specified regular expression
+    """
+    def __init__(self, expr):
+        self.regex = expr
+
+    def filter(self,line):
+        """ Removes all text before the specified prefix.
+
+            Args:
+                line (str): Line to check
+
+            Returns:
+                text from line minus any text that matched the regular expression
+        """
+        check_param_type("line", line, str)
+
+        match = re.search(self.regex, line)
+        while match:
+            line = line[:match.start()] + line[match.end():]
+            match = re.search(self.regex, line)
+
+        return line
 
 
 def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filters=[]):
@@ -1104,7 +1129,7 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
             for filter in filters:
                 filt_line = filter.filter(filt_line)
                 if not filt_line:
-                      break;
+                    break;
 
             if filt_line:
                 out_lines.append(filt_line)
@@ -1123,14 +1148,13 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
             for filter in filters:
                 filt_line = filter.filter(filt_line)
                 if not filt_line:
-                      break;
+                    break;
 
             if filt_line:
                 ref_lines.append(filt_line)
 
     if sort:
         ref_lines.sort()
-
 
     # Get the diff between the files
     diff = difflib.unified_diff(out_lines,ref_lines,outfile,reffile,n=1)
