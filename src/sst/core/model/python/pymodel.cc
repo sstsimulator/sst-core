@@ -1109,6 +1109,7 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition()
     gModel = nullptr;
 
     if ( nullptr != namePrefix ) free(namePrefix);
+    PyGC_Collect();
 }
 
 ConfigGraph*
