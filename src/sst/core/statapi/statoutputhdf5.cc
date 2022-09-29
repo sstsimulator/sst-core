@@ -298,7 +298,7 @@ StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
         compGroup->close();
         delete compGroup;
     }
-    catch ( H5::FileIException ex ) {
+    catch ( const H5::FileIException& ex ) {
         /* Ignore - group already exists.*/
     }
 
@@ -310,7 +310,7 @@ StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
             statGroup->close();
             delete statGroup;
         }
-        catch ( H5::FileIException ie ) {
+        catch ( const H5::FileIException& ie ) {
             /* Ignore - group already exists. */
         }
         statName += "/" + statistic->getStatSubId();
@@ -346,7 +346,7 @@ StatisticOutputHDF5::GroupInfo::GroupInfo(StatisticGroup* group, H5::H5File* fil
         compGroup->close();
         delete compGroup;
     }
-    catch ( H5::FileIException ex ) {
+    catch ( const H5::FileIException& ex ) {
         /* Ignore - group already exists.*/
     }
 }
@@ -419,7 +419,7 @@ StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
         statGroup->close();
         delete statGroup;
     }
-    catch ( H5::FileIException ie ) {
+    catch ( const H5::FileIException& ie ) {
         /* Ignore - group already exists. */
     }
 
@@ -548,7 +548,7 @@ StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, Statistic
             statGroup->close();
             delete statGroup;
         }
-        catch ( H5::FileIException ie ) {
+        catch ( const H5::FileIException& ie ) {
             /* Ignore - group already exists. */
         }
         statPath += "/" + stat->getStatSubId();

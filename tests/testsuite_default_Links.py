@@ -65,18 +65,26 @@ class testcase_Links(SSTTestCase):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        if rc == 0: ext = "out"
-        else: ext = "err"
         sdlfile = "{0}/test_Links.py".format(testsuitedir)
         reffile = "{0}/refFiles/test_Links_{1}.out".format(testsuitedir,testtype)
-        outfile = "{0}/test_Links_{1}.{2}".format(outdir,testtype,ext)
+        outfile = "{0}/test_Links_{1}.out".format(outdir,testtype)
 
-        self.run_sst(sdlfile, outfile, other_args=extra_args, expected_rc=rc)
+        if rc == 0: self.run_sst(sdlfile, outfile, other_args=extra_args, expected_rc=rc)
+        else:
+            errfile = "{0}/test_Links_{1}.err".format(outdir,testtype)
+            self.run_sst(sdlfile, outfile, errfile, other_args=extra_args, expected_rc=rc)
 
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")
         filter2 = IgnoreAllAfterFilter("SST Fatal")
+        filters = [filter1, filter2]
         # Do fitered diff.  Sort only when we are expecting success
-        cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), outfile, reffile, rc == 0, [filter1, filter2])
-        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+        if rc == 0:
+            cmpfile = outfile
+            cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), outfile, reffile, rc == 0, filters)
+        else:
+            cmpfile = errfile
+            filters.append(RemoveRegexFromLineFilter("FATAL: (\[[0-9]+:[0-9]+\])* "))
+            cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), errfile, reffile, rc == 0, filters)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(cmpfile, reffile))
 

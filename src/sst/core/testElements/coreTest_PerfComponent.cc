@@ -92,10 +92,9 @@ coreTestPerfComponent::handleEvent(Event* ev)
         dynamic_cast<SST::CoreTestComponent::coreTestComponentEvent*>(ev);
     if ( event ) {
         // scan through each element in the payload and do something to it
-        volatile int sum = 0;
         for ( SST::CoreTestComponent::coreTestComponentEvent::dataVec::iterator i = event->payload.begin();
               i != event->payload.end(); ++i ) {
-            sum += *i;
+            event->payload[0] += *i;
         }
         delete event;
     }
