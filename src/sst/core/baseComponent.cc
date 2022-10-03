@@ -35,6 +35,7 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),
+    sim_(Simulation_impl::getSimulation()),
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -78,14 +79,9 @@ BaseComponent::~BaseComponent()
         std::map<ComponentId_t, ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
         size_t                                  deleted         = parent_subcomps.erase(my_info->id);
         if ( deleted != 1 ) {
-            // This can't be checked while we still have backward
-            // compatibility to the old subcomponent API.  Making
-            // calls directly on a subcomponent/component makes the
-            // structure imperfect.
-
-            // // Should never happen, but issue warning just in case
-            // Simulation::getSimulationOutput().
-            //     output("Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
+            // Should never happen, but issue warning just in case
+            sim_->getSimulationOutput().output(
+                "Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
         }
     }
 }
@@ -96,7 +92,6 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc)
     LinkMap* myLinks = my_info->getLinkMap();
     if ( nullptr != myLinks ) {
         for ( std::pair<std::string, Link*> p : myLinks->getLinkMap() ) {
-            // if ( nullptr == p.second->getDefaultTimeBase() ) {
             if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
                 p.second->setDefaultTimeBase(tc);
             }
@@ -114,11 +109,10 @@ BaseComponent::pushValidParams(Params& params, const std::string& type)
 TimeConverter*
 BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handler, bool regAll)
 {
-    TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
+    TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool =
-        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
 
     if ( tool != nullptr ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
@@ -139,11 +133,10 @@ BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handle
 TimeConverter*
 BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll)
 {
-    TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
+    TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool =
-        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
 
     if ( tool != nullptr ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
@@ -164,11 +157,10 @@ BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handle
 TimeConverter*
 BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
-    TimeConverter* tcRet = Simulation_impl::getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
+    TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool =
-        Simulation_impl::getSimulation()->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
 
     if ( tool != nullptr ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
@@ -189,19 +181,19 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
 Cycle_t
 BaseComponent::reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler)
 {
-    return Simulation_impl::getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
+    return sim_->reregisterClock(freq, handler, CLOCKPRIORITY);
 }
 
 Cycle_t
 BaseComponent::getNextClockCycle(TimeConverter* freq)
 {
-    return Simulation_impl::getSimulation()->getNextClockCycle(freq, CLOCKPRIORITY);
+    return sim_->getNextClockCycle(freq, CLOCKPRIORITY);
 }
 
 void
 BaseComponent::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler)
 {
-    Simulation_impl::getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
+    sim_->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
 TimeConverter*
@@ -311,8 +303,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp->setFunctor(handler);
 
             // Check to see if there is a profile tool installed
-            auto* tool = Simulation_impl::getSimulation()->getProfileTool<Profile::EventHandlerProfileTool>(
-                SST_PROFILE_TOOL_EVENT);
+            auto* tool = sim_->getProfileTool<Profile::EventHandlerProfileTool>(SST_PROFILE_TOOL_EVENT);
             if ( tool != nullptr ) {
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
 
@@ -399,55 +390,55 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
 UnitAlgebra
 BaseComponent::getCoreTimeBase() const
 {
-    return Simulation_impl::getSimulation()->getTimeLord()->getTimeBase();
+    return sim_->getTimeLord()->getTimeBase();
 }
 
 SimTime_t
 BaseComponent::getCurrentSimCycle() const
 {
-    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+    return sim_->getCurrentSimCycle();
 }
 
 int
 BaseComponent::getCurrentPriority() const
 {
-    return Simulation_impl::getSimulation()->getCurrentPriority();
+    return sim_->getCurrentPriority();
 }
 
 UnitAlgebra
 BaseComponent::getElapsedSimTime() const
 {
-    return Simulation_impl::getSimulation()->getElapsedSimTime();
+    return sim_->getElapsedSimTime();
 }
 
 SimTime_t
 BaseComponent::getEndSimCycle() const
 {
-    return Simulation_impl::getSimulation()->getEndSimCycle();
+    return sim_->getEndSimCycle();
 }
 
 UnitAlgebra
 BaseComponent::getEndSimTime() const
 {
-    return Simulation_impl::getSimulation()->getEndSimTime();
+    return sim_->getEndSimTime();
 }
 
 UnitAlgebra
 BaseComponent::getFinalSimTime() const
 {
-    return Simulation_impl::getSimulation()->getFinalSimTime();
+    return sim_->getFinalSimTime();
 }
 
 RankInfo
 BaseComponent::getRank() const
 {
-    return Simulation_impl::getSimulation()->getRank();
+    return sim_->getRank();
 }
 
 RankInfo
 BaseComponent::getNumRanks() const
 {
-    return Simulation_impl::getSimulation()->getNumRanks();
+    return sim_->getNumRanks();
 }
 
 Output&
@@ -459,7 +450,7 @@ BaseComponent::getSimulationOutput() const
 SimTime_t
 BaseComponent::getCurrentSimTime(TimeConverter* tc) const
 {
-    return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
 }
 
 SimTime_t
@@ -468,7 +459,7 @@ BaseComponent::processCurrentTimeWithUnderflowedBase(const std::string& base) co
     // Use UnitAlgebra to compute because core timebase was too big to
     // represent the requested units
     UnitAlgebra uabase(base);
-    UnitAlgebra curr_time = Simulation_impl::getSimulation()->getElapsedSimTime();
+    UnitAlgebra curr_time = sim_->getElapsedSimTime();
 
     UnitAlgebra result = curr_time / uabase;
 
@@ -503,7 +494,7 @@ SimTime_t
 BaseComponent::getCurrentSimTimeNano() const
 {
     TimeConverter* tc = Simulation_impl::getTimeLord()->getNano();
-    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    if ( tc ) return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 ns");
 }
 
@@ -511,7 +502,7 @@ SimTime_t
 BaseComponent::getCurrentSimTimeMicro() const
 {
     TimeConverter* tc = Simulation_impl::getTimeLord()->getMicro();
-    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    if ( tc ) return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 us");
 }
 
@@ -519,7 +510,7 @@ SimTime_t
 BaseComponent::getCurrentSimTimeMilli() const
 {
     TimeConverter* tc = Simulation_impl::getTimeLord()->getMilli();
-    if ( tc ) return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
+    if ( tc ) return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 ms");
 }
 
@@ -527,49 +518,49 @@ BaseComponent::getCurrentSimTimeMilli() const
 double
 BaseComponent::getRunPhaseElapsedRealTime() const
 {
-    return Simulation_impl::getSimulation()->getRunPhaseElapsedRealTime();
+    return sim_->getRunPhaseElapsedRealTime();
 }
 
 double
 BaseComponent::getInitPhaseElapsedRealTime() const
 {
-    return Simulation_impl::getSimulation()->getInitPhaseElapsedRealTime();
+    return sim_->getInitPhaseElapsedRealTime();
 }
 
 double
 BaseComponent::getCompletePhaseElapsedRealTime() const
 {
-    return Simulation_impl::getSimulation()->getCompletePhaseElapsedRealTime();
+    return sim_->getCompletePhaseElapsedRealTime();
 }
 
 bool
 BaseComponent::isSimulationRunModeInit() const
 {
-    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::INIT;
+    return sim_->getSimulationMode() == Simulation::INIT;
 }
 
 bool
 BaseComponent::isSimulationRunModeRun() const
 {
-    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::RUN;
+    return sim_->getSimulationMode() == Simulation::RUN;
 }
 
 bool
 BaseComponent::isSimulationRunModeBoth() const
 {
-    return Simulation_impl::getSimulation()->getSimulationMode() == Simulation::BOTH;
+    return sim_->getSimulationMode() == Simulation::BOTH;
 }
 
 std::string&
 BaseComponent::getOutputDirectory() const
 {
-    return Simulation_impl::getSimulation()->getOutputDirectory();
+    return sim_->getOutputDirectory();
 }
 
 void
 BaseComponent::requireLibrary(const std::string& name)
 {
-    Simulation_impl::getSimulation()->requireLibrary(name);
+    sim_->requireLibrary(name);
 }
 
 bool
@@ -660,7 +651,7 @@ BaseComponent::doesSubComponentExist(const std::string& type)
 Simulation*
 BaseComponent::getSimulation() const
 {
-    return Simulation_impl::getSimulation();
+    return sim_;
 }
 
 uint8_t
@@ -839,13 +830,13 @@ BaseComponent::configureAllowedStatParams(SST::Params& params)
 void
 BaseComponent::performStatisticOutput(StatisticBase* stat)
 {
-    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat);
+    sim_->getStatisticsProcessingEngine()->performStatisticOutput(stat);
 }
 
 void
 BaseComponent::performGlobalStatisticOutput()
 {
-    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
+    sim_->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
 }
 
 } // namespace SST
