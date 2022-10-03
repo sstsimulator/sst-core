@@ -397,7 +397,7 @@ setSSTThreadCount(PyObject* UNUSED(self), PyObject* args)
     Config* cfg     = gModel->getConfig();
     long    oldNThr = cfg->num_threads();
     long    nThr    = SST_ConvertToCppLong(args);
-    if ( nThr > 0 && nThr <= oldNThr ) gModel->setConfigEntryFromModel("num_threads", std::to_string(nThr));
+    gModel->setConfigEntryFromModel("num_threads", std::to_string(nThr));
     return SST_ConvertToPythonLong(oldNThr);
 }
 

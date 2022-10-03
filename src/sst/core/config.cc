@@ -798,7 +798,11 @@ static const struct sstLongOpts_s sstOptions[] = {
         "verbose", 'v', "level", "Verbosity level to determine what information about core runtime is printed",
         &ConfigHelper::incrVerbose, &ConfigHelper::setVerbosity, true),
     DEF_ARG(
-        "num_threads", 'n', "NUM", "Number of parallel threads to use per rank", &ConfigHelper::setNumThreads, true),
+        "num-threads", 'n', "NUM", "Number of parallel threads to use per rank", &ConfigHelper::setNumThreads, true),
+    DEF_ARG(
+        "num_threads", 0, "NUM",
+        "[Deprecated] Number of parallel threads to use per rank (deprecated, please use --num-threads or -n instead)",
+        &ConfigHelper::setNumThreads, true),
     DEF_ARG(
         "sdl-file", 0, "FILE",
         "Specify SST Configuration file.  Note: this is most often done by just specifying the file without an option.",
