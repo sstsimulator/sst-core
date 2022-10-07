@@ -44,6 +44,10 @@ public:
         {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
+    SST_ELI_DOCUMENT_ATTRIBUTES(
+        { "test_element", "true" }
+    )
+
     coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
     ~coreTestComponentBase() {}
 };

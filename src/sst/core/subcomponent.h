@@ -25,19 +25,22 @@ namespace SST {
    SubComponent API is nearly identical to the Component API and all
    the calls are proxied to the parent Component.
 */
-class SubComponent : public Module, public BaseComponent
+class SubComponent : public BaseComponent
 {
 
 public:
     SST_ELI_DECLARE_BASE(SubComponent)
     // declare extern to limit compile times
     SST_ELI_DECLARE_CTOR_EXTERN(ComponentId_t)
+    // These categories will print in sst-info in the order they are
+    // listed here
     SST_ELI_DECLARE_INFO_EXTERN(
-      ELI::ProvidesParams,
-      ELI::ProvidesSubComponentSlots,
-      ELI::ProvidesPorts,
-      ELI::ProvidesStats,
-      ELI::ProvidesInterface)
+        ELI::ProvidesInterface,
+        ELI::ProvidesParams,
+        ELI::ProvidesPorts,
+        ELI::ProvidesSubComponentSlots,
+        ELI::ProvidesStats,
+        ELI::ProvidesAttributes)
 
     SubComponent(ComponentId_t id);
 
@@ -71,6 +74,10 @@ private:
     SST_ELI_NEW_BASE_CTOR(SST::ComponentId_t,SST::Params&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls, lib, name, version, desc, interface) \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(#interface)
+
+#define SST_ELI_REGISTER_SUBCOMPONENT(cls, lib, name, version, desc, interface)         \
     SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
     SST_ELI_INTERFACE_INFO(#interface)
 

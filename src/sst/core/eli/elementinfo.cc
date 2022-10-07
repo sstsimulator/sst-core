@@ -13,6 +13,8 @@
 
 #include "sst/core/eli/elementinfo.h"
 
+#include "sst/core/eli/elibase.h"
+
 namespace SST {
 
 /**************************************************************************
@@ -50,61 +52,58 @@ ProvidesDefaultInfo::getELICompiledVersion() const
 void
 ProvidesParams::toString(std::ostream& os) const
 {
-    os << "         NUM PARAMETERS = " << getValidParams().size() << "\n";
-    int index = 0;
+    os << "      Parameters (" << getValidParams().size() << " total)\n";
     for ( const ElementInfoParam& item : getValidParams() ) {
-        os << "            PARAMETER " << index << " = " << item.name << " ("
-           << (item.description == nullptr ? "<empty>" : item.description) << ")"
+        os << "         " << item.name << ": " << (item.description == nullptr ? " <empty>" : item.description) << " "
            << " [" << (item.defaultValue == nullptr ? "<required>" : item.defaultValue) << "]\n";
-        index++;
     }
 }
 
 void
 ProvidesPorts::toString(std::ostream& os) const
 {
-    os << "         NUM PORTS = " << getValidPorts().size() << "\n";
-    int index = 0;
+    os << "      Ports (" << getValidPorts().size() << " total)\n";
     for ( auto& item : getValidPorts() ) {
-        os << "            PORT " << index << " = " << item.name << " ("
-           << (item.description == nullptr ? "<empty>" : item.description) << ")\n";
-        ++index;
+        os << "         " << item.name << ": " << (item.description == nullptr ? "<empty>" : item.description) << "\n";
     }
 }
 
 void
 ProvidesSubComponentSlots::toString(std::ostream& os) const
 {
-    os << "         NUM SUBCOMPONENT SLOTS = " << getSubComponentSlots().size() << "\n";
-    int index = 0;
+    os << "      SubComponent Slots (" << getSubComponentSlots().size() << " total)\n";
     for ( auto& item : getSubComponentSlots() ) {
-        os << "            SUB COMPONENT SLOT " << index << " = " << item.name << " ("
-           << (item.description == nullptr ? "<empty>" : item.description) << ")"
-           << " [" << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
-        ++index;
+        os << "         " << item.name << ": " << (item.description == nullptr ? "<empty>" : item.description) << " ["
+           << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
     }
 }
 
 void
 ProvidesStats::toString(std::ostream& os) const
 {
-    os << "         NUM STATISTICS = " << getValidStats().size() << "\n";
-    int index = 0;
+    os << "      Statistics (" << getValidStats().size() << " total)\n";
     for ( auto& item : getValidStats() ) {
-        os << "            STATISTIC " << index << " = " << item.name << " ["
-           << (item.description == nullptr ? "<empty>" : item.description) << "]"
-           << " (" << (item.units == nullptr ? "<empty>" : item.units) << ")"
+        os << "         " << item.name << ": " << (item.description == nullptr ? "<empty>" : item.description) << ", "
+           << " (units = \"" << (item.units == nullptr ? "<empty>" : item.units) << "\")"
            << " Enable level = " << (int16_t)item.enableLevel << "\n";
-        ++index;
     }
 }
 
 void
 ProvidesDefaultInfo::toString(std::ostream& os) const
 {
-    os << "    " << getName() << ": " << getDescription() << std::endl;
-    os << "    Using ELI version " << getELIVersionString() << std::endl;
-    os << "    Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
+    os << "      Description: " << getDescription() << std::endl;
+    os << "      ELI version: " << getELIVersionString() << std::endl;
+    os << "      Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
+}
+
+void
+ProvidesAttributes::toString(std::ostream& os) const
+{
+    os << "      Attributes (" << getAttributes().size() << " total)\n";
+    for ( const ElementInfoAttribute& item : getAttributes() ) {
+        os << "         " << item.name << " = " << (item.value == nullptr ? "<empty>" : item.value) << "\n";
+    }
 }
 
 void
@@ -121,6 +120,32 @@ ProvidesParams::init()
     for ( auto& item : params_ ) {
         allowedKeys.insert(item.name);
     }
+}
+
+// ELI combine function for Attributes which don't have a description
+// field
+void
+combineEliInfo(std::vector<ElementInfoAttribute>& base, std::vector<ElementInfoAttribute>& add)
+{
+    std::vector<ElementInfoAttribute> combined;
+    // Add in any item that isn't already defined
+    for ( auto x : add ) {
+        bool add = true;
+        for ( auto y : base ) {
+            if ( !strcmp(x.name, y.name) ) {
+                add = false;
+                break;
+            }
+        }
+        if ( add ) combined.emplace_back(x);
+    }
+
+    // Now add all the locals.  We will skip any one that has nullptr
+    // in the description field
+    for ( auto x : base ) {
+        if ( x.value != nullptr ) { combined.emplace_back(x); }
+    }
+    base.swap(combined);
 }
 
 } // namespace ELI

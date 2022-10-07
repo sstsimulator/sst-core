@@ -43,7 +43,7 @@ public:
         }
     }
 
-    void toString(std::ostream& UNUSED(os)) const { os << "      CATEGORY: " << categoryName(cat_) << "\n"; }
+    void toString(std::ostream& UNUSED(os)) const { os << "      Category: " << categoryName(cat_) << "\n"; }
 
     template <class XMLNode>
     void outputXML(XMLNode* UNUSED(node))

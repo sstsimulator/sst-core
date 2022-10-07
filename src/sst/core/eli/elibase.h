@@ -70,6 +70,12 @@ struct ElementInfoSubComponentSlot
     const char* superclass;
 };
 
+struct ElementInfoAttribute
+{
+    const char* name;
+    const char* value;
+};
+
 typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
 namespace ELI {
@@ -77,7 +83,7 @@ namespace ELI {
 // Function used to combine the parent and child ELI information.
 // This function only works for items that have a 'name' and a
 // 'description' field (which is all of them at time of function
-// writing).  You can delete a parent't info by adding an entry in the
+// writing).  You can delete a parent's info by adding an entry in the
 // child with the same name and a nullptr in the description.  Each
 // info item should include a macro of the format SST_ELI_DELETE_* to
 // make this easy for the element library writer.
@@ -109,6 +115,10 @@ combineEliInfo(std::vector<T>& base, std::vector<T>& add)
     }
     base.swap(combined);
 }
+
+// ELI combine function for Attributes which don't have a description
+// field
+void combineEliInfo(std::vector<ElementInfoAttribute>& base, std::vector<ElementInfoAttribute>& add);
 
 template <class T>
 struct MethodDetect
