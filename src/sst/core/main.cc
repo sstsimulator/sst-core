@@ -640,6 +640,20 @@ main(int argc, char* argv[])
     }
 
     ////// End ConfigGraph Creation //////
+#ifdef SST_CONFIG_HAVE_MPI
+    // If we did a parallel load, check to make sure that all the
+    // ranks have the same thread count set (the python can change the
+    // thread count if not specified on the command line
+    if ( cfg.parallel_load() ) {
+        uint32_t max_thread_count = 0;
+        uint32_t my_thread_count  = cfg.num_threads();
+        MPI_Allreduce(&my_thread_count, &max_thread_count, 1, MPI_UINT32_T, MPI_MAX, MPI_COMM_WORLD);
+        if ( my_thread_count != max_thread_count ) {
+            g_output.fatal(
+                CALL_INFO, 1, "Thread counts do no match across ranks for configuration using parallel loading\n");
+        }
+    }
+#endif
 
     ////// Start Partitioning //////
     double start_part = sst_get_cpu_time();
