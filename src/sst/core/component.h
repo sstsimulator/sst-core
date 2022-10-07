@@ -33,12 +33,15 @@ public:
     SST_ELI_DECLARE_BASE(Component)
     // declare extern to limit compile times
     SST_ELI_DECLARE_CTOR_EXTERN(ComponentId_t,SST::Params&)
+    // These categories will print in sst-info in the order they are
+    // listed here
     SST_ELI_DECLARE_INFO_EXTERN(
-      ELI::ProvidesParams,
-      ELI::ProvidesSubComponentSlots,
-      ELI::ProvidesPorts,
-      ELI::ProvidesStats,
-      ELI::ProvidesCategory)
+        ELI::ProvidesCategory,
+        ELI::ProvidesParams,
+        ELI::ProvidesPorts,
+        ELI::ProvidesSubComponentSlots,
+        ELI::ProvidesStats,
+        ELI::ProvidesAttributes)
 
     /** Constructor. Generally only called by the factory class.
         @param id Unique component ID

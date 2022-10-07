@@ -32,10 +32,10 @@ class ProfileTool
 public:
     SST_ELI_DECLARE_BASE(ProfileTool)
     // maybe declare extern to limit compile times??
-    SST_ELI_DECLARE_CTOR(ProfileToolId_t, const std::string&)
-    SST_ELI_DECLARE_INFO(
-      ELI::ProvidesParams,
-      ELI::ProvidesInterface)
+    SST_ELI_DECLARE_CTOR_EXTERN(ProfileToolId_t, const std::string&)
+    SST_ELI_DECLARE_INFO_EXTERN(
+        ELI::ProvidesInterface,
+        ELI::ProvidesParams)
 
     ProfileTool(ProfileToolId_t id, const std::string& name);
 

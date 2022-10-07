@@ -393,17 +393,25 @@ template <class BaseType>
 void
 SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
 {
+    // lib is an InfoLibrary
     auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
     if ( lib ) {
-        os << "Num " << BaseType::ELI_baseName() << "s = " << lib->numEntries() << "\n";
-        int idx = 0;
-        for ( auto& pair : lib->getMap() ) {
-            bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
-            if ( print ) {
-                os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
-                if ( g_configuration.doVerbose() ) pair.second->toString(os);
+        // Only print if there is something of that type in the library
+        if ( lib->numEntries() != 0 ) {
+            os << BaseType::ELI_baseName() << "s (" << lib->numEntries() << " total)\n";
+            int idx = 0;
+            // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
+            // actually a Base::BuilderInfo and the implementation is in
+            // BuildInfoImpl
+            for ( auto& pair : lib->getMap() ) {
+                bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
+                if ( print ) {
+                    os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
+                    if ( g_configuration.doVerbose() ) pair.second->toString(os);
+                }
+                ++idx;
+                os << std::endl;
             }
-            ++idx;
         }
     }
     else {
@@ -417,13 +425,12 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
 
     os << "================================================================================\n";
-    os << "ELEMENT " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
+    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
        << "\n";
 
     outputHumanReadable<Component>(os, enableFullElementOutput);
     outputHumanReadable<SubComponent>(os, enableFullElementOutput);
     outputHumanReadable<Module>(os, enableFullElementOutput);
-    // outputHumanReadable(); events
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
 }

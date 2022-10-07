@@ -12,6 +12,7 @@
 #ifndef SST_CORE_ELI_ELEMENTINFO_H
 #define SST_CORE_ELI_ELEMENTINFO_H
 
+#include "sst/core/eli/attributeInfo.h"
 #include "sst/core/eli/categoryInfo.h"
 #include "sst/core/eli/defaultInfo.h"
 #include "sst/core/eli/elementbuilder.h"
@@ -107,8 +108,8 @@ public:
 
     void toString(std::ostream& os) const
     {
-        Parent::toString(os);
         Policy::toString(os);
+        Parent::toString(os);
     }
 };
 
