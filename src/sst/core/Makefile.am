@@ -9,6 +9,7 @@ AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	-DSST_BUILDING_CORE=1 \
 	$(ZOLTAN_CPPFLAGS) \
+	$(METIS_CPPFLAGS) \
 	$(PYTHON_CPPFLAGS) \
 	-I$(top_srcdir)/external \
 	$(LTDLINCL)
@@ -278,6 +279,7 @@ sstinfo_x_SOURCES = \
 sstsim_x_LDADD = \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
+	$(METIS_LIB) \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
@@ -286,6 +288,7 @@ sstsim_x_LDADD = \
 sstsim_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
+	$(METIS_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
@@ -294,6 +297,7 @@ sstsim_x_LDFLAGS = \
 sstinfo_x_LDADD = \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
+	$(METIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
@@ -301,6 +305,7 @@ sstinfo_x_LDADD = \
 sstinfo_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
+	$(METIS_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
