@@ -14,6 +14,7 @@ EXTRA_DIST += \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
     tests/testsuite_default_Serialization.py \
+    tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_testengine_testing.py \
     tests/test_Component.py \
     tests/test_ClockerComponent.py \
@@ -35,6 +36,7 @@ EXTRA_DIST += \
     tests/test_StatisticsComponent.py \
     tests/test_Links.py \
     tests/test_MessageGeneratorComponent.py \
+    tests/test_MemPool_overflow.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
@@ -47,6 +49,7 @@ EXTRA_DIST += \
     tests/refFiles/test_LookupTableComponent.out \
     tests/refFiles/test_ParamComponent.out \
     tests/refFiles/test_MessageGeneratorComponent.out \
+    tests/refFiles/test_MemPool_overflow.out \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \

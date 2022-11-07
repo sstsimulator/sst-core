@@ -12,152 +12,77 @@
 #ifndef SST_CORE_MEMPOOL_H
 #define SST_CORE_MEMPOOL_H
 
-#include "sst/core/threadsafe.h"
-
-#include <cinttypes>
-#include <cstddef>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <deque>
-#include <list>
-#include <sys/mman.h>
+#include "sst/core/serialization/serializable.h"
 
 namespace SST {
+class Output;
+
 namespace Core {
 
-/**
- * Simple Memory Pool class
- */
-class MemPool
+// Class to access stats/data about the mempools.  This is here to
+// limit exposure to the USE_MEMPOOL #define, which will only be in
+// core .cc files.
+class MemPoolAccessor
 {
-    template <typename LOCK_t>
-    class FreeList
-    {
-        LOCK_t             mtx;
-        std::vector<void*> list;
+public:
+    // Gets the arena size for the specified pool size on the current
+    // thread.  If mempools aren't enabled, it will return 0.
+    static size_t getArenaSize(size_t size);
 
-    public:
-        inline void insert(void* ptr)
-        {
-            std::lock_guard<LOCK_t> lock(mtx);
-            list.push_back(ptr);
-        }
+    // Gets the number of arenas allocated for the specified pool size
+    // on the current thread.  If mempools aren't enabled, it will
+    // return 0.
+    static size_t getNumArenas(size_t size);
 
-        inline void* try_remove()
-        {
-            std::lock_guard<LOCK_t> lock(mtx);
-            if ( list.empty() ) return nullptr;
-            void* p = list.back();
-            list.pop_back();
-            return p;
-        }
+    // Gets the total bytes used for the specified pool size on the
+    // current thread.  If mempools aren't enabled, it will return 0.
+    static uint64_t getBytesMemUsedBy(size_t size);
 
-        size_t size() const { return list.size(); }
-    };
+    // Gets the total mempool usage for the rank.  Returns both the
+    // bytes and the number of active entries.  Bytes and entries are
+    // added to the value passed into the function.  If mempools
+    // aren't enabled, then nothing will be counted.
+    static void getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries);
+
+    // Initialize the global mempool data structures
+    static void initializeGlobalData(int num_threads);
+
+    // Initialize the per thread mempool ata structures
+    static void initializeLocalData(int thread);
+};
+
+// Base class for those classes that will use mempools.  Mempools are
+// designed to be used primarily with Activities/Events and small data
+// strcutures that are part of events.  Thus, MemPoolItem inherits
+// from Serializable because all these classes will generally need to
+// serialize.
+class MemPoolItem : public SST::Core::Serialization::serializable
+{
+protected:
+    MemPoolItem() {}
 
 public:
-    /** Create a new Memory Pool.
-     * @param elementSize - Size of each Element
-     * @param initialSize - Size of the memory pool (in bytes)
+    /** Allocates memory from a memory pool for a new Activity */
+    void* operator new(std::size_t size) noexcept;
+
+    /** Returns memory for this Activity to the appropriate memory pool */
+    void operator delete(void* ptr);
+
+    /** Get a string represenation of the entry.  The default version
+     * will just use the name of the class, retrieved through the
+     * cls_name() function inherited from the serialzable class, which
+     * will return the name of the last class to call one of the
+     * serialization macros (ImplementSerializable(),
+     * ImplementVirtualSerializable(), or NotSerializable()).
+     * Subclasses can override this function if they want to add
+     * additional information.
      */
-    MemPool(size_t elementSize, size_t initialSize = (2 << 20)) :
-        numAlloc(0),
-        numFree(0),
-        elemSize(elementSize),
-        arenaSize(initialSize),
-        allocating(false)
-    {
-        allocPool();
-    }
+    virtual std::string toString() const;
 
-    ~MemPool()
-    {
-        for ( std::list<uint8_t*>::iterator i = arenas.begin(); i != arenas.end(); ++i ) {
-            ::free(*i);
-        }
-    }
 
-    /** Allocate a new element from the memory pool */
-    inline void* malloc()
-    {
-        void* ret = freeList.try_remove();
-        while ( !ret ) {
-            bool ok = allocPool();
-            if ( !ok ) return nullptr;
-            sst_pause();
-            ret = freeList.try_remove();
-        }
-        ++numAlloc;
-        return ret;
-    }
+    virtual void print(const std::string& header, Output& out) const;
 
-    /** Return an element to the memory pool */
-    inline void free(void* ptr)
-    {
-        // TODO:  Make sure this is in one of our arenas
-        freeList.insert(ptr);
-        // #ifdef __SST_DEBUG_EVENT_TRACKING__
-        //         *((uint64_t*)ptr) = 0xFFFFFFFFFFFFFFFF;
-        // #endif
-        ++numFree;
-    }
-
-    /**
-       Approximates the current memory usage of the mempool. Some
-       overheads are not taken into account.
-     */
-    uint64_t getBytesMemUsed()
-    {
-        uint64_t bytes_in_arenas    = arenas.size() * arenaSize;
-        uint64_t bytes_in_free_list = freeList.size() * sizeof(void*);
-        return bytes_in_arenas + bytes_in_free_list;
-    }
-
-    uint64_t getUndeletedEntries() { return numAlloc - numFree; }
-
-    /** Counter:  Number of times elements have been allocated */
-    std::atomic<uint64_t> numAlloc;
-    /** Counter:  Number times elements have been freed */
-    std::atomic<uint64_t> numFree;
-
-    size_t getArenaSize() const { return arenaSize; }
-    size_t getElementSize() const { return elemSize; }
-
-    const std::list<uint8_t*>& getArenas() { return arenas; }
-
-private:
-    bool allocPool()
-    {
-        /* If already in progress, return */
-        if ( allocating.exchange(1, std::memory_order_acquire) ) { return true; }
-
-        uint8_t* newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-        if ( MAP_FAILED == newPool ) {
-            allocating.store(0, std::memory_order_release);
-            return false;
-        }
-        std::memset(newPool, 0xFF, arenaSize);
-        arenas.push_back(newPool);
-        size_t nelem = arenaSize / elemSize;
-        for ( size_t i = 0; i < nelem; i++ ) {
-            uint64_t* ptr = (uint64_t*)(newPool + (elemSize * i));
-            // #ifdef __SST_DEBUG_EVENT_TRACKING__
-            //             *ptr = 0xFFFFFFFFFFFFFFFF;
-            // #endif
-            freeList.insert(ptr);
-            // freeList.push_back(newPool + (elemSize*i));
-        }
-        allocating.store(0, std::memory_order_release);
-        return true;
-    }
-
-    size_t elemSize;
-    size_t arenaSize;
-
-    std::atomic<unsigned int>      allocating;
-    FreeList<ThreadSafe::Spinlock> freeList;
-    std::list<uint8_t*>            arenas;
+    ImplementVirtualSerializable(SST::Core::MemPoolItem)
 };
 
 } // namespace Core

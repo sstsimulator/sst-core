@@ -14,6 +14,7 @@
 
 #include "sst/core/action.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/threadsafe.h"
 
 #include <cinttypes>
 #include <unordered_set>

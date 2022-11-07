@@ -1102,7 +1102,7 @@ Config::parseCmdLine(int argc, char* argv[])
         // Getopt is a bit strange it how it returns information.
         // There are three cases:
 
-        // 1 - Uknown value:  c = '?' & option_index = 0
+        // 1 - Unknown value:  c = '?' & option_index = 0
         // 2 - long options:  c = first letter of option & option_index = index of option in sst_long_options
         // 3 - short options: c = short option letter & option_index = 0
 
@@ -1137,18 +1137,22 @@ Config::parseCmdLine(int argc, char* argv[])
                 exit(1);
                 break;
 
+            // Note, for these cases, we have to supply the
+            // option_index ourselves because it is set to 0 from
+            // getopt.  So, these need to be revisited if there is
+            // ever a new option put above any of these options.
             case 'v':
                 if ( optarg == nullptr ) { ok = helper.incrVerbose(); }
                 else {
                     ok = helper.setVerbosity(optarg);
                 }
-                if ( ok ) sstOptions[option_index].set_cmdline = true;
+                if ( ok ) sstOptions[4].set_cmdline = true;
                 break;
 
             case 'n':
             {
                 ok = helper.setNumThreads(optarg);
-                if ( ok ) sstOptions[option_index].set_cmdline = true;
+                if ( ok ) sstOptions[5].set_cmdline = true;
                 break;
             }
 

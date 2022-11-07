@@ -47,9 +47,4 @@ Event::generateUniqueId()
     return std::make_pair(id_counter++, Simulation_impl::getSimulation()->getRank().rank);
 }
 
-#ifdef USE_MEMPOOL
-std::mutex                        Activity::poolMutex;
-std::vector<Activity::PoolInfo_t> Activity::memPools;
-#endif
-
 } // namespace SST
