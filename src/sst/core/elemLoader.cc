@@ -312,6 +312,9 @@ ElemLoader::getPotentialElements(std::vector<std::string>& potential_elements)
             closedir(current_dir);
         }
     }
+    // Always add in the sst library, since it's built into the sst
+    // and sst-info executables
+    potential_elements.push_back("sst");
 }
 
 } // namespace SST

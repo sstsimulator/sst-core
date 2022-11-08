@@ -821,8 +821,9 @@ protected:
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
 private:
-    ComponentInfo* my_info = nullptr;
-    bool           isExtension;
+    ComponentInfo*   my_info = nullptr;
+    Simulation_impl* sim_    = nullptr;
+    bool             isExtension;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);

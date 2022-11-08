@@ -20,6 +20,10 @@
 namespace SST {
 namespace Profile {
 
+SST_ELI_DEFINE_INFO_EXTERN(ProfileTool)
+SST_ELI_DEFINE_CTOR_EXTERN(ProfileTool)
+
+
 ProfileTool::ProfileTool(ProfileToolId_t id, const std::string& name) : my_id(id), name(name) {}
 
 } // namespace Profile
