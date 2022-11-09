@@ -574,7 +574,9 @@ main(int argc, char* argv[])
             return -1;
         }
 
-        modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile(), cfg.verbose(), &cfg, start);
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
+            modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile(), cfg.verbose(), &cfg, start);
+        }
     }
 
 
@@ -632,8 +634,10 @@ main(int argc, char* argv[])
     }
 
     // Delete the model generator
-    delete modelGen;
-    modelGen = nullptr;
+    if ( modelGen ) {
+        delete modelGen;
+        modelGen = nullptr;
+    }
 
     double end_graph_gen = sst_get_cpu_time();
 

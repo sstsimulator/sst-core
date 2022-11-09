@@ -71,6 +71,8 @@ static PyObject* enableStatisticForComponentType(PyObject* self, PyObject* args)
 static PyObject* setStatisticLoadLevelForComponentName(PyObject* self, PyObject* args);
 static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject* args);
 
+static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
+
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
 static PyObject* mlLoadModule(PyObject* self, PyObject* args);
 
@@ -777,6 +779,22 @@ setStatisticLoadLevelForComponentType(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
+setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
+{
+    PyErr_Clear();
+
+    bool state = SST_ConvertToCppLong(arg);
+    if ( PyErr_Occurred() ) {
+        PyErr_Print();
+        exit(-1);
+    }
+
+    gModel->setCallPythonFinalize(state);
+
+    return SST_ConvertToPythonLong(0);
+}
+
+static PyObject*
 globalAddParam(PyObject* UNUSED(self), PyObject* args)
 {
     char*     set   = nullptr;
@@ -894,6 +912,9 @@ static PyMethodDef sstModuleMethods[] = {
       "getting fine timings.  For that, use the built-in time module." },
     { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
       "Gets the current memory use, returned as a UnitAlgebra" },
+    { "setCallPythonFinalize", setCallPythonFinalize, METH_O,
+      "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
+      "called by default if this function is not called." },
     { nullptr, nullptr, 0, nullptr }
 };
 
@@ -1028,7 +1049,8 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     config(configObj),
     namePrefix(nullptr),
     namePrefixLen(0),
-    start_time(start_time)
+    start_time(start_time),
+    callPythonFinalize(true)
 {
     std::vector<std::string> argv_vector;
     argv_vector.push_back("sstsim.x");
@@ -1093,23 +1115,16 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     free(argv);
 }
 
-// SSTPythonModelDefinition::SSTPythonModelDefinition(
-//     const std::string& script_file, int verbosity, Config* configObj, double start_time, int argc, char** argv) :
-//     SSTModelDescription(),
-//     scriptName(script_file),
-//     config(configObj),
-//     start_time(start_time)
-// {
-//     initModel(script_file, verbosity, configObj, argc, argv);
-// }
-
 SSTPythonModelDefinition::~SSTPythonModelDefinition()
 {
     delete output;
     gModel = nullptr;
 
     if ( nullptr != namePrefix ) free(namePrefix);
-    PyGC_Collect();
+    if ( callPythonFinalize ) { Py_Finalize(); }
+    else {
+        PyGC_Collect();
+    }
 }
 
 ConfigGraph*
