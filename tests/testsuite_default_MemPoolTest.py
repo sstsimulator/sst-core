@@ -53,25 +53,23 @@ class testcase_StatisticComponent(SSTTestCase):
 
 #####
 
-    num_threads = test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
-
-    @unittest.skipIf(num_threads > 1, "Statistic test currently fails with threads due to strange interactions of independent threads with stats")
-    def test_StatisticsBasic(self):
-        self.Statistics_test_template("basic")
+    def test_MemPool_overflow(self):
+        self.Statistics_test_template("overflow", 4) # force 4 threads
 
 #####
 
-    def Statistics_test_template(self, testtype):
+    def Statistics_test_template(self, testtype, num_threads = None):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        sdlfile = "{0}/test_StatisticsComponent_{1}.py".format(testsuitedir, testtype)
-        reffile = "{0}/refFiles/test_StatisticsComponent_{1}.out".format(testsuitedir, testtype)
-        outfile = "{0}/test_StatisticsComponent_{1}.out".format(outdir, testtype)
+        sdlfile = "{0}/test_MemPool_{1}.py".format(testsuitedir, testtype)
+        reffile = "{0}/refFiles/test_MemPool_{1}.out".format(testsuitedir, testtype)
+        outfile = "{0}/test_MemPool_{1}.out".format(outdir, testtype)
 
-        self.run_sst(sdlfile, outfile)
+        self.run_sst(sdlfile, outfile, num_threads=num_threads)
 
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1])
+        filter2 = StartsWithFilter("#")
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2])
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))

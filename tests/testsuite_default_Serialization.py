@@ -62,7 +62,8 @@ class testcase_StatisticComponent(SSTTestCase):
         reffile = "{0}/refFiles/test_Serialization.out".format(testsuitedir)
         outfile = "{0}/test_Serialization.out".format(outdir)
 
-        self.run_sst(sdlfile, outfile)
+        # Force serial run since the serialization is all done in-situ
+        self.run_sst(sdlfile, outfile, num_ranks=1, num_threads=1)
 
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")

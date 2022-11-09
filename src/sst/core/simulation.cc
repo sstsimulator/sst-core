@@ -1169,7 +1169,7 @@ Simulation_impl::printProfilingInfo(FILE* fp)
     if ( profile_tools.size() == 0 ) return;
 
     // Print out a header if printing to stdout
-    if ( fp == stdout != 0 && my_rank.rank == 0 && my_rank.thread == 0 ) {
+    if ( fp == stdout && my_rank.rank == 0 && my_rank.thread == 0 ) {
         fprintf(fp, "\n------------------------------------------------------------\n");
         fprintf(fp, "Profiling Output:\n");
     }

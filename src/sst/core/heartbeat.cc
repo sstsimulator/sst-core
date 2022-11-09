@@ -14,6 +14,7 @@
 #include "sst/core/heartbeat.h"
 
 #include "sst/core/component.h"
+#include "sst/core/mempool.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
@@ -69,9 +70,7 @@ SimulatorHeartbeat::execute(void)
 
     uint64_t mempool_size      = 0;
     uint64_t active_activities = 0;
-#ifdef USE_MEMPOOL
-    Activity::getMemPoolUsage(mempool_size, active_activities);
-#endif
+    Core::MemPoolAccessor::getMemPoolUsage(mempool_size, active_activities);
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
 
 #ifdef SST_CONFIG_HAVE_MPI
