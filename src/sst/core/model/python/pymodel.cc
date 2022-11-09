@@ -301,40 +301,70 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     Config* cfg = gModel->getConfig();
 
     PyObject* dict = PyDict_New();
-    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
+    // Basic options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("num-ranks"), SST_ConvertToPythonLong(cfg->num_ranks()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("num-threads"), SST_ConvertToPythonLong(cfg->num_threads()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("sdl-file"), SST_ConvertToPythonString(cfg->configFile().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("print-timing-info"), SST_ConvertToPythonBool(cfg->print_timing()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stop_at().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("exit-after"), SST_ConvertToPythonLong(cfg->exit_after()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-partition"),
-        SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
+        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-directory"),
+        SST_ConvertToPythonString(cfg->output_directory().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-prefix-core"),
+        SST_ConvertToPythonString(cfg->output_core_prefix().c_str()));
+
+    // Configuration output options
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-config"),
         SST_ConvertToPythonString(cfg->output_config_graph().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->num_ranks()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->num_threads()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonBool(cfg->parallel_load()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-json"), SST_ConvertToPythonString(cfg->output_json().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-output"), SST_ConvertToPythonBool(cfg->parallel_output()));
 
-    const char* runModeStr = "UNKNOWN";
-    switch ( cfg->runMode() ) {
-    case Simulation::INIT:
-        runModeStr = "init";
-        break;
-    case Simulation::RUN:
-        runModeStr = "run";
-        break;
-    case Simulation::BOTH:
-        runModeStr = "both";
-        break;
-    default:
-        break;
-    }
-    PyDict_SetItem(dict, SST_ConvertToPythonString("run-mode"), SST_ConvertToPythonString(runModeStr));
+    // Graph output options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("dot-verbosity"), SST_ConvertToPythonLong(cfg->dot_verbosity()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-partition"),
+        SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
+
+    // Advanced options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonString(cfg->parallel_load_str().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("time-vortex"), SST_ConvertToPythonString(cfg->timeVortex().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("interthread-links"), SST_ConvertToPythonBool(cfg->interthread_links()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("lib-path"), SST_ConvertToPythonString(cfg->libpath().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("add-lib-path"), SST_ConvertToPythonString(cfg->addLibPath().c_str()));
+
+    // Advanced options - profiling
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("enable-profiling"),
+        SST_ConvertToPythonString(cfg->enabledProfiling().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("profiling-output"), SST_ConvertToPythonString(cfg->profilingOutput().c_str()));
+
+    // Advanced options - debug
+    PyDict_SetItem(dict, SST_ConvertToPythonString("run-mode"), SST_ConvertToPythonString(cfg->runMode_str().c_str()));
+#ifdef USE_MEMPOOL
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-undeleted-events"),
+        SST_ConvertToPythonString(cfg->event_dump_file().c_str()));
+#endif
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("force-rank-seq-startup"), SST_ConvertToPythonBool(cfg->rank_seq_startup()));
+
     return dict;
 }
 

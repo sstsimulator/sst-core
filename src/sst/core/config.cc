@@ -340,6 +340,11 @@ public:
         for ( auto& ch : arg_lower )
             ch = std::tolower(ch, loc);
 
+        if ( arg_lower == "none" )
+            cfg.parallel_load_ = false;
+        else
+            cfg.parallel_load_ = true;
+
         if ( arg_lower == "single" )
             cfg.parallel_load_mode_multi_ = false;
         else if ( arg_lower == "multi" )
@@ -351,7 +356,6 @@ public:
             return false;
         }
 
-        cfg.parallel_load_ = true;
         return true;
     }
 
@@ -889,7 +893,8 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARG_OPTVAL(
         "parallel-load", 0, "MODE",
         "Enable parallel loading of configuration. This option is ignored for single rank jobs.  Optional mode "
-        "parameters are SINGLE and MULTI (default).  If SINGLE is specified, the same file will be passed to all MPI "
+        "parameters are NONE, SINGLE and MULTI (default).  If NONE is specified, parallel-load is turned off. If "
+        "SINGLE is specified, the same file will be passed to all MPI "
         "ranks.  If MULTI is specified, each MPI rank is required to have it's own file to load. Note, not all input "
         "formats support both types of file loading.",
         &ConfigHelper::enableParallelLoad, &ConfigHelper::enableParallelLoadMode, false),
