@@ -30,6 +30,7 @@ REENABLE_WARNING
 #include "sst/core/factory.h"
 #include "sst/core/iouse.h"
 #include "sst/core/link.h"
+#include "sst/core/mempool.h"
 #include "sst/core/memuse.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
@@ -303,6 +304,8 @@ finalize_statEngineConfig(void)
 static void
 start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier)
 {
+    // Setup Mempools
+    Core::MemPoolAccessor::initializeLocalData(tid);
     info.myRank.thread = tid;
     double start_build = sst_get_cpu_time();
 
@@ -518,7 +521,6 @@ main(int argc, char* argv[])
         // Just asked for info, clean exit
         return 0;
     }
-    world_size.thread = cfg.num_threads();
 
     if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
         addRankToFileName(cfg.configFile_, myRank.rank);
@@ -575,13 +577,6 @@ main(int argc, char* argv[])
         modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile(), cfg.verbose(), &cfg, start);
     }
 
-    /* Build objects needed for startup */
-    Output::setWorldSize(world_size, myrank);
-    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
-
-    g_output.verbose(
-        CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
-        world_size.rank, world_size.thread);
 
     ////// Start ConfigGraph Creation //////
     ConfigGraph* graph = nullptr;
@@ -612,9 +607,17 @@ main(int argc, char* argv[])
             g_output.fatal(CALL_INFO, -1, "Error encountered broadcasting configuration object: %s\n", e.what());
         }
     }
-
-
 #endif
+
+    world_size.thread = cfg.num_threads();
+
+    /* Build objects needed for startup */
+    Output::setWorldSize(world_size, myrank);
+    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+
+    g_output.verbose(
+        CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
+        world_size.rank, world_size.thread);
 
     // Need to initialize TimeLord
     Simulation_impl::getTimeLord()->init(cfg.timeBase());
@@ -847,8 +850,7 @@ main(int argc, char* argv[])
     Simulation_impl::sim_output = g_output;
     Simulation_impl::resizeBarriers(world_size.thread);
 #ifdef USE_MEMPOOL
-    /* Estimate that we won't have more than 128 sizes of events */
-    Activity::memPools.reserve(world_size.thread * 128);
+    MemPoolAccessor::initializeGlobalData(world_size.thread);
 #endif
 
     std::vector<std::thread>     threads(world_size.thread);
@@ -909,9 +911,7 @@ main(int argc, char* argv[])
 
     uint64_t mempool_size = 0, max_mempool_size = 0, global_mempool_size = 0;
     uint64_t active_activities = 0, global_active_activities = 0;
-#ifdef USE_MEMPOOL
-    Activity::getMemPoolUsage(mempool_size, active_activities);
-#endif
+    Core::MemPoolAccessor::getMemPoolUsage(mempool_size, active_activities);
 
 #ifdef SST_CONFIG_HAVE_MPI
     uint64_t local_sync_data_size = threadInfo[0].sync_data_size;
@@ -994,16 +994,16 @@ main(int argc, char* argv[])
         g_output.output("\n");
     }
 
-#ifdef USE_MEMPOOL
-    if ( cfg.event_dump_file() != "" ) {
-        Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
-        if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" )
-            out.setOutputLocation(Output::STDOUT);
-        if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" )
-            out.setOutputLocation(Output::STDERR);
-        Activity::printUndeletedActivities("", out, MAX_SIMTIME_T);
-    }
-#endif
+    // #ifdef USE_MEMPOOL
+    //     if ( cfg.event_dump_file() != "" ) {
+    //         Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
+    //         if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" )
+    //             out.setOutputLocation(Output::STDOUT);
+    //         if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" )
+    //             out.setOutputLocation(Output::STDERR);
+    //         Activity::printUndeletedActivities("", out, MAX_SIMTIME_T);
+    //     }
+    // #endif
 
 #ifdef SST_CONFIG_HAVE_MPI
     if ( 0 == myRank.rank ) {
