@@ -641,9 +641,25 @@ main(int argc, char* argv[])
 
     double end_graph_gen = sst_get_cpu_time();
 
+    // If verbose level is high enough, compute the total number
+    // components in the simulation.  NOTE: if parallel-load is
+    // enabled, then the parittioning won't actually happen and all
+    // ranks already have their parts of the graph.
+    uint64_t comp_count = 0;
+    if ( cfg.verbose() >= 1 ) {
+        if ( !cfg.parallel_load() && myRank.rank == 0 ) { comp_count = graph->getNumComponents(); }
+#ifdef SST_CONFIG_HAVE_MPI
+        else if ( cfg.parallel_load() ) {
+            uint64_t my_count = graph->getNumComponentsInMPIRank(myRank.rank);
+            MPI_Allreduce(&my_count, &comp_count, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
+        }
+#endif
+    }
+
     if ( myRank.rank == 0 ) {
         g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
         g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", (end_graph_gen - start_graph_gen));
+        g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
     }
 
     ////// End ConfigGraph Creation //////
@@ -710,7 +726,8 @@ main(int argc, char* argv[])
     const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
     if ( myRank.rank == 0 ) {
-        g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning took %lg seconds.\n", (end_part - start_part));
+        if ( !cfg.parallel_load() )
+            g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning took %lg seconds.\n", (end_part - start_part));
         g_output.verbose(
             CALL_INFO, 1, 0, "# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
             (post_graph_create_rss - pre_graph_create_rss));
@@ -973,26 +990,29 @@ main(int argc, char* argv[])
         g_output.output("\n");
         g_output.output("\n");
         g_output.output("------------------------------------------------------------\n");
-        g_output.output("Simulation Timing Information:\n");
-        g_output.output("Build time:                      %f seconds\n", max_build_time);
-        g_output.output("Simulation time:                 %f seconds\n", max_run_time);
-        g_output.output("Total time:                      %f seconds\n", max_total_time);
-        g_output.output("Simulated time:                  %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
+        g_output.output("Simulation Timing Information (Wall Clock Times):\n");
+        g_output.output("  Build time:                      %f seconds\n", max_build_time);
+        g_output.output("  Run loop time:                   %f seconds\n", max_run_time);
+        g_output.output("  Total time:                      %f seconds\n", max_total_time);
+        g_output.output("\n");
+        g_output.output(
+            "Simulated time:                    %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
         g_output.output("\n");
         g_output.output("Simulation Resource Information:\n");
-        g_output.output("Max Resident Set Size:           %s\n", max_rss_ua.toStringBestSI().c_str());
-        g_output.output("Approx. Global Max RSS Size:     %s\n", global_rss_ua.toStringBestSI().c_str());
-        g_output.output("Max Local Page Faults:           %" PRIu64 " faults\n", local_max_pf);
-        g_output.output("Global Page Faults:              %" PRIu64 " faults\n", global_pf);
-        g_output.output("Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_out);
-        g_output.output("Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_in);
-        g_output.output("Max mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());
-        g_output.output("Global mempool usage:            %s\n", global_mempool_size_ua.toStringBestSI().c_str());
-        g_output.output("Global active activities:        %" PRIu64 " activities\n", global_active_activities);
-        g_output.output("Current global TimeVortex depth: %" PRIu64 " entries\n", global_current_tv_depth);
-        g_output.output("Max TimeVortex depth:            %" PRIu64 " entries\n", global_max_tv_depth);
-        g_output.output("Max Sync data size:              %s\n", global_max_sync_data_size_ua.toStringBestSI().c_str());
-        g_output.output("Global Sync data size:           %s\n", global_sync_data_size_ua.toStringBestSI().c_str());
+        g_output.output("  Max Resident Set Size:           %s\n", max_rss_ua.toStringBestSI().c_str());
+        g_output.output("  Approx. Global Max RSS Size:     %s\n", global_rss_ua.toStringBestSI().c_str());
+        g_output.output("  Max Local Page Faults:           %" PRIu64 " faults\n", local_max_pf);
+        g_output.output("  Global Page Faults:              %" PRIu64 " faults\n", global_pf);
+        g_output.output("  Max Output Blocks:               %" PRIu64 " blocks\n", global_max_io_out);
+        g_output.output("  Max Input Blocks:                %" PRIu64 " blocks\n", global_max_io_in);
+        g_output.output("  Max mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());
+        g_output.output("  Global mempool usage:            %s\n", global_mempool_size_ua.toStringBestSI().c_str());
+        g_output.output("  Global active activities:        %" PRIu64 " activities\n", global_active_activities);
+        g_output.output("  Current global TimeVortex depth: %" PRIu64 " entries\n", global_current_tv_depth);
+        g_output.output("  Max TimeVortex depth:            %" PRIu64 " entries\n", global_max_tv_depth);
+        g_output.output(
+            "  Max Sync data size:              %s\n", global_max_sync_data_size_ua.toStringBestSI().c_str());
+        g_output.output("  Global Sync data size:           %s\n", global_sync_data_size_ua.toStringBestSI().c_str());
         g_output.output("------------------------------------------------------------\n");
         g_output.output("\n");
         g_output.output("\n");
