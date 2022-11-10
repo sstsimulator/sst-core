@@ -71,6 +71,7 @@ protected:
     std::map<std::string, ComponentId_t> compNameMap;
     ComponentId_t                        nextComponentId;
     double                               start_time;
+    bool                                 callPythonFinalize;
 
 public: /* Public, but private.  Called only from Python functions */
     Config* getConfig(void) const { return config; }
@@ -123,6 +124,8 @@ public: /* Public, but private.  Called only from Python functions */
 
     UnitAlgebra getElapsedExecutionTime() const;
     UnitAlgebra getLocalMemoryUsage() const;
+
+    void setCallPythonFinalize(bool state) { callPythonFinalize = state; }
 };
 
 // For xml inputs (.xml or .sdl), we just use a python script to parse

@@ -220,6 +220,17 @@ public:
     bool parallel_load_mode_multi() const { return parallel_load_mode_multi_; }
 
     /**
+       Retruns the string equivalent for parallel-load: NONE (if
+       parallel load is off), SINGLE or MULTI.
+    */
+    std::string parallel_load_str() const
+    {
+        if ( !parallel_load_ ) return "NONE";
+        if ( parallel_load_mode_multi_ ) return "MULTI";
+        return "SINGLE";
+    }
+
+    /**
        TimeVortex implementation to use
     */
     const std::string& timeVortex() const { return timeVortex_; }
@@ -266,6 +277,24 @@ public:
        checkpointing.
     */
     Simulation::Mode_t runMode() const { return runMode_; }
+
+    /**
+       Get string version of runmode.
+    */
+    std::string runMode_str() const
+    {
+        switch ( runMode_ ) {
+        case Simulation::INIT:
+            return "INIT";
+        case Simulation::RUN:
+            return "RUN";
+        case Simulation::BOTH:
+            return "BOTH";
+        case Simulation::UNKNOWN:
+            return "UNKNOWN";
+        }
+        return "UNKNOWN";
+    }
 
 
 #ifdef USE_MEMPOOL

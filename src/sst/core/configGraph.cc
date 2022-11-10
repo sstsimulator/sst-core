@@ -663,6 +663,17 @@ ConfigComponent::checkPorts() const
     }
 }
 
+size_t
+ConfigGraph::getNumComponentsInMPIRank(uint32_t rank)
+{
+    size_t count = 0;
+    for ( auto* comp : comps ) {
+        if ( comp->rank.rank == rank ) ++count;
+    }
+    return count;
+}
+
+
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
