@@ -820,6 +820,14 @@ setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
     }
 
     gModel->setCallPythonFinalize(state);
+    int myrank = 0;
+#ifdef SST_CONFIG_HAVE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#endif
+    if ( state && myrank == 0 ) {
+        gModel->getOutput()->output(
+            "WARNING: Setting callPythonFinalize to True is EXPERIMENTAL pending further testing.\n");
+    }
 
     return SST_ConvertToPythonLong(0);
 }
@@ -1080,7 +1088,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     namePrefix(nullptr),
     namePrefixLen(0),
     start_time(start_time),
-    callPythonFinalize(true)
+    callPythonFinalize(false)
 {
     std::vector<std::string> argv_vector;
     argv_vector.push_back("sstsim.x");

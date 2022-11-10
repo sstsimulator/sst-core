@@ -621,6 +621,12 @@ main(int argc, char* argv[])
         CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
         world_size.rank, world_size.thread);
 
+    // Delete the model generator
+    if ( modelGen ) {
+        delete modelGen;
+        modelGen = nullptr;
+    }
+
     // Need to initialize TimeLord
     Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
@@ -631,12 +637,6 @@ main(int argc, char* argv[])
         if ( graph->checkForStructuralErrors() ) {
             g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
         }
-    }
-
-    // Delete the model generator
-    if ( modelGen ) {
-        delete modelGen;
-        modelGen = nullptr;
     }
 
     double end_graph_gen = sst_get_cpu_time();
