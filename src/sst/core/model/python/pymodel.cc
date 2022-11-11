@@ -71,6 +71,8 @@ static PyObject* enableStatisticForComponentType(PyObject* self, PyObject* args)
 static PyObject* setStatisticLoadLevelForComponentName(PyObject* self, PyObject* args);
 static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject* args);
 
+static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
+
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
 static PyObject* mlLoadModule(PyObject* self, PyObject* args);
 
@@ -299,40 +301,70 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     Config* cfg = gModel->getConfig();
 
     PyObject* dict = PyDict_New();
-    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
+    // Basic options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("num-ranks"), SST_ConvertToPythonLong(cfg->num_ranks()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("num-threads"), SST_ConvertToPythonLong(cfg->num_threads()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("sdl-file"), SST_ConvertToPythonString(cfg->configFile().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("print-timing-info"), SST_ConvertToPythonBool(cfg->print_timing()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stop_at().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("exit-after"), SST_ConvertToPythonLong(cfg->exit_after()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-partition"),
-        SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
+        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-directory"),
+        SST_ConvertToPythonString(cfg->output_directory().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-prefix-core"),
+        SST_ConvertToPythonString(cfg->output_core_prefix().c_str()));
+
+    // Configuration output options
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-config"),
         SST_ConvertToPythonString(cfg->output_config_graph().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->num_ranks()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->num_threads()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonBool(cfg->parallel_load()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-json"), SST_ConvertToPythonString(cfg->output_json().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("parallel-output"), SST_ConvertToPythonBool(cfg->parallel_output()));
 
-    const char* runModeStr = "UNKNOWN";
-    switch ( cfg->runMode() ) {
-    case Simulation::INIT:
-        runModeStr = "init";
-        break;
-    case Simulation::RUN:
-        runModeStr = "run";
-        break;
-    case Simulation::BOTH:
-        runModeStr = "both";
-        break;
-    default:
-        break;
-    }
-    PyDict_SetItem(dict, SST_ConvertToPythonString("run-mode"), SST_ConvertToPythonString(runModeStr));
+    // Graph output options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("dot-verbosity"), SST_ConvertToPythonLong(cfg->dot_verbosity()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-partition"),
+        SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
+
+    // Advanced options
+    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("parallel-load"), SST_ConvertToPythonString(cfg->parallel_load_str().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("time-vortex"), SST_ConvertToPythonString(cfg->timeVortex().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("interthread-links"), SST_ConvertToPythonBool(cfg->interthread_links()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("lib-path"), SST_ConvertToPythonString(cfg->libpath().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("add-lib-path"), SST_ConvertToPythonString(cfg->addLibPath().c_str()));
+
+    // Advanced options - profiling
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("enable-profiling"),
+        SST_ConvertToPythonString(cfg->enabledProfiling().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("profiling-output"), SST_ConvertToPythonString(cfg->profilingOutput().c_str()));
+
+    // Advanced options - debug
+    PyDict_SetItem(dict, SST_ConvertToPythonString("run-mode"), SST_ConvertToPythonString(cfg->runMode_str().c_str()));
+#ifdef USE_MEMPOOL
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("output-undeleted-events"),
+        SST_ConvertToPythonString(cfg->event_dump_file().c_str()));
+#endif
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("force-rank-seq-startup"), SST_ConvertToPythonBool(cfg->rank_seq_startup()));
+
     return dict;
 }
 
@@ -777,6 +809,30 @@ setStatisticLoadLevelForComponentType(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
+setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
+{
+    PyErr_Clear();
+
+    bool state = SST_ConvertToCppLong(arg);
+    if ( PyErr_Occurred() ) {
+        PyErr_Print();
+        exit(-1);
+    }
+
+    gModel->setCallPythonFinalize(state);
+    int myrank = 0;
+#ifdef SST_CONFIG_HAVE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#endif
+    if ( state && myrank == 0 ) {
+        gModel->getOutput()->output(
+            "WARNING: Setting callPythonFinalize to True is EXPERIMENTAL pending further testing.\n");
+    }
+
+    return SST_ConvertToPythonLong(0);
+}
+
+static PyObject*
 globalAddParam(PyObject* UNUSED(self), PyObject* args)
 {
     char*     set   = nullptr;
@@ -894,6 +950,9 @@ static PyMethodDef sstModuleMethods[] = {
       "getting fine timings.  For that, use the built-in time module." },
     { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
       "Gets the current memory use, returned as a UnitAlgebra" },
+    { "setCallPythonFinalize", setCallPythonFinalize, METH_O,
+      "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
+      "called by default if this function is not called." },
     { nullptr, nullptr, 0, nullptr }
 };
 
@@ -1028,7 +1087,8 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     config(configObj),
     namePrefix(nullptr),
     namePrefixLen(0),
-    start_time(start_time)
+    start_time(start_time),
+    callPythonFinalize(false)
 {
     std::vector<std::string> argv_vector;
     argv_vector.push_back("sstsim.x");
@@ -1093,23 +1153,16 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     free(argv);
 }
 
-// SSTPythonModelDefinition::SSTPythonModelDefinition(
-//     const std::string& script_file, int verbosity, Config* configObj, double start_time, int argc, char** argv) :
-//     SSTModelDescription(),
-//     scriptName(script_file),
-//     config(configObj),
-//     start_time(start_time)
-// {
-//     initModel(script_file, verbosity, configObj, argc, argv);
-// }
-
 SSTPythonModelDefinition::~SSTPythonModelDefinition()
 {
     delete output;
     gModel = nullptr;
 
     if ( nullptr != namePrefix ) free(namePrefix);
-    PyGC_Collect();
+    if ( callPythonFinalize ) { Py_Finalize(); }
+    else {
+        PyGC_Collect();
+    }
 }
 
 ConfigGraph*

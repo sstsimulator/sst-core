@@ -412,6 +412,8 @@ public:
 
     size_t getNumComponents() { return comps.data.size(); }
 
+    size_t getNumComponentsInMPIRank(uint32_t rank);
+
     /** Helper function to set all the ranks to the same value */
     void setComponentRanks(RankInfo rank);
     /** Checks to see if rank contains at least one component */
