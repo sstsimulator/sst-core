@@ -34,12 +34,6 @@
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);
 
-// #defines for the various default profile tools
-#define SST_PROFILE_TOOL_EVENT        1
-#define SST_PROFILE_TOOL_CLOCK        2
-#define SST_PROFILE_TOOL_SYNC         3
-#define SST_PROFILE_TOOL_CUSTOM_START 4
-
 namespace SST {
 
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
@@ -388,27 +382,51 @@ public:
 
     /** Performance Tracking Information **/
 
-    void intializeDefaultProfileTools(const std::string& config);
+    void intializeProfileTools(const std::string& config);
 
-    std::map<uint64_t, SST::Profile::ProfileTool*> profile_tools;
+    std::map<std::string, SST::Profile::ProfileTool*> profile_tools;
+    // Maps the component profile points to profiler names
+    std::map<std::string, std::vector<std::string>>   profiler_map;
 
     template <typename T>
-    T* getProfileTool(uint64_t id)
+    std::vector<T*> getProfileTool(std::string point)
     {
+        std::vector<T*> ret;
         try {
-            SST::Profile::ProfileTool* val = profile_tools.at(id);
-            T*                         ret = dynamic_cast<T*>(val);
-            if ( !ret ) {
-                //  Not the right type, fatal
-                Output::getDefaultObject().fatal(
-                    CALL_INFO_LONG, 1, "INTERNAL ERROR: wrong type of profiling tool found (id = %" PRIu64 ")\n", id);
+            std::vector<std::string>& profilers = profiler_map.at(point);
+
+            for ( auto& x : profilers ) {
+                try {
+                    SST::Profile::ProfileTool* val = profile_tools.at(x);
+
+                    T* tool = dynamic_cast<T*>(val);
+                    if ( !tool ) {
+                        //  Not the right type, fatal
+                        Output::getDefaultObject().fatal(
+                            CALL_INFO_LONG, 1,
+                            "ERROR: wrong type of profiling tool found (name = %s).  Check to make sure the profiling "
+                            "points enabled for this tool accept the type specified\n",
+                            x.c_str());
+                    }
+                    ret.push_back(tool);
+                }
+                catch ( std::out_of_range& e ) {
+                    // This shouldn't happen.  If it does, then something
+                    // didn't get initialized correctly.
+                    Output::getDefaultObject().fatal(
+                        CALL_INFO_LONG, 1,
+                        "INTERNAL ERROR: ProfileTool refered to in profiler_map not found in profile_tools map\n");
+                    return ret;
+                }
             }
-            return ret;
         }
         catch ( std::out_of_range& e ) {
-            // Not there, return nullptr
-            return nullptr;
+            // point not turned on, return nullptr
+            return ret;
         }
+
+
+        return ret;
     }
 
 

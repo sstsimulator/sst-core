@@ -17,6 +17,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/oneshot.h"
+#include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
@@ -486,6 +487,32 @@ protected:
      */
     void performGlobalStatisticOutput();
 
+    /** Registers a profiling point.
+        This function will register a profiling point.
+        @param point Point to resgister
+        @return Either a pointer to a created T::ProfilePoint or nullptr if not enabled.
+    */
+    template <typename T>
+    typename T::ProfilePoint* registerProfilePoint(const std::string& pointName)
+    {
+        std::string full_point_name = getType() + "/" + pointName;
+        auto        tools           = getComponentProfileTools(full_point_name);
+        if ( tools.size() == 0 ) return nullptr;
+
+        typename T::ProfilePoint* ret = new typename T::ProfilePoint();
+        for ( auto* x : tools ) {
+            T* tool = dynamic_cast<T*>(x);
+            if ( nullptr == tool ) {
+                //  Not the right type, fatal
+                fatal(
+                    CALL_INFO_LONG, 1, "ERROR: wrong type of profiling tool for profiling point %s)\n",
+                    pointName.c_str());
+            }
+            ret->registerProfilePoint(tool, pointName, getId(), getName(), getType());
+        }
+        return ret;
+    }
+
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
      * @param params Parameters the module should use for configuration
@@ -819,6 +846,8 @@ protected:
     uint8_t      getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
+
+    std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
 private:
     ComponentInfo*   my_info = nullptr;

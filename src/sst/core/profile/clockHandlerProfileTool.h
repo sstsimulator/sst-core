@@ -32,12 +32,12 @@ public:
     SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(SST::Profile::ClockHandlerProfileTool, SST::HandlerProfileToolAPI, Params&)
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "level", "Level at which to track profile (global, type, component, subcomponent)", "component" },
+        { "level", "Level at which to track profile (global, type, component, subcomponent)", "type" },
     )
 
     enum class Profile_Level { Global, Type, Component, Subcomponent };
 
-    ClockHandlerProfileTool(ProfileToolId_t id, const std::string& name, Params& params);
+    ClockHandlerProfileTool(const std::string& name, Params& params);
 
 protected:
     std::string getKeyForHandler(const HandlerMetaData& mdata);
@@ -62,7 +62,7 @@ public:
         "Profiler that will count calls to handler functions"
     )
 
-    ClockHandlerProfileToolCount(ProfileToolId_t id, const std::string& name, Params& params);
+    ClockHandlerProfileToolCount(const std::string& name, Params& params);
 
     virtual ~ClockHandlerProfileToolCount() {}
 
@@ -92,7 +92,7 @@ class ClockHandlerProfileToolTime : public ClockHandlerProfileTool
     };
 
 public:
-    ClockHandlerProfileToolTime(ProfileToolId_t id, const std::string& name, Params& params);
+    ClockHandlerProfileToolTime(const std::string& name, Params& params);
 
     virtual ~ClockHandlerProfileToolTime() {}
 
