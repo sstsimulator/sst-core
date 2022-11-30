@@ -1180,25 +1180,26 @@ Simulation_impl::intializeProfileTools(const std::string& config)
 
         for ( auto& tok : point_tokens ) {
             // Check to see if this is a valid profile point
-            std::vector<std::string> split_type;
-            SST::tokenize(split_type, tok, "/", true);
+            std::string p(tok);
+            SST::trim(p);
+            auto index = p.find_last_of(".");
+
             bool valid = false;
-            if ( split_type.size() == 1 ) {
-                // Check to see if it's a built-in type
-                auto& s = split_type[0];
-                if ( s == "clock" || s == "event" || s == "sync" ) { valid = true; }
+            if ( index == std::string::npos ) {
+                // No do, see if it's one of the built-in points
+                if ( p == "clock" || p == "event" || p == "sync" ) { valid = true; }
             }
-            else if ( split_type.size() > 2 ) {
-                // Do nothing
-            }
-            else if ( Factory::getFactory()->isProfilePointValid(split_type[0], split_type[1]) ) {
-                valid = true;
+            else {
+                // Get the type and the point
+                std::string type  = p.substr(0, index);
+                std::string point = p.substr(index + 1);
+                if ( Factory::getFactory()->isProfilePointValid(type, point) ) { valid = true; }
             }
 
             if ( !valid )
                 sim_output.fatal(CALL_INFO_LONG, 1, "ERROR: Invalid profile point specified: %s\n", tok.c_str());
 
-            profiler_map[tok].push_back(name);
+            profiler_map[p].push_back(name);
         }
     }
 

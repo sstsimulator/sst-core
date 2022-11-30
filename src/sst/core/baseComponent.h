@@ -495,7 +495,7 @@ protected:
     template <typename T>
     typename T::ProfilePoint* registerProfilePoint(const std::string& pointName)
     {
-        std::string full_point_name = getType() + "/" + pointName;
+        std::string full_point_name = getType() + "." + pointName;
         auto        tools           = getComponentProfileTools(full_point_name);
         if ( tools.size() == 0 ) return nullptr;
 

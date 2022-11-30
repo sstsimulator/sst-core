@@ -586,7 +586,7 @@ BaseComponent::vfatal(
     std::string    type_tree = my_info->getType();
     ComponentInfo* parent    = my_info->parent_info;
     while ( parent != nullptr ) {
-        type_tree = parent->type + "/" + type_tree;
+        type_tree = parent->type + "." + type_tree;
         parent    = parent->parent_info;
     }
 
