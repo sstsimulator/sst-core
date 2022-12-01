@@ -35,10 +35,10 @@ class HandlerProfileToolAPI : public Profile::ProfileTool
 {
 public:
     // Register with ELI as base API
-    SST_ELI_REGISTER_PROFILETOOL_API(SST::HandlerProfileToolAPI, ProfileToolId_t, const std::string&)
+    SST_ELI_REGISTER_PROFILETOOL_API(SST::HandlerProfileToolAPI, Params&)
 
 protected:
-    HandlerProfileToolAPI(ProfileToolId_t id, const std::string& name) : Profile::ProfileTool(id, name) {}
+    HandlerProfileToolAPI(const std::string& name) : Profile::ProfileTool(name) {}
     ~HandlerProfileToolAPI() {}
 
 public:

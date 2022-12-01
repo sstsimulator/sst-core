@@ -308,6 +308,13 @@ public:
      */
     std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
 
+    /** Get a list of allowed ports for a given component type.
+     * @param type - Type of component in lib.name format
+     * @param point = Profile point to check
+     * @return True if this is a valid profile point
+     */
+    bool isProfilePointValid(const std::string& type, const std::string& point);
+
 private:
     friend int ::main(int argc, char** argv);
 

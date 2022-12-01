@@ -41,6 +41,7 @@ public:
         ELI::ProvidesPorts,
         ELI::ProvidesSubComponentSlots,
         ELI::ProvidesStats,
+        ELI::ProvidesProfilePoints,
         ELI::ProvidesAttributes)
 
     /** Constructor. Generally only called by the factory class.

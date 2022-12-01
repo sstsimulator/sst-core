@@ -70,13 +70,18 @@ struct ElementInfoSubComponentSlot
     const char* superclass;
 };
 
+struct ElementInfoProfilePoint
+{
+    const char* name;
+    const char* description;
+    const char* superclass;
+};
+
 struct ElementInfoAttribute
 {
     const char* name;
     const char* value;
 };
-
-typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
 namespace ELI {
 

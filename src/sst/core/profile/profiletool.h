@@ -32,23 +32,20 @@ class ProfileTool
 public:
     SST_ELI_DECLARE_BASE(ProfileTool)
     // maybe declare extern to limit compile times??
-    SST_ELI_DECLARE_CTOR_EXTERN(ProfileToolId_t, const std::string&)
+    SST_ELI_DECLARE_CTOR_EXTERN(const std::string&, Params&)
     SST_ELI_DECLARE_INFO_EXTERN(
         ELI::ProvidesInterface,
         ELI::ProvidesParams)
 
-    ProfileTool(ProfileToolId_t id, const std::string& name);
+    ProfileTool(const std::string& name);
 
     virtual ~ProfileTool() {}
-
-    ProfileToolId_t getId() { return my_id; }
 
     std::string getName() { return name; }
 
     virtual void outputData(FILE* fp) = 0;
 
 protected:
-    const uint64_t    my_id;
     const std::string name;
 };
 
@@ -60,11 +57,11 @@ protected:
 // it
 #define SST_ELI_REGISTER_PROFILETOOL_API(cls, ...)            \
     SST_ELI_DECLARE_NEW_BASE(SST::Profile::ProfileTool,::cls) \
-    SST_ELI_NEW_BASE_CTOR(ProfileToolId_t,const std::string&,##__VA_ARGS__)
+    SST_ELI_NEW_BASE_CTOR(const std::string&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(cls, base, ...) \
     SST_ELI_DECLARE_NEW_BASE(::base,::cls)                       \
-    SST_ELI_NEW_BASE_CTOR(ProfileToolId_t,const std::string&,##__VA_ARGS__)
+    SST_ELI_NEW_BASE_CTOR(const std::string&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_PROFILETOOL(cls, interface, lib, name, version, desc)          \
     SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \

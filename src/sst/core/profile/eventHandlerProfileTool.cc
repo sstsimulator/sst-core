@@ -22,10 +22,9 @@ namespace SST {
 namespace Profile {
 
 
-EventHandlerProfileTool::EventHandlerProfileTool(ProfileToolId_t id, const std::string& name, Params& params) :
-    HandlerProfileToolAPI(id, name)
+EventHandlerProfileTool::EventHandlerProfileTool(const std::string& name, Params& params) : HandlerProfileToolAPI(name)
 {
-    std::string level = params.find<std::string>("level", "component");
+    std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
         profile_level_ = Profile_Level::Global;
     else if ( level == "type" )
@@ -73,9 +72,8 @@ EventHandlerProfileTool::getKeyForHandler(const HandlerMetaData& mdata)
     return key;
 }
 
-EventHandlerProfileToolCount::EventHandlerProfileToolCount(
-    ProfileToolId_t id, const std::string& name, Params& params) :
-    EventHandlerProfileTool(id, name, params)
+EventHandlerProfileToolCount::EventHandlerProfileToolCount(const std::string& name, Params& params) :
+    EventHandlerProfileTool(name, params)
 {}
 
 uintptr_t
@@ -100,7 +98,7 @@ EventHandlerProfileToolCount::eventSent(uintptr_t key, Event* UNUSED(ev))
 void
 EventHandlerProfileToolCount::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "Name");
     if ( profile_receives_ ) fprintf(fp, ", recv count");
     if ( profile_sends_ ) fprintf(fp, ", send count");
@@ -115,9 +113,8 @@ EventHandlerProfileToolCount::outputData(FILE* fp)
 
 
 template <typename T>
-EventHandlerProfileToolTime<T>::EventHandlerProfileToolTime(
-    ProfileToolId_t id, const std::string& name, Params& params) :
-    EventHandlerProfileTool(id, name, params)
+EventHandlerProfileToolTime<T>::EventHandlerProfileToolTime(const std::string& name, Params& params) :
+    EventHandlerProfileTool(name, params)
 {}
 
 template <typename T>
@@ -131,7 +128,7 @@ template <typename T>
 void
 EventHandlerProfileToolTime<T>::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "Name");
     if ( profile_receives_ ) fprintf(fp, ", recv count, recv time (s), avg. recv time (ns)");
     if ( profile_sends_ ) fprintf(fp, ", send count");
@@ -160,8 +157,8 @@ public:
         "Profiler that will time handlers using a high resolution clock"
     )
 
-    EventHandlerProfileToolTimeHighResolution(ProfileToolId_t id, const std::string& name, Params& params) :
-        EventHandlerProfileToolTime<std::chrono::high_resolution_clock>(id, name, params)
+    EventHandlerProfileToolTimeHighResolution(const std::string& name, Params& params) :
+        EventHandlerProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
     ~EventHandlerProfileToolTimeHighResolution() {}
@@ -181,8 +178,8 @@ public:
         "Profiler that will time handlers using a steady clock"
     )
 
-    EventHandlerProfileToolTimeSteady(ProfileToolId_t id, const std::string& name, Params& params) :
-        EventHandlerProfileToolTime<std::chrono::steady_clock>(id, name, params)
+    EventHandlerProfileToolTimeSteady(const std::string& name, Params& params) :
+        EventHandlerProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
     ~EventHandlerProfileToolTimeSteady() {}

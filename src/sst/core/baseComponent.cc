@@ -112,11 +112,10 @@ BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handle
     TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -136,11 +135,10 @@ BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handle
     TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -160,11 +158,10 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -303,8 +300,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp->setFunctor(handler);
 
             // Check to see if there is a profile tool installed
-            auto* tool = sim_->getProfileTool<Profile::EventHandlerProfileTool>(SST_PROFILE_TOOL_EVENT);
-            if ( tool != nullptr ) {
+            auto tools = sim_->getProfileTool<Profile::EventHandlerProfileTool>("event");
+            for ( auto& tool : tools ) {
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
 
                 // Add the receive profiler to the handler
@@ -589,7 +586,7 @@ BaseComponent::vfatal(
     std::string    type_tree = my_info->getType();
     ComponentInfo* parent    = my_info->parent_info;
     while ( parent != nullptr ) {
-        type_tree = parent->type + "/" + type_tree;
+        type_tree = parent->type + "." + type_tree;
         parent    = parent->parent_info;
     }
 
@@ -837,6 +834,12 @@ void
 BaseComponent::performGlobalStatisticOutput()
 {
     sim_->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
+}
+
+std::vector<Profile::ComponentProfileTool*>
+BaseComponent::getComponentProfileTools(const std::string& point)
+{
+    return sim_->getProfileTool<Profile::ComponentProfileTool>(point);
 }
 
 } // namespace SST

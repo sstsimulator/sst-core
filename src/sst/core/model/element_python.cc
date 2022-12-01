@@ -66,7 +66,12 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
     while ( ptb != nullptr ) {
         // Filename
 #ifdef SST_CONFIG_HAVE_PYTHON3
+// API change for code frames starting at 3.9
+#if PY_MINOR_VERSION < 9
         stream << "File \"" << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_filename) << "\", ";
+#else
+        stream << "File \"" << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_filename) << "\", ";
+#endif
 #else
         stream << "File \"" << PyString_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
 #endif
@@ -74,7 +79,12 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
         stream << "line " << ptb->tb_lineno << ", ";
         // Module name
 #ifdef SST_CONFIG_HAVE_PYTHON3
+// API change for code frames starting at 3.9
+#if PY_MINOR_VERSION < 9
         stream << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_name) << "\n";
+#else
+        stream << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_name) << "\n";
+#endif
 #else
         stream << PyString_AsString(ptb->tb_frame->f_code->co_name) << "\n";
 #endif

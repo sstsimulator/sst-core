@@ -994,7 +994,7 @@ ConfigHelper::usage()
     }
 
     const char     sdl_indicator[] = "(S)";
-    const uint32_t sdl_start       = 33;
+    const uint32_t sdl_start       = 34;
     const uint32_t desc_start      = sdl_start + sizeof(sdl_indicator);
     const uint32_t desc_width      = MAX_WIDTH - desc_start;
 
@@ -1014,9 +1014,9 @@ ConfigHelper::usage()
         }
 
         uint32_t npos = 0;
-        if ( sstOptions[i].opt.val ) { npos += fprintf(stderr, " -%c, ", (char)sstOptions[i].opt.val); }
+        if ( sstOptions[i].opt.val ) { npos += fprintf(stderr, "-%c ", (char)sstOptions[i].opt.val); }
         else {
-            npos += fprintf(stderr, "      ");
+            npos += fprintf(stderr, "   ");
         }
         npos += fprintf(stderr, "--%s", sstOptions[i].opt.name);
         if ( sstOptions[i].opt.has_arg != no_argument ) { npos += fprintf(stderr, "=%s", sstOptions[i].argName); }
