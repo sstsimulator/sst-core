@@ -10,7 +10,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(
   sst-core
-  VERSION 11.1.0
+  VERSION 12.1.0
   DESCRIPTION "SSTCore"
   LANGUAGES C CXX)
 
