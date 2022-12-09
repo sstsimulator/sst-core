@@ -79,6 +79,16 @@ ProvidesSubComponentSlots::toString(std::ostream& os) const
 }
 
 void
+ProvidesProfilePoints::toString(std::ostream& os) const
+{
+    os << "      Profile Points (" << getProfilePoints().size() << " total)\n";
+    for ( auto& item : getProfilePoints() ) {
+        os << "         " << item.name << ": " << (item.description == nullptr ? "<empty>" : item.description) << " ["
+           << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
+    }
+}
+
+void
 ProvidesStats::toString(std::ostream& os) const
 {
     os << "      Statistics (" << getValidStats().size() << " total)\n";

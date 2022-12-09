@@ -40,6 +40,7 @@ public:
         ELI::ProvidesPorts,
         ELI::ProvidesSubComponentSlots,
         ELI::ProvidesStats,
+        ELI::ProvidesProfilePoints,
         ELI::ProvidesAttributes)
 
     SubComponent(ComponentId_t id);

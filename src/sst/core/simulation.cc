@@ -172,7 +172,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec.resize(num_ranks.thread);
     instanceVec[my_rank.thread] = instance;
-    instance->intializeDefaultProfileTools(config->enabledProfiling());
+    instance->intializeProfileTools(config->enabledProfiling());
     return instance;
 }
 
@@ -333,9 +333,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Check to see if the SyncManager profile tool is installed
-    auto* tool = getProfileTool<Profile::SyncProfileTool>(SST_PROFILE_TOOL_SYNC);
+    auto tools = getProfileTool<Profile::SyncProfileTool>("sync");
 
-    if ( tool != nullptr ) {
+    for ( auto& tool : tools ) {
         // Add the receive profiler to the handler
         syncManager->addProfileTool(tool);
     }
@@ -1066,14 +1066,14 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     finishBarrier.resize(nthr);
 }
 
-
 void
-Simulation_impl::intializeDefaultProfileTools(const std::string& config)
+Simulation_impl::intializeProfileTools(const std::string& config)
 {
+    if ( config == "" ) return;
     // Need to parse the profile string.  Format is:
-    // point=type(key=value,key=value); point=type(...)
+    // profiler_name:profiler_type=(key=value,key=value)[point,point]; ...
 
-    // type is optional.  If not specified, a default will be used.  Params are optional.
+    // params are optional
 
     // First split on semicolon
     std::vector<std::string> tokens;
@@ -1081,37 +1081,70 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
 
     for ( auto& x : tokens ) {
         // Need to get the profile point name, type and params
-        std::string point;
+        std::string name;
         std::string type;
         std::string param_str;
+        std::string points;
 
+        // Find the name to use for the profiler.  This is the name
+        // that will be printed in the output
         auto start = 0;
         auto end   = x.find(":");
-        point      = x.substr(start, end - start);
-        trim(point);
-        if ( end != std::string::npos ) {
-            // type was specifed, get it
-            start = end + 1;
-            end   = x.find("(", start);
-            type  = x.substr(start, end - start);
+        if ( end == std::string::npos ) {
+            // error in format, missing profiler name
+            sim_output.fatal(
+                CALL_INFO_LONG, 1,
+                "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
+                "semi-colon "
+                "separated list where each item specified details for a given profiling point using the "
+                "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
+                "specified if a type is supplied.  Type is also optional and a default type will be used if "
+                "not specified.\n");
+        }
+
+        name = x.substr(start, end - start);
+        trim(name);
+        // Get the profiler info.  This will be everything from the
+        // current position to '['.  This will include the type, plus
+        // any optional parameters
+        std::string profiler_info;
+        start = end + 1;
+        end   = x.find("[", start);
+        if ( end == std::string::npos ) {
+            // format error, no profile points specified
+        }
+
+        profiler_info = x.substr(start, end - start);
+        trim(profiler_info);
+
+        // get the profile points string
+        start = end + 1;
+        end   = x.find("]", start);
+        if ( end == std::string::npos ) {
+            // format error, no end square bracket
+        }
+
+        points = x.substr(start, end - start);
+        trim(points);
+
+        // Need to get the profiler type and parameters
+        start = 0;
+        end   = profiler_info.find("(", start);
+        if ( end == std::string::npos ) {
+            // No parameters
+            type = profiler_info;
+        }
+        else {
+            type = profiler_info.substr(start, end - start);
             trim(type);
-            if ( end != std::string::npos ) {
-                // Get the params
-                start = end + 1;
-                end   = x.find(")", start);
-                if ( end == std::string::npos ) {
-                    sim_output.fatal(
-                        CALL_INFO_LONG, 1,
-                        "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
-                        "semi-colon "
-                        "separated list where each item specified details for a given profiling point using the "
-                        "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
-                        "specified if a type is supplied.  Type is also optional and a default type will be used if "
-                        "not specified.\n");
-                }
-                param_str = x.substr(start, end - start);
-                trim(param_str);
+
+            start = end + 1;
+            end   = profiler_info.find(")", start);
+            if ( end == std::string::npos ) {
+                // Format error, not end paran
             }
+            param_str = profiler_info.substr(start, end - start);
+            trim(param_str);
         }
 
         Params params;
@@ -1130,35 +1163,58 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
             }
         }
 
-        // Initialize the point
-        if ( point == "" ) {
-            // Do nothing
-        }
-        else if ( point == "event" ) {
-            if ( type == "" ) type = "sst.profile.handler.event.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
-                type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
-        }
-        else if ( point == "clock" ) {
-            if ( type == "" ) type = "sst.profile.handler.clock.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
-                type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_CLOCK] = tool;
-        }
-        else if ( point == "sync" ) {
-            if ( type == "" ) type = "sst.profile.sync.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::SyncProfileTool>(
-                type, SST_PROFILE_TOOL_SYNC, "Default SYNC Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_SYNC] = tool;
+        // Need to initialize the profile_tool.  If it's already
+        // there, then error since you can't reuse the same tool name.
+        if ( profile_tools.count(name) == 0 ) {
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ProfileTool>(type, name, params);
+            profile_tools[name] = tool;
         }
         else {
-            // FATAL
-            sim_output.fatal(
-                CALL_INFO_LONG, 1, "ERROR: Unknown profiling point specified with --enable-profiling: %s\n",
-                point.c_str());
+            // Error, can't reuse tool name
+            sim_output.fatal(CALL_INFO_LONG, 1, "ERROR: Cannot reuse tool name: %s\n", name.c_str());
+        }
+
+        // Now, parse the points
+        std::vector<std::string> point_tokens;
+        SST::tokenize(point_tokens, points, ",", true);
+
+        for ( auto& tok : point_tokens ) {
+            // Check to see if this is a valid profile point
+            std::string p(tok);
+            SST::trim(p);
+            auto index = p.find_last_of(".");
+
+            bool valid = false;
+            if ( index == std::string::npos ) {
+                // No do, see if it's one of the built-in points
+                if ( p == "clock" || p == "event" || p == "sync" ) { valid = true; }
+            }
+            else {
+                // Get the type and the point
+                std::string type  = p.substr(0, index);
+                std::string point = p.substr(index + 1);
+                if ( Factory::getFactory()->isProfilePointValid(type, point) ) { valid = true; }
+            }
+
+            if ( !valid )
+                sim_output.fatal(CALL_INFO_LONG, 1, "ERROR: Invalid profile point specified: %s\n", tok.c_str());
+
+            profiler_map[p].push_back(name);
         }
     }
+
+#if 0
+    printf("Profile tools:\n");
+    for ( auto& x : profile_tools ) {
+        printf("  %s\n", x.first.c_str());
+    }
+    printf("Profile points:\n");
+    for ( auto& x : profiler_map ) {
+        for ( auto& y : x.second ) {
+            printf("  %s -> %s\n", x.first.c_str(), y.c_str());
+        }
+    }
+#endif
 }
 
 void

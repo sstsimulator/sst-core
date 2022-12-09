@@ -22,10 +22,9 @@ namespace SST {
 namespace Profile {
 
 
-ClockHandlerProfileTool::ClockHandlerProfileTool(ProfileToolId_t id, const std::string& name, Params& params) :
-    HandlerProfileToolAPI(id, name)
+ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) : HandlerProfileToolAPI(name)
 {
-    std::string level = params.find<std::string>("level", "component");
+    std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
         profile_level_ = Profile_Level::Global;
     else if ( level == "type" )
@@ -66,9 +65,8 @@ ClockHandlerProfileTool::getKeyForHandler(const HandlerMetaData& mdata)
     return key;
 }
 
-ClockHandlerProfileToolCount::ClockHandlerProfileToolCount(
-    ProfileToolId_t id, const std::string& name, Params& params) :
-    ClockHandlerProfileTool(id, name, params)
+ClockHandlerProfileToolCount::ClockHandlerProfileToolCount(const std::string& name, Params& params) :
+    ClockHandlerProfileTool(name, params)
 {}
 
 uintptr_t
@@ -87,7 +85,7 @@ ClockHandlerProfileToolCount::handlerStart(uintptr_t key)
 void
 ClockHandlerProfileToolCount::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "Name, count\n");
     for ( auto& x : counts_ ) {
         fprintf(fp, "%s, %" PRIu64 "\n", x.first.c_str(), x.second);
@@ -96,9 +94,8 @@ ClockHandlerProfileToolCount::outputData(FILE* fp)
 
 
 template <typename T>
-ClockHandlerProfileToolTime<T>::ClockHandlerProfileToolTime(
-    ProfileToolId_t id, const std::string& name, Params& params) :
-    ClockHandlerProfileTool(id, name, params)
+ClockHandlerProfileToolTime<T>::ClockHandlerProfileToolTime(const std::string& name, Params& params) :
+    ClockHandlerProfileTool(name, params)
 {}
 
 template <typename T>
@@ -112,7 +109,7 @@ template <typename T>
 void
 ClockHandlerProfileToolTime<T>::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "Name, count, handler time (s), avg. handler time (ns)\n");
     for ( auto& x : times_ ) {
         fprintf(
@@ -134,8 +131,8 @@ public:
         "Profiler that will time handlers using a high resolution clock"
     )
 
-    ClockHandlerProfileToolTimeHighResolution(ProfileToolId_t id, const std::string& name, Params& params) :
-        ClockHandlerProfileToolTime<std::chrono::high_resolution_clock>(id, name, params)
+    ClockHandlerProfileToolTimeHighResolution(const std::string& name, Params& params) :
+        ClockHandlerProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
     ~ClockHandlerProfileToolTimeHighResolution() {}
@@ -155,8 +152,8 @@ public:
         "Profiler that will time handlers using a steady clock"
     )
 
-    ClockHandlerProfileToolTimeSteady(ProfileToolId_t id, const std::string& name, Params& params) :
-        ClockHandlerProfileToolTime<std::chrono::steady_clock>(id, name, params)
+    ClockHandlerProfileToolTimeSteady(const std::string& name, Params& params) :
+        ClockHandlerProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
     ~ClockHandlerProfileToolTimeSteady() {}

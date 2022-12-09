@@ -24,7 +24,7 @@ SST_ELI_DEFINE_INFO_EXTERN(ProfileTool)
 SST_ELI_DEFINE_CTOR_EXTERN(ProfileTool)
 
 
-ProfileTool::ProfileTool(ProfileToolId_t id, const std::string& name) : my_id(id), name(name) {}
+ProfileTool::ProfileTool(const std::string& name) : name(name) {}
 
 } // namespace Profile
 } // namespace SST

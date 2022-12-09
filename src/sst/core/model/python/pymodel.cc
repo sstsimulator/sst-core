@@ -1046,24 +1046,43 @@ SSTPythonModelDefinition::initModel(
         CALL_INFO, 2, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
         local_script_name.c_str());
 
+
 #if PY_MAJOR_VERSION >= 3
     // Add sst module to the Python interpreter as a built in
     PyImport_AppendInittab("sst", &PyInit_sst);
-#endif
+
+#if PY_MINOR_VERSION >= 11
+    {
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+        // Set to zero so that we can get environment variables in the
+        // script
+        config.isolated   = 0;
+        // Set to zero so it won't parse out the first argument of
+        // argv
+        config.parse_argv = 0;
+        // Set argc and argv
+        PyConfig_SetBytesArgv(&config, argc, argv);
+        // Get the Python scripting engine started
+        Py_InitializeFromConfig(&config);
+    }
+#else
+    // Set arguments; Python3 takes wchar_t* arg instead of char*
+    wchar_t** wargv = (wchar_t**)PyMem_Malloc(sizeof(wchar_t*) * argc);
+    for ( int i = 0; i < argc; i++ ) {
+        wargv[i] = Py_DecodeLocale(argv[i], nullptr);
+    }
 
     // Get the Python scripting engine started
     Py_Initialize();
-
-#if PY_MAJOR_VERSION >= 3
-    // Set arguments; Python3 takes wchar_t* arg instead of char*
-    wchar_t** wargv = (wchar_t**)PyMem_Malloc(sizeof(wchar_t*) * argc);
-    for ( int i = 0; i < argc; i++ )
-        wargv[i] = Py_DecodeLocale(argv[i], nullptr);
     PySys_SetArgv(argc, wargv);
+#endif
     PyRun_SimpleString("import sys\n"
                        "import sst\n"
                        "sys.meta_path.append(sst.ModuleLoader())\n");
 #else
+    // Get the Python scripting engine started
+    Py_Initialize();
     PySys_SetArgv(argc, argv);
     // Add sst module to the Python interpreter as a built in
     PyInit_sst();
