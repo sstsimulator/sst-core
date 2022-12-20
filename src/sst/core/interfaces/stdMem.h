@@ -157,7 +157,7 @@ public:
 
         void setSuccess() { unsetFail(); }
         void unsetSuccess() { setFail(); }
-        bool getSuccess() { return ~(flags & static_cast<int>(Flag::F_FAIL)); }
+        bool getSuccess() { return (flags & static_cast<int>(Flag::F_FAIL)) == 0; }
         bool getFail() { return flags & static_cast<int>(Flag::F_FAIL); }
         void setFail() { flags |= static_cast<int>(Flag::F_FAIL); }
         void unsetFail() { flags &= ~(static_cast<int>(Flag::F_FAIL)); }
