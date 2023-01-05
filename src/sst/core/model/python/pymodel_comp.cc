@@ -196,9 +196,10 @@ compAddLink(PyObject* self, PyObject* args)
     ConfigComponent* c  = getComp(self);
     ComponentId_t    id = c->id;
 
-    PyObject* plink = nullptr;
-    PyObject *plat = nullptr, *lstr = nullptr;
-    char *    port = nullptr, *lat = nullptr;
+    PyObject*   plink = nullptr;
+    PyObject *  plat = nullptr, *lstr = nullptr;
+    char*       port = nullptr;
+    const char* lat  = nullptr;
 
     if ( !PyArg_ParseTuple(args, "O!s|O", &PyModel_LinkType, &plink, &port, &plat) ) { return nullptr; }
     LinkPy_t* link = (LinkPy_t*)plink;

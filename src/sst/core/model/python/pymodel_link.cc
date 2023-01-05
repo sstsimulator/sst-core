@@ -38,8 +38,9 @@ extern "C" {
 static int
 linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    char *    name = nullptr, *lat = nullptr;
-    PyObject *lobj = nullptr, *lstr = nullptr;
+    char*       name = nullptr;
+    const char* lat  = nullptr;
+    PyObject *  lobj = nullptr, *lstr = nullptr;
     if ( !PyArg_ParseTuple(args, "s|O", &name, &lobj) ) return -1;
 
     self->name   = gModel->addNamePrefix(name);
@@ -70,10 +71,10 @@ linkConnect(PyObject* self, PyObject* args)
     PyObject *t0, *t1;
     if ( !PyArg_ParseTuple(args, "O!O!", &PyTuple_Type, &t0, &PyTuple_Type, &t1) ) { return nullptr; }
 
-    PyObject *c0, *c1;
-    char *    port0, *port1;
-    PyObject *l0 = nullptr, *l1 = nullptr, *lstr0 = nullptr, *lstr1 = nullptr;
-    char *    lat0 = nullptr, *lat1 = nullptr;
+    PyObject *  c0, *c1;
+    char *      port0, *port1;
+    PyObject *  l0 = nullptr, *l1 = nullptr, *lstr0 = nullptr, *lstr1 = nullptr;
+    const char *lat0 = nullptr, *lat1 = nullptr;
 
     LinkPy_t* link = (LinkPy_t*)self;
 
