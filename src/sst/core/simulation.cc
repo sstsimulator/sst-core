@@ -798,10 +798,18 @@ Simulation_impl::endSimulation(SimTime_t end)
 }
 
 void
+Simulation_impl::adjustTimeAtSimEnd()
+{
+    currentSimCycle = endSimCycle;
+
+    for ( auto const& entry : clockMap ) {
+        entry.second->updateCurrentCycle();
+    }
+}
+
+void
 Simulation_impl::finish()
 {
-
-    currentSimCycle = endSimCycle;
 
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->finish();

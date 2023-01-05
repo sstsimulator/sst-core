@@ -64,8 +64,9 @@ Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
 Cycle_t
 Clock::getNextCycle()
 {
+    if ( !scheduled ) updateCurrentCycle();
+
     return currentCycle + 1;
-    // return period->convertFromCoreTime(next);
 }
 
 void
@@ -122,6 +123,14 @@ Clock::schedule()
     // sim->getCurrentSimCycle() << std::endl;
     sim->insertActivity(next, this);
     scheduled = true;
+}
+
+void
+Clock::updateCurrentCycle()
+{
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    currentCycle         = sim->getCurrentSimCycle() / period->getFactor();
+    return;
 }
 
 std::string
