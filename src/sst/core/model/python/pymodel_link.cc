@@ -38,12 +38,19 @@ extern "C" {
 static int
 linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    char *name = nullptr, *lat = nullptr;
-    if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
+    char *    name = nullptr, *lat = nullptr;
+    PyObject *lobj = nullptr, *lstr = nullptr;
+    if ( !PyArg_ParseTuple(args, "s|O", &name, &lobj) ) return -1;
 
-    self->name    = gModel->addNamePrefix(name);
-    self->no_cut  = false;
+    self->name   = gModel->addNamePrefix(name);
+    self->no_cut = false;
+
+    if ( nullptr != lobj ) {
+        lstr = PyObject_CallMethod(lobj, (char*)"__str__", nullptr);
+        lat  = SST_ConvertToCppString(lstr);
+    }
     self->latency = lat ? strdup(lat) : nullptr;
+
     gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;

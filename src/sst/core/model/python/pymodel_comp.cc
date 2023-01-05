@@ -197,15 +197,16 @@ compAddLink(PyObject* self, PyObject* args)
     ComponentId_t    id = c->id;
 
     PyObject* plink = nullptr;
-    PyObject* plat  = nullptr;
+    PyObject *plat = nullptr, *lstr = nullptr;
     char *    port = nullptr, *lat = nullptr;
 
     if ( !PyArg_ParseTuple(args, "O!s|O", &PyModel_LinkType, &plink, &port, &plat) ) { return nullptr; }
     LinkPy_t* link = (LinkPy_t*)plink;
 
-    PyObject* lstr = PyObject_CallMethod(plat, (char*)"__str__", nullptr);
-    lat            = SST_ConvertToCppString(lstr);
-
+    if ( nullptr != plat ) {
+        lstr = PyObject_CallMethod(plat, (char*)"__str__", nullptr);
+        lat  = SST_ConvertToCppString(lstr);
+    }
     if ( nullptr == lat ) lat = link->latency;
     if ( nullptr == lat ) return nullptr;
 
