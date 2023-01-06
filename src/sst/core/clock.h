@@ -76,6 +76,13 @@ public:
     /** Return the time of the next clock tick */
     Cycle_t getNextCycle();
 
+    /**
+     * Update current cycle count - needed at simulation end if clock has run
+     * ahead of simulation end and to return correct cycle count in getNextCycle()
+     * for clocks that are currently not scheduled
+     */
+    void updateCurrentCycle();
+
     /** Add a handler to be called on this clock's tick */
     bool registerHandler(Clock::HandlerBase* handler);
     /** Remove a handler from the list of handlers to be called on the clock tick */

@@ -38,12 +38,20 @@ extern "C" {
 static int
 linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    char *name = nullptr, *lat = nullptr;
-    if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
+    char*       name = nullptr;
+    const char* lat  = nullptr;
+    PyObject *  lobj = nullptr, *lstr = nullptr;
+    if ( !PyArg_ParseTuple(args, "s|O", &name, &lobj) ) return -1;
 
-    self->name    = gModel->addNamePrefix(name);
-    self->no_cut  = false;
+    self->name   = gModel->addNamePrefix(name);
+    self->no_cut = false;
+
+    if ( nullptr != lobj ) {
+        lstr = PyObject_CallMethod(lobj, (char*)"__str__", nullptr);
+        lat  = SST_ConvertToCppString(lstr);
+    }
     self->latency = lat ? strdup(lat) : nullptr;
+
     gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
@@ -63,22 +71,36 @@ linkConnect(PyObject* self, PyObject* args)
     PyObject *t0, *t1;
     if ( !PyArg_ParseTuple(args, "O!O!", &PyTuple_Type, &t0, &PyTuple_Type, &t1) ) { return nullptr; }
 
-    PyObject *c0, *c1;
-    char *    port0, *port1;
-    char *    lat0 = nullptr, *lat1 = nullptr;
+    PyObject *  c0, *c1;
+    char *      port0, *port1;
+    PyObject *  l0 = nullptr, *l1 = nullptr, *lstr0 = nullptr, *lstr1 = nullptr;
+    const char *lat0 = nullptr, *lat1 = nullptr;
 
     LinkPy_t* link = (LinkPy_t*)self;
 
-    if ( !PyArg_ParseTuple(t0, "O!s|s", &PyModel_ComponentType, &c0, &port0, &lat0) ) {
+    if ( !PyArg_ParseTuple(t0, "O!s|O", &PyModel_ComponentType, &c0, &port0, &l0) ) {
         PyErr_Clear();
-        if ( !PyArg_ParseTuple(t0, "O!s|s", &PyModel_SubComponentType, &c0, &port0, &lat0) ) { return nullptr; }
+        if ( !PyArg_ParseTuple(t0, "O!s|O", &PyModel_SubComponentType, &c0, &port0, &l0) ) { return nullptr; }
     }
+
+    if ( nullptr != l0 ) {
+        lstr0 = PyObject_CallMethod(l0, (char*)"__str__", nullptr);
+        lat0  = SST_ConvertToCppString(lstr0);
+    }
+
     if ( nullptr == lat0 ) lat0 = link->latency;
 
-    if ( !PyArg_ParseTuple(t1, "O!s|s", &PyModel_ComponentType, &c1, &port1, &lat1) ) {
+
+    if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_ComponentType, &c1, &port1, &l1) ) {
         PyErr_Clear();
-        if ( !PyArg_ParseTuple(t1, "O!s|s", &PyModel_SubComponentType, &c1, &port1, &lat1) ) { return nullptr; }
+        if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_SubComponentType, &c1, &port1, &l1) ) { return nullptr; }
     }
+
+    if ( nullptr != l1 ) {
+        lstr1 = PyObject_CallMethod(l1, (char*)"__str__", nullptr);
+        lat1  = SST_ConvertToCppString(lstr1);
+    }
+
     if ( nullptr == lat1 ) lat1 = link->latency;
 
     if ( nullptr == lat0 || nullptr == lat1 ) {
@@ -95,6 +117,9 @@ linkConnect(PyObject* self, PyObject* args)
         ((LinkPy_t*)self)->name, lat0, lat1);
     gModel->addLink(id0, link->name, port0, lat0, link->no_cut);
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
+
+    Py_XDECREF(lstr0);
+    Py_XDECREF(lstr1);
 
     return SST_ConvertToPythonLong(0);
 }
