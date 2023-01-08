@@ -311,9 +311,22 @@ protected:
 
     /** Reactivates an existing Clock and Handler
      * @return time of next time clock handler will fire
+     *
+     * Note: If called after the simulation run loop (e.g., in finish() or complete()),
+     * will return the next time of the clock past when the simulation ended. There can
+     * be a small lag between simulation end and detection of simulation end during which
+     * clocks can run a few extra cycles. As a result, the return value just prior to
+     * simulation end may be greater than the value returned after simulation end.
      */
     Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
-    /** Returns the next Cycle that the TimeConverter would fire */
+
+    /** Returns the next Cycle that the TimeConverter would fire
+        If called prior to the simulation run loop, next Cycle is 0.
+        If called after the simulation run loop completes (e.g., during
+        complete() or finish()), next  Cycle is one past the end time of
+        the simulation. See Note in reregisterClock() for additional guidance
+        when calling this function after simulation ends.
+     */
     Cycle_t getNextClockCycle(TimeConverter* freq);
 
     /** Registers a default time base for the component and optionally

@@ -429,6 +429,13 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->run();
         barrier.wait();
 
+        /* Adjust clocks at simulation end to
+         * reflect actual simulation end if that
+         * differs from detected simulation end
+         */
+        sim->adjustTimeAtSimEnd();
+        barrier.wait();
+
         sim->complete();
         barrier.wait();
 

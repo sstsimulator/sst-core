@@ -198,6 +198,11 @@ public:
 
     void finish();
 
+    /** Adjust clocks and time to reflect precise simulation end time which
+        may differ in parallel simulations from the time simulation end is detected.
+     */
+    void adjustTimeAtSimEnd();
+
     bool isIndependentThread() { return independent; }
 
     void printProfilingInfo(FILE* fp);

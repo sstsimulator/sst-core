@@ -40,6 +40,7 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
+    tests/test_PythonUnitAlgebra.py \
     tests/test_PerfComponent.py \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_PerfComponent.out \
@@ -61,6 +62,7 @@ EXTRA_DIST += \
     tests/refFiles/test_SubComponent_2.out \
     tests/refFiles/test_SubComponent.out \
     tests/refFiles/test_UnitAlgebra.out \
+    tests/refFiles/test_PythonUnitAlgebra.out \
     tests/subcomponent_tests/test_sc_2a.py \
     tests/subcomponent_tests/test_sc_2u2u.py \
     tests/subcomponent_tests/test_sc_2u.py \
