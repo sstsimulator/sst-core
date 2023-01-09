@@ -334,8 +334,10 @@ public:
     static Core::ThreadSafe::Barrier finishBarrier;
     static std::mutex                simulationMutex;
 
-    static std::map<LinkId_t, Link*> cross_thread_links;
-    bool                             direct_interthread;
+    // Support for crossthread links
+    static Core::ThreadSafe::Spinlock cross_thread_lock;
+    static std::map<LinkId_t, Link*>  cross_thread_links;
+    bool                              direct_interthread;
 
     Component* createComponent(ComponentId_t id, const std::string& name, Params& params);
 
