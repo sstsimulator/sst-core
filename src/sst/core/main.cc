@@ -327,18 +327,16 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     barrier.wait();
 
-    // Perform the wireup.  Do this one thread at a time for now.  If
-    // this ever changes, then need to put in some serialization into
-    // performWireUp.
-    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
-        barrier.wait();
-    }
+    // Perform the wireup.
 
-    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) { do_graph_wireup(info.graph, sim, info.myRank, info.min_part); }
-        barrier.wait();
-    }
+    // Prepare the links, which creates the ComponentInfo objects and
+    // Link and puts the links in the LinkMap for each ComponentInfo.
+    do_link_preparation(info.graph, sim, info.myRank, info.min_part);
+    barrier.wait();
+
+    // Create all the simulation components
+    do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
+    barrier.wait();
 
     if ( tid == 0 ) {
         finalize_statEngineConfig();
