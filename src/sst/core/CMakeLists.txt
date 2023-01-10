@@ -30,6 +30,7 @@ add_subdirectory(interfaces)
 add_subdirectory(interprocess)
 add_subdirectory(math)
 add_subdirectory(part)
+add_subdirectory(profile)
 add_subdirectory(rng)
 add_subdirectory(serialization)
 add_subdirectory(statapi)
@@ -58,6 +59,7 @@ add_library(
   initQueue.cc
   link.cc
   memuse.cc
+  mempool.cc
   namecheck.cc
   oneshot.cc
   output.cc
@@ -72,6 +74,13 @@ add_library(
   module.cc
   sstpart.cc
   timeVortex.cc
+
+  profile/clockHandlerProfileTool.cc
+  profile/componentProfileTool.cc
+  profile/eventHandlerProfileTool.cc
+  profile/syncProfileTool.cc
+  profile/profiletool.cc
+
   serialization/serializable.cc
   serialization/serialize_serializable.cc
   serialization/serializer.cc
@@ -94,6 +103,7 @@ add_library(
   statapi/statoutputcsv.cc
   statapi/statoutputjson.cc
   statapi/statbase.cc
+  stringize.cc
   cputimer.cc
   iouse.cc)
 

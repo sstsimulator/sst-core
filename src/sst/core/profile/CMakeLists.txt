@@ -1,4 +1,4 @@
-# SST-CORE src/sst/core/eli CMake
+# SST-CORE src/sst/core/profile CMake
 #
 # Copyright 2009-2022 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
@@ -12,21 +12,12 @@
 # distribution.
 #
 
-set(SSTELIHeaders
-    attributeInfo.h
-    categoryInfo.h
-    defaultInfo.h
-    elementbuilder.h
-    elementinfo.h
-    elibase.h
-    interfaceInfo.h
-    paramsInfo.h
-    portsInfo.h
-    profilePointInfo.h
-    statsInfo.h
-    simpleInfo.h
-    subcompSlotInfo.h)
+set(SSTprofileHeaders 
+    componentProfileTool.h
+    profiletool.h
 
-install(FILES ${SSTELIHeaders} DESTINATION "include/sst/core/eli")
+)
+
+install(FILES ${SSTprofileHeaders} DESTINATION "include/sst/core/profile")
 
 # EOF
