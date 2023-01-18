@@ -52,7 +52,6 @@ class StatisticProcessingEngine
 {
 
 public:
-
     /** Called by the Components and Subcomponent to perform a statistic Output.
      * @param stat - Pointer to the statistic.
      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
