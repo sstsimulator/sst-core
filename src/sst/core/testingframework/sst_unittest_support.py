@@ -825,6 +825,72 @@ def test_output_get_tmp_dir():
 ################################################################################
 ### Testing Support
 ################################################################################
+def combine_per_rank_files(filename, header_lines_to_remove=0, remove_header_from_first_file=False):
+    """Combines per rank files into a single file.
+
+    This assumes that filename will be the base name with format
+    base.ext and that the per rank files will be of the format
+    base_0.ext, base_1.ext, etc.  The files will be concatenated in
+    order and written to the base filename.
+
+        Args:
+            filename (str): base name of file
+
+            header_lines_to_remove (int): number of header lines to remove from files
+
+            remove_header_from_first_file (bool): controls whether
+            header lines are removed from first file or no
+
+        Returns:
+            No return value
+
+    """
+    check_param_type("filename", filename, str)
+    check_param_type("header_lines_to_remove", header_lines_to_remove, int)
+    check_param_type("remove_header_from_first_file", remove_header_from_first_file, bool)
+
+    # Get the number of MPI ranks
+    ranks = testing_check_get_num_ranks()
+
+    # Nothing to be done if there's only one rank
+    if ranks == 1:
+        return
+
+    # Split the basename and extention from the file name
+    basename, extension = os.path.splitext(filename)
+
+    # Output lines
+    out_lines = []
+
+    for x in range(ranks):
+        # Get full name of file in format base_rank.ext (extension
+        # variable includes the .)
+        full_name = "{0}_{1}{2}".format(basename, x, extension)
+
+        # Check to make sure file exists
+        if not os.path.isfile(full_name):
+            log_error("Cannot combine rank per file files: File {0} does not exist".format(full_name))
+            return
+
+        # Read in the output file
+        with open(full_name) as fp:
+            count = 0
+            # If this is the first file and we don't remove header
+            # lines, adjust count so that nothing is removed
+            if x == 0 and not remove_header_from_first_file:
+                count = header_lines_to_remove
+            for line in fp:
+                if count < header_lines_to_remove:
+                    count += 1
+                    continue
+                out_lines.append(line)
+                count += 1
+
+    # write the output file
+    with open(filename, "w") as fp:
+        for line in out_lines:
+            fp.write(line)
+
 
 def testing_parse_stat(line):
     """ Return a parsed statistic or 'None' if the line does not match a known statistic format
@@ -1086,6 +1152,7 @@ class RemoveRegexFromLineFilter(LineFilter):
         return line
 
 
+### Diff functions
 def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filters=[]):
     """Filter, optionally sort and then compare 2 files for a difference.
 

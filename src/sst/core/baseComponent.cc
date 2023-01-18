@@ -573,6 +573,12 @@ BaseComponent::loadModule(const std::string& type, Params& params)
     return Factory::getFactory()->CreateModule(type, params);
 }
 
+StatisticProcessingEngine*
+BaseComponent::getStatEngine()
+{
+    return &sim_->stat_engine;
+}
+
 void
 BaseComponent::vfatal(
     uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
@@ -590,15 +596,11 @@ BaseComponent::vfatal(
         parent    = parent->parent_info;
     }
 
-    std::string new_format;
+    std::string prologue = format_string(
+        "Element name: %s,  type: %s (full type tree: %s)", name.c_str(), type.c_str(), type_tree.c_str());
 
-    new_format = format_string(
-        "\nElement name: %s,  type: %s (full type tree: %s)\n%s", name.c_str(), type.c_str(), type_tree.c_str(),
-        format);
-
-    std::string buf;
-    buf = format_string(new_format.c_str(), arg);
-    abort.fatal(line, file, func, exit_code, "%s", buf.c_str());
+    std::string msg = vformat_string(format, arg);
+    abort.fatal(line, file, func, exit_code, "\n%s\n%s\n", prologue.c_str(), msg.c_str());
 }
 
 void
@@ -711,7 +713,7 @@ BaseComponent::createStatistic(
     Params& cpp_params, const Params& python_params, const std::string& name, const std::string& subId,
     bool check_load_level, StatCreateFunction fxn)
 {
-    auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+    auto* engine = getStatEngine();
 
     if ( check_load_level ) {
         uint8_t my_load_level = getStatisticLoadLevel();

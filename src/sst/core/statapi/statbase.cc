@@ -146,7 +146,7 @@ StatisticBase::checkEventForOutput()
     if ( (m_registeredCollectionMode == STAT_MODE_COUNT) && (m_outputCollectionCount >= m_collectionCountLimit) &&
          (1 <= m_collectionCountLimit) ) {
         // Dont output if CountLimit is zero
-        StatisticProcessingEngine::getInstance()->performStatisticOutput(this);
+        m_component->getStatEngine()->performStatisticOutput(this);
     }
 }
 

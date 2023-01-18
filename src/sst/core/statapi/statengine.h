@@ -50,11 +50,8 @@ class StatisticOutput;
 
 class StatisticProcessingEngine
 {
-    static StatisticProcessingEngine* instance;
 
 public:
-    static StatisticProcessingEngine* getInstance() { return instance; }
-
     /** Called by the Components and Subcomponent to perform a statistic Output.
      * @param stat - Pointer to the statistic.
      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
@@ -81,7 +78,21 @@ public:
 
     uint8_t statLoadLevel() const { return m_statLoadLevel; }
 
-    const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
+    // Outputs are per MPI rank, so have to be static data
+    static const std::vector<StatisticOutput*>& getStatOutputs() { return m_statOutputs; }
+
+    /** Called to setup the StatOutputs, which are shared across all
+       the StatEngines on the same MPI rank.
+     */
+    static void static_setup(ConfigGraph* graph);
+
+    /** Called to nofiy StatOutputs that simulation has started
+     */
+    static void stat_outputs_simulation_start();
+
+    /** Called to nofiy StatOutputs that simulation has ended
+     */
+    static void stat_outputs_simulation_end();
 
 private:
     friend class SST::Simulation_impl;
@@ -89,12 +100,10 @@ private:
     friend void ::finalize_statEngineConfig(void);
 
     StatisticProcessingEngine();
-    void setup(ConfigGraph* graph);
+    void setup(Simulation_impl* sim, ConfigGraph* graph);
     ~StatisticProcessingEngine();
 
-    static void init(ConfigGraph* graph);
-
-    StatisticOutput* createStatisticOutput(const ConfigStatOutput& cfg);
+    static StatisticOutput* createStatisticOutput(const ConfigStatOutput& cfg);
 
     bool registerStatisticCore(StatisticBase* stat);
 
@@ -136,12 +145,14 @@ private:
     CompStatMap_t m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
     bool          m_SimulationStarted;    /*!< Flag showing if Simulation has started */
 
-    Output&                       m_output;
-    uint8_t                       m_statLoadLevel;
-    std::vector<StatisticOutput*> m_statOutputs;
-    StatisticGroup                m_defaultGroup;
-    std::vector<StatisticGroup>   m_statGroups;
-    Core::ThreadSafe::Barrier     m_barrier;
+    Simulation_impl*            m_sim;
+    Output&                     m_output;
+    uint8_t                     m_statLoadLevel;
+    StatisticGroup              m_defaultGroup;
+    std::vector<StatisticGroup> m_statGroups;
+
+    // Outputs are per MPI rank, so have to be static data
+    static std::vector<StatisticOutput*> m_statOutputs;
 };
 
 } // namespace Statistics

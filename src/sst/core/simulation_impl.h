@@ -22,6 +22,7 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <atomic>
@@ -59,10 +60,6 @@ class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
 class SharedRegionManager;
-namespace Statistics {
-class StatisticOutput;
-class StatisticProcessingEngine;
-} // namespace Statistics
 
 namespace Statistics {
 class StatisticOutput;
@@ -178,6 +175,7 @@ public:
      */
     void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
+    int  initializeStatisticEngine(ConfigGraph& graph);
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
@@ -303,7 +301,7 @@ public:
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
 
     /** Return the Statistic Processing Engine associated with this Simulation */
-    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void);
 
 
     friend class Link;
@@ -386,6 +384,9 @@ public:
     static TimeLord timeLord;
     /** Output */
     static Output   sim_output;
+
+    /** Statistics Engine */
+    SST::Statistics::StatisticProcessingEngine stat_engine;
 
     /** Performance Tracking Information **/
 
