@@ -42,9 +42,9 @@ vformat_string(const char* format, va_list args)
 
     // Buffer was too small, create a bigger one and try again
     char* large_buf = new char[length + 1];
-    vsnprintf(buf, length + 1, format, args);
+    vsnprintf(large_buf, length + 1, format, args);
 
-    std::string ret(buf);
+    std::string ret(large_buf);
     delete[] large_buf;
 
     return ret;
