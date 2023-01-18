@@ -350,6 +350,14 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 }
 
 int
+Simulation_impl::initializeStatisticEngine(ConfigGraph& graph)
+{
+    stat_engine.setup(this, &graph);
+    return 0;
+}
+
+
+int
 Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // First, go through all the components that are in this rank and
@@ -524,6 +532,10 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     */
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;
+
+    // Need to finalize stats engine configuration
+    stat_engine.finalizeInitialization();
+
     return 0;
 }
 
@@ -657,7 +669,7 @@ Simulation_impl::run()
     }
 
     // Tell the Statistics Engine that the simulation is beginning
-    if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
+    stat_engine.startOfSimulation();
 
     std::string header = std::to_string(my_rank.rank);
     header += ", ";
@@ -835,7 +847,7 @@ Simulation_impl::finish()
     finishBarrier.wait();
 
     // Tell the Statistics Engine that the simulation is ending
-    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::getInstance()->endOfSimulation(); }
+    stat_engine.endOfSimulation();
 }
 
 void
@@ -1004,9 +1016,9 @@ Simulation_impl::getSyncQueueDataSize() const
 }
 
 Statistics::StatisticProcessingEngine*
-Simulation_impl::getStatisticsProcessingEngine(void) const
+Simulation_impl::getStatisticsProcessingEngine(void)
 {
-    return Statistics::StatisticProcessingEngine::getInstance();
+    return &stat_engine;
 }
 
 #if SST_EVENT_PROFILING

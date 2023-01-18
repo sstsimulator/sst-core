@@ -31,37 +31,48 @@
 namespace SST {
 namespace Statistics {
 
-void
-StatisticProcessingEngine::init(ConfigGraph* graph)
-{
-    StatisticProcessingEngine::instance = new StatisticProcessingEngine();
-    instance->setup(graph);
-}
+std::vector<StatisticOutput*> StatisticProcessingEngine::m_statOutputs;
 
 StatisticProcessingEngine::StatisticProcessingEngine() : m_output(Output::getDefaultObject()) {}
 
+
 void
-StatisticProcessingEngine::setup(ConfigGraph* graph)
+StatisticProcessingEngine::static_setup(ConfigGraph* graph)
 {
-    m_SimulationStarted = false;
-    m_statLoadLevel     = graph->getStatLoadLevel();
+    // Outputs are per MPI rank, so have to be static data
     for ( auto& cfg : graph->getStatOutputs() ) {
         m_statOutputs.push_back(createStatisticOutput(cfg));
     }
+}
+
+void
+StatisticProcessingEngine::stat_outputs_simulation_start()
+{
+    for ( auto& so : m_statOutputs ) {
+        so->startOfSimulation();
+    }
+}
+
+void
+StatisticProcessingEngine::stat_outputs_simulation_end()
+{
+    for ( auto& so : m_statOutputs ) {
+        so->endOfSimulation();
+    }
+}
+
+
+void
+StatisticProcessingEngine::setup(Simulation_impl* sim, ConfigGraph* graph)
+{
+    m_sim = sim;
+
+    m_SimulationStarted = false;
+    m_statLoadLevel     = graph->getStatLoadLevel();
 
     m_defaultGroup.output = m_statOutputs[0];
     for ( auto& cfg : graph->getStatGroups() ) {
-        m_statGroups.emplace_back(cfg.second);
-
-        /* Force component / statistic registration for Group stats*/
-        for ( ComponentId_t compID : cfg.second.components ) {
-            ConfigComponent* ccomp = graph->findComponent(compID);
-            if ( ccomp ) { /* Should always be true */
-                for ( auto& kv : cfg.second.statMap ) {
-                    ccomp->enableStatistic(kv.first, kv.second);
-                }
-            }
-        }
+        m_statGroups.emplace_back(cfg.second, this);
     }
 }
 
@@ -164,10 +175,8 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 void
 StatisticProcessingEngine::finalizeInitialization()
 {
-    bool master = (Simulation_impl::getSimulation()->getRank().thread == 0);
-    if ( master ) { m_barrier.resize(Simulation_impl::getSimulation()->getNumRanks().thread); }
     for ( auto& g : m_statGroups ) {
-        if ( master ) { g.output->registerGroup(&g); }
+        g.output->registerGroup(&g);
 
         /* Register group clock, if rate is set */
         if ( g.outputFreq.getValue() != 0 ) {
@@ -184,10 +193,6 @@ void
 StatisticProcessingEngine::startOfSimulation()
 {
     m_SimulationStarted = true;
-
-    for ( auto& so : m_statOutputs ) {
-        so->startOfSimulation();
-    }
 }
 
 void
@@ -224,10 +229,6 @@ StatisticProcessingEngine::endOfSimulation()
     for ( auto& sg : m_statGroups ) {
         performStatisticGroupOutputImpl(sg, true);
     }
-
-    for ( auto& so : m_statOutputs ) {
-        so->endOfSimulation();
-    }
 }
 
 StatisticOutput*
@@ -238,18 +239,19 @@ StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput& cfg)
     std::transform(lcType.begin(), lcType.end(), lcType.begin(), ::tolower);
     StatisticOutput* so = Factory::getFactory()->CreateWithParams<StatisticOutput>(lcType, unsafeParams, unsafeParams);
     if ( nullptr == so ) {
-        m_output.fatal(CALL_INFO, 1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+        Output::getDefaultObject().fatal(
+            CALL_INFO, 1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
 
     if ( false == so->checkOutputParameters() ) {
         // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
-        m_output.output("Statistic Output (%s) :\n", so->getStatisticOutputName().c_str());
+        Output::getDefaultObject().output("Statistic Output (%s) :\n", so->getStatisticOutputName().c_str());
         so->printUsage();
-        m_output.output("\n");
+        Output::getDefaultObject().output("\n");
 
-        m_output.output("Statistic Output Parameters Provided:\n");
+        Output::getDefaultObject().output("Statistic Output Parameters Provided:\n");
         cfg.params.print_all_params(Output::getDefaultObject(), "  ");
-        m_output.fatal(CALL_INFO, 1, " - Required Statistic Output Parameters not set\n");
+        Output::getDefaultObject().fatal(CALL_INFO, 1, " - Required Statistic Output Parameters not set\n");
     }
     return so;
 }
@@ -437,7 +439,6 @@ StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool endO
 void
 StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag /*=false*/)
 {
-
     StatisticOutput* statOutput = getOutputForStatistic(stat);
 
     // Has the simulation started?
@@ -460,7 +461,6 @@ StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool 
 void
 StatisticProcessingEngine::performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag /*=false*/)
 {
-
     StatisticOutput* statOutput = group.output;
 
     // Has the simulation started?
@@ -531,9 +531,7 @@ StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleN
 bool
 StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(CycleNum), StatisticGroup* group)
 {
-    m_barrier.wait();
-    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) { performStatisticGroupOutputImpl(*group, false); }
-    m_barrier.wait();
+    performStatisticGroupOutputImpl(*group, false);
     return false;
 }
 
@@ -626,8 +624,6 @@ StatisticProcessingEngine::addStatisticToCompStatMap(
     // Add the statistic to the lists of statistics registered to this component
     statArray->push_back(Stat);
 }
-
-StatisticProcessingEngine* StatisticProcessingEngine::instance = nullptr;
 
 } // namespace Statistics
 } // namespace SST
