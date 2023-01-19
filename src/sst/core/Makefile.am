@@ -185,6 +185,7 @@ sst_core_sources = \
 	linkPair.h \
 	memuse.cc \
 	mempool.cc \
+	mempoolAccessor.h \
 	namecheck.cc \
 	oneshot.cc \
 	output.cc \

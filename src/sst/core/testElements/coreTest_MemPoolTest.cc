@@ -18,7 +18,7 @@
 #include "sst/core/testElements/coreTest_MemPoolTest.h"
 
 #include "sst/core/event.h"
-#include "sst/core/mempool.h"
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
 #include "sst/core/simulation.h"
 

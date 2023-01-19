@@ -14,7 +14,7 @@
 #include "sst/core/heartbeat.h"
 
 #include "sst/core/component.h"
-#include "sst/core/mempool.h"
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
