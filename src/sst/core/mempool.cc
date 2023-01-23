@@ -13,6 +13,7 @@
 
 #include "sst/core/mempool.h"
 
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
 #include "sst/core/threadsafe.h"
 
@@ -90,6 +91,10 @@ public:
 };
 
 
+// Controls whether or not the mempools cache align their entries
+static bool memPoolCacheAlign = false;
+
+
 /**
  * Simple Memory Pool class.  The class instance is only ever accessed
  * by a single thread.  Only have to mutex when putting things in the
@@ -114,7 +119,17 @@ public:
         arenaSize(initialSize),
         max_freelist_size(0)
     {
-        max_overflow_size = arenaSize / elemSize;
+        // Round up to next multiple of 64 to ensure no events are on
+        // the same cache line
+        size_t remainder = (elemSize + 8) % 64;
+        if ( memPoolCacheAlign ) { allocSize = remainder == 0 ? (elemSize + 8) : ((elemSize + 8) + 64 - remainder); }
+        else {
+            allocSize = elemSize + 8;
+        }
+        max_overflow_size = arenaSize / allocSize;
+
+        // max_overflow_size = arenaSize / elemSize;
+
 
         // Won't alloc until we need to
         // allocPool();
@@ -209,15 +224,16 @@ public:
 
 private:
     // allocPool will only ever be called by one thread, no need for locking
+    // version that will cache align each memory chunk for an event
     bool allocPool()
     {
         uint8_t* newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) { return false; }
         std::memset(newPool, 0xFF, arenaSize);
         arenas.push_back(newPool);
-        size_t nelem = arenaSize / elemSize;
+        size_t nelem = arenaSize / allocSize;
         for ( size_t i = 0; i < nelem; i++ ) {
-            uint64_t* ptr = (uint64_t*)(newPool + (elemSize * i));
+            uint64_t* ptr = (uint64_t*)(newPool + (allocSize * i));
             freelist.push_back(ptr);
         }
         max_freelist_size += nelem;
@@ -228,6 +244,7 @@ private:
     size_t arenaSize;
     size_t max_freelist_size;
     size_t max_overflow_size;
+    size_t allocSize;
 
     std::list<uint8_t*> arenas;
 };
@@ -252,7 +269,7 @@ struct PoolInfo_t
 // This is a vector where each thread has one entry.  Using a vector
 // so that the memory will be cleaned up.  There won't be a chance to
 // call delete[] if we use an array with new.
-std::vector<std::vector<PoolInfo_t>> memPoolThreadVector;
+static std::vector<std::vector<PoolInfo_t>> memPoolThreadVector;
 
 // My local thread number
 thread_local int                      thread_num = -1;
@@ -262,7 +279,6 @@ thread_local std::vector<PoolInfo_t>* myPools;
 inline MemPoolNoMutex*
 getMemPool(std::size_t size) noexcept
 {
-    // std::vector<PoolInfo_t>& memPools = memPoolThreadVector[thread_num];
     MemPoolNoMutex* pool = nullptr;
 
     for ( auto& x : *myPools ) {
@@ -283,10 +299,11 @@ getMemPool(std::size_t size) noexcept
 
 
 void
-MemPoolAccessor::initializeGlobalData(int num_threads)
+MemPoolAccessor::initializeGlobalData(int num_threads, bool cache_align)
 {
     // Only resize once
     if ( memPoolThreadVector.size() == 0 ) { memPoolThreadVector.resize(num_threads); }
+    memPoolCacheAlign = cache_align;
 }
 
 void
@@ -376,27 +393,11 @@ MemPoolItem::operator delete(void* ptr)
 }
 
 
-std::string
-MemPoolItem::toString() const
-{
-    std::stringstream buf;
-
-    buf << "MemPoolItem of class: " << cls_name();
-    return buf.str();
-}
-
-
-void
-MemPoolItem::print(const std::string& header, Output& out) const
-{
-    out.output("%s%s\n", header.c_str(), toString().c_str());
-}
-
-
 #else // #ifdef USE_MEMPOOLS
 
+
 void
-MemPoolAccessor::initializeGlobalData(int UNUSED(num_threads))
+MemPoolAccessor::initializeGlobalData(int UNUSED(num_threads), bool UNUSED(cache_align))
 {}
 
 void
@@ -445,8 +446,10 @@ void
 MemPoolItem::operator delete(void* ptr)
 {
     ::operator delete(ptr);
-    // free(ptr);
 }
+
+
+#endif // #ifdef USE_MEMPOOLS
 
 
 std::string
@@ -465,7 +468,6 @@ MemPoolItem::print(const std::string& header, Output& out) const
     out.output("%s%s\n", header.c_str(), toString().c_str());
 }
 
-#endif
 
 } // namespace Core
 } // namespace SST

@@ -31,6 +31,7 @@ REENABLE_WARNING
 #include "sst/core/iouse.h"
 #include "sst/core/link.h"
 #include "sst/core/mempool.h"
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/memuse.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
@@ -906,7 +907,7 @@ main(int argc, char* argv[])
     Simulation_impl::sim_output = g_output;
     Simulation_impl::resizeBarriers(world_size.thread);
 #ifdef USE_MEMPOOL
-    MemPoolAccessor::initializeGlobalData(world_size.thread);
+    MemPoolAccessor::initializeGlobalData(world_size.thread, cfg.cache_align_mempools());
 #endif
 
     std::vector<std::thread>     threads(world_size.thread);

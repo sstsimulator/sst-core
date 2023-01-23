@@ -401,6 +401,22 @@ public:
         return success;
     }
 
+#ifdef USE_MEMPOOL
+    // cache align mempool allocations
+    bool setCacheAlignMempools()
+    {
+        cfg.cache_align_mempools_ = true;
+        return true;
+    }
+
+    bool setCacheAlignMempoolsArg(const std::string& arg)
+    {
+        bool success              = false;
+        cfg.cache_align_mempools_ = parseBoolean(arg, success, "cache-align-mempools");
+        return success;
+    }
+#endif
+
     // debug file
     bool setDebugFile(const std::string& arg)
     {
@@ -567,6 +583,9 @@ Config::print()
     std::cout << "parallel_load = " << parallel_load_ << std::endl;
     std::cout << "timeVortex = " << timeVortex_ << std::endl;
     std::cout << "interthread_links = " << interthread_links_ << std::endl;
+#ifdef USE_MEMPOOL
+    std::cout << "cache_align_mempools = " << cache_align_mempools_ << std::endl;
+#endif
     std::cout << "debugFile = " << debugFile_ << std::endl;
     std::cout << "libpath = " << libpath_ << std::endl;
     std::cout << "addLlibPath = " << addLibPath_ << std::endl;
@@ -626,9 +645,12 @@ Config::Config(RankInfo rank_info) : Config()
     parallel_load_mode_multi_ = true;
     timeVortex_               = "sst.timevortex.priority_queue";
     interthread_links_        = false;
-    debugFile_                = "/dev/null";
-    libpath_                  = SST_INSTALL_PREFIX "/lib/sst";
-    addLibPath_               = "";
+#ifdef USE_MEMPOOL
+    cache_align_mempools_ = false;
+#endif
+    debugFile_  = "/dev/null";
+    libpath_    = SST_INSTALL_PREFIX "/lib/sst";
+    addLibPath_ = "";
 
     // Advance Options - Profiling
     enabled_profiling_ = "";
@@ -829,7 +851,7 @@ static const struct sstLongOpts_s sstOptions[] = {
         "exit-after", 0, "TIME",
         "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
         "seconds, with the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (captital letters are the "
-        "appropriate numbers for that value, lower case letters represent the units and are required in for those "
+        "appropriate numbers for that value, lower case letters represent the units and are required for those "
         "formats).",
         &ConfigHelper::setExitAfter, true),
     DEF_ARG(
@@ -903,8 +925,13 @@ static const struct sstLongOpts_s sstOptions[] = {
         "timeVortex", 0, "MODULE", "Select TimeVortex implementation <lib.timevortex>", &ConfigHelper::setTimeVortex,
         true),
     DEF_FLAG_OPTVAL(
-        "interthread-links", 0, "[EXPERIMENTAL] Set whether or not interthread links should be used <false>",
+        "interthread-links", 0, "[EXPERIMENTAL] Set whether or not interthread links should be used",
         &ConfigHelper::setInterThreadLinks, &ConfigHelper::setInterThreadLinksArg, true),
+#ifdef USE_MEMPOOL
+    DEF_FLAG_OPTVAL(
+        "cache-align-mempools", 0, "[EXPERIMENTAL] Set whether mempool allocations are cache aligned",
+        &ConfigHelper::setCacheAlignMempools, &ConfigHelper::setCacheAlignMempoolsArg, true),
+#endif
     DEF_ARG("debug-file", 0, "FILE", "File where debug output will go", &ConfigHelper::setDebugFile, true),
     DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)", &ConfigHelper::setLibPath, true),
     DEF_ARG(
@@ -956,9 +983,9 @@ ConfigHelper::parseBoolean(const std::string& arg, bool& success, const std::str
     for ( auto& ch : arg_lower )
         ch = std::tolower(ch, loc);
 
-    if ( arg_lower == "true" || arg_lower == "yes" || arg_lower == "1" )
+    if ( arg_lower == "true" || arg_lower == "yes" || arg_lower == "1" || arg_lower == "on" )
         return true;
-    else if ( arg_lower == "false" || arg_lower == "no" || arg_lower == "0" )
+    else if ( arg_lower == "false" || arg_lower == "no" || arg_lower == "0" || arg_lower == "off" )
         return false;
     else {
         fprintf(
@@ -1000,11 +1027,14 @@ ConfigHelper::usage()
 
     /* Print usage */
     fprintf(
-        stderr,
-        "Usage: sst [options] config-file\n"
-        "  Arguments to options contained in [] are optional.\n"
-        "  BOOL values can be expressed as true/false, yes/no or 1/0 and default to true if the option is specified\n"
-        "  Options available to be set in the sdl file (input configuration file) are denoted by (S)\n");
+        stderr, "Usage: sst [options] config-file\n"
+                "  Arguments to options contained in [] are optional\n"
+                "  Options available to be set in the sdl file (input configuration file) are denoted by (S)\n"
+                "   - Options set on the command line take precedence over options set in the SDL file\n"
+                "  Notes on flag options (options that take an optional BOOL value):\n"
+                "   - BOOL values can be expressed as true/false, yes/no, on/off or 1/0\n"
+                "   - Program default for flags is false\n"
+                "   - BOOL values default to true if flag is specified but no value is supplied\n");
 
     for ( size_t i = 0; i < nLongOpts; i++ ) {
         if ( !strcmp(sstOptions[i].opt.name, SECTION_HEADER) ) {
