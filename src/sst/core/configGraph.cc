@@ -717,6 +717,18 @@ ConfigGraph::postCreationCleanup()
         link->order      = count;
         count++;
     }
+
+    /* Force component / statistic registration for Group stats */
+    for ( auto& cfg : getStatGroups() ) {
+        for ( ComponentId_t compID : cfg.second.components ) {
+            ConfigComponent* ccomp = findComponent(compID);
+            if ( ccomp ) { /* Should always be true */
+                for ( auto& kv : cfg.second.statMap ) {
+                    ccomp->enableStatistic(kv.first, kv.second);
+                }
+            }
+        }
+    }
 }
 
 // Checks for errors that can't be easily detected during the build

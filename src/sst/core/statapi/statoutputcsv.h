@@ -91,6 +91,9 @@ protected:
     void outputField(fieldHandle_t fieldHandle, float data) override;
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
+    /** True if this StatOutput can handle StatisticGroups */
+    virtual bool acceptsGroups() const override { return true; }
+
 protected:
     StatisticOutputCSV() { ; } // For serialization
 

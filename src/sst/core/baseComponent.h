@@ -16,6 +16,7 @@
 #include "sst/core/componentInfo.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
+#include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/simulation.h"
@@ -395,7 +396,7 @@ protected:
     Statistics::Statistic<T>*
     createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId = "")
     {
-        auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+        auto* engine = getStatEngine();
         return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
     }
 
@@ -828,6 +829,9 @@ private:
     void
     vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const;
 
+    // Get the statengine from Simulation_impl
+    StatisticProcessingEngine* getStatEngine();
+
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
 
@@ -836,6 +840,7 @@ public:
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
+    friend class SST::Statistics::StatisticBase;
 
     bool isAnonymous() { return my_info->isAnonymous(); }
 

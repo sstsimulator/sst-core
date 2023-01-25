@@ -16,6 +16,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/threadSyncQueue.h"
+#include "sst/core/threadsafe.h"
 
 #include <unordered_map>
 
@@ -72,6 +73,7 @@ private:
     static Core::ThreadSafe::Barrier barrier[3];
     double                           totalWaitTime;
     bool                             single_rank;
+    Core::ThreadSafe::Spinlock       lock;
 };
 
 } // namespace SST

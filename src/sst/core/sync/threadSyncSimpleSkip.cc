@@ -64,7 +64,8 @@ ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 void
 ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
 {
-    auto iter = link_map.find(name);
+    std::lock_guard<Core::ThreadSafe::Spinlock> slock(lock);
+    auto                                        iter = link_map.find(name);
     if ( iter == link_map.end() ) {
         // I have initialized first, so just put the name and link in
         // the map
@@ -81,7 +82,8 @@ ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
 ActivityQueue*
 ThreadSyncSimpleSkip::registerRemoteLink(int tid, const std::string& name, Link* link)
 {
-    auto iter = link_map.find(name);
+    std::lock_guard<Core::ThreadSafe::Spinlock> slock(lock);
+    auto                                        iter = link_map.find(name);
     if ( iter == link_map.end() ) {
         // I have initialized first, so just put the name and link in
         // the map

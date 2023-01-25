@@ -54,7 +54,9 @@ EXTRA_DIST += \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \
-    tests/refFiles/test_StatisticsComponent.out \
+    tests/refFiles/test_StatisticsComponent_basic.out \
+    tests/refFiles/test_StatisticsComponent_basic_group_stats.csv \
+    tests/refFiles/test_StatisticsComponent_basic_group_stats.txt \
     tests/refFiles/test_Links_basic.out \
     tests/refFiles/test_Links_dangling.out \
     tests/refFiles/test_Links_wrong_port.out \

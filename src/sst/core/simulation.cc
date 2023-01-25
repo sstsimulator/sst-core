@@ -350,12 +350,20 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 }
 
 int
+Simulation_impl::initializeStatisticEngine(ConfigGraph& graph)
+{
+    stat_engine.setup(this, &graph);
+    return 0;
+}
+
+
+int
 Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
-    for ( ConfigComponentMap_t::iterator iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::const_iterator iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
             compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
@@ -365,7 +373,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
-    for ( ConfigLinkMap_t::iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
+    for ( ConfigLinkMap_t::const_iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
         rank[0] = graph.comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
@@ -426,22 +434,26 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             Link* link = new Link(clink->order);
             link->setLatency(clink->latency[local]);
-            if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
-                // The other side already initialized.  Hook them
-                // together as a pair.
-                Link* other_link      = cross_thread_links[clink->id];
-                link->pair_link       = other_link;
-                other_link->pair_link = link;
-                // Remove entry from map
-                cross_thread_links.erase(clink->id);
-            }
-            else {
-                // Nothing to do until the other side is created.
-                // Just add myself to the map so the other side can
-                // find me later.
-                cross_thread_links[clink->id] = link;
-            }
 
+            // Need to mutex to access cross_thread_links
+            {
+                std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(cross_thread_lock);
+                if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
+                    // The other side already initialized.  Hook them
+                    // together as a pair.
+                    Link* other_link      = cross_thread_links[clink->id];
+                    link->pair_link       = other_link;
+                    other_link->pair_link = link;
+                    // Remove entry from map
+                    cross_thread_links.erase(clink->id);
+                }
+                else {
+                    // Nothing to do until the other side is created.
+                    // Just add myself to the map so the other side can
+                    // find me later.
+                    cross_thread_links[clink->id] = link;
+                }
+            }
             ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
             if ( cinfo == nullptr ) { sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map."); }
             cinfo->getLinkMap()->insertLink(clink->port[local], link);
@@ -520,6 +532,10 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     */
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;
+
+    // Need to finalize stats engine configuration
+    stat_engine.finalizeInitialization();
+
     return 0;
 }
 
@@ -653,7 +669,7 @@ Simulation_impl::run()
     }
 
     // Tell the Statistics Engine that the simulation is beginning
-    if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
+    stat_engine.startOfSimulation();
 
     std::string header = std::to_string(my_rank.rank);
     header += ", ";
@@ -831,7 +847,7 @@ Simulation_impl::finish()
     finishBarrier.wait();
 
     // Tell the Statistics Engine that the simulation is ending
-    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::getInstance()->endOfSimulation(); }
+    stat_engine.endOfSimulation();
 }
 
 void
@@ -1000,9 +1016,9 @@ Simulation_impl::getSyncQueueDataSize() const
 }
 
 Statistics::StatisticProcessingEngine*
-Simulation_impl::getStatisticsProcessingEngine(void) const
+Simulation_impl::getStatisticsProcessingEngine(void)
 {
-    return Statistics::StatisticProcessingEngine::getInstance();
+    return &stat_engine;
 }
 
 #if SST_EVENT_PROFILING
@@ -1313,19 +1329,20 @@ Simulation_impl::printPerformanceInfo()
 #endif
 
 /* Define statics */
-Factory*                  Simulation_impl::factory;
-TimeLord                  Simulation_impl::timeLord;
-std::map<LinkId_t, Link*> Simulation_impl::cross_thread_links;
-Output                    Simulation_impl::sim_output;
-Core::ThreadSafe::Barrier Simulation_impl::initBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::completeBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::setupBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::runBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::exitBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::finishBarrier;
-std::mutex                Simulation_impl::simulationMutex;
-TimeConverter*            Simulation_impl::minPartTC = nullptr;
-SimTime_t                 Simulation_impl::minPart;
+Factory*                   Simulation_impl::factory;
+TimeLord                   Simulation_impl::timeLord;
+std::map<LinkId_t, Link*>  Simulation_impl::cross_thread_links;
+Output                     Simulation_impl::sim_output;
+Core::ThreadSafe::Barrier  Simulation_impl::initBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::completeBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::setupBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::runBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::exitBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::finishBarrier;
+std::mutex                 Simulation_impl::simulationMutex;
+Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
+TimeConverter*             Simulation_impl::minPartTC = nullptr;
+SimTime_t                  Simulation_impl::minPart;
 
 /* Define statics (Simulation) */
 std::unordered_map<std::thread::id, Simulation_impl*> Simulation_impl::instanceMap;

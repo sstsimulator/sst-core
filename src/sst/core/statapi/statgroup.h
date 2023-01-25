@@ -23,12 +23,13 @@ class ConfigStatGroup;
 namespace Statistics {
 class StatisticBase;
 class StatisticOutput;
+class StatisticProcessingEngine;
 
 class StatisticGroup
 {
 public:
     StatisticGroup() : isDefault(true), name("default") {};
-    StatisticGroup(const ConfigStatGroup& csg);
+    StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine);
 
     bool containsStatistic(const StatisticBase* stat) const;
     bool claimsStatistic(const StatisticBase* stat) const;

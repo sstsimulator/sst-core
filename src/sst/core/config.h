@@ -240,6 +240,13 @@ public:
     */
     bool interthread_links() const { return interthread_links_; }
 
+#ifdef USE_MEMPOOL
+    /**
+       Controls whether mempool items are cache-aligned
+
+    */
+    bool cache_align_mempools() const { return cache_align_mempools_; }
+#endif
     /**
        File to which core debug information should be written
     */
@@ -363,6 +370,9 @@ public:
         ser& parallel_load_mode_multi_;
         ser& timeVortex_;
         ser& interthread_links_;
+#ifdef USE_MEMPOOL
+        ser& cache_align_mempools_;
+#endif
         ser& debugFile_;
         ser& libpath_;
         ser& addLibPath_;
@@ -434,7 +444,10 @@ private:
     bool        parallel_load_mode_multi_; /*!< If true, load using multiple files */
     std::string timeVortex_;               /*!< TimeVortex implementation to use */
     bool        interthread_links_;        /*!< Use interthread links */
-    std::string debugFile_;                /*!< File to which debug information should be written */
+#ifdef USE_MEMPOOL
+    bool cache_align_mempools_; /*!< Cache align allocations from mempools */
+#endif
+    std::string debugFile_; /*!< File to which debug information should be written */
     std::string libpath_;
     std::string addLibPath_;
 
