@@ -402,8 +402,8 @@ private:
     }
 
     template <typename T>
-    Statistics::Statistic<T>* registerStatistic(
-        SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
         if ( my_info->enabledStatNames ) {
             auto iter = my_info->enabledStatNames->find(statName);
@@ -444,7 +444,7 @@ private:
             return nullptr; // get rid of warning
         }
     }
-  
+
 protected:
     /** Registers a statistic.
         If Statistic is allowed to run (controlled by Python runtime parameters),
@@ -464,8 +464,8 @@ protected:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistics::Statistic<T>* registerStatistic(
-        SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
         return registerStatistic<T>(params, statName, statSubId, false);
     }
@@ -869,9 +869,9 @@ protected:
     Simulation* getSimulation() const;
 
     // Does the statisticName exist in the ElementInfoStatistic
-    bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
+    bool    doesComponentInfoStatisticExist(const std::string& statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    uint8_t      getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
