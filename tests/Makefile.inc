@@ -37,6 +37,7 @@ EXTRA_DIST += \
     tests/test_Links.py \
     tests/test_MessageGeneratorComponent.py \
     tests/test_MemPool_overflow.py \
+    tests/test_MemPool_undeleted_items.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
@@ -51,6 +52,7 @@ EXTRA_DIST += \
     tests/refFiles/test_ParamComponent.out \
     tests/refFiles/test_MessageGeneratorComponent.out \
     tests/refFiles/test_MemPool_overflow.out \
+    tests/refFiles/test_MemPool_undeleted_items.out \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \

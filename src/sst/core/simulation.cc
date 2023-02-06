@@ -180,6 +180,8 @@ void
 Simulation_impl::shutdown()
 {
     instanceMap.clear();
+    // Done with sync object, delete it
+    delete Simulation_impl::m_exit;
 }
 
 Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks) :

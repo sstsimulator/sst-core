@@ -49,6 +49,7 @@ public:
     {
         if ( print_message ) { Output::getDefaultObject().output("%s\n", message.c_str()); }
         endSimulation();
+        delete this;
     }
 
     void print(const std::string& header, Output& out) const override

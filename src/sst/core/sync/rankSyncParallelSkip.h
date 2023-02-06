@@ -108,6 +108,8 @@ private:
     Core::ThreadSafe::Barrier serializeReadyBarrier;
     Core::ThreadSafe::Barrier slaveExchangeDoneBarrier;
     Core::ThreadSafe::Barrier allDoneBarrier;
+
+    Core::ThreadSafe::Spinlock lock;
 };
 
 } // namespace SST
