@@ -356,6 +356,7 @@ protected:
         }
     }
 
+private:
     template <typename T>
     Statistics::Statistic<T>*
     createStatistic(SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
@@ -400,25 +401,9 @@ protected:
         return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
     }
 
-    /** Registers a statistic.
-        If Statistic is allowed to run (controlled by Python runtime parameters),
-        then a statistic will be created and returned. If not allowed to run,
-        then a NullStatistic will be returned.  In either case, the returned
-        value should be used for all future Statistic calls.  The type of
-        Statistic and the Collection Rate is set by Python runtime parameters.
-        If no type is defined, then an Accumulator Statistic will be provided
-        by default.  If rate set to 0 or not provided, then the statistic will
-        output results only at end of sim (if output is enabled).
-        @param statName Primary name of the statistic.  This name must match the
-               defined ElementInfoStatistic in the component, and must also
-               be enabled in the Python input file.
-        @param statSubId An additional sub name for the statistic
-        @return Either a created statistic of desired type or a NullStatistic
-                depending upon runtime settings.
-    */
     template <typename T>
-    Statistics::Statistic<T>* registerStatistic(
-        SST::Params& params, const std::string& statName, const std::string& statSubId = "", bool inserting = false)
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
         if ( my_info->enabledStatNames ) {
             auto iter = my_info->enabledStatNames->find(statName);
@@ -449,7 +434,7 @@ protected:
         else if ( my_info->parent_info && my_info->sharesStatistics() ) {
             // this is not a statistic that I registered
             // but my parent can share statistics, maybe they enabled
-            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
+            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId, false);
         }
         else {
             // not a valid stat and I won't be able to share my parent's statistic
@@ -460,11 +445,36 @@ protected:
         }
     }
 
+protected:
+    /** Registers a statistic.
+        If Statistic is allowed to run (controlled by Python runtime parameters),
+        then a statistic will be created and returned. If not allowed to run,
+        then a NullStatistic will be returned.  In either case, the returned
+        value should be used for all future Statistic calls.  The type of
+        Statistic and the Collection Rate is set by Python runtime parameters.
+        If no type is defined, then an Accumulator Statistic will be provided
+        by default.  If rate set to 0 or not provided, then the statistic will
+        output results only at end of sim (if output is enabled).
+        @param params Parameter set to be passed to the statistic constructor.
+        @param statName Primary name of the statistic.  This name must match the
+               defined ElementInfoStatistic in the component, and must also
+               be enabled in the Python input file.
+        @param statSubId An additional sub name for the statistic
+        @return Either a created statistic of desired type or a NullStatistic
+                depending upon runtime settings.
+    */
+    template <typename T>
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    {
+        return registerStatistic<T>(params, statName, statSubId, false);
+    }
+
     template <typename T>
     Statistics::Statistic<T>* registerStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty {};
-        return registerStatistic<T>(empty, statName, statSubId);
+        return registerStatistic<T>(empty, statName, statSubId, false);
     }
 
     template <typename... Args>
@@ -472,14 +482,14 @@ protected:
     registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty {};
-        return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId);
+        return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId, false);
     }
 
     template <typename... Args>
     Statistics::Statistic<std::tuple<Args...>>*
     registerMultiStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
-        return registerStatistic<std::tuple<Args...>>(params, statName, statSubId);
+        return registerStatistic<std::tuple<Args...>>(params, statName, statSubId, false);
     }
 
     template <typename T>
@@ -859,9 +869,9 @@ protected:
     Simulation* getSimulation() const;
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
+    bool    doesComponentInfoStatisticExist(const std::string& statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    uint8_t      getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
