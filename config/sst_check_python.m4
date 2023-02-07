@@ -16,21 +16,14 @@ dnl check if user provided a specific python-config
 dnl search python3-config
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
     [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["NOTFOUND"])])])
 
 dnl search python-config
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
     [AS_IF([test -n "$with_python"], 
         [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"], ["$with_python/bin"])],
         [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"])])])
-
-dnl search python2-config
-  AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
-    [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"])])])
-
 
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
         [PYTHON_CPPFLAGS=`$PYTHON_CONFIG_EXE --includes`])
@@ -50,16 +43,8 @@ dnl Assume a consistent naming convention for pythonX and pythonX-config
   PYTHON_NAME=${PYTHON_CONFIG_NAME%%-*}
   AC_PATH_PROGS([PYTHON_EXE], ["$PYTHON_NAME"], [""], ["$PYTHON_PREFIX/bin"])
  
-dnl Error if python version < 2.6
-  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [2.6], [PYTHON_VERSION3="no"], [AC_MSG_ERROR([Python version must be >= 2.6])])
-
-dnl Set python3 flag if version >= 3.5
-  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.5], [PYTHON_VERSION3="yes"])
-
-dnl Error if python version is < 3.5 but > 3.0
-  AS_IF([test "$PYTHON_VERSION3" = "no"],
-    [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.0],
-        [AC_MSG_ERROR([Python3 version must be >= 3.5])])])
+dnl Error if python version < 3.6
+  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.6], [PYTHON_VERSION3="yes"], [AC_MSG_ERROR([Python version must be >= 2.6])])
 
 dnl Python3.8+ doesn't link to lpython by default
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
