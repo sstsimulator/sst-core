@@ -47,6 +47,8 @@ public:
 
     // Initialize the per thread mempool ata structures
     static void initializeLocalData(int thread);
+
+    static void printUndeletedMemPoolItems(const std::string& header, Output& out);
 };
 
 } // namespace Core
