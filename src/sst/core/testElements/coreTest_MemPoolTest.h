@@ -40,6 +40,11 @@ public:
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent1);
 
+    std::string toString() const override
+    {
+        return std::string("MemPoolTestEvent1 to be delivered at ") + std::to_string(getDeliveryTime());
+    }
+
 private:
     uint64_t array[1];
 };
@@ -56,6 +61,11 @@ public:
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent2);
+
+    std::string toString() const override
+    {
+        return std::string("MemPoolTestEvent2 to be delivered at ") + std::to_string(getDeliveryTime());
+    }
 
 private:
     uint64_t array[2];
@@ -74,6 +84,11 @@ public:
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent3);
 
+    std::string toString() const override
+    {
+        return std::string("MemPoolTestEvent3 to be delivered at ") + std::to_string(getDeliveryTime());
+    }
+
 private:
     uint64_t array[3];
 };
@@ -91,6 +106,11 @@ public:
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent4);
 
+    std::string toString() const override
+    {
+        return std::string("MemPoolTestEvent4 to be delivered at ") + std::to_string(getDeliveryTime());
+    }
+
 private:
     uint64_t array[4];
 };
@@ -102,7 +122,6 @@ public:
 
     double rate;
 
-    // No need to actually serialize the data because it isn't used.
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
@@ -130,7 +149,9 @@ public:
 
     SST_ELI_DOCUMENT_PARAMS(
         { "event_size", "Size of event to sent (valid sizes: 1-4).", "1" },
-        { "initial_events", "Number of events to send to each other component", "256" }
+        { "initial_events", "Number of events to send to each other component", "256" },
+        { "undeleted_events", "Number of events to leave undeleted", "0" },
+        { "check_overflow", "Check to see whether MemPool overflow is working correctly", "true"}
     )
 
     SST_ELI_DOCUMENT_PORTS(
@@ -156,10 +177,11 @@ private:
     int                events_recv;
     int                initial_events;
     double             event_rate;
+    int                undeleted_events;
+    bool               check_overflow;
 
     Event* createEvent();
 };
-
 
 } // namespace CoreTestMemPoolTest
 } // namespace SST

@@ -27,6 +27,7 @@ REENABLE_WARNING
 #include "sst/core/config.h"
 #include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
+#include "sst/core/exit.h"
 #include "sst/core/factory.h"
 #include "sst/core/iouse.h"
 #include "sst/core/link.h"
@@ -1054,17 +1055,6 @@ main(int argc, char* argv[])
         g_output.output("\n");
     }
 
-    // #ifdef USE_MEMPOOL
-    //     if ( cfg.event_dump_file() != "" ) {
-    //         Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
-    //         if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" )
-    //             out.setOutputLocation(Output::STDOUT);
-    //         if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" )
-    //             out.setOutputLocation(Output::STDERR);
-    //         Activity::printUndeletedActivities("", out, MAX_SIMTIME_T);
-    //     }
-    // #endif
-
 #ifdef SST_CONFIG_HAVE_MPI
     if ( 0 == myRank.rank ) {
 #endif
@@ -1074,6 +1064,30 @@ main(int argc, char* argv[])
 #ifdef SST_CONFIG_HAVE_MPI
     }
 #endif
+
+    if ( cfg.event_dump_file() != "" ) {
+        bool   print_header = false;
+        Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
+        if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" ) {
+            out.setOutputLocation(Output::STDOUT);
+            print_header = true;
+        }
+        if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" ) {
+            out.setOutputLocation(Output::STDERR);
+            print_header = true;
+        }
+        if ( print_header ) {
+#ifdef SST_CONFIG_HAVE_MPI
+            MPI_Barrier(MPI_COMM_WORLD);
+#endif
+            if ( 0 == myRank.rank ) { out.output("\nUndeleted Mempool Items:\n"); }
+#ifdef SST_CONFIG_HAVE_MPI
+            MPI_Barrier(MPI_COMM_WORLD);
+#endif
+        }
+        MemPoolAccessor::printUndeletedMemPoolItems("  ", out);
+    }
+
 
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Finalize();

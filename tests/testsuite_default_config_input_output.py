@@ -56,48 +56,34 @@ class testcase_Config_input_output(SSTTestCase):
     have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
 
     def test_python_io(self):
-        self.configio_test_template("python_io", "6 6", "py", False)
+        self.configio_test_template("python_io", "6 6", "py", False, "NONE")
 
     def test_python_io_comp(self):
-        self.configio_test_template("python_io_comp", "", "py", False, True)
+        self.configio_test_template("python_io_comp", "", "py", False, "NONE", True)
 
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_python_io_parallel(self):
-        self.configio_test_template("python_io_parallel", "6 6", "py", True)
+        self.configio_test_template("python_io_parallel", "6 6", "py", True, "MULTI")
 
     def test_json_io(self):
-        self.configio_test_template("json_io", "6 6", "json", False)
+        self.configio_test_template("json_io", "6 6", "json", False, "NONE")
 
     def test_json_io_comp(self):
-        self.configio_test_template("json_io_comp", "", "json", False, True)
+        self.configio_test_template("json_io_comp", "", "json", False, "NONE", True)
 
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_json_io_parallel(self):
-        self.configio_test_template("json_io_parallel", "6 6", "json", True)
+        self.configio_test_template("json_io_parallel", "6 6", "json", True, "MULTI")
 
 
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_python_single_parallel_load(self):
-        testsuitedir = self.get_testsuite_dir()
-        outdir = test_output_get_run_dir()
+        self.configio_test_template("python_single_parallel_load", "6 6", "py", False, "SINGLE")
 
-        output_config = "{0}/test_configio_python_single_parallel_load.py".format(outdir)
-
-        sdlfile = "{0}/test_ParallelLoad.py".format(testsuitedir)
-
-        outfile_ref = "{0}/test_configio_ref_single_paralell_load.out".format(outdir)
-        outfile_check = "{0}/test_configio_check_single_parallel_load.out".format(outdir)
-
-        self.run_sst(sdlfile, outfile_ref)
-        self.run_sst(sdlfile, outfile_check, other_args="--parallel-load=SINGLE")
-
-        # Perform the test
-        cmp_result = testing_compare_sorted_diff("check_single_parallel_load", outfile_ref, outfile_check)
-        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile_ref, outfile_check))
 
 #####
 
-    def configio_test_template(self, testtype, model_options, output_type, parallel_io, use_component_test=False):
+    def configio_test_template(self, testtype, model_options, output_type, parallel_io, load_mode, use_component_test=False):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
@@ -110,11 +96,11 @@ class testcase_Config_input_output(SSTTestCase):
 
         if ( parallel_io ):
             options_ref = "{0}={1} --parallel-output --model-options=\"{2}\"".format(out_flag,output_config,model_options);
-            options_check = "--parallel-load"
         else:
-            options_ref = "{0}={1} --model-options=\"{2}\"".format(out_flag,output_config,model_options);
-            options_check = ""
+            options_ref = "{0}={1} --output-partition --model-options=\"{2}\"".format(out_flag,output_config,model_options);
         
+        options_check = "--parallel-load={0}".format(load_mode)
+
         # Set the various file paths
         if use_component_test:
             sdlfile = "{0}/test_Component.py".format(testsuitedir)

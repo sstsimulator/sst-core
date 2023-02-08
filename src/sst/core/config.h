@@ -379,6 +379,7 @@ public:
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
+        ser& event_dump_file_;
 
         ser& print_env_;
         ser& enable_sig_handling_;

@@ -340,8 +340,10 @@ public:
         for ( auto& ch : arg_lower )
             ch = std::tolower(ch, loc);
 
-        if ( arg_lower == "none" )
+        if ( arg_lower == "none" ) {
             cfg.parallel_load_ = false;
+            return true;
+        }
         else
             cfg.parallel_load_ = true;
 
@@ -351,7 +353,7 @@ public:
             cfg.parallel_load_mode_multi_ = true;
         else {
             fprintf(
-                stderr, "Invalid option '%s' passed to --parallel-load.  Valid options are SINGLE and MULTI.\n",
+                stderr, "Invalid option '%s' passed to --parallel-load.  Valid options are NONE, SINGLE and MULTI.\n",
                 arg.c_str());
             return false;
         }

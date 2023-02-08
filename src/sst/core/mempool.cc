@@ -151,6 +151,8 @@ public:
         // overflow to see if there is data there we can take.  If all
         // that fails, then alloc a new arena.
 
+        numAlloc++;
+
         // Check freelist
         if ( !freelist.empty() ) {
             void* ret = freelist.back();
@@ -184,6 +186,7 @@ public:
     /** Return an element to the memory pool */
     inline void free(void* ptr)
     {
+        numFree++;
         // Goes in freelist if we aren't at max capacity.  Otherwise
         // goes in overflow.
         if ( freelist.size() >= max_freelist_size ) {
@@ -212,13 +215,14 @@ public:
     int64_t getNumFreedEntries() { return numFree; }
 
     /** Counter:  Number of times elements have been allocated */
-    std::atomic<uint64_t> numAlloc;
+    uint64_t numAlloc;
     /** Counter:  Number times elements have been freed */
-    std::atomic<uint64_t> numFree;
+    uint64_t numFree;
 
     size_t getArenaSize() const { return arenaSize; }
     size_t getNumArenas() const { return arenas.size(); }
     size_t getElementSize() const { return elemSize; }
+    size_t getAllocSize() const { return allocSize; }
 
     const std::list<uint8_t*>& getArenas() { return arenas; }
 
@@ -229,7 +233,7 @@ private:
     {
         uint8_t* newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) { return false; }
-        std::memset(newPool, 0xFF, arenaSize);
+        std::memset(newPool, 0, arenaSize);
         arenas.push_back(newPool);
         size_t nelem = arenaSize / allocSize;
         for ( size_t i = 0; i < nelem; i++ ) {
@@ -356,6 +360,29 @@ MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
     active_entries = alloced - freed;
 }
 
+void
+MemPoolAccessor::printUndeletedMemPoolItems(const std::string& header, Output& out)
+{
+    for ( auto&& pool_group : memPoolThreadVector ) {
+        for ( auto&& entry : pool_group ) {
+            const std::list<uint8_t*>& arenas    = entry.pool->getArenas();
+            size_t                     arenaSize = entry.pool->getArenaSize();
+            size_t                     allocSize = entry.pool->getAllocSize();
+            size_t                     nelem     = arenaSize / allocSize;
+            for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
+                for ( size_t j = 0; j < nelem; j++ ) {
+                    uint64_t* ptr = (uint64_t*)((*iter) + (allocSize * j));
+                    if ( *ptr != 0 ) {
+                        MemPoolItem* act = (MemPoolItem*)(ptr + 1);
+                        act->print(header, out);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 void*
 MemPoolItem::operator new(std::size_t size) noexcept
 {
@@ -431,6 +458,12 @@ MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
 {
     bytes          = 0;
     active_entries = 0;
+}
+
+void
+MemPoolAccessor::printUndeletedMemPoolItems(const std::string& UNUSED(header), Output& UNUSED(out))
+{
+    return;
 }
 
 
