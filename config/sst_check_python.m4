@@ -44,7 +44,7 @@ dnl Assume a consistent naming convention for pythonX and pythonX-config
   AC_PATH_PROGS([PYTHON_EXE], ["$PYTHON_NAME"], [""], ["$PYTHON_PREFIX/bin"])
  
 dnl Error if python version < 3.6
-  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.6], [PYTHON_VERSION3="yes"], [AC_MSG_ERROR([Python version must be >= 2.6])])
+  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.6], [PYTHON_VERSION3="yes"], [AC_MSG_ERROR([Python version must be >= 3.6])])
 
 dnl Python3.8+ doesn't link to lpython by default
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
