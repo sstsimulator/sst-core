@@ -142,7 +142,7 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
         fprintf(stderr, "**** CHECK: Has this library been registered with sst-core using the 'sst-register' utility?\n");
         fprintf(stderr, "**** CHECK: sst-info searches are case-sensitive\n");
         fprintf(stderr, "**** CHECK: Do not include the prefix or file extension when using the lib option.\n");
-        fprintf(stderr, "**** EXAMPLE: 'ssh-info -l PaintShop' to display model information from libPaintShop.so\n");
+        fprintf(stderr, "**** EXAMPLE: 'sst-info -l PaintShop' to display model information from libPaintShop.so\n");
         if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
     }
     else {
