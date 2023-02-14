@@ -32,12 +32,12 @@ AC_CACHE_SAVE
 LT_INIT([shared disable-static dlopen])
 
 dnl Work out the C++ standard which we are going to use
-AX_CXX_COMPILE_STDCXX_1Y
-AX_CXX_COMPILE_STDCXX_0X
+AX_CXX_COMPILE_STDCXX_17(noext)
 
-AS_IF([test "x$found_cxx1y" = "xyes"],
-        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
-        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
+CXXFLAGS="$CXXFLAGS -std=c++17"
+#AS_IF([test "x$found_cxx1y" = "xyes"],
+#        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
+#        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
 
 SST_CHECK_PICKY
 AS_IF([test "x$use_picky" = "xyes"],
@@ -184,12 +184,7 @@ printf "%38s : %s\n" "Linker" "$LD"
 printf "%38s : %s\n" "Preprocessor Options" "$CPPFLAGS"
 printf "%38s : %s\n" "C Compiler Options" "$CFLAGS"
 printf "%38s : %s\n" "C++ Compiler Options" "$CXXFLAGS"
-
-if test "x$found_cxx1y" = "xyes"; then
-printf "%38s : %s\n" "C++ Standard Compliance" "C++1Y/14"
-else
-printf "%38s : %s\n" "C++ Standard Compliance" "C++11"
-fi
+printf "%38s : %s\n" "C++ Standard Compliance" "C++17"
 
 printf "%38s : %s\n" "Linker Options" "$LDFLAGS"
 echo "-------------------------------------------------------"
