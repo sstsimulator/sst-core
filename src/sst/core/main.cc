@@ -1065,6 +1065,7 @@ main(int argc, char* argv[])
     }
 #endif
 
+#ifdef USE_MEMPOOL
     if ( cfg.event_dump_file() != "" ) {
         bool   print_header = false;
         Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
@@ -1087,7 +1088,7 @@ main(int argc, char* argv[])
         }
         MemPoolAccessor::printUndeletedMemPoolItems("  ", out);
     }
-
+#endif
 
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Finalize();

@@ -660,7 +660,7 @@ Config::Config(RankInfo rank_info) : Config()
 
     // Advanced Options - Debug
     runMode_ = Simulation::BOTH;
-#ifdef __SST_DEBUG_EVENT_TRACKING__
+#ifdef USE_MEMPOOL
     event_dump_file_ = "";
 #endif
     rank_seq_startup_ = false;
