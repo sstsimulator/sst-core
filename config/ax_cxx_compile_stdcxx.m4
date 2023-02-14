@@ -116,10 +116,6 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
             [eval $cachevar=no])
            CXX="$ac_save_CXX"])
         if eval test x\$$cachevar = xyes; then
-          CXX="$CXX $switch"
-          if test -n "$CXXCPP" ; then
-            CXXCPP="$CXXCPP $switch"
-          fi
           ac_success=yes
           break
         fi
