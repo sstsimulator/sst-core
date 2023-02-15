@@ -308,6 +308,9 @@ public:
     /**
        File to output list of events that remain undeleted at the end
        of the simulation.
+
+       If no mempools, just reutrn empty string.  This avoids a check
+    for mempools in main.cc
     */
     const std::string& event_dump_file() const { return event_dump_file_; }
 #endif
@@ -379,7 +382,9 @@ public:
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
+#ifdef USE_MEMPOOL
         ser& event_dump_file_;
+#endif
 
         ser& print_env_;
         ser& enable_sig_handling_;
@@ -459,7 +464,7 @@ private:
     // Advanced options - debug
     Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */
 #ifdef USE_MEMPOOL
-    std::string event_dump_file_; /*!< File to dump undeleted events to */
+    std::string event_dump_file_; /*!< File to dump undeleted events to  */
 #endif
     bool rank_seq_startup_; /*!< Run simulation initialization phases one rank at a time */
 
