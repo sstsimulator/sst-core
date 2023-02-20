@@ -5,7 +5,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
 
   sst_check_python_happy="yes"
 
-  PYTHON_CONFIG_EXE="NOTFOUND"
+  PYTHON_CONFIG_EXE="no"
   PYTHON_VERSION3="no"
 
 dnl check if user provided a specific python-config
@@ -14,44 +14,43 @@ dnl check if user provided a specific python-config
         [PYTHON_CONFIG_EXE=$with_python])])
 
 dnl search python3-config
-  AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
+  AS_IF([test $PYTHON_CONFIG_EXE = "no"],
     [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["NOTFOUND"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"])])])
 
 dnl search python-config
-  AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
+  AS_IF([test $PYTHON_CONFIG_EXE = "no"],
     [AS_IF([test -n "$with_python"], 
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["no"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["no"])])])
 
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [PYTHON_CPPFLAGS=`$PYTHON_CONFIG_EXE --includes`])
-  
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags`])
-        
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs`])
+dnl error if pythonX-config can't be found
 
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [PYTHON_PREFIX=`$PYTHON_CONFIG_EXE --prefix`])
+  AC_MSG_CHECKING([python-config exists])
+  AC_MSG_RESULT([$PYTHON_CONFIG_EXE])
+  AS_IF([test $PYTHON_CONFIG_EXE = "no"],
+        [AC_MSG_ERROR([Unable to locate Python configure utility, check that devel package is installed])])
+
+  PYTHON_CPPFLAGS=`$PYTHON_CONFIG_EXE --includes`
+  PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags`
+  PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs`
+  PYTHON_PREFIX=`$PYTHON_CONFIG_EXE --prefix`
   
 dnl Determine python version using the interpreter
 dnl Assume a consistent naming convention for pythonX and pythonX-config
   PYTHON_CONFIG_NAME=${PYTHON_CONFIG_EXE##*/}
   PYTHON_NAME=${PYTHON_CONFIG_NAME%%-*}
   AC_PATH_PROGS([PYTHON_EXE], ["$PYTHON_NAME"], [""], ["$PYTHON_PREFIX/bin"])
- 
+
+
 dnl Error if python version < 3.6
   AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.6], [PYTHON_VERSION3="yes"], [AC_MSG_ERROR([Python version must be >= 3.6])])
 
 dnl Python3.8+ doesn't link to lpython by default
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs --embed`], [])])
+  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs --embed`], [])
   
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-        [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags --embed`], [])])
+  AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags --embed`], [])
 
 dnl Figure out the name of the python library
   PYLIBX=`sed 's/.*python/python/g' <<< "$PYTHON_LIBS"`
