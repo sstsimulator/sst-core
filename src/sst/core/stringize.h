@@ -187,7 +187,7 @@ class Tokenizer
 {
 
     template <typename Func>
-    struct token_iter : public std::iterator<std::input_iterator_tag, std::string>
+    struct token_iter
     {
         Func&                       f;
         std::string::const_iterator first;
@@ -220,6 +220,12 @@ class Tokenizer
         bool               operator!=(token_iter other) const { return !(*this == other); }
         const std::string& operator*() const { return token; }
         const std::string& operator->() const { return token; }
+
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = std::string;
+        using pointer           = const std::string*;
+        using reference         = const std::string&;
+        using iterator_category = std::input_iterator_tag;
     };
 
     typedef token_iter<TokenizerFunc> iter;
