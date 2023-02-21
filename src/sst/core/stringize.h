@@ -221,10 +221,10 @@ class Tokenizer
         const std::string& operator*() const { return token; }
         const std::string& operator->() const { return token; }
 
-        using difference_type = std::string;
-        using value_type = std::string;
-        using pointer = const std::string*;
-        using reference = const std::string&;
+        using difference_type   = std::string;
+        using value_type        = std::string;
+        using pointer           = const std::string*;
+        using reference         = const std::string&;
         using iterator_category = std::input_iterator_tag;
     };
 
