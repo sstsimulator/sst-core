@@ -221,7 +221,7 @@ class Tokenizer
         const std::string& operator*() const { return token; }
         const std::string& operator->() const { return token; }
 
-        using difference_type   = std::string;
+        using difference_type   = std::ptrdiff_t;
         using value_type        = std::string;
         using pointer           = const std::string*;
         using reference         = const std::string&;
