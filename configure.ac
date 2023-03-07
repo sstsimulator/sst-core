@@ -31,6 +31,12 @@ AC_CACHE_SAVE
 
 LT_INIT([shared disable-static dlopen])
 
+AX_WITH_CURSES
+if test "x$ax_cv_ncursesw" != xyes && test "x$ax_cv_ncurses" != xyes; then
+    AC_MSG_ERROR([requires either NcursesW or Ncurses library])
+fi
+LDFLAGS="$LDFLAGS -lncurses"
+
 dnl Work out the C++ standard which we are going to use
 AX_CXX_COMPILE_STDCXX_1Y
 AX_CXX_COMPILE_STDCXX_0X
