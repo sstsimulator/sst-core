@@ -132,6 +132,9 @@ private:
     virtual bool getOutputRankDefault()         = 0;
 
     virtual std::string getDefaultFileName() { return ""; }
+
+    /** True if this StatOutput can handle StatisticGroups */
+    virtual bool acceptsGroups() const override { return true; }
 };
 
 

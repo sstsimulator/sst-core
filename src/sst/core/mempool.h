@@ -19,38 +19,6 @@ class Output;
 
 namespace Core {
 
-// Class to access stats/data about the mempools.  This is here to
-// limit exposure to the USE_MEMPOOL #define, which will only be in
-// core .cc files.
-class MemPoolAccessor
-{
-public:
-    // Gets the arena size for the specified pool size on the current
-    // thread.  If mempools aren't enabled, it will return 0.
-    static size_t getArenaSize(size_t size);
-
-    // Gets the number of arenas allocated for the specified pool size
-    // on the current thread.  If mempools aren't enabled, it will
-    // return 0.
-    static size_t getNumArenas(size_t size);
-
-    // Gets the total bytes used for the specified pool size on the
-    // current thread.  If mempools aren't enabled, it will return 0.
-    static uint64_t getBytesMemUsedBy(size_t size);
-
-    // Gets the total mempool usage for the rank.  Returns both the
-    // bytes and the number of active entries.  Bytes and entries are
-    // added to the value passed into the function.  If mempools
-    // aren't enabled, then nothing will be counted.
-    static void getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries);
-
-    // Initialize the global mempool data structures
-    static void initializeGlobalData(int num_threads);
-
-    // Initialize the per thread mempool ata structures
-    static void initializeLocalData(int thread);
-};
-
 // Base class for those classes that will use mempools.  Mempools are
 // designed to be used primarily with Activities/Events and small data
 // strcutures that are part of events.  Thus, MemPoolItem inherits

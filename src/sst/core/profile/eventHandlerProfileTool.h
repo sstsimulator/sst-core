@@ -32,7 +32,7 @@ public:
     SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(SST::Profile::EventHandlerProfileTool, SST::HandlerProfileToolAPI, Params&)
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "level", "Level at which to track profile (global, type, component, subcomponent)", "component" },
+        { "level", "Level at which to track profile (global, type, component, subcomponent)", "type" },
         { "track_ports",  "Controls whether to track by individual ports", "false" },
         { "profile_sends",  "Controls whether sends are profiled (due to location of profiling point in the code, turning on send profiling will incur relatively high overhead)", "false" },
         { "profile_receives",  "Controls whether receives are profiled", "true" },
@@ -40,7 +40,7 @@ public:
 
     enum class Profile_Level { Global, Type, Component, Subcomponent };
 
-    EventHandlerProfileTool(ProfileToolId_t id, const std::string& name, Params& params);
+    EventHandlerProfileTool(const std::string& name, Params& params);
 
     virtual void eventSent(uintptr_t UNUSED(key), Event* UNUSED(ev)) {}
 
@@ -82,7 +82,7 @@ public:
         "Profiler that will count calls to handler functions"
     )
 
-    EventHandlerProfileToolCount(ProfileToolId_t id, const std::string& name, Params& params);
+    EventHandlerProfileToolCount(const std::string& name, Params& params);
 
     virtual ~EventHandlerProfileToolCount() {}
 
@@ -114,7 +114,7 @@ class EventHandlerProfileToolTime : public EventHandlerProfileTool
     };
 
 public:
-    EventHandlerProfileToolTime(ProfileToolId_t id, const std::string& name, Params& params);
+    EventHandlerProfileToolTime(const std::string& name, Params& params);
 
     virtual ~EventHandlerProfileToolTime() {}
 

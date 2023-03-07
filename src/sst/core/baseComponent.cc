@@ -112,11 +112,10 @@ BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handle
     TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -136,11 +135,10 @@ BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handle
     TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -160,11 +158,10 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
 
     // Check to see if there is a profile tool installed
-    auto* tool = sim_->getProfileTool<Profile::ClockHandlerProfileTool>(SST_PROFILE_TOOL_CLOCK);
+    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
-    if ( tool != nullptr ) {
+    for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-
         // Add the receive profiler to the handler
         handler->addProfileTool(tool, mdata);
     }
@@ -303,8 +300,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp->setFunctor(handler);
 
             // Check to see if there is a profile tool installed
-            auto* tool = sim_->getProfileTool<Profile::EventHandlerProfileTool>(SST_PROFILE_TOOL_EVENT);
-            if ( tool != nullptr ) {
+            auto tools = sim_->getProfileTool<Profile::EventHandlerProfileTool>("event");
+            for ( auto& tool : tools ) {
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
 
                 // Add the receive profiler to the handler
@@ -576,6 +573,12 @@ BaseComponent::loadModule(const std::string& type, Params& params)
     return Factory::getFactory()->CreateModule(type, params);
 }
 
+StatisticProcessingEngine*
+BaseComponent::getStatEngine()
+{
+    return &sim_->stat_engine;
+}
+
 void
 BaseComponent::vfatal(
     uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
@@ -589,19 +592,15 @@ BaseComponent::vfatal(
     std::string    type_tree = my_info->getType();
     ComponentInfo* parent    = my_info->parent_info;
     while ( parent != nullptr ) {
-        type_tree = parent->type + "/" + type_tree;
+        type_tree = parent->type + "." + type_tree;
         parent    = parent->parent_info;
     }
 
-    std::string new_format;
+    std::string prologue = format_string(
+        "Element name: %s,  type: %s (full type tree: %s)", name.c_str(), type.c_str(), type_tree.c_str());
 
-    new_format = format_string(
-        "\nElement name: %s,  type: %s (full type tree: %s)\n%s", name.c_str(), type.c_str(), type_tree.c_str(),
-        format);
-
-    std::string buf;
-    buf = format_string(new_format.c_str(), arg);
-    abort.fatal(line, file, func, exit_code, "%s", buf.c_str());
+    std::string msg = vformat_string(format, arg);
+    abort.fatal(line, file, func, exit_code, "\n%s\n%s\n", prologue.c_str(), msg.c_str());
 }
 
 void
@@ -714,7 +713,7 @@ BaseComponent::createStatistic(
     Params& cpp_params, const Params& python_params, const std::string& name, const std::string& subId,
     bool check_load_level, StatCreateFunction fxn)
 {
-    auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+    auto* engine = getStatEngine();
 
     if ( check_load_level ) {
         uint8_t my_load_level = getStatisticLoadLevel();
@@ -837,6 +836,12 @@ void
 BaseComponent::performGlobalStatisticOutput()
 {
     sim_->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
+}
+
+std::vector<Profile::ComponentProfileTool*>
+BaseComponent::getComponentProfileTools(const std::string& point)
+{
+    return sim_->getProfileTool<Profile::ComponentProfileTool>(point);
 }
 
 } // namespace SST

@@ -386,6 +386,48 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     return nullptr;
 }
 
+bool
+Factory::isProfilePointValid(const std::string& type, const std::string& point)
+{
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(type);
+    // ensure library is already loaded...
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
+
+    const std::vector<ElementInfoProfilePoint>* pointNames = nullptr;
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    auto*             lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    std::stringstream err;
+    if ( lib ) {
+        auto* compInfo = lib->getInfo(elem);
+        if ( compInfo ) { pointNames = &compInfo->getProfilePoints(); }
+    }
+    if ( nullptr == pointNames ) {
+        auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+        if ( lib ) {
+            auto* subcompInfo = lib->getInfo(elem);
+            if ( subcompInfo ) { pointNames = &subcompInfo->getProfilePoints(); }
+        }
+    }
+
+    std::string tmp = elemlib + "." + elem;
+
+    if ( pointNames == nullptr ) {
+        out.fatal(
+            CALL_INFO, 1, "can't find requested component or subcomponent '%s' when searching for profile point\n ",
+            tmp.c_str());
+        return false;
+    }
+
+    for ( auto p : *pointNames ) {
+        if ( p.name == point ) return true;
+    }
+    return false;
+}
+
+
 Module*
 Factory::CreateModule(const std::string& type, Params& params)
 {

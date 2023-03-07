@@ -36,7 +36,7 @@ public:
     )
     // enum class Profile_Level { Global, Type, Component, Subcomponent };
 
-    SyncProfileTool(ProfileToolId_t id, const std::string& name, Params& params);
+    SyncProfileTool(const std::string& name, Params& params);
 
     virtual void syncManagerStart() {}
     virtual void syncManagerEnd() {}
@@ -60,7 +60,7 @@ public:
         "Profiler that will count calls to sync"
     )
 
-    SyncProfileToolCount(ProfileToolId_t id, const std::string& name, Params& params);
+    SyncProfileToolCount(const std::string& name, Params& params);
 
     virtual ~SyncProfileToolCount() {}
 
@@ -80,7 +80,7 @@ template <typename T>
 class SyncProfileToolTime : public SyncProfileTool
 {
 public:
-    SyncProfileToolTime(ProfileToolId_t id, const std::string& name, Params& params);
+    SyncProfileToolTime(const std::string& name, Params& params);
 
     virtual ~SyncProfileToolTime() {}
 

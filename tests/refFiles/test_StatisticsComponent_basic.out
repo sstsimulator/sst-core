@@ -52,6 +52,42 @@ REGISTER CLOCK #1 at 1 ns
 WARNING: Building component "StatObjComp1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1065, m_w = 1459
 REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj0" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1066, m_w = 1460
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj1" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1067, m_w = 1461
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj2" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1068, m_w = 1462
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj3" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1069, m_w = 1463
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj4" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1070, m_w = 1464
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj5" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1071, m_w = 1466
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj6" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1072, m_w = 1466
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj7" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1073, m_w = 1467
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj8" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1074, m_w = 1468
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj9" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1075, m_w = 1469
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj10" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1076, m_w = 1470
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj11" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1077, m_w = 1471
+REGISTER CLOCK #1 at 1 ns
  StatBasic0.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1034; SumSQ.u32 = 343326; Count.u64 = 5; Min.u32 = 2; Max.u32 = 376; 
  StatBasic4.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1115; SumSQ.u32 = 302501; Count.u64 = 5; Min.u32 = 112; Max.u32 = 358; 
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 6000; Sum.u32 = 1290; SumSQ.u32 = 344048; Count.u64 = 6; Min.u32 = 19; Max.u32 = 361; 
@@ -100,6 +136,12 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic5.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 3752; SumSQ.u32 = 1067916; Count.u64 = 18; Min.u32 = 3; Max.u32 = 418; 
  StatBasic7.stat1_U32.1 : Accumulator : SimTime = 18000; Sum.u32 = 3393; SumSQ.u32 = 1033865; Count.u64 = 18; Min.u32 = 11; Max.u32 = 414; 
  StatBasic7.stat3_I32.3 : Accumulator : SimTime = 18000; Sum.i32 = -473; SumSQ.i32 = 198009; Count.u64 = 18; Min.i32 = -197; Max.i32 = 207; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 19000; Sum.u32 = 3805; SumSQ.u32 = 1069949; Count.u64 = 19; Min.u32 = 3; Max.u32 = 407; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 19000; Sum.u64 = 122174; SumSQ.u64 = 1276700308; Count.u64 = 19; Min.u64 = 99; Max.u64 = 18182; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 19000; Sum.u32 = 4856; SumSQ.u32 = 1456294; Count.u64 = 19; Min.u32 = 15; Max.u32 = 404; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 19000; Sum.u64 = 207366; SumSQ.u64 = 2792580128; Count.u64 = 19; Min.u64 = 1212; Max.u64 = 17994; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 19000; Sum.u32 = 4266; SumSQ.u32 = 1211888; Count.u64 = 19; Min.u32 = 91; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 19000; Sum.u64 = 190191; SumSQ.u64 = 2409149651; Count.u64 = 19; Min.u64 = 1287; Max.u64 = 17624; 
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 2848; SumSQ.u32 = 683816; Count.u64 = 20; Min.u32 = 22; Max.u32 = 399; 
  StatBasic2.stat3_I32.3 : Accumulator : SimTime = 20000; Sum.i32 = 86; SumSQ.i32 = 159900; Count.u64 = 20; Min.i32 = -147; Max.i32 = 208; 
  StatBasic6.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 3786; SumSQ.u32 = 886820; Count.u64 = 20; Min.u32 = 12; Max.u32 = 360; 
@@ -179,6 +221,12 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic3.stat4_I64.4 : Accumulator : SimTime = 38000; Sum.i64 = 20400; SumSQ.i64 = 322663646; Count.u64 = 13; Min.i64 = -6626; Max.i64 = 9048; 
  StatBasic7.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 140016; SumSQ.u64 = 1785120822; Count.u64 = 13; Min.u64 = 2101; Max.u64 = 17962; 
  StatBasic7.stat4_I64.4 : Accumulator : SimTime = 38000; Sum.i64 = 9505; SumSQ.i64 = 470879403; Count.u64 = 13; Min.i64 = -8221; Max.i64 = 8226; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 38000; Sum.u32 = 9411; SumSQ.u32 = 2907641; Count.u64 = 38; Min.u32 = 3; Max.u32 = 423; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 205896; SumSQ.u64 = 2858719286; Count.u64 = 19; Min.u64 = 1323; Max.u64 = 17937; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 38000; Sum.u32 = 8588; SumSQ.u32 = 2505610; Count.u64 = 38; Min.u32 = 0; Max.u32 = 426; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 195112; SumSQ.u64 = 2473277070; Count.u64 = 19; Min.u64 = 280; Max.u64 = 17138; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 38000; Sum.u32 = 8463; SumSQ.u32 = 2382347; Count.u64 = 38; Min.u32 = 44; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 191216; SumSQ.u64 = 2336711130; Count.u64 = 19; Min.u64 = 1109; Max.u64 = 16934; 
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7233; SumSQ.u32 = 1849743; Count.u64 = 40; Min.u32 = 22; Max.u32 = 399; 
  StatBasic2.stat3_I32.3 : Accumulator : SimTime = 40000; Sum.i32 = 378; SumSQ.i32 = 420788; Count.u64 = 40; Min.i32 = -211; Max.i32 = 209; 
  StatBasic6.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7897; SumSQ.u32 = 1984671; Count.u64 = 40; Min.u32 = 12; Max.u32 = 424; 
@@ -268,6 +316,12 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic4.stat3_I32.3 : Accumulator : SimTime = 56000; Sum.i32 = 264; SumSQ.i32 = 463384; Count.u64 = 31; Min.i32 = -209; Max.i32 = 200; 
  StatBasic1.stat3_I32.3 : Accumulator : SimTime = 57000; Sum.i32 = -1423; SumSQ.i32 = 569767; Count.u64 = 32; Min.i32 = -212; Max.i32 = 154; 
  StatBasic5.stat3_I32.3 : Accumulator : SimTime = 57000; Sum.i32 = 103; SumSQ.i32 = 540565; Count.u64 = 32; Min.i32 = -197; Max.i32 = 211; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 57000; Sum.u32 = 13830; SumSQ.u32 = 4157500; Count.u64 = 57; Min.u32 = 3; Max.u32 = 423; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 57000; Sum.u64 = 153382; SumSQ.u64 = 1896730370; Count.u64 = 19; Min.u64 = 866; Max.u64 = 17013; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 57000; Sum.u32 = 13341; SumSQ.u32 = 4046481; Count.u64 = 57; Min.u32 = 0; Max.u32 = 426; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 57000; Sum.u64 = 197530; SumSQ.u64 = 2524066270; Count.u64 = 19; Min.u64 = 208; Max.u64 = 17997; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 57000; Sum.u32 = 12412; SumSQ.u32 = 3420672; Count.u64 = 57; Min.u32 = 16; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 57000; Sum.u64 = 154508; SumSQ.u64 = 1696302518; Count.u64 = 19; Min.u64 = 35; Max.u64 = 16226; 
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13595; SumSQ.u32 = 4125183; Count.u64 = 60; Min.u32 = 3; Max.u32 = 426; 
  StatBasic5.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13196; SumSQ.u32 = 3841648; Count.u64 = 60; Min.u32 = 3; Max.u32 = 427; 
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13171; SumSQ.u32 = 3850275; Count.u64 = 60; Min.u32 = 5; Max.u32 = 411; 
@@ -339,6 +393,12 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic10.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 14038; SumSQ.u32 = 3794754; Count.u64 = 75; Min.u32 = 10; Max.u32 = 426; 
  StatBasic0.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 15829; SumSQ.u32 = 4562285; Count.u64 = 75; Min.u32 = 2; Max.u32 = 429; 
  StatBasic4.stat1_U32.1 : Accumulator : SimTime = 75000; Sum.u32 = 15691; SumSQ.u32 = 4496853; Count.u64 = 75; Min.u32 = 0; Max.u32 = 423; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 76000; Sum.u32 = 17386; SumSQ.u32 = 5109284; Count.u64 = 76; Min.u32 = 0; Max.u32 = 423; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 76000; Sum.u64 = 220346; SumSQ.u64 = 3019548810; Count.u64 = 19; Min.u64 = 951; Max.u64 = 18422; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 76000; Sum.u32 = 17813; SumSQ.u32 = 5372969; Count.u64 = 76; Min.u32 = 0; Max.u32 = 426; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 76000; Sum.u64 = 194956; SumSQ.u64 = 2416968914; Count.u64 = 19; Min.u64 = 1570; Max.u64 = 17528; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 76000; Sum.u32 = 16245; SumSQ.u32 = 4518935; Count.u64 = 76; Min.u32 = 0; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 76000; Sum.u64 = 169570; SumSQ.u64 = 1994156824; Count.u64 = 19; Min.u64 = 347; Max.u64 = 16482; 
  StatBasic1.stat2_U64.2 : Accumulator : SimTime = 77000; Sum.u64 = 92153; SumSQ.u64 = 1026593329; Count.u64 = 11; Min.u64 = 519; Max.u64 = 15783; 
  StatBasic5.stat2_U64.2 : Accumulator : SimTime = 77000; Sum.u64 = 89037; SumSQ.u64 = 982468099; Count.u64 = 11; Min.u64 = 123; Max.u64 = 16173; 
  StatBasic0.stat3_I32.3 : Accumulator : SimTime = 77000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
@@ -403,6 +463,12 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic4.stat1_U32.1 : Accumulator : SimTime = 90000; Sum.u32 = 19022; SumSQ.u32 = 5445274; Count.u64 = 90; Min.u32 = 0; Max.u32 = 423; 
  StatBasic0.stat3_I32.3 : Accumulator : SimTime = 91000; Sum.i32 = -505; SumSQ.i32 = 495963; Count.u64 = 35; Min.i32 = -190; Max.i32 = 206; 
  StatBasic4.stat3_I32.3 : Accumulator : SimTime = 91000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 21721; SumSQ.u32 = 6434385; Count.u64 = 95; Min.u32 = 0; Max.u32 = 429; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 95000; Sum.u64 = 161752; SumSQ.u64 = 1807577038; Count.u64 = 19; Min.u64 = 106; Max.u64 = 18137; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 22305; SumSQ.u32 = 6738369; Count.u64 = 95; Min.u32 = 0; Max.u32 = 426; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 95000; Sum.u64 = 184749; SumSQ.u64 = 2283018507; Count.u64 = 19; Min.u64 = 1753; Max.u64 = 18437; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 19679; SumSQ.u32 = 5365661; Count.u64 = 95; Min.u32 = 0; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 95000; Sum.u64 = 170852; SumSQ.u64 = 2095576448; Count.u64 = 19; Min.u64 = 234; Max.u64 = 17734; 
  StatBasic0.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 20679; SumSQ.u32 = 5998209; Count.u64 = 95; Min.u32 = 2; Max.u32 = 429; 
  StatBasic4.stat1_U32.1 : Accumulator : SimTime = 95000; Sum.u32 = 20110; SumSQ.u32 = 5738016; Count.u64 = 95; Min.u32 = 0; Max.u32 = 423; 
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 21605; SumSQ.u32 = 6545649; Count.u64 = 96; Min.u32 = 3; Max.u32 = 426; 
@@ -497,4 +563,10 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic9.stat3_I32.3 : Accumulator : SimTime = 101000; Sum.i32 = 498; SumSQ.i32 = 1601514; Count.u64 = 101; Min.i32 = -213; Max.i32 = 209; 
  StatBasic9.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = -39836; SumSQ.i64 = 2681612260; Count.u64 = 101; Min.i64 = -9019; Max.i64 = 8738; 
  StatBasic10.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 20294; SumSQ.u32 = 5678008; Count.u64 = 101; Min.u32 = 4; Max.u32 = 426; 
+ StatGroupObj0.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 22876; SumSQ.u32 = 6748468; Count.u64 = 101; Min.u32 = 0; Max.u32 = 429; 
+ StatGroupObj0.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 75632; SumSQ.u64 = 1056167224; Count.u64 = 6; Min.u64 = 6592; Max.u64 = 18036; 
+ StatGroupObj1.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 23570; SumSQ.u32 = 7118448; Count.u64 = 101; Min.u32 = 0; Max.u32 = 426; 
+ StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 75047; SumSQ.u64 = 1174509607; Count.u64 = 6; Min.u64 = 16; Max.u64 = 17412; 
+ StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 21291; SumSQ.u32 = 5872115; Count.u64 = 101; Min.u32 = 0; Max.u32 = 429; 
+ StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 56017; SumSQ.u64 = 672000411; Count.u64 = 6; Min.u64 = 2341; Max.u64 = 16223; 
 Simulation is complete, simulated time: 101 ns

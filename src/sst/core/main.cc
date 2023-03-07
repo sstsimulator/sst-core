@@ -27,10 +27,12 @@ REENABLE_WARNING
 #include "sst/core/config.h"
 #include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
+#include "sst/core/exit.h"
 #include "sst/core/factory.h"
 #include "sst/core/iouse.h"
 #include "sst/core/link.h"
 #include "sst/core/mempool.h"
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/memuse.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
@@ -205,6 +207,37 @@ do_graph_wireup(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& m
     sim->performWireUp(*graph, myRank, min_part);
 }
 
+// Functions to do shared (static) initialization and notificaion for
+// stats engines.  Right now, the StatGroups are per MPI rank and
+// everything else in StatEngine is per partition.
+static void
+do_statengine_static_initialization(ConfigGraph* graph, const RankInfo& myRank)
+{
+    if ( myRank.thread != 0 ) return;
+    StatisticProcessingEngine::static_setup(graph);
+}
+
+static void
+do_statoutput_start_simulation(const RankInfo& myRank)
+{
+    if ( myRank.thread != 0 ) return;
+    StatisticProcessingEngine::stat_outputs_simulation_start();
+}
+
+static void
+do_statoutput_end_simulation(const RankInfo& myRank)
+{
+    if ( myRank.thread != 0 ) return;
+    StatisticProcessingEngine::stat_outputs_simulation_end();
+}
+
+// Function to initialize the StatEngines in each partition (Simulation_impl object)
+static void
+do_statengine_initialization(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& UNUSED(myRank))
+{
+    sim->initializeStatisticEngine(*graph);
+}
+
 static void
 do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank, SimTime_t min_part)
 {
@@ -295,12 +328,6 @@ typedef struct
 
 } SimThreadInfo_t;
 
-void
-finalize_statEngineConfig(void)
-{
-    StatisticProcessingEngine::getInstance()->finalizeInitialization();
-}
-
 static void
 start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier)
 {
@@ -327,23 +354,23 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     barrier.wait();
 
-    // Perform the wireup.  Do this one thread at a time for now.  If
-    // this ever changes, then need to put in some serialization into
-    // performWireUp.
-    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
-        barrier.wait();
-    }
+    // Perform the wireup.
+    if ( tid == 0 ) { do_statengine_static_initialization(info.graph, info.myRank); }
+    barrier.wait();
 
-    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) { do_graph_wireup(info.graph, sim, info.myRank, info.min_part); }
-        barrier.wait();
-    }
+    do_statengine_initialization(info.graph, sim, info.myRank);
+    barrier.wait();
 
-    if ( tid == 0 ) {
-        finalize_statEngineConfig();
-        delete info.graph;
-    }
+    // Prepare the links, which creates the ComponentInfo objects and
+    // Link and puts the links in the LinkMap for each ComponentInfo.
+    do_link_preparation(info.graph, sim, info.myRank, info.min_part);
+    barrier.wait();
+
+    // Create all the simulation components
+    do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
+    barrier.wait();
+
+    if ( tid == 0 ) { delete info.graph; }
 
     force_rank_sequential_stop(info.config->rank_seq_startup(), info.myRank, info.world_size);
 
@@ -425,14 +452,29 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->setup();
         barrier.wait();
 
+        /* Finalize all the stat outputs */
+        do_statoutput_start_simulation(info.myRank);
+        barrier.wait();
+
         /* Run Simulation */
         sim->run();
+        barrier.wait();
+
+        /* Adjust clocks at simulation end to
+         * reflect actual simulation end if that
+         * differs from detected simulation end
+         */
+        sim->adjustTimeAtSimEnd();
         barrier.wait();
 
         sim->complete();
         barrier.wait();
 
         sim->finish();
+        barrier.wait();
+
+        /* Tell stat outputs simulation is done */
+        do_statoutput_end_simulation(info.myRank);
         barrier.wait();
     }
 
@@ -859,11 +901,6 @@ main(int argc, char* argv[])
     if ( cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
 
 
-    ///// Set up StatisticEngine /////
-    SST::Statistics::StatisticProcessingEngine::init(graph);
-
-    ///// End Set up StatisticEngine /////
-
     ////// Create Simulation //////
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
@@ -871,7 +908,7 @@ main(int argc, char* argv[])
     Simulation_impl::sim_output = g_output;
     Simulation_impl::resizeBarriers(world_size.thread);
 #ifdef USE_MEMPOOL
-    MemPoolAccessor::initializeGlobalData(world_size.thread);
+    MemPoolAccessor::initializeGlobalData(world_size.thread, cfg.cache_align_mempools());
 #endif
 
     std::vector<std::thread>     threads(world_size.thread);
@@ -1018,17 +1055,6 @@ main(int argc, char* argv[])
         g_output.output("\n");
     }
 
-    // #ifdef USE_MEMPOOL
-    //     if ( cfg.event_dump_file() != "" ) {
-    //         Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
-    //         if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" )
-    //             out.setOutputLocation(Output::STDOUT);
-    //         if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" )
-    //             out.setOutputLocation(Output::STDERR);
-    //         Activity::printUndeletedActivities("", out, MAX_SIMTIME_T);
-    //     }
-    // #endif
-
 #ifdef SST_CONFIG_HAVE_MPI
     if ( 0 == myRank.rank ) {
 #endif
@@ -1036,6 +1062,31 @@ main(int argc, char* argv[])
         g_output.output(
             "Simulation is complete, simulated time: %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
 #ifdef SST_CONFIG_HAVE_MPI
+    }
+#endif
+
+#ifdef USE_MEMPOOL
+    if ( cfg.event_dump_file() != "" ) {
+        bool   print_header = false;
+        Output out("", 0, 0, Output::FILE, cfg.event_dump_file());
+        if ( cfg.event_dump_file() == "STDOUT" || cfg.event_dump_file() == "stdout" ) {
+            out.setOutputLocation(Output::STDOUT);
+            print_header = true;
+        }
+        if ( cfg.event_dump_file() == "STDERR" || cfg.event_dump_file() == "stderr" ) {
+            out.setOutputLocation(Output::STDERR);
+            print_header = true;
+        }
+        if ( print_header ) {
+#ifdef SST_CONFIG_HAVE_MPI
+            MPI_Barrier(MPI_COMM_WORLD);
+#endif
+            if ( 0 == myRank.rank ) { out.output("\nUndeleted Mempool Items:\n"); }
+#ifdef SST_CONFIG_HAVE_MPI
+            MPI_Barrier(MPI_COMM_WORLD);
+#endif
+        }
+        MemPoolAccessor::printUndeletedMemPoolItems("  ", out);
     }
 #endif
 

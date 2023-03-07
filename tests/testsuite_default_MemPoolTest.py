@@ -56,6 +56,9 @@ class testcase_StatisticComponent(SSTTestCase):
     def test_MemPool_overflow(self):
         self.Statistics_test_template("overflow", 4) # force 4 threads
 
+    def test_MemPool_undeleted_items(self):
+        self.Statistics_test_template("undeleted_items") # force 4 threads
+
 #####
 
     def Statistics_test_template(self, testtype, num_threads = None):

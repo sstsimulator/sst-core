@@ -22,13 +22,9 @@ namespace SST {
 namespace Profile {
 
 
-SyncProfileTool::SyncProfileTool(ProfileToolId_t id, const std::string& name, Params& UNUSED(params)) :
-    ProfileTool(id, name)
-{}
+SyncProfileTool::SyncProfileTool(const std::string& name, Params& UNUSED(params)) : ProfileTool(name) {}
 
-SyncProfileToolCount::SyncProfileToolCount(ProfileToolId_t id, const std::string& name, Params& params) :
-    SyncProfileTool(id, name, params)
-{}
+SyncProfileToolCount::SyncProfileToolCount(const std::string& name, Params& params) : SyncProfileTool(name, params) {}
 
 void
 SyncProfileToolCount::syncManagerStart()
@@ -40,21 +36,20 @@ SyncProfileToolCount::syncManagerStart()
 void
 SyncProfileToolCount::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "  SyncManager Count = %" PRIu64 "\n", syncmanager_count);
 }
 
 
 template <typename T>
-SyncProfileToolTime<T>::SyncProfileToolTime(ProfileToolId_t id, const std::string& name, Params& params) :
-    SyncProfileTool(id, name, params)
+SyncProfileToolTime<T>::SyncProfileToolTime(const std::string& name, Params& params) : SyncProfileTool(name, params)
 {}
 
 template <typename T>
 void
 SyncProfileToolTime<T>::outputData(FILE* fp)
 {
-    fprintf(fp, "%s (id = %" PRIu64 ")\n", name.c_str(), my_id);
+    fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "  SyncManager Count = %" PRIu64 "\n", syncmanager_count);
     fprintf(fp, "  Total SyncManager Time = %lfs\n", (float)syncmanager_time / 1000000000.0);
     fprintf(fp, "  Average SyncManager Time = %" PRIu64 "ns\n", syncmanager_time / syncmanager_count);
@@ -73,8 +68,8 @@ public:
         "Profiler that will time handlers using a high resolution clock"
     )
 
-    SyncProfileToolTimeHighResolution(ProfileToolId_t id, const std::string& name, Params& params) :
-        SyncProfileToolTime<std::chrono::high_resolution_clock>(id, name, params)
+    SyncProfileToolTimeHighResolution(const std::string& name, Params& params) :
+        SyncProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
     ~SyncProfileToolTimeHighResolution() {}
@@ -94,8 +89,8 @@ public:
         "Profiler that will time handlers using a steady clock"
     )
 
-    SyncProfileToolTimeSteady(ProfileToolId_t id, const std::string& name, Params& params) :
-        SyncProfileToolTime<std::chrono::steady_clock>(id, name, params)
+    SyncProfileToolTimeSteady(const std::string& name, Params& params) :
+        SyncProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
     ~SyncProfileToolTimeSteady() {}

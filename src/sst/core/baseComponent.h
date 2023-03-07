@@ -16,7 +16,9 @@
 #include "sst/core/componentInfo.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
+#include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
+#include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
@@ -310,9 +312,22 @@ protected:
 
     /** Reactivates an existing Clock and Handler
      * @return time of next time clock handler will fire
+     *
+     * Note: If called after the simulation run loop (e.g., in finish() or complete()),
+     * will return the next time of the clock past when the simulation ended. There can
+     * be a small lag between simulation end and detection of simulation end during which
+     * clocks can run a few extra cycles. As a result, the return value just prior to
+     * simulation end may be greater than the value returned after simulation end.
      */
     Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
-    /** Returns the next Cycle that the TimeConverter would fire */
+
+    /** Returns the next Cycle that the TimeConverter would fire
+        If called prior to the simulation run loop, next Cycle is 0.
+        If called after the simulation run loop completes (e.g., during
+        complete() or finish()), next  Cycle is one past the end time of
+        the simulation. See Note in reregisterClock() for additional guidance
+        when calling this function after simulation ends.
+     */
     Cycle_t getNextClockCycle(TimeConverter* freq);
 
     /** Registers a default time base for the component and optionally
@@ -341,6 +356,7 @@ protected:
         }
     }
 
+private:
     template <typename T>
     Statistics::Statistic<T>*
     createStatistic(SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
@@ -381,29 +397,13 @@ protected:
     Statistics::Statistic<T>*
     createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId = "")
     {
-        auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+        auto* engine = getStatEngine();
         return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
     }
 
-    /** Registers a statistic.
-        If Statistic is allowed to run (controlled by Python runtime parameters),
-        then a statistic will be created and returned. If not allowed to run,
-        then a NullStatistic will be returned.  In either case, the returned
-        value should be used for all future Statistic calls.  The type of
-        Statistic and the Collection Rate is set by Python runtime parameters.
-        If no type is defined, then an Accumulator Statistic will be provided
-        by default.  If rate set to 0 or not provided, then the statistic will
-        output results only at end of sim (if output is enabled).
-        @param statName Primary name of the statistic.  This name must match the
-               defined ElementInfoStatistic in the component, and must also
-               be enabled in the Python input file.
-        @param statSubId An additional sub name for the statistic
-        @return Either a created statistic of desired type or a NullStatistic
-                depending upon runtime settings.
-    */
     template <typename T>
-    Statistics::Statistic<T>* registerStatistic(
-        SST::Params& params, const std::string& statName, const std::string& statSubId = "", bool inserting = false)
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
         if ( my_info->enabledStatNames ) {
             auto iter = my_info->enabledStatNames->find(statName);
@@ -434,7 +434,7 @@ protected:
         else if ( my_info->parent_info && my_info->sharesStatistics() ) {
             // this is not a statistic that I registered
             // but my parent can share statistics, maybe they enabled
-            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
+            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId, false);
         }
         else {
             // not a valid stat and I won't be able to share my parent's statistic
@@ -445,11 +445,36 @@ protected:
         }
     }
 
+protected:
+    /** Registers a statistic.
+        If Statistic is allowed to run (controlled by Python runtime parameters),
+        then a statistic will be created and returned. If not allowed to run,
+        then a NullStatistic will be returned.  In either case, the returned
+        value should be used for all future Statistic calls.  The type of
+        Statistic and the Collection Rate is set by Python runtime parameters.
+        If no type is defined, then an Accumulator Statistic will be provided
+        by default.  If rate set to 0 or not provided, then the statistic will
+        output results only at end of sim (if output is enabled).
+        @param params Parameter set to be passed to the statistic constructor.
+        @param statName Primary name of the statistic.  This name must match the
+               defined ElementInfoStatistic in the component, and must also
+               be enabled in the Python input file.
+        @param statSubId An additional sub name for the statistic
+        @return Either a created statistic of desired type or a NullStatistic
+                depending upon runtime settings.
+    */
+    template <typename T>
+    Statistics::Statistic<T>*
+    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    {
+        return registerStatistic<T>(params, statName, statSubId, false);
+    }
+
     template <typename T>
     Statistics::Statistic<T>* registerStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty {};
-        return registerStatistic<T>(empty, statName, statSubId);
+        return registerStatistic<T>(empty, statName, statSubId, false);
     }
 
     template <typename... Args>
@@ -457,14 +482,14 @@ protected:
     registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty {};
-        return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId);
+        return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId, false);
     }
 
     template <typename... Args>
     Statistics::Statistic<std::tuple<Args...>>*
     registerMultiStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
-        return registerStatistic<std::tuple<Args...>>(params, statName, statSubId);
+        return registerStatistic<std::tuple<Args...>>(params, statName, statSubId, false);
     }
 
     template <typename T>
@@ -485,6 +510,32 @@ protected:
      * NOTE: Currently, this function will only output statistics that are on the same rank.
      */
     void performGlobalStatisticOutput();
+
+    /** Registers a profiling point.
+        This function will register a profiling point.
+        @param point Point to resgister
+        @return Either a pointer to a created T::ProfilePoint or nullptr if not enabled.
+    */
+    template <typename T>
+    typename T::ProfilePoint* registerProfilePoint(const std::string& pointName)
+    {
+        std::string full_point_name = getType() + "." + pointName;
+        auto        tools           = getComponentProfileTools(full_point_name);
+        if ( tools.size() == 0 ) return nullptr;
+
+        typename T::ProfilePoint* ret = new typename T::ProfilePoint();
+        for ( auto* x : tools ) {
+            T* tool = dynamic_cast<T*>(x);
+            if ( nullptr == tool ) {
+                //  Not the right type, fatal
+                fatal(
+                    CALL_INFO_LONG, 1, "ERROR: wrong type of profiling tool for profiling point %s)\n",
+                    pointName.c_str());
+            }
+            ret->registerProfilePoint(tool, pointName, getId(), getName(), getType());
+        }
+        return ret;
+    }
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
@@ -788,6 +839,9 @@ private:
     void
     vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const;
 
+    // Get the statengine from Simulation_impl
+    StatisticProcessingEngine* getStatEngine();
+
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
 
@@ -796,6 +850,7 @@ public:
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
+    friend class SST::Statistics::StatisticBase;
 
     bool isAnonymous() { return my_info->isAnonymous(); }
 
@@ -814,11 +869,13 @@ protected:
     Simulation* getSimulation() const;
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
+    bool    doesComponentInfoStatisticExist(const std::string& statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    uint8_t      getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
+
+    std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
 private:
     ComponentInfo*   my_info = nullptr;

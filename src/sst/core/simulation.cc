@@ -172,7 +172,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec.resize(num_ranks.thread);
     instanceVec[my_rank.thread] = instance;
-    instance->intializeDefaultProfileTools(config->enabledProfiling());
+    instance->intializeProfileTools(config->enabledProfiling());
     return instance;
 }
 
@@ -180,6 +180,8 @@ void
 Simulation_impl::shutdown()
 {
     instanceMap.clear();
+    // Done with sync object, delete it
+    delete Simulation_impl::m_exit;
 }
 
 Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
@@ -333,9 +335,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Check to see if the SyncManager profile tool is installed
-    auto* tool = getProfileTool<Profile::SyncProfileTool>(SST_PROFILE_TOOL_SYNC);
+    auto tools = getProfileTool<Profile::SyncProfileTool>("sync");
 
-    if ( tool != nullptr ) {
+    for ( auto& tool : tools ) {
         // Add the receive profiler to the handler
         syncManager->addProfileTool(tool);
     }
@@ -350,12 +352,20 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 }
 
 int
+Simulation_impl::initializeStatisticEngine(ConfigGraph& graph)
+{
+    stat_engine.setup(this, &graph);
+    return 0;
+}
+
+
+int
 Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
-    for ( ConfigComponentMap_t::iterator iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::const_iterator iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
             compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
@@ -365,7 +375,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
-    for ( ConfigLinkMap_t::iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
+    for ( ConfigLinkMap_t::const_iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
         rank[0] = graph.comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
@@ -426,22 +436,26 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             Link* link = new Link(clink->order);
             link->setLatency(clink->latency[local]);
-            if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
-                // The other side already initialized.  Hook them
-                // together as a pair.
-                Link* other_link      = cross_thread_links[clink->id];
-                link->pair_link       = other_link;
-                other_link->pair_link = link;
-                // Remove entry from map
-                cross_thread_links.erase(clink->id);
-            }
-            else {
-                // Nothing to do until the other side is created.
-                // Just add myself to the map so the other side can
-                // find me later.
-                cross_thread_links[clink->id] = link;
-            }
 
+            // Need to mutex to access cross_thread_links
+            {
+                std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(cross_thread_lock);
+                if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
+                    // The other side already initialized.  Hook them
+                    // together as a pair.
+                    Link* other_link      = cross_thread_links[clink->id];
+                    link->pair_link       = other_link;
+                    other_link->pair_link = link;
+                    // Remove entry from map
+                    cross_thread_links.erase(clink->id);
+                }
+                else {
+                    // Nothing to do until the other side is created.
+                    // Just add myself to the map so the other side can
+                    // find me later.
+                    cross_thread_links[clink->id] = link;
+                }
+            }
             ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
             if ( cinfo == nullptr ) { sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map."); }
             cinfo->getLinkMap()->insertLink(clink->port[local], link);
@@ -520,6 +534,10 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     */
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;
+
+    // Need to finalize stats engine configuration
+    stat_engine.finalizeInitialization();
+
     return 0;
 }
 
@@ -653,7 +671,7 @@ Simulation_impl::run()
     }
 
     // Tell the Statistics Engine that the simulation is beginning
-    if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
+    stat_engine.startOfSimulation();
 
     std::string header = std::to_string(my_rank.rank);
     header += ", ";
@@ -798,10 +816,18 @@ Simulation_impl::endSimulation(SimTime_t end)
 }
 
 void
+Simulation_impl::adjustTimeAtSimEnd()
+{
+    currentSimCycle = endSimCycle;
+
+    for ( auto const& entry : clockMap ) {
+        entry.second->updateCurrentCycle();
+    }
+}
+
+void
 Simulation_impl::finish()
 {
-
-    currentSimCycle = endSimCycle;
 
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->finish();
@@ -823,7 +849,7 @@ Simulation_impl::finish()
     finishBarrier.wait();
 
     // Tell the Statistics Engine that the simulation is ending
-    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::getInstance()->endOfSimulation(); }
+    stat_engine.endOfSimulation();
 }
 
 void
@@ -992,9 +1018,9 @@ Simulation_impl::getSyncQueueDataSize() const
 }
 
 Statistics::StatisticProcessingEngine*
-Simulation_impl::getStatisticsProcessingEngine(void) const
+Simulation_impl::getStatisticsProcessingEngine(void)
 {
-    return Statistics::StatisticProcessingEngine::getInstance();
+    return &stat_engine;
 }
 
 #if SST_EVENT_PROFILING
@@ -1066,14 +1092,14 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     finishBarrier.resize(nthr);
 }
 
-
 void
-Simulation_impl::intializeDefaultProfileTools(const std::string& config)
+Simulation_impl::intializeProfileTools(const std::string& config)
 {
+    if ( config == "" ) return;
     // Need to parse the profile string.  Format is:
-    // point=type(key=value,key=value); point=type(...)
+    // profiler_name:profiler_type=(key=value,key=value)[point,point]; ...
 
-    // type is optional.  If not specified, a default will be used.  Params are optional.
+    // params are optional
 
     // First split on semicolon
     std::vector<std::string> tokens;
@@ -1081,37 +1107,70 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
 
     for ( auto& x : tokens ) {
         // Need to get the profile point name, type and params
-        std::string point;
+        std::string name;
         std::string type;
         std::string param_str;
+        std::string points;
 
+        // Find the name to use for the profiler.  This is the name
+        // that will be printed in the output
         auto start = 0;
         auto end   = x.find(":");
-        point      = x.substr(start, end - start);
-        trim(point);
-        if ( end != std::string::npos ) {
-            // type was specifed, get it
-            start = end + 1;
-            end   = x.find("(", start);
-            type  = x.substr(start, end - start);
+        if ( end == std::string::npos ) {
+            // error in format, missing profiler name
+            sim_output.fatal(
+                CALL_INFO_LONG, 1,
+                "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
+                "semi-colon "
+                "separated list where each item specified details for a given profiling point using the "
+                "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
+                "specified if a type is supplied.  Type is also optional and a default type will be used if "
+                "not specified.\n");
+        }
+
+        name = x.substr(start, end - start);
+        trim(name);
+        // Get the profiler info.  This will be everything from the
+        // current position to '['.  This will include the type, plus
+        // any optional parameters
+        std::string profiler_info;
+        start = end + 1;
+        end   = x.find("[", start);
+        if ( end == std::string::npos ) {
+            // format error, no profile points specified
+        }
+
+        profiler_info = x.substr(start, end - start);
+        trim(profiler_info);
+
+        // get the profile points string
+        start = end + 1;
+        end   = x.find("]", start);
+        if ( end == std::string::npos ) {
+            // format error, no end square bracket
+        }
+
+        points = x.substr(start, end - start);
+        trim(points);
+
+        // Need to get the profiler type and parameters
+        start = 0;
+        end   = profiler_info.find("(", start);
+        if ( end == std::string::npos ) {
+            // No parameters
+            type = profiler_info;
+        }
+        else {
+            type = profiler_info.substr(start, end - start);
             trim(type);
-            if ( end != std::string::npos ) {
-                // Get the params
-                start = end + 1;
-                end   = x.find(")", start);
-                if ( end == std::string::npos ) {
-                    sim_output.fatal(
-                        CALL_INFO_LONG, 1,
-                        "ERROR: Invalid format for argument passed to --enable-profiling.  Argument should be a "
-                        "semi-colon "
-                        "separated list where each item specified details for a given profiling point using the "
-                        "following format: point=type(key=value,key=value,...).  Params are optional and can only be "
-                        "specified if a type is supplied.  Type is also optional and a default type will be used if "
-                        "not specified.\n");
-                }
-                param_str = x.substr(start, end - start);
-                trim(param_str);
+
+            start = end + 1;
+            end   = profiler_info.find(")", start);
+            if ( end == std::string::npos ) {
+                // Format error, not end paran
             }
+            param_str = profiler_info.substr(start, end - start);
+            trim(param_str);
         }
 
         Params params;
@@ -1130,35 +1189,58 @@ Simulation_impl::intializeDefaultProfileTools(const std::string& config)
             }
         }
 
-        // Initialize the point
-        if ( point == "" ) {
-            // Do nothing
-        }
-        else if ( point == "event" ) {
-            if ( type == "" ) type = "sst.profile.handler.event.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::EventHandlerProfileTool>(
-                type, SST_PROFILE_TOOL_EVENT, "Default Event Handler Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_EVENT] = tool;
-        }
-        else if ( point == "clock" ) {
-            if ( type == "" ) type = "sst.profile.handler.clock.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ClockHandlerProfileTool>(
-                type, SST_PROFILE_TOOL_CLOCK, "Default Clock Handler Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_CLOCK] = tool;
-        }
-        else if ( point == "sync" ) {
-            if ( type == "" ) type = "sst.profile.sync.time.high_resolution";
-            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::SyncProfileTool>(
-                type, SST_PROFILE_TOOL_SYNC, "Default SYNC Profile Tool", params);
-            profile_tools[SST_PROFILE_TOOL_SYNC] = tool;
+        // Need to initialize the profile_tool.  If it's already
+        // there, then error since you can't reuse the same tool name.
+        if ( profile_tools.count(name) == 0 ) {
+            auto* tool = Factory::getFactory()->CreateProfileTool<SST::Profile::ProfileTool>(type, name, params);
+            profile_tools[name] = tool;
         }
         else {
-            // FATAL
-            sim_output.fatal(
-                CALL_INFO_LONG, 1, "ERROR: Unknown profiling point specified with --enable-profiling: %s\n",
-                point.c_str());
+            // Error, can't reuse tool name
+            sim_output.fatal(CALL_INFO_LONG, 1, "ERROR: Cannot reuse tool name: %s\n", name.c_str());
+        }
+
+        // Now, parse the points
+        std::vector<std::string> point_tokens;
+        SST::tokenize(point_tokens, points, ",", true);
+
+        for ( auto& tok : point_tokens ) {
+            // Check to see if this is a valid profile point
+            std::string p(tok);
+            SST::trim(p);
+            auto index = p.find_last_of(".");
+
+            bool valid = false;
+            if ( index == std::string::npos ) {
+                // No do, see if it's one of the built-in points
+                if ( p == "clock" || p == "event" || p == "sync" ) { valid = true; }
+            }
+            else {
+                // Get the type and the point
+                std::string type  = p.substr(0, index);
+                std::string point = p.substr(index + 1);
+                if ( Factory::getFactory()->isProfilePointValid(type, point) ) { valid = true; }
+            }
+
+            if ( !valid )
+                sim_output.fatal(CALL_INFO_LONG, 1, "ERROR: Invalid profile point specified: %s\n", tok.c_str());
+
+            profiler_map[p].push_back(name);
         }
     }
+
+#if 0
+    printf("Profile tools:\n");
+    for ( auto& x : profile_tools ) {
+        printf("  %s\n", x.first.c_str());
+    }
+    printf("Profile points:\n");
+    for ( auto& x : profiler_map ) {
+        for ( auto& y : x.second ) {
+            printf("  %s -> %s\n", x.first.c_str(), y.c_str());
+        }
+    }
+#endif
 }
 
 void
@@ -1249,19 +1331,20 @@ Simulation_impl::printPerformanceInfo()
 #endif
 
 /* Define statics */
-Factory*                  Simulation_impl::factory;
-TimeLord                  Simulation_impl::timeLord;
-std::map<LinkId_t, Link*> Simulation_impl::cross_thread_links;
-Output                    Simulation_impl::sim_output;
-Core::ThreadSafe::Barrier Simulation_impl::initBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::completeBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::setupBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::runBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::exitBarrier;
-Core::ThreadSafe::Barrier Simulation_impl::finishBarrier;
-std::mutex                Simulation_impl::simulationMutex;
-TimeConverter*            Simulation_impl::minPartTC = nullptr;
-SimTime_t                 Simulation_impl::minPart;
+Factory*                   Simulation_impl::factory;
+TimeLord                   Simulation_impl::timeLord;
+std::map<LinkId_t, Link*>  Simulation_impl::cross_thread_links;
+Output                     Simulation_impl::sim_output;
+Core::ThreadSafe::Barrier  Simulation_impl::initBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::completeBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::setupBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::runBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::exitBarrier;
+Core::ThreadSafe::Barrier  Simulation_impl::finishBarrier;
+std::mutex                 Simulation_impl::simulationMutex;
+Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
+TimeConverter*             Simulation_impl::minPartTC = nullptr;
+SimTime_t                  Simulation_impl::minPart;
 
 /* Define statics (Simulation) */
 std::unordered_map<std::thread::id, Simulation_impl*> Simulation_impl::instanceMap;

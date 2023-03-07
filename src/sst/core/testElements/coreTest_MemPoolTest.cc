@@ -18,7 +18,7 @@
 #include "sst/core/testElements/coreTest_MemPoolTest.h"
 
 #include "sst/core/event.h"
-#include "sst/core/mempool.h"
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
 #include "sst/core/simulation.h"
 
@@ -41,6 +41,10 @@ MemPoolTestComponent::MemPoolTestComponent(ComponentId_t id, Params& params) :
     }
 
     initial_events = params.find<int>("initial_events", 256);
+
+    undeleted_events = params.find<int>("undeleted_events", 0);
+
+    check_overflow = params.find<bool>("check_overflow", true);
 
     // Connect to all the links
     bool done  = false;
@@ -67,8 +71,14 @@ MemPoolTestComponent::MemPoolTestComponent(ComponentId_t id, Params& params) :
 void
 MemPoolTestComponent::eventHandler(Event* ev, int port)
 {
-    // Whenever I get an event, just delete it and send one back
-    delete ev;
+    // Whenever I get an event, just delete it and send one back.  We
+    // will not delete some events, set by the undeleted_events
+    // parameter.  This will allow us to check to see if the
+    // undeleted_event detection works.
+    if ( undeleted_events > 0 ) { undeleted_events--; }
+    else {
+        delete ev;
+    }
     events_recv++;
     links[port]->send(createEvent());
 }
@@ -96,7 +106,10 @@ MemPoolTestComponent::complete(unsigned int phase)
         rate_event->rate = event_rate;
 
         // Send on link 0
-        if ( event_size != 1 ) links[0]->sendUntimedData(rate_event);
+        if ( event_size != 1 )
+            links[0]->sendUntimedData(rate_event);
+        else
+            delete rate_event;
     }
     else if ( event_size == 1 ) {
         // Check each of my links for rate events.  Only component 0
@@ -104,6 +117,7 @@ MemPoolTestComponent::complete(unsigned int phase)
         for ( auto* link : links ) {
             Event* ev = link->recvUntimedData();
             if ( ev != nullptr ) { event_rate += (static_cast<MemPoolTestPerformanceEvent*>(ev))->rate; }
+            delete ev;
         }
 
         getSimulationOutput().output("# Event rate = %lf Mmsgs/s\n", event_rate / 1000000);
@@ -113,6 +127,7 @@ MemPoolTestComponent::complete(unsigned int phase)
 void
 MemPoolTestComponent::finish()
 {
+    if ( !check_overflow ) return;
     // Need to get the number of mempool arenas created.  There
     // shouldn't be more than N (where N is the number of components,
     // up to 4, each on their own thread).

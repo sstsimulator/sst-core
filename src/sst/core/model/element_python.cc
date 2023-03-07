@@ -65,18 +65,20 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
     PyTracebackObject* ptb = (PyTracebackObject*)tb;
     while ( ptb != nullptr ) {
         // Filename
-#ifdef SST_CONFIG_HAVE_PYTHON3
+// API change for code frames starting at 3.9
+#if PY_MINOR_VERSION < 9
         stream << "File \"" << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_filename) << "\", ";
 #else
-        stream << "File \"" << PyString_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
+        stream << "File \"" << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_filename) << "\", ";
 #endif
         // Line number
         stream << "line " << ptb->tb_lineno << ", ";
         // Module name
-#ifdef SST_CONFIG_HAVE_PYTHON3
+// API change for code frames starting at 3.9
+#if PY_MINOR_VERSION < 9
         stream << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_name) << "\n";
 #else
-        stream << PyString_AsString(ptb->tb_frame->f_code->co_name) << "\n";
+        stream << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_name) << "\n";
 #endif
 
         // Get the next line
@@ -84,11 +86,7 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
     }
 
     // Add in the other error information
-#ifdef SST_CONFIG_HAVE_PYTHON3
     stream << exc_name << ": " << PyUnicode_AsUTF8(PyObject_Str(val)) << "\n";
-#else
-    stream << exc_name << ": " << PyString_AsString(PyObject_Str(val)) << "\n";
-#endif
     Simulation_impl::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
 }
 

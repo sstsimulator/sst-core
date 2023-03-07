@@ -69,6 +69,8 @@ private:
 
     double mpiWaitTime;
     double deserializeTime;
+
+    Core::ThreadSafe::Spinlock lock;
 };
 
 } // namespace SST

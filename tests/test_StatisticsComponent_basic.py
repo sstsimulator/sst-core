@@ -77,8 +77,19 @@ import sys
 # - New explicit sst.Statistic use
 #    - Sharing of same statistic by two stat slots
 
+# StatGroup0, StatGroup1 and StatGroup2 test the following:
+# - Statistic Groups
+#    - Output for stat groups
+#    - Enabling stats through stats groups
+
 ########################################################################
 ########################################################################
+
+# Set the partitioner to be round robin so elements of the same type
+# will get scattered across partitions
+sst.setProgramOptions({
+    "partitioner" : "roundrobin"
+})
 
 # Set the Statistic Load Level; Statistics with Enable Levels (set in
 # elementInfoStatistic) lower or equal to the load can be enabled (default = 0)
@@ -514,3 +525,246 @@ stat = StatObjComp1.createStatistic("statobj1", {
 
 StatObjComp1.setStatistic("stat2_F64", stat)
 StatObjComp1.setStatistic("stat3_F64", stat)
+
+
+# Statistic Group testing.  There are three tests:
+
+# Test 1 - Console output with 1 group of 3 components
+# Test 2 - CSV output with 1 group of 3 components
+# Test 3 - TXT output with 2 groups of 3 components
+
+##### StatGroup0 - Console
+StatGroup0 = sst.StatisticGroup("StatGroup0")
+
+StatGroupObj0 = sst.Component("StatGroupObj0", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj0.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1460",
+      "seed_z" : "1066"
+})
+
+# This component will test stat groups
+StatGroupObj1 = sst.Component("StatGroupObj1", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj1.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1461",
+      "seed_z" : "1067"
+})
+
+# This component will test stat groups
+StatGroupObj2 = sst.Component("StatGroupObj2", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj2.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1462",
+      "seed_z" : "1068"
+})
+
+
+# Add the components
+StatGroup0.addComponent(StatGroupObj0);
+StatGroup0.addComponent(StatGroupObj1);
+StatGroup0.addComponent(StatGroupObj2);
+
+# Add the stats
+StatGroup0.addStatistic("stat1_U32", {
+    "type" : "sst.AccumulatorStatistic"})
+StatGroup0.addStatistic("stat2_U64", {
+    "type" : "sst.AccumulatorStatistic",
+    "resetOnOutput" : True})
+
+# Set dump frequency
+StatGroup0.setFrequency("19ns")
+
+# Set output
+StatOutput0 = sst.StatisticOutput("sst.statOutputConsole", {
+    "outputsimtime" : True,
+    "outputrank" : False
+})
+
+StatGroup0.setOutput(StatOutput0)
+
+
+##### StatGroup1 - CSV
+StatGroup1 = sst.StatisticGroup("StatGroup1")
+
+StatGroupObj3 = sst.Component("StatGroupObj3", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj3.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1463",
+      "seed_z" : "1069"
+})
+
+# This component will test stat groups
+StatGroupObj4 = sst.Component("StatGroupObj4", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj4.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1464",
+      "seed_z" : "1070"
+})
+
+# This component will test stat groups
+StatGroupObj5 = sst.Component("StatGroupObj5", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj5.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1466",
+      "seed_z" : "1071"
+})
+
+
+# Add the components
+StatGroup1.addComponent(StatGroupObj3);
+StatGroup1.addComponent(StatGroupObj4);
+StatGroup1.addComponent(StatGroupObj5);
+
+# Add the stats
+StatGroup1.addStatistic("stat1_U32", {
+    "type" : "sst.AccumulatorStatistic"})
+StatGroup1.addStatistic("stat2_U64", {
+    "type" : "sst.AccumulatorStatistic",
+    "resetOnOutput" : True})
+
+# Set dump frequency
+StatGroup1.setFrequency("23ns")
+
+# Set output
+StatOutput1 = sst.StatisticOutput("sst.statOutputCSV", {
+    "filepath" : "test_StatisticsComponent_basic_group_stats.csv",
+    "separator" : ", ",
+    "outputrank" : "0"
+})
+
+StatGroup1.setOutput(StatOutput1)
+
+
+##### StatGroup2 & StatGroup3 - TXT
+
+## StatGroup2
+StatGroup2 = sst.StatisticGroup("StatGroup2")
+
+StatGroupObj6 = sst.Component("StatGroupObj6", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj6.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1466",
+      "seed_z" : "1072"
+})
+
+# This component will test stat groups
+StatGroupObj7 = sst.Component("StatGroupObj7", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj7.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1467",
+      "seed_z" : "1073"
+})
+
+# This component will test stat groups
+StatGroupObj8 = sst.Component("StatGroupObj8", "coreTestElement.StatisticsComponent.int")
+
+# Set Component Parameters
+StatGroupObj8.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1468",
+      "seed_z" : "1074"
+})
+
+
+# Add the components
+StatGroup2.addComponent(StatGroupObj6);
+StatGroup2.addComponent(StatGroupObj7);
+StatGroup2.addComponent(StatGroupObj8);
+
+# Add the stats
+StatGroup2.addStatistic("stat1_U32", {
+    "type" : "sst.AccumulatorStatistic"})
+StatGroup2.addStatistic("stat2_U64", {
+    "type" : "sst.AccumulatorStatistic",
+    "resetOnOutput" : True})
+
+# Set dump frequency
+StatGroup2.setFrequency("27ns")
+
+# Set output
+StatOutput2 = sst.StatisticOutput("sst.statOutputTXT", {
+    "filepath" : "test_StatisticsComponent_basic_group_stats.txt",
+    "outputrank" : "0"
+})
+
+StatGroup2.setOutput(StatOutput2)
+
+## StatGroup3 (same output as StatGroup2)
+StatGroup3 = sst.StatisticGroup("StatGroup3")
+
+StatGroupObj9 = sst.Component("StatGroupObj9", "coreTestElement.StatisticsComponent.float")
+
+# Set Component Parameters
+StatGroupObj9.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1469",
+      "seed_z" : "1075"
+})
+
+# This component will test stat groups
+StatGroupObj10 = sst.Component("StatGroupObj10", "coreTestElement.StatisticsComponent.float")
+
+# Set Component Parameters
+StatGroupObj10.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1470",
+      "seed_z" : "1076"
+})
+
+# This component will test stat groups
+StatGroupObj11 = sst.Component("StatGroupObj11", "coreTestElement.StatisticsComponent.float")
+
+# Set Component Parameters
+StatGroupObj11.addParams({
+      "rng" : "marsaglia",
+      "count" : "101",
+      "seed_w" : "1471",
+      "seed_z" : "1077"
+})
+
+
+# Add the components
+StatGroup3.addComponent(StatGroupObj9);
+StatGroup3.addComponent(StatGroupObj10);
+StatGroup3.addComponent(StatGroupObj11);
+
+# Add the stats
+StatGroup3.addStatistic("stat1_F32", {
+    "type" : "sst.AccumulatorStatistic"})
+StatGroup3.addStatistic("stat2_F64", {
+    "type" : "sst.AccumulatorStatistic",
+    "resetOnOutput" : True})
+
+# Set dump frequency
+StatGroup3.setFrequency("29ns")
+
+# Set output
+StatGroup3.setOutput(StatOutput2)

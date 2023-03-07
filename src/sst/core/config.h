@@ -240,6 +240,13 @@ public:
     */
     bool interthread_links() const { return interthread_links_; }
 
+#ifdef USE_MEMPOOL
+    /**
+       Controls whether mempool items are cache-aligned
+
+    */
+    bool cache_align_mempools() const { return cache_align_mempools_; }
+#endif
     /**
        File to which core debug information should be written
     */
@@ -301,6 +308,9 @@ public:
     /**
        File to output list of events that remain undeleted at the end
        of the simulation.
+
+       If no mempools, just reutrn empty string.  This avoids a check
+    for mempools in main.cc
     */
     const std::string& event_dump_file() const { return event_dump_file_; }
 #endif
@@ -363,12 +373,18 @@ public:
         ser& parallel_load_mode_multi_;
         ser& timeVortex_;
         ser& interthread_links_;
+#ifdef USE_MEMPOOL
+        ser& cache_align_mempools_;
+#endif
         ser& debugFile_;
         ser& libpath_;
         ser& addLibPath_;
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
+#ifdef USE_MEMPOOL
+        ser& event_dump_file_;
+#endif
 
         ser& print_env_;
         ser& enable_sig_handling_;
@@ -434,7 +450,10 @@ private:
     bool        parallel_load_mode_multi_; /*!< If true, load using multiple files */
     std::string timeVortex_;               /*!< TimeVortex implementation to use */
     bool        interthread_links_;        /*!< Use interthread links */
-    std::string debugFile_;                /*!< File to which debug information should be written */
+#ifdef USE_MEMPOOL
+    bool cache_align_mempools_; /*!< Cache align allocations from mempools */
+#endif
+    std::string debugFile_; /*!< File to which debug information should be written */
     std::string libpath_;
     std::string addLibPath_;
 
@@ -445,7 +464,7 @@ private:
     // Advanced options - debug
     Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */
 #ifdef USE_MEMPOOL
-    std::string event_dump_file_; /*!< File to dump undeleted events to */
+    std::string event_dump_file_; /*!< File to dump undeleted events to  */
 #endif
     bool rank_seq_startup_; /*!< Run simulation initialization phases one rank at a time */
 

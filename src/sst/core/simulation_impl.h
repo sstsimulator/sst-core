@@ -22,6 +22,7 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <atomic>
@@ -33,12 +34,6 @@
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);
-
-// #defines for the various default profile tools
-#define SST_PROFILE_TOOL_EVENT        1
-#define SST_PROFILE_TOOL_CLOCK        2
-#define SST_PROFILE_TOOL_SYNC         3
-#define SST_PROFILE_TOOL_CUSTOM_START 4
 
 namespace SST {
 
@@ -65,10 +60,6 @@ class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
 class SharedRegionManager;
-namespace Statistics {
-class StatisticOutput;
-class StatisticProcessingEngine;
-} // namespace Statistics
 
 namespace Statistics {
 class StatisticOutput;
@@ -184,6 +175,7 @@ public:
      */
     void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
+    int  initializeStatisticEngine(ConfigGraph& graph);
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
@@ -203,6 +195,11 @@ public:
     void run();
 
     void finish();
+
+    /** Adjust clocks and time to reflect precise simulation end time which
+        may differ in parallel simulations from the time simulation end is detected.
+     */
+    void adjustTimeAtSimEnd();
 
     bool isIndependentThread() { return independent; }
 
@@ -304,7 +301,7 @@ public:
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
 
     /** Return the Statistic Processing Engine associated with this Simulation */
-    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void);
 
 
     friend class Link;
@@ -335,8 +332,10 @@ public:
     static Core::ThreadSafe::Barrier finishBarrier;
     static std::mutex                simulationMutex;
 
-    static std::map<LinkId_t, Link*> cross_thread_links;
-    bool                             direct_interthread;
+    // Support for crossthread links
+    static Core::ThreadSafe::Spinlock cross_thread_lock;
+    static std::map<LinkId_t, Link*>  cross_thread_links;
+    bool                              direct_interthread;
 
     Component* createComponent(ComponentId_t id, const std::string& name, Params& params);
 
@@ -386,29 +385,56 @@ public:
     /** Output */
     static Output   sim_output;
 
+    /** Statistics Engine */
+    SST::Statistics::StatisticProcessingEngine stat_engine;
+
     /** Performance Tracking Information **/
 
-    void intializeDefaultProfileTools(const std::string& config);
+    void intializeProfileTools(const std::string& config);
 
-    std::map<uint64_t, SST::Profile::ProfileTool*> profile_tools;
+    std::map<std::string, SST::Profile::ProfileTool*> profile_tools;
+    // Maps the component profile points to profiler names
+    std::map<std::string, std::vector<std::string>>   profiler_map;
 
     template <typename T>
-    T* getProfileTool(uint64_t id)
+    std::vector<T*> getProfileTool(std::string point)
     {
+        std::vector<T*> ret;
         try {
-            SST::Profile::ProfileTool* val = profile_tools.at(id);
-            T*                         ret = dynamic_cast<T*>(val);
-            if ( !ret ) {
-                //  Not the right type, fatal
-                Output::getDefaultObject().fatal(
-                    CALL_INFO_LONG, 1, "INTERNAL ERROR: wrong type of profiling tool found (id = %" PRIu64 ")\n", id);
+            std::vector<std::string>& profilers = profiler_map.at(point);
+
+            for ( auto& x : profilers ) {
+                try {
+                    SST::Profile::ProfileTool* val = profile_tools.at(x);
+
+                    T* tool = dynamic_cast<T*>(val);
+                    if ( !tool ) {
+                        //  Not the right type, fatal
+                        Output::getDefaultObject().fatal(
+                            CALL_INFO_LONG, 1,
+                            "ERROR: wrong type of profiling tool found (name = %s).  Check to make sure the profiling "
+                            "points enabled for this tool accept the type specified\n",
+                            x.c_str());
+                    }
+                    ret.push_back(tool);
+                }
+                catch ( std::out_of_range& e ) {
+                    // This shouldn't happen.  If it does, then something
+                    // didn't get initialized correctly.
+                    Output::getDefaultObject().fatal(
+                        CALL_INFO_LONG, 1,
+                        "INTERNAL ERROR: ProfileTool refered to in profiler_map not found in profile_tools map\n");
+                    return ret;
+                }
             }
-            return ret;
         }
         catch ( std::out_of_range& e ) {
-            // Not there, return nullptr
-            return nullptr;
+            // point not turned on, return nullptr
+            return ret;
         }
+
+
+        return ret;
     }
 
 

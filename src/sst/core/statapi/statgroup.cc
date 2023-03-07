@@ -26,10 +26,10 @@
 namespace SST {
 namespace Statistics {
 
-StatisticGroup::StatisticGroup(const ConfigStatGroup& csg) :
+StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine) :
     isDefault(false),
     name(csg.name),
-    output(const_cast<StatisticOutput*>(StatisticProcessingEngine::getInstance()->getStatOutputs()[csg.outputID])),
+    output(const_cast<StatisticOutput*>(engine->getStatOutputs()[csg.outputID])),
     outputFreq(csg.outputFrequency),
     components(csg.components)
 {
@@ -40,6 +40,7 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg) :
             output->getStatisticOutputName().c_str());
     }
 
+    // Need to get the stats that are in this group
     for ( auto& kv : csg.statMap ) {
         statNames.push_back(kv.first);
     }

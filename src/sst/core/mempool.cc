@@ -13,6 +13,7 @@
 
 #include "sst/core/mempool.h"
 
+#include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
 #include "sst/core/threadsafe.h"
 
@@ -90,6 +91,10 @@ public:
 };
 
 
+// Controls whether or not the mempools cache align their entries
+static bool memPoolCacheAlign = false;
+
+
 /**
  * Simple Memory Pool class.  The class instance is only ever accessed
  * by a single thread.  Only have to mutex when putting things in the
@@ -114,7 +119,17 @@ public:
         arenaSize(initialSize),
         max_freelist_size(0)
     {
-        max_overflow_size = arenaSize / elemSize;
+        // Round up to next multiple of 64 to ensure no events are on
+        // the same cache line
+        size_t remainder = (elemSize + 8) % 64;
+        if ( memPoolCacheAlign ) { allocSize = remainder == 0 ? (elemSize + 8) : ((elemSize + 8) + 64 - remainder); }
+        else {
+            allocSize = elemSize + 8;
+        }
+        max_overflow_size = arenaSize / allocSize;
+
+        // max_overflow_size = arenaSize / elemSize;
+
 
         // Won't alloc until we need to
         // allocPool();
@@ -135,6 +150,8 @@ public:
         // If there is nothing there, we need to check with the shared
         // overflow to see if there is data there we can take.  If all
         // that fails, then alloc a new arena.
+
+        numAlloc++;
 
         // Check freelist
         if ( !freelist.empty() ) {
@@ -169,6 +186,7 @@ public:
     /** Return an element to the memory pool */
     inline void free(void* ptr)
     {
+        numFree++;
         // Goes in freelist if we aren't at max capacity.  Otherwise
         // goes in overflow.
         if ( freelist.size() >= max_freelist_size ) {
@@ -197,27 +215,29 @@ public:
     int64_t getNumFreedEntries() { return numFree; }
 
     /** Counter:  Number of times elements have been allocated */
-    std::atomic<uint64_t> numAlloc;
+    uint64_t numAlloc;
     /** Counter:  Number times elements have been freed */
-    std::atomic<uint64_t> numFree;
+    uint64_t numFree;
 
     size_t getArenaSize() const { return arenaSize; }
     size_t getNumArenas() const { return arenas.size(); }
     size_t getElementSize() const { return elemSize; }
+    size_t getAllocSize() const { return allocSize; }
 
     const std::list<uint8_t*>& getArenas() { return arenas; }
 
 private:
     // allocPool will only ever be called by one thread, no need for locking
+    // version that will cache align each memory chunk for an event
     bool allocPool()
     {
         uint8_t* newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) { return false; }
-        std::memset(newPool, 0xFF, arenaSize);
+        std::memset(newPool, 0, arenaSize);
         arenas.push_back(newPool);
-        size_t nelem = arenaSize / elemSize;
+        size_t nelem = arenaSize / allocSize;
         for ( size_t i = 0; i < nelem; i++ ) {
-            uint64_t* ptr = (uint64_t*)(newPool + (elemSize * i));
+            uint64_t* ptr = (uint64_t*)(newPool + (allocSize * i));
             freelist.push_back(ptr);
         }
         max_freelist_size += nelem;
@@ -228,6 +248,7 @@ private:
     size_t arenaSize;
     size_t max_freelist_size;
     size_t max_overflow_size;
+    size_t allocSize;
 
     std::list<uint8_t*> arenas;
 };
@@ -252,7 +273,7 @@ struct PoolInfo_t
 // This is a vector where each thread has one entry.  Using a vector
 // so that the memory will be cleaned up.  There won't be a chance to
 // call delete[] if we use an array with new.
-std::vector<std::vector<PoolInfo_t>> memPoolThreadVector;
+static std::vector<std::vector<PoolInfo_t>> memPoolThreadVector;
 
 // My local thread number
 thread_local int                      thread_num = -1;
@@ -262,7 +283,6 @@ thread_local std::vector<PoolInfo_t>* myPools;
 inline MemPoolNoMutex*
 getMemPool(std::size_t size) noexcept
 {
-    // std::vector<PoolInfo_t>& memPools = memPoolThreadVector[thread_num];
     MemPoolNoMutex* pool = nullptr;
 
     for ( auto& x : *myPools ) {
@@ -283,10 +303,11 @@ getMemPool(std::size_t size) noexcept
 
 
 void
-MemPoolAccessor::initializeGlobalData(int num_threads)
+MemPoolAccessor::initializeGlobalData(int num_threads, bool cache_align)
 {
     // Only resize once
     if ( memPoolThreadVector.size() == 0 ) { memPoolThreadVector.resize(num_threads); }
+    memPoolCacheAlign = cache_align;
 }
 
 void
@@ -339,6 +360,29 @@ MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
     active_entries = alloced - freed;
 }
 
+void
+MemPoolAccessor::printUndeletedMemPoolItems(const std::string& header, Output& out)
+{
+    for ( auto&& pool_group : memPoolThreadVector ) {
+        for ( auto&& entry : pool_group ) {
+            const std::list<uint8_t*>& arenas    = entry.pool->getArenas();
+            size_t                     arenaSize = entry.pool->getArenaSize();
+            size_t                     allocSize = entry.pool->getAllocSize();
+            size_t                     nelem     = arenaSize / allocSize;
+            for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
+                for ( size_t j = 0; j < nelem; j++ ) {
+                    uint64_t* ptr = (uint64_t*)((*iter) + (allocSize * j));
+                    if ( *ptr != 0 ) {
+                        MemPoolItem* act = (MemPoolItem*)(ptr + 1);
+                        act->print(header, out);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 void*
 MemPoolItem::operator new(std::size_t size) noexcept
 {
@@ -376,27 +420,11 @@ MemPoolItem::operator delete(void* ptr)
 }
 
 
-std::string
-MemPoolItem::toString() const
-{
-    std::stringstream buf;
-
-    buf << "MemPoolItem of class: " << cls_name();
-    return buf.str();
-}
-
-
-void
-MemPoolItem::print(const std::string& header, Output& out) const
-{
-    out.output("%s%s\n", header.c_str(), toString().c_str());
-}
-
-
 #else // #ifdef USE_MEMPOOLS
 
+
 void
-MemPoolAccessor::initializeGlobalData(int UNUSED(num_threads))
+MemPoolAccessor::initializeGlobalData(int UNUSED(num_threads), bool UNUSED(cache_align))
 {}
 
 void
@@ -432,6 +460,12 @@ MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
     active_entries = 0;
 }
 
+void
+MemPoolAccessor::printUndeletedMemPoolItems(const std::string& UNUSED(header), Output& UNUSED(out))
+{
+    return;
+}
+
 
 void*
 MemPoolItem::operator new(std::size_t size) noexcept
@@ -445,8 +479,10 @@ void
 MemPoolItem::operator delete(void* ptr)
 {
     ::operator delete(ptr);
-    // free(ptr);
 }
+
+
+#endif // #ifdef USE_MEMPOOLS
 
 
 std::string
@@ -465,7 +501,6 @@ MemPoolItem::print(const std::string& header, Output& out) const
     out.output("%s%s\n", header.c_str(), toString().c_str());
 }
 
-#endif
 
 } // namespace Core
 } // namespace SST
