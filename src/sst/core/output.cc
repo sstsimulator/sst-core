@@ -21,6 +21,7 @@
 #include "sst/core/warnmacros.h"
 
 // C++ System Headers
+#include <atomic>
 #include <cerrno>
 #include <cinttypes>
 
@@ -36,6 +37,9 @@ REENABLE_WARNING
 #endif
 
 namespace SST {
+
+// Atomic to control access to calling MPI_Abort or exit() in fatal() call
+std::atomic<int> fatal_count = 0;
 
 // Initialize The Static Member Variables
 Output      Output::m_defaultObject;
@@ -209,12 +213,18 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
 
     Simulation_impl::emergencyShutdown();
 
+    int count = fatal_count.fetch_add(1);
+
+    // Make sure only one thread calls MPI_Abort() or exit() in the
+    // case where two threads call fatal() at the same time
+    if ( count == 0 ) {
 #ifdef SST_CONFIG_HAVE_MPI
-    // If MPI exists, abort
-    MPI_Abort(MPI_COMM_WORLD, exit_code);
+        // If MPI exists, abort
+        MPI_Abort(MPI_COMM_WORLD, exit_code);
 #else
-    exit(exit_code);
+        exit(exit_code);
 #endif
+    }
 }
 
 void
