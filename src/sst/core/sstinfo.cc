@@ -32,6 +32,7 @@
 #include <getopt.h>
 #include <list>
 #include <sys/stat.h>
+#include <ncurses.h>
 
 using namespace std;
 using namespace SST;
@@ -43,6 +44,10 @@ static std::string                                        g_searchPath;
 static std::vector<SSTLibraryInfo>                        g_libInfoArray;
 static SSTInfoConfig                                      g_configuration;
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
+static WINDOW                                             *info;
+static WINDOW                                             *console;
+static std::vector<std::string>                           infoText;
+static unsigned int                                       textPos;
 
 void
 dprintf(FILE* fp, const char* fmt, ...)
@@ -79,16 +84,21 @@ retry:
 class OverallOutputter
 {
 public:
-    void outputHumanReadable(std::ostream& os);
+    void outputHumanReadable(std::stringstream&);
     void outputXML();
 } g_Outputter;
 
 // Forward Declarations
 void        initLTDL(const std::string& searchPath);
 void        shutdownLTDL();
-static void processSSTElementFiles();
-void        outputSSTElementInfo();
+static void processSSTElementFiles(std::stringstream&);
+void        outputSSTElementInfo(std::stringstream&);
 void        generateXMLOutputFile();
+void        run();
+void        getInput();
+void        drawWindows();
+void        setInfoText(std::string);
+void        printInfo();
 
 int
 main(int argc, char* argv[])
@@ -116,10 +126,148 @@ main(int argc, char* argv[])
         }
     }
 
-    // Read in the Element files and process them
-    processSSTElementFiles();
+    // Run curses
+    initscr();
+    cbreak();
+    noecho();
+    intrflush(stdscr, false);
+    scrollok(stdscr, true);
+    run();
 
     return 0;
+}
+
+int getCursorPos(WINDOW *console)
+{
+    int pos, _;
+    getyx(console, _, pos);
+    _ += 1; //to please the compiler
+    return pos;
+}
+
+void run() 
+{   
+    // Initialize Windows
+    drawWindows();
+    
+    // Set initial text to complete info text
+    std::stringstream outputStream;
+    processSSTElementFiles(outputStream);
+    setInfoText(outputStream.str());
+    //infoText = outputStream.str();
+    textPos = 0;
+
+    printInfo();
+
+    getInput();
+    endwin();
+}
+
+void getInput()
+{
+    // Take input
+    std::string input = "";
+    while(true) {
+        int c = wgetch(console);
+
+        if(c == '\n') {
+            //parseInput()
+            //printInfo(input);
+
+            // Erase and redraw
+            drawWindows();
+            printInfo();
+            input = "";
+        }
+        // Resizing the window
+        else if (c == KEY_RESIZE) {
+            endwin();
+            wrefresh(info);
+            wrefresh(console);
+            drawWindows();
+            printInfo();
+        }
+        // Handle backspaces
+        else if (c == KEY_BACKSPACE) {
+            int pos = getCursorPos(console);
+            if (pos > 1) {
+                wprintw(console, "\b \b");
+                input.pop_back();
+            }
+        }
+
+        // Scrolling
+        else if (c == KEY_UP) {
+            //printInfo("UP");
+            if (textPos > 0) {
+                textPos -= 1;
+            }
+            printInfo();
+
+        }
+        else if (c == KEY_DOWN) {
+            //printInfo("DOWN");
+            if (textPos < infoText.size()-LINES) {
+                textPos += 1;
+            }
+            printInfo();
+        }
+
+        // Regular characters
+        else if (c <= 255) {
+            input += c;
+            wprintw(console, "%c", c);
+            wrefresh(console);
+        }
+    }
+}
+
+void drawWindows()
+{
+    // Reset windows for redraws
+    werase(info);
+    werase(console);
+    delwin(info);
+    delwin(console);
+
+    info = newwin(LINES-3, COLS, 0, 0);
+    console = newwin(3, COLS, LINES-3, 0);
+
+
+    // Parameters
+    scrollok(info, true);
+    scrollok(console, false);
+    keypad(console, true);
+
+    box(console, 0, 0);
+    mvwprintw(console, 0, 1, " Console ");
+    wmove(console, 1, 1);
+    wrefresh(info);
+    wrefresh(console);
+}
+
+void setInfoText(std::string infoString) 
+{
+    // Splits the string into individual lines and stores them into the infoText vector
+    std::string delimiter = "\n";
+    size_t pos = 0;
+    std::string line;
+    while ((pos = infoString.find(delimiter)) != std::string::npos) {
+        line = infoString.substr(0, pos);
+        line.append("\n");
+        infoText.push_back(line);
+        infoString.erase(0, pos + delimiter.length());
+    }
+}
+
+void printInfo()
+{
+    for (unsigned int i = textPos; i < textPos+LINES; i++) {
+        const char *cstr = infoText[i].c_str();
+        wprintw(info, cstr);
+    }
+    wrefresh(info);
+    wrefresh(console); //moves the cursor back into the console window
 }
 
 static void
@@ -149,7 +297,7 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
 }
 
 static void
-processSSTElementFiles()
+processSSTElementFiles(std::stringstream& outputStream)
 {
     std::vector<bool>        EntryProcessedArray;
     ElemLoader               loader(g_searchPath);
@@ -168,7 +316,7 @@ processSSTElementFiles()
     }
 
     // Do we output in Human Readable form
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(); }
+    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(outputStream); }
 
     // Do we output an XML File
     if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
@@ -181,16 +329,16 @@ generateXMLOutputFile()
 }
 
 void
-outputSSTElementInfo()
+outputSSTElementInfo(std::stringstream& outputStream)
 {
-    g_Outputter.outputHumanReadable(std::cout);
+    g_Outputter.outputHumanReadable(outputStream);
 }
 
 void
-OverallOutputter::outputHumanReadable(std::ostream& os)
+OverallOutputter::outputHumanReadable(std::stringstream& outputStream)
 {
-    os << "PROCESSED " << g_fileProcessedCount << " .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) " << g_searchPath
-       << "\n";
+    outputStream << "PROCESSED " << g_fileProcessedCount << " .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) " << g_searchPath
+                 << "\n";
 
     // Tell the user what Elements will be displayed
     for ( auto& i : g_configuration.getFilterMap() ) {
@@ -201,7 +349,7 @@ OverallOutputter::outputHumanReadable(std::ostream& os)
 
     // Now dump the Library Info
     for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-        g_libInfoArray[x].outputHumanReadable(os, x);
+        g_libInfoArray[x].outputHumanReadable(outputStream, x);
     }
 }
 
