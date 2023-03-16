@@ -23,6 +23,8 @@ from sst_unittest_support import *
 module_init = 0
 module_sema = threading.Semaphore()
 
+have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
+
 def initializeTestModule_SingleInstance(class_inst):
     global module_init
     global module_sema
@@ -52,8 +54,6 @@ class testcase_Config_input_output(SSTTestCase):
         super(type(self), self).tearDown()
 
 ###
-
-    have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
 
     def test_python_io(self):
         self.configio_test_template("python_io", "6 6", "py", False, "NONE")
@@ -94,12 +94,15 @@ class testcase_Config_input_output(SSTTestCase):
             print("Unknown output type: {0}".format(output_type))
             sys.exit(1)
 
-        if ( parallel_io ):
+        if parallel_io:
             options_ref = "{0}={1} --parallel-output --model-options=\"{2}\"".format(out_flag,output_config,model_options);
         else:
             options_ref = "{0}={1} --output-partition --model-options=\"{2}\"".format(out_flag,output_config,model_options);
         
-        options_check = "--parallel-load={0}".format(load_mode)
+        if have_mpi:
+            options_check = "--parallel-load={0}".format(load_mode)
+        else:
+            options_check = ""
 
         # Set the various file paths
         if use_component_test:
