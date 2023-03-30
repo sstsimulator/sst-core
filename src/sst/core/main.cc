@@ -530,6 +530,9 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         }
     }
 
+    // Put in info about sync memory usage
+    info.sync_data_size = sim->getSyncQueueDataSize();
+
     delete sim;
 }
 
@@ -967,8 +970,8 @@ main(int argc, char* argv[])
 
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
 
-    uint64_t mempool_size = 0, max_mempool_size = 0, global_mempool_size = 0;
-    uint64_t active_activities = 0, global_active_activities = 0;
+    int64_t mempool_size = 0, max_mempool_size = 0, global_mempool_size = 0;
+    int64_t active_activities = 0, global_active_activities = 0;
     Core::MemPoolAccessor::getMemPoolUsage(mempool_size, active_activities);
 
 #ifdef SST_CONFIG_HAVE_MPI

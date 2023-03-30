@@ -119,17 +119,16 @@ public:
         arenaSize(initialSize),
         max_freelist_size(0)
     {
-        // Round up to next multiple of 64 to ensure no events are on
-        // the same cache line
-        size_t remainder = (elemSize + 8) % 64;
-        if ( memPoolCacheAlign ) { allocSize = remainder == 0 ? (elemSize + 8) : ((elemSize + 8) + 64 - remainder); }
+        if ( memPoolCacheAlign ) {
+            // Round up to next multiple of 64 to ensure no events are
+            // on the same cache line
+            size_t remainder = (elemSize + 8) % 64;
+            allocSize        = (remainder == 0) ? (elemSize + 8) : ((elemSize + 8) + 64 - remainder);
+        }
         else {
             allocSize = elemSize + 8;
         }
         max_overflow_size = arenaSize / allocSize;
-
-        // max_overflow_size = arenaSize / elemSize;
-
 
         // Won't alloc until we need to
         // allocPool();
@@ -215,9 +214,9 @@ public:
     int64_t getNumFreedEntries() { return numFree; }
 
     /** Counter:  Number of times elements have been allocated */
-    uint64_t numAlloc;
+    int64_t numAlloc;
     /** Counter:  Number times elements have been freed */
-    uint64_t numFree;
+    int64_t numFree;
 
     size_t getArenaSize() const { return arenaSize; }
     size_t getNumArenas() const { return arenas.size(); }
@@ -344,7 +343,7 @@ MemPoolAccessor::getBytesMemUsedBy(size_t size)
 
 
 void
-MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
+MemPoolAccessor::getMemPoolUsage(int64_t& bytes, int64_t& active_entries)
 {
     bytes           = 0;
     active_entries  = 0;
@@ -412,7 +411,13 @@ MemPoolItem::operator delete(void* ptr)
      */
     uint64_t* ptr8 = ((uint64_t*)ptr) - 1;
     uint64_t  size = *ptr8;
-    *ptr8          = 0;
+    if ( *ptr8 == 0 ) {
+        // This item has already been deleted, error
+        Output::getDefaultObject().fatal(
+            CALL_INFO, 1, "ERROR: Double deletion of mempool item detected: %s",
+            static_cast<MemPoolItem*>(ptr)->toString().c_str());
+    }
+    *ptr8 = 0;
 
     // find the pool
     MemPoolNoMutex* pool = getMemPool(size);
