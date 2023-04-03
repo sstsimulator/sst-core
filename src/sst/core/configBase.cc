@@ -22,6 +22,7 @@
 #include <string>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #ifndef E_OK
 #define E_OK 0

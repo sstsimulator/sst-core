@@ -15,6 +15,7 @@
 #include "sst/core/configShared.h"
 
 #include <cstdlib>
+#include <string.h>
 #include <unistd.h> // for opterr
 
 int
