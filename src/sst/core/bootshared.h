@@ -12,11 +12,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <unistd.h>
 
 extern char** environ;
 
 void update_env_var(const char* name, const int verbose, char* argv[], const int argc);
-void boot_sst_configure_env(const int verbose, char* argv[], const int argc);
+// void boot_sst_configure_env(const SST::Config& cfg);
+void boot_sst_configure_env(const std::string& path);
 void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc);

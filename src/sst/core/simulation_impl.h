@@ -76,7 +76,7 @@ class Simulation_impl : public Simulation
 public:
     /********  Public API inherited from Simulation ********/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    Mode_t getSimulationMode() const override { return runMode; };
+    SimulationRunMode getSimulationMode() const override { return runMode; };
 
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const override;
@@ -486,12 +486,17 @@ public:
     std::string clockResolution = "us";
 #endif
 
-    Mode_t    runMode;
+    // Run mode for the simulation
+    SimulationRunMode runMode;
+
+    // Track current simulated time
     SimTime_t currentSimCycle;
-    SimTime_t endSimCycle;
     int       currentPriority;
-    RankInfo  my_rank;
-    RankInfo  num_ranks;
+    SimTime_t endSimCycle;
+
+    // Rank information
+    RankInfo my_rank;
+    RankInfo num_ranks;
 
     std::string                 output_directory;
     static SharedRegionManager* sharedRegionManager;

@@ -12,7 +12,9 @@
 #ifndef SST_CORE_CONFIG_H
 #define SST_CORE_CONFIG_H
 
-#include "sst/core/simulation.h"
+#include "sst/core/configShared.h"
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/sst_types.h"
 
 #include <string>
 
@@ -20,14 +22,22 @@
 extern int main(int argc, char** argv);
 
 namespace SST {
+class Config;
 
 class ConfigHelper;
 class SSTModelDescription;
 /**
- * Class to contain SST Simulation Configuration variables
+ * Class to contain SST Simulation Configuration variables.
+ *
+ * NOTE: This class needs to be serialized for the sst.x executable,
+ * but not for the sst (wrapper compiled from the boot*.{h,cc} files)
+ * executable.  To avoid having to compile all the serialization code
+ * into the bootstrap executable, the Config class is the first level
+ * of class hierarchy to inherit from serializable.
  */
-class Config : public SST::Core::Serialization::serializable
+class Config : public ConfigShared, public SST::Core::Serialization::serializable
 {
+
 private:
     // Main creates the config object
     friend int ::main(int argc, char** argv);
@@ -37,23 +47,15 @@ private:
     /**
        Config constructor.  Meant to only be created by main function
      */
-    Config(RankInfo rank_info);
+    Config(uint32_t num_ranks, bool first_rank);
 
     /**
-       Default constructor used for serialization
+       Default constructor used for serialization.  At this point,
+       first_rank_ is no longer needed, so just initialize to false.
      */
-    Config() {}
+    Config() : ConfigShared(true, true), first_rank_(false) {}
 
     //// Functions for use in main
-
-    /**
-       Parse command-line arguments to update configuration values.
-
-       @return Returns 0 if execution should continue.  Returns -1
-       if there was an error.  Returns 1 if run command line only
-       asked for information to be print (e.g. --help or -V).
-     */
-    int parseCmdLine(int argc, char* argv[]);
 
     /**
        Checks for the existance of the config file.  This needs to be
@@ -62,21 +64,13 @@ private:
     */
     bool checkConfigFile();
 
-    /**
-       Get the final library path for loading element libraries
-    */
-    std::string getLibPath(void) const;
-
-    // Functions to be called from ModelDescriptions
+    // Function to be called from ModelDescriptions
 
     /** Set a configuration string to update configuration values */
     bool setOptionFromModel(const std::string& entryName, const std::string& value);
 
 
 public:
-    /** Create a new Config object.
-     * @param world_size - number of parallel ranks in the simulation
-     */
     ~Config() {}
 
     // Functions to access config options. Declared in order they show
@@ -91,19 +85,21 @@ public:
     /**
        Level of verbosity to use in the core prints using
        Output.verbose or Output.debug.
+
+       ** Included in ConfigShared
+       uint32_t verbose() const { return verbose_; }
     */
-    uint32_t verbose() const { return verbose_; }
 
 
     /**
        Number of threads requested
     */
-    uint32_t num_threads() const { return world_size_.thread; }
+    uint32_t num_threads() const { return num_threads_; }
 
     /**
        Number of ranks in the simulation
      */
-    uint32_t num_ranks() const { return world_size_.rank; }
+    uint32_t num_ranks() const { return num_ranks_; }
 
     /**
        Name of the SDL file to use to genearte the simulation
@@ -255,14 +251,18 @@ public:
     /**
        Library path to use for finding element libraries (will replace
        the libpath in the sstsimulator.conf file)
+
+       ** Included in ConfigShared
+       const std::string& libpath() const { return libpath_; }
     */
-    const std::string& libpath() const { return libpath_; }
 
     /**
        Paths to add to library search (adds to libpath found in
        sstsimulator.conf file)
+
+       ** Included in ConfigShared
+       const std::string& addLibPath() const { return addLibPath_; }
     */
-    const std::string& addLibPath() const { return addLibPath_; }
 
     // Advanced options - Profiling
 
@@ -283,7 +283,7 @@ public:
        not currently supported because there is not component level
        checkpointing.
     */
-    Simulation::Mode_t runMode() const { return runMode_; }
+    SimulationRunMode runMode() const { return runMode_; }
 
     /**
        Get string version of runmode.
@@ -291,13 +291,13 @@ public:
     std::string runMode_str() const
     {
         switch ( runMode_ ) {
-        case Simulation::INIT:
+        case SimulationRunMode::INIT:
             return "INIT";
-        case Simulation::RUN:
+        case SimulationRunMode::RUN:
             return "RUN";
-        case Simulation::BOTH:
+        case SimulationRunMode::BOTH:
             return "BOTH";
-        case Simulation::UNKNOWN:
+        case SimulationRunMode::UNKNOWN:
             return "UNKNOWN";
         }
         return "UNKNOWN";
@@ -326,12 +326,19 @@ public:
     /**
        Controls whether the environment variables that SST sees are
        printed out
+
+       ** Included in ConfigShared
+       bool print_env() const { return print_env_; }
     */
-    bool print_env() const { return print_env_; }
+
+    /**
+        ** Included in ConfigShared
+        bool no_env_config() const { return no_env_config_; }
+    */
 
     /**
        Controls whether signal handlers are enable or not.  NOTE: the
-       sense of this variable is opposite of the command line option
+       sense of this variable is opposite of the command1 line option
        (--disable-signal-handlers)
     */
     bool enable_sig_handling() const { return enable_sig_handling_; }
@@ -339,7 +346,6 @@ public:
     // This option is used by the SST wrapper found in
     // bootshare.{h,cc} and is never actually accessed once sst.x
     // executes.
-    bool no_env_config() const { return no_env_config_; }
 
 
     /** Print to stdout the current configuration */
@@ -348,7 +354,6 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         ser& verbose_;
-        ser& world_size_;
         ser& configFile_;
         ser& model_options_;
         ser& print_timing_;
@@ -378,7 +383,7 @@ public:
 #endif
         ser& debugFile_;
         ser& libpath_;
-        ser& addLibPath_;
+        ser& addlibpath_;
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
@@ -390,13 +395,22 @@ public:
         ser& enable_sig_handling_;
         ser& no_env_config_;
     }
-    ImplementSerializable(SST::Config)
+    ImplementSerializable(SST::Config);
 
+protected:
+    std::string getUsagePrelude() override;
+    int         checkArgsAfterParsing() override;
+    int         positionalCallback(int num, const std::string& arg);
 
 private:
     //// Items private to Config
 
     std::string run_name;
+    bool        first_rank_;
+
+    // Inserts all the command line options into the underlying data
+    // structures
+    void insertOptions();
 
     bool isFileNameOnly(const std::string& name)
     {
@@ -420,9 +434,10 @@ private:
     // No variable associated with version
 
     // Basic options
-    uint32_t    verbose_; /*!< Verbosity */
+    // uint32_t    verbose_; ** in ConfigShared
     // Num threads held in RankInfo.thread
-    RankInfo    world_size_;         /*!< Number of ranks, threads which should be invoked per rank */
+    uint32_t    num_ranks_;          /*!< Number of ranks in the simulation */
+    uint32_t    num_threads_;        /*!< Number of threads requested */
     std::string configFile_;         /*!< Graph generation file */
     std::string model_options_;      /*!< Options to pass to Python Model generator */
     bool        print_timing_;       /*!< Print SST timing information */
@@ -454,24 +469,24 @@ private:
     bool cache_align_mempools_; /*!< Cache align allocations from mempools */
 #endif
     std::string debugFile_; /*!< File to which debug information should be written */
-    std::string libpath_;
-    std::string addLibPath_;
+    // std::string libpath_;  ** in ConfigShared
+    // std::string addLibPath_; ** in ConfigShared
 
     // Advanced options - profiling
     std::string enabled_profiling_; /*!< Enabled default profiling points */
     std::string profiling_output_;  /*!< Location to write profiling data */
 
     // Advanced options - debug
-    Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */
+    SimulationRunMode runMode_; /*!< Run Mode (Init, Both, Run-only) */
 #ifdef USE_MEMPOOL
     std::string event_dump_file_; /*!< File to dump undeleted events to  */
 #endif
     bool rank_seq_startup_; /*!< Run simulation initialization phases one rank at a time */
 
     // Advanced options - envrionment
-    bool print_env_;           /*!< Print SST environment */
     bool enable_sig_handling_; /*!< Enable signal handling */
-    bool no_env_config_;       /*!< Bypass compile-time environmental configuration */
+    // bool print_env_;  ** in ConfigShared
+    // bool no_env_config_; ** in ConfigShared
 };
 
 } // namespace SST

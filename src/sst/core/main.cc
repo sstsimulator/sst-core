@@ -389,7 +389,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     barrier.wait();
 
-    if ( info.config->runMode() == Simulation::RUN || info.config->runMode() == Simulation::BOTH ) {
+    if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
         if ( info.config->verbose() && 0 == tid ) {
             g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
 
@@ -554,7 +554,7 @@ main(int argc, char* argv[])
     RankInfo world_size(1, 1);
     RankInfo myRank(0, 0);
 #endif
-    Config cfg(world_size);
+    Config cfg(world_size.rank, myrank == 0);
 
     // All ranks parse the command line
     auto ret_value = cfg.parseCmdLine(argc, argv);
@@ -566,6 +566,10 @@ main(int argc, char* argv[])
         // Just asked for info, clean exit
         return 0;
     }
+
+    // Set the debug output location
+    Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+
 
     if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
         addRankToFileName(cfg.configFile_, myRank.rank);
