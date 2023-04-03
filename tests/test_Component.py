@@ -1,7 +1,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "25us")
+sst.setProgramOption("stop-at", "25us")
 
 # Define the simulation components
 comp_c0_0 = sst.Component("c0_0", "coreTestElement.coreTestComponent")

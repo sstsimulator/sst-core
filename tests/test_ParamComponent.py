@@ -11,7 +11,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "25us")
+sst.setProgramOption("stop-at", "25us")
 
 global_params = {
     "bool_true_param" : "yes",
