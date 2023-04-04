@@ -12,9 +12,8 @@ import sst
 import sys
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10us")
+sst.setProgramOption("stop-at", "10us")
 #sst.setProgramOption("verbose", "3")
-#sst.setProgramOptions({"stopAtCycle" : "10us", "verbose" : "3"})
 
 x_size = int(sys.argv[1])
 y_size = int(sys.argv[2])

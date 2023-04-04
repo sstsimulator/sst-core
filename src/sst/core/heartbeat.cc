@@ -68,8 +68,8 @@ SimulatorHeartbeat::execute(void)
 
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
 
-    uint64_t mempool_size      = 0;
-    uint64_t active_activities = 0;
+    int64_t mempool_size      = 0;
+    int64_t active_activities = 0;
     Core::MemPoolAccessor::getMemPoolUsage(mempool_size, active_activities);
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
 

@@ -11,7 +11,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10000s")
+sst.setProgramOption("stop-at", "10000s")
 
 # Define the simulation components
 comp_msgGen0 = sst.Component("msgGen0", "coreTestElement.simpleMessageGeneratorComponent")

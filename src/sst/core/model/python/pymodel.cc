@@ -1047,7 +1047,6 @@ SSTPythonModelDefinition::initModel(
         local_script_name.c_str());
 
 
-#if PY_MAJOR_VERSION >= 3
     // Add sst module to the Python interpreter as a built in
     PyImport_AppendInittab("sst", &PyInit_sst);
 
@@ -1061,11 +1060,21 @@ SSTPythonModelDefinition::initModel(
         // Set to zero so it won't parse out the first argument of
         // argv
         config.parse_argv = 0;
+        config.safe_path  = 0;
         // Set argc and argv
         PyConfig_SetBytesArgv(&config, argc, argv);
+
         // Get the Python scripting engine started
         Py_InitializeFromConfig(&config);
+
+        PyConfig_Clear(&config);
     }
+    // For 3.11 and on, we need to append the current working
+    // directory to the path
+    PyRun_SimpleString("import sys\n"
+                       "import sst\n"
+                       "sys.meta_path.append(sst.ModuleLoader())\n"
+                       "sys.path.append(\".\")");
 #else
     // Set arguments; Python3 takes wchar_t* arg instead of char*
     wchar_t** wargv = (wchar_t**)PyMem_Malloc(sizeof(wchar_t*) * argc);
@@ -1076,26 +1085,9 @@ SSTPythonModelDefinition::initModel(
     // Get the Python scripting engine started
     Py_Initialize();
     PySys_SetArgv(argc, wargv);
-#endif
     PyRun_SimpleString("import sys\n"
                        "import sst\n"
                        "sys.meta_path.append(sst.ModuleLoader())\n");
-#else
-    // Get the Python scripting engine started
-    Py_Initialize();
-    PySys_SetArgv(argc, argv);
-    // Add sst module to the Python interpreter as a built in
-    PyInit_sst();
-
-    // Add our custom loader
-    PyObject* main_module = PyImport_ImportModule("__main__");
-    PyModule_AddObject(main_module, "ModuleLoader", (PyObject*)&ModuleLoaderType);
-    PyRun_SimpleString("def loadLoader():\n"
-                       "\timport sys\n"
-                       "\tsys.meta_path.append(ModuleLoader())\n"
-                       "\timport sst\n"
-                       "\tsst.__path__ = []\n" // Must be here or else meta_path won't be questioned
-                       "loadLoader()\n");
 #endif
 }
 

@@ -26,6 +26,8 @@ nobase_dist_sst_HEADERS = \
 	componentExtension.h \
 	componentInfo.h \
 	config.h \
+	configBase.h \
+	configShared.h \
 	configGraph.h \
 	configGraphOutput.h \
 	cfgoutput/pythonConfigOutput.h \
@@ -165,6 +167,8 @@ sst_core_sources = \
 	componentExtension.cc \
 	componentInfo.cc \
 	config.cc \
+	configBase.cc \
+	configShared.cc \
 	configGraph.cc \
 	cfgoutput/pythonConfigOutput.cc \
 	cfgoutput/dotConfigOutput.cc \
@@ -242,6 +246,10 @@ sst_info_SOURCES = \
 	bootsstinfo.cc \
 	bootshared.cc \
 	bootshared.h \
+	configBase.h \
+	configBase.cc \
+	configShared.h \
+	configShared.cc \
 	env/envquery.h \
 	env/envconfig.h \
 	env/envquery.cc \
@@ -251,6 +259,10 @@ sst_SOURCES = \
 	bootsst.cc \
 	bootshared.cc \
 	bootshared.h \
+	configBase.h \
+	configBase.cc \
+	configShared.h \
+	configShared.cc \
 	env/envquery.h \
 	env/envconfig.h \
 	env/envquery.cc \

@@ -11,7 +11,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10us")
+sst.setProgramOption("stop-at", "10us")
 
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
 loader0.addParam("clock", "1.5GHz")

@@ -34,36 +34,12 @@ class TimeLord;
 class Simulation
 {
 public:
-    /** Type of Run Modes */
-    typedef enum {
-        UNKNOWN, /*!< Unknown mode - Invalid for running */
-        INIT,    /*!< Initialize-only.  Useful for debugging initialization and graph generation */
-        RUN,     /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
-        BOTH     /*!< Default.  Both initialize and Run the simulation */
-    } Mode_t;
+    virtual ~Simulation() {}
 
-    virtual ~Simulation();
-
-    /********* Public Static API ************/
-
-    /** Return a pointer to the singleton instance of the Simulation */
-    static Simulation* getSimulation()
-        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
-                                  "element base classes.  The APIs will be removed in SST 13.")));
-
-    /** Return the TimeLord associated with this Simulation */
-    static TimeLord* getTimeLord(void)
-        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
-                                  "element base classes.  The APIs will be removed in SST 13.")));
-
-    /** Return the base simulation Output class instance */
-    static Output& getSimulationOutput()
-        __attribute__((deprecated("Element facing Simulation class APIs are deprecated and have moved to the various "
-                                  "element base classes.  The APIs will be removed in SST 13.")));
 
     /********* Public API ************/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    virtual Mode_t getSimulationMode() const = 0;
+    virtual SimulationRunMode getSimulationMode() const = 0;
 
     /** Return the current simulation time as a cycle count*/
     virtual SimTime_t getCurrentSimCycle() const = 0;
