@@ -123,10 +123,15 @@ ConfigShared::getLibPath(void) const
                 const std::string& key   = *keyItr;
                 const std::string& value = currentGroup->getValue(key);
 
-                if ( key.size() > 6 ) {
+                if ( key.size() >= 6 ) {
                     if ( "LIBDIR" == key.substr(key.size() - 6) ) {
-                        fullLibPath.append(":");
-                        fullLibPath.append(value);
+                        // See if there is a value, if not, skip it
+                        if ( value.size() > 0 ) {
+                            // If this is the first one, we don't need
+                            // a colon
+                            if ( fullLibPath.size() > 0 ) fullLibPath.append(":");
+                            fullLibPath.append(value);
+                        }
                     }
                 }
             }
