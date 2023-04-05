@@ -533,19 +533,19 @@ BaseComponent::getCompletePhaseElapsedRealTime() const
 bool
 BaseComponent::isSimulationRunModeInit() const
 {
-    return sim_->getSimulationMode() == Simulation::INIT;
+    return sim_->getSimulationMode() == SimulationRunMode::INIT;
 }
 
 bool
 BaseComponent::isSimulationRunModeRun() const
 {
-    return sim_->getSimulationMode() == Simulation::RUN;
+    return sim_->getSimulationMode() == SimulationRunMode::RUN;
 }
 
 bool
 BaseComponent::isSimulationRunModeBoth() const
 {
-    return sim_->getSimulationMode() == Simulation::BOTH;
+    return sim_->getSimulationMode() == SimulationRunMode::BOTH;
 }
 
 std::string&

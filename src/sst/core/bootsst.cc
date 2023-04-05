@@ -12,8 +12,11 @@
 #include "sst_config.h"
 
 #include "sst/core/bootshared.h"
+#include "sst/core/configShared.h"
 
 #include <cstdlib>
+#include <string.h>
+#include <unistd.h> // for opterr
 
 int
 main(int argc, char* argv[])
@@ -22,15 +25,24 @@ main(int argc, char* argv[])
     int print_env  = 0;
     int verbose    = 0;
 
+    // Create a ConfigShred object.  This object won't print any error
+    // messages about unknown command line options, that will be
+    // deferred to the actual sstsim.x executable.
+    SST::ConfigShared cfg(true, true, true, true, true);
+
+    // Make a copy of the argv array (shallow)
+    char* argv_copy[argc + 1];
     for ( int i = 0; i < argc; ++i ) {
-        if ( strcmp("--no-env-config", argv[i]) == 0 ) { config_env = 0; }
-        else if ( strcmp("--verbose", argv[i]) == 0 ) {
-            verbose = 1;
-        }
-        else if ( strcmp("--print-env", argv[i]) == 0 ) {
-            print_env = 1;
-        }
+        argv_copy[i] = argv[i];
     }
+    argv[argc] = nullptr;
+
+    // All ranks parse the command line
+    cfg.parseCmdLine(argc, argv_copy);
+
+    if ( cfg.no_env_config() ) config_env = 0;
+    if ( cfg.verbose() ) verbose = 1;
+    if ( cfg.print_env() ) print_env = 1;
 
     if ( print_env != 1 ) {
         const char* check_print_env   = std::getenv("SST_PRINT_ENV");
@@ -47,7 +59,7 @@ main(int argc, char* argv[])
 
     if ( verbose && config_env ) { printf("Launching SST with automatic environment processing enabled...\n"); }
 
-    if ( config_env ) { boot_sst_configure_env(verbose, argv, argc); }
+    if ( config_env ) { boot_sst_configure_env(cfg.getLibPath()); }
 
     if ( 1 == print_env ) {
         int next_index = 0;

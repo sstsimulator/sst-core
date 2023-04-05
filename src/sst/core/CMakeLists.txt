@@ -44,6 +44,8 @@ add_library(
   componentExtension.cc
   componentInfo.cc
   config.cc
+  configBase.cc
+  configShared.cc
   configGraph.cc
   cfgoutput/pythonConfigOutput.cc
   cfgoutput/dotConfigOutput.cc
@@ -119,6 +121,8 @@ set(SSTHeaders
     configGraph.h
     configGraphOutput.h
     config.h
+    configBase.h
+    configShared.h
     cputimer.h
     decimal_fixedpoint.h
     elemLoader.h

@@ -50,25 +50,6 @@ namespace SST {
 
 /**   Simulation functions **/
 
-/** Static functions **/
-Simulation*
-Simulation::getSimulation()
-{
-    return Simulation_impl::instanceMap.at(std::this_thread::get_id());
-}
-
-TimeLord*
-Simulation::getTimeLord()
-{
-    return &Simulation_impl::timeLord;
-}
-
-Output&
-Simulation::getSimulationOutput()
-{
-    return Simulation_impl::sim_output;
-}
-
 /** Non-static functions **/
 SimTime_t
 Simulation_impl::getCurrentSimCycle() const
@@ -105,8 +86,6 @@ Simulation_impl::getFinalSimTime() const
 {
     return timeLord.getTimeBase() * getEndSimCycle();
 }
-
-Simulation::~Simulation() {}
 
 /** Simulation_impl functions **/
 
@@ -195,8 +174,8 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     wireUpFinished(false),
     runMode(cfg->runMode()),
     currentSimCycle(0),
-    endSimCycle(0),
     currentPriority(0),
+    endSimCycle(0),
     my_rank(my_rank),
     num_ranks(num_ranks),
     run_phase_start_time(0.0),

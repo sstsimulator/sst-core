@@ -11,7 +11,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10us")
+sst.setProgramOption("stop-at", "10us")
 
 # Set up sender using user subcomponent
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")

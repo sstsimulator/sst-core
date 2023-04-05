@@ -22,59 +22,40 @@
 #include <string>
 
 void
-update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[]), const int UNUSED(argc))
+// update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[]), const int UNUSED(argc))
+
+// This will add the current load path variable to the end of path and
+// set it as the new load path for the actual executable
+update_env_var(const char* name, const std::string& path)
 {
-    char* current_ld_path  = getenv(name);
-    char* new_ld_path      = (char*)malloc(sizeof(char) * 32768);
-    char* new_ld_path_copy = (char*)malloc(sizeof(char) * 32768);
+    char* current_ld_path = getenv(name);
+    char* new_ld_path     = (char*)malloc(sizeof(char) * 32768);
 
-    for ( size_t i = 0; i < 32768; ++i ) {
-        new_ld_path[i]      = '\0';
-        new_ld_path_copy[i] = '\0';
+    // Put in the passed in path first
+    if ( current_ld_path == nullptr ) {
+        // No current load path, just put in path
+        snprintf(new_ld_path, 32768, "%s", path.c_str());
+    }
+    else {
+        snprintf(new_ld_path, 32768, "%s:%s", path.c_str(), current_ld_path);
     }
 
-    if ( nullptr != current_ld_path ) { snprintf(new_ld_path, 32768, "%s", current_ld_path); }
-    std::vector<std::string>                          configFiles;
-    SST::Core::Environment::EnvironmentConfiguration* envConfig =
-        SST::Core::Environment::getSSTEnvironmentConfiguration(configFiles);
-    std::set<std::string> groups = envConfig->getGroupNames();
-
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        SST::Core::Environment::EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(*groupItr);
-
-        std::set<std::string> keys = currentGroup->getKeys();
-
-        for ( auto configItr = keys.begin(); configItr != keys.end(); configItr++ ) {
-            const std::string& paramName = *configItr;
-            const std::string& value     = currentGroup->getValue(*configItr).c_str();
-
-            if ( paramName.size() >= 6 ) {
-                const char* paramNameEnding = paramName.c_str();
-
-                if ( strcmp(&paramNameEnding[paramName.size() - 6], "LIBDIR") == 0 ) {
-                    strcpy(new_ld_path_copy, new_ld_path);
-                    snprintf(new_ld_path, 32768, "%s:%s", value.c_str(), new_ld_path_copy);
-                }
-            }
-        }
-    }
-
-    // Override the exiting LD_LIBRARY_PATH with our updated variable
+    // Override the exiting load path with our updated variable
     setenv(name, new_ld_path, 1);
-    free(new_ld_path_copy);
 
     // Set the SST_ROOT information
 #ifdef SST_INSTALL_PREFIX
     // If SST_ROOT not previous set, then we will provide our own
     if ( nullptr == getenv("SST_ROOT") ) { setenv("SST_ROOT", SST_INSTALL_PREFIX, 1); }
 #endif
+    free(new_ld_path);
 }
 
 void
-boot_sst_configure_env(const int verbose, char* argv[], const int argc)
+boot_sst_configure_env(const std::string& path)
 {
-    update_env_var("LD_LIBRARY_PATH", verbose, argv, argc);
-    update_env_var("DYLD_LIBRARY_PATH", verbose, argv, argc);
+    update_env_var("LD_LIBRARY_PATH", path);
+    update_env_var("DYLD_LIBRARY_PATH", path);
 }
 
 void

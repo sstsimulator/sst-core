@@ -21,6 +21,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace SST {
 namespace Core {
