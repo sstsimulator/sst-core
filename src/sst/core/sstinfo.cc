@@ -130,8 +130,6 @@ main(int argc, char* argv[])
     initscr();
     cbreak();
     noecho();
-    intrflush(stdscr, false);
-    scrollok(stdscr, true);
     run();
 
     return 0;
@@ -154,13 +152,21 @@ void run()
     std::stringstream outputStream;
     processSSTElementFiles(outputStream);
     setInfoText(outputStream.str());
-    //infoText = outputStream.str();
     textPos = 0;
 
     printInfo();
-
     getInput();
     endwin();
+}
+
+void printInfo()
+{
+    for (unsigned int i = textPos; i < textPos+LINES; i++) {
+        const char *cstr = infoText[i].c_str();
+        wprintw(info, cstr);
+    }
+    wrefresh(info);
+    wrefresh(console); //moves the cursor back into the console window
 }
 
 void getInput()
@@ -258,16 +264,6 @@ void setInfoText(std::string infoString)
         infoText.push_back(line);
         infoString.erase(0, pos + delimiter.length());
     }
-}
-
-void printInfo()
-{
-    for (unsigned int i = textPos; i < textPos+LINES; i++) {
-        const char *cstr = infoText[i].c_str();
-        wprintw(info, cstr);
-    }
-    wrefresh(info);
-    wrefresh(console); //moves the cursor back into the console window
 }
 
 static void
@@ -421,15 +417,13 @@ SSTInfoConfig::~SSTInfoConfig() {}
 void
 SSTInfoConfig::outputUsage()
 {
-    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
-         << " [options]" << endl;
+    cout << "Usage: " << m_AppName << " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
     cout << "  -v, --version            Print SST Package Release Version\n";
     cout << "  -d, --debug              Enabled debugging messages\n";
     cout << "  -n, --nodisplay          Do not display output - default is off\n";
     cout << "  -x, --xml                Generate XML data - default is off\n";
     cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
-    cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library(s) to process\n";
     cout << "  -q, --quiet              Quiet/print summary only\n";
     cout << endl;
 }
@@ -452,7 +446,6 @@ SSTInfoConfig::parseCmdLine(int argc, char* argv[])
                                               { "xml", no_argument, nullptr, 'x' },
                                               { "quiet", no_argument, nullptr, 'q' },
                                               { "outputxml", required_argument, nullptr, 'o' },
-                                              { "libs", required_argument, nullptr, 'l' },
                                               { "elemenfilt", required_argument, nullptr, 0 },
                                               { nullptr, 0, nullptr, 0 } };
     while ( 1 ) {
