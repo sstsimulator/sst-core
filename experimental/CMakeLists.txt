@@ -18,13 +18,13 @@ set(SST_TOP_SRC_DIR "${sst-core_SOURCE_DIR}/..")
 include(cmake/PreventInSourceBuilds.cmake)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
   message(
-    STATUS "CMAKE_CXX_STANDARD was not set, defaulting the cmake standard to 11"
+    STATUS "CMAKE_CXX_STANDARD was not set, defaulting the cmake standard to 17"
   )
 else()
-  if(CMAKE_CXX_STANDARD LESS 11)
-    message(FATAL_ERROR "We require the c++ standard to be at least 11")
+  if(CMAKE_CXX_STANDARD LESS 17)
+    message(FATAL_ERROR "We require the c++ standard to be at least 17")
   endif()
 endif()
 

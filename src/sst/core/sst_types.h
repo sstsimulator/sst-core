@@ -54,6 +54,13 @@ typedef double volts;
 #define UNLIKELY(x) __builtin_expect((int)(x), 0)
 #endif
 
+enum class SimulationRunMode {
+    UNKNOWN, /*!< Unknown mode - Invalid for running */
+    INIT,    /*!< Initialize-only.  Useful for debugging initialization and graph generation */
+    RUN,     /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
+    BOTH     /*!< Default.  Both initialize and Run the simulation */
+};
+
 } // namespace SST
 
 #endif // SST_CORE_SST_TYPES_H

@@ -42,7 +42,7 @@ using namespace SST::Core;
 static int                                                g_fileProcessedCount;
 static std::string                                        g_searchPath;
 static std::vector<SSTLibraryInfo>                        g_libInfoArray;
-static SSTInfoConfig                                      g_configuration;
+static SSTInfoConfig                                      g_configuration(false);
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
 static WINDOW                                             *info;
 static WINDOW                                             *console;
@@ -104,27 +104,13 @@ int
 main(int argc, char* argv[])
 {
     // Parse the Command Line and get the Configuration Settings
-    if ( g_configuration.parseCmdLine(argc, argv) ) { return -1; }
-
-    std::vector<std::string>               overridePaths;
-    Environment::EnvironmentConfiguration* sstEnv = Environment::getSSTEnvironmentConfiguration(overridePaths);
-    g_searchPath                                  = "";
-    std::set<std::string> groupNames              = sstEnv->getGroupNames();
-
-    for ( auto groupItr = groupNames.begin(); groupItr != groupNames.end(); groupItr++ ) {
-        SST::Core::Environment::EnvironmentConfigGroup* currentGroup = sstEnv->getGroupByName(*groupItr);
-        std::set<std::string>                           groupKeys    = currentGroup->getKeys();
-
-        for ( auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++ ) {
-            const std::string key = *keyItr;
-
-            if ( key.size() > 6 && key.substr(key.size() - 6) == "LIBDIR" ) {
-                if ( g_searchPath.size() > 0 ) { g_searchPath.append(":"); }
-
-                g_searchPath.append(currentGroup->getValue(key));
-            }
-        }
+    int status = g_configuration.parseCmdLine(argc, argv);
+    if ( status ) {
+        if ( status == 1 ) return 0;
+        return 1;
     }
+
+    g_searchPath = g_configuration.getLibPath();
 
     // Run curses
     initscr();
@@ -394,7 +380,7 @@ OverallOutputter::outputXML()
     // XML Declaration
     TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
     XMLDocument.LinkEndChild(XMLDecl);
-    //
+
     // General Info on the Data
     xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
     xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
@@ -405,14 +391,55 @@ OverallOutputter::outputXML()
     XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
-SSTInfoConfig::SSTInfoConfig()
+SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, true)
 {
+    using namespace std::placeholders;
+
     m_optionBits   = CFG_OUTPUTHUMAN | CFG_VERBOSE; // Enable normal output by default
     m_XMLFilePath  = "./SSTInfo.xml";               // Default XML File Path
     m_debugEnabled = false;
+
+    // Add the options
+    DEF_SECTION_HEADING("Informational Options");
+    DEF_FLAG("help", 'h', "Print help message", std::bind(&SSTInfoConfig::printHelp, this, _1));
+    DEF_FLAG("version", 'V', "Print SST release version", std::bind(&SSTInfoConfig::outputVersion, this, _1));
+
+    DEF_SECTION_HEADING("Display Options");
+    addVerboseOptions(false);
+    DEF_FLAG("quiet", 'q', "Quiet/print summary only", std::bind(&SSTInfoConfig::setQuiet, this, _1));
+    DEF_FLAG("debug", 'd', "Enable debugging messages", std::bind(&SSTInfoConfig::setEnableDebug, this, _1));
+    DEF_FLAG(
+        "nodisplay", 'n', "Do not display output [default: off]", std::bind(&SSTInfoConfig::setNoDisplay, this, _1));
+    DEF_SECTION_HEADING("XML Options");
+    DEF_FLAG("xml", 'x', "Generate XML data [default:off]", std::bind(&SSTInfoConfig::setXML, this, _1));
+    DEF_ARG(
+        "outputxml", 'o', "FILE", "Filepath to XML file [default: SSTInfo.xml]",
+        std::bind(&SSTInfoConfig::setXMLOutput, this, _1), false);
+
+    DEF_SECTION_HEADING("Library and Path Options");
+    DEF_ARG(
+        "libs", 'l', "LIBS",
+        "Element libraries to process (all, <element>) [default: all]. <element> can be an element library, or it can "
+        "be a single element within the library.",
+        std::bind(&SSTInfoConfig::setLibs, this, _1), false);
+    addLibraryPathOptions();
+
+    DEF_SECTION_HEADING("Advanced Options - Environment");
+    addEnvironmentOptions();
+
+    addPositionalCallback(std::bind(&SSTInfoConfig::setPositionalArg, this, _1, _2));
 }
 
 SSTInfoConfig::~SSTInfoConfig() {}
+
+std::string
+SSTInfoConfig::getUsagePrelude()
+{
+    std::string prelude = "Usage: ";
+    prelude.append(getRunName());
+    prelude.append(" [options] [<element[.component|subcomponent]>]\n");
+    return prelude;
+}
 
 void
 SSTInfoConfig::outputUsage()
@@ -428,6 +455,7 @@ SSTInfoConfig::outputUsage()
     cout << endl;
 }
 
+#if 0
 void
 SSTInfoConfig::outputVersion()
 {
@@ -494,6 +522,7 @@ SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 
     return 0;
 }
+#endif
 
 void
 SSTInfoConfig::addFilter(const std::string& name_str)
@@ -551,7 +580,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
                     if ( g_configuration.doVerbose() ) pair.second->toString(os);
                 }
                 ++idx;
-                os << std::endl;
+                if ( print ) os << std::endl;
             }
         }
     }

@@ -12,6 +12,7 @@
 #ifndef SST_CORE_SST_INFO_H
 #define SST_CORE_SST_INFO_H
 
+#include "sst/core/configShared.h"
 #include "sst/core/eli/elementinfo.h"
 
 #include <map>
@@ -35,19 +36,13 @@ namespace SST {
  * This class will parse the command line, and setup internal
  * lists of elements and components to be processed.
  */
-class SSTInfoConfig
+class SSTInfoConfig : public ConfigShared
 {
 public:
     typedef std::multimap<std::string, std::string> FilterMap_t;
     /** Create a new SSTInfo configuration and parse the Command Line. */
-    SSTInfoConfig();
+    SSTInfoConfig(bool suppress_print);
     ~SSTInfoConfig();
-
-    /** Parse the Command Line.
-     * @param argc The number of arguments passed to the application
-     * @param argv The array of arguments
-     */
-    int parseCmdLine(int argc, char* argv[]);
 
     /** Return the list of elements to be processed. */
     std::set<std::string> getElementsToProcessArray()
@@ -72,10 +67,67 @@ public:
     bool processAllElements() const { return m_filters.empty(); }
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
 
+protected:
+    std::string getUsagePrelude() override;
+
 private:
     void outputUsage();
-    void outputVersion();
     void addFilter(const std::string& name);
+
+    int setPositionalArg(int UNUSED(num), const std::string& arg)
+    {
+        addFilter(arg);
+        return 0;
+    }
+
+    // Functions to set options
+    int printHelp(const std::string& UNUSED(arg))
+    {
+        printUsage();
+        return 1;
+    }
+
+    int outputVersion(const std::string& UNUSED(arg))
+    {
+        fprintf(stderr, "SST Release Version %s\n", PACKAGE_VERSION);
+        return 1;
+    }
+
+    int setEnableDebug(const std::string& UNUSED(arg))
+    {
+        m_debugEnabled = true;
+        return 0;
+    }
+
+    int setNoDisplay(const std::string& UNUSED(arg))
+    {
+        m_optionBits &= ~CFG_OUTPUTHUMAN;
+        return 0;
+    }
+
+    int setXML(const std::string& UNUSED(arg))
+    {
+        m_optionBits |= CFG_OUTPUTXML;
+        return 0;
+    }
+
+    int setXMLOutput(const std::string& UNUSED(arg))
+    {
+        m_XMLFilePath = arg;
+        return 0;
+    }
+
+    int setLibs(const std::string& UNUSED(arg))
+    {
+        addFilter(arg);
+        return 0;
+    }
+
+    int setQuiet(const std::string& UNUSED(arg))
+    {
+        m_optionBits &= ~CFG_VERBOSE;
+        return 0;
+    }
 
 private:
     char*                    m_AppName;

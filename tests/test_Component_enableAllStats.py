@@ -10,7 +10,7 @@
 # distribution.
 import sst
 
-sst.setProgramOption("stopAtCycle", "25us")
+sst.setProgramOption("stop-at", "25us")
 
 # Define the simulation components
 size = 2

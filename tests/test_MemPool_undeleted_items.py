@@ -1,7 +1,7 @@
 import sst
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10000ns")
+sst.setProgramOption("stop-at", "10000ns")
 sst.setProgramOption("output-undeleted-events", "STDOUT")
 
 # Define the simulation components

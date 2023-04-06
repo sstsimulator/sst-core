@@ -2,7 +2,7 @@ import sst
 import sys
 
 # Define SST core options
-sst.setProgramOption("stopAtCycle", "10us")
+sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner", "self")
 
 # Size per rank.  They will be tiled linearly in the x dimension
