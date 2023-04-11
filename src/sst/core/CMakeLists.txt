@@ -44,8 +44,8 @@ add_library(
   componentExtension.cc
   componentInfo.cc
   config.cc
-  configBase.cc
-  configShared.cc
+  #configBase.cc
+  #configShared.cc
   configGraph.cc
   cfgoutput/pythonConfigOutput.cc
   cfgoutput/dotConfigOutput.cc
@@ -191,6 +191,10 @@ if(ZLIB_FOUND)
   target_link_libraries(sst-core-lib PRIVATE ZLIB::ZLIB)
 endif()
 
+add_library(sst-config-lib OBJECT configBase.cc configShared.cc)
+target_link_libraries(sst-config-lib PUBLIC sst-config-headers)
+target_include_directories(sst-config-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
+
 add_library(sst-boot-lib OBJECT bootshared.cc)
 target_link_libraries(sst-boot-lib PUBLIC sst-config-headers)
 target_include_directories(sst-boot-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
@@ -204,6 +208,7 @@ target_link_libraries(
   sstsim.x
   PRIVATE sst-core-lib
           sst-env-lib
+          sst-config-lib
           partitioner
           timeVortex
           modelCore
@@ -218,6 +223,7 @@ target_link_libraries(
   sstinfo.x
   PRIVATE sst-core-lib
           sst-env-lib
+          sst-config-lib
           partitioner
           timeVortex
           modelCore
@@ -241,10 +247,10 @@ if(Threads_FOUND)
 endif()
 
 add_executable(sst bootsst.cc)
-target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib)
+target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib sst-config-lib)
 
 add_executable(sst-info bootsstinfo.cc)
-target_link_libraries(sst-info PRIVATE sst-boot-lib sst-env-lib)
+target_link_libraries(sst-info PRIVATE sst-boot-lib sst-env-lib sst-config-lib)
 
 add_executable(sst-config sstconfigtool.cc)
 target_link_libraries(sst-config PRIVATE sst-env-lib)
