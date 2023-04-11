@@ -459,7 +459,7 @@ MemPoolAccessor::getBytesMemUsedBy(size_t UNUSED(size))
 
 
 void
-MemPoolAccessor::getMemPoolUsage(uint64_t& bytes, uint64_t& active_entries)
+MemPoolAccessor::getMemPoolUsage(int64_t& bytes, int64_t& active_entries)
 {
     bytes          = 0;
     active_entries = 0;
