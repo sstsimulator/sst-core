@@ -17,6 +17,7 @@
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 
+#include <mutex>
 #include <string>
 
 namespace SST {

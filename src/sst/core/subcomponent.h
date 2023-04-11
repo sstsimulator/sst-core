@@ -91,9 +91,10 @@ public:
     SST_ELI_DECLARE_NEW_BASE(::base,::cls)                        \
     SST_ELI_NEW_BASE_CTOR(SST::ComponentId_t,SST::Params&,##__VA_ARGS__)
 
-#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls, lib, name, version, desc, interface)                            \
-    static const int SST_ELI_FAKE_VALUE = SUBCOMPONENT::sst_eli_fake_deprecated_class::fake_deprecated_function(); \
-    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)                            \
+#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls, lib, name, version, desc, interface) \
+    static const int SST_ELI_FAKE_VALUE =                                               \
+        SST::SUBCOMPONENT::sst_eli_fake_deprecated_class::fake_deprecated_function();   \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
     SST_ELI_INTERFACE_INFO(#interface)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls, lib, name, version, desc, interface)         \
