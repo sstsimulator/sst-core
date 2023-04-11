@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,13 +37,13 @@ class XORShiftRNG : public SST::RNG::Random
 
 public:
     /**
-        Create a new Mersenne RNG with a specified seed
+        Create a new Xorshift RNG with a specified seed
         @param[in] seed The seed for this RNG
     */
     XORShiftRNG(unsigned int seed);
 
     /**
-        Creates a new Mersenne using a random seed which is obtained from the system
+        Creates a new Xorshift using a random seed which is obtained from the system
         clock. Note this will give different results on different platforms and between
         runs.
     */
@@ -80,7 +80,7 @@ public:
     void seed(uint64_t newSeed);
 
     /**
-        Destructor for Mersenne
+        Destructor for Xorshift
     */
     ~XORShiftRNG();
 
