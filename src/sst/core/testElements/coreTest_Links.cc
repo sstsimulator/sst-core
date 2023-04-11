@@ -14,7 +14,6 @@
 #include "sst/core/testElements/coreTest_Links.h"
 
 #include "sst/core/event.h"
-#include "sst/core/simulation.h"
 
 using namespace SST;
 using namespace SST::CoreTestComponent;

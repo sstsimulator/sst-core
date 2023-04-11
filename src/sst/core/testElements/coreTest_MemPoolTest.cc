@@ -16,7 +16,6 @@
 #include "sst/core/event.h"
 #include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
 
 #include <string>
 #include <vector>

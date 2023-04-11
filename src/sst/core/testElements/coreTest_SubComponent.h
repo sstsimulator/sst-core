@@ -111,7 +111,7 @@ private:
 class SubCompSlot : public SubCompSlotInterface
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompSlot,
         "coreTestElement",
         "SubCompSlot",
@@ -153,7 +153,7 @@ public:
                                               SST::CoreTestSubComponent::SubCompInterface)
 
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompSendRecvInterface,
         "coreTestElement",
         "SubCompSendRecv",
@@ -191,7 +191,7 @@ class SubCompSender : public SubCompSendRecvInterface
 {
 public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompSender,
         "coreTestElement",
         "SubCompSender",
@@ -235,7 +235,7 @@ class SubCompReceiver : public SubCompSendRecvInterface
 
 public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompReceiver,
         "coreTestElement",
         "SubCompReceiver",

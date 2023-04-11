@@ -14,7 +14,6 @@
 #include "unitAlgebra.h"
 
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
 
 #include <algorithm>
 #include <iostream>

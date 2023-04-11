@@ -20,7 +20,6 @@
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_comp.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 

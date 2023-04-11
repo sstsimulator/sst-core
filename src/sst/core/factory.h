@@ -69,19 +69,6 @@ public:
      */
     void RequireEvent(const std::string& eventname);
 
-    /** Instantiate a new Module
-     * @param type - Fully qualified elementlibname.modulename type
-     * @param params - Parameters to pass to the Module's constructor
-     */
-    Module* CreateModule(const std::string& type, Params& params);
-
-    /** Instantiate a new Module
-     * @param type - Fully qualified elementlibname.modulename type
-     * @param comp - Component instance to pass to the Module's constructor
-     * @param params - Parameters to pass to the Module's constructor
-     */
-    Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
-
     bool doesSubComponentExist(const std::string& type);
 
     /** Return partitioner function

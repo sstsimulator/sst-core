@@ -81,12 +81,6 @@ Simulation_impl::getEndSimTime() const
     return timeLord.getTimeBase() * getEndSimCycle();
 }
 
-UnitAlgebra
-Simulation_impl::getFinalSimTime() const
-{
-    return timeLord.getTimeBase() * getEndSimCycle();
-}
-
 /** Simulation_impl functions **/
 
 TimeConverter*
@@ -220,12 +214,6 @@ Component*
 Simulation_impl::createComponent(ComponentId_t id, const std::string& name, Params& params)
 {
     return factory->CreateComponent(id, name, params);
-}
-
-void
-Simulation_impl::requireEvent(const std::string& name)
-{
-    factory->RequireEvent(name);
 }
 
 void

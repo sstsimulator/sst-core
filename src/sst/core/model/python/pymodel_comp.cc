@@ -22,7 +22,7 @@
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_link.h"
 #include "sst/core/model/python/pymodel_stat.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/stringize.h"
 #include "sst/core/subcomponent.h"

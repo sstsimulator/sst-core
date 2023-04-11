@@ -28,25 +28,27 @@ public:
     Module() {}
     virtual ~Module() {}
 };
-} // namespace SST
 
+namespace MODULE {
 // Very hackish way to get a deprecation warning for
 // SST_ELI_REGISTER_MODULE, but there are no standard ways to do this
 class sst_eli_fake_deprecated_class
 {
 public:
-    static constexpr int fake_deprecated_function()
-        __attribute__((deprecated("SST_ELI_REGISTER_MODULE is deprecated and will be removed in SST 13. Please use the "
-                                  "new SST_ELI_REGISTER_MODULE_API and SST_ELI_REGISTER_MODULE_DERIVED macros")))
+    static constexpr int fake_deprecated_function() __attribute__((
+        deprecated("SST_ELI_REGISTER_MODULE_DERIVED is deprecated and will be removed in SST 14. Please use the "
+                   "SST_ELI_REGISTER_MODULE macro")))
     {
         return 0;
     }
 };
 
-#define SST_ELI_REGISTER_MODULE(cls, lib, name, version, desc, interface)                            \
-    static const int SST_ELI_FAKE_VALUE = sst_eli_fake_deprecated_class::fake_deprecated_function(); \
-    SST_ELI_REGISTER_DERIVED(SST::Module,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)              \
-    SST_ELI_INTERFACE_INFO(interface)
+} // namespace MODULE
+} // namespace SST
+
+#define SST_ELI_REGISTER_MODULE(cls, lib, name, version, desc, interface)               \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(#interface)
 
 // New way to register modules.  Must register an interface (API)
 // first, then you can register a module that implements it
@@ -58,8 +60,9 @@ public:
     SST_ELI_DECLARE_NEW_BASE(::base,::cls)                  \
     SST_ELI_NEW_BASE_CTOR(SST::Params&,##__VA_ARGS__)
 
-#define SST_ELI_REGISTER_MODULE_DERIVED(cls, lib, name, version, desc, interface)       \
-    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+#define SST_ELI_REGISTER_MODULE_DERIVED(cls, lib, name, version, desc, interface)                            \
+    static const int SST_ELI_FAKE_VALUE = MODULE::sst_eli_fake_deprecated_class::fake_deprecated_function(); \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)                      \
     SST_ELI_INTERFACE_INFO(#interface)
 
 #endif // SST_CORE_MODULE_H

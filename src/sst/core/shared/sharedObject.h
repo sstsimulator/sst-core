@@ -13,8 +13,8 @@
 #define SST_CORE_SHARED_SHAREDOBJECT_H
 
 #include "sst/core/output.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/serialization/serializable.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 
 #include <string>
@@ -26,8 +26,8 @@ class Simulation_impl;
 namespace Shared {
 
 namespace Private {
-Output&     getSimulationOutput();
-Simulation* getSimulation();
+Output&  getSimulationOutput();
+RankInfo getNumRanks();
 } // namespace Private
 
 // NOTE: The classes in this header file are not part of the public

@@ -14,6 +14,10 @@
 #ifndef SST_CORE_SIMULATION_H
 #define SST_CORE_SIMULATION_H
 
+#if !SST_BUILDING_CORE
+#warning "The Simulation object is being removed as part of the public API and simulation.h will be removed in SST 14"
+#endif
+
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
@@ -56,11 +60,6 @@ public:
     /** Return the end simulation time as a time */
     virtual UnitAlgebra getEndSimTime() const = 0;
 
-    /** Return the end simulation time as a time */
-    virtual UnitAlgebra getFinalSimTime() const
-        __attribute__((deprecated("getFinalSimTime() has been deprecated and will be removed in SST 13.  It has been "
-                                  "replaced by getEndSimTime()."))) = 0;
-
     /** Get this instance's parallel rank */
     virtual RankInfo getRank() const = 0;
 
@@ -71,13 +70,6 @@ public:
      *  @return Directory in which simulation outputs are placed
      */
     virtual std::string& getOutputDirectory() = 0;
-
-    /** Signifies that an event type is required for this simulation
-     *  Causes the Factory to verify that the required event type can be found.
-     *  @param name fully qualified libraryName.EventName
-     */
-    virtual void requireEvent(const std::string& name) __attribute__((deprecated(
-        "requireEvent() has been deprecated in favor or requireLibrary() and will be removed in SST 13."))) = 0;
 
     /** Signifies that a library is required for this simulation.
      *  @param name Name of the library

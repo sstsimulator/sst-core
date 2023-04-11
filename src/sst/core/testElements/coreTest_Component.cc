@@ -16,7 +16,6 @@
 #include "sst/core/testElements/coreTest_ComponentEvent.h"
 
 #include "sst/core/event.h"
-#include "sst/core/simulation.h"
 
 #include <assert.h>
 

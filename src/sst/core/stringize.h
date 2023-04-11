@@ -22,54 +22,6 @@
 
 namespace SST {
 
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(double val)
-{
-    return std::to_string(val);
-};
-
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(float val)
-{
-    return std::to_string(val);
-};
-
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(int32_t val)
-{
-    return std::to_string(val);
-};
-
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(int64_t val)
-{
-    return std::to_string(val);
-};
-
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(uint32_t val)
-{
-    return std::to_string(val);
-};
-
-__attribute__((deprecated(
-    "SST::to_string() is deprecated and will be removed in SST 13.  Please use std::to_string() instead"))) inline std::
-    string
-    to_string(uint64_t val)
-{
-    return std::to_string(val);
-};
-
 inline bool
 strcasecmp(const std::string& s1, const std::string& s2)
 {

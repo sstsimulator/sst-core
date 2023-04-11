@@ -14,7 +14,6 @@
 #include "sst/core/statapi/statoutputhdf5.h"
 
 #include "sst/core/baseComponent.h"
-#include "sst/core/simulation.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"

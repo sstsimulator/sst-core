@@ -128,7 +128,7 @@ class PortSlot : public PortInterface
 {
 public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         PortSlot,
         "coreTestElement",
         "message_mesh.port_slot",
@@ -165,7 +165,7 @@ class MessagePort : public PortInterface
 {
 public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         MessagePort,
         "coreTestElement",
         "message_mesh.message_port",
@@ -201,7 +201,7 @@ class RouteMessage : public RouteInterface
 {
 public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+    SST_ELI_REGISTER_SUBCOMPONENT(
         RouteMessage,
         "coreTestElement",
         "message_mesh.route_message",
