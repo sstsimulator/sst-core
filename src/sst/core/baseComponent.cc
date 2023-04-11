@@ -420,12 +420,6 @@ BaseComponent::getEndSimTime() const
     return sim_->getEndSimTime();
 }
 
-UnitAlgebra
-BaseComponent::getFinalSimTime() const
-{
-    return sim_->getFinalSimTime();
-}
-
 RankInfo
 BaseComponent::getRank() const
 {
@@ -565,12 +559,6 @@ BaseComponent::doesComponentInfoStatisticExist(const std::string& statisticName)
 {
     const std::string& type = my_info->getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
-}
-
-Module*
-BaseComponent::loadModule(const std::string& type, Params& params)
-{
-    return Factory::getFactory()->CreateModule(type, params);
 }
 
 StatisticProcessingEngine*

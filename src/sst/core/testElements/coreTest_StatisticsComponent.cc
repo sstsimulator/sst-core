@@ -15,7 +15,6 @@
 
 #include "sst/core/rng/marsaglia.h"
 #include "sst/core/rng/mersenne.h"
-#include "sst/core/simulation.h"
 
 using namespace SST;
 using namespace SST::RNG;

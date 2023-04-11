@@ -15,6 +15,7 @@
 
 #include "sst/core/objectComms.h"
 #include "sst/core/output.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/shared/sharedArray.h"
 #include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedSet.h"
@@ -31,10 +32,10 @@ getSimulationOutput()
     return Simulation_impl::getSimulationOutput();
 }
 
-Simulation*
-getSimulation()
+RankInfo
+getNumRanks()
 {
-    return Simulation_impl::getSimulation();
+    return Simulation_impl::getSimulation()->getNumRanks();
 }
 
 } // namespace Private

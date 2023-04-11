@@ -93,9 +93,6 @@ public:
     /** Return the end simulation time as a time */
     UnitAlgebra getEndSimTime() const override;
 
-    /** Return the end simulation time as a time */
-    UnitAlgebra getFinalSimTime() const override;
-
     /** Get this instance's parallel rank */
     RankInfo getRank() const override { return my_rank; }
 
@@ -107,12 +104,6 @@ public:
     @return Directory in which simulation outputs are placed
     */
     std::string& getOutputDirectory() override { return output_directory; }
-
-    /** Signifies that an event type is required for this simulation
-     *  Causes the Factory to verify that the required event type can be found.
-     *  @param name fully qualified libraryName.EventName
-     */
-    virtual void requireEvent(const std::string& name) override;
 
     /** Signifies that a library is required for this simulation.
      *  @param name Name of the library

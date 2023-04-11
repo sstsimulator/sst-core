@@ -15,7 +15,6 @@
 
 #include "sst/core/clock.h"
 #include "sst/core/output.h"
-#include "sst/core/simulation.h"
 
 #include <algorithm>
 

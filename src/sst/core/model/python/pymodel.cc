@@ -27,7 +27,7 @@
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/model/python/pymodel_statgroup.h"
 #include "sst/core/model/python/pymodel_unitalgebra.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
