@@ -20,7 +20,7 @@ $> cd build
 ```
 3. Execute cmake with the appropriate options (listed below).
 ```
-$> cmake ../
+$> cmake ../experimental
 ```
 4. Execute make to build the source code.  Optionally, use parallel builds and/or install the source
 ```

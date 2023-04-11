@@ -44,8 +44,6 @@ add_library(
   componentExtension.cc
   componentInfo.cc
   config.cc
-  #configBase.cc
-  #configShared.cc
   configGraph.cc
   cfgoutput/pythonConfigOutput.cc
   cfgoutput/dotConfigOutput.cc
