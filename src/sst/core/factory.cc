@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -427,82 +427,6 @@ Factory::isProfilePointValid(const std::string& type, const std::string& point)
     return false;
 }
 
-
-Module*
-Factory::CreateModule(const std::string& type, Params& params)
-{
-    if ( "" == type ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1,
-            "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
-    }
-
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(type);
-
-    std::stringstream error_os;
-    requireLibrary(elemlib, error_os);
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
-    if ( lib ) {
-        auto* info = lib->getInfo(elem);
-        if ( info ) {
-            auto* builderLib = Module::getBuilderLibraryTemplate<Params&>(elemlib);
-            if ( builderLib ) {
-                auto* fact = builderLib->getBuilder(elem);
-                if ( fact ) {
-                    params.pushAllowedKeys(info->getParamNames());
-                    Module* ret = fact->create(params);
-                    params.popAllowedKeys();
-                    return ret;
-                }
-            }
-        }
-    }
-
-    // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n", type.c_str(), error_os.str().c_str());
-    return nullptr;
-}
-
-Module*
-Factory::CreateModuleWithComponent(const std::string& type, Component* comp, Params& params)
-{
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(type);
-
-    // ensure library is already loaded...
-    std::stringstream error_os;
-    requireLibrary(elemlib, error_os);
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
-    if ( lib ) {
-        auto* info = lib->getInfo(elem);
-        if ( info ) {
-            auto* builderLib = Module::getBuilderLibraryTemplate<Component*, Params&>(elemlib);
-            if ( builderLib ) {
-                auto* fact = builderLib->getBuilder(elem);
-                if ( fact ) {
-                    params.pushAllowedKeys(info->getParamNames());
-                    Module* ret = fact->create(comp, params);
-                    params.popAllowedKeys();
-                    return ret;
-                }
-            }
-        }
-    }
-
-    // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n", type.c_str(), error_os.str().c_str());
-    return nullptr;
-}
 
 bool
 Factory::doesSubComponentExist(const std::string& type)

@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -77,12 +77,6 @@ Simulation_impl::getElapsedSimTime() const
 
 UnitAlgebra
 Simulation_impl::getEndSimTime() const
-{
-    return timeLord.getTimeBase() * getEndSimCycle();
-}
-
-UnitAlgebra
-Simulation_impl::getFinalSimTime() const
 {
     return timeLord.getTimeBase() * getEndSimCycle();
 }
@@ -220,12 +214,6 @@ Component*
 Simulation_impl::createComponent(ComponentId_t id, const std::string& name, Params& params)
 {
     return factory->CreateComponent(id, name, params);
-}
-
-void
-Simulation_impl::requireEvent(const std::string& name)
-{
-    factory->RequireEvent(name);
 }
 
 void

@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -68,19 +68,6 @@ public:
      * @param eventname - The fully qualified elementlibname.eventname type
      */
     void RequireEvent(const std::string& eventname);
-
-    /** Instantiate a new Module
-     * @param type - Fully qualified elementlibname.modulename type
-     * @param params - Parameters to pass to the Module's constructor
-     */
-    Module* CreateModule(const std::string& type, Params& params);
-
-    /** Instantiate a new Module
-     * @param type - Fully qualified elementlibname.modulename type
-     * @param comp - Component instance to pass to the Module's constructor
-     * @param params - Parameters to pass to the Module's constructor
-     */
-    Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
 
     bool doesSubComponentExist(const std::string& type);
 

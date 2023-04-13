@@ -1,6 +1,6 @@
 # **SST Testing Frameworks**
 
-#### Copyright (c) 2009-2022, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
+#### Copyright (c) 2009-2023, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
 
 ---
 
