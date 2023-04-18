@@ -55,7 +55,7 @@ class ConfigGraphOutput;
 class Params : public SST::Core::Serialization::serializable
 {
 private:
-    struct KeyCompare : std::binary_function<std::string, std::string, bool>
+    struct KeyCompare
     {
         bool operator()(const std::string& X, const std::string& Y) const
         {
