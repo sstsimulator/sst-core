@@ -75,7 +75,6 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
-	part/sstpart.h \
 	eli/elementinfo.h \
 	eli/elibase.h \
 	eli/attributeInfo.h \
@@ -324,7 +323,6 @@ sstinfo_x_LDFLAGS = \
 
 include ../../../external/tinyxml/Makefile.inc
 include ../../../external/nlohmann/Makefile.inc
-include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc
 include impl/Makefile.inc

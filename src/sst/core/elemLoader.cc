@@ -16,7 +16,6 @@
 #include "sst/core/component.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/namecheck.h"
-#include "sst/core/part/sstpart.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
 

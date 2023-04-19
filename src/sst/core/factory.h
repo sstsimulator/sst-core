@@ -15,6 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/sstpart.h"
 
 #include <mutex>
 #include <stdio.h>
