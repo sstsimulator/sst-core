@@ -36,7 +36,6 @@ REENABLE_WARNING
 #include "sst/core/memuse.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
-#include "sst/core/part/sstpart.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statengine.h"

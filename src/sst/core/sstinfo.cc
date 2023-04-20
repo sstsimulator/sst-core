@@ -18,7 +18,6 @@
 #include "sst/core/elemLoader.h"
 #include "sst/core/env/envconfig.h"
 #include "sst/core/env/envquery.h"
-#include "sst/core/part/sstpart.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
