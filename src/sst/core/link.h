@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -157,14 +157,24 @@ public:
      * Same as sendUntimedData()
      * @param init_data data to send
      */
-    void sendInitData(Event* init_data) { sendUntimedData(init_data); }
+    [[deprecated(
+        "sendInitData() has been deprecated and will be removed in SST 14.  Use sendUntimedData() instead")]] void
+    sendInitData(Event* init_data)
+    {
+        sendUntimedData(init_data);
+    }
 
     /** Receive an event (if any) during the init() or complete() phase.
      * Same as recvUntimedData()
      * @return Event if one is available
      * @return nullptr if no Event is available
      */
-    Event* recvInitData() { return recvUntimedData(); }
+    [[deprecated(
+        "recvInitData() has been deprecated and will be removed in SST 14.  Use recvUntimedData() instead")]] Event*
+    recvInitData()
+    {
+        return recvUntimedData();
+    }
 
     /** Return whether link has been configured
      * @return whether link is configured

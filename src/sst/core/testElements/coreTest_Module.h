@@ -1,13 +1,9 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
-//
-// Portions are copyright of other developers:
-// See the file CONTRIBUTORS.TXT in the top level directory
-// the distribution for more information.
 //
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
@@ -33,7 +29,7 @@ public:
 
     SST_ELI_REGISTER_MODULE_API(SST::CoreTestModule::CoreTestModuleExample)
 
-    SST_ELI_REGISTER_MODULE_DERIVED(
+    SST_ELI_REGISTER_MODULE(
         CoreTestModuleExample, "coreTestElement", "CoreTestModule", SST_ELI_ELEMENT_VERSION(1, 0, 0),
         "CoreTest module to demonstrate interface.", SST::CoreTestModule::CoreTestModuleExample)
 
