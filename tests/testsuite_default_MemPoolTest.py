@@ -53,11 +53,12 @@ class testcase_StatisticComponent(SSTTestCase):
 
 #####
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports single rank runs")
     def test_MemPool_overflow(self):
         self.Statistics_test_template("overflow", 4) # force 4 threads
 
     def test_MemPool_undeleted_items(self):
-        self.Statistics_test_template("undeleted_items") # force 4 threads
+        self.Statistics_test_template("undeleted_items")
 
 #####
 
