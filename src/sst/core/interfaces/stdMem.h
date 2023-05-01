@@ -22,6 +22,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <atomic>
+#include <climits>
 #include <map>
 #include <string>
 #include <utility>
@@ -199,7 +200,7 @@ public:
                 }
                 str << "F_TRACE";
             }
-            for ( unsigned int i = 4; i < sizeof(flags_t); i++ ) {
+            for ( unsigned int i = 4; i < sizeof(flags_t) * CHAR_BIT; i++ ) {
                 flags_t shift = 1 << i;
                 if ( getFlag(shift) ) {
                     if ( comma ) { str << ","; }
