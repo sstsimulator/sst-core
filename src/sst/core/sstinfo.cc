@@ -94,8 +94,9 @@ void        shutdownLTDL();
 static void processSSTElementFiles(std::stringstream&);
 void        outputSSTElementInfo(std::stringstream&);
 void        generateXMLOutputFile();
-void        run();
+void        runCurses();
 void        getInput();
+void        parseInput(std::string);
 void        drawWindows();
 void        setInfoText(std::string);
 void        printInfo();
@@ -113,10 +114,7 @@ main(int argc, char* argv[])
     g_searchPath = g_configuration.getLibPath();
 
     // Run curses
-    initscr();
-    cbreak();
-    noecho();
-    run();
+    runCurses();
 
     return 0;
 }
@@ -129,20 +127,60 @@ int getCursorPos(WINDOW *console)
     return pos;
 }
 
-void run() 
+void runCurses() 
 {   
+    initscr();
+    cbreak();
+    noecho();
+    
     // Initialize Windows
     drawWindows();
     
-    // Set initial text to complete info text
+    // Set initial text to all info text
+    setElementInfo(["all"]);
+
+    // Print and start reading input
+    printInfo();
+    getInput();
+    endwin();
+}
+
+void drawWindows()
+{
+    // Reset windows for redraws
+    werase(info);
+    werase(console);
+    delwin(info);
+    delwin(console);
+
+    info = newwin(LINES-3, COLS, 0, 0);
+    console = newwin(3, COLS, LINES-3, 0);
+
+    // Parameters
+    scrollok(info, true);
+    scrollok(console, false);
+    keypad(console, true);
+
+    box(console, 0, 0);
+    mvwprintw(console, 0, 1, " Console ");
+    wmove(console, 1, 1);
+    wrefresh(info);
+    wrefresh(console);
+}
+
+void setElementInfo(std::vector<std::string> args)
+{
+    if (args == ["all"]) {}
+    else {
+        for (std::string arg : args) {
+            g_configuration.addFilter(arg);
+        }
+    }
+    
     std::stringstream outputStream;
     processSSTElementFiles(outputStream);
     setInfoText(outputStream.str());
     textPos = 0;
-
-    printInfo();
-    getInput();
-    endwin();
 }
 
 void printInfo()
@@ -163,10 +201,9 @@ void getInput()
         int c = wgetch(console);
 
         if(c == '\n') {
-            //parseInput()
-            //printInfo(input);
+            parseInput(input);
 
-            // Erase and redraw
+            //Clear input window and string
             drawWindows();
             printInfo();
             input = "";
@@ -190,7 +227,6 @@ void getInput()
 
         // Scrolling
         else if (c == KEY_UP) {
-            //printInfo("UP");
             if (textPos > 0) {
                 textPos -= 1;
             }
@@ -198,7 +234,6 @@ void getInput()
 
         }
         else if (c == KEY_DOWN) {
-            //printInfo("DOWN");
             if (textPos < infoText.size()-LINES) {
                 textPos += 1;
             }
@@ -214,28 +249,52 @@ void getInput()
     }
 }
 
-void drawWindows()
+void parseInput(std::string input)
 {
-    // Reset windows for redraws
-    werase(info);
-    werase(console);
-    delwin(info);
-    delwin(console);
+    // Split into set of strings -- could be abstracted w/ setInfoText
+    std::vector<std::string> inputWords;
+    std::string delimiter = " ";
+    size_t pos = 0;
+    std::string word;
+    while ((pos = input.find(delimiter)) != std::string::npos) {
+        word = input.substr(0, pos);
+        inputWords.push_back(word);
+        input.erase(0, pos + delimiter.length());
+    }
 
-    info = newwin(LINES-3, COLS, 0, 0);
-    console = newwin(3, COLS, LINES-3, 0);
+    // Parse
+    if (inputWords.size() > 0) {
+        std::string command = inputWords[0];
+        
+        if (inputWords.size() == 1) {
+            if (command == "help") {
 
+            }
+            else if (command == "list") {
 
-    // Parameters
-    scrollok(info, true);
-    scrollok(console, false);
-    keypad(console, true);
+            }
+            else {
 
-    box(console, 0, 0);
-    mvwprintw(console, 0, 1, " Console ");
-    wmove(console, 1, 1);
-    wrefresh(info);
-    wrefresh(console);
+            }
+        }
+        else if (inputWords.size() > 1) {
+            if (command == "help") {
+
+            }
+            else if (command == "list") {
+                //Get args
+                auto start = std::next(inputWords.begin(), 1);
+                auto end = inputWords.end();
+                std::vector<std::string> args(start, end);
+
+                setElementInfo(args);
+            }
+            else {
+
+            }
+        }
+    }
+    else { return; } //No input
 }
 
 void setInfoText(std::string infoString) 
