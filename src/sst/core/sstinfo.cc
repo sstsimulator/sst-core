@@ -34,6 +34,11 @@
 #include <sys/stat.h>
 #include <ncurses.h>
 
+//REMOVE
+#include <fstream>
+#include <iostream>
+
+
 using namespace std;
 using namespace SST;
 using namespace SST::Core;
@@ -96,6 +101,7 @@ void        outputSSTElementInfo(std::stringstream&);
 void        generateXMLOutputFile();
 void        runCurses();
 void        getInput();
+void        setElementInfo(std::vector<std::string>);
 void        parseInput(std::string);
 void        drawWindows();
 void        setInfoText(std::string);
@@ -119,15 +125,17 @@ main(int argc, char* argv[])
     return 0;
 }
 
-int getCursorPos(WINDOW *console)
+int 
+getCursorPos(WINDOW *console)
 {
-    int pos, _;
-    getyx(console, _, pos);
-    _ += 1; //to please the compiler
+    int pos, h;
+    getyx(console, h, pos);
+    h += 1; //to please the compiler
     return pos;
 }
 
-void runCurses() 
+void 
+runCurses() 
 {   
     initscr();
     cbreak();
@@ -137,7 +145,7 @@ void runCurses()
     drawWindows();
     
     // Set initial text to all info text
-    setElementInfo(["all"]);
+    setElementInfo(std::vector<std::string>{"all"});
 
     // Print and start reading input
     printInfo();
@@ -145,7 +153,8 @@ void runCurses()
     endwin();
 }
 
-void drawWindows()
+void 
+drawWindows()
 {
     // Reset windows for redraws
     werase(info);
@@ -168,11 +177,12 @@ void drawWindows()
     wrefresh(console);
 }
 
-void setElementInfo(std::vector<std::string> args)
+void 
+setElementInfo(std::vector<std::string> args)
 {
-    if (args == ["all"]) {}
+    if (args == std::vector<std::string>{"all"}) {}
     else {
-        for (std::string arg : args) {
+        for (auto arg : args) {
             g_configuration.addFilter(arg);
         }
     }
@@ -183,7 +193,8 @@ void setElementInfo(std::vector<std::string> args)
     textPos = 0;
 }
 
-void printInfo()
+void 
+printInfo()
 {
     for (unsigned int i = textPos; i < textPos+LINES; i++) {
         const char *cstr = infoText[i].c_str();
@@ -193,7 +204,8 @@ void printInfo()
     wrefresh(console); //moves the cursor back into the console window
 }
 
-void getInput()
+void 
+getInput()
 {
     // Take input
     std::string input = "";
@@ -211,8 +223,6 @@ void getInput()
         // Resizing the window
         else if (c == KEY_RESIZE) {
             endwin();
-            wrefresh(info);
-            wrefresh(console);
             drawWindows();
             printInfo();
         }
@@ -249,29 +259,45 @@ void getInput()
     }
 }
 
-void parseInput(std::string input)
+void 
+parseInput(std::string input)
 {
-    // Split into set of strings -- could be abstracted w/ setInfoText
-    std::vector<std::string> inputWords;
-    std::string delimiter = " ";
-    size_t pos = 0;
+    std::ofstream output("out.txt");
+    output << "Input: " << input << "\n";
+
+    // Split into set of strings
+    std::istringstream stream(input);
     std::string word;
-    while ((pos = input.find(delimiter)) != std::string::npos) {
-        word = input.substr(0, pos);
+    std::vector<std::string> inputWords;
+    
+    while (stream >> word) {
         inputWords.push_back(word);
-        input.erase(0, pos + delimiter.length());
     }
 
     // Parse
     if (inputWords.size() > 0) {
         std::string command = inputWords[0];
+        std::string text;
+        output << "Command: " << command << "\n";
+        
         
         if (inputWords.size() == 1) {
             if (command == "help") {
+                output << "H" << "\n";
 
+                text = "--- Commands ---\n"
+                       "- Help : displays this help message"
+                       "- List {element.subelement} : displays selected elements\n"
+                       "- Open {element.subelement} : ...\n"
+                       "- Path {subelement(?)} : ...\n";
+                setInfoText(text);
             }
             else if (command == "list") {
-
+                text = "--- Commands ---\n"
+                       "- Help : displays this help message"
+                       "- List {element.subelement} : displays selected elements\n"
+                       "- Open {element.subelement} : ...\n"
+                       "- Path {subelement(?)} : ...\n";
             }
             else {
 
@@ -295,9 +321,15 @@ void parseInput(std::string input)
         }
     }
     else { return; } //No input
+
+
+    output.close();
+
+
 }
 
-void setInfoText(std::string infoString) 
+void 
+setInfoText(std::string infoString) 
 {
     // Splits the string into individual lines and stores them into the infoText vector
     std::string delimiter = "\n";
