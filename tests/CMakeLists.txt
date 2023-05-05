@@ -17,7 +17,7 @@ if(SST_ENABLE_TESTS)
   add_test(
     NAME sst-test-core
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_BINARY_DIR}/src/sst/core/testingframework/sst-test-core)
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_INSTALL_PREFIX}/bin/sst-test-core)
   set_tests_properties(sst-test-core PROPERTIES PASS_REGULAR_EXPRESSION
                                                 "TESTING PASSED")
 endif()
