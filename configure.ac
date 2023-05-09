@@ -79,6 +79,11 @@ SST_ENABLE_CORE_PROFILE()
 
 SST_CHECK_FPIC()
 
+SST_CHECK_METIS([have_metis=1],[have_metis=0],[AC_MSG_ERROR([Metis requested but not found])])
+AS_IF([test "x$have_metis" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_METIS], [1],
+        [Define if you have the metis library.])])
+AM_CONDITIONAL([HAVE_METIS], [test "$have_metis" = 1])
+
 AC_DEFINE_UNQUOTED([SST_CPPFLAGS], ["$CPPFLAGS"], [Defines the CPPFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CFLAGS], ["$CFLAGS"], [Defines the CFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CXXFLAGS], ["$CXXFLAGS"], [Defines the CXXFLAGS used to build SST])
@@ -226,6 +231,11 @@ if test "x$PYTHON_VERSION3" = "xyes" ; then
     printf "%38s : Yes\n" "Python3"
 else
     printf "%38s : No\n" "Python3"
+fi
+if test "x$sst_check_metis_happy" = "xyes" ; then
+    printf "%38s : YES\n" "Metis Partitioner"
+else
+    printf "%38s : No\n" "Metis Partitioner"
 fi
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : Yes\n" "HDF5 Support"
