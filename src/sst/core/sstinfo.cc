@@ -182,7 +182,7 @@ setElementInfo(std::vector<std::string> args)
 {
     if (args == std::vector<std::string>{"all"}) {}
     else {
-        for (auto arg : args) {
+        for (std::string arg : args) {
             g_configuration.addFilter(arg);
         }
     }
@@ -202,6 +202,7 @@ printInfo()
     }
     wrefresh(info);
     wrefresh(console); //moves the cursor back into the console window
+    wmove(console, 1, 1);
 }
 
 void 
@@ -213,7 +214,12 @@ getInput()
         int c = wgetch(console);
 
         if(c == '\n') {
-            parseInput(input);
+            //parseInput(input);
+
+            std::string text = "--- List Command ---\n"
+                                "List {element.subelement} \n"
+                                "Displays the specified element/subelement. Search ...\n";
+            setInfoText(text);
 
             //Clear input window and string
             drawWindows();
@@ -222,7 +228,6 @@ getInput()
         }
         // Resizing the window
         else if (c == KEY_RESIZE) {
-            endwin();
             drawWindows();
             printInfo();
         }
@@ -234,14 +239,12 @@ getInput()
                 input.pop_back();
             }
         }
-
         // Scrolling
         else if (c == KEY_UP) {
             if (textPos > 0) {
                 textPos -= 1;
             }
             printInfo();
-
         }
         else if (c == KEY_DOWN) {
             if (textPos < infoText.size()-LINES) {
@@ -249,7 +252,6 @@ getInput()
             }
             printInfo();
         }
-
         // Regular characters
         else if (c <= 255) {
             input += c;
@@ -280,43 +282,40 @@ parseInput(std::string input)
         std::string text;
         output << "Command: " << command << "\n";
         
-        
+        // Help messages
         if (inputWords.size() == 1) {
             if (command == "help") {
                 output << "H" << "\n";
 
                 text = "--- Commands ---\n"
-                       "- Help : displays this help message"
+                       "- Help : displays this help message\n"
                        "- List {element.subelement} : displays selected elements\n"
                        "- Open {element.subelement} : ...\n"
                        "- Path {subelement(?)} : ...\n";
                 setInfoText(text);
             }
             else if (command == "list") {
-                text = "--- Commands ---\n"
-                       "- Help : displays this help message"
-                       "- List {element.subelement} : displays selected elements\n"
-                       "- Open {element.subelement} : ...\n"
-                       "- Path {subelement(?)} : ...\n";
+                output << "L" << "\n";
+                text = "--- List Command ---\n"
+                       "List {element.subelement} \n"
+                       "Displays the specified element/subelement. Search ...\n";
+                setInfoText(text);
             }
             else {
 
             }
         }
         else if (inputWords.size() > 1) {
-            if (command == "help") {
-
-            }
-            else if (command == "list") {
+            if (command == "list") {
                 //Get args
                 auto start = std::next(inputWords.begin(), 1);
                 auto end = inputWords.end();
                 std::vector<std::string> args(start, end);
-
+    
                 setElementInfo(args);
             }
             else {
-
+                
             }
         }
     }
@@ -331,6 +330,9 @@ parseInput(std::string input)
 void 
 setInfoText(std::string infoString) 
 {
+    std::vector<std::string>().swap(infoText);
+    textPos = 0;
+
     // Splits the string into individual lines and stores them into the infoText vector
     std::string delimiter = "\n";
     size_t pos = 0;
@@ -545,6 +547,9 @@ SSTInfoConfig::outputUsage()
     cout << "  -q, --quiet              Quiet/print summary only\n";
     cout << endl;
 }
+
+
+
 
 #if 0
 void

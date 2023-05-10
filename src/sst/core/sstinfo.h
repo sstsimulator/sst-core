@@ -66,13 +66,13 @@ public:
     bool debugEnabled() const { return m_debugEnabled; }
     bool processAllElements() const { return m_filters.empty(); }
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
+    void addFilter(const std::string& name);
 
 protected:
     std::string getUsagePrelude() override;
 
 private:
     void outputUsage();
-    void addFilter(const std::string& name);
 
     int setPositionalArg(int UNUSED(num), const std::string& arg)
     {
