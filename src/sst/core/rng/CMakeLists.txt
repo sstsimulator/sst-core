@@ -22,7 +22,6 @@ set(SSTRNGHeaders
     marsaglia.h
     mersenne.h
     poisson.h
-    sstrng.h
     uniform.h
     xorshift.h)
 
