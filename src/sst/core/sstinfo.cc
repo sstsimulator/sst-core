@@ -54,6 +54,9 @@ static WINDOW                                             *console;
 static std::vector<std::string>                           infoText;
 static unsigned int                                       textPos;
 
+
+std::ofstream output("out.txt");
+
 void
 dprintf(FILE* fp, const char* fmt, ...)
 {
@@ -196,7 +199,9 @@ setElementInfo(std::vector<std::string> args)
 void 
 printInfo()
 {
-    for (unsigned int i = textPos; i < textPos+LINES; i++) {
+    unsigned int posMax = ((int)infoText.size() < LINES-3) ? textPos + infoText.size() : textPos + (LINES-3);
+
+    for (unsigned int i = textPos; i < posMax; i++) {
         const char *cstr = infoText[i].c_str();
         wprintw(info, cstr);
     }
@@ -214,12 +219,7 @@ getInput()
         int c = wgetch(console);
 
         if(c == '\n') {
-            //parseInput(input);
-
-            std::string text = "--- List Command ---\n"
-                                "List {element.subelement} \n"
-                                "Displays the specified element/subelement. Search ...\n";
-            setInfoText(text);
+            parseInput(input);
 
             //Clear input window and string
             drawWindows();
@@ -243,14 +243,14 @@ getInput()
         else if (c == KEY_UP) {
             if (textPos > 0) {
                 textPos -= 1;
-            }
-            printInfo();
+                printInfo();
+            }   
         }
         else if (c == KEY_DOWN) {
-            if (textPos < infoText.size()-LINES) {
+            if ((int)textPos < (int)infoText.size() - (int)LINES) {
                 textPos += 1;
+                printInfo();
             }
-            printInfo();
         }
         // Regular characters
         else if (c <= 255) {
@@ -258,13 +258,14 @@ getInput()
             wprintw(console, "%c", c);
             wrefresh(console);
         }
+
+        wmove(console, 1, input.size()+1);
     }
 }
 
 void 
 parseInput(std::string input)
 {
-    std::ofstream output("out.txt");
     output << "Input: " << input << "\n";
 
     // Split into set of strings
@@ -273,6 +274,7 @@ parseInput(std::string input)
     std::vector<std::string> inputWords;
     
     while (stream >> word) {
+        output << word;
         inputWords.push_back(word);
     }
 
@@ -319,30 +321,23 @@ parseInput(std::string input)
             }
         }
     }
-    else { return; } //No input
-
-
-    output.close();
-
-
 }
 
 void 
-setInfoText(std::string infoString) 
+setInfoText(std::string infoString)
 {
-    std::vector<std::string>().swap(infoText);
+    std::vector<std::string> stringVec;
     textPos = 0;
 
     // Splits the string into individual lines and stores them into the infoText vector
-    std::string delimiter = "\n";
-    size_t pos = 0;
+    std::stringstream infoStream(infoString);
     std::string line;
-    while ((pos = infoString.find(delimiter)) != std::string::npos) {
-        line = infoString.substr(0, pos);
-        line.append("\n");
-        infoText.push_back(line);
-        infoString.erase(0, pos + delimiter.length());
+
+    while(std::getline(infoStream, line, '\n')){
+        stringVec.push_back((line + "\n"));
     }
+    infoText.clear(); //clears memory
+    infoText = stringVec;
 }
 
 static void
