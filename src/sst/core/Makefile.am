@@ -293,13 +293,11 @@ sstinfo_x_SOURCES = \
 sstsim_x_LDADD = \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
-	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
 
 sstsim_x_LDFLAGS = \
-	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
@@ -308,13 +306,11 @@ sstsim_x_LDFLAGS = \
 
 sstinfo_x_LDADD = \
 	$(ZOLTAN_LIB) \
-	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
 
 sstinfo_x_LDFLAGS = \
-	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
