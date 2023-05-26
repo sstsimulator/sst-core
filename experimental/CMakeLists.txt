@@ -16,7 +16,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(
   sst-core
-  VERSION 11.1.0
+  VERSION 13.0.0
   DESCRIPTION "SSTCore"
   LANGUAGES C CXX)
 
@@ -40,7 +40,7 @@ endif()
 # Don't change this path to SST_TOP_SRC_DIR cmake lives in experimental for now.
 list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 
-find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
 find_package(Threads)
 
 option(SST_DISABLE_ZLIB "Use zlib compression library" OFF)
