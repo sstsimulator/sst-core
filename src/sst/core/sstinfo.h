@@ -53,6 +53,9 @@ public:
         return res;
     }
 
+    /** Clears the current filter map */
+    void clearFilterMap() { m_filters.clear(); }
+
     /** Return the filter map */
     FilterMap_t& getFilterMap() { return m_filters; }
 

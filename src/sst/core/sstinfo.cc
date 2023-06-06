@@ -183,7 +183,11 @@ drawWindows()
 void 
 setElementInfo(std::vector<std::string> args)
 {
-    if (args == std::vector<std::string>{"all"}) {}
+    // Reset global config
+    g_fileProcessedCount = 0;
+    g_configuration.clearFilterMap();
+
+    if (args == std::vector<std::string>{"all"}) {} //do nothing
     else {
         for (std::string arg : args) {
             g_configuration.addFilter(arg);
@@ -259,6 +263,7 @@ getInput()
             wrefresh(console);
         }
 
+        // Make sure the cursor doesn't move
         wmove(console, 1, input.size()+1);
     }
 }
@@ -314,6 +319,7 @@ parseInput(std::string input)
                 auto end = inputWords.end();
                 std::vector<std::string> args(start, end);
     
+                g_libInfoArray.clear();
                 setElementInfo(args);
             }
             else {
@@ -341,13 +347,12 @@ setInfoText(std::string infoString)
 }
 
 static void
-addELI(ElemLoader& loader, const std::string& lib, bool optional)
+addELI(ElemLoader& loader, const std::string& lib, std::stringstream& outputStream, bool optional)
 {
 
-    if ( g_configuration.debugEnabled() ) fprintf(stdout, "Looking for library \"%s\"\n", lib.c_str());
+    //if ( g_configuration.debugEnabled() ) fprintf(stdout, "Looking for library \"%s\"\n", lib.c_str());
 
-    std::stringstream err_sstr;
-    loader.loadLibrary(lib, err_sstr);
+    loader.loadLibrary(lib, outputStream);
 
     // Check to see if this library loaded into the new ELI
     // Database
@@ -356,13 +361,18 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
         g_libInfoArray.emplace_back(lib);
     }
     else if ( !optional ) {
-        fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
-        if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
+        outputStream << "**** WARNING - PROCESS LIBRARY = " << lib.c_str() << "\n";
+        //fprintf(stderr, "**** WARNING - PROCESS LIBRARY = %s\n", lib.c_str());
+
+        //if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
     }
     else {
-        fprintf(stderr, "**** %s not Found!\n", lib.c_str());
+        outputStream <<  "**** " << lib.c_str() << " not Found!\n";
+        // fprintf(stderr, "**** %s not Found!\n", lib.c_str());
+
+
         // regardless of debug - force error printing
-        std::cerr << err_sstr.str() << std::endl;
+        //std::cerr << err_sstr.str() << std::endl;
     }
 }
 
@@ -382,7 +392,7 @@ processSSTElementFiles(std::stringstream& outputStream)
     }
 
     for ( auto l : processLibs ) {
-        addELI(loader, l, g_configuration.processAllElements());
+        addELI(loader, l, outputStream, g_configuration.processAllElements());
     }
 
     // Do we output in Human Readable form
@@ -412,9 +422,17 @@ OverallOutputter::outputHumanReadable(std::stringstream& outputStream)
 
     // Tell the user what Elements will be displayed
     for ( auto& i : g_configuration.getFilterMap() ) {
-        fprintf(stdout, "Filtering output on Element = \"%s", i.first.c_str());
-        if ( !i.second.empty() ) fprintf(stdout, ".%s", i.second.c_str());
-        fprintf(stdout, "\"\n");
+        outputStream << "Filtering output on Element = \"" << i.first.c_str();
+        //fprintf(stdout, "Filtering output on Element = \"%s", i.first.c_str());
+
+
+        if ( !i.second.empty() ) {
+            outputStream << "." << i.second.c_str();
+            // fprintf(stdout, ".%s", i.second.c_str());
+        }
+
+        outputStream << "\"\n";
+        // fprintf(stdout, "\"\n");
     }
 
     // Now dump the Library Info
