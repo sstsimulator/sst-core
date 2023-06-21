@@ -252,7 +252,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
-    interThreadMinLatency  = MAX_SIMTIME_T;
+    interThreadMinLatency      = MAX_SIMTIME_T;
     int num_cross_thread_links = 0;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
