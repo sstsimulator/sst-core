@@ -54,6 +54,8 @@ endif()
 option(SST_DISABLE_MPI "Compile without MPI" OFF)
 if(NOT SST_DISABLE_MPI)
   find_package(MPI REQUIRED)
+  include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+  add_definitions(-DSST_CONFIG_HAVE_MPI)
 endif()
 
 # sst sets all the variables needed for our *.in files
