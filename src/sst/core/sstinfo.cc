@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <ncurses.h>
 
+
 //REMOVE
 #include <fstream>
 #include <iostream>
@@ -286,44 +287,71 @@ parseInput(std::string input)
     // Parse
     if (inputWords.size() > 0) {
         std::string command = inputWords[0];
-        std::string text;
+        transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert to lowercase
+
+        std::string text; // Contains output text for cases that don't search through the library
         output << "Command: " << command << "\n";
         
         // Help messages
         if (inputWords.size() == 1) {
             if (command == "help") {
-                output << "H" << "\n";
+                text = "SST-INFO\n"
+                       "\t This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
+                       "COMMANDS\n"
+                       "\t- Help : Displays this help message\n"
+                       "\t- List {element.subelement} : Displays selected elements\n"
+                       "\t- Open {element.subelement} : ...\n"
+                       "\t- Path {subelement(?)} : ...\n\n";
 
-                text = "--- Commands ---\n"
-                       "- Help : displays this help message\n"
-                       "- List {element.subelement} : displays selected elements\n"
-                       "- Open {element.subelement} : ...\n"
-                       "- Path {subelement(?)} : ...\n";
                 setInfoText(text);
             }
             else if (command == "list") {
-                output << "L" << "\n";
-                text = "--- List Command ---\n"
-                       "List {element.subelement} \n"
-                       "Displays the specified element/subelement. Search ...\n";
+                text = "LIST COMMANDS\n"
+                       "\t- List all : Display all available element libraries and their components/subcomponents\n"
+                       "\t- List types [element] : Display all types of components/subcomponents within the specified element library(s)\n"
+                       "\t- List [element(type)] : Display all components/subcomponents of the specified type ***WIP\n"
+                       "\t- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
+                       "\t'element' - Element Library\n"
+                       "\t'type' - Type of Component/Subcomponent\n"
+                       "\t'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
+                       "EXAMPLES\n"
+                       "\tlist sst.linear\n"
+                       "\tlist types sst\n"
+                       "\tlist ariel sst\n"
+                       "\tlist sst(ProfileTools)\n"
+                       "\tlist coreTestElement(SubComponents)\n"
+                       "\netc..."; //needs more
+
                 setInfoText(text);
             }
             else {
 
             }
         }
+
+        // Parse commands
         else if (inputWords.size() > 1) {
             if (command == "list") {
-                //Get args
-                auto start = std::next(inputWords.begin(), 1);
-                auto end = inputWords.end();
-                std::vector<std::string> args(start, end);
-    
-                g_libInfoArray.clear();
-                setElementInfo(args);
+                if (inputWords[1] == "types") { // NOT case-insensitive (will be when all input gets converted to lowercase)
+                    std::set<std::string> types = g_libInfoArray[0].getTypeList();
+                    for (auto s : types) {
+                        text += s + "\n";
+                    }
+
+                    setInfoText(text);
+                }
+                else {
+                    //Get args
+                    auto start = std::next(inputWords.begin(), 1);
+                    auto end = inputWords.end();
+                    std::vector<std::string> args(start, end);
+        
+                    g_libInfoArray.clear();
+                    setElementInfo(args);
+                }
             }
             else {
-                
+                //More commands here
             }
         }
     }
@@ -677,7 +705,10 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
     if ( lib ) {
         // Only print if there is something of that type in the library
         if ( lib->numEntries() != 0 ) {
-            os << BaseType::ELI_baseName() << "s (" << lib->numEntries() << " total)\n";
+            std::string typeEntry = std::string(BaseType::ELI_baseName()) + "s (" + std::to_string(lib->numEntries()) + " total)";
+            typeList.insert(typeEntry);
+            os << typeEntry << "\n";
+
             int idx = 0;
             // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
             // actually a Base::BuilderInfo and the implementation is in

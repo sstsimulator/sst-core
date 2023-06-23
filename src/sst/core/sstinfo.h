@@ -178,8 +178,11 @@ public:
 
     std::string getLibraryDescription() { return ""; }
 
+    std::set<std::string> getTypeList() { return typeList; }
+
 private:
     std::string m_name;
+    std::set<std::string> typeList;
 };
 
 } // namespace SST
