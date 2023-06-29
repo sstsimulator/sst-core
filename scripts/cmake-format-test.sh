@@ -9,6 +9,22 @@ fi
 
 CMAKE_FORMAT_EXE="$(command -v cmake-format)"
 CMAKE_FORMAT_ARG="--check"
+CMAKE_FORMAT_OUTFILE="cmake_format_results.txt"
+
+while :; do
+    case $1 in
+        -h | --help)
+            echo "Run as scripts/cmake-format-test.sh [--format-exe <path_to_cmake-format>]"
+            exit
+            ;;
+        -i)
+            CMAKE_FORMAT_ARG="-i"
+            shift
+            ;;
+        * )
+            break
+    esac
+done
 
 echo "Using cmake-format '${CMAKE_FORMAT_EXE}' with arguments '${CMAKE_FORMAT_ARG}'."
 
@@ -24,7 +40,7 @@ echo "======================================="
 
 find . -type d \( $DIRS_TO_SKIP \) -prune -false \
      -o \( -type f -name '*.cmake' -o -name 'CMakeLists.txt' \) \
-     -exec "${CMAKE_FORMAT_EXE}" "${CMAKE_FORMAT_ARG}" '{}' + > cmake_format_results.txt 2>&1
+     -exec "${CMAKE_FORMAT_EXE}" "${CMAKE_FORMAT_ARG}" '{}' + > "${CMAKE_FORMAT_OUTFILE}" 2>&1
 rtncode=$?
 echo "=== CMAKE-FORMAT FINISHED CHECKS WITH RTN CODE $rtncode"
 
@@ -33,9 +49,9 @@ export FINAL_TEST_RESULT=0
 
 # Evaluate the Results
 echo
-if [ -s ./cmake_format_results_h.txt ]; then
+if [ -s "${CMAKE_FORMAT_OUTFILE}" ]; then
   echo "=== CMAKE FORMAT RESULT FILE IS IS NOT EMPTY - FAILURE"
-  cat ./cmake_format_results.txt
+  cat "${CMAKE_FORMAT_OUTFILE}"
   export FINAL_TEST_RESULT=1
 else
   echo "=== CMAKE FORMAT RESULT FILE IS EMPTY - SUCCESS"
@@ -45,9 +61,9 @@ fi
 echo
 echo "========================================"
 if [ $FINAL_TEST_RESULT == 0 ]; then
-echo "=== FINAL TEST RESULT = ($FINAL_TEST_RESULT) - PASSED ==="
+    echo "=== FINAL TEST RESULT = ($FINAL_TEST_RESULT) - PASSED ==="
 else
-echo "=== FINAL TEST RESULT = ($FINAL_TEST_RESULT) - FAILED ==="
+    echo "=== FINAL TEST RESULT = ($FINAL_TEST_RESULT) - FAILED ==="
 fi
 echo "========================================"
 echo
