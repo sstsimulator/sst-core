@@ -10,6 +10,7 @@
 Makefile.in
 libltdl
 clang_format_results*
+cmake_format_results*
 Makefile
 src/sst/core/sst.x
 src/sst/core/sst
