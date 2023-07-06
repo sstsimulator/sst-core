@@ -43,7 +43,6 @@ if(APPLE)
                       "LINKER:-undefined,dynamic_lookup")
 endif()
 
-
 # NEED To figure out how to deal with distributing the README
 
 # EOF

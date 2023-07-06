@@ -75,13 +75,11 @@ add_library(
   module.cc
   sstpart.cc
   timeVortex.cc
-
   profile/clockHandlerProfileTool.cc
   profile/componentProfileTool.cc
   profile/eventHandlerProfileTool.cc
   profile/syncProfileTool.cc
   profile/profiletool.cc
-
   serialization/serializable.cc
   serialization/serialize_serializable.cc
   serialization/serializer.cc

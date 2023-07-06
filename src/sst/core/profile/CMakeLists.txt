@@ -14,11 +14,7 @@
 # ~~~
 #
 
-set(SSTprofileHeaders 
-    componentProfileTool.h
-    profiletool.h
-
-)
+set(SSTprofileHeaders componentProfileTool.h profiletool.h)
 
 install(FILES ${SSTprofileHeaders} DESTINATION "include/sst/core/profile")
 
