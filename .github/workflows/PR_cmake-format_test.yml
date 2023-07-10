@@ -68,7 +68,7 @@ jobs:
     - name: Run cmake-format
       uses: PuneetMatharu/cmake-format-lint-action@a7e22edff1347b154dc1a0e8f900c450303efdf7 # v1.0.2
       with:
-        args: --config-files .cmake-format.yaml --check
+        args: --config-files experimental/.cmake-format.yaml --check
 
 
 #############################################
