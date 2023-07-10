@@ -33,8 +33,6 @@ while :; do
     esac
 done
 
-echo "Using cmake-format '${CMAKE_FORMAT_EXE}' with arguments '${CMAKE_FORMAT_ARG}'."
-
 # Setup SST-Core Directories to be skipped for cmake-format checks
 DIRS_TO_SKIP="-path ./build "
 DIRS_TO_SKIP="$DIRS_TO_SKIP -or -path ./src/sst/core/libltdl"
@@ -53,19 +51,27 @@ rtncode=$?
 
 echo "=== FIND FINISHED CHECKS WITH RTN CODE $rtncode"
 
+echo "Using cmake-format '${CMAKE_FORMAT_EXE}' with arguments '${CMAKE_FORMAT_ARG}'."
+
 echo "======================================="
 echo "=== PERFORMING CMAKE-FORMAT TESTING ==="
 echo "======================================="
 
-< "${CMAKE_CHECK_FILES}" xargs "${CMAKE_FORMAT_EXE}" "${CMAKE_FORMAT_ARG}" > "${CMAKE_FORMAT_OUTFILE}" 2>&1
+< "${CMAKE_CHECK_FILES}" xargs "${CMAKE_FORMAT_EXE}" "${CMAKE_FORMAT_ARG}" \
+  "--config-files=./experimental/.cmake-format.yaml" \
+  > "${CMAKE_FORMAT_OUTFILE}" 2>&1
 rtncode=$?
 echo "=== CMAKE-FORMAT FINISHED CHECKS WITH RTN CODE $rtncode"
+
+echo "Using cmake-lint '${CMAKE_LINT_EXE}' with arguments '${CMAKE_LINT_ARG}'."
 
 echo "======================================="
 echo "=== PERFORMING CMAKE-LINT TESTING ==="
 echo "======================================="
 
-< "${CMAKE_CHECK_FILES}" xargs "${CMAKE_LINT_EXE}" "${CMAKE_LINT_ARG}" > "${CMAKE_LINT_OUTFILE}" 2>&1
+< "${CMAKE_CHECK_FILES}" xargs "${CMAKE_LINT_EXE}" "${CMAKE_LINT_ARG}" \
+  "--config-files=./experimental/.cmake-format.yaml" \
+  > "${CMAKE_LINT_OUTFILE}" 2>&1
 rtncode=$?
 touch "${CMAKE_LINT_OUTFILE}"
 echo "=== CMAKE-LINT FINISHED CHECKS WITH RTN CODE $rtncode"
