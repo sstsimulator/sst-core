@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request_target:
     branches-ignore:
-    - master
+      - master
 # Push option may be used in the future for developers forks
 #  push:
 #    branches-ignore:
@@ -47,16 +47,16 @@ jobs:
 
 # Set the WIP label immediately before testing
     - name: SET WIP Label before testing
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.addLabels({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['AT: WIP']
-          })
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: WIP']
+            })
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
@@ -77,98 +77,98 @@ jobs:
 
 # Label the Results - FOR FAILURE
     - name: ADD FAIL + WIP Label Results for Failure
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.addLabels({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['AT: CMAKE-FORMAT FAIL', 'AT: WIP']
-          })
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: CMAKE-FORMAT FAIL', 'AT: WIP']
+            })
       if: ${{ failure() }}
 
     - name: REMOVE PASS Label Results for Failure
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.removeLabel({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            name: 'AT: CMAKE-FORMAT PASS'
-          })
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: CMAKE-FORMAT PASS'
+            })
       if: ${{ failure() }}
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT FAIL
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: '**CMAKE-FORMAT TEST - FAILED** (on last commit): <br>Run > ./scripts/cmake-format-test.sh using cmake-format to check formatting'
-          })
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**CMAKE-FORMAT TEST - FAILED** (on last commit): <br>Run > ./scripts/cmake-format-test.sh using cmake-format to check formatting'
+            })
       if: ${{ failure() }}
 
 #############################
 
 # Label the Results - FOR SUCCESS
     - name: ADD PASS Label Results for Success
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.addLabels({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['AT: CMAKE-FORMAT PASS']
-          })
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: CMAKE-FORMAT PASS']
+            })
       if: ${{ success() }}
 
     - name: REMOVE WIP Label Results for Success
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.removeLabel({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            name: 'AT: WIP'
-          })
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: WIP'
+            })
       if: ${{ success() }}
       continue-on-error: true
 
     - name: REMOVE FAIL Label Results for Success
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.removeLabel({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            name: 'AT: CMAKE-FORMAT FAIL'
-          })
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: CMAKE-FORMAT FAIL'
+            })
       if: ${{ success() }}
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT SUCCESS
-      uses: actions/github-script@v6
+      uses: actions/github-script@v4
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: '**CMAKE-FORMAT TEST - PASSED**'
-          })
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**CMAKE-FORMAT TEST - PASSED**'
+            })
       if: ${{ success() }}
