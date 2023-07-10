@@ -1,3 +1,4 @@
+# ~~~
 # SST-CORE src/sst/core/testElements CMake
 #
 # Copyright 2009-2023 NTESS. Under the terms
@@ -10,6 +11,7 @@
 # This file is part of the SST software package. For license
 # information, see the LICENSE file in the top level directory of the
 # distribution.
+# ~~~
 #
 
 add_library(
@@ -40,7 +42,6 @@ if(APPLE)
   target_link_options(coreTestElement PRIVATE
                       "LINKER:-undefined,dynamic_lookup")
 endif()
-
 
 # NEED To figure out how to deal with distributing the README
 
