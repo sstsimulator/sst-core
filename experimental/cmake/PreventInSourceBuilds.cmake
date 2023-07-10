@@ -1,6 +1,9 @@
-# From cpp-best-practices/cpp_starter_project This code is in the public domain
-# This function will prevent in-source builds
-function(AssureOutOfSourceBuilds)
+# ~~~
+# cmake-lint: disable=C0301
+# From https://github.com/cpp-best-practices/cmake_template/blob/e2a8aef3997405a452c438f0181d91ff03c1e78d/cmake/PreventInSourceBuilds.cmake#L4.
+# This code is in the public domain.  This function will prevent in-source builds.
+# ~~~
+function(assure_out_of_source_builds)
   # make sure the user doesn't play dirty with symlinks
   get_filename_component(srcdir "${SST_TOP_SRC_DIR}" REALPATH)
   get_filename_component(bindir "${CMAKE_BINARY_DIR}" REALPATH)
@@ -22,4 +25,4 @@ function(AssureOutOfSourceBuilds)
   endif()
 endfunction()
 
-assureoutofsourcebuilds()
+assure_out_of_source_builds()
