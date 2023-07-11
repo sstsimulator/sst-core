@@ -65,7 +65,7 @@ public:
     /** Constant, default value for id_types */
     static const id_type             NO_ID;
 
-    Event() : Activity()
+    Event() : Activity(), delivery_info(0)
     {
         setPriority(EVENTPRIORITY);
 #if __SST_DEBUG_EVENT_TRACKING__
