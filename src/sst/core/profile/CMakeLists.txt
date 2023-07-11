@@ -1,3 +1,4 @@
+# ~~~
 # SST-CORE src/sst/core/profile CMake
 #
 # Copyright 2009-2023 NTESS. Under the terms
@@ -10,13 +11,10 @@
 # This file is part of the SST software package. For license
 # information, see the LICENSE file in the top level directory of the
 # distribution.
+# ~~~
 #
 
-set(SSTprofileHeaders 
-    componentProfileTool.h
-    profiletool.h
-
-)
+set(SSTprofileHeaders componentProfileTool.h profiletool.h)
 
 install(FILES ${SSTprofileHeaders} DESTINATION "include/sst/core/profile")
 

@@ -1,3 +1,4 @@
+# ~~~
 # SST-CORE Top-Level CMake
 #
 # Copyright 2009-2023 NTESS. Under the terms
@@ -10,6 +11,7 @@
 # This file is part of the SST software package. For license
 # information, see the LICENSE file in the top level directory of the
 # distribution.
+# ~~~
 
 cmake_minimum_required(VERSION 3.16)
 project(
