@@ -16,19 +16,20 @@
 
 add_library(
   coreTestElement MODULE
-  coreTest_Component.cc
   coreTest_ClockerComponent.cc
+  coreTest_Component.cc
   coreTest_DistribComponent.cc
-  coreTest_RNGComponent.cc
-  coreTest_Serialization.cc
-  coreTest_StatisticsComponent.cc
   coreTest_Links.cc
+  coreTest_MemPoolTest.cc
   coreTest_MessageGeneratorComponent.cc
-  coreTest_SharedObjectComponent.cc
-  coreTest_SubComponent.cc
   coreTest_Module.cc
   coreTest_ParamComponent.cc
-  coreTest_PerfComponent.cc)
+  coreTest_PerfComponent.cc
+  coreTest_RNGComponent.cc
+  coreTest_Serialization.cc
+  coreTest_SharedObjectComponent.cc
+  coreTest_StatisticsComponent.cc
+  coreTest_SubComponent.cc)
 
 add_subdirectory(message_mesh)
 
