@@ -78,7 +78,7 @@ public:
     }
 
 protected:
-    ser_buffer_accessor() : bufstart_(nullptr), bufptr_(nullptr), size_(0) {}
+    ser_buffer_accessor() : bufstart_(nullptr), bufptr_(nullptr), size_(0), max_size_(0) {}
 
 protected:
     char*  bufstart_;
