@@ -16,6 +16,7 @@
 
 #include "sst/core/from_string.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <sstream>
