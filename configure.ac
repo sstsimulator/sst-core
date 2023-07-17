@@ -140,7 +140,7 @@ AC_CACHE_SAVE
 
 dnl Remove flags like -g, -O, and -W, that are not needed by other elements
 export_flag_cleanup() {
-  echo "$1" | sed -E -e 's/ *-(g@<:@^@<:@:space:@:>@@:>@*|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'
+  echo "$1" | sed -E -e 's/ *-(@<:@gO@:>@@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'
 }
 SST_EXPORT_CXXFLAGS=`export_flag_cleanup "$CXXFLAGS"`
 SST_EXPORT_CFLAGS=`export_flag_cleanup "$CFLAGS"`
