@@ -26,6 +26,9 @@
 /* Define to 1 if you have the `argz_stringify' function. */
 #cmakedefine HAVE_ARGZ_STRINGIFY 1
 
+/* Defines if the backtrace function is avalible */
+#cmakedefine HAVE_BACKTRACE 1
+
 /* Define to 1 if you have the `closedir' function. */
 #cmakedefine HAVE_CLOSEDIR 1
 
@@ -59,6 +62,9 @@
 
 /* Define to 1 if the system has the type `error_t'. */
 #cmakedefine HAVE_ERROR_T 1
+
+/* Define to 1 if you have the <execinfo.h> header file. */
+#cmakedefine HAVE_EXECINFO_H 1
 
 /* Defines whether we have the hdf5 library */
 #cmakedefine HAVE_HDF5
