@@ -66,7 +66,7 @@ jobs:
 
 #   Running the github action for cmake format
     - name: Run cmake-format
-      uses: PuneetMatharu/cmake-format-lint-action@a7e22edff1347b154dc1a0e8f900c450303efdf7 # v1.0.2
+      uses: PuneetMatharu/cmake-format-lint-action@153d95f1343baa771b35d1410b3e61d37130cf6e # v1.0.3
       with:
         args: --config-files experimental/.cmake-format.yaml --check
 
