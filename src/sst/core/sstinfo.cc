@@ -246,7 +246,7 @@ OverallOutputter::outputXML()
     XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
-SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, true)
+SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, {})
 {
     using namespace std::placeholders;
 

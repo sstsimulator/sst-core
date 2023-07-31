@@ -34,7 +34,14 @@ class ConfigHelper
 {
 public:
     // Print usage
-    static int printHelp(Config* cfg, const std::string& UNUSED(arg)) { return cfg->printUsage(); }
+    static int printUsage(Config* cfg, const std::string& UNUSED(arg)) { return cfg->printUsage(); }
+
+    // Print usage
+    static int printHelp(Config* cfg, const std::string& arg)
+    {
+        if ( arg != "" ) return cfg->printExtHelp(arg);
+        return cfg->printUsage();
+    }
 
     // Prints the SST version
     static int printVersion(Config* UNUSED(cfg), const std::string& UNUSED(arg))
@@ -355,6 +362,39 @@ public:
         return 0;
     }
 
+    static std::string getProfilingExtHelp()
+    {
+        std::string msg = "Profiling Points [EXPERIMENTAL]:\n\n";
+        msg.append(
+            "NOTE: Profiling points are still in development and syntax for enabling profiling tools, as well as "
+            "available profiling points is subject to change.  However, it is intended that profiling points "
+            "will continue to be supported into the future.\n\n");
+        msg.append("  Profiling points are points in the code where a profiling tool can be instantiated.  The "
+                   "profiling tool allows you to collect various data about code segments.  There are currently three "
+                   "profiling points in SST core:\n");
+        msg.append("   - clock: profiles calls to user registered clock handlers\n");
+        msg.append("   - event: profiles calls to user registered event handlers set on Links\n");
+        msg.append("   - sync: profiles calls into the SyncManager (only valid for parallel simulations)\n");
+        msg.append("\n");
+        msg.append("  The format for enabling profile point is a semicolon separated list where each item specifies "
+                   "details for a given profiling tool using the following format:\n");
+        msg.append("   name:type(params)[point]\n");
+        msg.append("     name: name of tool to be shown in output\n");
+        msg.append("     type: type of profiling tool in ELI format (lib.type)\n");
+        msg.append("     params: optional parameters to pass to profiling tool, format is key=value,key=value...\n");
+        msg.append("     point: profiling point to load the tool into\n");
+        msg.append("\n");
+        msg.append("Profiling tools can all be enabled in a single instance of --enable-profiling, or you can use "
+                   "multiple instances of --enable-profiling can be used to enable more than one profiling tool.  It "
+                   "is also possible to attach more than one profiling tool to a given profiling point.\n");
+        msg.append("\n");
+        msg.append("Examples:\n");
+        msg.append(
+            "  --enable-profiling=\"events:sst.profile.handler.event.time.high_resolution(level=component)[event]\"\n");
+        msg.append("  --enable-profiling=\"clocks:sst.profile.handler.clock.count(level=subcomponent)[clock]\"\n");
+        msg.append("  --enable-profiling=sync:sst.profile.sync.time.steady[sync]\n");
+        return msg;
+    }
 
     // Advanced options - debug
 
@@ -464,8 +504,13 @@ Config::print()
     std::cout << "no_env_config = " << no_env_config_ << std::endl;
 }
 
+static std::vector<AnnotationInfo> annotations = {
+    { 'S',
+      "Options annotated with 'S' can be set in the SDL file (input configuration file)\n  - Note: Options set on the "
+      "command line take precedence over options set in the SDL file\n" }
+};
 
-Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, false)
+Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, annotations)
 {
     // Basic Options
     first_rank_ = first_rank;
@@ -567,7 +612,10 @@ Config::insertOptions()
     using namespace std::placeholders;
     /* Informational options */
     DEF_SECTION_HEADING("Informational Options");
-    DEF_FLAG("help", 'h', "Print help message", std::bind(&ConfigHelper::printHelp, this, _1));
+    DEF_FLAG("usage", 'h', "Print usage information.", std::bind(&ConfigHelper::printUsage, this, _1));
+    DEF_ARG(
+        "help", 0, "option", "Print extended help information for requested option.",
+        std::bind(&ConfigHelper::printHelp, this, _1), false);
     DEF_FLAG("version", 'V', "Print SST Release Version", std::bind(&ConfigHelper::printVersion, this, _1));
 
     /* Basic Options */
@@ -679,11 +727,11 @@ Config::insertOptions()
 
     /* Advanced Features - Profiling */
     DEF_SECTION_HEADING("Advanced Options - Profiling (EXPERIMENTAL)");
-    DEF_ARG(
+    DEF_ARG_EH(
         "enable-profiling", 0, "POINTS",
         "Enables default profiling for the specified points.  Argument is a semicolon separated list specifying the "
         "points to enable.",
-        std::bind(&ConfigHelper::enableProfiling, this, _1), true);
+        std::bind(&ConfigHelper::enableProfiling, this, _1), std::bind(&ConfigHelper::getProfilingExtHelp), true);
     DEF_ARG(
         "profiling-output", 0, "FILE", "Set output location for profiling data [stdout (default) or a filename]",
         std::bind(&ConfigHelper::setProfilingOutput, this, _1), true);
@@ -721,8 +769,6 @@ Config::getUsagePrelude()
 {
     std::string prelude = "Usage: sst [options] config-file\n";
     prelude.append("  Arguments to options contained in [] are optional\n");
-    prelude.append("  Options available to be set in the sdl file (input configuration file) are denoted by (S)\n");
-    prelude.append("   - Options set on the command line take precedence over options set in the SDL file\n");
     prelude.append("  Notes on flag options (options that take an optional BOOL value):\n");
     prelude.append("   - BOOL values can be expressed as true/false, yes/no, on/off or 1/0\n");
     prelude.append("   - Program default for flags is false\n");
@@ -782,7 +828,11 @@ Config::checkArgsAfterParsing()
 bool
 Config::setOptionFromModel(const string& entryName, const string& value)
 {
-    return setOptionExternal(entryName, value);
+    // Check to make sure option is settable in the SDL file
+    if ( getAnnotation(entryName, 'S') ) { return setOptionExternal(entryName, value); }
+    fprintf(stderr, "ERROR: Option \"%s\" is not available to be set in the SDL file\n", entryName.c_str());
+    exit(-1);
+    return false;
 }
 
 

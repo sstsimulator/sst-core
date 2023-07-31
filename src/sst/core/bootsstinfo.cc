@@ -23,7 +23,7 @@ main(int argc, char* argv[])
     // for the wrapper.  We will suppress output so that it won't
     // report unknown options which are only parsed by the actual
     // sst-info executable.
-    SST::ConfigShared cfg(true, true, true, true, true);
+    SST::ConfigShared cfg(true, true, true, true);
 
     // Make a copy of the argv array (shallow)
     char* argv_copy[argc + 1];

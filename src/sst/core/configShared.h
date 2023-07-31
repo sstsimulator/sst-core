@@ -37,10 +37,10 @@ public:
 
     /**
        ConfigShared constructor that it meant to be used when needing
-       a stand only ConfigShared (i.e. for the bootstrap wrappers for
+       a stand alone ConfigShared (i.e. for the bootstrap wrappers for
        sst and sst-info
     */
-    ConfigShared(bool suppress_print, bool suppress_sdl, bool include_libpath, bool include_env, bool include_verbose);
+    ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose);
 
 protected:
     void addLibraryPathOptions();
@@ -50,7 +50,7 @@ protected:
     /**
        ConfigShared constructor for child classes
      */
-    ConfigShared(bool suppress_print, bool suppress_sdl);
+    ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations);
 
     /**
        Default constructor used for serialization.  At this point,

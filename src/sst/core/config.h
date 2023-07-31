@@ -53,7 +53,7 @@ private:
        Default constructor used for serialization.  At this point,
        first_rank_ is no longer needed, so just initialize to false.
      */
-    Config() : ConfigShared(true, true), first_rank_(false) {}
+    Config() : ConfigShared(true, {}), first_rank_(false) {}
 
     //// Functions for use in main
 
