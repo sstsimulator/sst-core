@@ -139,8 +139,11 @@ AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST 
 AC_CACHE_SAVE
 
 dnl Remove flags like -g, -O, and -W, that are not needed by other elements
-SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
-SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
+export_flag_cleanup() {
+  echo "$1" | sed -E -e 's/ *-(@<:@gO@:>@@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'
+}
+SST_EXPORT_CXXFLAGS=`export_flag_cleanup "$CXXFLAGS"`
+SST_EXPORT_CFLAGS=`export_flag_cleanup "$CFLAGS"`
 AC_SUBST(SST_EXPORT_CXXFLAGS)
 AC_SUBST(SST_EXPORT_CFLAGS)
 

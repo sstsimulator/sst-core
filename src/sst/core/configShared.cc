@@ -21,9 +21,8 @@ using namespace std;
 
 namespace SST {
 
-ConfigShared::ConfigShared(
-    bool suppress_print, bool suppress_sdl, bool include_libpath, bool include_env, bool include_verbose) :
-    ConfigBase(suppress_print, suppress_sdl)
+ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose) :
+    ConfigBase(suppress_print)
 {
     if ( include_libpath ) addLibraryPathOptions();
     if ( include_env ) addEnvironmentOptions();
@@ -31,7 +30,9 @@ ConfigShared::ConfigShared(
 }
 
 
-ConfigShared::ConfigShared(bool suppress_print, bool suppress_sdl) : ConfigBase(suppress_print, suppress_sdl) {}
+ConfigShared::ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations) :
+    ConfigBase(suppress_print, annotations)
+{}
 
 void
 ConfigShared::addLibraryPathOptions()
