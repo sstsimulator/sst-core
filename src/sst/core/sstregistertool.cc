@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -141,6 +142,8 @@ sstRegister(char* argv[])
     fclose(cfgFile);
 }
 
+namespace fs = std::filesystem;
+
 // sstUnregister
 // Takes a string argument and searches the sstsimulator config file for that name.
 // Removes the component from the file - unregistering it from SST
@@ -174,11 +177,17 @@ sstUnregister(const std::string& element)
 
     if ( found ) { std::cout << "\tModel " << element << " has been unregistered!\n"; }
     else
-        std::cout << "Model " << element << " not found\n\n";
+        std::cout << "\tModel " << element << " not found\n\n";
 
     infile.close();
     outfile.close();
-    rename(tempfile.c_str(), cfgPath);
+    try {
+        fs::rename(tempfile.c_str(), cfgPath);
+    // } catch (fs::filesystem_error const &ex) {
+    } catch (...) {
+        std::cerr << "\tError moving " << tempfile.c_str() << " to " << cfgPath << "\n";
+        // std::cerr << ex.what() << std::endl;
+    }
 }
 
 // listModels
