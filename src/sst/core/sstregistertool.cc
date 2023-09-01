@@ -151,14 +151,12 @@ namespace fs = std::filesystem;
 void
 sstUnregister(const std::string& element)
 {
-    std::string str1;
-    std::string s = "";
-    std::string tempfile;
-    int         found = 0;
-
     // setup element names to look for
-    str1     = START_DELIMITER + element + STOP_DELIMITER;
-    tempfile = "/tmp/sstsimulator.conf";
+    const std::string str1     = START_DELIMITER + element + STOP_DELIMITER;
+    const fs::path    tempfile = fs::temp_directory_path() / "sstsimulator.conf";
+
+    std::string s     = "";
+    int         found = 0;
 
     std::ifstream infile(cfgPath);
     std::ofstream outfile(tempfile);
@@ -181,12 +179,18 @@ sstUnregister(const std::string& element)
 
     infile.close();
     outfile.close();
-    try {
-        fs::rename(tempfile.c_str(), cfgPath);
-    // } catch (fs::filesystem_error const &ex) {
-    } catch (...) {
-        std::cerr << "\tError moving " << tempfile.c_str() << " to " << cfgPath << "\n";
-        // std::cerr << ex.what() << std::endl;
+
+    if ( !fs::remove(cfgPath) ) {
+        std::cerr << "\tError removing " << cfgPath << " before moving updated config\n";
+        return;
+    }
+    if ( !fs::copy_file(tempfile, cfgPath) ) {
+        std::cerr << "\tError copying updated config" << tempfile << " to " << cfgPath << "\n";
+        return;
+    }
+    if ( !fs::remove(tempfile) ) {
+        std::cerr << "\tError removing " << tempfile << " after moving updated config\n";
+        return;
     }
 }
 
