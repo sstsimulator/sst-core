@@ -150,7 +150,7 @@ sstUnregister(const std::string& element)
 {
     // setup element names to look for
     const std::string str1     = START_DELIMITER + element + STOP_DELIMITER;
-    const auto        tempfile = "/tmp/sstsimulator.conf";
+    const auto        tempfile = std::tmpnam(nullptr);
 
     std::string s     = "";
     int         found = 0;
