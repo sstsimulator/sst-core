@@ -17,7 +17,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -142,8 +141,6 @@ sstRegister(char* argv[])
     fclose(cfgFile);
 }
 
-namespace fs = std::filesystem;
-
 // sstUnregister
 // Takes a string argument and searches the sstsimulator config file for that name.
 // Removes the component from the file - unregistering it from SST
@@ -153,7 +150,7 @@ sstUnregister(const std::string& element)
 {
     // setup element names to look for
     const std::string str1     = START_DELIMITER + element + STOP_DELIMITER;
-    const fs::path    tempfile = fs::temp_directory_path() / "sstsimulator.conf";
+    const auto        tempfile = "/tmp/sstsimulator.conf";
 
     std::string s     = "";
     int         found = 0;
@@ -180,15 +177,14 @@ sstUnregister(const std::string& element)
     infile.close();
     outfile.close();
 
-    if ( !fs::remove(cfgPath) ) {
+    if ( std::remove(cfgPath) != 0 ) {
         std::cerr << "\tError removing " << cfgPath << " before moving updated config\n";
         return;
     }
-    if ( !fs::copy_file(tempfile, cfgPath) ) {
-        std::cerr << "\tError copying updated config" << tempfile << " to " << cfgPath << "\n";
-        return;
-    }
-    if ( !fs::remove(tempfile) ) {
+    infile  = std::ifstream(tempfile, std::ios::binary);
+    outfile = std::ofstream(cfgPath, std::ios::binary);
+    outfile << infile.rdbuf();
+    if ( std::remove(tempfile) != 0 ) {
         std::cerr << "\tError removing " << tempfile << " after moving updated config\n";
         return;
     }
