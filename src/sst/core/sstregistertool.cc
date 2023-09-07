@@ -148,14 +148,12 @@ sstRegister(char* argv[])
 void
 sstUnregister(const std::string& element)
 {
-    std::string str1;
-    std::string s = "";
-    std::string tempfile;
-    int         found = 0;
-
     // setup element names to look for
-    str1     = START_DELIMITER + element + STOP_DELIMITER;
-    tempfile = "/tmp/sstsimulator.conf";
+    const std::string str1     = START_DELIMITER + element + STOP_DELIMITER;
+    const auto        tempfile = std::tmpnam(nullptr);
+
+    std::string s     = "";
+    int         found = 0;
 
     std::ifstream infile(cfgPath);
     std::ofstream outfile(tempfile);
@@ -174,11 +172,22 @@ sstUnregister(const std::string& element)
 
     if ( found ) { std::cout << "\tModel " << element << " has been unregistered!\n"; }
     else
-        std::cout << "Model " << element << " not found\n\n";
+        std::cout << "\tModel " << element << " not found\n\n";
 
     infile.close();
     outfile.close();
-    rename(tempfile.c_str(), cfgPath);
+
+    if ( std::remove(cfgPath) != 0 ) {
+        std::cerr << "\tError removing " << cfgPath << " before moving updated config\n";
+        return;
+    }
+    infile  = std::ifstream(tempfile, std::ios::binary);
+    outfile = std::ofstream(cfgPath, std::ios::binary);
+    outfile << infile.rdbuf();
+    if ( std::remove(tempfile) != 0 ) {
+        std::cerr << "\tError removing " << tempfile << " after moving updated config\n";
+        return;
+    }
 }
 
 // listModels
