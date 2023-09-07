@@ -13,8 +13,6 @@
 # distribution.
 # ~~~
 
-# TODO Remove this set set(prefix ${CMAKE_INSTALL_PREFIX})
-
 message(
   STATUS "SST: PREPROCESSING ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in
