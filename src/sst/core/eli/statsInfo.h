@@ -90,7 +90,7 @@ public:
     {                                                                                                              \
         static std::vector<SST::ElementInfoStatistic> var    = { __VA_ARGS__ };                                    \
         auto parent = SST::ELI::InfoStats<                                                                         \
-            std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
         SST::ELI::combineEliInfo(var, parent);                                                                     \
         return var;                                                                                                \
     }
