@@ -16,23 +16,30 @@
 cmake_minimum_required(VERSION 3.16)
 project(
   sst-core
-  VERSION 11.1.0
+  VERSION 13.0.0
   DESCRIPTION "SSTCore"
   LANGUAGES C CXX)
 
 set(SST_TOP_SRC_DIR "${sst-core_SOURCE_DIR}/..")
 include(cmake/PreventInSourceBuilds.cmake)
 
+# cmake-lint: disable=C0103
+set(_REQUIRED_CXX_STANDARD 17)
+# cmake-lint: disable=C0301
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD ${_REQUIRED_CXX_STANDARD})
   message(
-    STATUS "CMAKE_CXX_STANDARD was not set, defaulting the cmake standard to 17"
+    STATUS
+      "CMAKE_CXX_STANDARD was not set, defaulting the cmake standard to ${_REQUIRED_CXX_STANDARD}"
   )
 else()
-  if(CMAKE_CXX_STANDARD LESS 17)
-    message(FATAL_ERROR "We require the c++ standard to be at least 17")
+  if(CMAKE_CXX_STANDARD LESS ${_REQUIRED_CXX_STANDARD})
+    message(
+      FATAL_ERROR
+        "We require the c++ standard to be at least ${_REQUIRED_CXX_STANDARD}")
   endif()
 endif()
+unset(_REQUIRED_CXX_STANDARD)
 
 # ------------------------------------------------------------------------
 # -- EXTERNAL CMAKE SCRIPTS
@@ -40,7 +47,7 @@ endif()
 # Don't change this path to SST_TOP_SRC_DIR cmake lives in experimental for now.
 list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 
-find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
 find_package(Threads)
 
 option(SST_DISABLE_ZLIB "Use zlib compression library" OFF)
