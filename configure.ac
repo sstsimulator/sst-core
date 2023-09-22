@@ -225,11 +225,6 @@ echo "Configuration Information (Dependencies):"
 echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
-if test "x$PYTHON_VERSION3" = "xyes" ; then
-    printf "%38s : Yes\n" "Python3"
-else
-    printf "%38s : No\n" "Python3"
-fi
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : Yes\n" "HDF5 Support"
 else
@@ -241,9 +236,4 @@ else
     printf "%38s : No\n" "libz compression library"
 fi
 
-if test "x$PYTHON_VERSION3" = "xno"; then
-    printf "DEPRECATION NOTICE: Use of Python 2 is deprecated in favor of Python 3.5 or greater. Support for Python 2 may be removed in SST 12 or later.\n"
-fi
-
 echo "-------------------------------------------------------"
-
