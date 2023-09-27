@@ -56,8 +56,6 @@ static std::vector<std::string>                           infoText;
 static unsigned int                                       textPos;
 
 
-std::ofstream output("out.txt");
-
 void
 dprintf(FILE* fp, const char* fmt, ...)
 {
@@ -90,10 +88,10 @@ retry:
     owner->LinkEndChild(comment);
 }
 
+// Could be removed/simplified now without outputHumanReadable
 class OverallOutputter
 {
 public:
-    void outputHumanReadable(std::stringstream&);
     void outputXML();
 } g_Outputter;
 
@@ -101,11 +99,11 @@ public:
 void        initLTDL(const std::string& searchPath);
 void        shutdownLTDL();
 static void processSSTElementFiles(std::stringstream&);
-void        outputSSTElementInfo(std::stringstream&);
+void        getSSTElementInfo();
 void        generateXMLOutputFile();
 void        runCurses();
 void        getInput();
-void        setElementInfo(std::vector<std::string>);
+void        setLibraryInfo(std::vector<std::string>);
 void        parseInput(std::string);
 void        drawWindows();
 void        setInfoText(std::string);
@@ -148,8 +146,8 @@ runCurses()
     // Initialize Windows
     drawWindows();
     
-    // Set initial text to all info text
-    setElementInfo(std::vector<std::string>{"all"});
+    // Set initial text to help text
+    parseInput("help");
 
     // Print and start reading input
     printInfo();
@@ -182,9 +180,9 @@ drawWindows()
 }
 
 void 
-setElementInfo(std::vector<std::string> args)
+setLibraryInfo(std::vector<std::string> args)
 {
-    // Reset global config
+    // Reset and set new filters for SSTInfoConfig g_configuration
     g_fileProcessedCount = 0;
     g_configuration.clearFilterMap();
 
@@ -197,25 +195,12 @@ setElementInfo(std::vector<std::string> args)
     
     std::stringstream outputStream;
     processSSTElementFiles(outputStream);
+
     setInfoText(outputStream.str());
     textPos = 0;
 }
 
-void 
-printInfo()
-{
-    unsigned int posMax = ((int)infoText.size() < LINES-3) ? textPos + infoText.size() : textPos + (LINES-3);
-
-    for (unsigned int i = textPos; i < posMax; i++) {
-        const char *cstr = infoText[i].c_str();
-        wprintw(info, cstr);
-    }
-    wrefresh(info);
-    wrefresh(console); //moves the cursor back into the console window
-    wmove(console, 1, 1);
-}
-
-void 
+void
 getInput()
 {
     // Take input
@@ -272,7 +257,7 @@ getInput()
 void 
 parseInput(std::string input)
 {
-    output << "Input: " << input << "\n";
+    //output << "Input: " << input << "\n";
 
     // Split into set of strings
     std::istringstream stream(input);
@@ -280,7 +265,7 @@ parseInput(std::string input)
     std::vector<std::string> inputWords;
     
     while (stream >> word) {
-        output << word;
+        //output << word;
         inputWords.push_back(word);
     }
 
@@ -290,7 +275,7 @@ parseInput(std::string input)
         transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert to lowercase
 
         std::string text; // Contains output text for cases that don't search through the library
-        output << "Command: " << command << "\n";
+        //output << "Command: " << command << "\n";
         
         // Help messages
         if (inputWords.size() == 1) {
@@ -331,23 +316,38 @@ parseInput(std::string input)
 
         // Parse commands
         else if (inputWords.size() > 1) {
-            if (command == "list") {
-                if (inputWords[1] == "types") { // NOT case-insensitive (will be when all input gets converted to lowercase)
-                    std::set<std::string> types = g_libInfoArray[0].getTypeList();
-                    for (auto s : types) {
-                        text += s + "\n";
-                    }
+            //Get args
+            auto start = std::next(inputWords.begin(), 1);
+            auto end = inputWords.end();
+            std::vector<std::string> args(start, end);
 
+            if (command == "list") {
+                if (args[0] == "types") { // NOT case-insensitive (will be when all input gets converted to lowercase)
+                    args.erase(args.begin());// Remove "types" from arg list
+
+                    // Go through g_libInfoArray to find each library listed in args
+                    for (std::string library : args) {
+                        bool found = false;
+                        for (auto libInfo : g_libInfoArray) {
+                            if (library == libInfo.getLibraryName()) {
+                                // Library found
+                                text += library + " BaseTypes:\n";
+                                for (auto type : libInfo.getTypeList()) {
+                                    text += "\t" + type + "\n";
+                                }
+                                text += "\n";
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) { text += "\nError: '" + library + "' Not Found\n\n"; }
+                    }
+                    
                     setInfoText(text);
                 }
                 else {
-                    //Get args
-                    auto start = std::next(inputWords.begin(), 1);
-                    auto end = inputWords.end();
-                    std::vector<std::string> args(start, end);
-        
                     g_libInfoArray.clear();
-                    setElementInfo(args);
+                    setLibraryInfo(args);
                 }
             }
             else {
@@ -372,6 +372,20 @@ setInfoText(std::string infoString)
     }
     infoText.clear(); //clears memory
     infoText = stringVec;
+}
+
+void 
+printInfo()
+{
+    unsigned int posMax = ((int)infoText.size() < LINES-3) ? textPos + infoText.size() : textPos + (LINES-3);
+
+    for (unsigned int i = textPos; i < posMax; i++) {
+        const char *cstr = infoText[i].c_str();
+        wprintw(info, cstr);
+    }
+    wrefresh(info);
+    wrefresh(console); //moves the cursor back into the console window
+    wmove(console, 1, 1);
 }
 
 static void
@@ -424,7 +438,7 @@ processSSTElementFiles(std::stringstream& outputStream)
     }
 
     // Do we output in Human Readable form
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(outputStream); }
+    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { getSSTElementInfo(); }
 
     // Do we output an XML File
     if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
@@ -437,37 +451,36 @@ generateXMLOutputFile()
 }
 
 void
-outputSSTElementInfo(std::stringstream& outputStream)
+getSSTElementInfo()
 {
-    g_Outputter.outputHumanReadable(outputStream);
+    // Get Element library info and store into libInfoArray
+    for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
+        g_libInfoArray[x].getLibString(x);
+    }
 }
 
 void
-OverallOutputter::outputHumanReadable(std::stringstream& outputStream)
+getLibraryInfo(std::stringstream& outputStream)
 {
     outputStream << "PROCESSED " << g_fileProcessedCount << " .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) " << g_searchPath
                  << "\n";
 
-    // Tell the user what Elements will be displayed
+    //Tell the user what Elements will be displayed
     for ( auto& i : g_configuration.getFilterMap() ) {
         outputStream << "Filtering output on Element = \"" << i.first.c_str();
         //fprintf(stdout, "Filtering output on Element = \"%s", i.first.c_str());
 
-
         if ( !i.second.empty() ) {
             outputStream << "." << i.second.c_str();
-            // fprintf(stdout, ".%s", i.second.c_str());
         }
-
         outputStream << "\"\n";
-        // fprintf(stdout, "\"\n");
     }
 
-    // Now dump the Library Info
     for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-        g_libInfoArray[x].outputHumanReadable(outputStream, x);
+        g_libInfoArray[x].outputText(outputStream);
     }
 }
+
 
 void
 OverallOutputter::outputXML()
@@ -696,53 +709,73 @@ shouldPrintElement(const std::string& libName, const std::string& elemName)
     return false;
 }
 
+void
+SSTLibraryInfo::outputText(std::stringstream& outputStream)
+{
+    for (auto& map : infoMap) {
+        // for ( auto& pair : map ) {
+            //pair.second->toString(outputStream);
+            //outputStream << "FIRST: " << map.first << "\nSECOND: " << map.second << "\n\n";
+            outputStream << "FIRST: " << map.first << "\n\n";
+
+            // bool print = shouldPrintElement(getLibraryName(), pair.first);
+            // if ( print ) {
+            //     outputStream << pair.first << "\n";
+            //     if ( g_configuration.doVerbose() ) pair.second->toString(outputStream);
+            // }
+            // if ( print ) outputStream << std::endl;
+        //}
+    }
+}
+
+void
+SSTLibraryInfo::find()
+{
+    
+}
+
 template <class BaseType>
 void
-SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
+SSTLibraryInfo::getLibString(bool printAll)
 {
+    std::ofstream output("out.txt");
+
     // lib is an InfoLibrary
     auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
     if ( lib ) {
         // Only print if there is something of that type in the library
         if ( lib->numEntries() != 0 ) {
-            std::string typeEntry = std::string(BaseType::ELI_baseName()) + "s (" + std::to_string(lib->numEntries()) + " total)";
-            typeList.insert(typeEntry);
-            os << typeEntry << "\n";
+            // Create map keys based on type name
+            std::string baseName = std::string(BaseType::ELI_baseName()) + "s (" + std::to_string(lib->numEntries()) + " total)";
 
             int idx = 0;
             // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
             // actually a Base::BuilderInfo and the implementation is in
-            // BuildInfoImpl
-            for ( auto& pair : lib->getMap() ) {
-                bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
-                if ( print ) {
-                    os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
-                    if ( g_configuration.doVerbose() ) pair.second->toString(os);
-                }
-                ++idx;
-                if ( print ) os << std::endl;
-            }
+            // eli/elementinfo as BuilderInfoImpl
+            auto& map = lib->getMap();
+            infoMap.insert(make_pair(baseName, map));
+            output << "*inserted type: " << baseName << "\n";
         }
     }
     else {
-        os << "No " << BaseType::ELI_baseName() << "s\n";
+        //os << "No " << BaseType::ELI_baseName() << "s\n";
     }
 }
 
 void
-SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
+SSTLibraryInfo::getLibString(int LibIndex)
 {
     bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
 
-    os << "================================================================================\n";
-    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
-       << "\n";
+    // os << "================================================================================\n";
+    // os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
+    //    << "\n";
 
-    outputHumanReadable<Component>(os, enableFullElementOutput);
-    outputHumanReadable<SubComponent>(os, enableFullElementOutput);
-    outputHumanReadable<Module>(os, enableFullElementOutput);
-    outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
-    outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
+    getLibString<Component>(enableFullElementOutput);
+    getLibString<SubComponent>(enableFullElementOutput);
+    getLibString<Module>(enableFullElementOutput);
+    getLibString<SST::Partition::SSTPartitioner>(enableFullElementOutput);
+    getLibString<SST::Profile::ProfileTool>(enableFullElementOutput);
 }
 
 template <class BaseType>

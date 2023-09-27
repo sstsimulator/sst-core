@@ -15,6 +15,7 @@
 #include "sst/core/configShared.h"
 #include "sst/core/eli/elementinfo.h"
 
+#include <any>
 #include <map>
 #include <set>
 #include <vector>
@@ -160,10 +161,10 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
-    /** Output the Library Information.
+    /** Store Library Information into infoMap.
      * @param LibIndex The Index of the Library.
      */
-    void outputHumanReadable(std::ostream& os, int LibIndex);
+    void getLibString(int LibIndex);
 
     /** Create the formatted XML data of the Library.
      * @param LibIndex The Index of the Library.
@@ -171,18 +172,27 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
+    /** Return text from infoMap */
+    void outputText(std::stringstream& os);
+
+
     template <class BaseType>
-    void outputHumanReadable(std::ostream& os, bool printAll);
+    void getLibString(bool printAll);
     template <class BaseType>
     void outputXML(TiXmlElement* node);
+
+    void find();
 
     std::string getLibraryDescription() { return ""; }
 
     std::set<std::string> getTypeList() { return typeList; }
 
+    
+
 private:
     std::string m_name;
     std::set<std::string> typeList;
+    std::map<std::string, std::any> infoMap;
 };
 
 } // namespace SST
