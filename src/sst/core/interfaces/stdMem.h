@@ -913,9 +913,9 @@ public:
             return str.str();
         }
 
-        CustomData* data; /* Custom class that holds data for this event */
-        Addr        iPtr; /* Instruction pointer */
-        uint32_t    tid;  /* Thread ID */
+        std::unique_ptr<CustomData> data; /* Custom class that holds data for this event */
+        Addr                        iPtr; /* Instruction pointer */
+        uint32_t                    tid;  /* Thread ID */
     };
 
     class CustomResp : public Request
@@ -951,9 +951,9 @@ public:
             return str.str();
         }
 
-        CustomData* data; /* Custom class that holds data for this event */
-        Addr        iPtr; /* Instruction pointer */
-        uint32_t    tid;  /* Thread ID */
+        std::unique_ptr<CustomData> data; /* Custom class that holds data for this event */
+        Addr                        iPtr; /* Instruction pointer */
+        uint32_t                    tid;  /* Thread ID */
     };
 
     /* Class for implementation-specific converter functions */
