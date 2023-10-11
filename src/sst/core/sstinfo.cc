@@ -92,13 +92,16 @@ retry:
 class OverallOutputter
 {
 public:
+    void outputHumanReadable(std::ostream& os);
     void outputXML();
 } g_Outputter;
 
 // Forward Declarations
 void        initLTDL(const std::string& searchPath);
 void        shutdownLTDL();
+static void processSSTElementFiles();
 static void processSSTElementFiles(std::stringstream&);
+void        outputSSTElementInfo();
 void        getSSTElementInfo();
 void        generateXMLOutputFile();
 void        runCurses();
@@ -121,8 +124,13 @@ main(int argc, char* argv[])
 
     g_searchPath = g_configuration.getLibPath();
 
-    // Run curses
-    runCurses();
+    if (g_configuration.interactiveEnabled()) {
+        runCurses();
+    }
+    else {
+        processSSTElementFiles();
+    }
+    
 
     return 0;
 }
@@ -389,11 +397,35 @@ printInfo()
 }
 
 static void
-addELI(ElemLoader& loader, const std::string& lib, std::stringstream& outputStream, bool optional)
+addELI(ElemLoader& loader, const std::string& lib, bool optional)
 {
 
-    //if ( g_configuration.debugEnabled() ) fprintf(stdout, "Looking for library \"%s\"\n", lib.c_str());
+    if ( g_configuration.debugEnabled() ) fprintf(stdout, "Looking for library \"%s\"\n", lib.c_str());
 
+    std::stringstream err_sstr;
+    loader.loadLibrary(lib, err_sstr);
+
+    // Check to see if this library loaded into the new ELI
+    // Database
+    if ( ELI::LoadedLibraries::isLoaded(lib) ) {
+        g_fileProcessedCount++;
+        g_libInfoArray.emplace_back(lib);
+    }
+    else if ( !optional ) {
+        fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
+        if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
+    }
+    else {
+        fprintf(stderr, "**** %s not Found!\n", lib.c_str());
+        // regardless of debug - force error printing
+        std::cerr << err_sstr.str() << std::endl;
+    }
+}
+
+// Interactive addELI
+static void
+addELI(ElemLoader& loader, const std::string& lib, std::stringstream& outputStream, bool optional)
+{
     loader.loadLibrary(lib, outputStream);
 
     // Check to see if this library loaded into the new ELI
@@ -404,18 +436,36 @@ addELI(ElemLoader& loader, const std::string& lib, std::stringstream& outputStre
     }
     else if ( !optional ) {
         outputStream << "**** WARNING - PROCESS LIBRARY = " << lib.c_str() << "\n";
-        //fprintf(stderr, "**** WARNING - PROCESS LIBRARY = %s\n", lib.c_str());
-
-        //if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
     }
     else {
         outputStream <<  "**** " << lib.c_str() << " not Found!\n";
-        // fprintf(stderr, "**** %s not Found!\n", lib.c_str());
-
-
-        // regardless of debug - force error printing
-        //std::cerr << err_sstr.str() << std::endl;
     }
+}
+
+static void
+processSSTElementFiles()
+{
+    std::vector<bool>        EntryProcessedArray;
+    ElemLoader               loader(g_searchPath);
+    std::vector<std::string> potentialLibs;
+    loader.getPotentialElements(potentialLibs);
+
+    // Which libraries should we (attempt) to process
+    std::set<std::string> processLibs(g_configuration.getElementsToProcessArray());
+    if ( processLibs.empty() ) {
+        for ( auto& i : potentialLibs )
+            processLibs.insert(i);
+    }
+
+    for ( auto l : processLibs ) {
+        addELI(loader, l, g_configuration.processAllElements());
+    }
+
+    // Do we output in Human Readable form
+    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(); }
+
+    // Do we output an XML File
+    if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
 }
 
 static void
@@ -437,17 +487,19 @@ processSSTElementFiles(std::stringstream& outputStream)
         addELI(loader, l, outputStream, g_configuration.processAllElements());
     }
 
-    // Do we output in Human Readable form
     if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { getSSTElementInfo(); }
-
-    // Do we output an XML File
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
 }
 
 void
 generateXMLOutputFile()
 {
     g_Outputter.outputXML();
+}
+
+void
+outputSSTElementInfo()
+{
+    g_Outputter.outputHumanReadable(std::cout);
 }
 
 void
@@ -481,6 +533,24 @@ getLibraryInfo(std::stringstream& outputStream)
     }
 }
 
+void
+OverallOutputter::outputHumanReadable(std::ostream& os)
+{
+    os << "PROCESSED " << g_fileProcessedCount << " .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) " << g_searchPath
+       << "\n";
+
+    // Tell the user what Elements will be displayed
+    for ( auto& i : g_configuration.getFilterMap() ) {
+        fprintf(stdout, "Filtering output on Element = \"%s", i.first.c_str());
+        if ( !i.second.empty() ) fprintf(stdout, ".%s", i.second.c_str());
+        fprintf(stdout, "\"\n");
+    }
+
+    // Now dump the Library Info
+    for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
+        g_libInfoArray[x].outputHumanReadable(os, x);
+    }
+}
 
 void
 OverallOutputter::outputXML()
@@ -557,6 +627,8 @@ SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print,
     DEF_FLAG("debug", 'd', "Enable debugging messages", std::bind(&SSTInfoConfig::setEnableDebug, this, _1));
     DEF_FLAG(
         "nodisplay", 'n', "Do not display output [default: off]", std::bind(&SSTInfoConfig::setNoDisplay, this, _1));
+    DEF_FLAG(
+        "interactive", 'i', "(EXPERIMENTAL) Enable interactive command line mode", std::bind(&SSTInfoConfig::setInteractive, this, _1));
     DEF_SECTION_HEADING("XML Options");
     DEF_FLAG("xml", 'x', "Generate XML data [default:off]", std::bind(&SSTInfoConfig::setXML, this, _1));
     DEF_ARG(
@@ -776,6 +848,52 @@ SSTLibraryInfo::getLibString(int LibIndex)
     getLibString<Module>(enableFullElementOutput);
     getLibString<SST::Partition::SSTPartitioner>(enableFullElementOutput);
     getLibString<SST::Profile::ProfileTool>(enableFullElementOutput);
+}
+
+template <class BaseType>
+void
+SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
+{
+    // lib is an InfoLibrary
+    auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
+    if ( lib ) {
+        // Only print if there is something of that type in the library
+        if ( lib->numEntries() != 0 ) {
+            os << BaseType::ELI_baseName() << "s (" << lib->numEntries() << " total)\n";
+            int idx = 0;
+            // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
+            // actually a Base::BuilderInfo and the implementation is in
+            // BuildInfoImpl
+            for ( auto& pair : lib->getMap() ) {
+                bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
+                if ( print ) {
+                    os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
+                    if ( g_configuration.doVerbose() ) pair.second->toString(os);
+                }
+                ++idx;
+                if ( print ) os << std::endl;
+            }
+        }
+    }
+    else {
+        os << "No " << BaseType::ELI_baseName() << "s\n";
+    }
+}
+
+void
+SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
+{
+    bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
+
+    os << "================================================================================\n";
+    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
+       << "\n";
+
+    outputHumanReadable<Component>(os, enableFullElementOutput);
+    outputHumanReadable<SubComponent>(os, enableFullElementOutput);
+    outputHumanReadable<Module>(os, enableFullElementOutput);
+    outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
+    outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

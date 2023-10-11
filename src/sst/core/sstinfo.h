@@ -70,6 +70,7 @@ public:
     bool debugEnabled() const { return m_debugEnabled; }
     bool processAllElements() const { return m_filters.empty(); }
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
+    bool interactiveEnabled() const{ return m_interactive; }
     void addFilter(const std::string& name);
 
 protected:
@@ -109,6 +110,12 @@ private:
         return 0;
     }
 
+    int setInteractive(const std::string& UNUSED(arg))
+    {
+        m_interactive = true;
+        return 0;
+    }
+
     int setXML(const std::string& UNUSED(arg))
     {
         m_optionBits |= CFG_OUTPUTXML;
@@ -139,6 +146,7 @@ private:
     unsigned int             m_optionBits;
     std::string              m_XMLFilePath;
     bool                     m_debugEnabled;
+    bool                     m_interactive;
     FilterMap_t              m_filters;
 };
 
@@ -161,6 +169,11 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
+    /** Output the Library Information.
+     * @param LibIndex The Index of the Library.
+     */
+    void outputHumanReadable(std::ostream& os, int LibIndex);
+
     /** Store Library Information into infoMap.
      * @param LibIndex The Index of the Library.
      */
@@ -178,6 +191,8 @@ public:
 
     template <class BaseType>
     void getLibString(bool printAll);
+    template <class BaseType>
+    void outputHumanReadable(std::ostream& os, bool printAll);
     template <class BaseType>
     void outputXML(TiXmlElement* node);
 
