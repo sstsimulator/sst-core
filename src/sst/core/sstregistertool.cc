@@ -149,8 +149,14 @@ void
 sstUnregister(const std::string& element)
 {
     // setup element names to look for
-    const std::string str1     = START_DELIMITER + element + STOP_DELIMITER;
-    const auto        tempfile = std::tmpnam(nullptr);
+    const std::string str1             = START_DELIMITER + element + STOP_DELIMITER;
+    char              tempfilename[24] = "sstsimulator.confXXXXXX";
+    const auto        fd               = mkstemp(&tempfilename[0]);
+    if ( fd == -1 ) {
+        std::cerr << "\tError creating temporary file for writing config with unregistered element " << element << "\n";
+        return;
+    }
+    const std::string tempfile(tempfilename);
 
     std::string s     = "";
     int         found = 0;
@@ -184,7 +190,7 @@ sstUnregister(const std::string& element)
     infile  = std::ifstream(tempfile, std::ios::binary);
     outfile = std::ofstream(cfgPath, std::ios::binary);
     outfile << infile.rdbuf();
-    if ( std::remove(tempfile) != 0 ) {
+    if ( std::remove(tempfile.c_str()) != 0 ) {
         std::cerr << "\tError removing " << tempfile << " after moving updated config\n";
         return;
     }
