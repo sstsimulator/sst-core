@@ -52,8 +52,8 @@ static SSTInfoConfig                                      g_configuration(false)
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
 static WINDOW                                             *info;
 static WINDOW                                             *console;
-static std::vector<std::string>                           infoText;
-static unsigned int                                       textPos;
+static std::vector<std::string>                           g_infoText;
+static unsigned int                                       g_textPos;
 
 
 void
@@ -88,7 +88,6 @@ retry:
     owner->LinkEndChild(comment);
 }
 
-// Could be removed/simplified now without outputHumanReadable
 class OverallOutputter
 {
 public:
@@ -97,20 +96,17 @@ public:
 } g_Outputter;
 
 // Forward Declarations
-void        initLTDL(const std::string& searchPath);
-void        shutdownLTDL();
-static void processSSTElementFiles();
-static void processSSTElementFiles(std::stringstream&);
-void        outputSSTElementInfo();
-void        getSSTElementInfo();
-void        generateXMLOutputFile();
-void        runCurses();
-void        getInput();
-void        setLibraryInfo(std::vector<std::string>);
-void        parseInput(std::string);
-void        drawWindows();
-void        setInfoText(std::string);
-void        printInfo();
+void            initLTDL(const std::string& searchPath);
+void            shutdownLTDL();
+static void     processSSTElementFiles();
+void            outputSSTElementInfo();
+void            generateXMLOutputFile();
+void            runInteractive();
+void            getInput();
+std::string     parseInput(std::string);
+void            drawWindows();
+void            setInfoText(std::string);
+void            printInfo();
 
 int
 main(int argc, char* argv[])
@@ -122,15 +118,12 @@ main(int argc, char* argv[])
         return 1;
     }
 
+    // Process all specified libraries
     g_searchPath = g_configuration.getLibPath();
+    processSSTElementFiles();
 
-    if (g_configuration.interactiveEnabled()) {
-        runCurses();
-    }
-    else {
-        processSSTElementFiles();
-    }
-    
+    // Run interactive mode
+    if ( g_configuration.interactiveEnabled() ) { runInteractive(); }
 
     return 0;
 }
@@ -145,20 +138,20 @@ getCursorPos(WINDOW *console)
 }
 
 void 
-runCurses() 
+runInteractive() 
 {   
     initscr();
     cbreak();
     noecho();
     
-    // Initialize Windows
+    // Initialize console screen
     drawWindows();
     
     // Set initial text to help text
-    parseInput("help");
-
-    // Print and start reading input
+    setInfoText(parseInput("help"));
     printInfo();
+
+    // Loop for input
     getInput();
     endwin();
 }
@@ -166,7 +159,7 @@ runCurses()
 void 
 drawWindows()
 {
-    // Reset windows for redraws
+    // Hard reset windows for redraws
     werase(info);
     werase(console);
     delwin(info);
@@ -187,39 +180,20 @@ drawWindows()
     wrefresh(console);
 }
 
-void 
-setLibraryInfo(std::vector<std::string> args)
-{
-    // Reset and set new filters for SSTInfoConfig g_configuration
-    g_fileProcessedCount = 0;
-    g_configuration.clearFilterMap();
-
-    if (args == std::vector<std::string>{"all"}) {} //do nothing
-    else {
-        for (std::string arg : args) {
-            g_configuration.addFilter(arg);
-        }
-    }
-    
-    std::stringstream outputStream;
-    processSSTElementFiles(outputStream);
-
-    setInfoText(outputStream.str());
-    textPos = 0;
-}
-
 void
 getInput()
 {
-    // Take input
+    // Main loop for console input
     std::string input = "";
     while(true) {
+        std::string output = "";
         int c = wgetch(console);
 
+        // Parse entered text
         if(c == '\n') {
-            parseInput(input);
+            output = parseInput(input);
+            setInfoText(output);
 
-            //Clear input window and string
             drawWindows();
             printInfo();
             input = "";
@@ -239,14 +213,14 @@ getInput()
         }
         // Scrolling
         else if (c == KEY_UP) {
-            if (textPos > 0) {
-                textPos -= 1;
+            if (g_textPos > 0) {
+                g_textPos -= 1;
                 printInfo();
             }   
         }
         else if (c == KEY_DOWN) {
-            if ((int)textPos < (int)infoText.size() - (int)LINES) {
-                textPos += 1;
+            if ((int)g_textPos < (int)g_infoText.size() - (int)LINES) {
+                g_textPos += 1;
                 printInfo();
             }
         }
@@ -257,12 +231,37 @@ getInput()
             wrefresh(console);
         }
 
-        // Make sure the cursor doesn't move
+        // Make sure the cursor resets to the correct place
         wmove(console, 1, input.size()+1);
     }
 }
 
-void 
+std::string 
+getLibraryInfo(std::vector<std::string> args)
+{
+    std::stringstream outputStream;
+
+    if (args == std::vector<std::string>{"all"}) {
+        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
+            g_libInfoArray[x].outputText(outputStream);
+        }
+    }
+    else {
+        for (std::string arg : args) {
+            g_configuration.addFilter(arg);
+        }
+    }
+
+    return outputStream.str();
+    
+    // std::stringstream outputStream;
+    // processSSTElementFiles(outputStream);
+
+    // setInfoText(outputStream.str());
+    // g_textPos = 0;
+}
+
+std::string 
 parseInput(std::string input)
 {
     //output << "Input: " << input << "\n";
@@ -278,13 +277,11 @@ parseInput(std::string input)
     }
 
     // Parse
+    std::string text = "";
     if (inputWords.size() > 0) {
         std::string command = inputWords[0];
         transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert to lowercase
 
-        std::string text; // Contains output text for cases that don't search through the library
-        //output << "Command: " << command << "\n";
-        
         // Help messages
         if (inputWords.size() == 1) {
             if (command == "help") {
@@ -295,8 +292,6 @@ parseInput(std::string input)
                        "\t- List {element.subelement} : Displays selected elements\n"
                        "\t- Open {element.subelement} : ...\n"
                        "\t- Path {subelement(?)} : ...\n\n";
-
-                setInfoText(text);
             }
             else if (command == "list") {
                 text = "LIST COMMANDS\n"
@@ -314,8 +309,6 @@ parseInput(std::string input)
                        "\tlist sst(ProfileTools)\n"
                        "\tlist coreTestElement(SubComponents)\n"
                        "\netc..."; //needs more
-
-                setInfoText(text);
             }
             else {
 
@@ -330,46 +323,23 @@ parseInput(std::string input)
             std::vector<std::string> args(start, end);
 
             if (command == "list") {
-                if (args[0] == "types") { // NOT case-insensitive (will be when all input gets converted to lowercase)
-                    args.erase(args.begin());// Remove "types" from arg list
-
-                    // Go through g_libInfoArray to find each library listed in args
-                    for (std::string library : args) {
-                        bool found = false;
-                        for (auto libInfo : g_libInfoArray) {
-                            if (library == libInfo.getLibraryName()) {
-                                // Library found
-                                text += library + " BaseTypes:\n";
-                                for (auto type : libInfo.getTypeList()) {
-                                    text += "\t" + type + "\n";
-                                }
-                                text += "\n";
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) { text += "\nError: '" + library + "' Not Found\n\n"; }
-                    }
-                    
-                    setInfoText(text);
-                }
-                else {
-                    g_libInfoArray.clear();
-                    setLibraryInfo(args);
-                }
+                text = getLibraryInfo(args);
             }
+            
             else {
                 //More commands here
             }
         }
     }
+
+    return text;
 }
 
 void 
 setInfoText(std::string infoString)
 {
     std::vector<std::string> stringVec;
-    textPos = 0;
+    g_textPos = 0;
 
     // Splits the string into individual lines and stores them into the infoText vector
     std::stringstream infoStream(infoString);
@@ -378,17 +348,17 @@ setInfoText(std::string infoString)
     while(std::getline(infoStream, line, '\n')){
         stringVec.push_back((line + "\n"));
     }
-    infoText.clear(); //clears memory
-    infoText = stringVec;
+    g_infoText.clear(); //clears memory
+    g_infoText = stringVec;
 }
 
 void 
 printInfo()
 {
-    unsigned int posMax = ((int)infoText.size() < LINES-3) ? textPos + infoText.size() : textPos + (LINES-3);
+    unsigned int posMax = ((int)g_infoText.size() < LINES-3) ? g_textPos + g_infoText.size() : g_textPos + (LINES-3);
 
-    for (unsigned int i = textPos; i < posMax; i++) {
-        const char *cstr = infoText[i].c_str();
+    for (unsigned int i = g_textPos; i < posMax; i++) {
+        const char *cstr = g_infoText[i].c_str();
         wprintw(info, cstr);
     }
     wrefresh(info);
@@ -422,26 +392,6 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
     }
 }
 
-// Interactive addELI
-static void
-addELI(ElemLoader& loader, const std::string& lib, std::stringstream& outputStream, bool optional)
-{
-    loader.loadLibrary(lib, outputStream);
-
-    // Check to see if this library loaded into the new ELI
-    // Database
-    if ( ELI::LoadedLibraries::isLoaded(lib) ) {
-        g_fileProcessedCount++;
-        g_libInfoArray.emplace_back(lib);
-    }
-    else if ( !optional ) {
-        outputStream << "**** WARNING - PROCESS LIBRARY = " << lib.c_str() << "\n";
-    }
-    else {
-        outputStream <<  "**** " << lib.c_str() << " not Found!\n";
-    }
-}
-
 static void
 processSSTElementFiles()
 {
@@ -461,39 +411,19 @@ processSSTElementFiles()
         addELI(loader, l, g_configuration.processAllElements());
     }
 
-    // Do we output in Human Readable form
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(); }
-
-    // Do we output an XML File
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
-}
-
-static void
-processSSTElementFiles(std::stringstream& outputStream)
-{
-    std::vector<bool>        EntryProcessedArray;
-    ElemLoader               loader(g_searchPath);
-    std::vector<std::string> potentialLibs;
-    loader.getPotentialElements(potentialLibs);
-
-    // Which libraries should we (attempt) to process
-    std::set<std::string> processLibs(g_configuration.getElementsToProcessArray());
-    if ( processLibs.empty() ) {
-        for ( auto& i : potentialLibs )
-            processLibs.insert(i);
+    // Store info strings for interactive mode
+    if ( g_configuration.interactiveEnabled() ) {
+        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
+            g_libInfoArray[x].getLibString();
+        }
     }
+    else {
+        // Do we output in Human Readable form
+        if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(); }
 
-    for ( auto l : processLibs ) {
-        addELI(loader, l, outputStream, g_configuration.processAllElements());
+        // Do we output an XML File
+        if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
     }
-
-    if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { getSSTElementInfo(); }
-}
-
-void
-generateXMLOutputFile()
-{
-    g_Outputter.outputXML();
 }
 
 void
@@ -503,35 +433,11 @@ outputSSTElementInfo()
 }
 
 void
-getSSTElementInfo()
+generateXMLOutputFile()
 {
-    // Get Element library info and store into libInfoArray
-    for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-        g_libInfoArray[x].getLibString(x);
-    }
+    g_Outputter.outputXML();
 }
 
-void
-getLibraryInfo(std::stringstream& outputStream)
-{
-    outputStream << "PROCESSED " << g_fileProcessedCount << " .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) " << g_searchPath
-                 << "\n";
-
-    //Tell the user what Elements will be displayed
-    for ( auto& i : g_configuration.getFilterMap() ) {
-        outputStream << "Filtering output on Element = \"" << i.first.c_str();
-        //fprintf(stdout, "Filtering output on Element = \"%s", i.first.c_str());
-
-        if ( !i.second.empty() ) {
-            outputStream << "." << i.second.c_str();
-        }
-        outputStream << "\"\n";
-    }
-
-    for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-        g_libInfoArray[x].outputText(outputStream);
-    }
-}
 
 void
 OverallOutputter::outputHumanReadable(std::ostream& os)
@@ -808,7 +714,7 @@ SSTLibraryInfo::find()
 
 template <class BaseType>
 void
-SSTLibraryInfo::getLibString(bool printAll)
+SSTLibraryInfo::getLibString()
 {
     std::ofstream output("out.txt");
 
@@ -820,7 +726,6 @@ SSTLibraryInfo::getLibString(bool printAll)
             // Create map keys based on type name
             std::string baseName = std::string(BaseType::ELI_baseName()) + "s (" + std::to_string(lib->numEntries()) + " total)";
 
-            int idx = 0;
             // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
             // actually a Base::BuilderInfo and the implementation is in
             // eli/elementinfo as BuilderInfoImpl
@@ -835,19 +740,14 @@ SSTLibraryInfo::getLibString(bool printAll)
 }
 
 void
-SSTLibraryInfo::getLibString(int LibIndex)
+SSTLibraryInfo::getLibString()
 {
-    bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
 
-    // os << "================================================================================\n";
-    // os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
-    //    << "\n";
-
-    getLibString<Component>(enableFullElementOutput);
-    getLibString<SubComponent>(enableFullElementOutput);
-    getLibString<Module>(enableFullElementOutput);
-    getLibString<SST::Partition::SSTPartitioner>(enableFullElementOutput);
-    getLibString<SST::Profile::ProfileTool>(enableFullElementOutput);
+    getLibString<Component>();
+    getLibString<SubComponent>();
+    getLibString<Module>();
+    getLibString<SST::Partition::SSTPartitioner>();
+    getLibString<SST::Profile::ProfileTool>();
 }
 
 template <class BaseType>

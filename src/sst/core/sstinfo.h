@@ -174,10 +174,8 @@ public:
      */
     void outputHumanReadable(std::ostream& os, int LibIndex);
 
-    /** Store Library Information into infoMap.
-     * @param LibIndex The Index of the Library.
-     */
-    void getLibString(int LibIndex);
+    /** Store Library Information into infoMap. */
+    void getLibString();
 
     /** Create the formatted XML data of the Library.
      * @param LibIndex The Index of the Library.
@@ -190,7 +188,7 @@ public:
 
 
     template <class BaseType>
-    void getLibString(bool printAll);
+    void getLibString();
     template <class BaseType>
     void outputHumanReadable(std::ostream& os, bool printAll);
     template <class BaseType>
