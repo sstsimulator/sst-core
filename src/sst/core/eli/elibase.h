@@ -187,6 +187,7 @@ private:
     template <class __TT>                                                       \
     static bool addDerivedInfo(const std::string& lib, const std::string& elem) \
     {                                                                           \
+        using BuilderInfo = typename __LocalEliBase::BuilderInfo;               \
         return addInfo(lib, elem, new BuilderInfo(lib, elem, (__TT*)nullptr));  \
     }
 
