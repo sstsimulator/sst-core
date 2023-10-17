@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -77,12 +77,6 @@ Simulation_impl::getElapsedSimTime() const
 
 UnitAlgebra
 Simulation_impl::getEndSimTime() const
-{
-    return timeLord.getTimeBase() * getEndSimCycle();
-}
-
-UnitAlgebra
-Simulation_impl::getFinalSimTime() const
 {
     return timeLord.getTimeBase() * getEndSimCycle();
 }
@@ -223,12 +217,6 @@ Simulation_impl::createComponent(ComponentId_t id, const std::string& name, Para
 }
 
 void
-Simulation_impl::requireEvent(const std::string& name)
-{
-    factory->RequireEvent(name);
-}
-
-void
 Simulation_impl::requireLibrary(const std::string& name)
 {
     factory->requireLibrary(name);
@@ -264,8 +252,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
-    interThreadMinLatency  = MAX_SIMTIME_T;
-    int cross_thread_links = 0;
+    interThreadMinLatency      = MAX_SIMTIME_T;
+    int num_cross_thread_links = 0;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
         ConfigComponentMap_t comps = graph.getComponentMap();
@@ -289,7 +277,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
             // At this point, we know that both endpoints are on this
             // rank, but on different threads.  Therefore, they
             // contribute to the interThreadMinLatency.
-            cross_thread_links++;
+            num_cross_thread_links++;
             if ( clink->getMinLatency() < interThreadMinLatency ) { interThreadMinLatency = clink->getMinLatency(); }
 
             // Now check only those latencies that directly impact this
@@ -324,7 +312,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
-    if ( min_part == MAX_SIMTIME_T && cross_thread_links == 0 ) { independent = true; }
+    if ( min_part == MAX_SIMTIME_T && num_cross_thread_links == 0 ) { independent = true; }
     else {
         independent = false;
     }

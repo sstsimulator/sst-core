@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-## Copyright 2009-2022 NTESS. Under the terms
-## of Contract DE-NA0003525 with NTESS, the U.S.
-## Government retains certain rights in this software.
-##
-## Copyright (c) 2009-2022, NTESS
-## All rights reserved.
-##
-## This file is part of the SST software package. For license
-## information, see the LICENSE file in the top level directory of the
-## distribution.
+# Copyright 2009-2023 NTESS. Under the terms
+# of Contract DE-NA0003525 with NTESS, the U.S.
+# Government retains certain rights in this software.
+#
+# Copyright (c) 2009-2023, NTESS
+# All rights reserved.
+#
+# This file is part of the SST software package. For license
+# information, see the LICENSE file in the top level directory of the
+# distribution.
 
 """ This module is the primary loader for the SST Testing Frameworks Engine
     it will verify that the test frameworks files are installed, and then will

@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -21,9 +21,8 @@ using namespace std;
 
 namespace SST {
 
-ConfigShared::ConfigShared(
-    bool suppress_print, bool suppress_sdl, bool include_libpath, bool include_env, bool include_verbose) :
-    ConfigBase(suppress_print, suppress_sdl)
+ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose) :
+    ConfigBase(suppress_print)
 {
     if ( include_libpath ) addLibraryPathOptions();
     if ( include_env ) addEnvironmentOptions();
@@ -31,7 +30,9 @@ ConfigShared::ConfigShared(
 }
 
 
-ConfigShared::ConfigShared(bool suppress_print, bool suppress_sdl) : ConfigBase(suppress_print, suppress_sdl) {}
+ConfigShared::ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations) :
+    ConfigBase(suppress_print, annotations)
+{}
 
 void
 ConfigShared::addLibraryPathOptions()

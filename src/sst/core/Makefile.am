@@ -8,7 +8,6 @@ CXX = $(MPICXX)
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	-DSST_BUILDING_CORE=1 \
-	$(ZOLTAN_CPPFLAGS) \
 	$(PYTHON_CPPFLAGS) \
 	-I$(top_srcdir)/external \
 	$(LTDLINCL)
@@ -75,7 +74,6 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
-	part/sstpart.h \
 	eli/elementinfo.h \
 	eli/elibase.h \
 	eli/attributeInfo.h \
@@ -121,7 +119,6 @@ nobase_dist_sst_HEADERS = \
 	interprocess/circularBuffer.h \
 	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
-	rng/sstrng.h \
 	rng/rng.h \
 	rng/marsaglia.h \
 	rng/poisson.h \
@@ -294,30 +291,22 @@ sstinfo_x_SOURCES = \
 
 sstsim_x_LDADD = \
 	$(PYTHON_LIBS) \
-	$(ZOLTAN_LIB) \
-	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
 
 sstsim_x_LDFLAGS = \
-	$(PARMETIS_LDFLAGS) \
-	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
 sstinfo_x_LDADD = \
-	$(ZOLTAN_LIB) \
-	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
 
 sstinfo_x_LDFLAGS = \
-	$(PARMETIS_LDFLAGS) \
-	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
@@ -325,7 +314,6 @@ sstinfo_x_LDFLAGS = \
 
 include ../../../external/tinyxml/Makefile.inc
 include ../../../external/nlohmann/Makefile.inc
-include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc
 include impl/Makefile.inc

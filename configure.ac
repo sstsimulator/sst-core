@@ -1,7 +1,8 @@
 
-AC_INIT([SSTCore], [12.0.0], [sst@sandia.gov])
+AC_INIT([SSTCore], [-dev], [wg-sst@sandia.gov])
 
 AC_PREREQ([2.59])
+AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2023])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
@@ -144,8 +145,11 @@ AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST 
 AC_CACHE_SAVE
 
 dnl Remove flags like -g, -O, and -W, that are not needed by other elements
-SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
-SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
+export_flag_cleanup() {
+  echo "$1" | sed -E -e 's/ *-(@<:@gO@:>@@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'
+}
+SST_EXPORT_CXXFLAGS=`export_flag_cleanup "$CXXFLAGS"`
+SST_EXPORT_CFLAGS=`export_flag_cleanup "$CFLAGS"`
 AC_SUBST(SST_EXPORT_CXXFLAGS)
 AC_SUBST(SST_EXPORT_CFLAGS)
 
@@ -227,11 +231,6 @@ echo "Configuration Information (Dependencies):"
 echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
-if test "x$PYTHON_VERSION3" = "xyes" ; then
-    printf "%38s : Yes\n" "Python3"
-else
-    printf "%38s : No\n" "Python3"
-fi
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : Yes\n" "HDF5 Support"
 else
@@ -243,9 +242,4 @@ else
     printf "%38s : No\n" "libz compression library"
 fi
 
-if test "x$PYTHON_VERSION3" = "xno"; then
-    printf "DEPRECATION NOTICE: Use of Python 2 is deprecated in favor of Python 3.5 or greater. Support for Python 2 may be removed in SST 12 or later.\n"
-fi
-
 echo "-------------------------------------------------------"
-

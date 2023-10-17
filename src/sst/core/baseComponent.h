@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -19,7 +19,6 @@
 #include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/profile/componentProfileTool.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
@@ -39,6 +38,7 @@ class Link;
 class LinkMap;
 class Module;
 class Params;
+class Simulation;
 class Simulation_impl;
 class SubComponent;
 class SubComponentSlotInfo;
@@ -123,16 +123,12 @@ public:
     SimTime_t   getEndSimCycle() const;
     /** Return the end simulation time as a time */
     UnitAlgebra getEndSimTime() const;
-    /** Return the end simulation time as a time */
-    UnitAlgebra getFinalSimTime() const
-        __attribute__((deprecated("getFinalSimTime() has been deprecated and will be removed in SST 13.  It has been "
-                                  "replaced by getEndSimTime().")));
     /** Get this instance's parallel rank */
-    RankInfo getRank() const;
+    RankInfo    getRank() const;
     /** Get the number of parallel ranks in the simulation */
-    RankInfo getNumRanks() const;
+    RankInfo    getNumRanks() const;
     /** Return the base simulation Output class instance */
-    Output&  getSimulationOutput() const;
+    Output&     getSimulationOutput() const;
 
     /** return the time since the simulation began in units specified by
         the parameter.
@@ -542,15 +538,6 @@ protected:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of module, or nullptr on failure.
      */
-    Module* loadModule(const std::string& type, Params& params)
-        __attribute__((deprecated("This version of loadModule() has been deprecated.  Please use the new templated "
-                                  "version that uses Module APIs")));
-
-    /** Loads a module from an element Library
-     * @param type Fully Qualified library.moduleName
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or nullptr on failure.
-     */
     template <class T, class... ARGS>
     T* loadModule(const std::string& type, Params& params, ARGS... args)
     {
@@ -866,7 +853,12 @@ protected:
     bool doesSubComponentExist(const std::string& type);
 
     /* Get the Simulation */
-    Simulation* getSimulation() const;
+#if !SST_BUILDING_CORE
+    [[deprecated("getSimulation is deprecated because the Simulation object is being removed as part of the public API "
+                 "and simulation.h will be removed in SST 14")]]
+#endif
+    Simulation*
+    getSimulation() const;
 
     // Does the statisticName exist in the ElementInfoStatistic
     bool    doesComponentInfoStatisticExist(const std::string& statisticName) const;

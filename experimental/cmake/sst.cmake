@@ -42,6 +42,8 @@ if(ZLIB_FOUND)
   set(HAVE_LIBZ ON)
 endif(ZLIB_FOUND)
 
+check_include_file(execinfo.h HAVE_EXECINFO_H)
+check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
 check_include_file(mach/mach_time.h HAVE_MACH_MACH_TIME_H)
 check_include_file(mach-o/dyld.h HAVE_MACH_O_DYLD_H)
 check_symbol_exists(opendir "dirent.h" HAVE_OPENDIR)
@@ -143,8 +145,7 @@ endif()
 
 find_package(Git REQUIRED)
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${SST_TOP_SRC_DIR}/.git rev-parse
-          HEAD
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${SST_TOP_SRC_DIR}/.git rev-parse HEAD
   RESULT_VARIABLE HASH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_HEADSHA
   OUTPUT_STRIP_TRAILING_WHITESPACE)

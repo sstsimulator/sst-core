@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -18,7 +18,6 @@
 #include "sst/core/elemLoader.h"
 #include "sst/core/env/envconfig.h"
 #include "sst/core/env/envquery.h"
-#include "sst/core/part/sstpart.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
@@ -515,7 +514,7 @@ OverallOutputter::outputXML()
     XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
-SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, true)
+SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, {})
 {
     using namespace std::placeholders;
 

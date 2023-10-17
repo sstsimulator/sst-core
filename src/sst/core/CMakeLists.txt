@@ -1,15 +1,17 @@
+# ~~~
 # SST-CORE src/sst/core CMake
 #
-# Copyright 2009-2022 NTESS. Under the terms
+# Copyright 2009-2023 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2022, NTESS
+# Copyright (c) 2009-2023, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
 # information, see the LICENSE file in the top level directory of the
 # distribution.
+# ~~~
 #
 
 add_definitions(-DSST_BUILDING_CORE=1)
@@ -29,7 +31,6 @@ add_subdirectory(env)
 add_subdirectory(interfaces)
 add_subdirectory(interprocess)
 add_subdirectory(math)
-add_subdirectory(part)
 add_subdirectory(profile)
 add_subdirectory(rng)
 add_subdirectory(serialization)
@@ -44,8 +45,6 @@ add_library(
   componentExtension.cc
   componentInfo.cc
   config.cc
-  configBase.cc
-  configShared.cc
   configGraph.cc
   cfgoutput/pythonConfigOutput.cc
   cfgoutput/dotConfigOutput.cc
@@ -76,13 +75,11 @@ add_library(
   module.cc
   sstpart.cc
   timeVortex.cc
-
   profile/clockHandlerProfileTool.cc
   profile/componentProfileTool.cc
   profile/eventHandlerProfileTool.cc
   profile/syncProfileTool.cc
   profile/profiletool.cc
-
   serialization/serializable.cc
   serialization/serialize_serializable.cc
   serialization/serializer.cc
@@ -191,6 +188,10 @@ if(ZLIB_FOUND)
   target_link_libraries(sst-core-lib PRIVATE ZLIB::ZLIB)
 endif()
 
+add_library(sst-config-lib OBJECT configBase.cc configShared.cc)
+target_link_libraries(sst-config-lib PUBLIC sst-config-headers)
+target_include_directories(sst-config-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
+
 add_library(sst-boot-lib OBJECT bootshared.cc)
 target_link_libraries(sst-boot-lib PUBLIC sst-config-headers)
 target_include_directories(sst-boot-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
@@ -204,6 +205,7 @@ target_link_libraries(
   sstsim.x
   PRIVATE sst-core-lib
           sst-env-lib
+          sst-config-lib
           partitioner
           timeVortex
           modelCore
@@ -218,6 +220,7 @@ target_link_libraries(
   sstinfo.x
   PRIVATE sst-core-lib
           sst-env-lib
+          sst-config-lib
           partitioner
           timeVortex
           modelCore
@@ -241,10 +244,10 @@ if(Threads_FOUND)
 endif()
 
 add_executable(sst bootsst.cc)
-target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib)
+target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib sst-config-lib)
 
 add_executable(sst-info bootsstinfo.cc)
-target_link_libraries(sst-info PRIVATE sst-boot-lib sst-env-lib)
+target_link_libraries(sst-info PRIVATE sst-boot-lib sst-env-lib sst-config-lib)
 
 add_executable(sst-config sstconfigtool.cc)
 target_link_libraries(sst-config PRIVATE sst-env-lib)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2022 NTESS. Under the terms
+# Copyright 2009-2023 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2022, NTESS
+# Copyright (c) 2009-2023, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -53,11 +53,12 @@ class testcase_StatisticComponent(SSTTestCase):
 
 #####
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports single rank runs")
     def test_MemPool_overflow(self):
         self.Statistics_test_template("overflow", 4) # force 4 threads
 
     def test_MemPool_undeleted_items(self):
-        self.Statistics_test_template("undeleted_items") # force 4 threads
+        self.Statistics_test_template("undeleted_items")
 
 #####
 

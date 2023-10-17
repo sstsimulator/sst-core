@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,22 +37,29 @@ struct LongOption
     std::string                         desc;
     std::function<int(const char* arg)> callback;
     bool                                header; // if true, desc is actually the header
-    bool                                sdl_avail;
+    std::vector<bool>                   annotations;
+    std::function<std::string(void)>    ext_help;
     mutable bool                        set_cmdline;
 
     LongOption(
         struct option opt, const char* argname, const char* desc, const std::function<int(const char* arg)>& callback,
-        bool header, bool sdl_avail, bool set_cmdline) :
+        bool header, std::vector<bool> annotations, std::function<std::string(void)> ext_help, bool set_cmdline) :
         opt(opt),
         argname(argname),
         desc(desc),
         callback(callback),
         header(header),
-        sdl_avail(sdl_avail),
+        annotations(annotations),
+        ext_help(ext_help),
         set_cmdline(set_cmdline)
     {}
 };
 
+struct AnnotationInfo
+{
+    char        annotation;
+    std::string help;
+};
 
 // Macros to make defining options easier.  These must be called
 // inside of a member function of a class inheriting from ConfigBase
@@ -66,21 +73,24 @@ struct LongOption
 // shortName - single character name referenced using -
 // text - help text
 // func - function called if option is found
-#define DEF_FLAG_OPTVAL(longName, shortName, text, func, sdl_avail) \
-    addOption({ longName, optional_argument, 0, shortName }, "[BOOL]", text, func, false, sdl_avail);
+#define DEF_FLAG_OPTVAL(longName, shortName, text, func, ...) \
+    addOption({ longName, optional_argument, 0, shortName }, "[BOOL]", text, func, { __VA_ARGS__ });
 
-#define DEF_FLAG(longName, shortName, text, func) \
-    addOption({ longName, no_argument, 0, shortName }, "", text, func, false, false);
+#define DEF_FLAG(longName, shortName, text, func, ...) \
+    addOption({ longName, no_argument, 0, shortName }, "", text, func, { __VA_ARGS__ });
 
-#define DEF_ARG(longName, shortName, argName, text, func, sdl_avail) \
-    addOption({ longName, required_argument, 0, shortName }, argName, text, func, false, sdl_avail);
+#define DEF_ARG(longName, shortName, argName, text, func, ...) \
+    addOption({ longName, required_argument, 0, shortName }, argName, text, func, { __VA_ARGS__ });
 
-#define DEF_ARG_OPTVAL(longName, shortName, argName, text, func, sdl_avail) \
-    addOption({ longName, optional_argument, 0, shortName }, "[" argName "]", text, func, false, sdl_avail);
+#define DEF_ARG_OPTVAL(longName, shortName, argName, text, func, ...) \
+    addOption({ longName, optional_argument, 0, shortName }, "[" argName "]", text, func, { __VA_ARGS__ });
+
+// Macros that include extended help
+#define DEF_ARG_EH(longName, shortName, argName, text, func, eh, ...) \
+    addOption({ longName, required_argument, 0, shortName }, argName, text, func, { __VA_ARGS__ }, eh);
 
 
-#define DEF_SECTION_HEADING(text) \
-    addOption({ "", optional_argument, 0, 0 }, "", text, std::function<int(const char* arg)>(), true, false);
+#define DEF_SECTION_HEADING(text) addHeading(text);
 
 
 /**
@@ -99,7 +109,7 @@ protected:
        ConfigBase constructor.  Meant to only be created by main
        function
      */
-    ConfigBase(bool suppress_print, bool suppress_sdl) : suppress_print_(suppress_print), suppress_sdl_(suppress_sdl) {}
+    ConfigBase(bool suppress_print) : suppress_print_(suppress_print) {}
 
     /**
        Default constructor used for serialization.  After
@@ -109,8 +119,13 @@ protected:
        to true. None of this class needs to be serialized because it
        it's state is only for parsing the arguments.
      */
-    ConfigBase() : suppress_print_(true), suppress_sdl_(true) { options.reserve(100); }
+    ConfigBase() : suppress_print_(true) { options.reserve(100); }
 
+
+    ConfigBase(bool suppress_print, std::vector<AnnotationInfo> annotations) :
+        annotations_(annotations),
+        suppress_print_(suppress_print)
+    {}
 
     /**
        Called to print the help/usage message
@@ -119,13 +134,23 @@ protected:
 
 
     /**
+       Called to print the extended help for an option
+     */
+    int printExtHelp(const std::string& option);
+
+    /**
        Add options to the Config object.  The options will be added in
        the order they are in the input array, and across calls to the
        function.
      */
     void addOption(
         struct option opt, const char* argname, const char* desc, std::function<int(const char* arg)> callback,
-        bool header, bool sdl_avail);
+        std::vector<bool> annotations, std::function<std::string(void)> ext_help = std::function<std::string(void)>());
+
+    /**
+       Adds a heading to the usage output
+     */
+    void addHeading(const char* desc);
 
     /**
        Called to get the prelude for the help/usage message
@@ -155,6 +180,9 @@ protected:
     /** Set a configuration string to update configuration values */
     bool setOptionExternal(const std::string& entryName, const std::string& value);
 
+    /** Get the value of an annotation for an option */
+    bool getAnnotation(const std::string& entryName, char annotation);
+
 public:
     // Function to uniformly parse boolean values for command line
     // arguments
@@ -171,7 +199,6 @@ public:
      */
     int parseCmdLine(int argc, char* argv[], bool ignore_unknown = false);
 
-
 private:
     std::vector<LongOption>                      options;
     std::map<char, int>                          short_options;
@@ -181,9 +208,15 @@ private:
     std::function<int(const char* arg)>          dashdash_callback;
     std::function<int(int num, const char* arg)> positional_args;
 
+    // Map to hold extended help function calls
+    std::map<std::string, std::function<std::string(void)>> extra_help_map;
+
+    // Annotations
+    std::vector<AnnotationInfo> annotations_;
+
     std::string run_name_;
     bool        suppress_print_;
-    bool        suppress_sdl_;
+    bool        has_extended_help_ = false;
 };
 
 } // namespace SST

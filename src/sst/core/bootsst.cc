@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -28,7 +28,7 @@ main(int argc, char* argv[])
     // Create a ConfigShred object.  This object won't print any error
     // messages about unknown command line options, that will be
     // deferred to the actual sstsim.x executable.
-    SST::ConfigShared cfg(true, true, true, true, true);
+    SST::ConfigShared cfg(true, true, true, true);
 
     // Make a copy of the argv array (shallow)
     char* argv_copy[argc + 1];

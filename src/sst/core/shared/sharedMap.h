@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -237,7 +237,7 @@ private:
 
         Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
-            if ( Private::getSimulation()->getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
         ~Data() { delete change_set; }

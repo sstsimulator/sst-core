@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -148,14 +148,18 @@ sstRegister(char* argv[])
 void
 sstUnregister(const std::string& element)
 {
-    std::string str1;
-    std::string s = "";
-    std::string tempfile;
-    int         found = 0;
-
     // setup element names to look for
-    str1     = START_DELIMITER + element + STOP_DELIMITER;
-    tempfile = "/tmp/sstsimulator.conf";
+    const std::string str1             = START_DELIMITER + element + STOP_DELIMITER;
+    char              tempfilename[24] = "sstsimulator.confXXXXXX";
+    const auto        fd               = mkstemp(&tempfilename[0]);
+    if ( fd == -1 ) {
+        std::cerr << "\tError creating temporary file for writing config with unregistered element " << element << "\n";
+        return;
+    }
+    const std::string tempfile(tempfilename);
+
+    std::string s     = "";
+    int         found = 0;
 
     std::ifstream infile(cfgPath);
     std::ofstream outfile(tempfile);
@@ -174,11 +178,22 @@ sstUnregister(const std::string& element)
 
     if ( found ) { std::cout << "\tModel " << element << " has been unregistered!\n"; }
     else
-        std::cout << "Model " << element << " not found\n\n";
+        std::cout << "\tModel " << element << " not found\n\n";
 
     infile.close();
     outfile.close();
-    rename(tempfile.c_str(), cfgPath);
+
+    if ( std::remove(cfgPath) != 0 ) {
+        std::cerr << "\tError removing " << cfgPath << " before moving updated config\n";
+        return;
+    }
+    infile  = std::ifstream(tempfile, std::ios::binary);
+    outfile = std::ofstream(cfgPath, std::ios::binary);
+    outfile << infile.rdbuf();
+    if ( std::remove(tempfile.c_str()) != 0 ) {
+        std::cerr << "\tError removing " << tempfile << " after moving updated config\n";
+        return;
+    }
 }
 
 // listModels

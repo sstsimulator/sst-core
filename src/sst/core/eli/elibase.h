@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -187,6 +187,7 @@ private:
     template <class __TT>                                                       \
     static bool addDerivedInfo(const std::string& lib, const std::string& elem) \
     {                                                                           \
+        using BuilderInfo = typename __LocalEliBase::BuilderInfo;               \
         return addInfo(lib, elem, new BuilderInfo(lib, elem, (__TT*)nullptr));  \
     }
 

@@ -1,13 +1,17 @@
+# ~~~
 # SST-CORE share/ CMake
 #
-# Copyright 2009-2022 National Technology and Engineering Solutions of Sandia,
-# LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
-# retains certain rights in this software.
+# Copyright 2009-2023 NTESS. Under the terms
+# of Contract DE-NA0003525 with NTESS, the U.S.
+# Government retains certain rights in this software.
 #
-# See LICENSE for full license details
+# Copyright (c) 2009-2023, NTESS
+# All rights reserved.
 #
-
-# TODO Remove this set set(prefix ${CMAKE_INSTALL_PREFIX})
+# This file is part of the SST software package. For license
+# information, see the LICENSE file in the top level directory of the
+# distribution.
+# ~~~
 
 message(
   STATUS "SST: PREPROCESSING ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in")

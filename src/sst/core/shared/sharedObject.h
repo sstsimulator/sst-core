@@ -1,8 +1,8 @@
-// Copyright 2009-2022 NTESS. Under the terms
+// Copyright 2009-2023 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2022, NTESS
+// Copyright (c) 2009-2023, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -13,10 +13,11 @@
 #define SST_CORE_SHARED_SHAREDOBJECT_H
 
 #include "sst/core/output.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/serialization/serializable.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 
+#include <mutex>
 #include <string>
 
 namespace SST {
@@ -26,8 +27,8 @@ class Simulation_impl;
 namespace Shared {
 
 namespace Private {
-Output&     getSimulationOutput();
-Simulation* getSimulation();
+Output&  getSimulationOutput();
+RankInfo getNumRanks();
 } // namespace Private
 
 // NOTE: The classes in this header file are not part of the public
