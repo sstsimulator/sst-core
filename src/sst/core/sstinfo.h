@@ -169,45 +169,80 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
+    /** Store Library Information into infoMap. */
+    void setAllLibraryInfo();
+
     /** Output the Library Information.
      * @param LibIndex The Index of the Library.
      */
     void outputHumanReadable(std::ostream& os, int LibIndex);
 
-    /** Store Library Information into infoMap. */
-    void getLibString();
-
     /** Create the formatted XML data of the Library.
-     * @param LibIndex The Index of the Library.
+     * @param Index The Index of the Library.
      * @param XMLParentElement The parent element to receive the XML data.
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
     /** Return text from infoMap */
     void outputText(std::stringstream& os);
+    void find();
 
 
     template <class BaseType>
-    void getLibString();
+    void setAllLibraryInfo();
     template <class BaseType>
     void outputHumanReadable(std::ostream& os, bool printAll);
     template <class BaseType>
     void outputXML(TiXmlElement* node);
 
-    void find();
-
     std::string getLibraryDescription() { return ""; }
 
-    std::set<std::string> getTypeList() { return typeList; }
+    void setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
+        ComponentInfo componentInfo;
+        std::map<std::string, std::string> infoMap;
 
-    
+        // Split string into lines and map each key:value pair
+        std::stringstream infoStream(info);
+        std::string line;
+        while(std::getline(infoStream, line, '\n')){
+            size_t split = line.find(':');
+
+            std::string tag;
+            std::string value;
+            if (split == std::string::npos) {
+                tag = line;
+                value = "";
+            }
+            else {
+                tag = line.substr(0, split);
+                value = line.substr(split+1);
+            }
+
+            infoMap.insert(make_pair(tag, value));
+            componentInfo.stringIndexer.push_back(tag);
+        }
+
+        componentInfo.componentName = componentName;
+        componentInfo.infoMap = infoMap;
+
+        // Add to component list
+        m_components[baseName].push_back(componentInfo);
+    }
 
 private:
-    std::string m_name;
-    std::set<std::string> typeList;
-    std::map<std::string, std::any> infoMap;
-};
+    // Contains info strings for each individual component, subcomponent, etc.
+    struct ComponentInfo 
+    {
+        std::string componentName;
+        std::vector<std::string> stringIndexer; // Used to maintain order of strings
+        std::map<std::string, std::string> infoMap;
+    };
 
+    // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
+    std::map<std::string, std::vector<ComponentInfo>> m_components;
+    std::string m_name;
+};
+ 
 } // namespace SST
 
 #endif // SST_CORE_SST_INFO_H

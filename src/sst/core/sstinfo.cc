@@ -102,9 +102,10 @@ static void     processSSTElementFiles();
 void            outputSSTElementInfo();
 void            generateXMLOutputFile();
 void            runInteractive();
+void            drawWindows();
 void            getInput();
 std::string     parseInput(std::string);
-void            drawWindows();
+std::string     getLibraryInfo(std::vector<std::string>);
 void            setInfoText(std::string);
 void            printInfo();
 
@@ -237,31 +238,6 @@ getInput()
 }
 
 std::string 
-getLibraryInfo(std::vector<std::string> args)
-{
-    std::stringstream outputStream;
-
-    if (args == std::vector<std::string>{"all"}) {
-        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-            g_libInfoArray[x].outputText(outputStream);
-        }
-    }
-    else {
-        for (std::string arg : args) {
-            g_configuration.addFilter(arg);
-        }
-    }
-
-    return outputStream.str();
-    
-    // std::stringstream outputStream;
-    // processSSTElementFiles(outputStream);
-
-    // setInfoText(outputStream.str());
-    // g_textPos = 0;
-}
-
-std::string 
 parseInput(std::string input)
 {
     //output << "Input: " << input << "\n";
@@ -333,6 +309,31 @@ parseInput(std::string input)
     }
 
     return text;
+}
+
+std::string 
+getLibraryInfo(std::vector<std::string> args)
+{
+    std::stringstream outputStream;
+
+    if (args == std::vector<std::string>{"all"}) {
+        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
+            g_libInfoArray[x].outputText(outputStream);
+        }
+    }
+    else {
+        for (std::string arg : args) {
+            
+        }
+    }
+
+    return outputStream.str();
+    
+    // std::stringstream outputStream;
+    // processSSTElementFiles(outputStream);
+
+    // setInfoText(outputStream.str());
+    // g_textPos = 0;
 }
 
 void 
@@ -414,7 +415,7 @@ processSSTElementFiles()
     // Store info strings for interactive mode
     if ( g_configuration.interactiveEnabled() ) {
         for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-            g_libInfoArray[x].getLibString();
+            g_libInfoArray[x].setAllLibraryInfo();
         }
     }
     else {
@@ -690,20 +691,60 @@ shouldPrintElement(const std::string& libName, const std::string& elemName)
 void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
-    for (auto& map : infoMap) {
-        // for ( auto& pair : map ) {
-            //pair.second->toString(outputStream);
-            //outputStream << "FIRST: " << map.first << "\nSECOND: " << map.second << "\n\n";
-            outputStream << "FIRST: " << map.first << "\n\n";
+    // Header
+    outputStream << "\n================================================================================\n";
+    outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;
 
-            // bool print = shouldPrintElement(getLibraryName(), pair.first);
-            // if ( print ) {
-            //     outputStream << pair.first << "\n";
-            //     if ( g_configuration.doVerbose() ) pair.second->toString(outputStream);
-            // }
-            // if ( print ) outputStream << std::endl;
-        //}
+    // Loop over component types
+    for (auto pair : this->m_components) {
+        std::string componentType = pair.first;
+        outputStream << componentType << "s (" << pair.second.size() << " total)\n";
+
+        // Loop over each component
+        int idx = 1;
+        for (auto component : pair.second) {
+            outputStream << componentType << " " << idx << " : " << component.componentName << endl;
+
+            // Iterate through infoMap using the string indexer
+            for (auto key : component.stringIndexer) {
+                std::string val = component.infoMap[key];
+
+                if (val == "") { outputStream << key << endl; }
+                else { outputStream << key << " : " << val << endl; }
+            }
+
+            idx++;
+            outputStream << endl;
+        }
+
+        
     }
+
+    //outputStream << "LIBRARY NAME: " << getLibraryName() << ", BASENAME: " << libInfo.baseName << ", UNITNAME: " << libInfo.unitName << "\n--- INFO ---\n" << libInfo.info;
+
+
+    // for (auto& map : infoMap) {
+    //     auto& pair = map.second;
+
+    //     outputStream << "FIRST: " << map.first << "\nSECOND: " << pair.first << "\n\n";
+
+        //auto sec = std::any_cast<std::pair&>(map.second);
+        
+        //outputStream << "NAME: " << this->getLibraryName() << "\nFIRST: " << map.first << "\nSECOND: " << sec.first << "\n\n";
+        
+        //map.second->toString(outputStream)
+
+
+        // for ( auto& pair : map ) {
+        //     //pair.second->toString(outputStream);
+            
+
+       
+        //     // outputStream << pair.first << "\n";
+        //     
+        //     outputStream << std::endl;
+        // }
+    //}
 }
 
 void
@@ -714,7 +755,7 @@ SSTLibraryInfo::find()
 
 template <class BaseType>
 void
-SSTLibraryInfo::getLibString()
+SSTLibraryInfo::setAllLibraryInfo()
 {
     std::ofstream output("out.txt");
 
@@ -724,13 +765,18 @@ SSTLibraryInfo::getLibString()
         // Only print if there is something of that type in the library
         if ( lib->numEntries() != 0 ) {
             // Create map keys based on type name
-            std::string baseName = std::string(BaseType::ELI_baseName()) + "s (" + std::to_string(lib->numEntries()) + " total)";
+            std::string baseName = std::string(BaseType::ELI_baseName());
 
             // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
             // actually a Base::BuilderInfo and the implementation is in
             // eli/elementinfo as BuilderInfoImpl
-            auto& map = lib->getMap();
-            infoMap.insert(make_pair(baseName, map));
+            for ( auto& map : lib->getMap() ) {
+                std::stringstream infoStream;
+                map.second->toString(infoStream);
+
+                setLibraryInfo(baseName, map.first, infoStream.str());    
+            }
+
             output << "*inserted type: " << baseName << "\n";
         }
     }
@@ -740,14 +786,14 @@ SSTLibraryInfo::getLibString()
 }
 
 void
-SSTLibraryInfo::getLibString()
+SSTLibraryInfo::setAllLibraryInfo()
 {
 
-    getLibString<Component>();
-    getLibString<SubComponent>();
-    getLibString<Module>();
-    getLibString<SST::Partition::SSTPartitioner>();
-    getLibString<SST::Profile::ProfileTool>();
+    setAllLibraryInfo<Component>();
+    setAllLibraryInfo<SubComponent>();
+    setAllLibraryInfo<Module>();
+    setAllLibraryInfo<SST::Partition::SSTPartitioner>();
+    setAllLibraryInfo<SST::Profile::ProfileTool>();
 }
 
 template <class BaseType>
