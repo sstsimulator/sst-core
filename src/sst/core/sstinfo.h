@@ -207,7 +207,7 @@ private:
     struct ComponentInfo 
     {
         std::string componentName;
-        std::vector<std::string> stringIndexer; // Used to maintain order of strings
+        std::vector<std::string> stringIndexer; // Used to maintain order of strings in infoMap
         std::map<std::string, std::string> infoMap;
     };
 

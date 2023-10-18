@@ -675,14 +675,14 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
                 // Apply filter
                 bool filtered = std::find(m_componentFilters.begin(), m_componentFilters.end(), component.componentName) != m_componentFilters.end();
                 if ((m_componentFilters.size() == 0) || filtered) {
-                    outputStream << "  " << componentType << " " << idx << " : " << component.componentName << endl;
+                    outputStream << "  " << componentType << " " << idx << ": " << component.componentName << endl;
 
                     // Iterate through infoMap using the string indexer
                     for (auto key : component.stringIndexer) {
                         std::string val = component.infoMap[key];
 
                         if (val == "") { outputStream << key << endl; }
-                        else { outputStream << key << " : " << val << endl; }
+                        else { outputStream << key << ": " << val << endl; }
                     }
                     outputStream << endl;
                 }
@@ -695,6 +695,7 @@ void
 SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
     ComponentInfo componentInfo;
     std::map<std::string, std::string> infoMap;
+    bool isParameter = false;
 
     // Split string into lines and map each key:value pair
     std::stringstream infoStream(info);
@@ -704,17 +705,28 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
 
         std::string tag;
         std::string value;
+
+        // Parameters
         if (split == std::string::npos) {
             tag = line;
             value = "";
+            isParameter = true;
         }
         else {
             tag = line.substr(0, split);
             value = line.substr(split+1);
         }
 
-        infoMap.insert(make_pair(tag, value));
-        componentInfo.stringIndexer.push_back(tag);
+        if ( !isParameter ) {
+            infoMap.insert(make_pair(tag, value));
+            componentInfo.stringIndexer.push_back(tag);
+        }
+        else {
+            // Store parameters as their whole strings under the key "Parameters"
+            std::string param = tag + ": " + value;
+            infoMap.insert(make_pair("Parameters", param));
+            componentInfo.stringIndexer.push_back(param);
+        }
     }
 
     componentInfo.componentName = componentName;
