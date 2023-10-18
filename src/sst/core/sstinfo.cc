@@ -86,7 +86,7 @@ retry:
     TiXmlComment* comment = new TiXmlComment(buf);
     owner->LinkEndChild(comment);
 }
-
+ 
 class OverallOutputter
 {
 public:
@@ -104,7 +104,7 @@ void            runInteractive();
 void            drawWindows();
 void            getInput();
 std::string     parseInput(std::string);
-std::string     getLibraryInfo(std::vector<std::string>);
+std::string     listLibraryInfo(std::vector<std::string>);
 void            setInfoText(std::string);
 void            printInfo();
 
@@ -191,12 +191,14 @@ getInput()
 
         // Parse entered text
         if(c == '\n') {
-            output = parseInput(input);
-            setInfoText(output);
+            if (input != "") {
+                output = parseInput(input);
+                setInfoText(output);
 
-            drawWindows();
-            printInfo();
-            input = "";
+                drawWindows();
+                printInfo();
+                input = "";
+            }
         }
         // Resizing the window
         else if (c == KEY_RESIZE) {
@@ -239,100 +241,128 @@ getInput()
 std::string 
 parseInput(std::string input)
 {
-    //output << "Input: " << input << "\n";
-
     // Split into set of strings
     std::istringstream stream(input);
     std::string word;
     std::vector<std::string> inputWords;
-    
+
     while (stream >> word) {
-        //output << word;
         inputWords.push_back(word);
     }
 
     // Parse
     std::string text = "";
-    if (inputWords.size() > 0) {
-        std::string command = inputWords[0];
-        transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert to lowercase
+    std::string command = inputWords[0];
+    transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert command to lowercase
 
-        // Help messages
-        if (inputWords.size() == 1) {
-            if (command == "help") {
-                text = "SST-INFO\n"
-                       "\t This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
-                       "COMMANDS\n"
-                       "\t- Help : Displays this help message\n"
-                       "\t- List {element.subelement} : Displays selected elements\n"
-                       "\t- Open {element.subelement} : ...\n"
-                       "\t- Path {subelement(?)} : ...\n\n";
-            }
-            else if (command == "list") {
-                text = "LIST COMMANDS\n"
-                       "\t- List all : Display all available element libraries and their components/subcomponents\n"
-                       "\t- List types [element] : Display all types of components/subcomponents within the specified element library(s)\n"
-                       "\t- List [element(type)] : Display all components/subcomponents of the specified type ***WIP\n"
-                       "\t- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
-                       "\t'element' - Element Library\n"
-                       "\t'type' - Type of Component/Subcomponent\n"
-                       "\t'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                       "EXAMPLES\n"
-                       "\tlist sst.linear\n"
-                       "\tlist types sst\n"
-                       "\tlist ariel sst\n"
-                       "\tlist sst(ProfileTools)\n"
-                       "\tlist coreTestElement(SubComponents)\n"
-                       "\netc..."; //needs more
-            }
-            else {
-
-            }
+    // Help messages
+    if (inputWords.size() == 1) {
+        if (command == "help") {
+            text = "SST-INFO\n"
+                    "\t This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
+                    "COMMANDS\n"
+                    "\t- Help : Displays this help message\n"
+                    "\t- List {element.subelement} : Displays selected elements\n"
+                    "\t- Open {element.subelement} : ...\n"
+                    "\t- Path {subelement(?)} : ...\n\n";
         }
+        else if (command == "list") {
+            text = "\nLIST COMMAND\n"
+                    "\t- List all : Display all available element libraries and their components/subcomponents\n"
+                    "\t- List types [element] : Display all types of components/subcomponents within the specified element library(s)\n"
+                    "\t- List [element(type)] : Display all components/subcomponents of the specified type ***WIP\n"
+                    "\t- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
+                    "\t'element' - Element Library\n"
+                    "\t'type' - Type of Component/Subcomponent\n"
+                    "\t'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
+                    "EXAMPLES\n"
+                    "\tlist sst.linear\n"
+                    "\tlist types sst\n"
+                    "\tlist ariel sst\n"
+                    "\tlist sst(ProfileTools)\n"
+                    "\tlist coreTestElement(SubComponents)\n"
+                    "\netc..."; //needs more
+        }
+        else if (command == "find") {
 
-        // Parse commands
-        else if (inputWords.size() > 1) {
-            //Get args
-            auto start = std::next(inputWords.begin(), 1);
-            auto end = inputWords.end();
-            std::vector<std::string> args(start, end);
+        }
+    }
 
-            if (command == "list") {
-                text = getLibraryInfo(args);
-            }
-            
-            else {
-                //More commands here
-            }
+    // Parse commands
+    else {
+        //Get args
+        auto start = std::next(inputWords.begin(), 1);
+        auto end = inputWords.end();
+        std::vector<std::string> args(start, end);
+
+        if (command == "list") {
+            text = listLibraryInfo(args);
+        }
+        
+        else {
+            //More commands here
         }
     }
 
     return text;
 }
 
-std::string 
-getLibraryInfo(std::vector<std::string> args)
+void setAllFilters(bool filter)
 {
-    std::stringstream outputStream;
+    for (auto& library : g_libInfoArray) {
+        library.setFilters(filter, "");
+    }
+}
 
-    if (args == std::vector<std::string>{"all"}) {
-        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-            g_libInfoArray[x].outputText(outputStream);
+int
+addLibFilter(std::string libFilter, std::string componentFilter)
+{
+    for (auto& library : g_libInfoArray) {
+        if (library.getLibraryName() == libFilter) {
+            library.setFilters(true, componentFilter);
+            return 0;
         }
     }
+
+    //Error - library not found
+    return 1;
+}
+
+std::string 
+listLibraryInfo(std::vector<std::string> args)
+{
+    if (args == std::vector<std::string>{"all"}) {
+        setAllFilters(true);
+    }
     else {
+        setAllFilters(false);
         for (std::string arg : args) {
-            
+            std::string library = "";
+            std::string component = "";
+
+            // Parse library.component
+            size_t split = arg.find('.');
+            if (split == std::string::npos) {                
+                library = arg;
+            }
+            else {
+                library = arg.substr(0, split);
+                component = arg.substr(split+1);
+            }
+
+            // Check for invalid input
+            if (addLibFilter(library, component)) {
+                return "ERR - Could not find Library/Component '" + library + "." + component + "'";
+            }
         }
+    }    
+    
+    std::stringstream outputStream;
+    for (auto& library : g_libInfoArray) {
+        library.outputText(outputStream);
     }
 
     return outputStream.str();
-    
-    // std::stringstream outputStream;
-    // processSSTElementFiles(outputStream);
-
-    // setInfoText(outputStream.str());
-    // g_textPos = 0;
 }
 
 void 
@@ -690,60 +720,68 @@ shouldPrintElement(const std::string& libName, const std::string& elemName)
 void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
-    // Header
-    outputStream << "\n================================================================================\n";
-    outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;
+    if (this->m_libraryFilter) {
+        outputStream << "\n================================================================================\n";
+        outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;
 
-    // Loop over component types
-    for (auto pair : this->m_components) {
-        std::string componentType = pair.first;
-        outputStream << componentType << "s (" << pair.second.size() << " total)\n";
+        // Loop over component types
+        for (auto& pair : this->m_components) {
+            std::string componentType = pair.first;
+            outputStream << componentType << "s (" << pair.second.size() << " total)\n";
 
-        // Loop over each component
-        int idx = 1;
-        for (auto component : pair.second) {
-            outputStream << componentType << " " << idx << " : " << component.componentName << endl;
+            // Loop over each component
+            for (int idx = 0; idx < int(pair.second.size()); idx++) {
+                auto component = pair.second[idx]; 
 
-            // Iterate through infoMap using the string indexer
-            for (auto key : component.stringIndexer) {
-                std::string val = component.infoMap[key];
+                // Apply filter
+                if ((m_componentFilter == "") || (m_componentFilter == component.componentName)) {
+                    outputStream << "  " << componentType << " " << idx << " : " << component.componentName << endl;
 
-                if (val == "") { outputStream << key << endl; }
-                else { outputStream << key << " : " << val << endl; }
+                    // Iterate through infoMap using the string indexer
+                    for (auto key : component.stringIndexer) {
+                        std::string val = component.infoMap[key];
+
+                        if (val == "") { outputStream << key << endl; }
+                        else { outputStream << key << " : " << val << endl; }
+                    }
+                    outputStream << endl;
+                }
             }
+        }
+    }
+}
 
-            idx++;
-            outputStream << endl;
+void
+SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
+    ComponentInfo componentInfo;
+    std::map<std::string, std::string> infoMap;
+
+    // Split string into lines and map each key:value pair
+    std::stringstream infoStream(info);
+    std::string line;
+    while(std::getline(infoStream, line, '\n')){
+        size_t split = line.find(':');
+
+        std::string tag;
+        std::string value;
+        if (split == std::string::npos) {
+            tag = line;
+            value = "";
+        }
+        else {
+            tag = line.substr(0, split);
+            value = line.substr(split+1);
         }
 
-        
+        infoMap.insert(make_pair(tag, value));
+        componentInfo.stringIndexer.push_back(tag);
     }
 
-    //outputStream << "LIBRARY NAME: " << getLibraryName() << ", BASENAME: " << libInfo.baseName << ", UNITNAME: " << libInfo.unitName << "\n--- INFO ---\n" << libInfo.info;
+    componentInfo.componentName = componentName;
+    componentInfo.infoMap = infoMap;
 
-
-    // for (auto& map : infoMap) {
-    //     auto& pair = map.second;
-
-    //     outputStream << "FIRST: " << map.first << "\nSECOND: " << pair.first << "\n\n";
-
-        //auto sec = std::any_cast<std::pair&>(map.second);
-        
-        //outputStream << "NAME: " << this->getLibraryName() << "\nFIRST: " << map.first << "\nSECOND: " << sec.first << "\n\n";
-        
-        //map.second->toString(outputStream)
-
-
-        // for ( auto& pair : map ) {
-        //     //pair.second->toString(outputStream);
-            
-
-       
-        //     // outputStream << pair.first << "\n";
-        //     
-        //     outputStream << std::endl;
-        // }
-    //}
+    // Add to component list
+    m_components[baseName].push_back(componentInfo);
 }
 
 void

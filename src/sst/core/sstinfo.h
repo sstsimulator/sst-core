@@ -169,7 +169,7 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
-    /** Store Library Information into infoMap. */
+    /** Store all Library Information. */
     void setAllLibraryInfo();
 
     /** Output the Library Information.
@@ -183,10 +183,14 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
-    /** Return text from infoMap */
+    /** Return text from info map */
     void outputText(std::stringstream& os);
+    void setLibraryInfo(std::string baseName, std::string componentName, std::string info);
     void find();
 
+    /** Filter output from info map*/
+    bool getFilter() { return m_libraryFilter; }
+    void setFilters(bool filter, std::string component) { m_libraryFilter = filter; m_componentFilter = component; }
 
     template <class BaseType>
     void setAllLibraryInfo();
@@ -196,38 +200,6 @@ public:
     void outputXML(TiXmlElement* node);
 
     std::string getLibraryDescription() { return ""; }
-
-    void setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
-        ComponentInfo componentInfo;
-        std::map<std::string, std::string> infoMap;
-
-        // Split string into lines and map each key:value pair
-        std::stringstream infoStream(info);
-        std::string line;
-        while(std::getline(infoStream, line, '\n')){
-            size_t split = line.find(':');
-
-            std::string tag;
-            std::string value;
-            if (split == std::string::npos) {
-                tag = line;
-                value = "";
-            }
-            else {
-                tag = line.substr(0, split);
-                value = line.substr(split+1);
-            }
-
-            infoMap.insert(make_pair(tag, value));
-            componentInfo.stringIndexer.push_back(tag);
-        }
-
-        componentInfo.componentName = componentName;
-        componentInfo.infoMap = infoMap;
-
-        // Add to component list
-        m_components[baseName].push_back(componentInfo);
-    }
 
 private:
     // Contains info strings for each individual component, subcomponent, etc.
@@ -240,6 +212,8 @@ private:
 
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
+    bool m_libraryFilter = false;
+    std::string m_componentFilter;
     std::string m_name;
 };
  
