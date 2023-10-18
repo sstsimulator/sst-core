@@ -186,11 +186,12 @@ public:
     /** Return text from info map */
     void outputText(std::stringstream& os);
     void setLibraryInfo(std::string baseName, std::string componentName, std::string info);
-    void find();
 
     /** Filter output from info map*/
     bool getFilter() { return m_libraryFilter; }
-    void setFilters(bool filter, std::string component) { m_libraryFilter = filter; m_componentFilter = component; }
+    void resetFilters() { m_libraryFilter = true, m_componentFilters.clear(); } 
+    void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
+    void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
 
     template <class BaseType>
     void setAllLibraryInfo();
@@ -213,7 +214,7 @@ private:
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
     bool m_libraryFilter = false;
-    std::string m_componentFilter;
+    std::vector<std::string> m_componentFilters;
     std::string m_name;
 };
  

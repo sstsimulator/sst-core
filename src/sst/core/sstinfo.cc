@@ -105,6 +105,7 @@ void            drawWindows();
 void            getInput();
 std::string     parseInput(std::string);
 std::string     listLibraryInfo(std::vector<std::string>);
+std::string     findLibraryInfo(std::vector<std::string>);
 void            setInfoText(std::string);
 void            printInfo();
 
@@ -271,7 +272,7 @@ parseInput(std::string input)
                     "Displays specified element libraries.\n\n"
                     "=== USAGE ===\n"
                     "- List all : Display all available element libraries and their components/subcomponents\n"
-                    "- List [element{.component|subcomponent}] : Display the specified element/subelement(s)\n\n"
+                    "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
                     "'element' - Element Library\n"
                     "'type' - Type of Component/Subcomponent\n"
                     "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
@@ -299,27 +300,24 @@ parseInput(std::string input)
             text += listLibraryInfo(args);
         }
         
-        else {
-            //More commands here
+        else if (command == "find"){
+            text += findLibraryInfo(args);         
         }
     }
 
     return text;
 }
 
-void setAllFilters(bool filter)
-{
-    for (auto& library : g_libInfoArray) {
-        library.setFilters(filter, "");
-    }
-}
-
 int
-addLibFilter(std::string libFilter, std::string componentFilter)
+addLibFilter(std::string libFilter, std::string componentFilter = "")
 {
     for (auto& library : g_libInfoArray) {
         if (library.getLibraryName() == libFilter) {
-            library.setFilters(true, componentFilter);
+            library.setLibraryFilter(true);
+
+            if (componentFilter != "") {
+                library.setComponentFilter(componentFilter);
+            }
             return 0;
         }
     }
@@ -331,11 +329,18 @@ addLibFilter(std::string libFilter, std::string componentFilter)
 std::string 
 listLibraryInfo(std::vector<std::string> args)
 {
+    
     if (args == std::vector<std::string>{"all"}) {
-        setAllFilters(true);
+        for (auto& library : g_libInfoArray) {
+            library.resetFilters();
+        }
     }
     else {
-        setAllFilters(false);
+        //Reset all lib filters to false
+        for (auto& library : g_libInfoArray) {
+            library.setLibraryFilter(false);
+        }
+        
         for (std::string arg : args) {
             std::string library = "";
             std::string component = "";
@@ -363,6 +368,12 @@ listLibraryInfo(std::vector<std::string> args)
     }
 
     return outputStream.str();
+}
+
+std::string
+findLibraryInfo(std::vector<std::string> args)
+{
+
 }
 
 void 
@@ -610,78 +621,6 @@ SSTInfoConfig::outputUsage()
     cout << endl;
 }
 
-
-
-
-#if 0
-void
-SSTInfoConfig::outputVersion()
-{
-    cout << "SST Release Version " PACKAGE_VERSION << endl;
-}
-
-int
-SSTInfoConfig::parseCmdLine(int argc, char* argv[])
-{
-    m_AppName = argv[0];
-
-    static const struct option longOpts[] = { { "help", no_argument, nullptr, 'h' },
-                                              { "version", no_argument, nullptr, 'v' },
-                                              { "debug", no_argument, nullptr, 'd' },
-                                              { "nodisplay", no_argument, nullptr, 'n' },
-                                              { "xml", no_argument, nullptr, 'x' },
-                                              { "quiet", no_argument, nullptr, 'q' },
-                                              { "outputxml", required_argument, nullptr, 'o' },
-                                              { "elemenfilt", required_argument, nullptr, 0 },
-                                              { nullptr, 0, nullptr, 0 } };
-    while ( 1 ) {
-        int       opt_idx = 0;
-        const int intC    = getopt_long(argc, argv, "hvqdnxo:l:", longOpts, &opt_idx);
-        if ( intC == -1 ) break;
-
-        const char c = static_cast<char>(intC);
-
-        switch ( c ) {
-        case 'h':
-            outputUsage();
-            return 1;
-        case 'v':
-            outputVersion();
-            return 1;
-        case 'q':
-            m_optionBits &= ~CFG_VERBOSE;
-            break;
-        case 'd':
-            m_debugEnabled = true;
-            break;
-        case 'n':
-            m_optionBits &= ~CFG_OUTPUTHUMAN;
-            break;
-        case 'x':
-            m_optionBits |= CFG_OUTPUTXML;
-            break;
-        case 'o':
-            m_XMLFilePath = optarg;
-            break;
-        case 'l':
-        {
-            addFilter(optarg);
-            break;
-        }
-        case 0:
-            if ( !strcmp(longOpts[opt_idx].name, "elemnfilt") ) { addFilter(optarg); }
-            break;
-        }
-    }
-
-    while ( optind < argc ) {
-        addFilter(argv[optind++]);
-    }
-
-    return 0;
-}
-#endif
-
 void
 SSTInfoConfig::addFilter(const std::string& name_str)
 {
@@ -734,7 +673,8 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
                 auto component = pair.second[idx]; 
 
                 // Apply filter
-                if ((m_componentFilter == "") || (m_componentFilter == component.componentName)) {
+                bool filtered = std::find(m_componentFilters.begin(), m_componentFilters.end(), component.componentName) != m_componentFilters.end();
+                if ((m_componentFilters.size() == 0) || filtered) {
                     outputStream << "  " << componentType << " " << idx << " : " << component.componentName << endl;
 
                     // Iterate through infoMap using the string indexer
@@ -782,12 +722,6 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
 
     // Add to component list
     m_components[baseName].push_back(componentInfo);
-}
-
-void
-SSTLibraryInfo::find()
-{
-    
 }
 
 template <class BaseType>
