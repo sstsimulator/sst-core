@@ -251,40 +251,40 @@ parseInput(std::string input)
     }
 
     // Parse
-    std::string text = "";
+    std::string text = "\n";
     std::string command = inputWords[0];
     transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert command to lowercase
 
     // Help messages
     if (inputWords.size() == 1) {
         if (command == "help") {
-            text = "SST-INFO\n"
-                    "\t This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
-                    "COMMANDS\n"
-                    "\t- Help : Displays this help message\n"
-                    "\t- List {element.subelement} : Displays selected elements\n"
-                    "\t- Open {element.subelement} : ...\n"
-                    "\t- Path {subelement(?)} : ...\n\n";
+            text += "=== SST-INFO ===\n"
+                    "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
+                    "=== COMMANDS ===\n"
+                    "- Help : Displays this help message\n"
+                    "- List {element.subelement} : Displays element libraries and component information\n"
+                    "- Find {field} {search string} : Displays all components with the given search string in its field\n"
+                    "- Path {subelement} : ... (PLANNED)\n\n";
         }
         else if (command == "list") {
-            text = "\nLIST COMMAND\n"
-                    "\t- List all : Display all available element libraries and their components/subcomponents\n"
-                    "\t- List types [element] : Display all types of components/subcomponents within the specified element library(s)\n"
-                    "\t- List [element(type)] : Display all components/subcomponents of the specified type ***WIP\n"
-                    "\t- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
-                    "\t'element' - Element Library\n"
-                    "\t'type' - Type of Component/Subcomponent\n"
-                    "\t'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                    "EXAMPLES\n"
-                    "\tlist sst.linear\n"
-                    "\tlist types sst\n"
-                    "\tlist ariel sst\n"
-                    "\tlist sst(ProfileTools)\n"
-                    "\tlist coreTestElement(SubComponents)\n"
-                    "\netc..."; //needs more
+            text += "=== LIST ===\n"
+                    "Displays specified element libraries.\n\n"
+                    "=== USAGE ===\n"
+                    "- List all : Display all available element libraries and their components/subcomponents\n"
+                    "- List [element{.component|subcomponent}] : Display the specified element/subelement(s)\n\n"
+                    "'element' - Element Library\n"
+                    "'type' - Type of Component/Subcomponent\n"
+                    "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
+                    "=== EXAMPLES ===\n"
+                    "list sst.linear\n"
+                    "list ariel miranda\n"
+                    "list ariel miranda.ReverseSingleStreamGenerator\n";
         }
         else if (command == "find") {
 
+        }
+        else { 
+            text += "ERROR: Unknown command '" + command + "'";
         }
     }
 
@@ -296,7 +296,7 @@ parseInput(std::string input)
         std::vector<std::string> args(start, end);
 
         if (command == "list") {
-            text = listLibraryInfo(args);
+            text += listLibraryInfo(args);
         }
         
         else {
