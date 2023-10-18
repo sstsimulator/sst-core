@@ -48,6 +48,7 @@ public:
 
     /** All Addresses can be 64-bit */
     typedef int64_t nid_t;
+#define PRI_NID PRIi64
 
     static const nid_t INIT_BROADCAST_ADDR;
 
