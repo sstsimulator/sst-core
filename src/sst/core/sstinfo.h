@@ -15,6 +15,7 @@
 #include "sst/core/configShared.h"
 #include "sst/core/eli/elementinfo.h"
 
+#include <any>
 #include <map>
 #include <set>
 #include <vector>
@@ -53,6 +54,9 @@ public:
         return res;
     }
 
+    /** Clears the current filter map */
+    void clearFilterMap() { m_filters.clear(); }
+
     /** Return the filter map */
     FilterMap_t& getFilterMap() { return m_filters; }
 
@@ -66,13 +70,14 @@ public:
     bool debugEnabled() const { return m_debugEnabled; }
     bool processAllElements() const { return m_filters.empty(); }
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
+    bool interactiveEnabled() const{ return m_interactive; }
+    void addFilter(const std::string& name);
 
 protected:
     std::string getUsagePrelude() override;
 
 private:
     void outputUsage();
-    void addFilter(const std::string& name);
 
     int setPositionalArg(int UNUSED(num), const std::string& arg)
     {
@@ -102,6 +107,12 @@ private:
     int setNoDisplay(const std::string& UNUSED(arg))
     {
         m_optionBits &= ~CFG_OUTPUTHUMAN;
+        return 0;
+    }
+
+    int setInteractive(const std::string& UNUSED(arg))
+    {
+        m_interactive = true;
         return 0;
     }
 
@@ -135,6 +146,7 @@ private:
     unsigned int             m_optionBits;
     std::string              m_XMLFilePath;
     bool                     m_debugEnabled;
+    bool                     m_interactive;
     FilterMap_t              m_filters;
 };
 
@@ -157,17 +169,37 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
+    /** Store all Library Information. */
+    void setAllLibraryInfo();
+
     /** Output the Library Information.
      * @param LibIndex The Index of the Library.
      */
     void outputHumanReadable(std::ostream& os, int LibIndex);
 
     /** Create the formatted XML data of the Library.
-     * @param LibIndex The Index of the Library.
+     * @param Index The Index of the Library.
      * @param XMLParentElement The parent element to receive the XML data.
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
+    /** Put text into info map*/
+    void setLibraryInfo(std::string baseName, std::string componentName, std::string info);
+
+    /** Return text from info map based on filters */
+    void outputText(std::stringstream& os);
+
+    /** Set filters based on search term */
+    void filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm);
+
+    /** Filter output from info map*/
+    bool getFilter() { return m_libraryFilter; }
+    void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); } 
+    void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
+    void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
+
+    template <class BaseType>
+    void setAllLibraryInfo();
     template <class BaseType>
     void outputHumanReadable(std::ostream& os, bool printAll);
     template <class BaseType>
@@ -176,9 +208,22 @@ public:
     std::string getLibraryDescription() { return ""; }
 
 private:
+    // Contains info strings for each individual component, subcomponent, etc.
+    struct ComponentInfo 
+    {
+        std::string componentName;
+        std::vector<std::string> stringIndexer; // Used to maintain order of strings in infoMap
+        std::map<std::string, std::string> infoMap;
+    };
+
+    // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
+    std::map<std::string, std::vector<ComponentInfo>> m_components;
+    bool m_libraryFilter = false;
+    std::vector<std::string> m_componentFilters;
+
     std::string m_name;
 };
-
+ 
 } // namespace SST
 
 #endif // SST_CORE_SST_INFO_H
