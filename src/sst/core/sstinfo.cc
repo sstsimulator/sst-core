@@ -94,6 +94,15 @@ public:
     void outputXML();
 } g_Outputter;
 
+struct SearchableData {
+    const std::map<std::string, std::string> componentTags = 
+        {{"description", "      Description"}, 
+         {"version", "      ELI Version"}, 
+         {"compiledate", "      Compiled on"}, 
+         {"category", "      Category"}};
+    // Can add more in the future
+} g_searchData;
+
 // Forward Declarations
 void            initLTDL(const std::string& searchPath);
 void            shutdownLTDL();
@@ -104,10 +113,11 @@ void            runInteractive();
 void            drawWindows();
 void            getInput();
 std::string     parseInput(std::string);
-std::string     listLibraryInfo(std::vector<std::string>);
-std::string     findLibraryInfo(std::vector<std::string>);
+std::string     listLibraryInfo(std::list<std::string>);
+std::string     findLibraryInfo(std::list<std::string>);
 void            setInfoText(std::string);
 void            printInfo();
+
 
 int
 main(int argc, char* argv[])
@@ -260,12 +270,13 @@ parseInput(std::string input)
     if (inputWords.size() == 1) {
         if (command == "help") {
             text += "=== SST-INFO ===\n"
-                    "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library\n\n"
+                    "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an Element Library.\n\n"
                     "=== COMMANDS ===\n"
                     "- Help : Displays this help message\n"
                     "- List {element.subelement} : Displays element libraries and component information\n"
                     "- Find {field} {search string} : Displays all components with the given search string in its field\n"
-                    "- Path {subelement} : ... (PLANNED)\n\n";
+                    "- Path {subelement} : ... (PLANNED)\n\n"
+                    "To see more detailed instructions, type in a command without parameters.";
         }
         else if (command == "list") {
             text += "=== LIST ===\n"
@@ -277,15 +288,28 @@ parseInput(std::string input)
                     "'type' - Type of Component/Subcomponent\n"
                     "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
                     "=== EXAMPLES ===\n"
+                    "list coreTestElement\n"
                     "list sst.linear\n"
                     "list ariel miranda\n"
                     "list ariel miranda.ReverseSingleStreamGenerator\n";
         }
         else if (command == "find") {
-
+            text += "=== FIND ===\n"
+                    "Search for text within component/subcomponent fields. "
+                    "Displays all loaded components/subcomponents with the specified text.\n"
+                    "Currently only supports searching within Description, ELI Version, Compile Date, and Category.\n\n"
+                    "=== USAGE ===\n"
+                    "- Find {field} [search term] \n\n"
+                    "'field' - Component/subcomponent fields.\n"
+                    "Valid keywords - [Description, Version, Compiledate, Category] (case-insensitive)\n"
+                    "Search term can be multiple words, but is case-sensitive\n\n"
+                    "=== EXAMPLES ===\n"
+                    "find Description test\n"
+                    "find compiledate Oct 17\n"
+                    "find category UNCATEGORIZED\n";
         }
         else { 
-            text += "ERROR: Unknown command '" + command + "'";
+            text += "ERROR: Unknown command '" + command + "'\n\nUse the command 'Help' to see usage options.";
         }
     }
 
@@ -294,7 +318,7 @@ parseInput(std::string input)
         //Get args
         auto start = std::next(inputWords.begin(), 1);
         auto end = inputWords.end();
-        std::vector<std::string> args(start, end);
+        std::list<std::string> args(start, end);
 
         if (command == "list") {
             text += listLibraryInfo(args);
@@ -327,21 +351,24 @@ addLibFilter(std::string libFilter, std::string componentFilter = "")
 }
 
 std::string 
-listLibraryInfo(std::vector<std::string> args)
+listLibraryInfo(std::list<std::string> args)
 {
+    std::stringstream outputStream;
     
-    if (args == std::vector<std::string>{"all"}) {
+    if (args == std::list<std::string>{"all"}) {
+        outputStream << "\n-Displaying All Libraries-";
         for (auto& library : g_libInfoArray) {
-            library.resetFilters();
+            library.resetFilters(true);
         }
     }
     else {
-        //Reset all lib filters to false
         for (auto& library : g_libInfoArray) {
-            library.setLibraryFilter(false);
+            library.resetFilters(false);
         }
         
+        outputStream << "\n-Displaying:";
         for (std::string arg : args) {
+            outputStream << " " + arg;
             std::string library = "";
             std::string component = "";
 
@@ -360,9 +387,9 @@ listLibraryInfo(std::vector<std::string> args)
                 return "ERR - Could not find Library/Component '" + library + "." + component + "'";
             }
         }
+        outputStream << "-";
     }    
     
-    std::stringstream outputStream;
     for (auto& library : g_libInfoArray) {
         library.outputText(outputStream);
     }
@@ -371,9 +398,42 @@ listLibraryInfo(std::vector<std::string> args)
 }
 
 std::string
-findLibraryInfo(std::vector<std::string> args)
+findLibraryInfo(std::list<std::string> args)
 {
+    std::stringstream outputStream;
 
+    // Error handling
+    if (args.size() < 2) {
+        return "Invalid input. Your command should be in the format of 'find {tag} {search term}'\n\n"
+               "For example, `Find Description profiler`";
+    }
+
+    std::string inputTag = args.front();
+    std::transform(inputTag.begin(), inputTag.end(), inputTag.begin(), ::tolower); // Convert tag to lowercase
+
+    // Compare to tag list and convert to proper string
+    auto mapIter = g_searchData.componentTags.find(inputTag);
+
+    if (mapIter != g_searchData.componentTags.end()) {
+        std::string tag = mapIter->second;
+
+        args.pop_front();
+        std::string searchTerm = "";
+        for (std::string arg : args) {
+            if (arg == args.back()) { searchTerm += arg; }
+            else { searchTerm += arg + " "; }
+        }
+
+        // Search through libraries
+        for (auto& library : g_libInfoArray) {
+            library.resetFilters(false);
+            library.filterSearch(outputStream, tag, searchTerm);
+            library.outputText(outputStream);
+        }
+        return outputStream.str();
+    }
+
+    return "Invalid component tag. Choose from [Description, Version, Compiled, Category]";
 }
 
 void 
@@ -657,6 +717,40 @@ shouldPrintElement(const std::string& libName, const std::string& elemName)
 }
 
 void
+SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
+    ComponentInfo componentInfo;
+    std::map<std::string, std::string> infoMap;
+
+    // Split string into lines and map each key:value pair
+    std::stringstream infoStream(info);
+    std::string line;
+    while(std::getline(infoStream, line, '\n')){
+        size_t split = line.find(':');
+
+        std::string tag;
+        std::string value;
+
+        if (split == std::string::npos) {
+            tag = line;
+            value = "";
+        }
+        else {
+            tag = line.substr(0, split);
+            value = line.substr(split+1);
+        }
+
+        infoMap.insert(make_pair(tag, value));
+        componentInfo.stringIndexer.push_back(tag);
+    }
+
+    componentInfo.componentName = componentName;
+    componentInfo.infoMap = infoMap;
+
+    // Add to component list
+    m_components[baseName].push_back(componentInfo);
+}
+
+void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
     if (this->m_libraryFilter) {
@@ -692,56 +786,31 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
 }
 
 void
-SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, std::string info) {
-    ComponentInfo componentInfo;
-    std::map<std::string, std::string> infoMap;
-    bool isParameter = false;
+SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm)
+{
+    int count = 0;
 
-    // Split string into lines and map each key:value pair
-    std::stringstream infoStream(info);
-    std::string line;
-    while(std::getline(infoStream, line, '\n')){
-        size_t split = line.find(':');
+    for (auto& pair : m_components) {
+        for (auto& component : pair.second) {
+            std::string searchString = component.infoMap[tag];
+            size_t found = searchString.find(searchTerm);
 
-        std::string tag;
-        std::string value;
-
-        // Parameters
-        if (split == std::string::npos) {
-            tag = line;
-            value = "";
-            isParameter = true;
-        }
-        else {
-            tag = line.substr(0, split);
-            value = line.substr(split+1);
-        }
-
-        if ( !isParameter ) {
-            infoMap.insert(make_pair(tag, value));
-            componentInfo.stringIndexer.push_back(tag);
-        }
-        else {
-            // Store parameters as their whole strings under the key "Parameters"
-            std::string param = tag + ": " + value;
-            infoMap.insert(make_pair("Parameters", param));
-            componentInfo.stringIndexer.push_back(param);
+            // If term is found, set Library to show and add component to filters
+            if (found != std::string::npos) {
+                m_libraryFilter = true;
+                m_componentFilters.push_back(component.componentName);
+                count++;
+            }
         }
     }
 
-    componentInfo.componentName = componentName;
-    componentInfo.infoMap = infoMap;
-
-    // Add to component list
-    m_components[baseName].push_back(componentInfo);
+    outputStream << "-Found " << count << " components in " + m_name + " with '" + searchTerm + "' in '" + tag.substr(6) + "'-\n";   
 }
 
 template <class BaseType>
 void
 SSTLibraryInfo::setAllLibraryInfo()
 {
-    std::ofstream output("out.txt");
-
     // lib is an InfoLibrary
     auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
     if ( lib ) {
@@ -759,8 +828,6 @@ SSTLibraryInfo::setAllLibraryInfo()
 
                 setLibraryInfo(baseName, map.first, infoStream.str());    
             }
-
-            output << "*inserted type: " << baseName << "\n";
         }
     }
     else {

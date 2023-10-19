@@ -183,13 +183,18 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
-    /** Return text from info map */
-    void outputText(std::stringstream& os);
+    /** Put text into info map*/
     void setLibraryInfo(std::string baseName, std::string componentName, std::string info);
+
+    /** Return text from info map based on filters */
+    void outputText(std::stringstream& os);
+
+    /** Set filters based on search term */
+    void filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm);
 
     /** Filter output from info map*/
     bool getFilter() { return m_libraryFilter; }
-    void resetFilters() { m_libraryFilter = true, m_componentFilters.clear(); } 
+    void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); } 
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
     void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
 
@@ -215,6 +220,7 @@ private:
     std::map<std::string, std::vector<ComponentInfo>> m_components;
     bool m_libraryFilter = false;
     std::vector<std::string> m_componentFilters;
+
     std::string m_name;
 };
  
