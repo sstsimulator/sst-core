@@ -50,8 +50,7 @@ bool
 StatisticGroup::containsStatistic(const StatisticBase* stat) const
 {
     if ( isDefault ) return true;
-    std::find(stats.begin(), stats.end(), stat);
-    return false;
+    return std::find(stats.begin(), stats.end(), stat) != stats.end();
 }
 
 bool
