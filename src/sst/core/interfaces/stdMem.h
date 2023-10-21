@@ -104,6 +104,7 @@ public:
 
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
+#define PRI_ADDR PRIx64
 
     /**
      * Base class for StandardMem commands
