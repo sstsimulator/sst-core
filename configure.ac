@@ -40,6 +40,13 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
 
+# Temporary fix to ensure tests pass with newer Apple clang compiler
+case "${host_os}" in
+    darwin*)
+    CXXFLAGS="$CXXFLAGS -ffp-contract=off"
+    ;;
+esac
+
 SST_CHECK_PICKY
 AS_IF([test "x$use_picky" = "xyes"],
       [WARNFLAGS="-Wall -Wextra"],
