@@ -70,7 +70,7 @@ public:
     bool debugEnabled() const { return m_debugEnabled; }
     bool processAllElements() const { return m_filters.empty(); }
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
-    bool interactiveEnabled() const{ return m_interactive; }
+    bool interactiveEnabled() const { return m_interactive; }
     void addFilter(const std::string& name);
 
 protected:
@@ -194,7 +194,7 @@ public:
 
     /** Filter output from info map*/
     bool getFilter() { return m_libraryFilter; }
-    void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); } 
+    void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); }
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
     void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
 
@@ -209,21 +209,21 @@ public:
 
 private:
     // Contains info strings for each individual component, subcomponent, etc.
-    struct ComponentInfo 
+    struct ComponentInfo
     {
-        std::string componentName;
-        std::vector<std::string> stringIndexer; // Used to maintain order of strings in infoMap
+        std::string                        componentName;
+        std::vector<std::string>           stringIndexer; // Used to maintain order of strings in infoMap
         std::map<std::string, std::string> infoMap;
     };
 
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
-    bool m_libraryFilter = false;
-    std::vector<std::string> m_componentFilters;
+    bool                                              m_libraryFilter = false;
+    std::vector<std::string>                          m_componentFilters;
 
     std::string m_name;
 };
- 
+
 } // namespace SST
 
 #endif // SST_CORE_SST_INFO_H
