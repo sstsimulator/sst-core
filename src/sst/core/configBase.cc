@@ -306,8 +306,8 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         my_argc = end_arg_index == 0 ? argc : end_arg_index;
     }
 
-    int ok = 0;
-    while ( 0 == ok ) {
+    int status = 0;
+    while ( 0 == status ) {
         int       option_index = 0;
         const int intC = getopt_long(my_argc, argv, short_options_string.c_str(), sst_long_options, &option_index);
 
@@ -332,29 +332,29 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         // is an unknown command
         if ( c == '?' ) {
             // Unknown option
-            if ( !ignore_unknown ) { ok = printUsage(); }
+            if ( !ignore_unknown ) { status = printUsage(); }
         }
         else if ( option_index != 0 ) {
             // Long options
             int real_index = option_map[option_index];
             if ( optarg )
-                ok = options[real_index].callback(optarg);
+                status = options[real_index].callback(optarg);
             else
-                ok = options[real_index].callback("");
-            if ( ok ) options[real_index].set_cmdline = true;
+                status = options[real_index].callback("");
+            if ( !status ) options[real_index].set_cmdline = true;
         }
         else {
             // Short option
             int real_index = short_options[c];
             if ( optarg )
-                ok = options[real_index].callback(optarg);
+                status = options[real_index].callback(optarg);
             else
-                ok = options[real_index].callback("");
-            if ( ok ) options[real_index].set_cmdline = true;
+                status = options[real_index].callback("");
+            if ( !status ) options[real_index].set_cmdline = true;
         }
     }
 
-    if ( ok != 0 ) { return ok; }
+    if ( status != 0 ) { return status; }
 
     /* Handle positional arguments */
     int    pos   = optind;
@@ -369,7 +369,7 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         // If we aren't ignoring unknown arguments, we'll get an error
         // above. Otherwise, just ignore all the positional arguments.
         if ( positional_args )
-            ok = positional_args(count, argv[pos++]);
+            status = positional_args(count, argv[pos++]);
         else
             pos++;
     }
@@ -388,8 +388,8 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
     }
 
     // If everything parsed okay, call the check function
-    if ( ok == 0 ) return checkArgsAfterParsing();
-    return ok;
+    if ( status == 0 ) return checkArgsAfterParsing();
+    return status;
 }
 
 
