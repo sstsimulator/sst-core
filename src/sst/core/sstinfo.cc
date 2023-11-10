@@ -48,6 +48,7 @@ static WINDOW*                                            info;
 static WINDOW*                                            console;
 static std::vector<std::string>                           g_infoText;
 static unsigned int                                       g_textPos;
+static std::deque<std::string>                            g_prevInput;
 
 
 void
@@ -189,21 +190,26 @@ drawWindows()
 void
 getInput()
 {
+    std::string input        = "";
+    std::string output       = "";
+    std::string stashedInput = "";
+    int         entryIdx     = -1;
+
     // Main loop for console input
-    std::string input = "";
     while ( true ) {
-        std::string output = "";
-        int         c      = wgetch(console);
+        int c = wgetch(console);
 
         // Parse entered text
         if ( c == '\n' ) {
             if ( input != "" ) {
+                g_prevInput.push_front(input);
                 output = parseInput(input);
                 setInfoText(output);
 
                 drawWindows();
                 printInfo();
                 input = "";
+                entryIdx = -1;
             }
         }
         // Resizing the window
@@ -232,11 +238,34 @@ getInput()
                 printInfo();
             }
         }
+        // Cycle through previous commands
+        else if ( c == KEY_PPAGE) {
+            if ( entryIdx == -1 ) { stashedInput = input; }
+
+            if ( entryIdx < int(g_prevInput.size() - 1)) {
+                entryIdx++;
+                input = g_prevInput[entryIdx];
+
+                drawWindows();
+                printInfo();
+                wprintw(console, input.c_str());
+            }
+        }
+        else if ( c == KEY_NPAGE ) {
+            if ( entryIdx >= 0 ) {
+                entryIdx--;
+                if ( entryIdx == -1 ) { input = stashedInput; }
+                else { input = g_prevInput[entryIdx]; }
+
+                drawWindows();
+                printInfo();
+                wprintw(console, input.c_str());
+            }
+        }
         // Regular characters
         else if ( c <= 255 ) {
             input += c;
             wprintw(console, "%c", c);
-            wrefresh(console);
         }
 
         // Make sure the cursor resets to the correct place
@@ -266,14 +295,18 @@ parseInput(std::string input)
         if ( command == "help" ) {
             text +=
                 "=== SST-INFO ===\n"
-                "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
+                "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an"
                 "Element Library.\n\n"
+                "=== CONTROLS ===\n"
+                "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
+                "The text window can be resized at will, and both arrow key and mouse scrolling is enabled.\n"
+                "Use 'Page Up' and 'Page Down' to scroll through previously entered commands.\n\n"
                 "=== COMMANDS ===\n"
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
                 "- Find {field} {search string} : Displays all components with the given search string in its field\n"
                 "- Path {subelement} : ... (PLANNED)\n\n"
-                "To see more detailed instructions, type in a command without parameters.";
+                "To see more detailed instructions, type in a command without additional parameters.\n\n";
         }
         else if ( command == "list" ) {
             text += "=== LIST ===\n"
