@@ -49,6 +49,7 @@ static WINDOW*                                            console;
 static std::vector<std::string>                           g_infoText;
 static unsigned int                                       g_textPos;
 static std::deque<std::string>                            g_prevInput;
+static std::vector<std::string>                           g_libraryNames;
 
 
 void
@@ -135,15 +136,6 @@ main(int argc, char* argv[])
     return 0;
 }
 
-int
-getCursorPos(WINDOW* console)
-{
-    int pos, h;
-    getyx(console, h, pos);
-    h += 1; // to please the compiler
-    return pos;
-}
-
 void
 runInteractive()
 {
@@ -219,7 +211,7 @@ getInput()
         }
         // Handle backspaces
         else if ( c == KEY_BACKSPACE ) {
-            int pos = getCursorPos(console);
+            int pos = getcury(console);
             if ( pos > 1 ) {
                 wprintw(console, "\b \b");
                 input.pop_back();
@@ -273,6 +265,12 @@ getInput()
     }
 }
 
+void
+convertToLower(std::string input)
+{
+    transform(input.begin(), input.end(), input.begin(), ::tolower);
+}
+
 std::string
 parseInput(std::string input)
 {
@@ -288,7 +286,7 @@ parseInput(std::string input)
     // Parse
     std::string text    = "\n";
     std::string command = inputWords[0];
-    transform(command.begin(), command.end(), command.begin(), ::tolower); // Convert command to lowercase
+    convertToLower(command);
 
     // Help messages
     if ( inputWords.size() == 1 ) {
@@ -433,7 +431,7 @@ findLibraryInfo(std::list<std::string> args)
     }
 
     std::string inputTag = args.front();
-    std::transform(inputTag.begin(), inputTag.end(), inputTag.begin(), ::tolower); // Convert tag to lowercase
+    convertToLower(inputTag);
 
     // Compare to tag list and convert to proper string
     auto mapIter = g_searchData.componentTags.find(inputTag);
@@ -775,7 +773,8 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
     componentInfo.componentName = componentName;
     componentInfo.infoMap       = infoMap;
 
-    // Add to component list
+    // Add to component lists
+    m_componentNames.push_back(componentName);
     m_components[baseName].push_back(componentInfo);
 }
 

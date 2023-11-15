@@ -218,10 +218,10 @@ private:
 
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
+    std::vector<std::string>                          m_componentNames;
     bool                                              m_libraryFilter = false;
     std::vector<std::string>                          m_componentFilters;
-
-    std::string m_name;
+    std::string                                       m_name;
 };
 
 } // namespace SST
