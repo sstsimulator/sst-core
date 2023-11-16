@@ -30,7 +30,6 @@
 #include <dlfcn.h>
 #include <getopt.h>
 #include <list>
-#include <ncurses.h>
 #include <sys/stat.h>
 
 
@@ -163,12 +162,6 @@ getInput()
     while ( true ) {
         int c = g_window.getInput();
 
-        //Handle autofill box
-        // int height = int(LINES / 4);
-        // int width = int(COLS / 6);
-        // autofillBox = newwin(height, width, getcury(console) - height, getcurx(console) + 1);
-        // box(console, 0, 0);
-
         // Parse entered text
         if ( c == '\n' ) {
             if ( input != "" ) {
@@ -181,6 +174,10 @@ getInput()
                 input = "";
                 entryIdx = -1;
             }
+        }
+        // Autofill Box
+        else if ( c == '\t' ) {
+            
         }
         // Resizing the window
         else if ( c == KEY_RESIZE ) {

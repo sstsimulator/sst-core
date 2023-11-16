@@ -225,6 +225,9 @@ private:
     std::string                                       m_name;
 };
 
+/**
+ * Handles all ncurses window operations for interactive SSTInfo.
+ */
 class InteractiveWindow
 {
 public:
@@ -259,6 +262,22 @@ public:
     }
 
     void
+    drawAutofillBox() 
+    {
+        int height = int(LINES / 4);
+        int width = int(COLS / 6);
+        autofillBox = newwin(height, width, getcury(console) - height, getcurx(console) + 1);
+        box(autofillBox, 0, 0);
+
+    }
+
+    void
+    removeAutofillBox()
+    {
+
+    }
+
+    void
     printInfo(const char* input)
     {
         wprintw(info, input);
@@ -267,17 +286,13 @@ public:
         wmove(console, 1, 1);
     }
 
-    void
-    printConsole(const char* input) { wprintw(console, input); }
+    void printConsole(const char* input) { wprintw(console, input); }
 
-    int
-    getInput() { return wgetch(console); }
+    int getInput() { return wgetch(console); }
 
-    void
-    resetCursor(int pos) { wmove(console, 1, pos); }
+    void resetCursor(int pos) { wmove(console, 1, pos); }
 
-    int
-    getCursorPos() { return getcury(console); }
+    int getCursorPos() { return getcurx(console); }
 
 private:
     WINDOW* info;
