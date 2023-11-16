@@ -17,9 +17,9 @@
 
 #include <any>
 #include <map>
+#include <ncurses.h>
 #include <set>
 #include <vector>
-#include <ncurses.h>
 
 #include "tinyxml/tinyxml.h"
 
@@ -225,64 +225,38 @@ private:
     std::string                                       m_name;
 };
 
+/**
+ * Handles all ncurses window operations for interactive SSTInfo.
+ */
 class InteractiveWindow
 {
 public:
-    InteractiveWindow() 
+    InteractiveWindow()
     {
-        info    = newwin(LINES - 3, COLS, 0, 0);
-        console = newwin(3, COLS, LINES - 3, 0);
+        info            = newwin(LINES - 3, COLS, 0, 0);
+        console         = newwin(3, COLS, LINES - 3, 0);
+        autofillEnabled = false;
     }
 
-    void
-    draw() 
-    {
-        // Hard reset windows for redraws
-        werase(info);
-        werase(console);
-        delwin(info);
-        delwin(console);
+    /* Draw/redraw info and console windows */
+    void draw(bool drawConsole = true);
 
-        info    = newwin(LINES - 3, COLS, 0, 0);
-        console = newwin(3, COLS, LINES - 3, 0);
+    /* Toggle display of the autofill box */
+    void toggleAutofillBox();
 
-        // Parameters
-        scrollok(info, true);
-        scrollok(console, false);
-        keypad(console, true);
+    /* Prints SST-info text to the info window */
+    void printInfo();
 
-        box(console, 0, 0);
-        mvwprintw(console, 0, 1, " Console ");
-        wmove(console, 1, 1);
-        wrefresh(info);
-        wrefresh(console);
-    }
-
-    void
-    printInfo(const char* input)
-    {
-        wprintw(info, input);
-        wrefresh(info);
-        wrefresh(console); // moves the cursor back into the console window
-        wmove(console, 1, 1);
-    }
-
-    void
-    printConsole(const char* input) { wprintw(console, input); }
-
-    int
-    getInput() { return wgetch(console); }
-
-    void
-    resetCursor(int pos) { wmove(console, 1, pos); }
-
-    int
-    getCursorPos() { return getcury(console); }
+    void printConsole(const char* input) { wprintw(console, input); }
+    int  getInput() { return wgetch(console); }
+    void resetCursor(int pos) { wmove(console, 1, pos); }
+    int  getCursorPos() { return getcurx(console); }
 
 private:
     WINDOW* info;
     WINDOW* console;
     WINDOW* autofillBox;
+    bool    autofillEnabled;
 };
 
 } // namespace SST

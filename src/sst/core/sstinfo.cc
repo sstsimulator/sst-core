@@ -30,7 +30,6 @@
 #include <dlfcn.h>
 #include <getopt.h>
 #include <list>
-#include <ncurses.h>
 #include <sys/stat.h>
 
 
@@ -111,7 +110,6 @@ std::string parseInput(std::string);
 std::string listLibraryInfo(std::list<std::string>);
 std::string findLibraryInfo(std::list<std::string>);
 void        setInfoText(std::string);
-void        printInfo();
 
 
 int
@@ -144,7 +142,7 @@ runInteractive()
     // Set initial text to help text
     g_window.draw();
     setInfoText(parseInput("help"));
-    printInfo();
+    g_window.printInfo();
 
     // Loop for input
     getInput();
@@ -163,12 +161,6 @@ getInput()
     while ( true ) {
         int c = g_window.getInput();
 
-        //Handle autofill box
-        // int height = int(LINES / 4);
-        // int width = int(COLS / 6);
-        // autofillBox = newwin(height, width, getcury(console) - height, getcurx(console) + 1);
-        // box(console, 0, 0);
-
         // Parse entered text
         if ( c == '\n' ) {
             if ( input != "" ) {
@@ -177,15 +169,19 @@ getInput()
                 setInfoText(output);
 
                 g_window.draw();
-                printInfo();
-                input = "";
+                g_window.printInfo();
+                input    = "";
                 entryIdx = -1;
             }
+        }
+        // Autofill Box
+        else if ( c == '\t' ) {
+            g_window.toggleAutofillBox();
         }
         // Resizing the window
         else if ( c == KEY_RESIZE ) {
             g_window.draw();
-            printInfo();
+            g_window.printInfo();
         }
         // Handle backspaces
         else if ( c == KEY_BACKSPACE ) {
@@ -199,25 +195,25 @@ getInput()
         else if ( c == KEY_UP ) {
             if ( g_textPos > 0 ) {
                 g_textPos -= 1;
-                printInfo();
+                g_window.printInfo();
             }
         }
         else if ( c == KEY_DOWN ) {
             if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES ) {
                 g_textPos += 1;
-                printInfo();
+                g_window.printInfo();
             }
         }
         // Cycle through previous commands
-        else if ( c == KEY_PPAGE) {
+        else if ( c == KEY_PPAGE ) {
             if ( entryIdx == -1 ) { stashedInput = input; }
 
-            if ( entryIdx < int(g_prevInput.size() - 1)) {
+            if ( entryIdx < int(g_prevInput.size() - 1) ) {
                 entryIdx++;
                 input = g_prevInput[entryIdx];
 
                 g_window.draw();
-                printInfo();
+                g_window.printInfo();
                 g_window.printConsole(input.c_str());
             }
         }
@@ -225,10 +221,12 @@ getInput()
             if ( entryIdx >= 0 ) {
                 entryIdx--;
                 if ( entryIdx == -1 ) { input = stashedInput; }
-                else { input = g_prevInput[entryIdx]; }
+                else {
+                    input = g_prevInput[entryIdx];
+                }
 
                 g_window.draw();
-                printInfo();
+                g_window.printInfo();
                 g_window.printConsole(input.c_str());
             }
         }
@@ -276,13 +274,13 @@ parseInput(std::string input)
                 "Element Library.\n\n"
                 "=== CONTROLS ===\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
-                "The text window can be resized at will, and both arrow key and mouse scrolling is enabled.\n"
-                "Use 'Page Up' and 'Page Down' to scroll through previously entered commands.\n\n"
+                "The text window can be resized, and both arrow key and mouse scrolling is enabled.\n"
+                "PAGE UP/PAGE DOWN scrolls through previously entered commands.\n"
+                "TAB opens and closes the autofill window. Select avaiable input using the arrow keys.\n\n"
                 "=== COMMANDS ===\n"
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
-                "- Find {field} {search string} : Displays all components with the given search string in its field\n"
-                "- Path {subelement} : ... (PLANNED)\n\n"
+                "- Find {field} {search string} : Displays all components with the given search string in its field\n\n"
                 "To see more detailed instructions, type in a command without additional parameters.\n\n";
         }
         else if ( command == "list" ) {
@@ -454,20 +452,6 @@ setInfoText(std::string infoString)
     }
     g_infoText.clear(); // clears memory
     g_infoText = stringVec;
-}
-
-void
-printInfo()
-{
-    unsigned int posMax =
-        ((int)g_infoText.size() < LINES - 3) ? g_textPos + g_infoText.size() : g_textPos + (LINES - 3);
-
-    std::string infoString = "";
-    for ( unsigned int i = g_textPos; i < posMax; i++ ) {
-        infoString += g_infoText[i];
-    }
-
-    g_window.printInfo(infoString.c_str());
 }
 
 static void
@@ -938,4 +922,66 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
     outputXML<Module>(XMLLibraryElement);
     outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
     XMLParentElement->LinkEndChild(XMLLibraryElement);
+}
+
+
+void
+InteractiveWindow::draw(bool drawConsole)
+{
+    werase(info);
+    delwin(info);
+    info = newwin(LINES - 3, COLS, 0, 0);
+    scrollok(info, true);
+    wrefresh(info);
+
+    if ( drawConsole ) {
+        werase(console);
+        delwin(console);
+        console = newwin(3, COLS, LINES - 3, 0);
+        scrollok(console, false);
+        keypad(console, true);
+        box(console, 0, 0);
+        mvwprintw(console, 0, 1, " Console ");
+        wmove(console, 1, 1);
+        wrefresh(console);
+    }
+}
+
+void
+InteractiveWindow::toggleAutofillBox()
+{
+    // Toggle flag
+    autofillEnabled = !autofillEnabled;
+
+    if ( autofillEnabled ) {
+        int height  = int(LINES / 3);
+        int width   = int(COLS / 6);
+        int starty  = LINES - height - 3;
+        int startx  = getcurx(console) + 1;
+        autofillBox = newwin(height, width, starty, startx);
+        box(autofillBox, 0, 0);
+        wrefresh(autofillBox);
+    }
+    else {
+        werase(autofillBox);
+        draw(false);
+        printInfo();
+    }
+}
+
+void
+InteractiveWindow::printInfo()
+{
+    unsigned int posMax =
+        ((int)g_infoText.size() < LINES - 3) ? g_textPos + g_infoText.size() : g_textPos + (LINES - 3);
+
+    std::string infoString = "";
+    for ( unsigned int i = g_textPos; i < posMax; i++ ) {
+        infoString += g_infoText[i];
+    }
+
+    wprintw(info, infoString.c_str());
+    wrefresh(info);
+    wrefresh(console); // moves the cursor back into the console window
+    wmove(console, 1, 1);
 }
