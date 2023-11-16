@@ -44,8 +44,7 @@ static std::string                                        g_searchPath;
 static std::vector<SSTLibraryInfo>                        g_libInfoArray;
 static SSTInfoConfig                                      g_configuration(false);
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
-static WINDOW*                                            info;
-static WINDOW*                                            console;
+static InteractiveWindow                                  g_window;
 static std::vector<std::string>                           g_infoText;
 static unsigned int                                       g_textPos;
 static std::deque<std::string>                            g_prevInput;
@@ -107,7 +106,6 @@ static void processSSTElementFiles();
 void        outputSSTElementInfo();
 void        generateXMLOutputFile();
 void        runInteractive();
-void        drawWindows();
 void        getInput();
 std::string parseInput(std::string);
 std::string listLibraryInfo(std::list<std::string>);
@@ -143,40 +141,14 @@ runInteractive()
     cbreak();
     noecho();
 
-    // Initialize console screen
-    drawWindows();
-
     // Set initial text to help text
+    g_window.draw();
     setInfoText(parseInput("help"));
     printInfo();
 
     // Loop for input
     getInput();
     endwin();
-}
-
-void
-drawWindows()
-{
-    // Hard reset windows for redraws
-    werase(info);
-    werase(console);
-    delwin(info);
-    delwin(console);
-
-    info    = newwin(LINES - 3, COLS, 0, 0);
-    console = newwin(3, COLS, LINES - 3, 0);
-
-    // Parameters
-    scrollok(info, true);
-    scrollok(console, false);
-    keypad(console, true);
-
-    box(console, 0, 0);
-    mvwprintw(console, 0, 1, " Console ");
-    wmove(console, 1, 1);
-    wrefresh(info);
-    wrefresh(console);
 }
 
 void
@@ -189,7 +161,13 @@ getInput()
 
     // Main loop for console input
     while ( true ) {
-        int c = wgetch(console);
+        int c = g_window.getInput();
+
+        //Handle autofill box
+        // int height = int(LINES / 4);
+        // int width = int(COLS / 6);
+        // autofillBox = newwin(height, width, getcury(console) - height, getcurx(console) + 1);
+        // box(console, 0, 0);
 
         // Parse entered text
         if ( c == '\n' ) {
@@ -198,7 +176,7 @@ getInput()
                 output = parseInput(input);
                 setInfoText(output);
 
-                drawWindows();
+                g_window.draw();
                 printInfo();
                 input = "";
                 entryIdx = -1;
@@ -206,14 +184,14 @@ getInput()
         }
         // Resizing the window
         else if ( c == KEY_RESIZE ) {
-            drawWindows();
+            g_window.draw();
             printInfo();
         }
         // Handle backspaces
         else if ( c == KEY_BACKSPACE ) {
-            int pos = getcury(console);
+            int pos = g_window.getCursorPos();
             if ( pos > 1 ) {
-                wprintw(console, "\b \b");
+                g_window.printConsole("\b \b");
                 input.pop_back();
             }
         }
@@ -238,9 +216,9 @@ getInput()
                 entryIdx++;
                 input = g_prevInput[entryIdx];
 
-                drawWindows();
+                g_window.draw();
                 printInfo();
-                wprintw(console, input.c_str());
+                g_window.printConsole(input.c_str());
             }
         }
         else if ( c == KEY_NPAGE ) {
@@ -249,19 +227,20 @@ getInput()
                 if ( entryIdx == -1 ) { input = stashedInput; }
                 else { input = g_prevInput[entryIdx]; }
 
-                drawWindows();
+                g_window.draw();
                 printInfo();
-                wprintw(console, input.c_str());
+                g_window.printConsole(input.c_str());
             }
         }
         // Regular characters
         else if ( c <= 255 ) {
             input += c;
-            wprintw(console, "%c", c);
+            std::string letter(1, c);
+            g_window.printConsole(letter.c_str());
         }
 
         // Make sure the cursor resets to the correct place
-        wmove(console, 1, input.size() + 1);
+        g_window.resetCursor(input.size() + 1);
     }
 }
 
@@ -483,13 +462,12 @@ printInfo()
     unsigned int posMax =
         ((int)g_infoText.size() < LINES - 3) ? g_textPos + g_infoText.size() : g_textPos + (LINES - 3);
 
+    std::string infoString = "";
     for ( unsigned int i = g_textPos; i < posMax; i++ ) {
-        const char* cstr = g_infoText[i].c_str();
-        wprintw(info, cstr);
+        infoString += g_infoText[i];
     }
-    wrefresh(info);
-    wrefresh(console); // moves the cursor back into the console window
-    wmove(console, 1, 1);
+
+    g_window.printInfo(infoString.c_str());
 }
 
 static void

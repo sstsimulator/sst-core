@@ -19,6 +19,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <ncurses.h>
 
 #include "tinyxml/tinyxml.h"
 
@@ -222,6 +223,66 @@ private:
     bool                                              m_libraryFilter = false;
     std::vector<std::string>                          m_componentFilters;
     std::string                                       m_name;
+};
+
+class InteractiveWindow
+{
+public:
+    InteractiveWindow() 
+    {
+        info    = newwin(LINES - 3, COLS, 0, 0);
+        console = newwin(3, COLS, LINES - 3, 0);
+    }
+
+    void
+    draw() 
+    {
+        // Hard reset windows for redraws
+        werase(info);
+        werase(console);
+        delwin(info);
+        delwin(console);
+
+        info    = newwin(LINES - 3, COLS, 0, 0);
+        console = newwin(3, COLS, LINES - 3, 0);
+
+        // Parameters
+        scrollok(info, true);
+        scrollok(console, false);
+        keypad(console, true);
+
+        box(console, 0, 0);
+        mvwprintw(console, 0, 1, " Console ");
+        wmove(console, 1, 1);
+        wrefresh(info);
+        wrefresh(console);
+    }
+
+    void
+    printInfo(const char* input)
+    {
+        wprintw(info, input);
+        wrefresh(info);
+        wrefresh(console); // moves the cursor back into the console window
+        wmove(console, 1, 1);
+    }
+
+    void
+    printConsole(const char* input) { wprintw(console, input); }
+
+    int
+    getInput() { return wgetch(console); }
+
+    void
+    resetCursor(int pos) { wmove(console, 1, pos); }
+
+    int
+    getCursorPos() { return getcury(console); }
+
+private:
+    WINDOW* info;
+    WINDOW* console;
+    WINDOW* autofillBox;
 };
 
 } // namespace SST
