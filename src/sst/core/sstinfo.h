@@ -235,69 +235,28 @@ public:
     {
         info    = newwin(LINES - 3, COLS, 0, 0);
         console = newwin(3, COLS, LINES - 3, 0);
+        autofillEnabled = false;
     }
 
-    void
-    draw() 
-    {
-        // Hard reset windows for redraws
-        werase(info);
-        werase(console);
-        delwin(info);
-        delwin(console);
+    /* Draw/redraw info and console windows */
+    void draw(bool drawConsole=true);
 
-        info    = newwin(LINES - 3, COLS, 0, 0);
-        console = newwin(3, COLS, LINES - 3, 0);
-
-        // Parameters
-        scrollok(info, true);
-        scrollok(console, false);
-        keypad(console, true);
-
-        box(console, 0, 0);
-        mvwprintw(console, 0, 1, " Console ");
-        wmove(console, 1, 1);
-        wrefresh(info);
-        wrefresh(console);
-    }
-
-    void
-    drawAutofillBox() 
-    {
-        int height = int(LINES / 4);
-        int width = int(COLS / 6);
-        autofillBox = newwin(height, width, getcury(console) - height, getcurx(console) + 1);
-        box(autofillBox, 0, 0);
-
-    }
-
-    void
-    removeAutofillBox()
-    {
-
-    }
-
-    void
-    printInfo(const char* input)
-    {
-        wprintw(info, input);
-        wrefresh(info);
-        wrefresh(console); // moves the cursor back into the console window
-        wmove(console, 1, 1);
-    }
+    /* Toggle display of the autofill box */
+    void toggleAutofillBox();
+    
+    /* Prints SST-info text to the info window */
+    void printInfo();
 
     void printConsole(const char* input) { wprintw(console, input); }
-
     int getInput() { return wgetch(console); }
-
     void resetCursor(int pos) { wmove(console, 1, pos); }
-
     int getCursorPos() { return getcurx(console); }
 
 private:
-    WINDOW* info;
-    WINDOW* console;
-    WINDOW* autofillBox;
+    WINDOW*     info;
+    WINDOW*     console;
+    WINDOW*     autofillBox;
+    bool        autofillEnabled;
 };
 
 } // namespace SST
