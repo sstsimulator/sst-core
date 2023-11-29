@@ -170,7 +170,7 @@ getInput()
 
                 g_window.draw();
                 g_window.printInfo();
-                input = "";
+                input    = "";
                 entryIdx = -1;
             }
         }
@@ -205,10 +205,10 @@ getInput()
             }
         }
         // Cycle through previous commands
-        else if ( c == KEY_PPAGE) {
+        else if ( c == KEY_PPAGE ) {
             if ( entryIdx == -1 ) { stashedInput = input; }
 
-            if ( entryIdx < int(g_prevInput.size() - 1)) {
+            if ( entryIdx < int(g_prevInput.size() - 1) ) {
                 entryIdx++;
                 input = g_prevInput[entryIdx];
 
@@ -221,7 +221,9 @@ getInput()
             if ( entryIdx >= 0 ) {
                 entryIdx--;
                 if ( entryIdx == -1 ) { input = stashedInput; }
-                else { input = g_prevInput[entryIdx]; }
+                else {
+                    input = g_prevInput[entryIdx];
+                }
 
                 g_window.draw();
                 g_window.printInfo();
@@ -924,7 +926,7 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
 
 
 void
-InteractiveWindow::draw(bool drawConsole) 
+InteractiveWindow::draw(bool drawConsole)
 {
     werase(info);
     delwin(info);
@@ -932,7 +934,7 @@ InteractiveWindow::draw(bool drawConsole)
     scrollok(info, true);
     wrefresh(info);
 
-    if (drawConsole) {
+    if ( drawConsole ) {
         werase(console);
         delwin(console);
         console = newwin(3, COLS, LINES - 3, 0);
@@ -942,20 +944,20 @@ InteractiveWindow::draw(bool drawConsole)
         mvwprintw(console, 0, 1, " Console ");
         wmove(console, 1, 1);
         wrefresh(console);
-    }    
+    }
 }
 
 void
-InteractiveWindow::toggleAutofillBox() 
+InteractiveWindow::toggleAutofillBox()
 {
     // Toggle flag
-    autofillEnabled = !autofillEnabled; 
+    autofillEnabled = !autofillEnabled;
 
     if ( autofillEnabled ) {
-        int height = int(LINES / 3);
-        int width = int(COLS / 6);
-        int starty = LINES - height - 3;
-        int startx = getcurx(console) + 1;
+        int height  = int(LINES / 3);
+        int width   = int(COLS / 6);
+        int starty  = LINES - height - 3;
+        int startx  = getcurx(console) + 1;
         autofillBox = newwin(height, width, starty, startx);
         box(autofillBox, 0, 0);
         wrefresh(autofillBox);
@@ -971,7 +973,7 @@ void
 InteractiveWindow::printInfo()
 {
     unsigned int posMax =
-    ((int)g_infoText.size() < LINES - 3) ? g_textPos + g_infoText.size() : g_textPos + (LINES - 3);
+        ((int)g_infoText.size() < LINES - 3) ? g_textPos + g_infoText.size() : g_textPos + (LINES - 3);
 
     std::string infoString = "";
     for ( unsigned int i = g_textPos; i < posMax; i++ ) {
@@ -979,7 +981,7 @@ InteractiveWindow::printInfo()
     }
 
     wprintw(info, infoString.c_str());
-    wrefresh(info); 
+    wrefresh(info);
     wrefresh(console); // moves the cursor back into the console window
     wmove(console, 1, 1);
 }
