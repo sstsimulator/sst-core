@@ -233,9 +233,8 @@ class InteractiveWindow
 public:
     InteractiveWindow()
     {
-        info            = newwin(LINES - 3, COLS, 0, 0);
-        console         = newwin(3, COLS, LINES - 3, 0);
-        autofillEnabled = false;
+        info    = newwin(LINES - 3, COLS, 0, 0);
+        console = newwin(3, COLS, LINES - 3, 0);
     }
 
     /* Draw/redraw info and console windows */
@@ -244,11 +243,16 @@ public:
     /* Toggle display of the autofill box */
     void toggleAutofillBox();
 
+    /* Start up the interactive window */
+    void start();
+
+    /* Main loop for user input */
+    void  getInput();
+
     /* Prints SST-info text to the info window */
     void printInfo();
 
     void printConsole(const char* input) { wprintw(console, input); }
-    int  getInput() { return wgetch(console); }
     void resetCursor(int pos) { wmove(console, 1, pos); }
     int  getCursorPos() { return getcurx(console); }
 

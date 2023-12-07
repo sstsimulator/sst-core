@@ -45,9 +45,10 @@ static SSTInfoConfig                                      g_configuration(false)
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
 static InteractiveWindow                                  g_window;
 static std::vector<std::string>                           g_infoText;
-static unsigned int                                       g_textPos;
 static std::deque<std::string>                            g_prevInput;
 static std::vector<std::string>                           g_libraryNames;
+static unsigned int                                       g_textPos;
+static bool                                               g_popupEnabled;
 
 
 void
@@ -104,8 +105,6 @@ void        shutdownLTDL();
 static void processSSTElementFiles();
 void        outputSSTElementInfo();
 void        generateXMLOutputFile();
-void        runInteractive();
-void        getInput();
 std::string parseInput(std::string);
 std::string listLibraryInfo(std::list<std::string>);
 std::string findLibraryInfo(std::list<std::string>);
@@ -127,120 +126,11 @@ main(int argc, char* argv[])
     processSSTElementFiles();
 
     // Run interactive mode
-    if ( g_configuration.interactiveEnabled() ) { runInteractive(); }
+    if ( g_configuration.interactiveEnabled() ) { g_window.start(); }
 
     return 0;
 }
 
-void
-runInteractive()
-{
-    initscr();
-    cbreak();
-    noecho();
-
-    // Set initial text to help text
-    g_window.draw();
-    setInfoText(parseInput("help"));
-    g_window.printInfo();
-
-    // Loop for input
-    getInput();
-    endwin();
-}
-
-void
-getInput()
-{
-    std::string input        = "";
-    std::string output       = "";
-    std::string stashedInput = "";
-    int         entryIdx     = -1;
-
-    // Main loop for console input
-    while ( true ) {
-        int c = g_window.getInput();
-
-        // Parse entered text
-        if ( c == '\n' ) {
-            if ( input != "" ) {
-                g_prevInput.push_front(input);
-                output = parseInput(input);
-                setInfoText(output);
-
-                g_window.draw();
-                g_window.printInfo();
-                input    = "";
-                entryIdx = -1;
-            }
-        }
-        // Autofill Box
-        else if ( c == '\t' ) {
-            g_window.toggleAutofillBox();
-        }
-        // Resizing the window
-        else if ( c == KEY_RESIZE ) {
-            g_window.draw();
-            g_window.printInfo();
-        }
-        // Handle backspaces
-        else if ( c == KEY_BACKSPACE ) {
-            int pos = g_window.getCursorPos();
-            if ( pos > 1 ) {
-                g_window.printConsole("\b \b");
-                input.pop_back();
-            }
-        }
-        // Scrolling
-        else if ( c == KEY_UP ) {
-            if ( g_textPos > 0 ) {
-                g_textPos -= 1;
-                g_window.printInfo();
-            }
-        }
-        else if ( c == KEY_DOWN ) {
-            if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES ) {
-                g_textPos += 1;
-                g_window.printInfo();
-            }
-        }
-        // Cycle through previous commands
-        else if ( c == KEY_PPAGE ) {
-            if ( entryIdx == -1 ) { stashedInput = input; }
-
-            if ( entryIdx < int(g_prevInput.size() - 1) ) {
-                entryIdx++;
-                input = g_prevInput[entryIdx];
-
-                g_window.draw();
-                g_window.printInfo();
-                g_window.printConsole(input.c_str());
-            }
-        }
-        else if ( c == KEY_NPAGE ) {
-            if ( entryIdx >= 0 ) {
-                entryIdx--;
-                if ( entryIdx == -1 ) { input = stashedInput; }
-                else {
-                    input = g_prevInput[entryIdx];
-                }
-
-                g_window.draw();
-                g_window.printInfo();
-                g_window.printConsole(input.c_str());
-            }
-        }
-        // Regular characters
-        else if ( c <= 255 ) {
-            input += c;
-            std::string letter(1, c);
-            g_window.printConsole(letter.c_str());
-        }
-
-        // Make sure the cursor resets to the correct place
-        g_window.resetCursor(input.size() + 1);
-    }
-}
 
 void
 convertToLower(std::string input)
@@ -270,7 +160,7 @@ parseInput(std::string input)
         if ( command == "help" ) {
             text +=
                 "=== SST-INFO ===\n"
-                "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an"
+                "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
                 "Element Library.\n\n"
                 "=== CONTROLS ===\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
@@ -926,6 +816,127 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
 
 
 void
+InteractiveWindow::start()
+{
+    g_textPos = 0;
+    g_popupEnabled = false;
+
+    initscr();
+    cbreak();
+    noecho();
+    draw();
+    setInfoText(parseInput("help"));
+    printInfo();
+
+    // Loop for input
+    getInput();
+    endwin();
+}
+
+void
+InteractiveWindow::getInput()
+{
+    std::string input        = "";
+    std::string output       = "";
+    std::string stashedInput = "";
+    int         entryIdx     = -1;
+
+    // Main loop for console input
+    while ( true ) {
+        int c = wgetch(console);
+
+        // Parse entered text
+        if ( c == '\n' ) {
+            if ( input != "" ) {
+                g_prevInput.push_front(input);
+                output = parseInput(input);
+                setInfoText(output);
+
+                g_window.draw();
+                g_window.printInfo();
+                input    = "";
+                entryIdx = -1;
+            }
+        }
+        // Autofill Box
+        else if ( c == '\t' ) {
+            g_window.toggleAutofillBox();
+        }
+        // Resizing the window
+        else if ( c == KEY_RESIZE ) {
+            g_window.draw();
+            g_window.printInfo();
+        }
+        // Handle backspaces
+        else if ( c == KEY_BACKSPACE ) {
+            int pos = g_window.getCursorPos();
+            if ( pos > 1 ) {
+                g_window.printConsole("\b \b");
+                input.pop_back();
+            }
+        }
+        // Scrolling
+        else if ( c == KEY_UP ) {
+            if ( g_popupEnabled ) {
+                
+            }
+            else {
+                if ( g_textPos > 0 ) {
+                    g_textPos -= 1;
+                    g_window.printInfo();
+                }
+            }
+        }
+        else if ( c == KEY_DOWN ) {
+            if ( g_popupEnabled ) {
+                
+            }
+            else {
+                if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES ) {
+                    g_textPos += 1;
+                    g_window.printInfo();
+                }
+            }
+        }
+        // Cycle through previous commands
+        else if ( c == KEY_PPAGE ) {
+            if ( entryIdx == -1 ) { stashedInput = input; }
+
+            if ( entryIdx < int(g_prevInput.size() - 1) ) {
+                entryIdx++;
+                input = g_prevInput[entryIdx];
+
+                g_window.draw();
+                g_window.printInfo();
+                g_window.printConsole(input.c_str());
+            }
+        }
+        else if ( c == KEY_NPAGE ) {
+            if ( entryIdx >= 0 ) {
+                entryIdx--;
+                if ( entryIdx == -1 ) { input = stashedInput; }
+                else {
+                    input = g_prevInput[entryIdx];
+                }
+
+                g_window.draw();
+                g_window.printInfo();
+                g_window.printConsole(input.c_str());
+            }
+        }
+        // Regular characters
+        else if ( c <= 255 ) {
+            input += c;
+            std::string letter(1, c);
+            g_window.printConsole(letter.c_str());
+        }
+
+        // Make sure the cursor resets to the correct place
+        g_window.resetCursor(input.size() + 1);
+    }
+}
+
+void
 InteractiveWindow::draw(bool drawConsole)
 {
     werase(info);
@@ -951,9 +962,9 @@ void
 InteractiveWindow::toggleAutofillBox()
 {
     // Toggle flag
-    autofillEnabled = !autofillEnabled;
+    g_popupEnabled = !g_popupEnabled;
 
-    if ( autofillEnabled ) {
+    if ( g_popupEnabled ) {
         int height  = int(LINES / 3);
         int width   = int(COLS / 6);
         int starty  = LINES - height - 3;
