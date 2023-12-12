@@ -444,7 +444,7 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID:" << id << ", Type: WriteResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
+            str << "ID: " << id << ", Type: WriteResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
                 << pAddr;
             str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr;
             str << ", ThreadID: " << std::dec << tid;
@@ -492,7 +492,7 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID:" << id << ", Type: FlushAddr, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
+            str << "ID: " << id << ", Type: FlushAddr, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
                 << pAddr;
             str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", Inv: " << (inv ? "T" : "F");
             str << ", Depth: " << depth << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
@@ -546,7 +546,7 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID:" << id << ", Type: FlushResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
+            str << "ID: " << id << ", Type: FlushResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex
                 << pAddr;
             str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size;
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
