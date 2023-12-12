@@ -914,6 +914,8 @@ public:
             return str.str();
         }
 
+        CustomData* getData() { return data; }
+
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
@@ -951,6 +953,8 @@ public:
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
             return str.str();
         }
+
+        CustomData* getData() { return data; }
 
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
