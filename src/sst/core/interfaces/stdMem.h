@@ -916,6 +916,8 @@ public:
 
         CustomData* getData() { return data; }
 
+        void setData(CustomData* d) { data = d; }
+
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
@@ -932,7 +934,7 @@ public:
         {}
         CustomResp(CustomReq* req) :
             Request(req->getID(), req->getAllFlags()),
-            data(req->data->makeResponse()),
+            data(req->getData()->makeResponse()),
             iPtr(req->iPtr),
             tid(req->tid)
         {}
@@ -955,6 +957,8 @@ public:
         }
 
         CustomData* getData() { return data; }
+
+        void setData(CustomData* d) { data = d; }
 
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
