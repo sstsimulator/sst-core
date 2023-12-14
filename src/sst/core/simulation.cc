@@ -661,10 +661,22 @@ Simulation_impl::run()
 
     run_phase_start_time = sst_get_cpu_time();
 
-    while ( LIKELY(!endSim) ) {
+    // Will check to make sure time doesn't "go backwards".  This will
+    // also catch the case of rollover (exceeding the 64-bit value
+    // space of SimTime_t).  To avoid yet another branch in the main
+    // run loop, we will check for a time fault, but will execute the
+    // next event and only exit the run loop on the next iteration.
+    // If there was a fault, a message will be printed.
+    bool time_fault = false;
+    while ( LIKELY(!endSim && !time_fault) ) {
         current_activity = timeVortex->pop();
-        currentSimCycle  = current_activity->getDeliveryTime();
-        currentPriority  = current_activity->getPriority();
+
+        // Check for time fault
+        SimTime_t event_time = current_activity->getDeliveryTime();
+        time_fault           = event_time < currentSimCycle;
+
+        currentSimCycle = event_time;
+        currentPriority = current_activity->getPriority();
         current_activity->execute();
 
 #if SST_PERIODIC_PRINT
@@ -711,6 +723,17 @@ Simulation_impl::run()
         }
 #endif
     }
+
+    // Check to see if there was a time fault
+    if ( time_fault ) {
+        sim_output.fatal(
+            CALL_INFO, 1,
+            "ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most "
+            "likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by "
+            "having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst "
+            "--help timebase)\n");
+    }
+
     /* We shouldn't need to do this, but to be safe... */
 
     runBarrier.wait(); // TODO<- Is this needed?

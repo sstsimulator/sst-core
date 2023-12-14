@@ -17,6 +17,7 @@ EXTRA_DIST += \
     tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_testengine_testing.py \
     tests/test_Component.py \
+    tests/test_Component_time_overflow.py \
     tests/test_ClockerComponent.py \
     tests/test_DistribComponent_discrete.py \
     tests/test_DistribComponent_expon.py \
@@ -44,6 +45,7 @@ EXTRA_DIST += \
     tests/test_PythonUnitAlgebra.py \
     tests/test_PerfComponent.py \
     tests/refFiles/test_Component.out \
+    tests/refFiles/test_Component_time_overflow.out \
     tests/refFiles/test_PerfComponent.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \
