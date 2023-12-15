@@ -17,7 +17,6 @@
 
 #include <any>
 #include <map>
-#include <ncurses.h>
 #include <set>
 #include <vector>
 
