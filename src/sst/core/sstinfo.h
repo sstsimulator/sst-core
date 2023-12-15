@@ -17,7 +17,6 @@
 
 #include <any>
 #include <map>
-#include <ncurses.h>
 #include <set>
 #include <vector>
 
@@ -225,6 +224,8 @@ private:
     std::string                                       m_name;
 };
 
+#ifdef HAVE_CURSES
+#include <ncurses.h>
 /**
  * Handles all ncurses window operations for interactive SSTInfo.
  */
@@ -247,7 +248,7 @@ public:
     void start();
 
     /* Main loop for user input */
-    void  getInput();
+    void getInput();
 
     /* Prints SST-info text to the info window */
     void printInfo();
@@ -262,7 +263,9 @@ private:
     WINDOW* autofillBox;
     bool    autofillEnabled;
 };
+#endif
 
 } // namespace SST
+
 
 #endif // SST_CORE_SST_INFO_H

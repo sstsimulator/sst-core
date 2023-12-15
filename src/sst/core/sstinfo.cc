@@ -37,18 +37,23 @@ using namespace std;
 using namespace SST;
 using namespace SST::Core;
 
-// Global Variables
+// General Global Variables
 static int                                                g_fileProcessedCount;
 static std::string                                        g_searchPath;
 static std::vector<SSTLibraryInfo>                        g_libInfoArray;
 static SSTInfoConfig                                      g_configuration(false);
 static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
-static InteractiveWindow                                  g_window;
-static std::vector<std::string>                           g_infoText;
-static std::deque<std::string>                            g_prevInput;
-static std::vector<std::string>                           g_libraryNames;
-static unsigned int                                       g_textPos;
-static bool                                               g_popupEnabled;
+
+// Interactive Global Variables
+#ifdef HAVE_CURSES
+#include <ncurses.h>
+static InteractiveWindow        g_window;
+static std::vector<std::string> g_infoText;
+static std::deque<std::string>  g_prevInput;
+static std::vector<std::string> g_libraryNames;
+static unsigned int             g_textPos;
+static bool                     g_popupEnabled;
+#endif
 
 
 void
@@ -111,6 +116,30 @@ std::string findLibraryInfo(std::list<std::string>);
 void        setInfoText(std::string);
 
 
+#ifndef HAVE_CURSES
+int
+main(int argc, char* argv[])
+{
+    // Parse the Command Line and get the Configuration Settings
+    int status = g_configuration.parseCmdLine(argc, argv);
+    if ( status ) {
+        if ( status == 1 ) return 0;
+        return 1;
+    }
+
+    // Process all specified libraries
+    g_searchPath = g_configuration.getLibPath();
+    processSSTElementFiles();
+
+    // Run interactive mode
+    if ( g_configuration.interactiveEnabled() ) {
+        std::cout << "Curses library not found. Run SST-Info without the -i flag." << endl;
+    }
+
+    return 0;
+}
+
+#else
 int
 main(int argc, char* argv[])
 {
@@ -130,7 +159,6 @@ main(int argc, char* argv[])
 
     return 0;
 }
-
 
 void
 convertToLower(std::string input)
@@ -343,6 +371,7 @@ setInfoText(std::string infoString)
     g_infoText.clear(); // clears memory
     g_infoText = stringVec;
 }
+#endif
 
 static void
 addELI(ElemLoader& loader, const std::string& lib, bool optional)
@@ -814,11 +843,11 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
     XMLParentElement->LinkEndChild(XMLLibraryElement);
 }
 
-
+#ifdef HAVE_CURSES
 void
 InteractiveWindow::start()
 {
-    g_textPos = 0;
+    g_textPos      = 0;
     g_popupEnabled = false;
 
     initscr();
@@ -877,9 +906,7 @@ InteractiveWindow::getInput()
         }
         // Scrolling
         else if ( c == KEY_UP ) {
-            if ( g_popupEnabled ) {
-                
-            }
+            if ( g_popupEnabled ) {}
             else {
                 if ( g_textPos > 0 ) {
                     g_textPos -= 1;
@@ -888,11 +915,9 @@ InteractiveWindow::getInput()
             }
         }
         else if ( c == KEY_DOWN ) {
-            if ( g_popupEnabled ) {
-                
-            }
+            if ( g_popupEnabled ) {}
             else {
-                if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES ) {
+                if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES + 3 ) {
                     g_textPos += 1;
                     g_window.printInfo();
                 }
@@ -996,3 +1021,4 @@ InteractiveWindow::printInfo()
     wrefresh(console); // moves the cursor back into the console window
     wmove(console, 1, 1);
 }
+#endif
