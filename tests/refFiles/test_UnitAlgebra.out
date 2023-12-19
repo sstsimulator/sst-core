@@ -81,4 +81,12 @@ hasUnits():
 '10 ns'.hasUnits("ns") = True
 '10 ns'.hasUnits("s") = True
 '10 ns'.hasUnits("Hz") = False
+
+Initialization from numeric arguments:
+From int = 2: 2 
+From float = 9.443: 9.443 
+
+Printing:
+1073741823 B = 1.07374e+09 B = 1.074e+09 B = 1.07374 GB = 1.1 GB = 1.073741823 GB
+
 Simulation is complete, simulated time: 0 s

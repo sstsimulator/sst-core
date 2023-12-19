@@ -35,17 +35,18 @@ extern "C" {
 static int
 unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    char*            init_str = NULL;
-    // PyObject* obj;
     UnitAlgebraPy_t* new_obj;
+    PyObject*        str_obj;
 
-    if ( PyArg_ParseTuple(args, "s", &init_str) ) {
-        self->obj = init_str;
+    if ( PyArg_ParseTuple(args, "O!", &PyModel_UnitAlgebraType, &new_obj) ) {
+        self->obj = new_obj->obj;
         return 0;
     }
     PyErr_Clear();
-    if ( PyArg_ParseTuple(args, "O!", &PyModel_UnitAlgebraType, &new_obj) ) {
-        self->obj = new_obj->obj;
+    if ( PyArg_ParseTuple(args, "O", &str_obj) ) {
+        PyObject* vstr = PyObject_CallMethod(str_obj, (char*)"__str__", nullptr);
+        self->obj      = SST_ConvertToCppString(vstr);
+        Py_XDECREF(vstr);
         return 0;
     }
     PyErr_SetString(
@@ -64,7 +65,7 @@ static PyObject*
 unitAlgebraStr(PyObject* self)
 {
     UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
-    return SST_ConvertToPythonString(ua->obj.toStringBestSI().c_str());
+    return SST_ConvertToPythonString(ua->obj.toString(0).c_str());
 }
 
 static PyObject*
@@ -397,6 +398,26 @@ unitAlgebraInvert(PyObject* self, PyObject* UNUSED(args))
     return ret;
 }
 
+static PyObject*
+unitAlgebraBestSI(PyObject* self, PyObject* args)
+{
+    int precision = 6;
+    if ( !PyArg_ParseTuple(args, "|i", &precision) ) return nullptr;
+
+    UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
+    return SST_ConvertToPythonString(ua->obj.toStringBestSI(precision).c_str());
+}
+
+static PyObject*
+unitAlgebraPrecision(PyObject* self, PyObject* args)
+{
+    int precision = 6;
+    if ( !PyArg_ParseTuple(args, "|i", &precision) ) return nullptr;
+
+    UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
+    return SST_ConvertToPythonString(ua->obj.toString(precision).c_str());
+}
+
 static PyMethodDef unitAlgebraMethods[] = {
     { "getRoundedValue", unitAlgebraGetRoundedValue, METH_NOARGS,
       "Rounds value of UnitAlgebra to nearest whole number and returns a long" },
@@ -404,6 +425,9 @@ static PyMethodDef unitAlgebraMethods[] = {
     { "isValueZero", unitAlgebraIsValueZero, METH_NOARGS, "Returns True if value is zero, false otherwise" },
     { "hasUnits", unitAlgebraHasUnits, METH_VARARGS, "Checks to see if the UnitAlgebra has the specified units" },
     { "invert", unitAlgebraInvert, METH_NOARGS, "Inverts the UnitAlgebra value and units" },
+    { "bestSI", unitAlgebraBestSI, METH_VARARGS, "Returns a string representation of the UnitAlgebra using SI units" },
+    { "precision", unitAlgebraPrecision, METH_VARARGS,
+      "Returns a string representation of the UnitAlgebra with the requested precision" },
     { NULL, NULL, 0, NULL }
 };
 
