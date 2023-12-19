@@ -45,7 +45,7 @@ unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
     PyErr_Clear();
     if ( PyArg_ParseTuple(args, "O", &str_obj) ) {
         PyObject* vstr = PyObject_CallMethod(str_obj, (char*)"__str__", nullptr);
-        self->obj = SST_ConvertToCppString(vstr);
+        self->obj      = SST_ConvertToCppString(vstr);
         Py_XDECREF(vstr);
         return 0;
     }
@@ -402,7 +402,7 @@ static PyObject*
 unitAlgebraBestSI(PyObject* self, PyObject* args)
 {
     int precision = 6;
-    if (!PyArg_ParseTuple(args, "|i", &precision)) return nullptr;
+    if ( !PyArg_ParseTuple(args, "|i", &precision) ) return nullptr;
 
     UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
     return SST_ConvertToPythonString(ua->obj.toStringBestSI(precision).c_str());
@@ -412,7 +412,7 @@ static PyObject*
 unitAlgebraPrecision(PyObject* self, PyObject* args)
 {
     int precision = 6;
-    if (!PyArg_ParseTuple(args, "|i", &precision)) return nullptr;
+    if ( !PyArg_ParseTuple(args, "|i", &precision) ) return nullptr;
 
     UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
     return SST_ConvertToPythonString(ua->obj.toString(precision).c_str());
@@ -425,8 +425,9 @@ static PyMethodDef unitAlgebraMethods[] = {
     { "isValueZero", unitAlgebraIsValueZero, METH_NOARGS, "Returns True if value is zero, false otherwise" },
     { "hasUnits", unitAlgebraHasUnits, METH_VARARGS, "Checks to see if the UnitAlgebra has the specified units" },
     { "invert", unitAlgebraInvert, METH_NOARGS, "Inverts the UnitAlgebra value and units" },
-    { "bestSI", unitAlgebraBestSI, METH_VARARGS, "Returns a string representation of the UnitAlgebra using SI units"},
-    { "precision", unitAlgebraPrecision, METH_VARARGS, "Returns a string representation of the UnitAlgebra with the requested precision"},
+    { "bestSI", unitAlgebraBestSI, METH_VARARGS, "Returns a string representation of the UnitAlgebra using SI units" },
+    { "precision", unitAlgebraPrecision, METH_VARARGS,
+      "Returns a string representation of the UnitAlgebra with the requested precision" },
     { NULL, NULL, 0, NULL }
 };
 
