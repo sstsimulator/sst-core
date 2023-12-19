@@ -374,27 +374,27 @@ UnitAlgebra::UnitAlgebra(const std::string& val)
 }
 
 void
-UnitAlgebra::print(ostream& stream)
+UnitAlgebra::print(ostream& stream, int32_t precision)
 {
-    stream << value.toString() << " " << unit.toString() << endl;
+    stream << value.toString(precision) << " " << unit.toString() << endl;
 }
 
 void
-UnitAlgebra::printWithBestSI(std::ostream& stream)
+UnitAlgebra::printWithBestSI(std::ostream& stream, int32_t precision)
 {
-    stream << toStringBestSI() << endl;
+    stream << toStringBestSI(precision) << endl;
 }
 
 string
-UnitAlgebra::toString() const
+UnitAlgebra::toString(int32_t precision) const
 {
     stringstream s;
-    s << value.toString() << " " << unit.toString();
+    s << value.toString(precision) << " " << unit.toString();
     return s.str();
 }
 
 string
-UnitAlgebra::toStringBestSI() const
+UnitAlgebra::toStringBestSI(int32_t precision) const
 {
     stringstream s;
     sst_big_num  temp;
@@ -411,7 +411,7 @@ UnitAlgebra::toStringBestSI() const
             break;
         }
     }
-    s << (found ? temp.toString() : value.toString()) << " " << si << unit.toString();
+    s << (found ? temp.toString(precision) : value.toString(precision)) << " " << si << unit.toString();
     return s.str();
 }
 

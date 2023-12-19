@@ -138,18 +138,24 @@ public:
     /** Copy constructor */
     UnitAlgebra(const UnitAlgebra&) = default;
 
-    /** Print to an ostream the value */
-    void        print(std::ostream& stream);
+    /** Print to an ostream the value 
+     * \param precision Number of digits to print. Default is 6. <= 0 is full precision. 
+     */
+    void        print(std::ostream& stream, int32_t precision = 6);
     /** Print to an ostream the value
      * Formats the number using SI-prefixes
+     * \param precision Number of digits to print. Default is 6. <= 0 is full precision. 
      */
-    void        printWithBestSI(std::ostream& stream);
-    /** Return a string representation of this value */
-    std::string toString() const;
+    void        printWithBestSI(std::ostream& stream, int32_t precision = 6);
+    /** Return a string representation of this value 
+     * \param precision Number of digits to print. Default is 6. <= 0 is full precision. 
+     */
+    std::string toString(int32_t precision = 6) const;
     /** Return a string representation of this value
      * Formats the number using SI-prefixes
+     * \param precision Number of digits to print. Default is 6. <= 0 is full precision. 
      */
-    std::string toStringBestSI() const;
+    std::string toStringBestSI(int32_t precision = 6) const;
 
     UnitAlgebra& operator=(const std::string& v);
 
