@@ -913,10 +913,51 @@ public:
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
             return str.str();
         }
+    
+        /** 
+         * Get the CustomData object associated with this request. 
+         * Ownership of the CustomData object is retained by this request.
+         */
+        CustomData& getData() { return *data; }
+    
+        /** 
+         * Get the CustomData object associated with this request. 
+         * Ownership of the CustomData object is retained by this request. 
+         * The returned data cannot be modified.
+         */
+        const CustomData& getData() const { return *data; }
+        
+        /** 
+         * Set the CustomData object associated with this request to a new
+         * value.
+         * This request takes ownership of the CustomData object.
+         * The previous CustomData object is deleted.
+         */
+        void setData(CustomData* d) { 
+            delete data;
+            data = d; 
+        }
+        
+        /**
+         * Reset the CustomData object associated with this request to a new
+         * value.
+         * The previous CustomData object is returned and ownership is
+         * transferred to the caller.
+         * This request assumes ownership of the passed in CustomData object.
+         * If no CustomData object is passed in, the data member is set to nullptr.
+         */
+        CustomData* resetData(CustomData* d = nullptr) {
+            return std::exchange(data,d);
+        }
 
-        CustomData* getData() { return data; }
-
-        void setData(CustomData* d) { data = d; }
+        /** 
+         * Obtain the CustomData object associated with this request.
+         * Ownership of the CustomData object is transferred to the caller.
+         * The data member of this request is set to nullptr.
+         */
+        CustomData* releaseData() {
+            return resetData();
+        }
 
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
@@ -934,7 +975,7 @@ public:
         {}
         CustomResp(CustomReq* req) :
             Request(req->getID(), req->getAllFlags()),
-            data(req->getData()->makeResponse()),
+            data(req->getData().makeResponse()),
             iPtr(req->iPtr),
             tid(req->tid)
         {}
@@ -955,10 +996,51 @@ public:
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
             return str.str();
         }
+       
+        /** 
+         * Get the CustomData object associated with this response. 
+         * Ownership of the CustomData object is retained by this response.
+         */
+        CustomData& getData() { return *data; }
+    
+        /** 
+         * Get the CustomData object associated with this response. 
+         * Ownership of the CustomData object is retained by this response. 
+         * The returned data cannot be modified.
+         */
+        const CustomData& getData() const { return *data; }
+        
+        /** 
+         * Set the CustomData object associated with this response to a new
+         * value.
+         * This response takes ownership of the CustomData object.
+         * The previous CustomData object is deleted.
+         */
+        void setData(CustomData* d) { 
+            delete data;
+            data = d; 
+        }
+        
+        /**
+         * Reset the CustomData object associated with this response to a new
+         * value.
+         * The previous CustomData object is returned and ownership is
+         * transferred to the caller.
+         * This response assumes ownership of the passed in CustomData object.
+         * If no CustomData object is passed in, the data member is set to nullptr.
+         */
+        CustomData* resetData(CustomData* d = nullptr) {
+            return std::exchange(data,d);
+        }
 
-        CustomData* getData() { return data; }
-
-        void setData(CustomData* d) { data = d; }
+        /** 
+         * Obtain the CustomData object associated with this response.
+         * Ownership of the CustomData object is transferred to the caller.
+         * The data member of this response is set to nullptr.
+         */
+        CustomData* releaseData() {
+            return resetData();
+        }
 
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
