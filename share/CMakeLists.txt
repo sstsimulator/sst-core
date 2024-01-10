@@ -18,6 +18,12 @@ message(
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/SSTConfig.cmake)
 
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/SSTConfigVersion.cmake"
+  VERSION ${CMAKE_PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion)
+
 install(
   DIRECTORY "."
   DESTINATION "lib/cmake/SST"

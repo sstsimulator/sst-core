@@ -368,6 +368,8 @@ public:
 
     using Datum = T;
     using StatisticCollector<T>::addData_impl;
+    using StatisticCollector<T>::addData_impl_Ntimes;
+
     // The main method to add data to the statistic
     /** Add data to the Statistic
      * This will call the addData_impl() routine in the derived Statistic.
