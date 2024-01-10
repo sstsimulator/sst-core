@@ -240,7 +240,6 @@ do_statengine_initialization(ConfigGraph* graph, SST::Simulation_impl* sim, cons
 static void
 do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank, SimTime_t min_part)
 {
-
     sim->prepareLinks(*graph, myRank, min_part);
 }
 
@@ -362,7 +361,22 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     // Prepare the links, which creates the ComponentInfo objects and
     // Link and puts the links in the LinkMap for each ComponentInfo.
+#ifdef SST_COMPILE_MACOSX
+    // Some versions of clang on mac have an issue with deleting links
+    // that were created interleaved between threads, so force
+    // serialization of threads during link creation.  This has been
+    // confirmed on both Intel and ARM for Xcode 14 and 15.  We should
+    // revisit this in the future.  This is easy to see when running
+    // sst-benchmark with 1024 components and multiple threads.  At
+    // time of adding this code, the difference in delete times was
+    // 3-5 minutes versuses less than a second.
+    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
+        if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
+        barrier.wait();
+    }
+#else
     do_link_preparation(info.graph, sim, info.myRank, info.min_part);
+#endif
     barrier.wait();
 
     // Create all the simulation components

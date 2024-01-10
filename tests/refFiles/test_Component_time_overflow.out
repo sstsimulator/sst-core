@@ -1,0 +1,15 @@
+FATAL:  SST Core: ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst --help timebase)
+SST Fatal Backtrace Information:
+    0 : 0   sstsim.x                            0x000000010024ea3f _ZNK3SST6Output5fatalEjPKcS2_iS2_z + 879
+    1 : 1   sstsim.x                            0x0000000100269b82 _ZN3SST15Simulation_impl3runEv + 866
+    2 : 2   sstsim.x                            0x00000001001f1b20 _ZL16start_simulationjR15SimThreadInfo_tRN3SST4Core10ThreadSafe7BarrierE + 3200
+    3 : 3   sstsim.x                            0x00000001001ed044 main + 7492
+    4 : 4   dyld                                0x000000010916852e start + 462
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 5.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------

@@ -37,6 +37,9 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) : coreTes
 
     commSize = params.find<int64_t>("commSize", 16);
 
+
+    std::string clockFrequency = params.find<std::string>("clockFrequency", "1GHz");
+
     // init randomness
     srand(1);
     neighbor = rng->generateNextInt32() % 4;
@@ -62,7 +65,7 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) : coreTes
     assert(W);
 
     // set our clock
-    registerClock("1GHz", new Clock::Handler<coreTestComponent>(this, &coreTestComponent::clockTic));
+    registerClock(clockFrequency, new Clock::Handler<coreTestComponent>(this, &coreTestComponent::clockTic));
 }
 
 coreTestComponent::~coreTestComponent()
