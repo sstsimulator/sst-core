@@ -1070,8 +1070,9 @@ class StartsWithFilter(LineFilter):
 class IgnoreAllAfterFilter(LineFilter):
     """ Filters out any line that starts with a specified string and all lines after it
     """
-    def __init__(self, prefix):
+    def __init__(self, prefix, keep_line = False):
         self._prefix = prefix;
+        self._keep_line = keep_line
         self._found = False
 
     def reset(self):
@@ -1091,6 +1092,8 @@ class IgnoreAllAfterFilter(LineFilter):
         if self._found: return None
         if ( line.startswith(self._prefix) ):
             self._found = True
+            if self._keep_line:
+                return line
             return None
         return line
 

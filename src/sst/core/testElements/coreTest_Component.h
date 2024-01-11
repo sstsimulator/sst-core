@@ -29,7 +29,8 @@ public:
     SST_ELI_REGISTER_COMPONENT_BASE(SST::CoreTestComponent::coreTestComponentBase)
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "workPerCycle", "Count of busy work to do during a clock tick.", NULL}
+        { "workPerCycle", "Count of busy work to do during a clock tick.", NULL},
+        { "clockFrequency", "Frequency of the clock", "1GHz"}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
@@ -55,7 +56,7 @@ public:
         SST::CoreTestComponent::coreTestComponentBase2, SST::CoreTestComponent::coreTestComponentBase)
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "commFreq",     "Approximate frequency of sending an event during a clock tick.", NULL},
+        { "commFreq", "There is a 1/commFreq chance each clock cycle of sending an event to a neighbor", NULL}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(

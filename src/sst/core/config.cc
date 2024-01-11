@@ -362,6 +362,26 @@ public:
         return 0;
     }
 
+    static std::string getTimebaseExtHelp()
+    {
+        std::string msg = "Timebase:\n\n";
+        msg.append("Time in SST core is represented by a 64-bit unsigned integer.  By default, each count of that "
+                   "value represents 1ps of time.  The timebase option allows you to set that atomic core timebase to "
+                   "a different value.\n ");
+        msg.append("There are two things to balance when determing a timebase to use:\n\n");
+        msg.append("1) The shortest time period or fastest clock frequency you want to represent:\n");
+        msg.append("  It is recommended that the core timebase be set to ~1000x smaller than the shortest time period "
+                   "(fastest frequency) in your simulation.  For the default 1ps timebase, clocks in the 1-10GHz range "
+                   "are easily represented.  If you want to have higher frequency clocks, you can set the timebase to "
+                   "a smaller value, at the cost of decreasing the amount of time you can simulate.\n\n");
+        msg.append("2) How much simulated time you need to support:\n");
+        msg.append("  The default timebase of 1ps will support ~215.5 days (5124 hours) of simulated time.  If you are "
+                   "using SST to simulate longer term phenomena, you will need to make the core timebase longer.  A "
+                   "consequence of increaing the timebase is that the minimum time period that can be represented will "
+                   "increase (conversely, the maximum frequency that can be represented will increase).");
+        return msg;
+    }
+
     static std::string getProfilingExtHelp()
     {
         std::string msg = "Profiling Points [EXPERIMENTAL]:\n\n";
@@ -696,9 +716,9 @@ Config::insertOptions()
 
     /* Advanced Features */
     DEF_SECTION_HEADING("Advanced Options");
-    DEF_ARG(
+    DEF_ARG_EH(
         "timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
-        std::bind(&ConfigHelper::setTimebase, this, _1), true);
+        std::bind(&ConfigHelper::setTimebase, this, _1), std::bind(&ConfigHelper::getTimebaseExtHelp), true);
 #ifdef SST_CONFIG_HAVE_MPI
     DEF_ARG_OPTVAL(
         "parallel-load", 0, "MODE",
