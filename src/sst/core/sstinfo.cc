@@ -893,9 +893,9 @@ InteractiveWindow::getInput()
             }
         }
         // Autofill Box
-        else if ( c == '\t' ) {
-            g_window.toggleAutofillBox();
-        }
+        // else if ( c == '\t' ) {
+        //     g_window.toggleAutofillBox();
+        // }
         // Resizing the window
         else if ( c == KEY_RESIZE ) {
             g_window.draw();
