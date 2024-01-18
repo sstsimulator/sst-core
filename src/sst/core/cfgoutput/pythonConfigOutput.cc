@@ -53,14 +53,13 @@ PythonConfigGraphOutput::generateParams(const Params& params)
 }
 
 const std::string&
-PythonConfigGraphOutput::getLinkObject(LinkId_t id, bool no_cut)
+PythonConfigGraphOutput::getLinkObject(LinkId_t id, const std::string& name, bool no_cut)
 {
     if ( linkMap.find(id) == linkMap.end() ) {
-        char tmp[8 + 8 + 1];
-        snprintf(tmp, 8 + 8 + 1, "link_id_%08" PRIx32, id);
-        fprintf(outputFile, "%s = sst.Link(\"%s\")\n", tmp, tmp);
-        if ( no_cut ) fprintf(outputFile, "%s.setNoCut()\n", tmp);
-        linkMap[id] = tmp;
+        char* pyLinkName = makePythonSafeWithPrefix(name.c_str(), "link_");
+        fprintf(outputFile, "%s = sst.Link(\"%s\")\n", pyLinkName, name.c_str());
+        if ( no_cut ) fprintf(outputFile, "%s.setNoCut()\n", pyLinkName);
+        linkMap[id] = pyLinkName;
     }
     return linkMap[id];
 }
@@ -114,7 +113,7 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
         std::string       latencyStr = link->latency_str[idx];
         char*             esPortName = makeEscapeSafe(link->port[idx].c_str());
 
-        const std::string& linkName = getLinkObject(linkID, link->no_cut);
+        const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
         fprintf(
             outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n", objName, linkName.c_str(), esPortName,
             tmp.toStringBestSI().c_str());

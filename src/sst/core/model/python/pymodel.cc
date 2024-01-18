@@ -1221,7 +1221,7 @@ SSTPythonModelDefinition::pushNamePrefix(const char* name)
         namePrefixLen *= 2;
     }
 
-    if ( origLen > 0 ) {
+    if ( origLen > 0 && newLen > 0 ) {
         namePrefix[origLen]     = '.';
         namePrefix[origLen + 1] = '\0';
     }
@@ -1241,7 +1241,7 @@ SSTPythonModelDefinition::popNamePrefix(void)
 char*
 SSTPythonModelDefinition::addNamePrefix(const char* name) const
 {
-    if ( nameStack.empty() ) { return strdup(name); }
+    if ( nameStack.empty() || strlen(namePrefix) == 0 ) { return strdup(name); }
     size_t prefixLen = strlen(namePrefix);
     char*  buf       = (char*)malloc(prefixLen + 2 + strlen(name));
 
