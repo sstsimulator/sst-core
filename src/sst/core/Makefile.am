@@ -9,7 +9,6 @@ AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	-DSST_BUILDING_CORE=1 \
 	$(PYTHON_CPPFLAGS) \
-	$(CURSES_CPPFLAGS) \
 	-I$(top_srcdir)/external \
 	$(LTDLINCL)
 
@@ -305,13 +304,11 @@ sstsim_x_LDFLAGS = \
 sstinfo_x_LDADD = \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
-	$(CURSES_LIBS) \
 	-lm
 
 sstinfo_x_LDFLAGS = \
 	$(TCMALLOC_LDFLAGS) \
 	$(PYTHON_LDFLAGS) \
-	$(CURSES_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
@@ -342,6 +339,12 @@ endif
 if USE_LIBZ
 sstsim_x_LDADD += $(LIBZ_LIBS)
 sstinfo_x_LDADD += $(LIBZ_LIBS)
+endif
+
+if USE_CURSES
+AM_CPPFLAGS += $(CURSES_CFPPLAGS)
+sstinfo_x_LDADD += $(CURSES_LIBS)
+sstinfo_x_LDFLAGS += $(CURSES_LDFLAGS)
 endif
 
 if USE_HDF5

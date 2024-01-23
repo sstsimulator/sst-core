@@ -64,7 +64,7 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
-SST_CHECK_CURSES([], [AC_MSG_ERROR([Could not find curses, this is required for utility sstinfo to build])])
+SST_CHECK_CURSES()
 dnl AC_MSG_ERROR([Could not find curses, this is required for utility sst-info to build])])
 SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
@@ -237,6 +237,12 @@ if test "x$sst_check_libz_happy" = "xyes" ; then
     printf "%38s : Yes\n" "libz compression library"
 else
     printf "%38s : No\n" "libz compression library"
+fi
+
+if test "x$sst_check_curses_happy" = "xyes" ; then
+    printf "%38s : Yes\n" "curses library"
+else
+    printf "%38s : No\n" "curses library"
 fi
 
 echo "-------------------------------------------------------"
