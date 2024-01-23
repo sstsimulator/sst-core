@@ -32,12 +32,6 @@ AC_CACHE_SAVE
 
 LT_INIT([shared disable-static dlopen])
 
-AX_WITH_CURSES
-if test "x$ax_cv_ncursesw" != xyes && test "x$ax_cv_ncurses" != xyes; then
-    AC_MSG_ERROR([requires either NcursesW or Ncurses library])
-fi
-LDFLAGS="$LDFLAGS -lncurses"
-
 dnl Work out the C++ standard which we are going to use
 AX_CXX_COMPILE_STDCXX_17(noext)
 
@@ -70,6 +64,8 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
+SST_CHECK_CURSES([], [AC_MSG_ERROR([Could not find curses, this is required for utility sstinfo to build])])
+dnl AC_MSG_ERROR([Could not find curses, this is required for utility sst-info to build])])
 SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
