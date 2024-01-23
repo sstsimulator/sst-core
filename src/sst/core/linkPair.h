@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2022 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2022, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -23,7 +23,9 @@ namespace SST {
 class LinkPair
 {
 public:
-    /** Create a new LinkPair.  This is used when the endpoints are in the same partition. */
+    /** Create a new LinkPair.  This is used when the endpoints are in the same partition. 
+     * @param order Value used to enforce the link order.
+    */
     LinkPair(LinkId_t order) : left(new Link(order)), right(new Link(order))
     {
         my_id = order;
@@ -32,7 +34,10 @@ public:
         right->pair_link = left;
     }
 
-    /** Create a new LinkPair.  This is used when the endpoints are in different partitions. */
+    /** Create a new LinkPair.  This is used when the endpoints are in different partitions. 
+     * @param order Value used to enforce the link order.
+     * @param remote_tag Used to look up the correct link on the other side.
+    */
     LinkPair(LinkId_t order, LinkId_t remote_tag) : left(new Link(remote_tag)), right(new Link(order))
     {
         my_id = order;
@@ -43,10 +48,14 @@ public:
 
     virtual ~LinkPair() {}
 
-    /** Return the Left Link */
+    /** Return the Left Link 
+     * @return left - Left link.
+    */
     inline Link* getLeft() { return left; }
 
-    /** Return the Right Link */
+    /** Return the Right Link 
+     * @return right - Right link.
+    */
     inline Link* getRight() { return right; }
 
 private:

@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2022 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2022, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -23,6 +23,10 @@ class ConfigGraph;
 
 namespace Core {
 
+/**
+ * Exception handler class for graph configuration.
+ * Provides the interface to handle errors through the throw exception.
+*/
 class ConfigGraphOutputException : public std::exception
 {
 public:
@@ -32,12 +36,21 @@ public:
         std::strcpy(exMsg, msg);
     }
 
+    /**
+     * @return Exception Message
+    */
     virtual const char* what() const noexcept override { return exMsg; }
 
+/**
+ * Exception message generated on call. 
+*/
 protected:
     char* exMsg;
 };
 
+/**
+ * Outputs configuration data to a specified file path.
+*/
 class ConfigGraphOutput
 {
 public:
@@ -45,6 +58,11 @@ public:
 
     virtual ~ConfigGraphOutput() { fclose(outputFile); }
 
+    /**
+     * @param cfg Constant pointer to SST configuration
+     * @param graph Constant pointer to SSt configuration graph
+     * @return void
+    */
     virtual void generate(const Config* cfg, ConfigGraph* graph) = 0;
 
 protected:
