@@ -341,6 +341,12 @@ sstsim_x_LDADD += $(LIBZ_LIBS)
 sstinfo_x_LDADD += $(LIBZ_LIBS)
 endif
 
+if USE_CURSES
+AM_CPPFLAGS += $(CURSES_CFPPLAGS)
+sstinfo_x_LDADD += $(CURSES_LIBS)
+sstinfo_x_LDFLAGS += $(CURSES_LDFLAGS)
+endif
+
 if USE_HDF5
 AM_CPPFLAGS += $(HDF5_CFLAGS)
 sstsim_x_SOURCES += statapi/statoutputhdf5.cc
