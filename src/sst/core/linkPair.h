@@ -49,12 +49,12 @@ public:
     virtual ~LinkPair() {}
 
     /** Return the Left Link 
-     * @return left - Left link.
+     * @return Left link
     */
     inline Link* getLeft() { return left; }
 
     /** Return the Right Link 
-     * @return right - Right link.
+     * @return Right link
     */
     inline Link* getRight() { return right; }
 

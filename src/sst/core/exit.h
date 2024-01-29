@@ -62,22 +62,22 @@ public:
     */
     SimTime_t    getEndTime() { return end_time; }
 
-    /** Stores the time the simulation has ended.
-     * @param time - Current simulation time.
+    /** Stores the time the simulation has ended
+     * @param time Current simulation time
      * @return void
     */
     void         setEndTime(SimTime_t time) { end_time = time; }
 
-    /** Computes the end time of the simulation.
-     * @return End time of the simulation.
+    /** Computes the end time of the simulation
+     * @return End time of the simulation
     */
     SimTime_t computeEndTime();
     void      execute(void) override;
     void      check();
 
     /**
-     * @param header - 
-     * @param out - 
+     * @param header String to preface the exit action log
+     * @param out SST Output logger object
      * @return void
     */
     void print(const std::string& header, Output& out) const override
@@ -87,9 +87,7 @@ public:
             getPriority());
     }
 
-    /**
-     * 
-    */
+
     unsigned int getGlobalCount() { return global_count; }
 
 private:

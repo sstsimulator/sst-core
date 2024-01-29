@@ -60,7 +60,7 @@ public:
 
     /**
      * @param cfg Constant pointer to SST configuration
-     * @param graph Constant pointer to SSt configuration graph
+     * @param graph Constant pointer to SST configuration graph
      * @return void
     */
     virtual void generate(const Config* cfg, ConfigGraph* graph) = 0;
