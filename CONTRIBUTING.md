@@ -4,7 +4,7 @@
 
 * SST-Core is the repository for the Sandia developed SST Simulation Core.  The repository is hosted on [GitHub](https://github.com).
    * An understanding of [git scm](https://git-scm.com/) is essential to developing code for SST.
-   * There are 2 primary branches used for SST development
+   * There are two primary branches used for SST development
       * **devel** - Contains the latest development codeset of SST-Core.
          * **While this branch is fairly stable, unexpected events can cause it to be broken at any time.**
       * **master** - Contains the latest fully tested stable version of SST-Core that is under development.
@@ -16,9 +16,9 @@
 Code accepted into the SST core codebase is deemed supported unless otherwise denoted to be experimental (e.g., by putting code in a directory named “experimental”, using the Experimental namespace, etc.).  Supported code is regularly tested for proper functionality and stability.  Please follow these guidelines:
  
 * When a feature branch falls behind the sstsimulator/devel branch, it is preferred that the feature branch be rebased to the latest devel before being pushed to github and a PR is submitted (rebasing is preferred to merging).
-   * Please ensure that there is no remerging old commits
+   * Please ensure that there is no remerging old commits or merge commits between a forked branch and the sstsimulator:sst-core branches
 * PRs will be subject to review by the SST team to ensure they adhere to the core design principles, to help reduce the invasiveness of the changes and/or to make stylistic adjustments to keep the code base as consistent as possible. Changes may be requested prior to PR acceptance.
-   * SST Core is limited to language features found in C++11
+   * SST Core is limited to language features found in C++17
    * Avoid use of static variables in core
    * Minimize need for #ifdefs
    * Prefer C++ to C APIs when otherwise equivalent
@@ -137,11 +137,13 @@ git fetch --all --prune
 
 #### **Patches to existing code to fix an issue**
 
-* Create a `issue-fix` branch on your forked repo derived from the **sst-core/devel** branch
+* Create an `issue-fix` branch on your forked repo derived from the **sstsimulator:sst-core/devel** branch
+  * Use the instructions above under "Forked Development" to ensure your branch is configured correctly
 * Make all required changes to correct the issue. All the changes must be commited to the `issue-fix` branch.
 * Open a new GitHub pull request from the `issue-fix` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the problem and solution. Include the relevant issue number if applicable.
+   * Ensure that the list of commits to be added matches the commit(s) you are submitting and that there are no merge commits. If you see commits such as "Merge branch 'sstsimulator:devel' into devel", re-create your branch using the "Forked Development" instructions above.
    *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged via the normal workflow process.**
    *  **DO NOT DELETE THE `issue-fix` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
@@ -150,22 +152,25 @@ git fetch --all --prune
 
 #### **New Feature**
 
-* Create a `new-feature` branch on your forked repo derived from the **sst-core/devel** branch
+* Create a `new-feature` branch on your forked repo derived from the **sstsimulator:sst-core/devel** branch
 * Make all required changes to implement the new feature(s). All the changes must be commited to the `new-feature` branch.
-* Open a new GitHub pull request from the `new-feature` branch to the **sst-core/devel** branch.
+* Open a new GitHub pull request from the `new-feature` branch to the **sstsimulator:sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the new feature, and any relevant information.
+   * Ensure that the list of commits to be added matches the commit(s) you are submitting and that there are no merge commits. If you see commits such as "Merge branch 'sstsimulator:devel' into devel", re-create your branch using the "Forked Development" instructions above.
    *  **DO NOT ATTEMPT TO MERGE THE `new-feature` branch, it will be merged via the normal workflow process.**
    *  **DO NOT DELETE THE `new-feature` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
 ---
 
-#### **SST AutoTester (CI Testing)**
+#### **Review and SST AutoTester (CI Testing)**
 
-* When a Pull Request is created against the **sst-core/devel** branch, the SST AutoTester application will automatically run (usually within 30 minutes) and will build and test the source branch of the Pull Request.
-   * Testing is performed across a number of different platforms
-   * If the test suites pass, then the Pull Request will be setup for manual merging by SST-Core staff.
+* When a Pull Request is created against the **sstsimulator:sst-core/devel** branch, the SST-Core developer team is notified. The team will review the request and comment on the request with any required changes.
+* Once a Pull Request is approved, the request will be marked approved and the tag "AT: PRE-TEST INSPECTED" will be applied.
+* At this point, the SST AutoTester application will automatically run (usually within 30 minutes) and will build and test the source branch of the Pull Request.
+   * Testing is performed across a number of different platforms. See [SST AutoTesting Guide](http://sst-simulator.org/sst-docs/docs/guides/dev/autotest) for more information.
+   * If the test suites pass, then the Pull Request will be setup for manual merging by the SST-Core team.
    * The testing is not all inclusive, it is possible for a bug related to a specific platform to slip in.  See Nightly Testing below.
 
 ---
