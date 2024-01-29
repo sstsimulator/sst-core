@@ -14,6 +14,9 @@
 
 #include <sys/time.h>
 
+/**
+ * @return Current CPU time using the time of day. Timezone information is not filled.
+*/
 double sst_get_cpu_time();
 
 #endif // SST_CORE_CPU_TIMER_H
