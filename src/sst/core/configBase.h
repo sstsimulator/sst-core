@@ -199,6 +199,14 @@ public:
      */
     int parseCmdLine(int argc, char* argv[], bool ignore_unknown = false);
 
+    /**
+       Check to see if an option was set on the command line
+
+       @return True if option was set on command line, false
+       otherwise.  Will also return false if option is unknown.
+    */
+    bool wasOptionSetOnCmdLine(const std::string& option);
+
 private:
     std::vector<LongOption>                      options;
     std::map<char, int>                          short_options;

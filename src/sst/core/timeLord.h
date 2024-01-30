@@ -34,7 +34,7 @@ class UnitAlgebra;
 /**
     Class for creating and managing TimeConverter objects
  */
-class TimeLord
+class TimeLord : public SST::Core::Serialization::serializable
 {
     typedef std::map<SimTime_t, TimeConverter*>   TimeConverterMap_t;
     typedef std::map<std::string, TimeConverter*> StringToTCMap_t;
@@ -76,6 +76,8 @@ public:
      */
     SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::TimeLord)
 
 private:
     friend class SST::Simulation;

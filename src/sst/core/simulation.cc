@@ -14,6 +14,7 @@
 #include "sst/core/simulation_impl.h"
 // simulation_impl header should stay here
 
+#include "sst/core/checkpointAction.h"
 #include "sst/core/clock.h"
 #include "sst/core/config.h"
 #include "sst/core/configGraph.h"
@@ -39,6 +40,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <cinttypes>
+#include <fstream>
 #include <utility>
 
 #define SST_SIMTIME_MAX 0xffffffffffffffff
@@ -146,6 +148,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceVec.resize(num_ranks.thread);
     instanceVec[my_rank.thread] = instance;
     instance->intializeProfileTools(config->enabledProfiling());
+
     return instance;
 }
 
@@ -177,22 +180,30 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     init_phase_start_time(0.0),
     init_phase_total_time(0.0),
     complete_phase_start_time(0.0),
-    complete_phase_total_time(0.0)
+    complete_phase_total_time(0.0),
+    checkpointPrefix(cfg->checkpoint_prefix()),
+    globalOutputFileName(cfg->debugFile())
 {
     sim_output.init(cfg->output_core_prefix(), cfg->verbose(), 0, Output::STDOUT);
     output_directory = cfg->output_directory();
     Params p;
     // params get passed twice - both the params and a ctor argument
     direct_interthread = cfg->interthread_links();
-    std::string timevortex_type(cfg->timeVortex());
-    if ( direct_interthread && num_ranks.thread > 1 ) timevortex_type = timevortex_type + ".ts";
-    timeVortex = factory->Create<TimeVortex>(timevortex_type, p);
+    timeVortexType     = cfg->timeVortex();
+    if ( direct_interthread && num_ranks.thread > 1 ) timeVortexType = timeVortexType + ".ts";
+    timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
     if ( my_rank.thread == 0 ) { m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1); }
 
-    if ( cfg->heartbeatPeriod() != "" && my_rank.thread == 0 ) {
-        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod().c_str());
+    if ( cfg->heartbeat_period() != "" && my_rank.thread == 0 ) {
+        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeat_period().c_str());
         m_heartbeat =
-            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod()));
+            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_period()));
+    }
+
+    if ( cfg->checkpoint_period() != "" ) {
+        sim_output.output("# Creating simulation checkpoint at period of %s.\n", cfg->checkpoint_period().c_str());
+        m_checkpoint =
+            new CheckpointAction(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->checkpoint_period()));
     }
 
     // Need to create the thread sync if there is more than one thread
@@ -528,7 +539,6 @@ Simulation_impl::initialize()
         initBarrier.wait();
 
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            // printf("Calling init on %s: %p\n",(*iter)->getName().c_str(),(*iter)->getComponent());
             (*iter)->getComponent()->init(untimed_phase);
         }
 
@@ -569,7 +579,6 @@ Simulation_impl::complete()
     for ( auto& i : compInfoMap ) {
         i->prepareForComplete();
     }
-
     syncManager->prepareForComplete();
 
     bool done = false;
@@ -614,7 +623,7 @@ Simulation_impl::setup()
 }
 
 void
-Simulation_impl::run()
+Simulation_impl::prepare_for_run()
 {
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
@@ -644,7 +653,11 @@ Simulation_impl::run()
     header += ", ";
     header += std::to_string(my_rank.thread);
     header += ":  ";
+}
 
+void
+Simulation_impl::run()
+{
 #if SST_PERFORMANCE_INSTRUMENTING
     std::string filename = "rank_" + std::to_string(my_rank.rank);
     filename += "_thread_" + std::to_string(my_rank.thread);
@@ -922,6 +935,19 @@ Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handle
     return tcFreq;
 }
 
+void
+Simulation_impl::registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(factor, priority);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Clock* ce        = new Clock(timeLord.getTimeConverter(factor), priority);
+        clockMap[mapKey] = ce;
+
+        ce->schedule();
+    }
+    clockMap[mapKey]->registerHandler(handler);
+}
+
 Cycle_t
 Simulation_impl::reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority)
 {
@@ -944,6 +970,16 @@ Simulation_impl::getNextClockCycle(TimeConverter* tc, int priority)
             CALL_INFO, 1, "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
     return clockMap[mapKey]->getNextCycle();
+}
+
+SimTime_t
+Simulation_impl::getClockForHandler(Clock::HandlerBase* handler)
+{
+    // Have to search all the clocks
+    for ( auto& x : clockMap ) {
+        if ( x.second->isHandlerRegistered(handler) ) { return x.first.first; }
+    }
+    return 0;
 }
 
 void
@@ -1231,6 +1267,329 @@ Simulation_impl::intializeProfileTools(const std::string& config)
         }
     }
 #endif
+}
+
+void
+Simulation_impl::checkpoint()
+{
+    std::string checkpoint_filename = std::to_string(currentSimCycle) + "_" + std::to_string(checkpoint_id) + ".sstcpt";
+    if ( checkpointPrefix != "" ) checkpoint_filename = checkpointPrefix + "_" + checkpoint_filename;
+    checkpoint_id++;
+
+    std::ofstream fs(checkpoint_filename, std::ios::out | std::ios::binary);
+
+    SST::Core::Serialization::serializer ser;
+    ser.enable_pointer_tracking();
+
+    size_t size, buffer_size;
+    char*  buffer;
+
+    /* Section 1: Config options */
+    ser.start_sizing();
+    ser&        num_ranks.rank;
+    ser&        num_ranks.thread;
+    std::string libpath = factory->getSearchPaths();
+    ser&        libpath;
+    ser&        timeLord.timeBaseString;
+    ser&        output_directory;
+    std::string prefix = sim_output.getPrefix();
+    ser&        prefix;
+    uint32_t    verbose = sim_output.getVerboseLevel();
+    ser&        verbose;
+    ser&        globalOutputFileName;
+    ser&        checkpointPrefix;
+
+    size        = ser.size();
+    buffer_size = size;
+    buffer      = new char[buffer_size];
+
+    ser.start_packing(buffer, size);
+    ser& num_ranks.rank;
+    ser& num_ranks.thread;
+    ser& libpath;
+    ser& timeLord.timeBaseString;
+    ser& output_directory;
+    ser& prefix;
+    ser& verbose;
+    ser& globalOutputFileName;
+    ser& checkpointPrefix;
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer, size);
+
+    /* Section 2: Loaded libraries */
+    ser.start_sizing();
+    std::set<std::string> libnames;
+    factory->getLoadedLibraryNames(libnames);
+    ser& libnames;
+
+    size = ser.size();
+    if ( size > buffer_size ) {
+        buffer_size = size;
+        delete[] buffer;
+        buffer = new char[buffer_size];
+    }
+
+    ser.start_packing(buffer, size);
+    ser& libnames;
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer, size);
+
+
+    /* Section 3: Simulation_impl */
+    ser.start_sizing();
+    ser& num_ranks;
+    ser& my_rank;
+    ser& currentSimCycle;
+    // ser& threadMinPartTC;
+    ser& minPart;
+    ser& minPartTC;
+    ser& interThreadLatencies;
+    ser& interThreadMinLatency;
+    ser& endSim;
+    ser& independent;
+    // ser& sim_output;
+    ser& runMode;
+    ser& currentPriority;
+    ser& endSimCycle;
+    ser& output_directory;
+    ser& timeLord;
+    // Actions that may also be in TV
+    ser& m_exit;
+    ser& syncManager;
+    ser& m_heartbeat;
+
+    // Add shared regions
+    ser& SharedObject::manager;
+
+    // Serialize the clockmap
+    ser& clockMap;
+
+    // Last, get the timevortex
+    ser& timeVortex;
+
+    size = ser.size();
+    if ( size > buffer_size ) {
+        delete[] buffer;
+        buffer_size = size;
+        buffer      = new char[buffer_size];
+    }
+
+    // Pack buffer
+    ser.start_packing(buffer, size);
+    ser& num_ranks;
+    ser& my_rank;
+    ser& currentSimCycle;
+    // ser& threadMinPartTC;
+    ser& minPart;
+    ser& minPartTC;
+    ser& interThreadLatencies;
+    ser& interThreadMinLatency;
+    ser& endSim;
+    ser& independent;
+    // ser& sim_output;
+    ser& runMode;
+    ser& currentPriority;
+    ser& endSimCycle;
+    ser& output_directory;
+    ser& timeLord;
+    // Actions that may also be in TV
+    ser& m_exit;
+    ser& syncManager;
+    ser& m_heartbeat;
+
+    // Add shared regions
+    ser& SharedObject::manager;
+
+    ser& clockMap;
+
+    // Last, get the timevortex
+    ser& timeVortex;
+
+    // Write buffer to file
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer, size);
+
+    size = compInfoMap.size();
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+
+    // Serialize component blobs individually
+    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
+        ser.start_sizing();
+        ComponentInfo* compinfo = *comp;
+        ser&           compinfo;
+        size = ser.size();
+
+        if ( buffer_size < size ) {
+            delete[] buffer;
+            buffer      = new char[size];
+            buffer_size = size;
+        }
+
+        ser.start_packing(buffer, size);
+        ser& compinfo;
+
+        fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        fs.write(buffer, size);
+    }
+
+    fs.close();
+    delete[] buffer;
+
+    /*
+     * Still needs to be added to checkpoint:
+     *  - SST::Statistics::StatisticProcessingEngine stat_engine;
+     *  - oneShotMap_t oneShotMap;
+     *
+     * The rest will be recreated at restart or is not needed for checkpoint.
+     *
+     */
+}
+
+void
+Simulation_impl::restart(Config* cfg)
+{
+    size_t                               size, buffer_size;
+    char*                                buffer;
+    SST::Core::Serialization::serializer ser;
+    ser.enable_pointer_tracking();
+    std::ifstream fs(cfg->configFile(), std::ios::binary);
+
+    /* Skip config section, main did that already */
+    fs.read(reinterpret_cast<char*>(&size), sizeof(size));
+    fs.seekg(size, std::ios::cur);
+
+    /* Begin deserialization, libraries */
+    fs.read(reinterpret_cast<char*>(&size), sizeof(size));
+
+    buffer_size = size;
+    buffer      = new char[buffer_size];
+    fs.read(buffer, size);
+    ser.start_unpacking(buffer, size);
+
+    std::set<std::string> libnames;
+    ser&                  libnames;
+
+    /* Load libraries before anything else */
+    factory->loadUnloadedLibraries(libnames);
+
+    /* Now get the global blob */
+    fs.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if ( size > buffer_size ) {
+        delete[] buffer;
+        buffer_size = size;
+        buffer      = new char[buffer_size];
+    }
+    fs.read(buffer, size);
+
+    ser.start_unpacking(buffer, size);
+
+    ser& num_ranks;
+    ser& my_rank;
+    ser& currentSimCycle;
+    // ser& threadMinPartTC;
+    ser& minPart;
+    ser& minPartTC;
+    ser& interThreadLatencies;
+    ser& interThreadMinLatency;
+    ser& endSim;
+    ser& independent;
+    // ser& sim_output;
+    ser& runMode;
+    ser& currentPriority;
+    ser& endSimCycle;
+    ser& output_directory;
+    ser& timeLord;
+    // Actions that may also be in TV
+    ser& m_exit;
+    ser& syncManager;
+    ser& m_heartbeat;
+    // Add shared regions
+    ser& SharedObject::manager;
+    ser& clockMap;
+    // Last, get the timevortex
+    ser& timeVortex;
+
+    /* Fix-up global state before proceeding */
+    timeLord.init(timeLord.timeBaseString);
+
+    /* Extract components */
+    size_t compCount;
+    fs.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
+
+    // Deserialize component blobs individually
+    for ( size_t comp = 0; comp < compCount; comp++ ) {
+        fs.read(reinterpret_cast<char*>(&size), sizeof(size));
+        if ( size > buffer_size ) {
+            delete[] buffer;
+            buffer_size = size;
+            buffer      = new char[buffer_size];
+        }
+        fs.read(buffer, size);
+        ser.start_unpacking(buffer, size);
+        ComponentInfo* compInfo = new ComponentInfo();
+        ser&           compInfo;
+        compInfoMap.insert(compInfo);
+    }
+
+    fs.close();
+    delete[] buffer;
+
+    // Need to clean up the handlers in the TimeVortex
+    timeVortex->fixup_handlers();
+}
+
+void
+Simulation_impl::printSimulationState()
+{
+    std::string tmp_str = "";
+    sim_output.output("Printing simulation state\n");
+
+    sim_output.output("num_ranks: %" PRIu32 ", %" PRIu32 "\n", num_ranks.rank, num_ranks.thread);
+    sim_output.output("my_rank:   %" PRIu32 ", %" PRIu32 "\n", my_rank.rank, my_rank.thread);
+    sim_output.output("currentSimCycle: %" PRIu64 "\n", currentSimCycle);
+    // sim_output.output("threadMinPartTC: %" PRIu64 "\n", threadMinPartTC->getFactor());
+    sim_output.output("minPart: %" PRIu64 "\n", minPart);
+    sim_output.output("minPartTC: %" PRIu64 "\n", minPartTC->getFactor());
+    for ( auto i : interThreadLatencies ) {
+        tmp_str = tmp_str + " " + std::to_string(i);
+    }
+    tmp_str += " ";
+    sim_output.output("interThreadLatencies: [%s]\n", tmp_str.c_str());
+    sim_output.output("interThreadMinlatency: %" PRIu64 "\n", interThreadMinLatency);
+    sim_output.output("endSim: %s\n", endSim ? "true" : "false");
+    sim_output.output("independent: %s\n", independent ? "true" : "false");
+    sim_output.output("runMode: %d\n", (int)runMode);
+    sim_output.output("currentPriority: %d\n", currentPriority);
+    sim_output.output("endSimCycle: %" PRIu64 "\n", endSimCycle);
+    sim_output.output("output_directory: %s\n", output_directory.c_str());
+    sim_output.output("m_exit: %s\n", m_exit == nullptr ? "nullptr" : m_exit->toString().c_str());
+    sim_output.output("syncManager: %s\n", syncManager == nullptr ? "nullptr" : syncManager->toString().c_str());
+    sim_output.output("heartbeat: %s\n", m_heartbeat == nullptr ? "nullptr" : m_heartbeat->toString().c_str());
+    sim_output.output("\nTimeVortex\n");
+    timeVortex->dbg_print(sim_output);
+
+    sim_output.output("\n\nPrinting re-generated state:\n");
+
+    // clockMap
+    // oneShotMap
+    sim_output.output("shutdown_mode: %d\n", (int)shutdown_mode);
+    sim_output.output("wireUpFinished: %s\n", wireUpFinished ? "true" : "false");
+    // timeLord
+    // instanceMap
+    // instanceVec
+
+    sim_output.output("\n\nPrinting ComponentInfoMap:\n");
+    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
+        (*comp)->test_printComponentInfoHierarchy();
+        (*comp)->getComponent()->printStatus(sim_output);
+    }
+
+    /*
+     * Not printing yet
+     * - stat engine
+     */
 }
 
 void

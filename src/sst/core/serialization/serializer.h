@@ -168,18 +168,24 @@ public:
     {
         packer_.init(buffer, size);
         mode_ = PACK;
+        ser_pointer_set.clear();
+        ser_pointer_map.clear();
     }
 
     void start_sizing()
     {
         sizer_.reset();
         mode_ = SIZER;
+        ser_pointer_set.clear();
+        ser_pointer_map.clear();
     }
 
     void start_unpacking(char* buffer, size_t size)
     {
         unpacker_.init(buffer, size);
         mode_ = UNPACK;
+        ser_pointer_set.clear();
+        ser_pointer_map.clear();
     }
 
     size_t size() const
@@ -195,13 +201,44 @@ public:
         return 0;
     }
 
+    inline bool check_pointer_pack(uintptr_t ptr)
+    {
+        if ( ser_pointer_set.count(ptr) == 0 ) {
+            ser_pointer_set.insert(ptr);
+            return false;
+        }
+        return true;
+    }
+
+    inline uintptr_t check_pointer_unpack(uintptr_t ptr)
+    {
+        auto it = ser_pointer_map.find(ptr);
+        if ( it != ser_pointer_map.end() ) { return it->second; }
+        // Keep a copy of the ptr in case we have a split report
+        split_key = ptr;
+        return 0;
+    }
+
+    inline void report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
+
+    inline void report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
+
+    void enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
+
+    inline bool is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
+
 protected:
-    // only one of these is going to be valid for this spkt_serializer
+    // only one of these is going to be valid for this serializer
     // not very good class design, but a little more convenient
     pvt::ser_packer   packer_;
     pvt::ser_unpacker unpacker_;
     pvt::ser_sizer    sizer_;
     SERIALIZE_MODE    mode_;
+    bool              enable_ptr_tracking_ = false;
+
+    std::set<uintptr_t>            ser_pointer_set;
+    std::map<uintptr_t, uintptr_t> ser_pointer_map;
+    uintptr_t                      split_key;
 };
 
 } // namespace Serialization

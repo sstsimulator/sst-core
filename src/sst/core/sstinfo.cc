@@ -18,6 +18,7 @@
 #include "sst/core/elemLoader.h"
 #include "sst/core/env/envconfig.h"
 #include "sst/core/env/envquery.h"
+#include "sst/core/model/element_python.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
@@ -1042,6 +1043,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<Module>(os, enableFullElementOutput);
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
+    outputHumanReadable<SST::SSTElementPythonModule>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

@@ -3,19 +3,22 @@
 #
 
 EXTRA_DIST += \
+    tests/testsuite_default_Checkpoint.py \
     tests/testsuite_default_Component.py \
+    tests/testsuite_default_Links.py \
+    tests/testsuite_default_MemPoolTest.py \
+    tests/testsuite_default_Module.py \
+    tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
-    tests/testsuite_default_Links.py \
-    tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_SharedObject.py \
+    tests/testsuite_default_Serialization.py \
     tests/testsuite_default_SubComponent.py \
     tests/testsuite_default_UnitAlgebra.py \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
-    tests/testsuite_default_Serialization.py \
-    tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_testengine_testing.py \
+    tests/test_Checkpoint.py \
     tests/test_Component.py \
     tests/test_Component_time_overflow.py \
     tests/test_ClockerComponent.py \
@@ -39,6 +42,7 @@ EXTRA_DIST += \
     tests/test_MessageGeneratorComponent.py \
     tests/test_MemPool_overflow.py \
     tests/test_MemPool_undeleted_items.py \
+    tests/test_Module.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
@@ -64,7 +68,11 @@ EXTRA_DIST += \
     tests/refFiles/test_Links_basic.out \
     tests/refFiles/test_Links_dangling.out \
     tests/refFiles/test_Links_wrong_port.out \
+    tests/refFiles/test_Module.out \
     tests/refFiles/test_Serialization.out \
+    tests/refFiles/test_Serialization_componentinfo.out \
+    tests/refFiles/test_Serialization_default.out \
+    tests/refFiles/test_Serialization_handler.out \
     tests/refFiles/test_SubComponent_2.out \
     tests/refFiles/test_SubComponent.out \
     tests/refFiles/test_UnitAlgebra.out \

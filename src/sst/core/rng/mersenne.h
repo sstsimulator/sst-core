@@ -83,6 +83,16 @@ public:
     */
     ~MersenneRNG();
 
+    /**
+     * Serialization function for checkpoint
+     */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    /**
+      Serialization macro
+    */
+    ImplementSerializable(SST::RNG::MersenneRNG)
+
 private:
     /**
        Generates the next batch of random numbers

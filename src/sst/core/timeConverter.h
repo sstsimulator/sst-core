@@ -12,6 +12,7 @@
 #ifndef SST_CORE_TIMECONVERTER_H
 #define SST_CORE_TIMECONVERTER_H
 
+#include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
 
@@ -63,6 +64,15 @@ private:
     ~TimeConverter() {}
 
     TimeConverter() {} // Only needed to simplify serialization
+};
+
+template <>
+class SST::Core::Serialization::serialize_impl<TimeConverter*>
+{
+    template <class A>
+    friend class serialize;
+    // Function implemented in timeLord.cc
+    void operator()(TimeConverter*& s, SST::Core::Serialization::serializer& ser);
 };
 
 } // namespace SST

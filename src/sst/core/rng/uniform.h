@@ -79,7 +79,7 @@ public:
         \return The next random double from the distribution, this is the double converted of the index where the
        probability is located
     */
-    double getNextDouble()
+    double getNextDouble() override
     {
         const double nextD       = baseDistrib->nextUniform();
         uint32_t     current_bin = 1;
@@ -90,6 +90,27 @@ public:
 
         return static_cast<double>(current_bin - 1);
     }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    UniformDistribution() : RandomDistribution(), deleteDistrib(true), probCount(0) {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& baseDistrib;
+        ser& const_cast<bool&>(deleteDistrib);
+        ser& const_cast<uint32_t&>(probCount);
+        ser& probPerBin;
+    }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(SST::RNG::UniformDistribution)
 
 protected:
     /**

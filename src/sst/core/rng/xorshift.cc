@@ -138,3 +138,12 @@ XORShiftRNG::seed(uint64_t seed)
 }
 
 XORShiftRNG::~XORShiftRNG() {}
+
+void
+XORShiftRNG::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& x;
+    ser& y;
+    ser& w;
+    ser& z;
+}

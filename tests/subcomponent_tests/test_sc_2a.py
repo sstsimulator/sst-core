@@ -9,10 +9,14 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 import sst
+import sys
 
 # Define SST core options
 sst.setProgramOption("stop-at", "10us")
 
+verbose = 0
+if len(sys.argv) > 1:
+    verbose = int(sys.argv[1])
 
 # Set up senders using anonymous subcomponents
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
@@ -20,6 +24,7 @@ loader0.addParam("clock", "1.5GHz")
 loader0.addParam("unnamed_subcomponent", "coreTestElement.SubCompSender")
 loader0.addParam("num_subcomps", "2")
 loader0.addParam("sendCount", 15)
+loader0.addParam("verbose", verbose)
 loader0.enableAllStatistics()
 
 # Set up receivers using anonymous subcomponents
@@ -27,6 +32,7 @@ loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoader")
 loader1.addParam("clock", "1.0GHz")
 loader1.addParam("unnamed_subcomponent", "coreTestElement.SubCompReceiver")
 loader1.addParam("num_subcomps", "2")
+loader1.addParam("verbose", verbose)
 loader1.enableAllStatistics()
 
 # Set up links

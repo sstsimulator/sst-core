@@ -78,8 +78,9 @@ public:
     /** Print details about the OneShot */
     void print(const std::string& header, Output& out) const override;
 
-private:
-    typedef std::vector<OneShot::HandlerBase*> HandlerList_t;
+    NotSerializable(SST::OneShot)
+
+        private : typedef std::vector<OneShot::HandlerBase*> HandlerList_t;
 
     // Since this only gets fixed latency events, the times will fire
     // in order of arrival.  No need to use a full map, a double ended

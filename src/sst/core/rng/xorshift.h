@@ -84,6 +84,16 @@ public:
     */
     ~XORShiftRNG();
 
+    /**
+     * Serialization function for checkpoint
+     */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    /**
+      Serialization macro
+    */
+    ImplementSerializable(SST::RNG::XORShiftRNG)
+
 protected:
     uint32_t x;
     uint32_t y;

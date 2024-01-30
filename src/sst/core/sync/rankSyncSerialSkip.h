@@ -28,6 +28,7 @@ class RankSyncSerialSkip : public RankSync
 public:
     /** Create a new Sync object which fires with a specified period */
     RankSyncSerialSkip(RankInfo num_ranks, TimeConverter* minPartTC);
+    RankSyncSerialSkip() {} // For serialization
     virtual ~RankSyncSerialSkip();
 
     /** Register a Link which this Sync Object is responsible for */
@@ -46,18 +47,24 @@ public:
 
     uint64_t getDataSize() const override;
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::RankSyncSerialSkip)
+
 private:
     static SimTime_t myNextSyncTime;
 
     // Function that actually does the exchange during run
     void exchange();
 
-    struct comm_pair
+    struct comm_pair : public SST::Core::Serialization::serializable
     {
         SyncQueue* squeue; // SyncQueue
         char*      rbuf;   // receive buffer
         uint32_t   local_size;
         uint32_t   remote_size;
+
+        void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+        ImplementSerializable(comm_pair)
     };
 
     typedef std::map<int, comm_pair>         comm_map_t;

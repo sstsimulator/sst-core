@@ -33,6 +33,8 @@ public:
     Activity* pop() override;
     Activity* front() override;
 
+    void serialize_order(SST::Core::Serialization::serializer& ser);
+
 private:
     std::multiset<Activity*, Activity::less<true, false, false>> data;
 };

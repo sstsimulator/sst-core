@@ -60,6 +60,7 @@ unpack_serializable(serializable*& s, serializer& ser)
     else {
         // debug_printf(dbg::serialize, "unpacking class id %ld", cls_id);
         s = SST::Core::Serialization::serializable_factory::get_serializable(cls_id);
+        ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
         s->serialize_order(ser);
         // debug_printf(dbg::serialize, "unpacked object %s", s->cls_name());
     }

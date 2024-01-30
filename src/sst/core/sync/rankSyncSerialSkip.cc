@@ -333,4 +333,15 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
 #endif
 }
 
+void
+RankSyncSerialSkip::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    RankSync::serialize_order(ser);
+    // TODO Do we need to keep anything from comm_map? Certainly don't need the struct
+    // ser& comm_map;
+    ser& mpiWaitTime;
+    ser& deserializeTime;
+}
+
+
 } // namespace SST

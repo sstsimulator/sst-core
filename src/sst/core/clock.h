@@ -68,6 +68,12 @@ public:
     using Handler = SSTHandler<bool, Cycle_t, classT, dataT>;
 
     /**
+       New style (checkpointable) SSTHandler
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<bool, Cycle_t, classT, dataT, funcT>;
+
+    /**
      * Activates this clock object, by inserting into the simulation's
      * timeVortex for future execution.
      */
@@ -88,6 +94,11 @@ public:
     /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler(Clock::HandlerBase* handler, bool& empty);
 
+    /**
+       Checks to see if a handler is registered with this clock
+    */
+    bool isHandlerRegistered(Clock::HandlerBase* handler);
+
     std::string toString() const override;
 
 private:
@@ -104,7 +115,9 @@ private:
     SimTime_t          next;
     bool               scheduled;
 
-    NotSerializable(SST::Clock)
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Clock)
+    // NotSerializable(SST::Clock)
 };
 
 

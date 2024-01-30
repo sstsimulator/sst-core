@@ -33,7 +33,10 @@
 
 namespace SST {
 
+BaseComponent::BaseComponent() : SST::Core::Serialization::serializable() {}
+
 BaseComponent::BaseComponent(ComponentId_t id) :
+    SST::Core::Serialization::serializable(),
     my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),
     sim_(Simulation_impl::getSimulation()),
     isExtension(false)
@@ -106,10 +109,19 @@ BaseComponent::pushValidParams(Params& params, const std::string& type)
     params.pushAllowedKeys(keyset);
 }
 
-TimeConverter*
-BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handler, bool regAll)
+void
+BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
-    TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
+
+    // Need to see if I already know about this clock handler
+    bool found = false;
+    for ( auto* x : clock_handlers ) {
+        if ( handler == x ) {
+            found = true;
+            break;
+        }
+    }
+    if ( !found ) clock_handlers.push_back(handler);
 
     // Check to see if there is a profile tool installed
     auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
@@ -126,6 +138,14 @@ BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handle
         setDefaultTimeBaseForLinks(tc);
         my_info->defaultTimeBase = tc;
     }
+}
+
+
+TimeConverter*
+BaseComponent::registerClock(const std::string& freq, Clock::HandlerBase* handler, bool regAll)
+{
+    TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
+    registerClock_impl(tc, handler, regAll);
     return tc;
 }
 
@@ -133,22 +153,7 @@ TimeConverter*
 BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll)
 {
     TimeConverter* tc = sim_->registerClock(freq, handler, CLOCKPRIORITY);
-
-    // Check to see if there is a profile tool installed
-    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
-
-    for ( auto* tool : tools ) {
-        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-        // Add the receive profiler to the handler
-        handler->addProfileTool(tool, mdata);
-    }
-
-    // if regAll is true set tc as the default for the component and
-    // for all the links
-    if ( regAll ) {
-        setDefaultTimeBaseForLinks(tc);
-        my_info->defaultTimeBase = tc;
-    }
+    registerClock_impl(tc, handler, regAll);
     return tc;
 }
 
@@ -156,22 +161,7 @@ TimeConverter*
 BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
-
-    // Check to see if there is a profile tool installed
-    auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
-
-    for ( auto* tool : tools ) {
-        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-        // Add the receive profiler to the handler
-        handler->addProfileTool(tool, mdata);
-    }
-
-    // if regAll is true set tc as the default for the component and
-    // for all the links
-    if ( regAll ) {
-        setDefaultTimeBaseForLinks(tcRet);
-        my_info->defaultTimeBase = tcRet;
-    }
+    registerClock_impl(tcRet, handler, regAll);
     return tcRet;
 }
 
@@ -831,5 +821,46 @@ BaseComponent::getComponentProfileTools(const std::string& point)
 {
     return sim_->getProfileTool<Profile::ComponentProfileTool>(point);
 }
+
+void
+BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& my_info;
+    ser& isExtension;
+
+    switch ( ser.mode() ) {
+    case SST::Core::Serialization::serializer::SIZER:
+    case SST::Core::Serialization::serializer::PACK:
+    {
+        // Need to serialize each handler
+        std::pair<Clock::HandlerBase*, SimTime_t> p;
+        size_t                                    num_handlers = clock_handlers.size();
+        ser&                                      num_handlers;
+        for ( auto* handler : clock_handlers ) {
+            p.first  = handler;
+            // See if it's currently registered with a clock
+            p.second = sim_->getClockForHandler(handler);
+            ser& p;
+        }
+        break;
+    }
+    case SST::Core::Serialization::serializer::UNPACK:
+    {
+        sim_ = Simulation_impl::getSimulation();
+        std::pair<Clock::HandlerBase*, SimTime_t> p;
+        size_t                                    num_handlers;
+        ser&                                      num_handlers;
+        for ( size_t i = 0; i < num_handlers; ++i ) {
+            ser& p;
+            // Add handler to clock_handlers list
+            clock_handlers.push_back(p.first);
+            // If it was previously registered, register it now
+            if ( p.second ) { sim_->registerClock(p.second, p.first, CLOCKPRIORITY); }
+        }
+        break;
+    }
+    }
+}
+
 
 } // namespace SST

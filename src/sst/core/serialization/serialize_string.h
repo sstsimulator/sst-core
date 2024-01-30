@@ -19,7 +19,7 @@ namespace Core {
 namespace Serialization {
 
 template <>
-class serialize<std::string>
+class serialize_impl<std::string>
 {
 public:
     void operator()(std::string& str, serializer& ser) { ser.string(str); }

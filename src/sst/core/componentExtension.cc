@@ -20,4 +20,13 @@ ComponentExtension::ComponentExtension(ComponentId_t id) : BaseComponent(id)
     isExtension = true;
 }
 
+void
+ComponentExtension::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent::serialize_order(ser);
+}
+
+// For serialization only
+ComponentExtension::ComponentExtension() : BaseComponent() {}
+
 } // namespace SST

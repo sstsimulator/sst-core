@@ -22,4 +22,13 @@ SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
 SubComponent::SubComponent(ComponentId_t id) : BaseComponent(id) {}
 
+void
+SubComponent::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent::serialize_order(ser);
+}
+
+// For serialization only
+SubComponent::SubComponent() : BaseComponent() {}
+
 } // namespace SST

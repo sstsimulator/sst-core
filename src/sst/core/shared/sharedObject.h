@@ -84,7 +84,7 @@ private:
    Base class for holding SharedObject data.  The base class is needed
    so that we can have an API to manage unknown types of objects.
 */
-class SharedObjectData
+class SharedObjectData : public SST::Core::Serialization::serializable
 {
 
     friend class SharedObjectDataManager;
@@ -198,13 +198,19 @@ protected:
         locked(false)
     {}
 
+    SharedObjectData() {}
+
     /**
        Destructor for SharedObjectData
      */
     virtual ~SharedObjectData() {}
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& name; }
+
+    ImplementVirtualSerializable(SharedObjectData);
 };
 
-class SharedObjectDataManager
+class SharedObjectDataManager : public SST::Core::Serialization::serializable
 {
 
     std::map<std::string, SharedObjectData*> shared_data;
@@ -255,9 +261,12 @@ public:
     }
 
     void updateState(bool finalize);
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& shared_data; }
+    ImplementSerializable(SST::Shared::SharedObjectDataManager)
 };
 
-class SharedObject
+class SharedObject : public SST::Core::Serialization::serializable
 {
 
 public:
@@ -268,6 +277,9 @@ public:
 
     SharedObject() {}
     virtual ~SharedObject() {}
+
+    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    ImplementSerializable(SST::Shared::SharedObject)
 
 protected:
     friend class SST::Simulation_impl;

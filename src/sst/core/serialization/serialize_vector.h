@@ -51,10 +51,57 @@ public:
         }
 
         for ( size_t i = 0; i < v.size(); ++i ) {
-            serialize<T>()(v[i], ser);
+            ser& v[i];
         }
     }
 };
+
+template <>
+class serialize<std::vector<bool>>
+{
+    typedef std::vector<bool> Vector;
+
+public:
+    void operator()(Vector& v, serializer& ser)
+    {
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+        {
+            size_t size = v.size();
+            ser.size(size);
+            bool val;
+            for ( auto it = v.begin(); it != v.end(); it++ ) {
+                val = *it;
+                ser& val;
+            }
+            break;
+        }
+        case serializer::PACK:
+        {
+            size_t size = v.size();
+            ser.pack(size);
+            for ( auto it = v.begin(); it != v.end(); it++ ) {
+                bool val = *it;
+                ser& val;
+            }
+            break;
+        }
+        case serializer::UNPACK:
+        {
+            size_t s;
+            ser.unpack(s);
+            v.resize(s);
+            for ( size_t i = 0; i < v.size(); i++ ) {
+                bool val = false;
+                ser& val;
+                v[i] = val;
+            }
+            break;
+        }
+        }
+    }
+};
+
 
 } // namespace Serialization
 } // namespace Core

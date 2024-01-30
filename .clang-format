@@ -199,5 +199,7 @@ WhitespaceSensitiveMacros:
   - BOOST_PP_STRINGIZE
   - NS_SWIFT_NAME
   - CF_SWIFT_NAME
+  - SST_SER
+  - SST_SER_AS_PTR
 ...
 

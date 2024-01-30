@@ -32,6 +32,15 @@ private:
     // const std::vector<std::string> * allowedPorts;
     std::vector<std::string>     selfPorts;
 
+    friend class SST::Core::Serialization::serialize_impl<LinkMap*>;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
+    {
+        ser& linkMap;
+        ser& selfPorts;
+    }
+
+
     // bool checkPort(const char *def, const char *offered) const
     // {
     //     const char * x = def;
