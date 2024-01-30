@@ -45,7 +45,13 @@ unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
     PyErr_Clear();
     if ( PyArg_ParseTuple(args, "O", &str_obj) ) {
         PyObject* vstr = PyObject_CallMethod(str_obj, (char*)"__str__", nullptr);
-        self->obj      = SST_ConvertToCppString(vstr);
+        try {
+            self->obj = SST_ConvertToCppString(vstr);
+        }
+        catch ( const UnitAlgebra::InvalidUnitType& e ) {
+            PyErr_SetString(PyExc_ValueError, e.what());
+            return -1;
+        }
         Py_XDECREF(vstr);
         return 0;
     }
@@ -74,45 +80,51 @@ unitAlgebraRichCmp(PyObject* self, PyObject* other, int op)
     UnitAlgebraPy_t* self_ua = (UnitAlgebraPy_t*)self;
     if ( Py_TYPE(other) == &PyModel_UnitAlgebraType ) {
         UnitAlgebraPy_t* other_ua = (UnitAlgebraPy_t*)other;
-        switch ( op ) {
-        case Py_LT:
-            if ( self_ua->obj < other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        case Py_LE:
-            if ( self_ua->obj <= other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        case Py_GT:
-            if ( self_ua->obj > other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        case Py_GE:
-            if ( self_ua->obj >= other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        case Py_EQ:
-            if ( self_ua->obj == other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        case Py_NE:
-            if ( self_ua->obj != other_ua->obj )
-                return Py_True;
-            else
-                return Py_False;
-            break;
-        default:
-            break;
+        try {
+            switch ( op ) {
+            case Py_LT:
+                if ( self_ua->obj < other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            case Py_LE:
+                if ( self_ua->obj <= other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            case Py_GT:
+                if ( self_ua->obj > other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            case Py_GE:
+                if ( self_ua->obj >= other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            case Py_EQ:
+                if ( self_ua->obj == other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            case Py_NE:
+                if ( self_ua->obj != other_ua->obj )
+                    return Py_True;
+                else
+                    return Py_False;
+                break;
+            default:
+                break;
+            }
+        }
+        catch ( const UnitAlgebra::NonMatchingUnits& e ) {
+            PyErr_SetString(PyExc_TypeError, e.what());
+            return nullptr;
         }
     }
 
@@ -184,23 +196,29 @@ unitAlgebraMathOps(PyObject* self, PyObject* other, char op, bool in_place)
 
     UnitAlgebraPy_t* other_ua = (UnitAlgebraPy_t*)other;
 
-    switch ( op ) {
-    case '+':
-        ret_ua->obj += other_ua->obj;
-        break;
-    case '-':
-        ret_ua->obj -= other_ua->obj;
-        break;
-    case '*':
-        ret_ua->obj *= other_ua->obj;
-        break;
-    case '/':
-        ret_ua->obj /= other_ua->obj;
-        break;
-    default:
-        Output::getDefaultObject().fatal(CALL_INFO_LONG, 1, "Internal error encountered, terminating.\n");
-        break;
-    };
+    try {
+        switch ( op ) {
+        case '+':
+            ret_ua->obj += other_ua->obj;
+            break;
+        case '-':
+            ret_ua->obj -= other_ua->obj;
+            break;
+        case '*':
+            ret_ua->obj *= other_ua->obj;
+            break;
+        case '/':
+            ret_ua->obj /= other_ua->obj;
+            break;
+        default:
+            Output::getDefaultObject().fatal(CALL_INFO_LONG, 1, "Internal error encountered, terminating.\n");
+            break;
+        };
+    }
+    catch ( const UnitAlgebra::NonMatchingUnits& e ) {
+        PyErr_SetString(PyExc_TypeError, e.what());
+        return nullptr;
+    }
 
     return ret;
 }
