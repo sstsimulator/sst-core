@@ -155,6 +155,7 @@ private:
        For links that are going to a sync, the delivery_info is used
        on the remote side to send the event on the proper link.  For
        local links, delivery_info contains the delivery functor.
+       @return void
      */
     inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
     {
