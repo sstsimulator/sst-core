@@ -26,7 +26,7 @@ namespace Core {
 /**
  * Exception handler class for graph configuration.
  * Provides the interface to handle errors through the throw exception.
-*/
+ */
 class ConfigGraphOutputException : public std::exception
 {
 public:
@@ -38,19 +38,19 @@ public:
 
     /**
      * @return Exception Message
-    */
+     */
     virtual const char* what() const noexcept override { return exMsg; }
 
-/**
- * Exception message generated on call. 
-*/
+    /**
+     * Exception message generated on call.
+     */
 protected:
     char* exMsg;
 };
 
 /**
  * Outputs configuration data to a specified file path.
-*/
+ */
 class ConfigGraphOutput
 {
 public:
@@ -62,7 +62,7 @@ public:
      * @param cfg Constant pointer to SST configuration
      * @param graph Constant pointer to SST configuration graph
      * @return void
-    */
+     */
     virtual void generate(const Config* cfg, ConfigGraph* graph) = 0;
 
 protected:

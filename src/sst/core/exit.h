@@ -59,18 +59,18 @@ public:
 
     /** Gets the end time of the simulation
      * @return Time when simulation ends
-    */
-    SimTime_t    getEndTime() { return end_time; }
+     */
+    SimTime_t getEndTime() { return end_time; }
 
     /** Stores the time the simulation has ended
      * @param time Current simulation time
      * @return void
-    */
-    void         setEndTime(SimTime_t time) { end_time = time; }
+     */
+    void setEndTime(SimTime_t time) { end_time = time; }
 
     /** Computes the end time of the simulation
      * @return End time of the simulation
-    */
+     */
     SimTime_t computeEndTime();
     void      execute(void) override;
     void      check();
@@ -79,7 +79,7 @@ public:
      * @param header String to preface the exit action log
      * @param out SST Output logger object
      * @return void
-    */
+     */
     void print(const std::string& header, Output& out) const override
     {
         out.output(
