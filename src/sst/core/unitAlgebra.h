@@ -252,6 +252,31 @@ public:
         }
     }
     ImplementSerializable(SST::UnitAlgebra)
+
+public:
+    class UnitAlgebraException : public std::logic_error
+    {
+    public:
+        UnitAlgebraException(const std::string& msg);
+    };
+
+    class InvalidUnitType : public UnitAlgebraException
+    {
+    public:
+        InvalidUnitType(const std::string& type);
+    };
+
+    class InvalidNumberString : public UnitAlgebraException
+    {
+    public:
+        InvalidNumberString(const std::string& number);
+    };
+
+    class NonMatchingUnits : public UnitAlgebraException
+    {
+    public:
+        NonMatchingUnits(const std::string& lhs, const std::string& rhs, const std::string& operation);
+    };
 };
 
 // template <typename T>

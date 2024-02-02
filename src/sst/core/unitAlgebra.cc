@@ -150,7 +150,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
         multiplier *= si_unit_map[si_unit];
     }
 
-    // Check to see if the unit is valid and get it's ID
+    // Check to see if the unit is valid and get its ID
     string type = units.substr(si_length);
     if ( valid_base_units.find(type) != valid_base_units.end() ) {
         if ( !invert ) { numerator.push_back(valid_base_units[type]); }
@@ -175,8 +175,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
         return;
     }
     else {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(CALL_INFO, 1, "Invalid unit type: %s\n", type.c_str());
+        throw UnitAlgebra::InvalidUnitType(type);
     }
 }
 
@@ -339,7 +338,7 @@ void
 UnitAlgebra::init(const std::string& val)
 {
     // Trim off all whitespace on front and back
-    string parse = trim(val);
+    const string parse = trim(val);
 
     // Start from the back and find the first digit.  Split the string
     // at that point.
@@ -351,8 +350,8 @@ UnitAlgebra::init(const std::string& val)
         }
     }
 
-    string number = trim(parse.substr(0, split));
-    string units  = trim(parse.substr(split));
+    const string number = trim(parse.substr(0, split));
+    string       units  = trim(parse.substr(split));
 
     sst_big_num multiplier(1);
     unit = Units(units, multiplier);
@@ -361,8 +360,7 @@ UnitAlgebra::init(const std::string& val)
         value = sst_big_num(number);
     }
     catch ( runtime_error& e ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(CALL_INFO, 1, "Error: invalid number string: %s\n", number.c_str());
+        throw InvalidNumberString(number);
     }
 
     value *= multiplier;
@@ -441,14 +439,7 @@ UnitAlgebra::operator/=(const UnitAlgebra& v)
 UnitAlgebra&
 UnitAlgebra::operator+=(const UnitAlgebra& v)
 {
-    if ( unit != v.unit ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to add UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
-    }
+    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "add"); }
     value += v.value;
     return *this;
 }
@@ -456,14 +447,7 @@ UnitAlgebra::operator+=(const UnitAlgebra& v)
 UnitAlgebra&
 UnitAlgebra::operator-=(const UnitAlgebra& v)
 {
-    if ( unit != v.unit ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to subtract UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
-    }
+    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "subtract"); }
     value -= v.value;
     return *this;
 }
@@ -471,14 +455,7 @@ UnitAlgebra::operator-=(const UnitAlgebra& v)
 bool
 UnitAlgebra::operator>(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to compare UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
-    }
+    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
     return value > v.value;
 }
 
@@ -487,11 +464,7 @@ UnitAlgebra::operator>=(const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
         Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to compare UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare");
     }
     return value >= v.value;
 }
@@ -499,28 +472,14 @@ UnitAlgebra::operator>=(const UnitAlgebra& v) const
 bool
 UnitAlgebra::operator<(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to compare UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
-    }
+    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
     return value < v.value;
 }
 
 bool
 UnitAlgebra::operator<=(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) {
-        Output abort = Output::getDefaultObject();
-        abort.fatal(
-            CALL_INFO, 1,
-            "Error: Attempting to compare UnitAlgebra values "
-            "with non-matching units: %s, %s\n",
-            toString().c_str(), v.toString().c_str());
-    }
+    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
     return value <= v.value;
 }
 
@@ -581,3 +540,19 @@ UnitAlgebra::isValueZero() const
 {
     return value.isZero();
 }
+
+UnitAlgebra::UnitAlgebraException::UnitAlgebraException(const std::string& msg) : std::logic_error(msg) {}
+
+UnitAlgebra::InvalidUnitType::InvalidUnitType(const std::string& type) :
+    UnitAlgebra::UnitAlgebraException(std::string("Invalid unit type: ") + type)
+{}
+
+UnitAlgebra::InvalidNumberString::InvalidNumberString(const std::string& number) :
+    UnitAlgebra::UnitAlgebraException(std::string("Invalid number string: ") + number)
+{}
+
+UnitAlgebra::NonMatchingUnits::NonMatchingUnits(
+    const std::string& lhs, const std::string& rhs, const std::string& operation) :
+    UnitAlgebraException(
+        std::string("Attempting to ") + operation + " UnitAlgebra values with non-matching units: " + lhs + ", " + rhs)
+{}

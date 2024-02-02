@@ -36,8 +36,8 @@ class Exit : public Action
 public:
     /**
      * Create a new ExitEvent
-     * @param sim - Simulation Object
-     * @param single_rank - True if there are no parallel ranks
+     * @param sim Simulation object
+     * @param single_rank True if there are no parallel ranks
      *
      *  Exit needs to register a handler during constructor time, which
      * requires a simulation object.  But the simulation class creates
@@ -56,19 +56,37 @@ public:
     bool refDec(ComponentId_t, uint32_t thread);
 
     unsigned int getRefCount();
-    SimTime_t    getEndTime() { return end_time; }
-    void         setEndTime(SimTime_t time) { end_time = time; }
 
+    /** Gets the end time of the simulation
+     * @return Time when simulation ends
+     */
+    SimTime_t getEndTime() { return end_time; }
+
+    /** Stores the time the simulation has ended
+     * @param time Current simulation time
+     * @return void
+     */
+    void setEndTime(SimTime_t time) { end_time = time; }
+
+    /** Computes the end time of the simulation
+     * @return End time of the simulation
+     */
     SimTime_t computeEndTime();
     void      execute(void) override;
     void      check();
 
+    /**
+     * @param header String to preface the exit action log
+     * @param out SST Output logger object
+     * @return void
+     */
     void print(const std::string& header, Output& out) const override
     {
         out.output(
             "%s Exit Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
             getPriority());
     }
+
 
     unsigned int getGlobalCount() { return global_count; }
 
