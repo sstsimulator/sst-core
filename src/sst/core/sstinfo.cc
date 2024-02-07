@@ -112,6 +112,8 @@ void        generateXMLOutputFile();
 std::string parseInput(std::string);
 std::string listLibraryInfo(std::list<std::string>);
 std::string findLibraryInfo(std::list<std::string>);
+std::string setErrorText(std::string);
+std::string setErrorText(std::string, std::list<std::string>);
 void        setInfoText(std::string);
 
 
@@ -178,22 +180,21 @@ parseInput(std::string input)
     }
 
     // Parse
-    std::string text    = "\n";
+    std::string text;
     std::string command = inputWords[0];
     convertToLower(command);
 
     // Help messages
     if ( inputWords.size() == 1 ) {
         if ( command == "help" ) {
-            text +=
-                "=== SST-INFO ===\n"
+            text =
+                "\n=== SST-INFO ===\n"
                 "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
                 "Element Library.\n\n"
                 "=== CONTROLS ===\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
                 "The text window can be resized, and both arrow key and mouse scrolling is enabled.\n"
                 "PAGE UP/PAGE DOWN scrolls through previously entered commands.\n\n"
-                //"TAB opens and closes the autofill window. Select avaiable input using the arrow keys.\n\n"
                 "=== COMMANDS ===\n"
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
@@ -201,37 +202,39 @@ parseInput(std::string input)
                 "To see more detailed instructions, type in a command without additional parameters.\n\n";
         }
         else if ( command == "list" ) {
-            text += "=== LIST ===\n"
-                    "Displays specified element libraries.\n\n"
-                    "=== USAGE ===\n"
-                    "- List all : Display all available element libraries and their components/subcomponents\n"
-                    "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
-                    "'element' - Element Library\n"
-                    "'type' - Type of Component/Subcomponent\n"
-                    "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                    "=== EXAMPLES ===\n"
-                    "list coreTestElement\n"
-                    "list sst.linear\n"
-                    "list ariel miranda\n"
-                    "list ariel miranda.ReverseSingleStreamGenerator\n";
+            text = 
+                "\n=== LIST ===\n"
+                "Displays specified element libraries.\n\n"
+                "=== USAGE ===\n"
+                "- List all : Display all available element libraries and their components/subcomponents\n"
+                "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
+                "'element' - Element Library\n"
+                "'type' - Type of Component/Subcomponent\n"
+                "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
+                "=== EXAMPLES ===\n"
+                "list coreTestElement\n"
+                "list sst.linear\n"
+                "list ariel miranda\n"
+                "list ariel miranda.ReverseSingleStreamGenerator\n";
         }
         else if ( command == "find" ) {
-            text += "=== FIND ===\n"
-                    "Search for text within component/subcomponent fields. "
-                    "Displays all loaded components/subcomponents with the specified text.\n"
-                    "Currently only supports searching within Description, ELI Version, Compile Date, and Category.\n\n"
-                    "=== USAGE ===\n"
-                    "- Find {field} [search term] \n\n"
-                    "'field' - Component/subcomponent fields.\n"
-                    "Valid keywords - [Description, Version, Compiledate, Category] (case-insensitive)\n"
-                    "Search term can be multiple words, but is case-sensitive\n\n"
-                    "=== EXAMPLES ===\n"
-                    "find Description test\n"
-                    "find compiledate Oct 17\n"
-                    "find category UNCATEGORIZED\n";
+            text = 
+                "\n=== FIND ===\n"
+                "Search for text within component/subcomponent fields. "
+                "Displays all loaded components/subcomponents with the specified text.\n"
+                "Currently only supports searching within Description, ELI Version, Compile Date, and Category.\n\n"
+                "=== USAGE ===\n"
+                "- Find {field} [search term] \n\n"
+                "'field' - Component/subcomponent fields.\n"
+                "Valid keywords - [Description, Version, Compiledate, Category] (case-insensitive)\n"
+                "Search term can be multiple words, but is case-sensitive\n\n"
+                "=== EXAMPLES ===\n"
+                "find Description test\n"
+                "find compiledate Oct 17\n"
+                "find category UNCATEGORIZED\n";
         }
         else {
-            text += "ERROR: Unknown command '" + command + "'\n\nUse the command 'Help' to see usage options.";
+            text = setErrorText(command);
         }
     }
 
@@ -242,10 +245,16 @@ parseInput(std::string input)
         auto                   end   = inputWords.end();
         std::list<std::string> args(start, end);
 
-        if ( command == "list" ) { text += listLibraryInfo(args); }
-
+        if ( command == "list" ) {
+            text = listLibraryInfo(args);
+        }
         else if ( command == "find" ) {
-            text += findLibraryInfo(args);
+            text = findLibraryInfo(args);
+        }
+
+        // Handle errors from getting text from library info
+        if ( text == "ERR" ) {
+            text = setErrorText(command, args);
         }
     }
 
@@ -300,7 +309,7 @@ listLibraryInfo(std::list<std::string> args)
 
             // Check for invalid input
             if ( addLibFilter(library, component) ) {
-                return "ERR - Could not find Library/Component '" + library + "." + component + "'";
+                return "ERR";
             }
         }
         outputStream << "-";
@@ -320,8 +329,7 @@ findLibraryInfo(std::list<std::string> args)
 
     // Error handling
     if ( args.size() < 2 ) {
-        return "Invalid input. Your command should be in the format of 'find {tag} {search term}'\n\n"
-               "For example, `Find Description Profiler`";
+        return "ERR";
     }
 
     std::string inputTag = args.front();
@@ -351,8 +359,22 @@ findLibraryInfo(std::list<std::string> args)
         return outputStream.str();
     }
 
-    return "Invalid component tag. Choose from [Description, Version, Compiledate, Category]";
+    return "ERR";
 }
+
+std::string 
+setErrorText(std::string) {
+
+    return "Invalid command";
+}
+
+
+std::string 
+setErrorText(std::string, std::list<std::string>) {
+
+    return "Invalid arguments";
+}
+
 
 void
 setInfoText(std::string infoString)
