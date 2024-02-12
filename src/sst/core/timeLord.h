@@ -60,15 +60,15 @@ public:
     TimeConverter* getTimeConverter(const UnitAlgebra& ts);
 
     /**
-     * Return the Time Base of the TimeLord
+     * @return Time Base of the TimeLord
      */
     UnitAlgebra getTimeBase() const { return timeBase; }
 
-    /** Return a TimeConverter which represents Nanoseconds */
+    /** @return TimeConverter which represents Nanoseconds */
     TimeConverter* getNano() { return nano; }
-    /** Return a TimeConverter which represents Microseconds */
+    /** @return TimeConverter which represents Microseconds */
     TimeConverter* getMicro() { return micro; }
-    /** Return a TimeConverter which represents Milliseconds */
+    /** @return TimeConverter which represents Milliseconds */
     TimeConverter* getMilli() { return milli; }
 
     /** Not a Public API.
