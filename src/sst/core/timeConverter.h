@@ -31,25 +31,24 @@ class TimeConverter
 public:
     /**
        Converts from the component's view to the core's view of time.
-       \param time time to convert to core time
+       @param time time to convert to core time
      */
     SimTime_t convertToCoreTime(SimTime_t time) const { return time * factor; }
 
     /**
        Converts from the core's view to the components's view of time.
        The result is truncated, not rounded.
-       \param time time to convert from core time
+       @param time time to convert from core time
      */
     SimTime_t convertFromCoreTime(SimTime_t time) const { return time / factor; }
 
     /**
-     * Return the factor used for conversions with Core Time
+     * @return The factor used for conversions with Core Time
      */
     SimTime_t getFactor() const { return factor; }
 
     /**
-       Return the period represented by this TimeConverter as a
-       UnitAlgebra
+       @return The period represented by this TimeConverter as a UnitAlgebra
      */
     UnitAlgebra getPeriod() const; // Implemented in timeLord.cc
 

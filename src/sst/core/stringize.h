@@ -102,7 +102,7 @@ struct escaped_list_separator
     {}
 
     /**
-     * @return pair<iter, iter> = <tok_end, next_tok>
+     * Sets pair<iter, iter> = <tok_end, next_tok>
      */
     void operator()(iter& first, iter last, std::string& token)
     {

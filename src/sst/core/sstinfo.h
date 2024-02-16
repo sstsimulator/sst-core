@@ -56,19 +56,22 @@ public:
     /** Clears the current filter map */
     void clearFilterMap() { m_filters.clear(); }
 
-    /** Return the filter map */
+    /** @return Filter map */
     FilterMap_t& getFilterMap() { return m_filters; }
 
-    /** Return the bit field of various command line options enabled. */
+    /** @return Bit field of various command line options enabled. */
     unsigned int getOptionBits() { return m_optionBits; }
 
-    /** Return the user defined path the XML File. */
+    /** @return User defined path the XML File. */
     std::string& getXMLFilePath() { return m_XMLFilePath; }
 
-    /** Is debugging output enabled? */
+    /** @return True if the debugging output is enabled, otherwise False */
     bool debugEnabled() const { return m_debugEnabled; }
+    /** @return True if the m_filter multimap is emtpy, otherwise False */
     bool processAllElements() const { return m_filters.empty(); }
+    /** @return True if command line options are enabled and verbose configuration is valid, otherwise False */
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
+    /** @return True if interactive is enabled, otherwise False */
     bool interactiveEnabled() const { return m_interactive; }
     void addFilter(const std::string& name);
 
@@ -191,10 +194,24 @@ public:
     /** Set filters based on search term */
     void filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm);
 
-    /** Filter output from info map*/
+    /** Filter output from info map
+     * @return True if the library filter is defined, otherwise False
+     */
     bool getFilter() { return m_libraryFilter; }
+    /**
+     * Clears the component filter and sets the internal library filter status
+     * @param libFilter
+     */
     void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); }
+    /**
+     * Sets the internal library filter status
+     * @param libFilter
+     */
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
+    /**
+     * Adds the component filter string to the end of the internal vector of components
+     * @param component
+     */
     void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
 
     template <class BaseType>
