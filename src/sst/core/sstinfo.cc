@@ -112,8 +112,8 @@ void        generateXMLOutputFile();
 std::string parseInput(std::string);
 std::string listLibraryInfo(std::list<std::string>);
 std::string findLibraryInfo(std::list<std::string>);
-std::string setErrorText(std::string);
-std::string setErrorText(std::string, std::list<std::string>);
+std::string getErrorText(std::string);
+std::string getErrorText(std::string, std::list<std::string>);
 void        setInfoText(std::string);
 
 
@@ -234,7 +234,7 @@ parseInput(std::string input)
                 "find category UNCATEGORIZED\n";
         }
         else {
-            text = setErrorText(command);
+            text = getErrorText(command);
         }
     }
 
@@ -254,7 +254,7 @@ parseInput(std::string input)
 
         // Handle errors from getting text from library info
         if ( text == "ERR" ) {
-            text = setErrorText(command, args);
+            text = getErrorText(command, args);
         }
     }
 
@@ -362,15 +362,59 @@ findLibraryInfo(std::list<std::string> args)
     return "ERR";
 }
 
-std::string 
-setErrorText(std::string) {
+// Finds the closest term using Levenshtein distance
+std::string
+getClosestTerm(std::string source, std::list<std::string> dict) {
+    std::string closest = "\n";
+    int distance = INT_MAX;
+    for ( auto& term : dict ) {
+        int m = source.length();
+        int n = term.length();
+        int matrix[m+1][n+1] = {0};
 
-    return "Invalid command";
+        for ( int i=0; i<=m; i++) {
+            matrix[i][0] = i;
+        }
+        for ( int j=0; j<=n; j++) {
+            matrix[0][j] = j;
+        }
+
+        const char* s = source.c_str();
+        const char* t = term.c_str();
+
+        for ( int j=1; j<=n; j++) {
+            for ( int i=1; i<=m; i++) {
+                int subCost = 0;
+                if ( s[i] != t[j] ) {
+                    subCost = 1;
+                }
+                matrix[i][j] = std::min({matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + subCost});
+            }
+        }
+
+        // Get final score and set closest term
+        if ( matrix[m][n] < distance ) {
+            closest = term; 
+            distance = matrix[m][n];
+        }
+    }
+    
+    return closest;
 }
 
-
+// For Commands
 std::string 
-setErrorText(std::string, std::list<std::string>) {
+getErrorText(std::string command) {
+    std::list<std::string> dict = {"help", "list", "find"};
+
+    std::string term = getClosestTerm(command, dict);
+
+    return "Invalid command " + command + " -- Did you mean '" + term + "'?";
+}
+
+// For Library names
+std::string 
+getErrorText(std::string, std::list<std::string>) {
 
     return "Invalid arguments";
 }
