@@ -98,7 +98,7 @@ git checkout devel
 git pull
 ```
 
-Now you can branch from `devel` to create new features and when you push those feature branches they will push to your fork. When you pull devel, it will get updates from the official sst repo
+Now you can branch from `devel` to create new features and when you push those feature branches they will push to your fork. When you pull devel, it will get updates from the official sst repo, avoiding the need to merge changes in devel into your local fork
 
 ##### Feature branches
 Once a local clone has more than 1 remote (origin and sst-official in this case) you will need to tell git which remote to track for a new branch.  This requires one additional step when pushing a branch for the first time.  I personally like to push the branch right after I create it like shown below.
@@ -137,6 +137,7 @@ git fetch --all --prune
 
 #### **Patches to existing code to fix an issue**
 
+* Create a "Bug Report" issue in the github issue tracker describing the bug.  This issue can be closed once the bug fix has been merged into devel. NOTE: Bug fixes are generally not subject to the same twe week waiting period as new features (see "New Feature" secion below), but could be if the fix requires major code changes.
 * Create an `issue-fix` branch on your forked repo derived from the **sstsimulator:sst-core/devel** branch
   * Use the instructions above under "Forked Development" to ensure your branch is configured correctly
 * Make all required changes to correct the issue. All the changes must be commited to the `issue-fix` branch.
@@ -151,7 +152,11 @@ git fetch --all --prune
 ---
 
 #### **New Feature**
+SST is an open source project and we encourage contribution of new features. For new features, please open a “Feature Request” in the GitHub issues tracker and describe both the use-case and the proposed functionality in sufficient detail that the community can understand how the feature will generally integrate into the existing code base.  Once the code is ready, a GitHub pull request (PR) should be opened as described in this document.  If the feature can be implemented using one of the existing “plug-in” APIs that already exist in the core, then it is preferred that the development use these APIs.  Features implemented through plug-ins can be made available externally and do not necessarily need to be merged into the main code repository, though that option is available if there is a compelling reason.
+ 
+To support community involvement, major new features require a two week public discussion period. "Feature requests" GitHub issues must be opened at least two weeks prior to a pull request submission, and are encouraged to be opened early in the feature planning and development process. Once development of the feature starts, the "In Process" label can be applied to the issue.  This will allow the community to provide input on planning how the feature will be architected into the code base and allow other developers an opportunity to understand any potential conflicts with other feature development. This can also help prevent duplicated effort if multiple groups are developing similar functionality and can help catch potential issues early and avoid long iteration cycles on the resulting pull request before being able to merge the feature.  While we strive to include all new features developers feel they need, it is possible that the community may determine that a particular feature is not a good fit for SST, that it breaks certain fundamental assumptions of the code architecture, or that the intended implementation is not a good match for the code base.  In these cases, having early feedback can save development that will not be able to be merged.
 
+To create a pull reqeust for the feature, use the following procedure.
 * Create a `new-feature` branch on your forked repo derived from the **sstsimulator:sst-core/devel** branch
 * Make all required changes to implement the new feature(s). All the changes must be commited to the `new-feature` branch.
 * Open a new GitHub pull request from the `new-feature` branch to the **sstsimulator:sst-core/devel** branch.
