@@ -23,9 +23,9 @@ AC_DEFUN([SST_CHECK_CURSES],
        CURSES_CPPFLAGS_LDFLAGS=
        CURSES_LIBS=])])
   
-dnl Check for curses.h header
+dnl Check for header
   AC_LANG_PUSH([C++])
-  AC_CHECK_HEADER([curses.h], [], [sst_check_curses_happy="no"])
+  AC_CHECK_HEADER([ncurses.h], [], [sst_check_curses_happy="no"])
   AC_LANG_POP([C++])
 
 dnl Check that library is usable
