@@ -342,7 +342,7 @@ sstinfo_x_LDADD += $(LIBZ_LIBS)
 endif
 
 if USE_CURSES
-AM_CPPFLAGS += $(CURSES_CFPPLAGS)
+AM_CPPFLAGS += $(CURSES_CPPFLAGS)
 sstinfo_x_LDADD += $(CURSES_LIBS)
 sstinfo_x_LDFLAGS += $(CURSES_LDFLAGS)
 endif
