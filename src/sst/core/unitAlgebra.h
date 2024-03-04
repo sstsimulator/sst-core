@@ -256,27 +256,53 @@ public:
     ImplementSerializable(SST::UnitAlgebra)
 
 public:
+    /** Base exception for all exception classes in UnitAlgebra
+     *
+     * This exception inherits from std::logic_error, as all exceptions
+     * thrown in UnitAlgebra are considered configuration errors occurring
+     * prior to simulation start, rather than runtime errors.
+     */
     class UnitAlgebraException : public std::logic_error
     {
     public:
+        /**
+         * @param msg exception message displayed as-is without modification
+         */
         UnitAlgebraException(const std::string& msg);
     };
 
+    /** Exception for when units are not recognized or are invalid
+     */
     class InvalidUnitType : public UnitAlgebraException
     {
     public:
+        /**
+         * @param type string containing invalid type
+         */
         InvalidUnitType(const std::string& type);
     };
 
+    /** Exception for when number couldn't be parsed
+     */
     class InvalidNumberString : public UnitAlgebraException
     {
     public:
+        /**
+         * @param number string containing invalid number
+         */
         InvalidNumberString(const std::string& number);
     };
 
+    /** Exception for when attempting operations between objects that do not have matching base units
+     */
     class NonMatchingUnits : public UnitAlgebraException
     {
     public:
+        /**
+         * @param lhs units for UnitAlgebra on left-hand side of operation
+         * @param rhs units for UnitAlgebra on right-hand side of operation
+         * @param operation representation of operation attempted between units
+         */
         NonMatchingUnits(const std::string& lhs, const std::string& rhs, const std::string& operation);
     };
 };
