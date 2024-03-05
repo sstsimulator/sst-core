@@ -14,6 +14,11 @@
 #include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
+// The Python header already defines this and should override one from the
+// command line.
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <Python.h>
 REENABLE_WARNING
 
