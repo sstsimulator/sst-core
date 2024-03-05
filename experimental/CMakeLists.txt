@@ -55,13 +55,16 @@ if(NOT SST_DISABLE_ZLIB)
   find_package(ZLIB)
 endif()
 
-option(SST_DISABLE_CURSES "Use curses library (needed for interactive sst-info)" OFF)
+option(SST_DISABLE_CURSES
+       "Use curses library (needed for interactive sst-info)" OFF)
 if(NOT SST_DISABLE_CURSES)
   # https://gitlab.kitware.com/cmake/cmake/-/issues/23236
   set(CURSES_NEED_NCURSES 1)
   find_package(Curses)
   if(NOT CURSES_HAVE_NCURSES_H)
-    message(FATAL_ERROR "Curses was found, but the specific header <ncurses.h> was not")
+    message(
+      FATAL_ERROR
+        "Curses was found, but the specific header <ncurses.h> was not")
   endif()
 endif()
 
