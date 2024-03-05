@@ -245,7 +245,9 @@ endif()
 
 if(CURSES_FOUND)
   target_link_libraries(sstinfo.x PRIVATE ${CURSES_LIBRARIES})
-  target_include_directories(sstinfo.x PRIVATE ${CURSES_INCLUDE_DIRS})
+  # Before means no chance of interfering with a system curses if a
+  # user-provided one was specified.
+  target_include_directories(sstinfo.x BEFORE PRIVATE ${CURSES_INCLUDE_DIRS})
 endif()
 
 add_executable(sst bootsst.cc)
