@@ -25,7 +25,7 @@ AC_DEFUN([SST_CHECK_CURSES],
   dnl specific libraries
   AC_MSG_CHECKING([ncurses6-config exists])
   AC_MSG_RESULT([$NCURSES_CONFIG_EXE])
-  AS_IF([test $CURSES_CONFIG_EXE = "no"],
+  AS_IF([test $NCURSES_CONFIG_EXE = "no"],
         [AC_MSG_ERROR([Unable to locate ncurses6-config utility])])
 
   CURSES_CPPFLAGS=`$NCURSES_CONFIG_EXE --cflags`
