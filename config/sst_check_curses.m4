@@ -28,9 +28,13 @@ AC_DEFUN([SST_CHECK_CURSES],
   AS_IF([test $NCURSES_CONFIG_EXE = "no"],
         [AC_MSG_ERROR([Unable to locate ncurses6-config utility])])
 
+  dnl Older versions only have --libs, not --libs-only-l and --libs-only-L,
+  dnl which combines the two.  Ideally, CURSES_LDFLAGS (sstinfo_x_LDFLAGS)
+  dnl contains --libs-only-L and CURSES_LIBS (sstinfo_x_LDADD) contains
+  dnl --libs-only-l, but rather than complicated logic testing the above,
+  dnl combining everything into LDADD seems acceptable..
   CURSES_CPPFLAGS=`$NCURSES_CONFIG_EXE --cflags`
-  CURSES_LDFLAGS=`$NCURSES_CONFIG_EXE --libs-only-L`
-  CURSES_LIBS=`$NCURSES_CONFIG_EXE --libs-only-l`
+  CURSES_LIBS=`$NCURSES_CONFIG_EXE --libs`
 
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"
@@ -44,7 +48,6 @@ dnl Check for header
   LDFLAGS="$LDFLAGS_saved"
 
   AC_SUBST([CURSES_CPPFLAGS])
-  AC_SUBST([CURSES_LDFLAGS])
   AC_SUBST([CURSES_LIBS])
   AS_IF([test "x$sst_check_curses_happy" = "xyes"], [AC_DEFINE([HAVE_CURSES], [1], [Defines whether we have the curses library])])
   AM_CONDITIONAL([USE_CURSES], [test "x$sst_check_curses_happy" = "xyes"])
