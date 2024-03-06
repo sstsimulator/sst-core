@@ -240,7 +240,7 @@ else
 fi
 
 if test "x$sst_check_curses_happy" = "xyes" ; then
-    printf "%38s : %s %s\n" "curses library" "$CURSES_LDFLAGS" "$CURSES_LIBS"
+    printf "%38s : %s %s\n" "curses library" "$CURSES_LIBS"
 else
     printf "%38s : Not found\n" "curses library"
 fi
