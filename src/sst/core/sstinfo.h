@@ -191,7 +191,10 @@ public:
     /** Set filters based on search term */
     void filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm);
 
-    /** Filter output from info map*/
+    /** Clear highlight characters from info strings*/
+    void clearHighlights();
+
+    /** Filter output from info map */
     bool getFilter() { return m_libraryFilter; }
     void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); }
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }

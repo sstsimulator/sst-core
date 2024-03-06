@@ -51,7 +51,6 @@ static std::vector<std::string> g_infoText;
 static std::deque<std::string>  g_prevInput;
 static std::vector<std::string> g_libraryNames;
 static unsigned int             g_textPos;
-static bool                     g_popupEnabled;
 #endif
 
 
@@ -188,14 +187,14 @@ parseInput(std::string input)
     if ( inputWords.size() == 1 ) {
         if ( command == "help" ) {
             text =
-                "\n=== SST-INFO ===\n"
+                "\n*=== SST-INFO ===*\n"
                 "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
                 "Element Library.\n\n"
-                "=== CONTROLS ===\n"
+                "*=== CONTROLS ===*\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
                 "The text window can be resized, and both arrow key and mouse scrolling is enabled.\n"
                 "PAGE UP/PAGE DOWN scrolls through previously entered commands.\n\n"
-                "=== COMMANDS ===\n"
+                "*=== COMMANDS ===*\n"
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
                 "- Find {field} {search string} : Displays all components with the given search string in its field\n\n"
@@ -203,15 +202,15 @@ parseInput(std::string input)
         }
         else if ( command == "list" ) {
             text = 
-                "\n=== LIST ===\n"
+                "\n*=== LIST ===*\n"
                 "Displays specified element libraries.\n\n"
-                "=== USAGE ===\n"
+                "*=== USAGE ===*\n"
                 "- List all : Display all available element libraries and their components/subcomponents\n"
                 "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
                 "'element' - Element Library\n"
                 "'type' - Type of Component/Subcomponent\n"
                 "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                "=== EXAMPLES ===\n"
+                "*=== EXAMPLES ===*\n"
                 "list coreTestElement\n"
                 "list sst.linear\n"
                 "list ariel miranda\n"
@@ -219,16 +218,16 @@ parseInput(std::string input)
         }
         else if ( command == "find" ) {
             text = 
-                "\n=== FIND ===\n"
+                "\n*=== FIND ===*\n"
                 "Search for text within component/subcomponent fields. "
                 "Displays all loaded components/subcomponents with the specified text.\n"
                 "Currently only supports searching within Description, ELI Version, Compile Date, and Category.\n\n"
-                "=== USAGE ===\n"
+                "*=== USAGE ===*\n"
                 "- Find {field} [search term] \n\n"
                 "'field' - Component/subcomponent fields.\n"
                 "Valid keywords - [Description, Version, Compiledate, Category] (case-insensitive)\n"
                 "Search term can be multiple words, but is case-sensitive\n\n"
-                "=== EXAMPLES ===\n"
+                "*=== EXAMPLES ===*\n"
                 "find Description test\n"
                 "find compiledate Oct 17\n"
                 "find category UNCATEGORIZED\n";
@@ -250,6 +249,11 @@ parseInput(std::string input)
         }
         else if ( command == "find" ) {
             text = findLibraryInfo(args);
+
+            // Clear Library Info text of highlight characters
+            for ( auto& library : g_libInfoArray ) {
+                library.clearHighlights();
+            }
         }
 
         // Handle errors from getting text from library info
@@ -277,13 +281,14 @@ addLibFilter(std::string libFilter, std::string componentFilter = "")
     return 1;
 }
 
+// 'List' command
 std::string
 listLibraryInfo(std::list<std::string> args)
 {
     std::stringstream outputStream;
 
     if ( args == std::list<std::string> { "all" } ) {
-        outputStream << "\n-Displaying All Libraries-";
+        outputStream << "\n*-Displaying All Libraries-*";
         for ( auto& library : g_libInfoArray ) {
             library.resetFilters(true);
         }
@@ -293,7 +298,7 @@ listLibraryInfo(std::list<std::string> args)
             library.resetFilters(false);
         }
 
-        outputStream << "\n-Displaying:";
+        outputStream << "\n*-Displaying:";
         for ( std::string arg : args ) {
             outputStream << " " + arg;
             std::string library   = "";
@@ -312,7 +317,7 @@ listLibraryInfo(std::list<std::string> args)
                 return "ERR";
             }
         }
-        outputStream << "-";
+        outputStream << "-*\n";
     }
 
     for ( auto& library : g_libInfoArray ) {
@@ -322,14 +327,14 @@ listLibraryInfo(std::list<std::string> args)
     return outputStream.str();
 }
 
+// 'Find' command
 std::string
 findLibraryInfo(std::list<std::string> args)
 {
     std::stringstream outputStream;
 
-    // Error handling
-    if ( args.size() < 2 ) {
-        return "ERR";
+    if ( args.size() == 1 ) {
+        return "Missing search term -- See 'find' documentation to see usage.";
     }
 
     std::string inputTag = args.front();
@@ -344,7 +349,9 @@ findLibraryInfo(std::list<std::string> args)
         args.pop_front();
         std::string searchTerm = "";
         for ( std::string arg : args ) {
-            if ( arg == args.back() ) { searchTerm += arg; }
+            if ( arg == args.back() ) { 
+                searchTerm += arg; 
+            }
             else {
                 searchTerm += arg + " ";
             }
@@ -402,21 +409,36 @@ getClosestTerm(std::string source, std::list<std::string> dict) {
     return closest;
 }
 
-// For Commands
+// Handle misspelled commands
 std::string 
 getErrorText(std::string command) {
     std::list<std::string> dict = {"help", "list", "find"};
 
     std::string term = getClosestTerm(command, dict);
 
-    return "Invalid command " + command + " -- Did you mean '" + term + "'?";
+    return "Invalid command '" + command + "' -- Did you mean '" + term + "'?";
 }
 
-// For Library names
+// Handle misspelled Libraries or search terms
 std::string 
-getErrorText(std::string, std::list<std::string>) {
+getErrorText(std::string command, std::list<std::string> args) {
+    if ( command == "find" ) {
+        std::list<std::string> dict;
+        for(auto const& tag : g_searchData.componentTags) {
+            dict.push_back(tag.first);
+        }
+        std::string term = getClosestTerm(args.front(), dict);
 
-    return "Invalid arguments";
+        return "Invalid search term '" + args.front() + "'-- Did you mean '" + term + "'?";
+    }
+    else {
+        std::string term = "";
+        for ( auto& arg : args ) {
+            //std::string term += getClosestTerm(arg, dict) + " ";
+        }
+
+        return "Invalid library name(s) ";
+    }
 }
 
 
@@ -778,19 +800,35 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
     for ( auto& pair : m_components ) {
         for ( auto& component : pair.second ) {
             std::string searchString = component.infoMap[tag];
-            size_t      found        = searchString.find(searchTerm);
+            size_t      foundIdx        = searchString.find(searchTerm);
 
             // If term is found, set Library to show and add component to filters
-            if ( found != std::string::npos ) {
+            if ( foundIdx != std::string::npos ) {
                 m_libraryFilter = true;
                 m_componentFilters.push_back(component.componentName);
                 count++;
+
+                //Highlight the found text
+                component.infoMap[tag].insert(foundIdx, "^");
+                component.infoMap[tag].insert(foundIdx + searchTerm.length() + 1, "^");
             }
         }
     }
 
-    outputStream << "-Found " << count
-                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag.substr(6) + "'-\n";
+    outputStream << "\n*-Found " << count
+                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag.substr(6) + "'-*\n";
+}
+
+void
+SSTLibraryInfo::clearHighlights() {
+    for ( auto& pair : m_components ) {
+        for ( auto& component : pair.second ) {
+            for ( auto& info : component.infoMap ) {
+                std::string* infoStr = &info.second;
+                infoStr->erase(remove(infoStr->begin(), infoStr->end(), '^'), infoStr->end());
+            }
+        }
+    }
 }
 
 template <class BaseType>
@@ -920,7 +958,6 @@ void
 InteractiveWindow::start()
 {
     g_textPos      = 0;
-    g_popupEnabled = false;
 
     initscr();
     cbreak();
@@ -946,7 +983,6 @@ InteractiveWindow::getInput()
     while ( true ) {
         int c = wgetch(console);
 
-        // Parse entered text
         if ( c == '\n' ) {
             if ( input != "" ) {
                 g_prevInput.push_front(input);
@@ -959,10 +995,6 @@ InteractiveWindow::getInput()
                 entryIdx = -1;
             }
         }
-        // Autofill Box
-        // else if ( c == '\t' ) {
-        //     g_window.toggleAutofillBox();
-        // }
         // Resizing the window
         else if ( c == KEY_RESIZE ) {
             g_window.draw();
@@ -978,21 +1010,15 @@ InteractiveWindow::getInput()
         }
         // Scrolling
         else if ( c == KEY_UP ) {
-            if ( g_popupEnabled ) {}
-            else {
-                if ( g_textPos > 0 ) {
-                    g_textPos -= 1;
-                    g_window.printInfo();
-                }
+            if ( g_textPos > 0 ) {
+                g_textPos -= 1;
+                g_window.printInfo();
             }
         }
         else if ( c == KEY_DOWN ) {
-            if ( g_popupEnabled ) {}
-            else {
-                if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES + 3 ) {
-                    g_textPos += 1;
-                    g_window.printInfo();
-                }
+            if ( (int)g_textPos < (int)g_infoText.size() - (int)LINES + 3 ) {
+                g_textPos += 1;
+                g_window.printInfo();
             }
         }
         // Cycle through previous commands
@@ -1056,28 +1082,6 @@ InteractiveWindow::draw(bool drawConsole)
 }
 
 void
-InteractiveWindow::toggleAutofillBox()
-{
-    // Toggle flag
-    g_popupEnabled = !g_popupEnabled;
-
-    if ( g_popupEnabled ) {
-        int height  = int(LINES / 3);
-        int width   = int(COLS / 6);
-        int starty  = LINES - height - 3;
-        int startx  = getcurx(console) + 1;
-        autofillBox = newwin(height, width, starty, startx);
-        box(autofillBox, 0, 0);
-        wrefresh(autofillBox);
-    }
-    else {
-        werase(autofillBox);
-        draw(false);
-        printInfo();
-    }
-}
-
-void
 InteractiveWindow::printInfo()
 {
     unsigned int posMax =
@@ -1088,7 +1092,30 @@ InteractiveWindow::printInfo()
         infoString += g_infoText[i];
     }
 
-    wprintw(info, infoString.c_str());
+    bool bold = false;
+    bool highlight = false;
+    for ( auto& c : infoString) {
+        if ( c == '*' && !bold) {
+            wattron(info, A_BOLD);
+            bold = true;
+        }
+        else if ( c == '*' && bold ) {
+            wattroff(info, A_BOLD);
+            bold = false;
+        }
+        else if ( c == '^' && !highlight ) {
+            wattron(info, A_STANDOUT);
+            highlight = true;
+        }
+        else if ( c == '^' && highlight ) {
+            wattroff(info, A_STANDOUT);
+            highlight = false;
+        }
+        else {
+            wprintw(info, "%c", c);
+        }
+
+    }
     wrefresh(info);
     wrefresh(console); // moves the cursor back into the console window
     wmove(console, 1, 1);
