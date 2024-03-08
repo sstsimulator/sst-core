@@ -32,4 +32,4 @@ EXTRA_DIST = \
 
 include tests/Makefile.inc
 
-bin_SCRIPTS = scripts/sst-snippets.py
+dist_bin_SCRIPTS = scripts/sst-snippets.py
