@@ -20,10 +20,6 @@ AC_DEFUN([SST_CHECK_CURSES],
     [AS_IF([test -n "$with_curses"],
         [AC_PATH_PROGS([NCURSES_CONFIG_EXE], ["ncurses6-config" "ncurses5.4-config" "ncurses5-config"], ["no"], ["$with_curses/bin"])],
         [AC_PATH_PROGS([NCURSES_CONFIG_EXE], ["ncurses6-config" "ncurses5.4-config" "ncurses5-config"], ["no"])])])
-  AS_IF([test $NCURSES_CONFIG_EXE = "no"],
-    [AS_IF([test -n "$with_curses"],
-        [AC_PATH_PROGS([NCURSES_CONFIG_EXE], ["ncurses6-config"], ["no"], ["$with_curses/bin"])],
-        [AC_PATH_PROGS([NCURSES_CONFIG_EXE], ["ncurses6-config"], ["no"])])])
 
   dnl don't continue if ncursesN-config can't be found rather than look for the
   dnl specific libraries
