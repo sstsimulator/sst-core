@@ -31,3 +31,5 @@ EXTRA_DIST = \
 	VERSION.md
 
 include tests/Makefile.inc
+
+dist_bin_SCRIPTS = scripts/sst-snippets.py
