@@ -243,6 +243,13 @@ if(Threads_FOUND)
   target_link_libraries(sstsim.x PRIVATE Threads::Threads)
 endif()
 
+if(CURSES_FOUND)
+  target_link_libraries(sstinfo.x PRIVATE ${CURSES_LIBRARIES})
+  # Before means no chance of interfering with a system curses if a
+  # user-provided one was specified.
+  target_include_directories(sstinfo.x BEFORE PRIVATE ${CURSES_INCLUDE_DIRS})
+endif()
+
 add_executable(sst bootsst.cc)
 target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib sst-config-lib)
 

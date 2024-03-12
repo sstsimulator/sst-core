@@ -42,6 +42,10 @@ if(ZLIB_FOUND)
   set(HAVE_LIBZ ON)
 endif(ZLIB_FOUND)
 
+if(CURSES_FOUND)
+  set(HAVE_CURSES ON)
+endif(CURSES_FOUND)
+
 check_include_file(execinfo.h HAVE_EXECINFO_H)
 check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
 check_include_file(mach/mach_time.h HAVE_MACH_MACH_TIME_H)
