@@ -1,0 +1,21 @@
+---
+name: ci
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  cancel-in-progress: true
+
+jobs:
+  prechecks:
+    uses: ./.github/workflows/pre-commit.yml
+  all-prechecks:
+    needs: [prechecks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: "true"
