@@ -160,7 +160,7 @@ main(int argc, char* argv[])
     return 0;
 }
 
-void
+inline void
 convertToLower(std::string input)
 {
     transform(input.begin(), input.end(), input.begin(), ::tolower);
@@ -272,11 +272,12 @@ addLibFilter(std::string libFilter, std::string componentFilter = "")
         if ( library.getLibraryName() == libFilter ) {
             library.setLibraryFilter(true);
 
-            if ( componentFilter != "" ) { library.setComponentFilter(componentFilter); }
+            if ( componentFilter != "" ) {
+                return library.setComponentFilter(componentFilter);   
+            }
             return 0;
         }
     }
-
     // Error - library not found
     return 1;
 }
@@ -312,7 +313,7 @@ listLibraryInfo(std::list<std::string> args)
                 component = arg.substr(split + 1);
             }
 
-            // Check for invalid input
+            // Check for invalid library name
             if ( addLibFilter(library, component) ) {
                 return "ERR";
             }
@@ -432,12 +433,68 @@ getErrorText(std::string command, std::list<std::string> args) {
         return "Invalid search term '" + args.front() + "'-- Did you mean '" + term + "'?";
     }
     else {
-        std::string term = "";
-        for ( auto& arg : args ) {
-            //std::string term += getClosestTerm(arg, dict) + " ";
-        }
+        std::string output = "Invalid Library input:\n\n" ;
 
-        return "Invalid library name(s) ";
+        // Find error distances for every library entered
+        for ( auto& arg : args ) {
+            std::string library;
+            std::string component = "";
+
+            size_t split = arg.find('.');
+            if ( split == std::string::npos ) { library = arg; }
+            else {
+                library   = arg.substr(0, split);
+                component = arg.substr(split + 1);
+            }
+
+            // Build search dictionaries
+            std::list<std::string> library_dict;
+            std::list<std::string> component_dict;
+            for ( auto& lib : g_libInfoArray ) {
+                library_dict.push_back(lib.getLibraryName());
+
+                if ( component != "" ) {
+                    for ( auto& pair : lib.getComponentInfo()) {
+                        for ( auto& comp : pair.second ) {
+                            component_dict.push_back(comp.componentName);
+                        }
+                    }
+                }
+            }
+
+            // Find closest term for all Library entries
+            std::string closest_lib = getClosestTerm(library, library_dict);
+            std::string closest_comp;
+            if ( component != "" ) { 
+                closest_comp = getClosestTerm(component, component_dict); 
+
+                if ( library != closest_lib ) {
+                    if ( component != closest_comp ) { 
+                        output += "^" + library + "." + component + "^ --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
+                    }
+                    else {
+                        output += "^" + library + "^." + component + "^ --- Did you mean '" + closest_lib + "'?\n";
+                    }
+                }
+                else {
+                    if ( component != closest_comp ) { 
+                        output += library + ".^" + component + "^ --- Did you mean '" + closest_comp + "'?\n";
+                    }
+                    else {
+                        output += arg + "\n";
+                    }
+                }
+            }
+            else {
+                if ( library != closest_lib ) {
+                    output += "^" + library + "^ --- Did you mean '" + closest_lib + "'?\n";
+                }
+                else {
+                    output += arg + "\n";
+                }
+            }
+        }
+        return output;
     }
 }
 
