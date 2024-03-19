@@ -904,7 +904,7 @@ def testing_parse_stat(line):
         Returns:
             (list) list of [component, sum, sumSq, count, min, max] or 'None' if not a statistic
     """
-    cons_accum = re.compile(' ([\w.]+)\.(\w+) : Accumulator : Sum.(\w+) = ([\d.]+); SumSQ.\w+ = ([\d.]+); Count.\w+ = ([\d.]+); Min.\w+ = ([\d.]+); Max.\w+ = ([\d.]+);')
+    cons_accum = re.compile(r' ([\w.]+)\.(\w+) : Accumulator : Sum.(\w+) = ([\d.]+); SumSQ.\w+ = ([\d.]+); Count.\w+ = ([\d.]+); Min.\w+ = ([\d.]+); Max.\w+ = ([\d.]+);')
     m = cons_accum.match(line)
     if m == None:
         return None
