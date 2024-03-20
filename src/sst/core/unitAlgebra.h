@@ -70,8 +70,8 @@ public:
 
     // Non-static data members and functions
     /** Create a new instantiation of a Units with a base unit string, and multiplier
-     * \param units String representing the new unit
-     * \param multiplier Value by which to multiply to get to this unit
+     * @param units String representing the new unit
+     * @param multiplier Value by which to multiply to get to this unit
      */
     Units(const std::string& units, sst_big_num& multiplier);
     Units() {}
@@ -120,8 +120,8 @@ public:
     /**
      Create a new UnitAlgebra instance, and pre-populate with a parsed value.
 
-     \param val  Value to parse.  It is of the following format:
-     \code
+     @param val  Value to parse.  It is of the following format:
+     @code
      val        := NUMBER( )?UNITS
      NUMBER     := (-)?[0-9]+(.[0-9]+)?
      UNITS      := UNITGROUP(/UNITGROUP)
@@ -130,7 +130,7 @@ public:
      SIPREFIX   := {a,f,p,n,u,m,[kKMGTPE]i?}
      BASEUNIT   := {s,B,b,events}
      COMPUNIT   := {Hz,hz,Bps,bps,event}
-     \endcode
+     @endcode
      */
     UnitAlgebra(const std::string& val);
     virtual ~UnitAlgebra();
@@ -139,21 +139,23 @@ public:
     UnitAlgebra(const UnitAlgebra&) = default;
 
     /** Print to an ostream the value
-     * \param precision Number of digits to print. Default is 6. <= 0 is full precision.
+     * @param stream Output stream
+     * @param precision Number of digits to print. Default is 6. <= 0 is full precision.
      */
     void        print(std::ostream& stream, int32_t precision = 6);
     /** Print to an ostream the value
      * Formats the number using SI-prefixes
-     * \param precision Number of digits to print. Default is 6. <= 0 is full precision.
+     * @param stream Output stream
+     * @param precision Number of digits to print. Default is 6. <= 0 is full precision.
      */
     void        printWithBestSI(std::ostream& stream, int32_t precision = 6);
     /** Return a string representation of this value
-     * \param precision Number of digits to print. Default is 6. <= 0 is full precision.
+     * @param precision Number of digits to print. Default is 6. <= 0 is full precision.
      */
     std::string toString(int32_t precision = 6) const;
     /** Return a string representation of this value
      * Formats the number using SI-prefixes
-     * \param precision Number of digits to print. Default is 6. <= 0 is full precision.
+     * @param precision Number of digits to print. Default is 6. <= 0 is full precision.
      */
     std::string toStringBestSI(int32_t precision = 6) const;
 
@@ -220,7 +222,7 @@ public:
     bool        hasUnits(const std::string& u) const;
     /** Return the raw value */
     sst_big_num getValue() const { return value; }
-    /** Return the rounded value as a 64bit integer */
+    /** @return Rounded value as a 64bit integer */
     int64_t     getRoundedValue() const;
     double      getDoubleValue() const;
     bool        isValueZero() const;
@@ -252,6 +254,57 @@ public:
         }
     }
     ImplementSerializable(SST::UnitAlgebra)
+
+public:
+    /** Base exception for all exception classes in UnitAlgebra
+     *
+     * This exception inherits from std::logic_error, as all exceptions
+     * thrown in UnitAlgebra are considered configuration errors occurring
+     * prior to simulation start, rather than runtime errors.
+     */
+    class UnitAlgebraException : public std::logic_error
+    {
+    public:
+        /**
+         * @param msg exception message displayed as-is without modification
+         */
+        UnitAlgebraException(const std::string& msg);
+    };
+
+    /** Exception for when units are not recognized or are invalid
+     */
+    class InvalidUnitType : public UnitAlgebraException
+    {
+    public:
+        /**
+         * @param type string containing invalid type
+         */
+        InvalidUnitType(const std::string& type);
+    };
+
+    /** Exception for when number couldn't be parsed
+     */
+    class InvalidNumberString : public UnitAlgebraException
+    {
+    public:
+        /**
+         * @param number string containing invalid number
+         */
+        InvalidNumberString(const std::string& number);
+    };
+
+    /** Exception for when attempting operations between objects that do not have matching base units
+     */
+    class NonMatchingUnits : public UnitAlgebraException
+    {
+    public:
+        /**
+         * @param lhs units for UnitAlgebra on left-hand side of operation
+         * @param rhs units for UnitAlgebra on right-hand side of operation
+         * @param operation representation of operation attempted between units
+         */
+        NonMatchingUnits(const std::string& lhs, const std::string& rhs, const std::string& operation);
+    };
 };
 
 // template <typename T>

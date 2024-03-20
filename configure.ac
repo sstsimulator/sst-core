@@ -65,7 +65,6 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
 SST_CHECK_CURSES()
-dnl AC_MSG_ERROR([Could not find curses, this is required for utility sst-info to build])])
 SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
@@ -228,6 +227,7 @@ echo "Configuration Information (Dependencies):"
 echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
+
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : Yes\n" "HDF5 Support"
 else
@@ -240,9 +240,9 @@ else
 fi
 
 if test "x$sst_check_curses_happy" = "xyes" ; then
-    printf "%38s : Yes\n" "curses library"
+    printf "%38s : %s %s\n" "curses library" "$CURSES_LIBS"
 else
-    printf "%38s : No\n" "curses library"
+    printf "%38s : Not found\n" "curses library"
 fi
 
 echo "-------------------------------------------------------"

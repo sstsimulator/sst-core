@@ -96,7 +96,7 @@ ua4 = ua3
 ua3_id_before = id(ua3)
 ua3 /= ua2
 if id(ua3) == ua3_id_before:
-    print("ERROR: \= operator returned the same object")
+    print("ERROR: /= operator returned the same object")
 print(ua3.bestSI())
 print(ua4.bestSI())
 
@@ -221,13 +221,28 @@ if not correct_throw:
     print("ERROR: did not get exception when checking not equals against invalid operand type as first argument")
 
 
-# Once expections are enabled in UnitAlgebra (instead of the fatal()
-# that is currently called), we need to test doing math and comparison
-# operations on this with mismatch units to make sure that they throw
-# exceptions in the proper instances (i.e. add, sub and compares other
-# than == and != will throw an exception if the units don't match.
+# Test doing math and comparison operations on this with mismatch units to make
+# sure that they throw exceptions in the proper instances (i.e. add, sub and
+# compares other than == and != will throw an exception if the units don't match.
+try:
+    UnitAlgebra("1 m")
+except ValueError as e:
+    assert str(e) == "Invalid unit type: "
 
-
+ua4 = UnitAlgebra("1s")
+ua5 = UnitAlgebra("4 events")
+try:
+    ua1 + ua4
+except TypeError as e:
+    assert str(e) == ""
+try:
+    ua1 + ua5
+except TypeError as e:
+    assert str(e) == "Attempting to add UnitAlgebra values with non-matching units: s, events"
+try:
+    ua1 < ua5
+except TypeError as e:
+    assert str(e) == "Attempting to compare UnitAlgebra values with non-matching units: s, events"
 
 #Check conversions to int (in which case it rounds to nearest integer)
 #and floats.  There are two ways to do it:
