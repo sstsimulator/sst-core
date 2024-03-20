@@ -16,6 +16,6 @@ NOTE: If you are reporting an issue for a specific element library, please submi
 
 3 - What Operating system(s) and versions 
 
-4 - What version of external libraries (MPI, etc.)
+4 - What versions of external libraries (MPI, etc.)
 
 5 - Provide sha1 of all relevant SST repositories (sst-core, sst-elements, etc)

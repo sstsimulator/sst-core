@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 New help request for SST Core
-NOTE: If you are requesting help for a specific element library, please submit request in ssts-element repository.
+NOTE: If you are requesting help for a specific element library, please submit request in the sst-element repository.
 ----------------------
 1 - Detailed description of issue needing support
 
