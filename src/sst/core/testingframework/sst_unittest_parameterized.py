@@ -55,9 +55,6 @@ except ImportError:
         pass
 
 
-# Python 3 doesn't have an InstanceType, so just use a dummy type.
-class InstanceType():
-    pass
 lzip = lambda *a: list(zip(*a))
 def make_method(func, instance, type):
     if instance is None:
@@ -353,16 +350,6 @@ class parameterized(object):
         @wraps(test_func)
         def wrapper(test_self=None):
             test_cls = test_self and type(test_self)
-            if test_self is not None:
-                if issubclass(test_cls, InstanceType):
-                    raise TypeError((
-                        "@parameterized can't be used with old-style classes, but "
-                        "%r has an old-style class. Consider using a new-style "
-                        "class, or '@parameterized.expand' "
-                        "(see http://stackoverflow.com/q/54867/71522 for more "
-                        "information on old-style classes)."
-                    ) %(test_self, ))
-
             original_doc = wrapper.__doc__
             for num, args in enumerate(wrapper.parameterized_input):
                 p = param.from_decorator(args)
