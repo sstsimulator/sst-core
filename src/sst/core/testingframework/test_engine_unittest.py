@@ -22,10 +22,6 @@ import threading
 import time
 from datetime import datetime
 
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-PY3_4_Plus = sys.version_info[1] >= 4
-
 ################################################################################
 
 def check_module_conditional_import(module_name):
@@ -39,22 +35,9 @@ def check_module_conditional_import(module_name):
         Returns:
             True if module is loadable
     """
-    if PY2:
-        import imp
-        try:
-            imp.find_module(module_name)
-            return True
-        except ImportError:
-            return False
-    else:
-        import importlib
-        import importlib.util
-        if not PY3_4_Plus:
-            avail = importlib.find_loader(module_name)
-            return avail is not None
-        else:
-            avail = importlib.util.find_spec(module_name)
-            return avail is not None
+    import importlib.util
+    avail = importlib.util.find_spec(module_name)
+    return avail is not None
 
 ################################################################################
 
@@ -69,21 +52,11 @@ pygments_loaded = False
 if check_module_conditional_import('pygments'):
     import pygments
     from pygments import formatters, highlight
+    from pygments.lexers import PythonTracebackLexer as Lexer
     pygments_loaded = True
-    try:
-        # Python 2
-        from pygments.lexers import PythonTracebackLexer as Lexer
-    except NameError:
-        # Python 3
-        from pygments.lexers import Python3TracebackLexer as Lexer
 
-# Queue module changes name between Py2->Py3
-if PY3:
-    import queue
-    Queue = queue.Queue
-else:
-    import Queue
-    Queue = Queue.Queue
+import queue
+Queue = queue.Queue
 
 # Try to import testtools (this may not be installed on system)
 if check_module_conditional_import('testtools'):
@@ -102,11 +75,6 @@ from sst_unittest_support import *
 from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestCase
-
-if testing_check_is_py_2():
-    text_type = unicode
-else:
-    text_type = str
 
 ################################################################################
 
@@ -131,14 +99,14 @@ class SSTTextTestRunner(unittest.TextTestRunner):
     if blessings_loaded:
         _terminal = Terminal()
         colours = {
-            None: text_type,
+            None: str,
             'failed': _terminal.bold_red,
             'passed': _terminal.green,
             'notes': _terminal.bold_yellow,
         }
     else:
         colours = {
-            None: text_type
+            None: str
         }
 
     def __init__(self, stream=sys.stderr, descriptions=True, verbosity=1,
@@ -275,7 +243,7 @@ class SSTTextTestResult(unittest.TestResult):
     if blessings_loaded:
         _terminal = Terminal()
         colours = {
-            None: text_type,
+            None: str,
             'error': _terminal.bold_yellow,
             'expected': _terminal.green,
             'fail': _terminal.bold_red,
@@ -286,7 +254,7 @@ class SSTTextTestResult(unittest.TestResult):
         }
     else:
         colours = {
-            None: text_type
+            None: str
         }
 
     if pygments_loaded:
