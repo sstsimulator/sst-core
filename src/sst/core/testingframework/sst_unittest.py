@@ -38,13 +38,6 @@ from test_engine_junit import JUnitTestSuite
 from test_engine_junit import junit_to_xml_report_file
 #from test_engine_junit import junit_to_xml_report_string
 
-################################################################################
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
-################################################################################
-
 class SSTTestCase(unittest.TestCase):
     """ This class is main SSTTestCase class for the SST Testing Frameworks
 

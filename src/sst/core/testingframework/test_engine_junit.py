@@ -48,28 +48,9 @@ import re
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-#from six import u, iteritems, PY2
-# The orig code uses 3rd party module "six".
-# We dont want any external modules, so
-# here are equivalent functions
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-if PY3:
-    unichr = chr
-    def _iteritems(_d, **kw):
-        """ Py3 iteritems() """
-        return iter(_d.items(**kw))
-    def _u(_s):
-        """ Py3 u() """
-        return _s
-else:
-    unichr
-    def _iteritems(_d, **kw):
-        """ Py2 iteritems() """
-        return _d.iteritems(**kw)
-    def _u(_s):
-        """ Py2 u() """
-        return unicode(_s.replace(r'\\', r'\\\\'), "unicode_escape")
+def _iteritems(_d, **kw):
+    """ Py3 iteritems() """
+    return iter(_d.items(**kw))
 
 ################################################################################
 
@@ -443,19 +424,7 @@ def _junit_decode(var, encoding):
     """
     If not already unicode, decode it.
     """
-    if PY2:
-        if isinstance(var, unicode):  # noqa: F821
-            ret = var
-        elif isinstance(var, str):
-            if encoding:
-                ret = var.decode(encoding)
-            else:
-                ret = unicode(var)  # noqa: F821
-        else:
-            ret = unicode(var)  # noqa: F821
-    else:
-        ret = str(var)
-    return ret
+    return str(var)
 
 ####
 
@@ -492,8 +461,8 @@ def _junit_clean_illegal_xml_chars(string_to_clean):
         (0x10FFFE, 0x10FFFF),
     ]
 
-    illegal_ranges = ["%s-%s" % (unichr(low), unichr(high)) for \
+    illegal_ranges = ["%s-%s" % (chr(low), chr(high)) for \
         (low, high) in illegal_unichrs if low < sys.maxunicode]
 
-    illegal_xml_re = re.compile(_u("[%s]") % _u("").join(illegal_ranges))
+    illegal_xml_re = re.compile("[%s]" % "".join(illegal_ranges))
     return illegal_xml_re.sub("", string_to_clean)

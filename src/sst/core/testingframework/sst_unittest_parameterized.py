@@ -54,38 +54,18 @@ except ImportError:
     class SkipTest(Exception):
         pass
 
-PY3 = sys.version_info[0] == 3
-PY2 = sys.version_info[0] == 2
 
-
-if PY3:
-    # Python 3 doesn't have an InstanceType, so just use a dummy type.
-    class InstanceType():
-        pass
-    lzip = lambda *a: list(zip(*a))
-    text_type = str
-    string_types = str,
-    bytes_type = bytes
-    def make_method(func, instance, type):
-        if instance is None:
-            return func
-        return MethodType(func, instance)
-else:
-    from types import InstanceType
-    lzip = zip
-    text_type = unicode
-    bytes_type = str
-    string_types = basestring,
-    def make_method(func, instance, type):
-        return MethodType(func, instance, type)
+lzip = lambda *a: list(zip(*a))
+def make_method(func, instance, type):
+    if instance is None:
+        return func
+    return MethodType(func, instance)
 
 
 CompatArgSpec = namedtuple("CompatArgSpec", "args varargs keywords defaults")
 
 
 def getargspec(func):
-    if PY2:
-        return CompatArgSpec(*inspect.getargspec(func))
     args = inspect.getfullargspec(func)
     if args.kwonlyargs:
         raise TypeError((
@@ -170,7 +150,7 @@ class param(_param):
             """
         if isinstance(args, param):
             return args
-        elif isinstance(args, string_types):
+        elif isinstance(args, str):
             args = (args, )
         try:
             return cls(*args)
@@ -256,11 +236,11 @@ def short_repr(x, n=64):
     """
 
     x_repr = repr(x)
-    if isinstance(x_repr, bytes_type):
+    if isinstance(x_repr, bytes):
         try:
-            x_repr = text_type(x_repr, "utf-8")
+            x_repr = str(x_repr, encoding="utf-8")
         except UnicodeDecodeError:
-            x_repr = text_type(x_repr, "latin1")
+            x_repr = str(x_repr, encoding="latin1")
     if len(x_repr) > n:
         x_repr = x_repr[:n//2] + "..." + x_repr[len(x_repr) - n//2:]
     return x_repr
@@ -291,7 +271,7 @@ def default_name_func(func, num, p):
     base_name = func.__name__
     name_suffix = "_%s" %(num, )
 
-    if len(p.args) > 0 and isinstance(p.args[0], string_types):
+    if len(p.args) > 0 and isinstance(p.args[0], str):
         name_suffix += "_" + parameterized.to_safe_name(p.args[0])
     return base_name + name_suffix
 
@@ -370,16 +350,6 @@ class parameterized(object):
         @wraps(test_func)
         def wrapper(test_self=None):
             test_cls = test_self and type(test_self)
-            if test_self is not None:
-                if issubclass(test_cls, InstanceType):
-                    raise TypeError((
-                        "@parameterized can't be used with old-style classes, but "
-                        "%r has an old-style class. Consider using a new-style "
-                        "class, or '@parameterized.expand' "
-                        "(see http://stackoverflow.com/q/54867/71522 for more "
-                        "information on old-style classes)."
-                    ) %(test_self, ))
-
             original_doc = wrapper.__doc__
             for num, args in enumerate(wrapper.parameterized_input):
                 p = param.from_decorator(args)
@@ -427,10 +397,7 @@ class parameterized(object):
             # sure that the `self` in the method is properly shared with the
             # `self` used in `setUp` and `tearDown`. But only there. Everyone
             # else needs a bound method.
-            func_self = (
-                None if PY2 and detect_runner() == "nose" else
-                test_self
-            )
+            func_self = test_self
             nose_func = make_method(nose_func, func_self, type(test_self))
         return unbound_func, (nose_func, ) + p.args + (p.kwargs or {}, )
 
@@ -586,7 +553,7 @@ def parameterized_class(attrs, input_values=None, class_name_func=None, classnam
                 ...
     """
 
-    if isinstance(attrs, string_types):
+    if isinstance(attrs, str):
         attrs = [attrs]
 
     input_dicts = (
@@ -633,13 +600,9 @@ def get_class_name_suffix(params_dict):
     if "name" in params_dict:
         return parameterized.to_safe_name(params_dict["name"])
 
-    params_vals = (
-        params_dict.values() if PY3 else
-        (v for (_, v) in sorted(params_dict.items()))
-    )
     return parameterized.to_safe_name(next((
-        v for v in params_vals
-        if isinstance(v, string_types)
+        v for v in params_dict.values()
+        if isinstance(v, str)
     ), ""))
 
 
