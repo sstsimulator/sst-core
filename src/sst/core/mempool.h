@@ -30,10 +30,14 @@ protected:
     MemPoolItem() {}
 
 public:
-    /** Allocates memory from a memory pool for a new Activity */
+    /** Allocates memory from a memory pool for a new Activity
+     * @param size Pool size
+     */
     void* operator new(std::size_t size) noexcept;
 
-    /** Returns memory for this Activity to the appropriate memory pool */
+    /** Returns memory for this Activity to the appropriate memory pool
+     * @param ptr Pointer to a specific memory pool item
+     */
     void operator delete(void* ptr);
 
     /** Get a string represenation of the entry.  The default version

@@ -16,8 +16,24 @@
 #include <unistd.h>
 
 extern char** environ;
-
-void update_env_var(const char* name, const int verbose, char* argv[], const int argc);
+/**
+ * @param name Host environment
+ * @param verbose Logger output setting
+ * @param argv Commands for executing SST
+ * @param argc Unused
+ */
+void          update_env_var(const char* name, const int verbose, char* argv[], const int argc);
 // void boot_sst_configure_env(const SST::Config& cfg);
-void boot_sst_configure_env(const std::string& path);
-void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc);
+/**
+ * Updates the LD and DYLD Library paths and sets the current path for the executable.
+ * @param path Current load path
+ */
+void          boot_sst_configure_env(const std::string& path);
+/**
+ * Checks and sets the install path and environment variable of SST. Handles errors in this context.
+ * @param binary Update to the real binary path
+ * @param verbose Logger output setting
+ * @param argv Commands for executing SST
+ * @param argc Unused
+ */
+void          boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc);

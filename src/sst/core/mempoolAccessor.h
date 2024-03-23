@@ -23,31 +23,50 @@ namespace Core {
 class MemPoolAccessor
 {
 public:
-    // Gets the arena size for the specified pool size on the current
-    // thread.  If mempools aren't enabled, it will return 0.
+    /** Gets the arena size for the specified pool size on the current
+     * thread.  If mempools aren't enabled, it will return 0.
+     * @param size Pool size
+     * @return Arena size for a specific pool size
+     */
     static size_t getArenaSize(size_t size);
 
-    // Gets the number of arenas allocated for the specified pool size
-    // on the current thread.  If mempools aren't enabled, it will
-    // return 0.
+    /** Gets the number of arenas allocated for the specified pool size
+     * on the current thread.  If mempools aren't enabled, it will return 0.
+     * @param size Pool size
+     * @return Number of arenas allocated for a specific pool size
+     */
     static size_t getNumArenas(size_t size);
 
-    // Gets the total bytes used for the specified pool size on the
-    // current thread.  If mempools aren't enabled, it will return 0.
+    /** Gets the total bytes used for the specified pool size on the
+     * current thread.  If mempools aren't enabled, it will return 0.
+     * @param size Pool size
+     * @return Total bytes used for specific pool size
+     */
     static uint64_t getBytesMemUsedBy(size_t size);
 
-    // Gets the total mempool usage for the rank.  Returns both the
-    // bytes and the number of active entries.  Bytes and entries are
-    // added to the value passed into the function.  If mempools
-    // aren't enabled, then nothing will be counted.
+    /** Gets the total mempool usage for the rank. Bytes and entries are
+     * added to the value passed into the function.  If mempools
+     * aren't enabled, then nothing will be counted.
+     * @param bytes Holds the number of bytes used by MemPool
+     * @param active_entries Holds the number of active entries used by MemPool
+     */
     static void getMemPoolUsage(int64_t& bytes, int64_t& active_entries);
 
-    // Initialize the global mempool data structures
+    /** Initialize the global mempool data structures
+     * @param num_threads Number of threads available in the global memory pool
+     * @param cache_align Sets the cache alignment of the global memory pool. Default value is false
+     */
     static void initializeGlobalData(int num_threads, bool cache_align = false);
 
-    // Initialize the per thread mempool ata structures
+    /** Initialize the per thread mempool data structures
+     * @param thread Number of local threads
+     */
     static void initializeLocalData(int thread);
 
+    /** Outputs the remaining mempool items
+     * @param header Prefix message to output before any data
+     * @param out Object used to log any information, through stdout, sterr and/or sst debug file
+     */
     static void printUndeletedMemPoolItems(const std::string& header, Output& out);
 };
 

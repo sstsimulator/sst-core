@@ -142,10 +142,19 @@ private:
      */
     uint64_t share_flags;
 
+    /**
+     * @return True if parent ports are shared with the child
+     */
     bool sharesPorts() { return (share_flags & SHARE_PORTS) != 0; }
 
+    /**
+     * @return True if parent statistics are shared with with the child
+     */
     bool sharesStatistics() { return (share_flags & SHARE_STATS) != 0; }
 
+    /**
+     * @return True if parent insert statistics are shared with the child
+     */
     bool canInsertStatistics() { return (share_flags & INSERT_STATS) != 0; }
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
@@ -261,8 +270,16 @@ public:
 
     ComponentInfoMap() {}
 
+    /**
+     * Add component info to an unordered set
+     * @param info ComponentInfo
+     */
     void insert(ComponentInfo* info) { dataByID.insert(info); }
 
+    /**
+     * @param key Key used to find ComponentInfo from an unordered set storing this information
+     * @return Pointer to a ComponentInfo object, found by its key value
+     */
     ComponentInfo* getByID(const ComponentId_t key) const
     {
         ComponentInfo infoKey(COMPONENT_ID_MASK(key), "");
@@ -275,8 +292,14 @@ public:
         return *value;
     }
 
+    /**
+     * @return True if the unordered set storing ComponentInfo objects is empty
+     */
     bool empty() { return dataByID.empty(); }
 
+    /**
+     * Clear the unordered set storing ComponentInfo objects
+     */
     void clear()
     {
         for ( auto i : dataByID ) {

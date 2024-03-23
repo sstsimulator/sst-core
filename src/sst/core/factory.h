@@ -46,41 +46,41 @@ public:
     static Factory* getFactory() { return instance; }
 
     /** Get a list of allowed ports for a given component type.
-     * @param type - Name of component in lib.name format
+     * @param type Name of component in lib.name format
      * @return True if this is a valid portname
      */
     bool isPortNameValid(const std::string& type, const std::string& port_name);
 
     /** Get a list of allowed param keys for a given component type.
-     * @param type - Name of component in lib.name format
+     * @param type Name of component in lib.name format
      * @return True if this is a valid portname
      */
     const Params::KeySet_t& getParamNames(const std::string& type);
 
     /** Attempt to create a new Component instantiation
-     * @param id - The unique ID of the component instantiation
-     * @param componentname - The fully qualified elementlibname.componentname type of component
-     * @param params - The params to pass to the component's constructor
+     * @param id The unique ID of the component instantiation
+     * @param componentname The fully qualified elementlibname.componentname type of component
+     * @param params The params to pass to the component's constructor
      * @return Newly created component
      */
     Component* CreateComponent(ComponentId_t id, const std::string& componentname, Params& params);
 
     /** Ensure that an element library containing the required event is loaded
-     * @param eventname - The fully qualified elementlibname.eventname type
+     * @param eventname The fully qualified elementlibname.eventname type
      */
     void RequireEvent(const std::string& eventname);
 
     bool doesSubComponentExist(const std::string& type);
 
     /** Return partitioner function
-     * @param name - Fully qualified elementlibname.partitioner type name
+     * @param name Fully qualified elementlibname.partitioner type name
      */
     Partition::SSTPartitioner*
     CreatePartitioner(const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
     /**
        Check to see if a given element type is loadable with a particular API
-       @param name - Name of element to check in lib.name format
+       @param name Name of element to check in lib.name format
        @return True if loadable as the API specified as the template parameter
      */
     template <class Base>
@@ -135,8 +135,7 @@ public:
     /**
      * General function to create a given base class.
      *
-     * @param type
-     * @param params
+     * @param type Whole name of the library
      * @param args Constructor arguments
      */
     template <class Base, class... CtorArgs>
@@ -180,8 +179,8 @@ public:
      * If you don't need the allowed keys to be populated, just use
      * the Create() bunction.
      *
-     * @param type
-     * @param params
+     * @param type Whole name of the library
+     * @param params Parameter key storage
      * @param args Constructor arguments
      */
     template <class Base, class... CtorArgs>
@@ -216,12 +215,12 @@ public:
     }
 
     /** Instantiate a new Statistic
-     * @param comp - Owning component
-     * @param type - Fully qualified elementlibname.statisticname type
-     * @param statName - Name of the statistic
-     * @param statSubId - Name of the sub statistic
-     * @param params - Parameters to pass to the Statistics's constructor
-     * @param fieldType - Type of data stored in statistic
+     * @param comp Owning component
+     * @param type Fully qualified elementlibname.statisticname type
+     * @param statName Name of the statistic
+     * @param statSubId Name of the sub statistic
+     * @param params Parameters to pass to the Statistics's constructor
+     * @param fieldType Type of data stored in statistic
      */
     template <class T, class... Args>
     Statistics::Statistic<T>* CreateStatistic(
@@ -245,13 +244,13 @@ public:
     }
 
     /** Return Python Module creation function
-     * @param name - Fully qualified elementlibname.pythonModName type name
+     * @param name Fully qualified elementlibname.pythonModName type name
      */
     SSTElementPythonModule* getPythonModule(const std::string& name);
 
     /**
      * @brief hasLibrary Checks to see if library exists and can be loaded
-     * @param elemlib
+     * @param elemlib Name of the Element Library Database
      * @param err_os Stream to print error messages to
      * @return whether the library was found
      */
@@ -267,15 +266,15 @@ public:
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
 
     /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
-     * @param type - The name of the component/subcomponent
-     * @param slotName - The name of the SubComponentSlot
+     * @param type The name of the component/subcomponent
+     * @param slotName The name of the SubComponentSlot
      * @return True if the SubComponentSlot is defined in the component's ELI
      */
     bool DoesSubComponentSlotExist(const std::string& type, const std::string& slotName);
 
     /** Determine if a statistic is defined in a components ElementInfoStatistic
-     * @param type - The name of the component
-     * @param statisticName - The name of the statistic
+     * @param type The name of the component
+     * @param statisticName The name of the statistic
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
     bool DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
@@ -283,22 +282,22 @@ public:
     const std::vector<std::string>& GetValidStatistics(const std::string& compType);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
-     * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic
+     * @param componentname The name of the component
+     * @param statisticName The name of the statistic
      * @return The Enable Level of the statistic from the ElementInfoStatistic
      */
     uint8_t GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName);
 
     /** Get the units of a statistic defined in the component's ElementInfoStatistic
-     * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic
+     * @param componentname The name of the component
+     * @param statisticName The name of the statistic
      * @return The units string of the statistic from the ElementInfoStatistic
      */
     std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
 
     /** Get a list of allowed ports for a given component type.
-     * @param type - Type of component in lib.name format
-     * @param point = Profile point to check
+     * @param type Type of component in lib.name format
+     * @param point Profile point to check
      * @return True if this is a valid profile point
      */
     bool isProfilePointValid(const std::string& type, const std::string& point);

@@ -131,14 +131,28 @@ public:
     /**
        Controls whether the environment variables that SST sees are
        printed out
+       @return True if the environment option is enabled
     */
     bool print_env() const { return print_env_; }
 
+    /**
+     * @return True if the environment option is enabled
+     */
     bool no_env_config() const { return no_env_config_; }
 
+    /**
+     * @return Logger
+     */
     int verbose() const { return verbose_; }
 
+    /**
+     * @return Libarary path
+     */
     std::string libpath() const { return libpath_; }
+
+    /**
+     * @return Additional Library path
+     */
     std::string addLibPath() const { return addlibpath_; }
 
     std::string getLibPath(void) const;
