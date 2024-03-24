@@ -24,9 +24,6 @@ import shlex
 import ast
 import inspect
 
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
 import test_engine_globals
 
 ################################################################################
@@ -226,24 +223,18 @@ class OSCommandResult():
     def output(self):
         """ return the run output result """
         # Sometimes the output can be a unicode or a byte string - convert it
-        if PY3:
-            if type(self._run_output) is bytes:
-                self._run_output = self._run_output.decode(encoding='UTF-8')
-            return self._run_output
-        else:
-            return self._run_output.decode('utf-8')
+        if isinstance(self._run_output, bytes):
+            self._run_output = self._run_output.decode(encoding='UTF-8')
+        return self._run_output
 
 ####
 
     def error(self):
         """ return the run error output result """
         # Sometimes the output can be a unicode or a byte string - convert it
-        if PY3:
-            if type(self._run_error) is bytes:
-                self._run_error = self._run_error.decode(encoding='UTF-8')
-            return self._run_error
-        else:
-            return self._run_error.decode('utf-8')
+        if isinstance(self._run_error, bytes):
+            self._run_error = self._run_error.decode(encoding='UTF-8')
+        return self._run_error
 
 ####
 

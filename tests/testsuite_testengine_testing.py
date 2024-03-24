@@ -146,15 +146,7 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
         sourcedir = sstsimulator_conf_get_value_str("SSTCore", "sourcedir")
         log_forced("SSTCore SourceDir = {0}; Type = {1}".format(sourcedir, type(sourcedir)))
-        if testing_check_is_py_2():
-            if type(sourcedir) == str:
-                self.assertEqual(str, type(sourcedir))
-            elif type(sourcedir) == unicode:
-                self.assertEqual(unicode, type(sourcedir))
-            else:
-                self.assertTrue(False)
-        else:
-            self.assertEqual(str, type(sourcedir))
+        self.assertIsInstance(sourcedir, str)
 
     def test_support_functions_get_info_from_sstsimulator_conf_invalid_section_exception_success(self):
         # This should pass as we detect an expected exception due to invalid section
@@ -288,42 +280,18 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
         output = os_pwd(echo_out = False)
         log_forced("pwd = {0}".format(output))
-        if testing_check_is_py_2():
-            if type(output) == str:
-                self.assertEqual(str, type(output))
-            elif type(output) == unicode:
-                self.assertEqual(unicode, type(output))
-            else:
-                self.assertTrue(False)
-        else:
-            self.assertEqual(str, type(output))
+        self.assertIsInstance(output, str)
 
     def test_support_functions_test_os_ls_cmd_success(self):
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
         output = os_ls(self.get_testsuite_dir(), echo_out = False)
         log_forced("ls -lia =\n{0}".format(output))
-        if testing_check_is_py_2():
-            if type(output) == str:
-                self.assertEqual(str, type(output))
-            elif type(output) == unicode:
-                self.assertEqual(unicode, type(output))
-            else:
-                self.assertTrue(False)
-        else:
-            self.assertEqual(str, type(output))
+        self.assertIsInstance(output, str)
 
     def test_support_functions_test_os_cat_cmd_success(self):
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
         catfile = "{0}/{1}".format(self.get_testsuite_dir(), "testsuite_default_UnitAlgebra.py")
         output = os_cat(catfile, echo_out = False)
         log_forced("cat cmd output =\n{0}".format(output))
-        if testing_check_is_py_2():
-            if type(output) == str:
-                self.assertEqual(str, type(output))
-            elif type(output) == unicode:
-                self.assertEqual(unicode, type(output))
-            else:
-                self.assertTrue(False)
-        else:
-            self.assertEqual(str, type(output))
+        self.assertIsInstance(output, str)
 
