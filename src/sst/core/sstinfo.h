@@ -257,28 +257,6 @@ private:
     bool                                              m_libraryFilter = false;
     std::vector<std::string>                          m_componentFilters;
     std::string                                       m_name;
-
-    /** Trim whitespace from strings */
-    inline void 
-    _ltrim(std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
-        }));
-    }
-
-    inline void 
-    _rtrim(std::string &s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-            return !std::isspace(ch);
-        }).base(), s.end());
-    }
-
-    inline std::string
-    trim(std::string s) {
-        _ltrim(s);
-        _rtrim(s);
-        return s;
-    }
 };
 
 #ifdef HAVE_CURSES

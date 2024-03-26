@@ -86,6 +86,13 @@ retry:
     owner->LinkEndChild(comment);
 }
 
+/** Trim whitespace from strings */
+inline std::string
+trim(std::string s) {
+    s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
+    return s;
+}
+
 class OverallOutputter
 {
 public:
@@ -98,7 +105,8 @@ struct SearchableData
     const std::map<std::string, std::string> componentTags = { { "description", "      Description" },
                                                                { "version", "      ELI Version" },
                                                                { "compiledate", "      Compiled on" },
-                                                               { "category", "      Category" } };
+                                                               { "category", "      Category" },
+                                                               { "interface", "      Interface"} };
     // Can add more in the future
 } g_searchData;
 
@@ -160,10 +168,11 @@ main(int argc, char* argv[])
     return 0;
 }
 
-inline void
+std::string
 convertToLower(std::string input)
 {
     transform(input.begin(), input.end(), input.begin(), ::tolower);
+    return input;
 }
 
 std::string
@@ -180,8 +189,7 @@ parseInput(std::string input)
 
     // Parse
     std::string text;
-    std::string command = inputWords[0];
-    convertToLower(command);
+    std::string command = convertToLower(inputWords[0]);
 
     // Help messages
     if ( inputWords.size() == 1 ) {
@@ -288,38 +296,52 @@ listLibraryInfo(std::list<std::string> args)
 {
     std::stringstream outputStream;
 
-    if ( args == std::list<std::string> { "all" } ) {
-        outputStream << "\n*-Displaying All Libraries-*";
-        for ( auto& library : g_libInfoArray ) {
-            library.resetFilters(true);
+    // Handle special keywords
+    if ( args.size() == 1 ) {
+        std::string arg = convertToLower(args.front());
+
+        if ( arg == "all" ) {
+            outputStream << "\n*-Displaying All Libraries-*";
+            for ( auto& library : g_libInfoArray ) {
+                library.resetFilters(true);
+                library.outputText(outputStream);
+            }
+            return outputStream.str();
+        }
+        else if ( arg == "libraries" ) {
+            outputStream << "*-All Loaded Libraries-\n*";
+            for ( auto& library : g_libInfoArray ) {
+                outputStream << "\n - " << library.getLibraryName();
+            }
+            return outputStream.str();
+        }    
+    }
+
+    // Reset all filters
+    for ( auto& library : g_libInfoArray ) {
+        library.resetFilters(false);
+    }
+
+    outputStream << "\n*-Displaying:";
+    for ( std::string arg : args ) {
+        outputStream << " " + arg;
+        std::string library   = "";
+        std::string component = "";
+
+        // Parse library.component
+        size_t split = arg.find('.');
+        if ( split == std::string::npos ) { library = arg; }
+        else {
+            library   = arg.substr(0, split);
+            component = arg.substr(split + 1);
+        }
+
+        // Check for invalid library name
+        if ( addLibFilter(library, component) ) {
+            return "ERR";
         }
     }
-    else {
-        for ( auto& library : g_libInfoArray ) {
-            library.resetFilters(false);
-        }
-
-        outputStream << "\n*-Displaying:";
-        for ( std::string arg : args ) {
-            outputStream << " " + arg;
-            std::string library   = "";
-            std::string component = "";
-
-            // Parse library.component
-            size_t split = arg.find('.');
-            if ( split == std::string::npos ) { library = arg; }
-            else {
-                library   = arg.substr(0, split);
-                component = arg.substr(split + 1);
-            }
-
-            // Check for invalid library name
-            if ( addLibFilter(library, component) ) {
-                return "ERR";
-            }
-        }
-        outputStream << "-*\n";
-    }
+    outputStream << "-*\n";
 
     for ( auto& library : g_libInfoArray ) {
         library.outputText(outputStream);
@@ -338,8 +360,7 @@ findLibraryInfo(std::list<std::string> args)
         return "Missing search term -- See 'find' documentation to see usage.";
     }
 
-    std::string inputTag = args.front();
-    convertToLower(inputTag);
+    std::string inputTag = convertToLower(args.front());
 
     // Compare to tag list and convert to proper string
     auto mapIter = g_searchData.componentTags.find(inputTag);
@@ -470,27 +491,27 @@ getErrorText(std::string command, std::list<std::string> args) {
 
                 if ( library != closest_lib ) {
                     if ( component != closest_comp ) { 
-                        output += "^" + library + "." + component + "^ --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
+                        output += " - ^" + library + "." + component + "^ --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
                     }
                     else {
-                        output += "^" + library + "^." + component + "^ --- Did you mean '" + closest_lib + "'?\n";
+                        output += " - ^" + library + "^." + component + "^ --- Did you mean '" + closest_lib + "'?\n";
                     }
                 }
                 else {
                     if ( component != closest_comp ) { 
-                        output += library + ".^" + component + "^ --- Did you mean '" + closest_comp + "'?\n";
+                        output += " - " + library + ".^" + component + "^ --- Did you mean '" + closest_comp + "'?\n";
                     }
                     else {
-                        output += arg + "\n";
+                        output += " - " + arg + "\n";
                     }
                 }
             }
             else {
                 if ( library != closest_lib ) {
-                    output += "^" + library + "^ --- Did you mean '" + closest_lib + "'?\n";
+                    output += " - ^" + library + "^ --- Did you mean '" + closest_lib + "'?\n";
                 }
                 else {
-                    output += arg + "\n";
+                    output += " - " + arg + "\n";
                 }
             }
         }
@@ -873,7 +894,7 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
     }
 
     outputStream << "\n*-Found " << count
-                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag.substr(6) + "'-*\n";
+                 << " components in " + m_name + " with '" + searchTerm + "' in '" + trim(tag) + "'-*\n";
 }
 
 void
