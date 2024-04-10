@@ -90,6 +90,7 @@ retry:
 inline std::string
 trim(std::string s) {
     s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
+    s.erase(s.find_last_not_of(" \t\n\r\f\v")+1);
     return s;
 }
 
@@ -102,11 +103,17 @@ public:
 
 struct SearchableData
 {
-    const std::map<std::string, std::string> componentTags = { { "description", "      Description" },
-                                                               { "version", "      ELI Version" },
-                                                               { "compiledate", "      Compiled on" },
-                                                               { "category", "      Category" },
-                                                               { "interface", "      Interface"} };
+    const std::map<std::string, std::string> componentTags = { { "description", "Description" },
+                                                               { "version", "ELI version" },
+                                                               { "compiledate", "Compiled on" },
+                                                               { "category", "Category" },
+                                                               { "interface", "Interface"},
+                                                               { "parameters", "Parameters"},
+                                                               { "ports", "Ports"},
+                                                               { "subcomponents", "Subcomponent Slots"},
+                                                               { "statistics", "Statistics"},
+                                                               { "profile", "Profile Points"},
+                                                               { "attributes", "Attributes"} };
     // Can add more in the future
 } g_searchData;
 
@@ -874,28 +881,74 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
 void
 SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm)
 {
-    int count = 0;
-
+    std::vector<std::string> stringList = { "Parameters", 
+                                            "Ports", 
+                                            "SubComponent Slots", 
+                                            "Statistics", 
+                                            "Profile Points", 
+                                            "Attributes" };
+    std::string prefix = "         ";    
+    int count          = 0;
     for ( auto& pair : m_components ) {
         for ( auto& component : pair.second ) {
-            std::string searchString = component.infoMap[tag];
-            size_t      foundIdx        = searchString.find(searchTerm);
+            std::string searchString = "";
+            bool found               = false;
+            std::string fullTag = "";
+            for ( auto& mapTag : component.stringIndexer ) {
+                std::string temp;
+                std::istringstream stream(mapTag);
+                std::getline(stream, temp, '(');
+                std::string infoTag = trim(temp);
+
+                // Search for correct tag
+                if ( infoTag == tag ) {
+                    fullTag = mapTag;
+                    if ( std::find(stringList.begin(), stringList.end(), infoTag) != stringList.end() ) {
+                        found = true;
+                    }
+                    else {
+                        searchString = component.infoMap[mapTag];
+                        break;
+                    }
+                }
+                else {
+                    // Get sub-items
+                    std::string info_prefix = mapTag.substr(0, 9);
+                    if ( found && info_prefix == prefix ) {
+                        // Set highlighting
+                        size_t foundSecondIdx = component.infoMap[mapTag].find(searchTerm);
+                        if ( foundSecondIdx != std::string::npos ) {
+                            component.infoMap[mapTag].insert(foundSecondIdx, "^");
+                            component.infoMap[mapTag].insert(foundSecondIdx + searchTerm.size() + 1, "^");
+                        }
+
+                        searchString += mapTag + ": " + component.infoMap[mapTag] + "\n";
+                    }
+                    else {
+                        if ( found ) { 
+                            break; }
+                    }
+                }
+            }
 
             // If term is found, set Library to show and add component to filters
+            size_t foundIdx = searchString.find(searchTerm);
             if ( foundIdx != std::string::npos ) {
                 m_libraryFilter = true;
                 m_componentFilters.push_back(component.componentName);
                 count++;
 
                 //Highlight the found text
-                component.infoMap[tag].insert(foundIdx, "^");
-                component.infoMap[tag].insert(foundIdx + searchTerm.length() + 1, "^");
+                if (component.infoMap[fullTag] != "") {
+                    component.infoMap[fullTag].insert(foundIdx, "^");
+                    component.infoMap[fullTag].insert(foundIdx + searchTerm.length() + 1, "^");
+                }
             }
         }
     }
 
     outputStream << "\n*-Found " << count
-                 << " components in " + m_name + " with '" + searchTerm + "' in '" + trim(tag) + "'-*\n";
+                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag + "'-*\n\n";
 }
 
 void
