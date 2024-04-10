@@ -236,17 +236,29 @@ parseInput(std::string input)
             text = 
                 "\n*=== FIND ===*\n"
                 "Search for text within component/subcomponent fields. "
-                "Displays all loaded components/subcomponents with the specified text.\n"
-                "Currently only supports searching within Description, ELI Version, Compile Date, and Category.\n\n"
+                "Displays all loaded components/subcomponents with the specified text.\n\n"
                 "*=== USAGE ===*\n"
                 "- Find {field} [search term] \n\n"
                 "'field' - Component/subcomponent fields.\n"
-                "Valid keywords - [Description, Version, Compiledate, Category] (case-insensitive)\n"
-                "Search term can be multiple words, but is case-sensitive\n\n"
+                "Valid field keywords (case-insensitive):\n"
+                "   - Description,\n"
+                "   - Version,\n"
+                "   - Compiledate,\n"
+                "   - Category,\n"
+                "   - Interface,\n"
+                "   - Parameters,\n"
+                "   - Ports,\n"
+                "   - Subcomponents,\n"
+                "   - Statistics,\n"
+                "   - Profile,\n"
+                "   - Attributes\n"
+                "Search term can be multiple words, but is case-sensitive.\n\n"
                 "*=== EXAMPLES ===*\n"
                 "find Description test\n"
                 "find compiledate Oct 17\n"
-                "find category UNCATEGORIZED\n";
+                "find category UNCATEGORIZED\n"
+                ""
+                ;
         }
         else {
             text = getErrorText(command);
@@ -309,7 +321,7 @@ listLibraryInfo(std::list<std::string> args)
         std::string arg = convertToLower(args.front());
 
         if ( arg == "all" ) {
-            outputStream << "\n*-Displaying All Libraries-*";
+            outputStream << "\n*-Displaying All Libraries-*\n";
             for ( auto& library : g_libInfoArray ) {
                 library.resetFilters(true);
                 library.outputText(outputStream);
@@ -317,7 +329,7 @@ listLibraryInfo(std::list<std::string> args)
             return outputStream.str();
         }
         else if ( arg == "libraries" ) {
-            outputStream << "*-All Loaded Libraries-\n*";
+            outputStream << "\n*-All Loaded Libraries-\n*";
             for ( auto& library : g_libInfoArray ) {
                 outputStream << "\n - " << library.getLibraryName();
             }
