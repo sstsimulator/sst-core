@@ -110,7 +110,7 @@ struct SearchableData
                                                                { "interface", "Interface"},
                                                                { "parameters", "Parameters"},
                                                                { "ports", "Ports"},
-                                                               { "subcomponents", "Subcomponent Slots"},
+                                                               { "subcomponents", "SubComponent Slots"},
                                                                { "statistics", "Statistics"},
                                                                { "profile", "Profile Points"},
                                                                { "attributes", "Attributes"} };
@@ -202,14 +202,14 @@ parseInput(std::string input)
     if ( inputWords.size() == 1 ) {
         if ( command == "help" ) {
             text =
-                "\n*=== SST-INFO ===*\n"
+                "\n~=== SST-INFO ===~\n"
                 "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
                 "Element Library.\n\n"
-                "*=== CONTROLS ===*\n"
+                "~=== CONTROLS ===~\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
                 "The text window can be resized, and both arrow key and mouse scrolling is enabled.\n"
                 "PAGE UP/PAGE DOWN scrolls through previously entered commands.\n\n"
-                "*=== COMMANDS ===*\n"
+                "~=== COMMANDS ===~\n"
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
                 "- Find {field} {search string} : Displays all components with the given search string in its field\n\n"
@@ -217,16 +217,16 @@ parseInput(std::string input)
         }
         else if ( command == "list" ) {
             text = 
-                "\n*=== LIST ===*\n"
+                "\n~=== LIST ===~\n"
                 "Displays specified element libraries.\n\n"
-                "*=== USAGE ===*\n"
+                "~=== USAGE ===~\n"
                 "- List All : Display all available element libraries and their components/subcomponents\n"
                 "- List Libraries : Display all currently loaded element libraries\n"
                 "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
                 "'element' - Element Library\n"
                 "'type' - Type of Component/Subcomponent\n"
                 "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                "*=== EXAMPLES ===*\n"
+                "~=== EXAMPLES ===~\n"
                 "list coreTestElement\n"
                 "list sst.linear\n"
                 "list ariel miranda\n"
@@ -234,31 +234,30 @@ parseInput(std::string input)
         }
         else if ( command == "find" ) {
             text = 
-                "\n*=== FIND ===*\n"
-                "Search for text within component/subcomponent fields. "
-                "Displays all loaded components/subcomponents with the specified text.\n\n"
-                "*=== USAGE ===*\n"
+                "\n~=== FIND ===~\n"
+                "Search for text within component library fields.\n"
+                "Displays all loaded components with the specified text.\n\n"
+                "~=== USAGE ===~\n"
                 "- Find {field} [search term] \n\n"
                 "'field' - Component/subcomponent fields.\n"
                 "Valid field keywords (case-insensitive):\n"
-                "   - Description,\n"
-                "   - Version,\n"
-                "   - Compiledate,\n"
-                "   - Category,\n"
-                "   - Interface,\n"
-                "   - Parameters,\n"
-                "   - Ports,\n"
-                "   - Subcomponents,\n"
-                "   - Statistics,\n"
-                "   - Profile,\n"
+                "   - Description\n"
+                "   - Version (ELI Version)\n"
+                "   - Compiledate\n"
+                "   - Category\n"
+                "   - Interface\n"
+                "   - Parameters\n"
+                "   - Ports\n"
+                "   - Subcomponents\n"
+                "   - Statistics\n"
+                "   - Profile\n"
                 "   - Attributes\n"
                 "Search term can be multiple words, but is case-sensitive.\n\n"
-                "*=== EXAMPLES ===*\n"
+                "~=== EXAMPLES ===~\n"
                 "find Description test\n"
                 "find compiledate Oct 17\n"
-                "find category UNCATEGORIZED\n"
-                ""
-                ;
+                "find CATEGORY UNCATEGORIZED\n"
+                "find parameters rng";
         }
         else {
             text = getErrorText(command);
@@ -321,7 +320,7 @@ listLibraryInfo(std::list<std::string> args)
         std::string arg = convertToLower(args.front());
 
         if ( arg == "all" ) {
-            outputStream << "\n*-Displaying All Libraries-*\n";
+            outputStream << "\n~-Displaying All Libraries-~\n";
             for ( auto& library : g_libInfoArray ) {
                 library.resetFilters(true);
                 library.outputText(outputStream);
@@ -329,7 +328,7 @@ listLibraryInfo(std::list<std::string> args)
             return outputStream.str();
         }
         else if ( arg == "libraries" ) {
-            outputStream << "\n*-All Loaded Libraries-\n*";
+            outputStream << "\n~-All Loaded Libraries-~\n";
             for ( auto& library : g_libInfoArray ) {
                 outputStream << "\n - " << library.getLibraryName();
             }
@@ -342,7 +341,7 @@ listLibraryInfo(std::list<std::string> args)
         library.resetFilters(false);
     }
 
-    outputStream << "\n*-Displaying:";
+    outputStream << "\n~-Displaying:";
     for ( std::string arg : args ) {
         outputStream << " " + arg;
         std::string library   = "";
@@ -361,7 +360,7 @@ listLibraryInfo(std::list<std::string> args)
             return "ERR";
         }
     }
-    outputStream << "-*\n";
+    outputStream << "-~\n";
 
     for ( auto& library : g_libInfoArray ) {
         library.outputText(outputStream);
@@ -511,15 +510,15 @@ getErrorText(std::string command, std::list<std::string> args) {
 
                 if ( library != closest_lib ) {
                     if ( component != closest_comp ) { 
-                        output += " - ^" + library + "." + component + "^ --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
+                        output += " - `" + library + "." + component + "` --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
                     }
                     else {
-                        output += " - ^" + library + "^." + component + "^ --- Did you mean '" + closest_lib + "'?\n";
+                        output += " - `" + library + "`." + component + "` --- Did you mean '" + closest_lib + "'?\n";
                     }
                 }
                 else {
                     if ( component != closest_comp ) { 
-                        output += " - " + library + ".^" + component + "^ --- Did you mean '" + closest_comp + "'?\n";
+                        output += " - " + library + ".`" + component + "` --- Did you mean '" + closest_comp + "'?\n";
                     }
                     else {
                         output += " - " + arg + "\n";
@@ -528,7 +527,7 @@ getErrorText(std::string command, std::list<std::string> args) {
             }
             else {
                 if ( library != closest_lib ) {
-                    output += " - ^" + library + "^ --- Did you mean '" + closest_lib + "'?\n";
+                    output += " - `" + library + "` --- Did you mean '" + closest_lib + "'?\n";
                 }
                 else {
                     output += " - " + arg + "\n";
@@ -930,8 +929,8 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                         // Set highlighting
                         size_t foundSecondIdx = component.infoMap[mapTag].find(searchTerm);
                         if ( foundSecondIdx != std::string::npos ) {
-                            component.infoMap[mapTag].insert(foundSecondIdx, "^");
-                            component.infoMap[mapTag].insert(foundSecondIdx + searchTerm.size() + 1, "^");
+                            component.infoMap[mapTag].insert(foundSecondIdx, "`");
+                            component.infoMap[mapTag].insert(foundSecondIdx + searchTerm.size() + 1, "`");
                         }
 
                         searchString += mapTag + ": " + component.infoMap[mapTag] + "\n";
@@ -952,15 +951,15 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
 
                 //Highlight the found text
                 if (component.infoMap[fullTag] != "") {
-                    component.infoMap[fullTag].insert(foundIdx, "^");
-                    component.infoMap[fullTag].insert(foundIdx + searchTerm.length() + 1, "^");
+                    component.infoMap[fullTag].insert(foundIdx, "`");
+                    component.infoMap[fullTag].insert(foundIdx + searchTerm.length() + 1, "`");
                 }
             }
         }
     }
 
-    outputStream << "\n*-Found " << count
-                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag + "'-*\n\n";
+    outputStream << "\n~-Found " << count
+                 << " components in " + m_name + " with '" + searchTerm + "' in '" + tag + "'-~\n\n";
 }
 
 void
@@ -969,7 +968,7 @@ SSTLibraryInfo::clearHighlights() {
         for ( auto& component : pair.second ) {
             for ( auto& info : component.infoMap ) {
                 std::string* infoStr = &info.second;
-                infoStr->erase(remove(infoStr->begin(), infoStr->end(), '^'), infoStr->end());
+                infoStr->erase(remove(infoStr->begin(), infoStr->end(), '`'), infoStr->end());
             }
         }
     }
@@ -1239,19 +1238,19 @@ InteractiveWindow::printInfo()
     bool bold = false;
     bool highlight = false;
     for ( auto& c : infoString) {
-        if ( c == '*' && !bold) {
+        if ( c == '~' && !bold) {
             wattron(info, A_BOLD);
             bold = true;
         }
-        else if ( c == '*' && bold ) {
+        else if ( c == '~' && bold ) {
             wattroff(info, A_BOLD);
             bold = false;
         }
-        else if ( c == '^' && !highlight ) {
+        else if ( c == '`' && !highlight ) {
             wattron(info, A_STANDOUT);
             highlight = true;
         }
-        else if ( c == '^' && highlight ) {
+        else if ( c == '`' && highlight ) {
             wattroff(info, A_STANDOUT);
             highlight = false;
         }
