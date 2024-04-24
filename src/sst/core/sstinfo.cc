@@ -88,9 +88,10 @@ retry:
 
 /** Trim whitespace from strings */
 inline std::string
-trim(std::string s) {
+trim(std::string s)
+{
     s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
-    s.erase(s.find_last_not_of(" \t\n\r\f\v")+1);
+    s.erase(s.find_last_not_of(" \t\n\r\f\v") + 1);
     return s;
 }
 
@@ -107,13 +108,13 @@ struct SearchableData
                                                                { "version", "ELI version" },
                                                                { "compiledate", "Compiled on" },
                                                                { "category", "Category" },
-                                                               { "interface", "Interface"},
-                                                               { "parameters", "Parameters"},
-                                                               { "ports", "Ports"},
-                                                               { "subcomponents", "SubComponent Slots"},
-                                                               { "statistics", "Statistics"},
-                                                               { "profile", "Profile Points"},
-                                                               { "attributes", "Attributes"} };
+                                                               { "interface", "Interface" },
+                                                               { "parameters", "Parameters" },
+                                                               { "ports", "Ports" },
+                                                               { "subcomponents", "SubComponent Slots" },
+                                                               { "statistics", "Statistics" },
+                                                               { "profile", "Profile Points" },
+                                                               { "attributes", "Attributes" } };
     // Can add more in the future
 } g_searchData;
 
@@ -216,48 +217,46 @@ parseInput(std::string input)
                 "To see more detailed instructions, type in a command without additional parameters.\n\n";
         }
         else if ( command == "list" ) {
-            text = 
-                "\n~=== LIST ===~\n"
-                "Displays specified element libraries.\n\n"
-                "~=== USAGE ===~\n"
-                "- List All : Display all available element libraries and their components/subcomponents\n"
-                "- List Libraries : Display all currently loaded element libraries\n"
-                "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
-                "'element' - Element Library\n"
-                "'type' - Type of Component/Subcomponent\n"
-                "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
-                "~=== EXAMPLES ===~\n"
-                "list coreTestElement\n"
-                "list sst.linear\n"
-                "list ariel miranda\n"
-                "list ariel miranda.ReverseSingleStreamGenerator\n";
+            text = "\n~=== LIST ===~\n"
+                   "Displays specified element libraries.\n\n"
+                   "~=== USAGE ===~\n"
+                   "- List All : Display all available element libraries and their components/subcomponents\n"
+                   "- List Libraries : Display all currently loaded element libraries\n"
+                   "- List [element[.component|subcomponent]] : Display the specified element/subelement(s)\n\n"
+                   "'element' - Element Library\n"
+                   "'type' - Type of Component/Subcomponent\n"
+                   "'component|subcomponent' - Either a Component or SubComponent defined in the Element Library\n\n"
+                   "~=== EXAMPLES ===~\n"
+                   "list coreTestElement\n"
+                   "list sst.linear\n"
+                   "list ariel miranda\n"
+                   "list ariel miranda.ReverseSingleStreamGenerator\n";
         }
         else if ( command == "find" ) {
-            text = 
-                "\n~=== FIND ===~\n"
-                "Search for text within component library fields.\n"
-                "Displays all loaded components with the specified text.\n\n"
-                "~=== USAGE ===~\n"
-                "- Find {field} [search term] \n\n"
-                "'field' - Component/subcomponent fields.\n"
-                "Valid field keywords (case-insensitive):\n"
-                "   - Description\n"
-                "   - Version (ELI Version)\n"
-                "   - Compiledate\n"
-                "   - Category\n"
-                "   - Interface\n"
-                "   - Parameters\n"
-                "   - Ports\n"
-                "   - Subcomponents\n"
-                "   - Statistics\n"
-                "   - Profile\n"
-                "   - Attributes\n"
-                "Search term can be multiple words, but is case-sensitive.\n\n"
-                "~=== EXAMPLES ===~\n"
-                "find Description test\n"
-                "find compiledate Oct 17\n"
-                "find CATEGORY UNCATEGORIZED\n"
-                "find parameters rng";
+            text = "\n~=== FIND ===~\n"
+                   "Search for text within component library fields.\n"
+                   "Displays all loaded components with the specified text.\n\n"
+                   "~=== USAGE ===~\n"
+                   "- Find {field} [search term] \n\n"
+                   "'field' - Component/subcomponent fields.\n"
+                   "Valid field keywords (case-insensitive):\n"
+                   "   - Description\n"
+                   "   - Version (ELI Version)\n"
+                   "   - Compiledate\n"
+                   "   - Category\n"
+                   "   - Interface\n"
+                   "   - Parameters\n"
+                   "   - Ports\n"
+                   "   - Subcomponents\n"
+                   "   - Statistics\n"
+                   "   - Profile\n"
+                   "   - Attributes\n"
+                   "Search term can be multiple words, but is case-sensitive.\n\n"
+                   "~=== EXAMPLES ===~\n"
+                   "find Description test\n"
+                   "find compiledate Oct 17\n"
+                   "find CATEGORY UNCATEGORIZED\n"
+                   "find parameters rng";
         }
         else {
             text = getErrorText(command);
@@ -271,9 +270,7 @@ parseInput(std::string input)
         auto                   end   = inputWords.end();
         std::list<std::string> args(start, end);
 
-        if ( command == "list" ) {
-            text = listLibraryInfo(args);
-        }
+        if ( command == "list" ) { text = listLibraryInfo(args); }
         else if ( command == "find" ) {
             text = findLibraryInfo(args);
 
@@ -284,9 +281,7 @@ parseInput(std::string input)
         }
 
         // Handle errors from getting text from library info
-        if ( text == "ERR" ) {
-            text = getErrorText(command, args);
-        }
+        if ( text == "ERR" ) { text = getErrorText(command, args); }
     }
 
     return text;
@@ -299,9 +294,7 @@ addLibFilter(std::string libFilter, std::string componentFilter = "")
         if ( library.getLibraryName() == libFilter ) {
             library.setLibraryFilter(true);
 
-            if ( componentFilter != "" ) {
-                return library.setComponentFilter(componentFilter);   
-            }
+            if ( componentFilter != "" ) { return library.setComponentFilter(componentFilter); }
             return 0;
         }
     }
@@ -333,7 +326,7 @@ listLibraryInfo(std::list<std::string> args)
                 outputStream << "\n - " << library.getLibraryName();
             }
             return outputStream.str();
-        }    
+        }
     }
 
     // Reset all filters
@@ -356,9 +349,7 @@ listLibraryInfo(std::list<std::string> args)
         }
 
         // Check for invalid library name
-        if ( addLibFilter(library, component) ) {
-            return "ERR";
-        }
+        if ( addLibFilter(library, component) ) { return "ERR"; }
     }
     outputStream << "-~\n";
 
@@ -375,9 +366,7 @@ findLibraryInfo(std::list<std::string> args)
 {
     std::stringstream outputStream;
 
-    if ( args.size() == 1 ) {
-        return "Missing search term -- See 'find' documentation to see usage.";
-    }
+    if ( args.size() == 1 ) { return "Missing search term -- See 'find' documentation to see usage."; }
 
     std::string inputTag = convertToLower(args.front());
 
@@ -390,9 +379,7 @@ findLibraryInfo(std::list<std::string> args)
         args.pop_front();
         std::string searchTerm = "";
         for ( std::string arg : args ) {
-            if ( arg == args.back() ) { 
-                searchTerm += arg; 
-            }
+            if ( arg == args.back() ) { searchTerm += arg; }
             else {
                 searchTerm += arg + " ";
             }
@@ -412,48 +399,48 @@ findLibraryInfo(std::list<std::string> args)
 
 // Finds the closest term using Levenshtein distance
 std::string
-getClosestTerm(std::string source, std::list<std::string> dict) {
-    std::string closest = "\n";
-    int distance = INT_MAX;
+getClosestTerm(std::string source, std::list<std::string> dict)
+{
+    std::string closest  = "\n";
+    int         distance = INT_MAX;
     for ( auto& term : dict ) {
-        int m = source.length();
-        int n = term.length();
-        int matrix[m+1][n+1] = {0};
+        int m                    = source.length();
+        int n                    = term.length();
+        int matrix[m + 1][n + 1] = { 0 };
 
-        for ( int i=0; i<=m; i++) {
+        for ( int i = 0; i <= m; i++ ) {
             matrix[i][0] = i;
         }
-        for ( int j=0; j<=n; j++) {
+        for ( int j = 0; j <= n; j++ ) {
             matrix[0][j] = j;
         }
 
         const char* s = source.c_str();
         const char* t = term.c_str();
 
-        for ( int j=1; j<=n; j++) {
-            for ( int i=1; i<=m; i++) {
+        for ( int j = 1; j <= n; j++ ) {
+            for ( int i = 1; i <= m; i++ ) {
                 int subCost = 0;
-                if ( s[i] != t[j] ) {
-                    subCost = 1;
-                }
-                matrix[i][j] = std::min({matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + subCost});
+                if ( s[i] != t[j] ) { subCost = 1; }
+                matrix[i][j] = std::min({ matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + subCost });
             }
         }
 
         // Get final score and set closest term
         if ( matrix[m][n] < distance ) {
-            closest = term; 
+            closest  = term;
             distance = matrix[m][n];
         }
     }
-    
+
     return closest;
 }
 
 // Handle misspelled commands
-std::string 
-getErrorText(std::string command) {
-    std::list<std::string> dict = {"help", "list", "find"};
+std::string
+getErrorText(std::string command)
+{
+    std::list<std::string> dict = { "help", "list", "find" };
 
     std::string term = getClosestTerm(command, dict);
 
@@ -461,11 +448,12 @@ getErrorText(std::string command) {
 }
 
 // Handle misspelled Libraries or search terms
-std::string 
-getErrorText(std::string command, std::list<std::string> args) {
+std::string
+getErrorText(std::string command, std::list<std::string> args)
+{
     if ( command == "find" ) {
         std::list<std::string> dict;
-        for(auto const& tag : g_searchData.componentTags) {
+        for ( auto const& tag : g_searchData.componentTags ) {
             dict.push_back(tag.first);
         }
         std::string term = getClosestTerm(args.front(), dict);
@@ -473,7 +461,7 @@ getErrorText(std::string command, std::list<std::string> args) {
         return "Invalid search term '" + args.front() + "'-- Did you mean '" + term + "'?";
     }
     else {
-        std::string output = "Invalid Library input:\n\n" ;
+        std::string output = "Invalid Library input:\n\n";
 
         // Find error distances for every library entered
         for ( auto& arg : args ) {
@@ -494,7 +482,7 @@ getErrorText(std::string command, std::list<std::string> args) {
                 library_dict.push_back(lib.getLibraryName());
 
                 if ( component != "" ) {
-                    for ( auto& pair : lib.getComponentInfo()) {
+                    for ( auto& pair : lib.getComponentInfo() ) {
                         for ( auto& comp : pair.second ) {
                             component_dict.push_back(comp.componentName);
                         }
@@ -505,19 +493,20 @@ getErrorText(std::string command, std::list<std::string> args) {
             // Find closest term for all Library entries
             std::string closest_lib = getClosestTerm(library, library_dict);
             std::string closest_comp;
-            if ( component != "" ) { 
-                closest_comp = getClosestTerm(component, component_dict); 
+            if ( component != "" ) {
+                closest_comp = getClosestTerm(component, component_dict);
 
                 if ( library != closest_lib ) {
-                    if ( component != closest_comp ) { 
-                        output += " - `" + library + "." + component + "` --- Did you mean '" + closest_lib + "." + closest_comp + "'?\n";
+                    if ( component != closest_comp ) {
+                        output += " - `" + library + "." + component + "` --- Did you mean '" + closest_lib + "." +
+                                  closest_comp + "'?\n";
                     }
                     else {
                         output += " - `" + library + "`." + component + "` --- Did you mean '" + closest_lib + "'?\n";
                     }
                 }
                 else {
-                    if ( component != closest_comp ) { 
+                    if ( component != closest_comp ) {
                         output += " - " + library + ".`" + component + "` --- Did you mean '" + closest_comp + "'?\n";
                     }
                     else {
@@ -892,21 +881,17 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
 void
 SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm)
 {
-    std::vector<std::string> stringList = { "Parameters", 
-                                            "Ports", 
-                                            "SubComponent Slots", 
-                                            "Statistics", 
-                                            "Profile Points", 
-                                            "Attributes" };
-    std::string prefix = "         ";    
-    int count          = 0;
+    std::vector<std::string> stringList = { "Parameters", "Ports",          "SubComponent Slots",
+                                            "Statistics", "Profile Points", "Attributes" };
+    std::string              prefix     = "         ";
+    int                      count      = 0;
     for ( auto& pair : m_components ) {
         for ( auto& component : pair.second ) {
             std::string searchString = "";
-            bool found               = false;
-            std::string fullTag = "";
+            bool        found        = false;
+            std::string fullTag      = "";
             for ( auto& mapTag : component.stringIndexer ) {
-                std::string temp;
+                std::string        temp;
                 std::istringstream stream(mapTag);
                 std::getline(stream, temp, '(');
                 std::string infoTag = trim(temp);
@@ -936,8 +921,7 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                         searchString += mapTag + ": " + component.infoMap[mapTag] + "\n";
                     }
                     else {
-                        if ( found ) { 
-                            break; }
+                        if ( found ) { break; }
                     }
                 }
             }
@@ -949,8 +933,8 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                 m_componentFilters.push_back(component.componentName);
                 count++;
 
-                //Highlight the found text
-                if (component.infoMap[fullTag] != "") {
+                // Highlight the found text
+                if ( component.infoMap[fullTag] != "" ) {
                     component.infoMap[fullTag].insert(foundIdx, "`");
                     component.infoMap[fullTag].insert(foundIdx + searchTerm.length() + 1, "`");
                 }
@@ -963,7 +947,8 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
 }
 
 void
-SSTLibraryInfo::clearHighlights() {
+SSTLibraryInfo::clearHighlights()
+{
     for ( auto& pair : m_components ) {
         for ( auto& component : pair.second ) {
             for ( auto& info : component.infoMap ) {
@@ -1100,7 +1085,7 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
 void
 InteractiveWindow::start()
 {
-    g_textPos      = 0;
+    g_textPos = 0;
 
     initscr();
     cbreak();
@@ -1235,10 +1220,10 @@ InteractiveWindow::printInfo()
         infoString += g_infoText[i];
     }
 
-    bool bold = false;
+    bool bold      = false;
     bool highlight = false;
-    for ( auto& c : infoString) {
-        if ( c == '~' && !bold) {
+    for ( auto& c : infoString ) {
+        if ( c == '~' && !bold ) {
             wattron(info, A_BOLD);
             bold = true;
         }
@@ -1257,7 +1242,6 @@ InteractiveWindow::printInfo()
         else {
             wprintw(info, "%c", c);
         }
-
     }
     wrefresh(info);
     wrefresh(console); // moves the cursor back into the console window

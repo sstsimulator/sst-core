@@ -224,15 +224,16 @@ public:
      * @param libFilter
      */
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
-    
+
     /**
      * Adds the component filter string to the end of the internal vector of components
      * @param component
      */
-    int setComponentFilter(std::string component) {
-        for ( auto& pair : m_components) {
+    int setComponentFilter(std::string component)
+    {
+        for ( auto& pair : m_components ) {
             for ( auto& comp : pair.second ) {
-                if ( comp.componentName == component) {
+                if ( comp.componentName == component ) {
                     m_componentFilters.push_back(component);
                     return 0;
                 }
