@@ -25,15 +25,7 @@ import multiprocessing
 import tarfile
 import shutil
 import difflib
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
-# ConfigParser module changes name between Py2->Py3
-if PY3:
-    import configparser
-else:
-    import ConfigParser as configparser
+import configparser
 
 import test_engine_globals
 from test_engine_support import OSCommand
@@ -178,24 +170,6 @@ def testing_is_PIN3_used():
 ################################################################################
 # System Information Functions
 ################################################################################
-
-def testing_check_is_py_2():
-    """ Check if Test Frameworks is running via Python Version 2
-
-        Returns:
-            (bool) True if test frameworks is being run by Python Version 2
-    """
-    return PY2
-
-def testing_check_is_py_3():
-    """ Check if Test Frameworks is running via Python Version 3
-
-        Returns:
-            (bool) True if test frameworks is being run by Python Version 3
-    """
-    return PY3
-
-###
 
 def host_os_get_system_node_name():
     """ Get the node name of the system
@@ -1478,13 +1452,10 @@ def os_awk_print(in_str, fields_index_list):
         Returns:
             (str) Space separated string of extracted fields.
     """
-    if PY2:
-        check_param_type("in_str", in_str, unicode)
+    if isinstance(in_str, bytes):
+        check_param_type("in_str", in_str, bytes)
     else:
-        if isinstance(in_str, bytes):
-            check_param_type("in_str", in_str, bytes)
-        else:
-            check_param_type("in_str", in_str, str)
+        check_param_type("in_str", in_str, str)
     check_param_type("fields_index_list", fields_index_list, list)
     for index, field_index in enumerate(fields_index_list):
         check_param_type("field_index - {0}".format(index), field_index, int)
