@@ -407,7 +407,7 @@ getClosestTerm(std::string source, std::list<std::string> dict)
         int m                    = source.length();
         int n                    = term.length();
         int matrix[m + 1][n + 1] = { 0 };
-        memset(matrix, 0, (m+1)*(n+1)*sizeof(int));
+        memset(matrix, 0, (m + 1) * (n + 1) * sizeof(int));
 
         for ( int i = 0; i <= m; i++ ) {
             matrix[i][0] = i;
