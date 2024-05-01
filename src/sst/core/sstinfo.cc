@@ -404,8 +404,8 @@ getClosestTerm(std::string source, std::list<std::string> dict)
     std::string closest  = "\n";
     int         distance = INT_MAX;
     for ( auto& term : dict ) {
-        int m                    = source.length();
-        int n                    = term.length();
+        int m = source.length();
+        int n = term.length();
         int matrix[m + 1][n + 1];
         memset(matrix, 0, (m + 1) * (n + 1) * sizeof(int));
 
