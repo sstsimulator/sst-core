@@ -40,11 +40,14 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
 
-# Temporary fix to ensure tests pass with newer Apple clang compiler
+# The combination of newer versions of Clang changing the default behavior
+# from `-ffp-contract=off` to `-ffp-contract=on` and running on ARM due to the
+# underlying FMA instruction lead to floating point
+# differences. (https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html#floating-point-support-in-clang)
 case "${host_os}" in
     darwin*)
-    CXXFLAGS="$CXXFLAGS -ffp-contract=off"
-    ;;
+        CXXFLAGS="$CXXFLAGS -ffp-contract=off"
+        ;;
 esac
 
 SST_CHECK_PICKY
