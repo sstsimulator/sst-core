@@ -92,12 +92,10 @@ static PyTypeObject ModuleLoaderType = {
     sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
     0,                              /* tp_itemsize */
     nullptr,                        /* tp_dealloc */
-    SST_TP_VECTORCALL_OFFSET        /* Python3 only */
-        SST_TP_PRINT                /* Python2 only */
+    0,                              /* tp_vectorcall_offset */
     nullptr,                        /* tp_getattr */
     nullptr,                        /* tp_setattr */
-    SST_TP_COMPARE(nullptr)         /* Python2 only */
-    SST_TP_AS_SYNC                  /* Python3 only */
+    nullptr,                        /* tp_as_sync */
     nullptr,                        /* tp_repr */
     nullptr,                        /* tp_as_number */
     nullptr,                        /* tp_as_sequence */
@@ -112,7 +110,7 @@ static PyTypeObject ModuleLoaderType = {
     "SST Module Loader",            /* tp_doc */
     nullptr,                        /* tp_traverse */
     nullptr,                        /* tp_clear */
-    SST_TP_RICH_COMPARE(nullptr)    /* Python3 only */
+    nullptr,                        /* tp_rich_compare */
     0,                              /* tp_weaklistoffset */
     nullptr,                        /* tp_iter */
     nullptr,                        /* tp_iternext */
@@ -136,9 +134,10 @@ static PyTypeObject ModuleLoaderType = {
     nullptr,                        /* tp_weaklist */
     nullptr,                        /* tp_del */
     0,                              /* tp_version_tag */
-    SST_TP_FINALIZE                 /* Python3 only */
-        SST_TP_VECTORCALL           /* Python3 only */
-            SST_TP_PRINT_DEP        /* Python3.8 only */
+    nullptr,                        /* tp_finalize */
+    SST_TP_VECTORCALL               /* Python3.8+ */
+        SST_TP_PRINT_DEP            /* Python3.8 only */
+            SST_TP_WATCHED          /* Python3.12+ */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -224,13 +223,11 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     // error there.
     if ( !PyArg_ParseTuple(args, "O", &spec) ) return nullptr;
 
-    PyObject* nameobj;
-    const char * name;
+    PyObject*   nameobj;
+    const char* name;
 
     nameobj = PyObject_GetAttrString(spec, "name");
-    if ( nameobj == nullptr ) {
-        return nullptr;
-    }
+    if ( nameobj == nullptr ) { return nullptr; }
     name = SST_ConvertToCppString(nameobj);
 
     if ( strncmp(name, "sst.", 4) ) {
@@ -244,7 +241,7 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject*               mod   = nullptr;
-    if ( !pymod ) { mod = SST_PY_INIT_MODULE(name, emptyModMethods, emptyModDef); }
+    if ( !pymod ) { mod = PyModule_Create(&emptyModDef); }
     else {
         mod = static_cast<PyObject*>(pymod->load());
     }
@@ -1016,7 +1013,7 @@ PyInit_sst(void)
     }
 
     // Create the module
-    PyObject* module = SST_PY_INIT_MODULE("sst", sstModuleMethods, sstModuleDef);
+    PyObject* module = PyModule_Create(&sstModuleDef);
     if ( !module ) return nullptr;
 
     Py_INCREF(&PyModel_ComponentType);

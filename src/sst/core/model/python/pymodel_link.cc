@@ -148,12 +148,10 @@ PyTypeObject PyModel_LinkType = {
     sizeof(LinkPy_t),           /* tp_basicsize */
     0,                          /* tp_itemsize */
     (destructor)linkDealloc,    /* tp_dealloc */
-    SST_TP_VECTORCALL_OFFSET    /* Python3 only */
-        SST_TP_PRINT            /* Python2 only */
+    0,                          /* tp_vectorcall_offset */
     nullptr,                    /* tp_getattr */
     nullptr,                    /* tp_setattr */
-    SST_TP_COMPARE(nullptr)     /* Python2 only */
-    SST_TP_AS_SYNC              /* Python3 only */
+    nullptr,                    /* tp_as_sync */
     nullptr,                    /* tp_repr */
     nullptr,                    /* tp_as_number */
     nullptr,                    /* tp_as_sequence */
@@ -192,9 +190,10 @@ PyTypeObject PyModel_LinkType = {
     nullptr,                    /* tp_weaklist */
     nullptr,                    /* tp_del */
     0,                          /* tp_version_tag */
-    SST_TP_FINALIZE             /* Python3 only */
-        SST_TP_VECTORCALL       /* Python3 only */
-            SST_TP_PRINT_DEP    /* Python3.8 only */
+    nullptr,                    /* tp_finalize */
+    SST_TP_VECTORCALL           /* Python3.8+ */
+        SST_TP_PRINT_DEP        /* Python3.8 only */
+            SST_TP_WATCHED      /* Python3.12+ */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
