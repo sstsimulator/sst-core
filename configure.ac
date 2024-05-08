@@ -44,8 +44,11 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 # from `-ffp-contract=off` to `-ffp-contract=on` and running on ARM due to the
 # underlying FMA instruction lead to floating point
 # differences. (https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html#floating-point-support-in-clang)
-case "${host_os}" in
-    darwin*)
+AC_LANG_PUSH([C++])
+AX_COMPILER_VENDOR
+AC_LANG_POP([C++])
+case "$ax_cv_cxx_compiler_vendor" in
+    clang)
         CXXFLAGS="$CXXFLAGS -ffp-contract=off"
         ;;
 esac
