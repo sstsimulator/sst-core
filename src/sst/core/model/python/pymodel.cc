@@ -74,10 +74,12 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject*
 static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
 
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
-static PyObject* mlLoadModule(PyObject* self, PyObject* args);
+static PyObject* mlCreateModule(PyObject* self, PyObject* args);
+static PyObject* mlExecModule(PyObject* self, PyObject* args);
 
 static PyMethodDef mlMethods[] = { { "find_module", mlFindModule, METH_VARARGS, "Finds an SST Element Module" },
-                                   { "load_module", mlLoadModule, METH_VARARGS, "Loads an SST Element Module" },
+                                   { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
+                                   { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" },
                                    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
@@ -203,17 +205,40 @@ static struct PyModuleDef emptyModDef
 #endif
 
 static PyObject*
-mlLoadModule(PyObject* UNUSED(self), PyObject* args)
+mlExecModule(PyObject* UNUSED(self), PyObject* args)
 {
-    char* name;
-    if ( !PyArg_ParseTuple(args, "s", &name) ) return nullptr;
+    return args;
+}
+
+static PyObject*
+mlCreateModule(PyObject* UNUSED(self), PyObject* args)
+{
+    PyObject* spec;
+    // The argument is a ModuleSpec, but I don't know how to check for
+    // that.  If we can find the right type, this would be similar to:
+
+    // if ( !PyArg_ParseTuple(args, "O!", &PyModuleSpec_Type, &spec) ) return nullptr;
+
+    // For now, we can just use PyObject_GetAttrString to get the
+    // right field from it.  If there is no name field, then it will
+    // error there.
+    if ( !PyArg_ParseTuple(args, "O", &spec) ) return nullptr;
+
+    PyObject* nameobj;
+    const char * name;
+
+    nameobj = PyObject_GetAttrString(spec, "name");
+    if ( nameobj == nullptr ) {
+        return nullptr;
+    }
+    name = SST_ConvertToCppString(nameobj);
 
     if ( strncmp(name, "sst.", 4) ) {
         // We know how to handle only sst.<module>
         return nullptr; // ERROR!
     }
 
-    char* modName = name + 4; // sst.<modName>
+    const char* modName = name + 4; // sst.<modName>
 
     // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
@@ -1069,12 +1094,6 @@ SSTPythonModelDefinition::initModel(
 
         PyConfig_Clear(&config);
     }
-    // For 3.11 and on, we need to append the current working
-    // directory to the path
-    PyRun_SimpleString("import sys\n"
-                       "import sst\n"
-                       "sys.meta_path.append(sst.ModuleLoader())\n"
-                       "sys.path.append(\".\")");
 #else
     // Set arguments; Python3 takes wchar_t* arg instead of char*
     wchar_t** wargv = (wchar_t**)PyMem_Malloc(sizeof(wchar_t*) * argc);
@@ -1085,9 +1104,26 @@ SSTPythonModelDefinition::initModel(
     // Get the Python scripting engine started
     Py_Initialize();
     PySys_SetArgv(argc, wargv);
+#endif
+
     PyRun_SimpleString("import sys\n"
                        "import sst\n"
-                       "sys.meta_path.append(sst.ModuleLoader())\n");
+                       "import importlib\n"
+                       "import importlib.machinery\n"
+                       "spec = importlib.machinery.ModuleSpec(\"sst loader\", sst.ModuleLoader())\n"
+                       "class SSTModuleFinder:\n"
+                       "  def find_spec(self, fullname, path, target=None):\n"
+                       "    loader = sst.ModuleLoader()\n"
+                       "    found_loader = loader.find_module(fullname)\n"
+                       "    if found_loader:  return importlib.machinery.ModuleSpec(fullname, found_loader)\n"
+                       "    else: return None\n"
+                       "sys.meta_path.append(SSTModuleFinder())\n"
+                       "sys.path.append(\".\")");
+
+#if PY_MINOR_VERSION >= 11
+    // // For 3.11 and on, we need to append the current working
+    // // directory to the path
+    PyRun_SimpleString("sys.meta_path.append(sst.ModuleLoader())\n");
 #endif
 }
 
