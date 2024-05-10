@@ -112,7 +112,6 @@ nobase_dist_sst_HEADERS = \
 	serialization/statics.h \
 	interfaces/TestEvent.h \
 	interfaces/stringEvent.h \
-	interfaces/simpleMem.h \
 	interfaces/stdMem.h \
 	interfaces/simpleNetwork.h \
 	interprocess/tunneldef.h \
@@ -218,7 +217,6 @@ sst_core_sources = \
 	serialization/statics.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
-	interfaces/simpleMem.cc \
 	interfaces/stdMem.cc \
 	interfaces/simpleNetwork.cc \
 	interprocess/ipctunnel.cc \

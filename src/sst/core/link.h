@@ -168,29 +168,6 @@ public:
      */
     Event* recvUntimedData();
 
-    /** Send data during the init() or complete() phase.
-     * Same as sendUntimedData()
-     * @param init_data data to send
-     */
-    [[deprecated(
-        "sendInitData() has been deprecated and will be removed in SST 14.  Use sendUntimedData() instead")]] void
-    sendInitData(Event* init_data)
-    {
-        sendUntimedData(init_data);
-    }
-
-    /** Receive an event (if any) during the init() or complete() phase.
-     * Same as recvUntimedData()
-     * @return Event if one is available
-     * @return nullptr if no Event is available
-     */
-    [[deprecated(
-        "recvInitData() has been deprecated and will be removed in SST 14.  Use recvUntimedData() instead")]] Event*
-    recvInitData()
-    {
-        return recvUntimedData();
-    }
-
     /** Return whether link has been configured
      * @return whether link is configured
      */
