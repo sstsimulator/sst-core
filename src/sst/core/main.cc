@@ -393,22 +393,14 @@ start_graph_creation(
         }
     }
 #endif
+
     // Delete the model generator
     if ( modelGen ) {
         delete modelGen;
         modelGen = nullptr;
     }
 
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
-        graph->postCreationCleanup();
-
-        // Check config graph to see if there are structural errors.
-        if ( graph->checkForStructuralErrors() ) {
-            g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
-        }
-    }
-
-    return sst_get_cpu_time() - start_graph_gen;
+    return start_graph_gen;
 }
 
 static double
@@ -798,38 +790,22 @@ main(int argc, char* argv[])
         if ( !cfg.wasOptionSetOnCmdLine("verbose") ) cfg.verbose_ = cpt_output_verbose;
         if ( !cfg.wasOptionSetOnCmdLine("debug-file") ) cfg.debugFile_ = cpt_debug_file;
         if ( !cfg.wasOptionSetOnCmdLine("checkpoint-prefix") ) cfg.checkpoint_prefix_ = cpt_prefix;
+
+        ////// Initialize global data //////
+
+        // These are initialized after graph creation in the non-restart path
+        world_size.thread = cfg.num_threads();
+        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+        Simulation_impl::getTimeLord()->init(cfg.timeBase());
     }
 
-    // Set the debug output location
-    Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
-
-
-    // If we are doing a parallel load with a file per rank, add the
-    // rank number to the file name before the extension
-    if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
-        addRankToFileName(cfg.configFile_, myRank.rank);
-    }
     // Check to see if the config file exists
     cfg.checkConfigFile();
 
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
-
-    ////// Initialize global data //////
-
-    // Set the number of threads
-    world_size.thread = cfg.num_threads();
-
-    /* Build objects needed for startup */
-    Output::setWorldSize(world_size.rank, world_size.thread, myrank);
-    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
-
-    g_output.verbose(
-        CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
-        world_size.rank, world_size.thread);
-
-    // Need to initialize TimeLord
-    Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
     if ( restart && (cfg.num_ranks() != cpt_num_ranks || cfg.num_threads() != cpt_num_threads) ) {
         g_output.fatal(
@@ -850,8 +826,43 @@ main(int argc, char* argv[])
         // Get the memory before we create the graph
         const uint64_t pre_graph_create_rss = maxGlobalMemSize();
 
-        double graph_gen_time = start_graph_creation(graph, cfg, factory, world_size, myRank);
+        double start_graph_gen = start_graph_creation(graph, cfg, factory, world_size, myRank);
 
+        ////// Initialize global data //////
+        // Config is updated from SDL, initialize globals
+
+        // Set the number of threads
+        world_size.thread = cfg.num_threads();
+
+        // If we are doing a parallel load with a file per rank, add the
+        // rank number to the file name before the extension
+        if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
+            addRankToFileName(cfg.configFile_, myRank.rank);
+        }
+
+        // Create global output object
+        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+
+        g_output.verbose(
+            CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
+            world_size.rank, world_size.thread);
+
+        // TimeLord must be initialized prior to postCreationCleanup() call
+        Simulation_impl::getTimeLord()->init(cfg.timeBase());
+
+        // Cleanup after graph creation
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
+
+            graph->postCreationCleanup();
+
+            // Check config graph to see if there are structural errors.
+            if ( graph->checkForStructuralErrors() ) {
+                g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
+            }
+        }
+        double graph_gen_time = sst_get_cpu_time() - start_graph_gen;
 
         // If verbose level is high enough, compute the total number
         // components in the simulation.  NOTE: if parallel-load is
@@ -875,6 +886,7 @@ main(int argc, char* argv[])
         }
 
         ////// End ConfigGraph Creation //////
+
 #ifdef SST_CONFIG_HAVE_MPI
         // If we did a parallel load, check to make sure that all the
         // ranks have the same thread count set (the python can change the

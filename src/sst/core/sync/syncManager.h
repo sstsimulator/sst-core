@@ -38,7 +38,7 @@ class RankSync : public SST::Core::Serialization::serializable
 {
 public:
     RankSync(RankInfo num_ranks) : num_ranks(num_ranks) { link_maps.resize(num_ranks.rank); }
-    RankSync() {}
+    RankSync() : max_period(nullptr) {}
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
@@ -87,7 +87,7 @@ private:
 class ThreadSync : public SST::Core::Serialization::serializable
 {
 public:
-    ThreadSync() {}
+    ThreadSync() : max_period(nullptr) {}
     virtual ~ThreadSync() {}
 
     virtual void before()                     = 0;
@@ -113,7 +113,9 @@ public:
     }
     ImplementVirtualSerializable(SST::ThreadSync)
 
-        protected : SimTime_t nextSyncTime;
+        protected :
+
+        SimTime_t nextSyncTime;
     TimeConverter* max_period;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
