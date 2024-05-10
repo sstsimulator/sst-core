@@ -803,6 +803,12 @@ main(int argc, char* argv[])
     // Check to see if the config file exists
     cfg.checkConfigFile();
 
+    // If we are doing a parallel load with a file per rank, add the
+    // rank number to the file name before the extension
+    if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
+        addRankToFileName(cfg.configFile_, myRank.rank);
+    }
+
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
 
@@ -832,12 +838,6 @@ main(int argc, char* argv[])
 
         // Set the number of threads
         world_size.thread = cfg.num_threads();
-
-        // If we are doing a parallel load with a file per rank, add the
-        // rank number to the file name before the extension
-        if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
-            addRankToFileName(cfg.configFile_, myRank.rank);
-        }
 
         // Create global output object
         Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
