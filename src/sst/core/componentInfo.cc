@@ -223,8 +223,8 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& share_flags;
 
     // For SubComponents map, need to serialize map by hand since we
-    // weill need to use the track non-pointer as pointer feature in
-    // the serilzer.  This is becaues the SubComponent's ComponentInfo
+    // we will need to use the track non-pointer as pointer feature in
+    // the serializer. This is becaues the SubComponent's ComponentInfo
     // object is actually stored in the map and they may have their
     // own SubCompenents that will need to point to the data location
     // in the map.

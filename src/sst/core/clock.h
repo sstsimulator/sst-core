@@ -117,7 +117,6 @@ private:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Clock)
-    // NotSerializable(SST::Clock)
 };
 
 

@@ -101,13 +101,7 @@ template <bool TS>
 void
 TimeVortexPQBase<TS>::print(Output& out) const
 {
-    out.output("TimeVortex state:\n");
-
-    //  STL's priority_queue does not support iteration.
-    /*std::vector<Activity*>& act = const_cast<TimeVortexPQBase<TS>*>(this)->getContainer(data);
-        for ( auto it = act.begin(); it != act.end(); it++ ) {
-            (*it)->print("  ", out);
-        }*/
+    out.output("TimeVortex state: cannot iterate priority_queue\n");
 }
 
 template <bool TS>

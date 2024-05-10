@@ -35,10 +35,6 @@ CheckpointAction::CheckpointAction(Config* UNUSED(cfg), int this_rank, Simulatio
 {
     sim->insertActivity(period->getFactor(), this);
     if ( (0 == this_rank) ) { lastTime = sst_get_cpu_time(); }
-    // if( (0 == this_rank) ) {
-    //     sim->insertActivity( period->getFactor(), this );
-    //     lastTime = sst_get_cpu_time();
-    // }
 }
 
 CheckpointAction::~CheckpointAction() {}
@@ -61,8 +57,6 @@ CheckpointAction::execute(void)
 
     SimTime_t next = sim->getCurrentSimCycle() + m_period->getFactor();
     sim->insertActivity(next, this);
-
-    // Print some resource usage
 }
 
 } // namespace SST

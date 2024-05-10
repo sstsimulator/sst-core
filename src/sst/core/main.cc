@@ -584,7 +584,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 set<string> lib_names;
                 set<string> other_lib_names;
                 Factory::getFactory()->getLoadedLibraryNames(lib_names);
-                // vector<set<string> > all_lib_names;
 
                 // Send my lib_names to the next lowest rank
                 if ( info.myRank.rank == (info.world_size.rank - 1) ) {

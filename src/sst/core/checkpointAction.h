@@ -40,7 +40,10 @@ public:
 
     NotSerializable(SST::CheckpointAction) // Going to have to fix this
 
-        private : CheckpointAction() {};
+        private :
+
+        CheckpointAction()
+    {}
     CheckpointAction(const CheckpointAction&);
 
     void           operator=(CheckpointAction const&);
