@@ -34,8 +34,8 @@ public:
             size_t size = v.size();
             ser.size(size);
             for ( auto it = v.begin(); it != v.end(); ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -44,8 +44,8 @@ public:
             size_t size = v.size();
             ser.pack(size);
             for ( auto it = v.begin(); it != v.end(); ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -54,8 +54,8 @@ public:
             size_t size;
             ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
-                T t = {};
-                serialize<T>()(t, ser);
+                T    t = {};
+                ser& t;
                 v.push_back(t);
             }
             break;

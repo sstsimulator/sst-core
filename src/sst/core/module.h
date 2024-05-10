@@ -13,12 +13,13 @@
 #define SST_CORE_MODULE_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/serialization/serializable.h"
 
 namespace SST {
 /**
    Module is a tag class used with the loadModule function.
  */
-class Module
+class Module : public SST::Core::Serialization::serializable
 {
 public:
     SST_ELI_DECLARE_BASE(Module)
@@ -27,6 +28,8 @@ public:
     SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
     Module() {}
     virtual ~Module() {}
+    void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    ImplementSerializable(SST::Module)
 };
 
 namespace MODULE {

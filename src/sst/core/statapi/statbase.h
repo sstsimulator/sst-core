@@ -13,6 +13,7 @@
 #define SST_CORE_STATAPI_STATBASE_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/params.h"
 #include "sst/core/serialization/serializable.h"

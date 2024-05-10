@@ -13,4 +13,7 @@ import sys
 
 sst.setProgramOption("stop-at", "1us");
 
+test = sys.argv[1]
+
 comp = sst.Component("Component0", "coreTestElement.coreTestSerialization")
+comp.addParam("test", test)

@@ -334,7 +334,8 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
+        dict, SST_ConvertToPythonString("heartbeat-period"),
+        SST_ConvertToPythonString(cfg->heartbeat_period().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-directory"),
         SST_ConvertToPythonString(cfg->output_directory().c_str()));
@@ -386,6 +387,14 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
 #endif
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("force-rank-seq-startup"), SST_ConvertToPythonBool(cfg->rank_seq_startup()));
+
+    // Advanced options - checkpointing
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-period"),
+        SST_ConvertToPythonString(cfg->checkpoint_period().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-prefix"),
+        SST_ConvertToPythonString(cfg->checkpoint_prefix().c_str()));
 
     return dict;
 }

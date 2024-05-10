@@ -67,7 +67,7 @@ public:
         Gets the next (random) double value in the distribution
         \return The next random double from the distribution
     */
-    double getNextDouble()
+    double getNextDouble() override
     {
         const double L = exp(-lambda);
         double       p = 1.0;
@@ -86,6 +86,26 @@ public:
         \return The lambda which the user created the distribution with
     */
     double getLambda() { return lambda; }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    PoissonDistribution() : RandomDistribution(), lambda(1.0) {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& const_cast<double&>(lambda);
+        ser& baseDistrib;
+        ser& deleteDistrib;
+    }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(PoissonDistribution)
 
 protected:
     /**

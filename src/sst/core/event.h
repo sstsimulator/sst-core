@@ -60,6 +60,12 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<void, Event*, classT, dataT>;
 
+    /**
+       New style (checkpointable) SSTHandler
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
+
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
     /** Constant, default value for id_types */
@@ -139,6 +145,7 @@ private:
     friend class NullEvent;
     friend class RankSync;
     friend class ThreadSync;
+    friend class TimeVortex;
 
 
     /** Cause this event to fire */

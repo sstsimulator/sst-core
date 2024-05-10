@@ -25,6 +25,7 @@ class Output;
 
 namespace IMPL {
 
+
 /**
  * Primary Event Queue
  */
@@ -35,6 +36,7 @@ class TimeVortexPQBase : public TimeVortex
 public:
     // TimeVortexPQ();
     TimeVortexPQBase(Params& params);
+    TimeVortexPQBase(); // For serialization only
     ~TimeVortexPQBase();
 
     bool      empty() override;
@@ -49,8 +51,24 @@ public:
     uint64_t getCurrentDepth() const override { return current_depth; }
     uint64_t getMaxDepth() const override { return max_depth; }
 
+    void dbg_print(Output& out) override;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    virtual void fixup_handlers() override;
+
 private:
     typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>> dataType_t;
+
+    template <class T, class S, class C>
+    S& getContainer(std::priority_queue<T, S, C>& q)
+    {
+        struct UnderlyingContainer : std::priority_queue<T, S, C>
+        {
+            static S& getUnderlyingContainer(std::priority_queue<T, S, C>& q) { return q.*&UnderlyingContainer::c; }
+        };
+        return UnderlyingContainer::getUnderlyingContainer(q);
+    }
 
     // Data
     dataType_t data;

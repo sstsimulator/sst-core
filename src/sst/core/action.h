@@ -32,12 +32,14 @@ public:
 protected:
     /** Called to signal to the Simulation object to end the simulation */
     void endSimulation();
+
     /** Called to signal to the Simulation object to end the simulation
      * @param end Simulation cycle when the simulation finishes
      */
     void endSimulation(SimTime_t end);
 
-    NotSerializable(SST::Action)
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementVirtualSerializable(SST::Action)
 };
 
 } // namespace SST

@@ -34,6 +34,7 @@ class ThreadSyncDirectSkip : public ThreadSync
 public:
     /** Create a new ThreadSync object */
     ThreadSyncDirectSkip(int num_threads, int thread, Simulation_impl* sim);
+    ThreadSyncDirectSkip() {} // For serialization only
     ~ThreadSyncDirectSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -58,6 +59,9 @@ public:
     }
 
     uint64_t getDataSize() const;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::ThreadSyncDirectSkip)
 
 private:
     SimTime_t                        my_max_period;

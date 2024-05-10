@@ -46,13 +46,28 @@ public:
         value specified by the user
         \return Constant value specified by the user when creating the class
     */
-    double getNextDouble() { return mean; }
+    double getNextDouble() override { return mean; }
 
     /**
         Gets the constant value for the distribution
         \return Constant value specified by the user when creating the class
     */
     double getMean() { return mean; }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    ConstantDistribution() : RandomDistribution() {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& mean; }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(SST::RNG::ConstantDistribution)
 
 protected:
     /**

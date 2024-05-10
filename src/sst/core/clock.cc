@@ -61,6 +61,18 @@ Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
     return 0;
 }
 
+
+bool
+Clock::isHandlerRegistered(Clock::HandlerBase* handler)
+{
+    for ( auto* h : staticHandlerMap ) {
+        if ( h == handler ) return true;
+    }
+
+    return false;
+}
+
+
 Cycle_t
 Clock::getNextCycle()
 {
@@ -141,5 +153,19 @@ Clock::toString() const
         << " with priority " << getPriority() << " with " << staticHandlerMap.size() << " items on clock list";
     return buf.str();
 }
+
+void
+Clock::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Action::serialize_order(ser);
+
+    // Won't serialize the handlers; they'll be re-registered at
+    // restart
+    ser& currentCycle;
+    ser& period;
+    ser& next;
+    ser& scheduled;
+}
+
 
 } // namespace SST

@@ -160,3 +160,10 @@ MarsagliaRNG::generateNextUInt32()
 
     return returnUInt32;
 }
+
+void
+MarsagliaRNG::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& m_z;
+    ser& m_w;
+}

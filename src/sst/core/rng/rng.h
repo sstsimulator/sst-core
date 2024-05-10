@@ -12,6 +12,8 @@
 #ifndef SST_CORE_RNG_RNG_H
 #define SST_CORE_RNG_RNG_H
 
+#include "sst/core/serialization/serializable.h"
+
 #include <stdint.h>
 
 namespace SST {
@@ -24,7 +26,7 @@ namespace RNG {
     implement an actual RNG itself only the base class which describes the methods each
     class will implement.
 */
-class Random
+class Random : public SST::Core::Serialization::serializable
 {
 
 public:
@@ -57,6 +59,9 @@ public:
         Destroys the random number generator
     */
     virtual ~Random() {}
+
+    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {};
+    ImplementVirtualSerializable(SST::RNG::Random)
 };
 
 } // namespace RNG

@@ -34,10 +34,11 @@ namespace Profile {
 class SyncProfileTool;
 }
 
-class RankSync
+class RankSync : public SST::Core::Serialization::serializable
 {
 public:
     RankSync(RankInfo num_ranks) : num_ranks(num_ranks) { link_maps.resize(num_ranks.rank); }
+    RankSync() : max_period(nullptr) {}
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
@@ -57,8 +58,14 @@ public:
 
     virtual uint64_t getDataSize() const = 0;
 
-protected:
-    SimTime_t      nextSyncTime;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& nextSyncTime;
+        ser& max_period; // Unused
+        // ser& num_ranks; // const so a pain to serialize but don't need it
+        ser& link_maps;
+    }
+    ImplementVirtualSerializable(SST::RankSync) protected : SimTime_t nextSyncTime;
     TimeConverter* max_period;
     const RankInfo num_ranks;
 
@@ -77,10 +84,10 @@ protected:
 private:
 };
 
-class ThreadSync
+class ThreadSync : public SST::Core::Serialization::serializable
 {
 public:
-    ThreadSync() {}
+    ThreadSync() : max_period(nullptr) {}
     virtual ~ThreadSync() {}
 
     virtual void before()                     = 0;
@@ -99,8 +106,16 @@ public:
     virtual void           registerLink(const std::string& name, Link* link)                = 0;
     virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
 
-protected:
-    SimTime_t      nextSyncTime;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& nextSyncTime;
+        ser& max_period; // Unused
+    }
+    ImplementVirtualSerializable(SST::ThreadSync)
+
+        protected :
+
+        SimTime_t nextSyncTime;
     TimeConverter* max_period;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
@@ -122,6 +137,7 @@ public:
     SyncManager(
         const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
         const std::vector<SimTime_t>& interThreadLatencies);
+    SyncManager(); // For serialization only
     virtual ~SyncManager();
 
     /** Register a Link which this Sync Object is responsible for */
@@ -142,6 +158,8 @@ public:
 
     void addProfileTool(Profile::SyncProfileTool* tool);
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::SyncManager)
 private:
     enum sync_type_t { RANK, THREAD };
 
@@ -164,8 +182,6 @@ private:
     SyncProfileToolList* profile_tools = nullptr;
 
     void computeNextInsert();
-
-    NotSerializable(SST::SyncManager)
 };
 
 } // namespace SST

@@ -38,6 +38,9 @@ public:
     SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter* period);
     ~SimulatorHeartbeat();
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::SimulatorHeartbeat)
+
 private:
     SimulatorHeartbeat() {};
     SimulatorHeartbeat(const SimulatorHeartbeat&);

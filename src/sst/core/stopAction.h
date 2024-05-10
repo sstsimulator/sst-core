@@ -56,6 +56,14 @@ public:
     {
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        Action::serialize_order(ser);
+        ser& message;
+        ser& print_message;
+    }
+    ImplementSerializable(SST::StopAction)
 };
 
 } // namespace SST

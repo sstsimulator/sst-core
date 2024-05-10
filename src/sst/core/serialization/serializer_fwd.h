@@ -18,7 +18,7 @@ namespace Serialization {
 
 class serializer;
 
-}
+} // namespace Serialization
 } // namespace Core
 } // namespace SST
 

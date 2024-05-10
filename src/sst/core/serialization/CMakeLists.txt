@@ -21,9 +21,11 @@ set(SSTSerializationHeaders
     serialize_buffer_accessor.h
     serialize_deque.h
     serialize.h
+    serialize_impl_fwd.h
     serialize_list.h
     serialize_map.h
     serialize_packer.h
+    serialize_priority_queue.h
     serializer_fwd.h
     serializer.h
     serialize_serializable.h
