@@ -61,7 +61,6 @@ nobase_dist_sst_HEADERS = \
 	profile/syncProfileTool.h \
 	profile/componentProfileTool.h \
 	rankInfo.h \
-	simulation.h \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstpart.h \

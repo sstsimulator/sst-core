@@ -20,7 +20,6 @@
 #include "sst/core/output.h"
 #include "sst/core/profile/profiletool.h"
 #include "sst/core/rankInfo.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
@@ -68,55 +67,55 @@ class StatisticProcessingEngine;
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation_impl : public Simulation
+class Simulation_impl
 {
 
 public:
     /********  Public API inherited from Simulation ********/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    SimulationRunMode getSimulationMode() const override { return runMode; };
+    SimulationRunMode getSimulationMode() const { return runMode; };
 
     /** Return the current simulation time as a cycle count*/
-    SimTime_t getCurrentSimCycle() const override;
+    SimTime_t getCurrentSimCycle() const;
 
     /** Return the end simulation time as a cycle count*/
-    SimTime_t getEndSimCycle() const override;
+    SimTime_t getEndSimCycle() const;
 
     /** Return the current priority */
-    int getCurrentPriority() const override;
+    int getCurrentPriority() const;
 
     /** Return the elapsed simulation time as a time */
-    UnitAlgebra getElapsedSimTime() const override;
+    UnitAlgebra getElapsedSimTime() const;
 
     /** Return the end simulation time as a time */
-    UnitAlgebra getEndSimTime() const override;
+    UnitAlgebra getEndSimTime() const;
 
     /** Get this instance's parallel rank */
-    RankInfo getRank() const override { return my_rank; }
+    RankInfo getRank() const { return my_rank; }
 
     /** Get the number of parallel ranks in the simulation */
-    RankInfo getNumRanks() const override { return num_ranks; }
+    RankInfo getNumRanks() const { return num_ranks; }
 
     /**
     Returns the output directory of the simulation
     @return Directory in which simulation outputs are placed
     */
-    std::string& getOutputDirectory() override { return output_directory; }
+    std::string& getOutputDirectory() { return output_directory; }
 
     /** Signifies that a library is required for this simulation.
      *  @param name Name of the library
      */
-    virtual void requireLibrary(const std::string& name) override;
+    void requireLibrary(const std::string& name);
 
     /** Causes the current status of the simulation to be printed to stderr.
      * @param fullStatus - if true, call printStatus() on all components as well
      *        as print the base Simulation's status
      */
-    virtual void printStatus(bool fullStatus) override;
+    void printStatus(bool fullStatus);
 
-    virtual double getRunPhaseElapsedRealTime() const override;
-    virtual double getInitPhaseElapsedRealTime() const override;
-    virtual double getCompletePhaseElapsedRealTime() const override;
+    double getRunPhaseElapsedRealTime() const;
+    double getInitPhaseElapsedRealTime() const;
+    double getCompletePhaseElapsedRealTime() const;
 
     /******** End Public API from Simulation ********/
 

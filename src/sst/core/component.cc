@@ -41,14 +41,14 @@ Component::registerAsPrimaryComponent()
 void
 Component::primaryComponentDoNotEndSim()
 {
-    int thread = getSimulation()->getRank().thread;
+    int thread = Simulation_impl::getSimulation()->getRank().thread;
     Simulation_impl::getSimulation()->getExit()->refInc(getId(), thread);
 }
 
 void
 Component::primaryComponentOKToEndSim()
 {
-    int thread = getSimulation()->getRank().thread;
+    int thread = Simulation_impl::getSimulation()->getRank().thread;
     Simulation_impl::getSimulation()->getExit()->refDec(getId(), thread);
 }
 
