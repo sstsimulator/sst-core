@@ -36,8 +36,8 @@ public:
             ser.size(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = *it;
-                serialize<T>()(t, ser);
+                T&   t = *it;
+                ser& t;
             }
             break;
         }
@@ -47,8 +47,8 @@ public:
             ser.pack(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = *it;
-                serialize<T>()(t, ser);
+                T&   t = *it;
+                ser& t;
             }
             break;
         }
@@ -57,8 +57,8 @@ public:
             size_t size;
             ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
-                T t;
-                serialize<T>()(t, ser);
+                T    t;
+                ser& t;
                 v.push_back(t);
             }
             break;

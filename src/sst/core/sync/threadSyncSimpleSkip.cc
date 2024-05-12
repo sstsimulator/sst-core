@@ -177,6 +177,25 @@ ThreadSyncSimpleSkip::getDataSize() const
     return count;
 }
 
+void
+ThreadSyncSimpleSkip::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ThreadSync::serialize_order(ser);
+    ser& my_max_period;
+    ser& num_threads;
+    ser& thread;
+    ser& localMinimumNextActivityTime;
+    ser& totalWaitTime;
+    ser& single_rank;
+
+    // No need to serialize
+    // link_map - unused after construction
+    // sim - regenerate
+    // barrier - regenerate & guarantee empty during checkpoint
+    // lock - regenerate
+    // queues - empty
+}
+
 Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
 
 } // namespace SST

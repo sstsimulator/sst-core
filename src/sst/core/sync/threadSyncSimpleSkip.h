@@ -35,6 +35,7 @@ class ThreadSyncSimpleSkip : public ThreadSync
 public:
     /** Create a new ThreadSync object */
     ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim);
+    ThreadSyncSimpleSkip() {} // For serialization only
     ~ThreadSyncSimpleSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -56,6 +57,9 @@ public:
     uint64_t getDataSize() const;
 
     // static void disable() { disabled = true; barrier.disable(); }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::ThreadSyncSimpleSkip)
 
 private:
     // Stores the links until they can be intialized with the right

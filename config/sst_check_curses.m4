@@ -44,9 +44,10 @@ AC_DEFUN([SST_CHECK_CURSES],
             CPPFLAGS="$CPPFLAGS $CURSES_CPPFLAGS"
             LDFLAGS="$LDFLAGS $CURSES_LIBS"
 
-            dnl Check for specific header
+            dnl Check that the specific header exists and that the config-provided lib locations are correct.
             AC_LANG_PUSH([C++])
             AC_CHECK_HEADER([ncurses.h], [], [sst_check_curses_happy="no"])
+            AC_SEARCH_LIBS([initscr], [$CURSES_LIBS], [], [sst_check_curses_happy="no"])
             AC_LANG_POP([C++])
 
             CPPFLAGS="$CPPFLAGS_saved"

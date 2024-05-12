@@ -154,11 +154,9 @@ Exit::computeEndTime()
     return end_time;
 }
 
-// bool Exit::handler( Event* e )
 void
 Exit::check()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     int value = (m_refCount > 0);
     int out;
 
@@ -184,6 +182,28 @@ Exit::check()
     //     SimTime_t next = sim->getCurrentSimCycle() +
     //     sim->insertActivity( next, this );
     // }
+}
+
+void
+Exit::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Action::serialize_order(ser);
+
+    ser& num_threads;
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        m_thread_counts = new unsigned int[num_threads];
+    }
+
+    for ( int i = 0; i < num_threads; i++ ) {
+        ser& m_thread_counts[i];
+    }
+
+    ser& m_refCount;
+    ser& global_count;
+    ser& m_idSet;
+    ser& end_time;
+    ser& single_rank;
 }
 
 } // namespace SST

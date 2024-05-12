@@ -13,6 +13,7 @@
 #define SST_CORE_LINK_H
 
 #include "sst/core/event.h"
+#include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
@@ -33,11 +34,25 @@ namespace Profile {
 class EventHandlerProfileTool;
 }
 
+class Link;
+
+template <>
+class SST::Core::Serialization::serialize_impl<Link*>
+{
+    template <class A>
+    friend class serialize;
+    // Function implemented in link.cc
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
+};
+
+
 /** Link between two components. Carries events */
 class alignas(64) Link
 {
     enum Type_t : uint16_t { POLL, HANDLER, SYNC, UNINITIALIZED };
     enum Mode_t : uint16_t { INIT, RUN, COMPLETE };
+
+    friend class SST::Core::Serialization::serialize_impl<Link*>;
 
 public:
     friend class LinkPair;

@@ -57,8 +57,13 @@ public:
         destroyed. A good place to print out statistics. */
     virtual void finish() override {}
 
-private:
+protected:
+    // For serialization only
+    SubComponent();
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
     friend class Component;
+    ImplementSerializable(SST::SubComponent)
 };
 
 namespace SUBCOMPONENT {

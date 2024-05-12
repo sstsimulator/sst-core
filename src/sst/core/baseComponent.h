@@ -48,9 +48,10 @@ class UnitAlgebra;
 /**
  * Main component object for the simulation.
  */
-class BaseComponent
+class BaseComponent : public SST::Core::Serialization::serializable
 {
 
+    friend class Component;
     friend class ComponentExtension;
     friend class ComponentInfo;
     friend class SubComponent;
@@ -60,6 +61,9 @@ protected:
     using StatCreateFunction = std::function<Statistics::StatisticBase*(
         BaseComponent*, Statistics::StatisticProcessingEngine*, const std::string& /*type*/,
         const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
+
+    // For serialization only
+    BaseComponent();
 
 public:
     BaseComponent(ComponentId_t id);
@@ -353,6 +357,16 @@ protected:
     }
 
 private:
+    ImplementSerializable(SST::BaseComponent)
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+
+    /**
+       Handles the profile points, default time base, handler tracking
+       and checkpointing.
+     */
+    void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll);
+
     template <typename T>
     Statistics::Statistic<T>*
     createStatistic(SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
@@ -870,9 +884,13 @@ protected:
     std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
 private:
-    ComponentInfo*   my_info = nullptr;
-    Simulation_impl* sim_    = nullptr;
-    bool             isExtension;
+    ComponentInfo*   my_info     = nullptr;
+    Simulation_impl* sim_        = nullptr;
+    bool             isExtension = false;
+
+    // Need to track clock handlers for checkpointing.  We need to
+    // know what clock handlers we have registered with the core
+    std::vector<Clock::HandlerBase*> clock_handlers;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
@@ -1076,6 +1094,42 @@ public:
         }
     }
 };
+
+namespace Core {
+namespace Serialization {
+
+template <class T>
+class serialize_impl<Statistic<T>*>
+{
+    template <class A>
+    friend class serialize;
+    void operator()(Statistic<T>*& s, serializer& ser)
+    {
+        // For sizer and pack, only need to get the information needed
+        // to create a NullStatistic on unpack.
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+        case serializer::PACK:
+        {
+            BaseComponent* comp = s->getComponent();
+            ser&           comp;
+            break;
+        }
+        case serializer::UNPACK:
+        {
+            Params         params;
+            BaseComponent* comp;
+            ser&           comp;
+            s = Factory::getFactory()->CreateWithParams<Statistic<T>>(
+                "sst.NullStatistic", params, comp, "", "", params);
+            break;
+        }
+        }
+    }
+};
+
+} // namespace Serialization
+} // namespace Core
 
 } // namespace SST
 

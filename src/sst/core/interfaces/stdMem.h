@@ -1145,6 +1145,9 @@ public:
         SubComponent(id)
     {}
 
+    /** Default constructor, used for serialization ONLY */
+    StandardMem() : SubComponent() {}
+
     /**
      * Sends a memory-based request during the init()/complete() phases
      * @param req Request to send
@@ -1204,6 +1207,11 @@ public:
      * @param size Size, in bytes, of the region mapped to this endpoint
      */
     virtual void setMemoryMappedAddressRegion(Addr start, Addr size) = 0;
+
+    /**
+     * Serialization function
+     */
+    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST::SubComponent::serialize_order(ser); }
 };
 
 } // namespace Interfaces

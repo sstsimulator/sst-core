@@ -58,7 +58,6 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UN
     slaveExchangeDoneBarrier(num_ranks.thread),
     allDoneBarrier(num_ranks.thread)
 {
-    // TraceFunction(CALL_INFO_LONG);
     max_period     = Simulation_impl::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
     recv_count     = new int[num_ranks.thread];
@@ -157,7 +156,6 @@ RankSyncParallelSkip::getDataSize() const
 void
 RankSyncParallelSkip::execute(int thread)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     if ( thread == 0 ) {
         exchange_master(thread);
         allDoneBarrier.wait(); /* Sync up with slave finish below */
@@ -482,5 +480,30 @@ RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
 
     deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 }
+
+void
+RankSyncParallelSkip::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    RankSync::serialize_order(ser);
+    ser& myNextSyncTime;
+    ser& mpiWaitTime;
+    ser& deserializeTime;
+    ser& send_count;
+    for ( uint32_t i = 0; i < num_ranks.thread; i++ )
+        ser& recv_count[i];
+
+    ser& comm_send_map;
+    ser& comm_recv_map;
+
+    // Unused
+    // link_map
+
+    //  No need to serialize
+    // remaining_deser
+    // queues (deserialize_queue, link_send_queue, serialize_queue, send_queue)
+    // barriers (serializeReadyBarrier, slaveExchangeDoneBarrier, allDoneBarrier)
+    // lock
+}
+
 
 } // namespace SST

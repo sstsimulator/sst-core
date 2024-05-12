@@ -29,4 +29,10 @@ Action::endSimulation(SimTime_t end)
     Simulation_impl::getSimulation()->endSimulation(end);
 }
 
+void
+Action::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST::Activity::serialize_order(ser);
+}
+
 } // namespace SST

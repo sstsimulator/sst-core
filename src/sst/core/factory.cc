@@ -562,6 +562,12 @@ Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
     }
 }
 
+const std::string&
+Factory::getSearchPaths()
+{
+    return searchPaths;
+}
+
 bool
 Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
 {

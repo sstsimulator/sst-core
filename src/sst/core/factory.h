@@ -266,6 +266,8 @@ public:
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
 
+    const std::string& getSearchPaths();
+
     /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
      * @param type - The name of the component/subcomponent
      * @param slotName - The name of the SubComponentSlot

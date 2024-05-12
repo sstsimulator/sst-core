@@ -35,6 +35,7 @@ class RankSyncParallelSkip : public RankSync
 public:
     /** Create a new Sync object which fires with a specified period */
     RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
+    RankSyncParallelSkip() {} // For serialization
     virtual ~RankSyncParallelSkip();
 
     /** Register a Link which this Sync Object is responsible for */
@@ -53,6 +54,9 @@ public:
 
     uint64_t getDataSize() const override;
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::RankSyncParallelSkip)
+
 private:
     static SimTime_t myNextSyncTime;
 
@@ -60,15 +64,24 @@ private:
     void exchange_master(int thread);
     void exchange_slave(int thread);
 
-    struct comm_send_pair
+    struct comm_send_pair : public SST::Core::Serialization::serializable
     {
         RankInfo   to_rank;
         SyncQueue* squeue; // SyncQueue
         char*      sbuf;
         uint32_t   remote_size;
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            ser& to_rank;
+            // squeue - empty so recreate on restart
+            // sbuf - empty so recreate on restart
+            // remote_size - don't need
+        }
+        ImplementSerializable(comm_send_pair)
     };
 
-    struct comm_recv_pair
+    struct comm_recv_pair : public SST::Core::Serialization::serializable
     {
         uint32_t               remote_rank;
         uint32_t               local_thread;
@@ -79,6 +92,16 @@ private:
 #ifdef SST_CONFIG_HAVE_MPI
         MPI_Request req;
 #endif
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            ser& remote_rank;
+            ser& local_thread;
+            // activity_vec - empty so recreate on restart
+            // rbuf - empty so recreate on restart
+            // recv_done - don't need
+            // req - don't need
+        }
+        ImplementSerializable(comm_recv_pair)
     };
 
     typedef std::map<RankInfo, comm_send_pair> comm_send_map_t;

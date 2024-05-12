@@ -32,6 +32,7 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
+        { "test", "Type of serialization test to perform", NULL}
     )
 
     // Optional since there is nothing to document

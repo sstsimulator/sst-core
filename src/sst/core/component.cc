@@ -52,4 +52,14 @@ Component::primaryComponentOKToEndSim()
     Simulation_impl::getSimulation()->getExit()->refDec(getId(), thread);
 }
 
+
+void
+Component::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent::serialize_order(ser);
+}
+
+// For serialization only
+Component::Component() : BaseComponent() {}
+
 } // namespace SST

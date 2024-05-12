@@ -15,6 +15,8 @@
 
 #include "sst/core/configGraph.h"
 #include "sst/core/linkMap.h"
+#include "sst/core/serialization/serialize.h"
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 
@@ -22,6 +24,26 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     id(id),
     parent_info(nullptr),
     name(name),
+    type(""),
+    link_map(nullptr),
+    component(nullptr),
+    params(nullptr),
+    defaultTimeBase(nullptr),
+    statConfigs(nullptr),
+    enabledStatNames(nullptr),
+    enabledAllStats(false),
+    allStatConfig(nullptr),
+    coordinates(3, 0.0),
+    subIDIndex(1),
+    slot_name(""),
+    slot_num(-1),
+    share_flags(0)
+{}
+
+ComponentInfo::ComponentInfo() :
+    id(-1),
+    parent_info(nullptr),
+    name(""),
     type(""),
     link_map(nullptr),
     component(nullptr),
@@ -102,8 +124,6 @@ ComponentInfo::ComponentInfo(
     slot_num(ccomp->slot_num),
     share_flags(0)
 {
-    // printf("ComponentInfo(ConfigComponent): id = %llx\n",ccomp->id);
-
     // See how many subcomponents are in each slot so we know how to name them
     std::map<std::string, int> counts;
     for ( auto sc : ccomp->subComponents ) {
@@ -160,6 +180,101 @@ ComponentInfo::~ComponentInfo()
         delete component;
     }
 }
+
+void
+ComponentInfo::serialize_comp(SST::Core::Serialization::serializer& ser)
+{
+    ser& component;
+    ser& link_map;
+    for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
+        it->second.serialize_comp(ser);
+    }
+}
+
+void
+ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    // The ComponentInfo for the Component will make sure all of the
+    // hierarchy of ComponentInfos are serialized before serializing
+    // any components, which includes serializing links because they
+    // have handlers which have pointers to components.  This is done
+    // to ensure that the ComponentInfo objects in the subComponents
+    // map serialize first.  If they don't, then we may end up with a
+    // corrupted subComponents map when we restart.
+
+    // Serialize all my data except the component and link_map
+
+    ser& const_cast<ComponentId_t&>(id);
+    ser& parent_info;
+    ser& const_cast<std::string&>(name);
+    ser& const_cast<std::string&>(type);
+
+    // Not used after construction, no need to serialize
+    // ser& params;
+
+    ser& defaultTimeBase;
+    // ser& statConfigs;
+    // ser& allStatConfig;
+    // ser& statLoadLevel;
+    // ser& coordinates;
+    ser& subIDIndex;
+    ser& const_cast<std::string&>(slot_name);
+    ser& slot_num;
+    ser& share_flags;
+
+    // For SubComponents map, need to serialize map by hand since we
+    // we will need to use the track non-pointer as pointer feature in
+    // the serializer. This is becaues the SubComponent's ComponentInfo
+    // object is actually stored in the map and they may have their
+    // own SubCompenents that will need to point to the data location
+    // in the map.
+
+    // ser& subComponents;
+    switch ( ser.mode() ) {
+    case SST::Core::Serialization::serializer::SIZER:
+    {
+        size_t size = subComponents.size();
+        ser&   size;
+        for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
+            // keys are const values - annoyingly
+            ser& const_cast<ComponentId_t&>(it->first);
+            ser | it->second;
+        }
+        break;
+    }
+    case SST::Core::Serialization::serializer::PACK:
+    {
+        size_t size = subComponents.size();
+        ser&   size;
+        for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
+            // keys are const values - annoyingly
+            ser& const_cast<ComponentId_t&>(it->first);
+            ser | it->second;
+        }
+        break;
+    }
+    case SST::Core::Serialization::serializer::UNPACK:
+    {
+        size_t size;
+        ser&   size;
+        for ( size_t i = 0; i < size; ++i ) {
+            ComponentId_t key;
+            ser&          key;
+
+            auto p = subComponents.emplace(key, ComponentInfo {});
+
+            ser | p.first->second;
+        }
+        break;
+    }
+    }
+
+    // Only the parent Component will call serialize_comp directly.
+    // This function will walk the hierarchy and call it on all of its
+    // subcomponent children.
+    if ( parent_info == nullptr ) { serialize_comp(ser); }
+}
+
 
 LinkMap*
 ComponentInfo::getLinkMap()
@@ -253,6 +368,60 @@ ComponentInfo::hasLinks() const
         if ( sc.second.hasLinks() ) return true;
     }
     return false;
+}
+
+////  Functions for testing serialization
+
+ComponentInfo::ComponentInfo(
+    ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter* tv) :
+    id(id),
+    parent_info(nullptr),
+    name(name),
+    type(""),
+    link_map(nullptr),
+    component(nullptr),
+    params(nullptr),
+    defaultTimeBase(tv),
+    statConfigs(nullptr),
+    enabledStatNames(nullptr),
+    enabledAllStats(false),
+    allStatConfig(nullptr),
+    coordinates(3, 0.0),
+    subIDIndex(1),
+    slot_name(slot_name),
+    slot_num(-1),
+    share_flags(0)
+{}
+
+ComponentInfo*
+ComponentInfo::test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter* tv)
+{
+    // Get next id, which is stored only in the ultimate parent
+    ComponentInfo* real_comp = this;
+    while ( real_comp->parent_info != nullptr )
+        real_comp = real_comp->parent_info;
+
+    auto ret = subComponents.emplace(
+        std::piecewise_construct, std::forward_as_tuple(real_comp->subIDIndex),
+        std::forward_as_tuple(real_comp->subIDIndex, name, slot_name, tv));
+    real_comp->subIDIndex++;
+    ret.first->second.parent_info = this;
+    return &(ret.first->second);
+}
+
+void
+ComponentInfo::test_printComponentInfoHierarchy(int indent)
+{
+    for ( int i = 0; i < indent; ++i )
+        printf("  ");
+    printf("id = %" PRIu64 ", name = %s, slot_name = %s", id, name.c_str(), slot_name.c_str());
+    if ( defaultTimeBase != nullptr ) printf(", defaultTimeBase = %" PRI_SIMTIME, defaultTimeBase->getFactor());
+    if ( parent_info != nullptr ) printf(", parent_id = %" PRIu64, parent_info->id);
+    printf("\n");
+
+    for ( auto& x : subComponents ) {
+        x.second.test_printComponentInfoHierarchy(indent + 1);
+    }
 }
 
 } // namespace SST

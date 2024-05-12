@@ -32,6 +32,13 @@ public:
     ComponentExtension(ComponentId_t id);
 
     virtual ~ComponentExtension() {};
+
+private:
+    // For serialization only
+    ComponentExtension();
+
+    ImplementSerializable(SST::ComponentExtension)
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
 };
 
 } // namespace SST

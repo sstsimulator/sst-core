@@ -171,6 +171,17 @@ public:
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
+    // Contains info strings for each individual component, subcomponent, etc.
+    struct ComponentInfo
+    {
+        std::string                        componentName;
+        std::vector<std::string>           stringIndexer; // Used to maintain order of strings in infoMap
+        std::map<std::string, std::string> infoMap;
+    };
+
+    /** Return the map of all component info for the Library. */
+    std::map<std::string, std::vector<ComponentInfo>> getComponentInfo() { return m_components; }
+
     /** Store all Library Information. */
     void setAllLibraryInfo();
 
@@ -194,25 +205,42 @@ public:
     /** Set filters based on search term */
     void filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm);
 
+    /** Clear highlight characters from info strings */
+    void clearHighlights();
+
     /** Filter output from info map
      * @return True if the library filter is defined, otherwise False
      */
     bool getFilter() { return m_libraryFilter; }
+
     /**
      * Clears the component filter and sets the internal library filter status
      * @param libFilter
      */
     void resetFilters(bool libFilter) { m_libraryFilter = libFilter, m_componentFilters.clear(); }
+
     /**
      * Sets the internal library filter status
      * @param libFilter
      */
     void setLibraryFilter(bool filter) { m_libraryFilter = filter; }
+
     /**
      * Adds the component filter string to the end of the internal vector of components
      * @param component
      */
-    void setComponentFilter(std::string component) { m_componentFilters.push_back(component); }
+    int setComponentFilter(std::string component)
+    {
+        for ( auto& pair : m_components ) {
+            for ( auto& comp : pair.second ) {
+                if ( comp.componentName == component ) {
+                    m_componentFilters.push_back(component);
+                    return 0;
+                }
+            }
+        }
+        return 1;
+    }
 
     template <class BaseType>
     void setAllLibraryInfo();
@@ -224,14 +252,6 @@ public:
     std::string getLibraryDescription() { return ""; }
 
 private:
-    // Contains info strings for each individual component, subcomponent, etc.
-    struct ComponentInfo
-    {
-        std::string                        componentName;
-        std::vector<std::string>           stringIndexer; // Used to maintain order of strings in infoMap
-        std::map<std::string, std::string> infoMap;
-    };
-
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
     std::vector<std::string>                          m_componentNames;
