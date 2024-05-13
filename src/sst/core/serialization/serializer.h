@@ -16,6 +16,7 @@
 #include "sst/core/serialization/serialize_sizer.h"
 #include "sst/core/serialization/serialize_unpacker.h"
 
+#include <cstdint>
 #include <cstring>
 #include <list>
 #include <map>
