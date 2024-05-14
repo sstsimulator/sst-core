@@ -41,7 +41,10 @@ checkSimpleSerializeDeserialize(T data)
     auto buffer = SST::Comms::serialize(data);
     T    result;
     SST::Comms::deserialize(buffer, result);
-    return data == result;
+    DISABLE_WARN_MAYBE_UNINITIALIZED
+    bool ret = data == result;
+    REENABLE_WARNING
+    return ret;
 };
 
 template <typename T>

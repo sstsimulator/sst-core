@@ -765,7 +765,7 @@ main(int argc, char* argv[])
 
         std::string cpt_lib_path, cpt_timebase, cpt_output_directory;
         std::string cpt_output_core_prefix, cpt_debug_file, cpt_prefix;
-        int         cpt_output_verbose;
+        int         cpt_output_verbose = 0;
 
         ser.start_unpacking(buffer, size);
         ser& cpt_num_ranks;

@@ -28,7 +28,9 @@ public:
     void pack(T& t)
     {
         T* buf = ser_buffer_accessor::next<T>();
-        *buf   = t;
+        DISABLE_WARN_MAYBE_UNINITIALIZED
+        *buf = t;
+        REENABLE_WARNING
     }
 
     /**
