@@ -161,7 +161,6 @@ Simulation_impl::shutdown()
 }
 
 Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
-    Simulation(),
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
     endSim(false),

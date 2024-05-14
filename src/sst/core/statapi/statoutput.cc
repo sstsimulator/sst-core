@@ -56,6 +56,12 @@ StatisticOutput::registerGroup(StatisticGroup* group)
     stopRegisterGroup();
 }
 
+Output&
+StatisticOutput::getSimulationOutput()
+{
+    return Simulation_impl::getSimulationOutput();
+}
+
 StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) : StatisticOutput(outputParameters)
 {
     m_highestFieldHandle   = 0;
@@ -225,6 +231,7 @@ StatisticFieldsOutput::stopRegisterFields()
 {
     m_currentFieldStatName = "";
 }
+
 
 } // namespace Statistics
 } // namespace SST

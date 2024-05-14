@@ -625,12 +625,6 @@ BaseComponent::doesSubComponentExist(const std::string& type)
     return Factory::getFactory()->doesSubComponentExist(type);
 }
 
-Simulation*
-BaseComponent::getSimulation() const
-{
-    return sim_;
-}
-
 uint8_t
 BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statisticName) const
 {

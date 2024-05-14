@@ -107,6 +107,10 @@ protected:
      * Allows object to perform any shutdown required. */
     virtual void endOfSimulation() = 0;
 
+    /** Gets the Output object for the Simulation object associeted
+     * with this StatOutput. */
+    Output& getSimulationOutput();
+
 private:
     // Start / Stop of register Fields
     virtual void registerStatistic(StatisticBase* stat) = 0;
