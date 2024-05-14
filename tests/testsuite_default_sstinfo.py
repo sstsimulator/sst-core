@@ -76,6 +76,6 @@ class testcase_sstinfo(SSTTestCase):
 
         err_file_not_empty = os_test_file(errfile, expression='-s')
         if err_file_not_empty:
-            self.assertFalse(err_file_not_empty, "sst-info Test failed because the error file is not empty".format(cmd, rtn.result()))
+            self.assertFalse(err_file_not_empty, f"sst-info Test failed because the error file is not empty: {errfile}")
             with open(errfile, 'r') as f:
                 log_failure("FAILURE: sst-info cmdline {0}; error output =\n{1}".format(cmd, f.read()))
