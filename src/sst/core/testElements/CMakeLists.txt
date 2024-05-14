@@ -16,6 +16,7 @@
 
 add_library(
   coreTestElement MODULE
+  coreTest_Checkpoint.cc
   coreTest_ClockerComponent.cc
   coreTest_Component.cc
   coreTest_DistribComponent.cc
