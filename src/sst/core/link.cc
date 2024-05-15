@@ -518,8 +518,8 @@ Link::recv()
             CALL_INFO, 1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
     }
 
-    Event*      event      = nullptr;
-    Simulation* simulation = Simulation_impl::getSimulation();
+    Event*           event      = nullptr;
+    Simulation_impl* simulation = Simulation_impl::getSimulation();
 
     if ( !pair_link->send_queue->empty() ) {
         Activity* activity = pair_link->send_queue->front();

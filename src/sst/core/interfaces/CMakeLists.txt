@@ -14,8 +14,7 @@
 # ~~~
 #
 
-set(SSTInterfacesHeaders simpleMem.h simpleNetwork.h stdMem.h stringEvent.h
-                         TestEvent.h)
+set(SSTInterfacesHeaders simpleNetwork.h stdMem.h stringEvent.h TestEvent.h)
 
 install(FILES ${SSTInterfacesHeaders} DESTINATION "include/sst/core/interfaces")
 

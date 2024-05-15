@@ -866,14 +866,6 @@ protected:
 
     bool doesSubComponentExist(const std::string& type);
 
-    /* Get the Simulation */
-#if !SST_BUILDING_CORE
-    [[deprecated("getSimulation is deprecated because the Simulation object is being removed as part of the public API "
-                 "and simulation.h will be removed in SST 14")]]
-#endif
-    Simulation*
-    getSimulation() const;
-
     // Does the statisticName exist in the ElementInfoStatistic
     bool    doesComponentInfoStatisticExist(const std::string& statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
