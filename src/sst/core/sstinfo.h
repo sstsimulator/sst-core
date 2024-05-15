@@ -289,7 +289,12 @@ public:
     /* Prints SST-info text to the info window */
     void printInfo();
 
-    void printConsole(const char* input) { wprintw(console, input); }
+    void printConsole(const char* input)
+    {
+        DISABLE_WARN_FORMAT_SECURITY
+        wprintw(console, input);
+        REENABLE_WARNING
+    }
     void resetCursor(int pos) { wmove(console, 1, pos); }
     int  getCursorPos() { return getcurx(console); }
 

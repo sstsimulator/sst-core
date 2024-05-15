@@ -18,12 +18,14 @@ set(SSTSerializationHeaders
     serializable_fwd.h
     serializable.h
     serialize_array.h
+    serialize_atomic.h
     serialize_buffer_accessor.h
     serialize_deque.h
     serialize.h
     serialize_impl_fwd.h
     serialize_list.h
     serialize_map.h
+    serialize_multiset.h
     serialize_packer.h
     serialize_priority_queue.h
     serializer_fwd.h
@@ -34,7 +36,6 @@ set(SSTSerializationHeaders
     serialize_string.h
     serialize_unpacker.h
     serialize_vector.h
-    ser_ptr_type.h
     statics.h)
 
 install(FILES ${SSTSerializationHeaders}

@@ -41,6 +41,7 @@ add_library(
   action.cc
   clock.cc
   baseComponent.cc
+  checkpointAction.cc
   component.cc
   componentExtension.cc
   componentInfo.cc
