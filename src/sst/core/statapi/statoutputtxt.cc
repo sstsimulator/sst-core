@@ -13,7 +13,6 @@
 
 #include "sst/core/statapi/statoutputtxt.h"
 
-#include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
 namespace SST {
@@ -83,8 +82,8 @@ StatisticOutputTextBase::startOfSimulation()
     FieldInfoArray_t::iterator it_v;
 
     // Set Filename with Rank if Num Ranks > 1
-    if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
-        int         rank    = Simulation_impl::getSimulation()->getRank().rank;
+    if ( 1 < getNumRanks().rank ) {
+        int         rank    = getRank().rank;
         std::string rankstr = "_" + std::to_string(rank);
 
         // Search for any extension
@@ -161,11 +160,9 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     m_outputBuffer += " : ";
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
-        if ( true == m_outputInlineHeader ) {
-            buffer = format_string("SimTime = %" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
-        }
+        if ( true == m_outputInlineHeader ) { buffer = format_string("SimTime = %" PRIu64, getCurrentSimCycle()); }
         else {
-            buffer = format_string("%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
+            buffer = format_string("%" PRIu64, getCurrentSimCycle());
         }
 
         m_outputBuffer += buffer;
@@ -174,11 +171,9 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
 
     if ( true == m_outputRank ) {
         // Add the Rank to the front
-        if ( true == m_outputInlineHeader ) {
-            buffer = format_string("Rank = %d", Simulation_impl::getSimulation()->getRank().rank);
-        }
+        if ( true == m_outputInlineHeader ) { buffer = format_string("Rank = %d", getRank().rank); }
         else {
-            buffer = format_string("%d", Simulation_impl::getSimulation()->getRank().rank);
+            buffer = format_string("%d", getRank().rank);
         }
 
         m_outputBuffer += buffer;
@@ -328,7 +323,7 @@ StatisticOutputTextBase::openFile(void)
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
-            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
+            Output out = getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
@@ -342,7 +337,7 @@ StatisticOutputTextBase::openFile(void)
         m_hFile = fopen(m_FilePath.c_str(), "w");
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
-            Output out = Simulation_impl::getSimulation()->getSimulationOutput();
+            Output out = getSimulationOutput();
             out.fatal(
                 CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
@@ -415,7 +410,7 @@ StatisticOutputTextBase::print(const char* fmt, ...)
 StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation_impl::getSimulationOutput();
+    Output out = getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n", m_useCompression ? "Compressed" : "");
     setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
 }
@@ -424,7 +419,7 @@ StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutp
 StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation_impl::getSimulationOutput();
+    Output out = getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputConsole enabled...\n");
     setStatisticOutputName("StatisticOutputConsole");
 }

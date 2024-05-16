@@ -62,6 +62,24 @@ StatisticOutput::getSimulationOutput()
     return Simulation_impl::getSimulationOutput();
 }
 
+RankInfo
+StatisticOutput::getNumRanks()
+{
+    return Simulation_impl::getSimulation()->getNumRanks();
+}
+
+RankInfo
+StatisticOutput::getRank()
+{
+    return Simulation_impl::getSimulation()->getRank();
+}
+
+SimTime_t
+StatisticOutput::getCurrentSimCycle()
+{
+    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+}
+
 StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) : StatisticOutput(outputParameters)
 {
     m_highestFieldHandle   = 0;
