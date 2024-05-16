@@ -111,6 +111,17 @@ protected:
      * with this StatOutput. */
     Output& getSimulationOutput();
 
+    /**
+       Gets the number of ranks for the simulation */
+    RankInfo getNumRanks();
+
+    /** Gets the Rank (MPI rank and thread) that this StatisticOutput
+       is associated with. */
+    RankInfo getRank();
+
+    /** Gets the current simulstion cycle */
+    SimTime_t getCurrentSimCycle();
+
 private:
     // Start / Stop of register Fields
     virtual void registerStatistic(StatisticBase* stat) = 0;

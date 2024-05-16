@@ -13,7 +13,6 @@
 
 #include "sst/core/statapi/statoutputjson.h"
 
-#include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/stringize.h"
 
@@ -23,7 +22,7 @@ namespace Statistics {
 StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
 {
     // Announce this output object's name
-    Output& out = Simulation_impl::getSimulationOutput();
+    Output& out = getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputJSON enabled...\n");
     setStatisticOutputName("StatisticOutputJSON");
 
@@ -85,8 +84,8 @@ StatisticOutputJSON::startOfSimulation()
     fprintf(m_hFile, "{\n");
     m_curIndentLevel++;
 
-    if ( 1 < Simulation_impl::getSimulation()->getNumRanks().rank ) {
-        const int thisRank = Simulation_impl::getSimulation()->getRank().rank;
+    if ( 1 < getNumRanks().rank ) {
+        const int thisRank = getRank().rank;
 
         printIndent();
         fprintf(m_hFile, "\"rank\" : %d,\n\n", thisRank);
@@ -238,7 +237,7 @@ StatisticOutputJSON::openFile(void)
 
     if ( nullptr == m_hFile ) {
         // We got an error of some sort
-        Output out = Simulation_impl::getSimulation()->getSimulationOutput();
+        Output out = getSimulationOutput();
         out.fatal(
             CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(),
             strerror(errno));
