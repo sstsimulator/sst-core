@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -60,6 +60,24 @@ Output&
 StatisticOutput::getSimulationOutput()
 {
     return Simulation_impl::getSimulationOutput();
+}
+
+RankInfo
+StatisticOutput::getNumRanks()
+{
+    return Simulation_impl::getSimulation()->getNumRanks();
+}
+
+RankInfo
+StatisticOutput::getRank()
+{
+    return Simulation_impl::getSimulation()->getRank();
+}
+
+SimTime_t
+StatisticOutput::getCurrentSimCycle()
+{
+    return Simulation_impl::getSimulation()->getCurrentSimCycle();
 }
 
 StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) : StatisticOutput(outputParameters)

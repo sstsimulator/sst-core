@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -32,6 +32,10 @@
 
 #define DISABLE_WARN_DEPRECATED_REGISTER DIAG_DISABLE(deprecated-register)
 
+#define DISABLE_WARN_FORMAT_SECURITY DIAG_DISABLE(format-security)
+
+#define DISABLE_WARN_MAYBE_UNINITIALIZED DIAG_DISABLE(uninitialized)
+
 #define DISABLE_WARN_STRICT_ALIASING DIAG_DISABLE(strict-aliasing)
 
 #define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(inconsistent-missing-override)
@@ -42,6 +46,10 @@
 #define DIAG_COMPILER GCC
 
 #define DISABLE_WARN_DEPRECATED_REGISTER
+
+#define DISABLE_WARN_FORMAT_SECURITY DIAG_DISABLE(format-security)
+
+#define DISABLE_WARN_MAYBE_UNINITIALIZED DIAG_DISABLE(maybe-uninitialized)
 
 #define DISABLE_WARN_STRICT_ALIASING DIAG_DISABLE(strict-aliasing)
 
@@ -58,6 +66,8 @@
 #undef REENABLE_WARNING
 #define REENABLE_WARNING
 #define DISABLE_WARN_DEPRECATED_REGISTER
+#define DISABLE_WARN_FORMAT_SECURITY
+#define DISABLE_WARN_MAYBE_UNINITIALIZED
 #define DISABLE_WARN_STRICT_ALIASING
 #define DISABLE_WARN_MISSING_OVERRIDE
 #endif

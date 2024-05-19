@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -134,12 +134,12 @@ private:
         virtual void beginGroupRegistration(StatisticGroup* UNUSED(group)) {}
         virtual void finalizeGroupRegistration() {}
 
-        virtual void startNewGroupEntry() {}
+        virtual void startNewGroupEntry(Cycle_t UNUSED(cycle)) {}
         virtual void finishGroupEntry() {}
 
-        virtual void        startNewEntry(StatisticBase* stat)     = 0;
-        virtual StatData_u& getFieldLoc(fieldHandle_t fieldHandle) = 0;
-        virtual void        finishEntry()                          = 0;
+        virtual void        startNewEntry(StatisticBase* stat, Cycle_t cycle) = 0;
+        virtual StatData_u& getFieldLoc(fieldHandle_t fieldHandle)            = 0;
+        virtual void        finishEntry()                                     = 0;
 
     protected:
         H5::H5File* file;
@@ -174,7 +174,7 @@ private:
         void finalizeCurrentStatistic() override;
 
         bool        isGroup() const override { return false; }
-        void        startNewEntry(StatisticBase* stat) override;
+        void        startNewEntry(StatisticBase* stat, Cycle_t cycle) override;
         StatData_u& getFieldLoc(fieldHandle_t fieldHandle) override;
         void        finishEntry() override;
     };
@@ -227,11 +227,11 @@ private:
         void finalizeGroupRegistration() override;
 
         bool        isGroup() const override { return true; }
-        void        startNewEntry(StatisticBase* stat) override;
+        void        startNewEntry(StatisticBase* stat, Cycle_t cycle) override;
         StatData_u& getFieldLoc(fieldHandle_t fieldHandle) override { return m_currentStat->getFieldLoc(fieldHandle); }
         void        finishEntry() override;
 
-        void   startNewGroupEntry() override;
+        void   startNewGroupEntry(Cycle_t cycle) override;
         void   finishGroupEntry() override;
         size_t getNumComponents() const { return m_components.size(); }
 
