@@ -1,5 +1,5 @@
 
-AC_INIT([SSTCore], [-dev], [wg-sst@sandia.gov])
+AC_INIT([SSTCore], [14.0.0], [wg-sst@sandia.gov])
 
 AC_PREREQ([2.59])
 AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2024])
