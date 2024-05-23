@@ -23,6 +23,7 @@
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -180,7 +181,7 @@ main(int argc, char* argv[])
 std::string
 convertToLower(std::string input)
 {
-    transform(input.begin(), input.end(), input.begin(), ::tolower);
+    std::transform(input.begin(), input.end(), input.begin(), ::tolower);
     return input;
 }
 
