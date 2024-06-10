@@ -9,4 +9,4 @@ id = 0, name = top_component, slot_name = NONE, defaultTimeBase = 500
     id = 2, name = subcomp1_0, slot_name = slot0, defaultTimeBase = 1000, parent_id = 1
     id = 3, name = subcomp1_1, slot_name = slot1, defaultTimeBase = 2000, parent_id = 1
   id = 4, name = subcomp0_1, slot_name = slot1, parent_id = 0
-Simulation is complete, simulated time: 1 us
+Simulation is complete, simulated time: 0 s
