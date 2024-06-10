@@ -406,7 +406,7 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
 // information.  See comment for SST_ELI_DECLARE_BASE in elibase.h for
 // info on how __EliDerivedLevel is used.
 #define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)                                              \
-    static constexpr int __EliDerivedLevel = std::is_same<base, cls>::value ? __EliBaseLevel : __EliBaseLevel + 1; \
+    [[maybe_unused]] static constexpr int __EliDerivedLevel = std::is_same<base, cls>::value ? __EliBaseLevel : __EliBaseLevel + 1; \
     static bool          ELI_isLoaded()                                                                            \
     {                                                                                                              \
         return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&                                              \
