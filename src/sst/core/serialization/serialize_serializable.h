@@ -24,42 +24,14 @@ namespace Serialization {
 
 namespace pvt {
 
-void size_serializable(serializable* s, serializer& ser);
+void size_serializable(serializable_base* s, serializer& ser);
 
-void pack_serializable(serializable* s, serializer& ser);
+void pack_serializable(serializable_base* s, serializer& ser);
 
-void unpack_serializable(serializable*& s, serializer& ser);
-
-
-void size_pointer(serializable* s, serializer& ser);
-
-void pack_pointer(serializable* s, serializer& ser);
-
-void unpack_pointer(serializable*& s, serializer& ser);
+void unpack_serializable(serializable_base*& s, serializer& ser);
 
 } // namespace pvt
 
-template <>
-class serialize_impl<serializable*>
-{
-
-    template <class A>
-    friend class serialize;
-    void operator()(serializable*& s, serializer& ser)
-    {
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-            pvt::size_serializable(s, ser);
-            break;
-        case serializer::PACK:
-            pvt::pack_serializable(s, ser);
-            break;
-        case serializer::UNPACK:
-            pvt::unpack_serializable(s, ser);
-            break;
-        }
-    }
-};
 
 template <class T>
 class serialize_impl<
@@ -70,7 +42,7 @@ class serialize_impl<
     friend class serialize;
     void operator()(T*& s, serializer& ser)
     {
-        serializable* sp = static_cast<serializable*>(s);
+        serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
         case serializer::SIZER:
             pvt::size_serializable(sp, ser);
@@ -90,7 +62,7 @@ template <class T>
 void
 serialize_intrusive_ptr(T*& t, serializer& ser)
 {
-    serializable* s = t;
+    serializable_base* s = t;
     switch ( ser.mode() ) {
     case serializer::SIZER:
         pvt::size_serializable(s, ser);
@@ -118,17 +90,6 @@ class serialize_impl<
         t.serialize_order(ser);
     }
 };
-
-// Hold off on trivially_serializable for now, as it's not really safe
-// in the case of inheritance
-//
-// template <class T>
-// class serialize <T, typename
-// std::enable_if<std::is_base_of<SST::Core::Serialization::trivially_serializable,T>::value>::type> { public:
-//     inline void operator()(T& t, serializer& ser){
-//         ser.primitive(t);
-//     }
-// };
 
 } // namespace Serialization
 } // namespace Core

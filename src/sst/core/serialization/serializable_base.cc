@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serializable_base.h"
 
 #include "sst/core/output.h"
 #include "sst/core/serialization/statics.h"
@@ -28,7 +28,7 @@ static need_delete_statics<serializable_factory> del_statics;
 serializable_factory::builder_map*               serializable_factory::builders_ = nullptr;
 
 void
-serializable::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
+serializable_base::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
 {
     SST::Output ser_abort("", 5, SST::Output::PrintAll, SST::Output::STDERR);
     ser_abort.fatal(line, file, func, 1, "ERROR: type %s should not be serialized\n", obj);
@@ -73,7 +73,7 @@ serializable_factory::delete_statics()
     delete builders_;
 }
 
-serializable*
+serializable_base*
 serializable_factory::get_serializable(uint32_t cls_id)
 {
     builder_map::const_iterator it = builders_->find(cls_id);
