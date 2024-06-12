@@ -19,6 +19,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/profile/componentProfileTool.h"
+#include "sst/core/serialization/serializable_base.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
@@ -48,7 +49,7 @@ class UnitAlgebra;
 /**
  * Main component object for the simulation.
  */
-class BaseComponent : public SST::Core::Serialization::serializable
+class BaseComponent : public SST::Core::Serialization::serializable_base
 {
 
     friend class Component;
@@ -1117,6 +1118,39 @@ class serialize_impl<Statistic<T>*>
             break;
         }
         }
+    }
+};
+
+
+namespace pvt {
+
+void size_basecomponent(serializable_base* s, serializer& ser);
+
+void pack_basecomponent(serializable_base* s, serializer& ser);
+
+void unpack_basecomponent(serializable_base*& s, serializer& ser);
+} // namespace pvt
+
+template <class T>
+class serialize_impl<T*, typename std::enable_if<std::is_base_of<SST::BaseComponent, T>::value>::type>
+{
+    template <class A>
+    friend class serialize;
+    void operator()(T*& s, serializer& ser)
+    {
+        serializable_base* sp = static_cast<serializable_base*>(s);
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+            pvt::size_basecomponent(sp, ser);
+            break;
+        case serializer::PACK:
+            pvt::pack_basecomponent(sp, ser);
+            break;
+        case serializer::UNPACK:
+            pvt::unpack_basecomponent(sp, ser);
+            break;
+        }
+        s = static_cast<T*>(sp);
     }
 };
 

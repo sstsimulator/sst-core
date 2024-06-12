@@ -91,7 +91,7 @@ class testcase_Serialization(SSTTestCase):
 
         outfile = "{0}/test_Serialization_{1}.out".format(outdir,testtype)
 
-        options = "--model-options=\"{0}\"".format(testtype)
+        options = "--run-mode=init --model-options=\"{0}\"".format(testtype)
         # Force serial run since the serialization is all done in-situ
         self.run_sst(sdlfile, outfile, num_ranks=1, num_threads=1, other_args=options)
 

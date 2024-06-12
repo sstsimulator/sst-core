@@ -16,6 +16,7 @@
 
 set(SSTSerializationHeaders
     serializable_fwd.h
+    serializable_base.h
     serializable.h
     serialize_array.h
     serialize_atomic.h

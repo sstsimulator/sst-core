@@ -33,10 +33,10 @@
 
 namespace SST {
 
-BaseComponent::BaseComponent() : SST::Core::Serialization::serializable() {}
+BaseComponent::BaseComponent() : SST::Core::Serialization::serializable_base() {}
 
 BaseComponent::BaseComponent(ComponentId_t id) :
-    SST::Core::Serialization::serializable(),
+    SST::Core::Serialization::serializable_base(),
     my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),
     sim_(Simulation_impl::getSimulation()),
     isExtension(false)
@@ -855,6 +855,51 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     }
     }
 }
+
+namespace Core {
+namespace Serialization {
+namespace pvt {
+
+static const long null_ptr_id = -1;
+
+void
+size_basecomponent(serializable_base* s, serializer& ser)
+{
+    long dummy = 0;
+    ser.size(dummy);
+    if ( s ) { s->serialize_order(ser); }
+}
+
+void
+pack_basecomponent(serializable_base* s, serializer& ser)
+{
+    if ( s ) {
+        long cls_id = s->cls_id();
+        ser.pack(cls_id);
+        s->serialize_order(ser);
+    }
+    else {
+        long id = null_ptr_id;
+        ser.pack(id);
+    }
+}
+
+void
+unpack_basecomponent(serializable_base*& s, serializer& ser)
+{
+    long cls_id;
+    ser.unpack(cls_id);
+    if ( cls_id == null_ptr_id ) { s = nullptr; }
+    else {
+        s = SST::Core::Serialization::serializable_factory::get_serializable(cls_id);
+        ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
+        s->serialize_order(ser);
+    }
+}
+
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
 
 
 } // namespace SST
