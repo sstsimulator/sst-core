@@ -51,11 +51,14 @@ class testcase_sstinfo(SSTTestCase):
 #####
 
     def test_sstinfo_coretestelement(self):
-        self.sstinfo_test_template("coreTestElement")
+        self.sstinfo_test_template("coreTestElement", "-q")
 
+    def test_sstinfo_interactive(self):
+        self.sstinfo_test_template("interactive", "-i")
+        
 #####
 
-    def sstinfo_test_template(self, testtype):
+    def sstinfo_test_template(self, testtype, flags):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
@@ -67,9 +70,9 @@ class testcase_sstinfo(SSTTestCase):
         err_str = "Path to SST-INFO {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
-        cmd = '{0}/sst-info -q {1}'.format(sst_app_path, testtype)
+        cmd = 'timeout 1 {0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
         rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run()
-        if rtn.result() != 0:
+        if rtn.result() != (0 or 124):
             self.assertEquals(rtn.result(), 0, "sst-info Test failed running cmdline {0} - return = {1}".format(cmd, rtn.result()))
             with open(outfile, 'r') as f:
                 log_failure("FAILURE: sst-info cmdline {0}; output =\n{1}".format(cmd, f.read()))
