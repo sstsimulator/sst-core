@@ -81,7 +81,7 @@ add_library(
   profile/eventHandlerProfileTool.cc
   profile/syncProfileTool.cc
   profile/profiletool.cc
-  serialization/serializable.cc
+  serialization/serializable_base.cc
   serialization/serialize_serializable.cc
   serialization/serializer.cc
   serialization/statics.cc

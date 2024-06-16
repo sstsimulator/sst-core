@@ -88,6 +88,7 @@ nobase_dist_sst_HEADERS = \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
 	serialization/serializable.h \
+	serialization/serializable_base.h \
 	serialization/serializable_fwd.h \
 	serialization/serialize.h \
 	serialization/serialize_impl_fwd.h \
@@ -210,7 +211,7 @@ sst_core_sources = \
 	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \
-	serialization/serializable.cc \
+	serialization/serializable_base.cc \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \

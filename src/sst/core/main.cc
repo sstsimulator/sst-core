@@ -626,25 +626,27 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->restart(info.config);
     }
     /* Run Simulation */
-    sim->run();
-    barrier.wait();
+    if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
+        sim->run();
+        barrier.wait();
 
-    /* Adjust clocks at simulation end to
-     * reflect actual simulation end if that
-     * differs from detected simulation end
-     */
-    sim->adjustTimeAtSimEnd();
-    barrier.wait();
+        /* Adjust clocks at simulation end to
+         * reflect actual simulation end if that
+         * differs from detected simulation end
+         */
+        sim->adjustTimeAtSimEnd();
+        barrier.wait();
 
-    sim->complete();
-    barrier.wait();
+        sim->complete();
+        barrier.wait();
 
-    sim->finish();
-    barrier.wait();
+        sim->finish();
+        barrier.wait();
 
-    /* Tell stat outputs simulation is done */
-    do_statoutput_end_simulation(info.myRank);
-    barrier.wait();
+        /* Tell stat outputs simulation is done */
+        do_statoutput_end_simulation(info.myRank);
+        barrier.wait();
+    }
 
     info.simulated_time = sim->getEndSimTime();
     // g_output.output(CALL_INFO,"Simulation time = %s\n",info.simulated_time.toStringBestSI().c_str());
