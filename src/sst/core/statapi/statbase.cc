@@ -28,13 +28,14 @@ namespace SST {
 namespace Stat {
 namespace pvt {
 
-void registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s)
+void
+registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s)
 {
-        Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine(s);
+    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine(s);
 }
 
 } // namespace pvt
-} // namespace StatBase
+} // namespace Stat
 
 namespace Statistics {
 
@@ -178,8 +179,9 @@ StatisticBase::delayOutput(const char* delayTime)
         m_outputEnabled      = false;
         m_outputDelayed      = true;
 
-        Simulation_impl::getSimulation()->registerOneShot(delayTime, 
-            new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayOutputExpiredHandler), STATISTICCLOCKPRIORITY);
+        Simulation_impl::getSimulation()->registerOneShot(
+            delayTime, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayOutputExpiredHandler),
+            STATISTICCLOCKPRIORITY);
     }
 }
 
@@ -194,9 +196,9 @@ StatisticBase::delayCollection(const char* delayTime)
         m_savedStatEnabled  = m_statEnabled;
         m_statEnabled       = false;
         m_collectionDelayed = true;
-        
+
         Simulation_impl::getSimulation()->registerOneShot(
-            delayTime, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler), 
+            delayTime, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler),
             STATISTICCLOCKPRIORITY);
     }
 }
@@ -220,16 +222,17 @@ StatisticBase::delayCollectionExpiredHandler()
 void
 StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& m_component;   // BaseComponent*
+    ser& m_component; // BaseComponent*
     ser& m_statName;
     ser& m_statSubId;
     ser& m_statFullName;
-    ser& m_statParams;  // OPTIMIZATION: Don't need all of these for recreation
+    ser& m_statParams; // OPTIMIZATION: Don't need all of these for recreation
     ser& m_registeredCollectionMode;
     ser& m_currentCollectionCount;
     ser& m_outputCollectionCount;
     ser& m_collectionCountLimit;
-    ser& m_statDataType;    // TODO: Need to store type name instead & lookup ID on return -> may differ if custom types exist
+    ser& m_statDataType; // TODO: Need to store type name instead & lookup ID on return -> may differ if custom types
+                         // exist
     ser& m_statEnabled;
     ser& m_outputEnabled;
     ser& m_resetCountOnOutput;
@@ -238,8 +241,7 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& m_outputDelayed;
     ser& m_savedStatEnabled;
     ser& m_savedOutputEnabled;
-    //ser& m_group; // This will get re-created on restart
-    
+    // ser& m_group; // This will get re-created on restart
 }
 SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);
 SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint32_t);

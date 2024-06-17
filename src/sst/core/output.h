@@ -49,7 +49,7 @@ namespace Serialization {
 class serializer;
 
 }
-}
+} // namespace Core
 
 
 /**

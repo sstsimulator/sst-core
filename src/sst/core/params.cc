@@ -140,8 +140,8 @@ std::string
 Params::toString(const std::string& prefix) const
 {
     std::stringstream str;
-    int level = 0;
-      for ( auto map : data ) {
+    int               level = 0;
+    for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) str << "Local params:" << std::endl;
             level++;

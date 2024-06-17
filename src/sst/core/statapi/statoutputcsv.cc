@@ -30,7 +30,7 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) : StatisticFiel
 bool
 StatisticOutputCSV::checkOutputParameters()
 {
-    bool        foundKey;
+    bool foundKey;
 
     // Review the output parameters and make sure they are correct, and
     // also setup internal variables

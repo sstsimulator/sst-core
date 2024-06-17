@@ -166,10 +166,10 @@ public:
     /** Indicate if the Statistic is a NullStatistic */
     virtual bool isNullStatistic() const { return false; }
 
-    /** Return the Statistic Parameters 
+    /** Return the Statistic Parameters
      * NOTE: This must be public so that it is accessible to the serialize_impl
      * class for statistics.
-    */
+     */
     Params& getParams() { return m_statParams; }
 
     /** Serialization */
@@ -615,10 +615,12 @@ class serialize_impl<Statistics::Statistic<T>*>
         case serializer::SIZER:
         case serializer::PACK:
         {
-            Params params = s->getParams();
-            std::string    stattype = s->getStatTypeName();
-            if (stattype == "NULL") stattype = "sst.NullStatistic";
-            else stattype = params.find<std::string>("type", "sst.AccumulatorStatistic");
+            Params      params   = s->getParams();
+            std::string stattype = s->getStatTypeName();
+            if ( stattype == "NULL" )
+                stattype = "sst.NullStatistic";
+            else
+                stattype = params.find<std::string>("type", "sst.AccumulatorStatistic");
             BaseComponent* comp = s->getComponent();
             ser&           stattype;
             ser&           comp;
@@ -637,9 +639,7 @@ class serialize_impl<Statistics::Statistic<T>*>
             s = Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
                 stattype, params, comp, "", "", params);
             s->serialize_order(ser);
-            if (stattype != "sst.NullStatistic") {
-                SST::Stat::pvt::registerStatWithEngineOnRestart(s);
-            }
+            if ( stattype != "sst.NullStatistic" ) { SST::Stat::pvt::registerStatWithEngineOnRestart(s); }
             break;
         }
         }
@@ -648,7 +648,6 @@ class serialize_impl<Statistics::Statistic<T>*>
 
 } // namespace Serialization
 } // namespace Core
-
 
 
 } // namespace SST

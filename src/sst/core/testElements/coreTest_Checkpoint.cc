@@ -66,7 +66,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
         new RNG::MarsagliaRNG(params.find<unsigned int>("rng_seed_w", 7), params.find<unsigned int>("rng_seed_z", 5));
     mersenne = new RNG::MersenneRNG(params.find<unsigned int>("rng_seed", 11));
     xorshift = new RNG::XORShiftRNG(params.find<unsigned int>("rng_seed", 11));
-    
+
     dist_const = new RNG::ConstantDistribution(params.find<double>("dist_const", 1.5));
 
     std::vector<double> discrete_probs;
@@ -85,8 +85,8 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     dist_uniform = new RNG::UniformDistribution(params.find<uint32_t>("dist_uni_bins", 4));
 
     stat_eventcount = registerStatistic<uint32_t>("eventcount");
-    stat_rng = registerStatistic<uint32_t>("rngvals");
-    stat_dist = registerStatistic<double>("distvals");
+    stat_rng        = registerStatistic<uint32_t>("rngvals");
+    stat_dist       = registerStatistic<double>("distvals");
 }
 
 coreTestCheckpoint::~coreTestCheckpoint() {}
@@ -129,17 +129,16 @@ coreTestCheckpoint::handleClock(Cycle_t cycle)
 {
     getSimulationOutput().output("Clock cycle count = %" PRIu64 "\n", cycle);
 
-    double distval = dist_gauss->getNextDouble();
-    uint32_t rngval = mersenne->generateNextUInt32();
+    double   distval = dist_gauss->getNextDouble();
+    uint32_t rngval  = mersenne->generateNextUInt32();
 
     output->output(
         "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia->generateNextUInt32(), rngval,
         xorshift->generateNextUInt32());
     output->output(
         "Distributions: %f, %f, %f, %f, %f, %f\n", dist_const->getNextDouble(), dist_discrete->getNextDouble(),
-        dist_expon->getNextDouble(), distval, dist_poisson->getNextDouble(),
-        dist_uniform->getNextDouble());
-    
+        dist_expon->getNextDouble(), distval, dist_poisson->getNextDouble(), dist_uniform->getNextDouble());
+
     stat_dist->addData(distval);
     stat_rng->addData(rngval);
 

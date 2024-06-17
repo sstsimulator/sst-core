@@ -772,9 +772,9 @@ public:
     }
 
     /** Print all key/value parameter pairs to specified ostream */
-    void print_all_params(std::ostream& os, const std::string& prefix = "") const;
+    void        print_all_params(std::ostream& os, const std::string& prefix = "") const;
     /** Print all key/value parameter pairs to specified ostream */
-    void print_all_params(Output& out, const std::string& prefix = "") const;
+    void        print_all_params(Output& out, const std::string& prefix = "") const;
     /** Return a string version of all key/value parameter pairs */
     std::string toString(const std::string& prefix = "") const;
 

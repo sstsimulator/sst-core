@@ -137,9 +137,7 @@ StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
         printIndent();
         fprintf(m_hFile, "\"name\" : \"%s\",\n", statistic->getCompName().c_str());
         printIndent();
-        if (m_outputSimTime) {
-            fprintf(m_hFile, "\"simtime\" : %" PRIu64 ",\n", getCurrentSimCycle());
-        }
+        if ( m_outputSimTime ) { fprintf(m_hFile, "\"simtime\" : %" PRIu64 ",\n", getCurrentSimCycle()); }
 
         printIndent();
         fprintf(m_hFile, "\"statistics\" : [\n");

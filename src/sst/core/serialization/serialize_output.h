@@ -12,8 +12,8 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZE_OUTPUT_H
 #define SST_CORE_SERIALIZATION_SERIALIZE_OUTPUT_H
 
-#include "sst/core/serialization/serializer.h"
 #include "sst/core/output.h"
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

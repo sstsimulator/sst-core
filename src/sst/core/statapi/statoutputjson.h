@@ -92,7 +92,14 @@ protected:
     void printIndent();
 
 protected:
-    StatisticOutputJSON() : m_currentComponentName(""), m_firstEntry(false), m_processedAnyStats(false), m_curIndentLevel(0) { ; } // For serialization
+    StatisticOutputJSON() :
+        m_currentComponentName(""),
+        m_firstEntry(false),
+        m_processedAnyStats(false),
+        m_curIndentLevel(0)
+    {
+        ;
+    } // For serialization
 
 private:
     bool openFile();

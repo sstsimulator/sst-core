@@ -12,9 +12,9 @@
 #ifndef SST_CORE_STATAPI_STATGROUP_H
 #define SST_CORE_STATAPI_STATGROUP_H
 
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
-#include "sst/core/serialization/serializer.h"
 
 #include <string>
 #include <vector>

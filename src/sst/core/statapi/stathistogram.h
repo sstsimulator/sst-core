@@ -84,7 +84,7 @@ public:
     ~HistogramStatistic() {}
 
     HistogramStatistic() : Statistic<BinDataType>() {} // For serialization ONLY
-    
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<BinDataType>::serialize_order(ser);
@@ -99,7 +99,7 @@ public:
         ser& m_binsMap;
         ser& m_dumpBinsOnOutput;
         ser& m_includeOutOfBounds;
-        //ser& m_Fields; // Rebuilt by stat output object
+        // ser& m_Fields; // Rebuilt by stat output object
     }
 
 protected:
@@ -356,8 +356,8 @@ private:
 
     // Support
     std::vector<StatisticOutput::fieldHandle_t> m_Fields;
-    bool                  m_dumpBinsOnOutput;
-    bool                  m_includeOutOfBounds;
+    bool                                        m_dumpBinsOnOutput;
+    bool                                        m_includeOutOfBounds;
 };
 
 } // namespace Statistics

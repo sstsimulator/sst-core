@@ -74,16 +74,16 @@ public:
     virtual void output(StatisticBase* statistic, bool endOfSimFlag) = 0;
 
     virtual bool supportsDynamicRegistration() const { return false; }
-  
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    
+
     ImplementVirtualSerializable(SST::Statistics::StatisticOutput)
 
-    /////////////////
-    // Methods for Registering Fields (Called by Statistic Objects)
-public:
-    // by default, no params to return
-    static const std::vector<SST::ElementInfoParam>& ELI_getParams()
+        /////////////////
+        // Methods for Registering Fields (Called by Statistic Objects)
+        public :
+        // by default, no params to return
+        static const std::vector<SST::ElementInfoParam>& ELI_getParams()
     {
         static std::vector<SST::ElementInfoParam> var {};
         return var;
@@ -271,15 +271,15 @@ public:
      * @return String name of the field type.
      */
     const char* getFieldTypeShortName(fieldType_t type);
-    
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementVirtualSerializable(SST::Statistics::StatisticFieldsOutput)
 
-protected:
-    /** Construct a base StatisticOutput
-     * @param outputParameters - The parameters for the statistic Output.
-     */
-    StatisticFieldsOutput(Params& outputParameters);
+        protected :
+        /** Construct a base StatisticOutput
+         * @param outputParameters - The parameters for the statistic Output.
+         */
+        StatisticFieldsOutput(Params& outputParameters);
 
     // For Serialization
     StatisticFieldsOutput() : m_highestFieldHandle(0), m_currentFieldStatName("") {}

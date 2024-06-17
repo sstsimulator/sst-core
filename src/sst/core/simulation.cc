@@ -1297,9 +1297,9 @@ Simulation_impl::checkpoint()
     ser&        verbose;
     ser&        globalOutputFileName;
     ser&        checkpointPrefix;
-    ser& Params::keyMap;
-    ser& Params::keyMapReverse;
-    ser& Params::nextKeyID;
+    ser&        Params::keyMap;
+    ser&        Params::keyMapReverse;
+    ser&        Params::nextKeyID;
 
     size        = ser.size();
     buffer_size = size;
@@ -1466,7 +1466,7 @@ Simulation_impl::checkpoint()
 void
 Simulation_impl::restart(Config* cfg)
 {
-    TraceFunction trace(CALL_INFO, false, false);
+    TraceFunction                        trace(CALL_INFO, false, false);
     size_t                               size, buffer_size;
     char*                                buffer;
     SST::Core::Serialization::serializer ser;
@@ -1522,7 +1522,7 @@ Simulation_impl::restart(Config* cfg)
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
-    
+
     trace.output("Getting statistics engine\n");
     // Get statistics engine
     ser& StatisticProcessingEngine::m_statOutputs;
@@ -1541,7 +1541,7 @@ Simulation_impl::restart(Config* cfg)
     timeLord.init(timeLord.timeBaseString);
 
     trace.output("Beginning component extraction\n");
-    
+
     /* Extract components */
     size_t compCount;
     fs.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
@@ -1570,9 +1570,7 @@ Simulation_impl::restart(Config* cfg)
     // Prepare stat engine for restart now that stats are registered
     trace.output("Calling startOfSimulation on StatEngine\n");
     stat_engine.finalizeInitialization();
-    if ( my_rank.thread == 0 ) {
-        StatisticProcessingEngine::stat_outputs_simulation_start();
-    }
+    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::stat_outputs_simulation_start(); }
     stat_engine.startOfSimulation();
 }
 

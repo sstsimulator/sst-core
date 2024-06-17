@@ -416,7 +416,7 @@ StatisticOutputTextBase::serialize_order(SST::Core::Serialization::serializer& s
     ser& m_outputRank;
     ser& m_outputSimTime;
     ser& m_useCompression;
-    //ser& m_outputBuffer; // Rebuild during restart
+    // ser& m_outputBuffer; // Rebuild during restart
     ser& m_FilePath;
 }
 

@@ -138,9 +138,9 @@ private:
     RNG::RandomDistribution* dist_poisson;
     RNG::RandomDistribution* dist_uniform;
 
-    Statistic<uint32_t> * stat_eventcount;
-    Statistic<uint32_t> * stat_rng;
-    Statistic<double> * stat_dist;
+    Statistic<uint32_t>* stat_eventcount;
+    Statistic<uint32_t>* stat_rng;
+    Statistic<double>*   stat_dist;
 };
 
 } // namespace CoreTestCheckpoint
