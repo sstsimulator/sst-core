@@ -765,9 +765,12 @@ main(int argc, char* argv[])
         buffer = new char[size];
         fs.read(buffer, size);
 
-        std::string cpt_lib_path, cpt_timebase, cpt_output_directory;
-        std::string cpt_output_core_prefix, cpt_debug_file, cpt_prefix;
-        int         cpt_output_verbose = 0;
+        std::string                     cpt_lib_path, cpt_timebase, cpt_output_directory;
+        std::string                     cpt_output_core_prefix, cpt_debug_file, cpt_prefix;
+        int                             cpt_output_verbose = 0;
+        std::map<std::string, uint32_t> cpt_params_key_map;
+        std::vector<std::string>        cpt_params_key_map_reverse;
+        uint32_t                        cpt_params_next_key_id;
 
         ser.start_unpacking(buffer, size);
         ser& cpt_num_ranks;
@@ -779,6 +782,9 @@ main(int argc, char* argv[])
         ser& cpt_output_verbose;
         ser& cpt_debug_file;
         ser& cpt_prefix;
+        ser& cpt_params_key_map;
+        ser& cpt_params_key_map_reverse;
+        ser& cpt_params_next_key_id;
 
         fs.close();
         delete[] buffer;
@@ -800,6 +806,10 @@ main(int argc, char* argv[])
         Output::setWorldSize(world_size.rank, world_size.thread, myrank);
         g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
         Simulation_impl::getTimeLord()->init(cfg.timeBase());
+
+        Params::keyMap        = cpt_params_key_map;
+        Params::keyMapReverse = cpt_params_key_map_reverse;
+        Params::nextKeyID     = cpt_params_next_key_id;
     }
 
     // Check to see if the config file exists

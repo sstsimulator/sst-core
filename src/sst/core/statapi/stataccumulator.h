@@ -68,6 +68,18 @@ public:
 
     ~AccumulatorStatistic() {}
 
+    AccumulatorStatistic() : Statistic<NumberBase>() {} // For serialization only
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::Statistics::Statistic<NumberBase>::serialize_order(ser);
+        ser& m_sum;
+        ser& m_sum_sq;
+        ser& m_min;
+        ser& m_max;
+        // Remaining fields will be reset by statistics output object
+    }
+
 protected:
     /**
         Present a new value to the class to be included in the statistics.

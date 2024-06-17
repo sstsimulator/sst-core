@@ -621,5 +621,16 @@ StatisticOutputHDF5::GroupInfo::GroupStat::finishGroupEntry()
     dataset->write(currentData.data(), *memType, memSpace, fspace);
 }
 
+void
+StatisticOutputHDF5::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticFieldsOutput::serialize_order(ser);
+    // H5::H5File*                              m_hFile;
+    // DataSet*                                 m_currentDataSet;
+    // std::map<StatisticBase*, StatisticInfo*> m_statistics;
+    // std::map<std::string, GroupInfo>         m_statGroups;
+}
+
+
 } // namespace Statistics
 } // namespace SST

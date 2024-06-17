@@ -50,6 +50,15 @@ public:
 
     ~UniqueCountStatistic() {};
 
+    UniqueCountStatistic() : Statistic<T>() {}
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
+    {
+        SST::Statistics::Statistic<T>::serialize_order(ser);
+        ser& uniqueSet;
+        // uniqueCountField will be reset by statistics output object
+    }
+
 protected:
     /**
     Present a new value to the Statistic to be included in the unique set

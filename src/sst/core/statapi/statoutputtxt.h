@@ -31,11 +31,12 @@ public:
      */
     StatisticOutputTextBase(Params& outputParameters);
 
-protected:
-    /** Perform a check of provided parameters
-     * @return True if all required parameters and options are acceptable
-     */
-    bool checkOutputParameters() override;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase) protected :
+        /** Perform a check of provided parameters
+         * @return True if all required parameters and options are acceptable
+         */
+        bool checkOutputParameters() override;
 
     /** Print out usage for this Statistic Output */
     void printUsage() override;
@@ -160,6 +161,10 @@ public:
      */
     StatisticOutputTxt(Params& outputParameters);
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Statistics::StatisticOutputTxt)
+
+
 protected:
     StatisticOutputTxt() { ; } // For serialization
 
@@ -226,6 +231,9 @@ public:
      * @param outputParameters - Parameters used for this Statistic Output
      */
     StatisticOutputConsole(Params& outputParameters);
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Statistics::StatisticOutputConsole)
 
 protected:
     StatisticOutputConsole() { ; } // For serialization

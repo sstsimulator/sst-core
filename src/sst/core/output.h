@@ -24,8 +24,6 @@
 #define __STDC_FORMAT_MACROS
 #endif
 
-#include "sst/core/serialization/serializable.h"
-
 #include <cinttypes>
 #include <cstdio>
 #include <stdarg.h>
@@ -45,12 +43,21 @@ namespace SST {
 #define CALL_INFO_LONG __LINE__, __FILE__, __FUNCTION__
 #endif
 
+namespace Core {
+namespace Serialization {
+
+class serializer;
+
+}
+} // namespace Core
+
+
 /**
  * Output object provides consistent method for outputting data to
  * stdout, stderr and/or sst debug file.  All components should
  * use this class to log any information.
  */
-class Output : public SST::Core::Serialization::serializable
+class Output
 {
 public:
     /** Choice of output location
@@ -477,9 +484,7 @@ public:
 
     static Output& getDefaultObject() { return m_defaultObject; }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-
-    ImplementSerializable(SST::Output)
+    void serialize_order(SST::Core::Serialization::serializer& ser);
 
 private:
     friend class TraceFunction;

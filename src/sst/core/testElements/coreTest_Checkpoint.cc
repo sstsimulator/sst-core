@@ -83,6 +83,10 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     dist_poisson = new RNG::PoissonDistribution(params.find<double>("dist_poisson_lambda", 1.0));
 
     dist_uniform = new RNG::UniformDistribution(params.find<uint32_t>("dist_uni_bins", 4));
+
+    stat_eventcount = registerStatistic<uint32_t>("eventcount");
+    stat_rng        = registerStatistic<uint32_t>("rngvals");
+    stat_dist       = registerStatistic<double>("distvals");
 }
 
 coreTestCheckpoint::~coreTestCheckpoint() {}
@@ -116,6 +120,7 @@ coreTestCheckpoint::handleEvent(Event* ev)
     getSimulationOutput().output(
         "%s, bounce %d, t=%" PRIu64 "\n", getName().c_str(), event->getCount(), getCurrentSimCycle());
     link->send(event);
+    stat_eventcount->addData(1);
 }
 
 // clock hander just prints
@@ -123,13 +128,20 @@ bool
 coreTestCheckpoint::handleClock(Cycle_t cycle)
 {
     getSimulationOutput().output("Clock cycle count = %" PRIu64 "\n", cycle);
+
+    double   distval = dist_gauss->getNextDouble();
+    uint32_t rngval  = mersenne->generateNextUInt32();
+
     output->output(
-        "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia->generateNextUInt32(), mersenne->generateNextUInt32(),
+        "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia->generateNextUInt32(), rngval,
         xorshift->generateNextUInt32());
     output->output(
         "Distributions: %f, %f, %f, %f, %f, %f\n", dist_const->getNextDouble(), dist_discrete->getNextDouble(),
-        dist_expon->getNextDouble(), dist_gauss->getNextDouble(), dist_poisson->getNextDouble(),
-        dist_uniform->getNextDouble());
+        dist_expon->getNextDouble(), distval, dist_poisson->getNextDouble(), dist_uniform->getNextDouble());
+
+    stat_dist->addData(distval);
+    stat_rng->addData(rngval);
+
     duty_cycle_count--;
     if ( duty_cycle_count == 0 ) {
         duty_cycle_count = duty_cycle;
@@ -180,6 +192,9 @@ coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(dist_gauss)
     SST_SER(dist_poisson)
     SST_SER(dist_uniform)
+    SST_SER(stat_eventcount)
+    SST_SER(stat_rng)
+    SST_SER(stat_dist)
 }
 
 

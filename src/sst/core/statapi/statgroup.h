@@ -12,6 +12,7 @@
 #ifndef SST_CORE_STATAPI_STATGROUP_H
 #define SST_CORE_STATAPI_STATGROUP_H
 
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
 
@@ -39,10 +40,14 @@ public:
     std::string      name;
     StatisticOutput* output;
     UnitAlgebra      outputFreq;
+    size_t           outputId;
 
     std::vector<ComponentId_t>  components;
     std::vector<std::string>    statNames;
     std::vector<StatisticBase*> stats;
+
+    void restartGroup(StatisticProcessingEngine* engine);
+    void serialize_order(SST::Core::Serialization::serializer& ser);
 };
 
 } // namespace Statistics

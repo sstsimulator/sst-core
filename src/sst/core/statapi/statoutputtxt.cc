@@ -407,6 +407,19 @@ StatisticOutputTextBase::print(const char* fmt, ...)
     return res;
 }
 
+void
+StatisticOutputTextBase::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticOutput::serialize_order(ser);
+    ser& m_outputTopHeader;
+    ser& m_outputInlineHeader;
+    ser& m_outputRank;
+    ser& m_outputSimTime;
+    ser& m_useCompression;
+    // ser& m_outputBuffer; // Rebuild during restart
+    ser& m_FilePath;
+}
+
 StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
@@ -415,6 +428,11 @@ StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutp
     setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
 }
 
+void
+StatisticOutputTxt::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticOutputTextBase::serialize_order(ser);
+}
 
 StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
 {
@@ -424,6 +442,11 @@ StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : Stati
     setStatisticOutputName("StatisticOutputConsole");
 }
 
+void
+StatisticOutputConsole::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticOutputTextBase::serialize_order(ser);
+}
 
 } // namespace Statistics
 } // namespace SST

@@ -15,6 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/module.h"
 #include "sst/core/params.h"
+#include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statfieldinfo.h"
@@ -46,7 +47,7 @@ class StatisticGroup;
   the end of the simulation.  A single statistic output will be created by the
   simulation (per node) and will collect the data per its design.
 */
-class StatisticOutput
+class StatisticOutput : public SST::Core::Serialization::serializable
 {
 public:
     SST_ELI_DECLARE_BASE(StatisticOutput)
@@ -74,11 +75,15 @@ public:
 
     virtual bool supportsDynamicRegistration() const { return false; }
 
-    /////////////////
-    // Methods for Registering Fields (Called by Statistic Objects)
-public:
-    // by default, no params to return
-    static const std::vector<SST::ElementInfoParam>& ELI_getParams()
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    ImplementVirtualSerializable(SST::Statistics::StatisticOutput)
+
+        /////////////////
+        // Methods for Registering Fields (Called by Statistic Objects)
+        public :
+        // by default, no params to return
+        static const std::vector<SST::ElementInfoParam>& ELI_getParams()
     {
         static std::vector<SST::ElementInfoParam> var {};
         return var;
@@ -267,14 +272,17 @@ public:
      */
     const char* getFieldTypeShortName(fieldType_t type);
 
-protected:
-    /** Construct a base StatisticOutput
-     * @param outputParameters - The parameters for the statistic Output.
-     */
-    StatisticFieldsOutput(Params& outputParameters);
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementVirtualSerializable(SST::Statistics::StatisticFieldsOutput)
+
+        protected :
+        /** Construct a base StatisticOutput
+         * @param outputParameters - The parameters for the statistic Output.
+         */
+        StatisticFieldsOutput(Params& outputParameters);
 
     // For Serialization
-    StatisticFieldsOutput() {}
+    StatisticFieldsOutput() : m_highestFieldHandle(0), m_currentFieldStatName("") {}
 
 private:
     // Other support functions

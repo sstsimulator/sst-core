@@ -93,6 +93,12 @@ public:
         {"port", "Link to the other coreTestCheckpoint", { "coreTestElement.coreTestCheckpointEvent", "" } }
     )
 
+    SST_ELI_DOCUMENT_STATISTICS(
+        {"eventcount", "Total number of events received", "events", 1},
+        {"rngvals", "Numbers from RNG", "number", 2},
+        {"distvals", "Numbers from distribution", "number", 3}
+    )
+
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
     ~coreTestCheckpoint();
 
@@ -131,6 +137,10 @@ private:
     RNG::RandomDistribution* dist_gauss;
     RNG::RandomDistribution* dist_poisson;
     RNG::RandomDistribution* dist_uniform;
+
+    Statistic<uint32_t>* stat_eventcount;
+    Statistic<uint32_t>* stat_rng;
+    Statistic<double>*   stat_dist;
 };
 
 } // namespace CoreTestCheckpoint

@@ -49,11 +49,14 @@ public:
 
     bool acceptsGroups() const override { return true; }
 
-private:
-    /** Perform a check of provided parameters
-     * @return True if all required parameters and options are acceptable
-     */
-    bool checkOutputParameters() override;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    NotSerializable(SST::Statistics::StatisticOutputHDF5)
+
+        private :
+        /** Perform a check of provided parameters
+         * @return True if all required parameters and options are acceptable
+         */
+        bool checkOutputParameters() override;
 
     /** Print out usage for this Statistic Output */
     void printUsage() override;
