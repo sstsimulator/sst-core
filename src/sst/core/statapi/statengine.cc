@@ -76,6 +76,17 @@ StatisticProcessingEngine::setup(Simulation_impl* sim, ConfigGraph* graph)
     }
 }
 
+void
+StatisticProcessingEngine::restart(Simulation_impl* sim)
+{
+    m_sim = sim;
+    m_SimulationStarted = false;
+    m_defaultGroup.output = m_statOutputs[0];
+    for ( std::vector<StatisticGroup>::iterator it = m_statGroups.begin(); it != m_statGroups.end(); it++ ) {
+        it->restartGroup(this);
+    }
+}
+
 StatisticProcessingEngine::~StatisticProcessingEngine()
 {
     StatArray_t*   statArray;
@@ -102,7 +113,7 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     auto* comp = stat->getComponent();
     if ( comp == nullptr ) {
         m_output.verbose(
-            CALL_INFO, 1, 0, " Error: Statistc %s hasn't any associated component .\n",
+            CALL_INFO, 1, 0, " Error: Statistic %s hasn't any associated component .\n",
             stat->getFullStatName().c_str());
         return false;
     }
@@ -297,7 +308,6 @@ StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, St
 
     // See if the map contains an entry for this factor
     if ( m_PeriodicStatisticMap.find(tcFactor) == m_PeriodicStatisticMap.end() ) {
-
         // Check to see if the freq is zero.  Only add a new clock if the freq is non zero
         if ( 0 != freq.getValue() ) {
 
@@ -623,6 +633,32 @@ StatisticProcessingEngine::addStatisticToCompStatMap(
 
     // Add the statistic to the lists of statistics registered to this component
     statArray->push_back(Stat);
+}
+
+void
+StatisticProcessingEngine::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& m_SimulationStarted;
+    ser& m_statLoadLevel;
+    ser& m_statGroups; // Going to have to revisit if changing partitioning - will stat groups need to be global? Are they global already?
+
+    // Maybe save
+    //typedef std::vector<StatisticBase*>           StatArray_t;   /*!< Array of Statistics */
+    //typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;     /*!< Map of simtimes to Statistic Arrays */
+    //typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t; /*!< Map of ComponentId's to StatInfo Arrays */
+
+    //StatArray_t   m_EventStatisticArray;  /*!< Array of Event Based Statistics */
+    //StatMap_t     m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
+    //StatMap_t     m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
+    //StatMap_t     m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
+    //CompStatMap_t m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
+
+    // Don't save
+    // m_output         Reset to default output in default constructor so don't need to save
+    // m_sim            Reset on restart
+    // m_defaultGroup   Reset on restart
+    // m_statOutputs    Saved & recreated by simulation object
+
 }
 
 } // namespace Statistics

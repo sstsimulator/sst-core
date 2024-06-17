@@ -29,6 +29,7 @@ StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) : StatisticFi
     m_currentComponentName = "";
     m_firstEntry           = false;
     m_processedAnyStats    = false;
+    m_curIndentLevel       = 0;
 }
 
 bool
@@ -47,12 +48,9 @@ StatisticOutputJSON::checkOutputParameters()
     if ( true == foundKey ) { return false; }
 
     // Get the parameters
-    m_FilePath  = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.json");
-    simTimeFlag = getOutputParameters().find<std::string>("outputsimtime", "1");
-    rankFlag    = getOutputParameters().find<std::string>("outputrank", "1");
-
-    m_outputSimTime = ("1" == simTimeFlag);
-    m_outputRank    = ("1" == rankFlag);
+    m_FilePath      = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.json");
+    m_outputSimTime = getOutputParameters().find<bool>("outputsimtime", true);
+    m_outputRank    = getOutputParameters().find<bool>("outputrank", true);
 
     if ( 0 == m_FilePath.length() ) {
         // Filepath is zero length
@@ -138,6 +136,10 @@ StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
         m_curIndentLevel++;
         printIndent();
         fprintf(m_hFile, "\"name\" : \"%s\",\n", statistic->getCompName().c_str());
+        printIndent();
+        if (m_outputSimTime) {
+            fprintf(m_hFile, "\"simtime\" : %" PRIu64 ",\n", getCurrentSimCycle());
+        }
 
         printIndent();
         fprintf(m_hFile, "\"statistics\" : [\n");
@@ -259,6 +261,18 @@ StatisticOutputJSON::printIndent()
     for ( int i = 0; i < m_curIndentLevel; ++i ) {
         fprintf(m_hFile, "   ");
     }
+}
+
+void
+StatisticOutputJSON::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticFieldsOutput::serialize_order(ser);
+    ser& m_FilePath;
+    ser& m_outputSimTime;
+    ser& m_outputRank;
+    ser& m_firstEntry;
+    ser& m_firstField;
+    ser& m_processedAnyStats;
 }
 
 } // namespace Statistics

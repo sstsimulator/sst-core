@@ -775,6 +775,8 @@ public:
     void print_all_params(std::ostream& os, const std::string& prefix = "") const;
     /** Print all key/value parameter pairs to specified ostream */
     void print_all_params(Output& out, const std::string& prefix = "") const;
+    /** Return a string version of all key/value parameter pairs */
+    std::string toString(const std::string& prefix = "") const;
 
     /**
      * Add a key/value pair into the param object.
@@ -946,6 +948,8 @@ private:
 
     /* Friend main() because it broadcasts the maps */
     friend int ::main(int argc, char* argv[]);
+    /* Friend simulation because it checkpoints the maps */
+    friend class Simulation_impl;
 
     static std::map<std::string, uint32_t> keyMap;
     static std::vector<std::string>        keyMapReverse;

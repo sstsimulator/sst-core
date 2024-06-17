@@ -15,6 +15,7 @@
 #include "sst/core/clock.h"
 #include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
+#include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statfieldinfo.h"
@@ -48,7 +49,7 @@ class StatisticOutput;
     all registered Statistics to generate their outputs at desired rates.
 */
 
-class StatisticProcessingEngine
+class StatisticProcessingEngine : public SST::Core::Serialization::serializable
 {
 
 public:
@@ -94,6 +95,8 @@ public:
      */
     static void stat_outputs_simulation_end();
 
+    void serialize_order(SST::Core::Serialization::serializer& ser);
+    ImplementSerializable(SST::Statistics::StatisticProcessingEngine)
 private:
     friend class SST::Simulation_impl;
     friend int ::main(int argc, char** argv);
@@ -101,6 +104,7 @@ private:
 
     StatisticProcessingEngine();
     void setup(Simulation_impl* sim, ConfigGraph* graph);
+    void restart(Simulation_impl* sim);
     ~StatisticProcessingEngine();
 
     static StatisticOutput* createStatisticOutput(const ConfigStatOutput& cfg);

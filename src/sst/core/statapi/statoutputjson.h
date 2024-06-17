@@ -39,6 +39,9 @@ public:
      */
     StatisticOutputJSON(Params& outputParameters);
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Statistics::StatisticOutputJSON)
+
 protected:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
@@ -89,7 +92,7 @@ protected:
     void printIndent();
 
 protected:
-    StatisticOutputJSON() { ; } // For serialization
+    StatisticOutputJSON() : m_currentComponentName(""), m_firstEntry(false), m_processedAnyStats(false), m_curIndentLevel(0) { ; } // For serialization
 
 private:
     bool openFile();

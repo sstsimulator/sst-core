@@ -138,15 +138,21 @@ template <class T>
 class serializable_type
 {};
 
-#define ImplementVirtualSerializable(obj) \
-public:                                   \
-    virtual const char* cls_name() const override { return #obj; }
+#define ImplementVirtualSerializable(obj)                                                                         \
+public:                                                                                                           \
+    static void throw_exc()                                                                                       \
+    {                                                                                                             \
+        ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj);  \
+    }                                                                                                             \
+    virtual const char* cls_name() const override { return #obj; }                                                \
+    virtual uint32_t    cls_id() const { throw_exc(); return 0; }                                                 \
+    virtual std::string serialization_name() const { throw_exc(); return ""; }
 
 #define NotSerializable(obj)                                                                                      \
 public:                                                                                                           \
     static void throw_exc()                                                                                       \
     {                                                                                                             \
-        ::SST::Core::Serialization::serializable_base::serializable_abort(CALL_INFO_LONG, #obj);                  \
+        ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj);  \
     }                                                                                                             \
     virtual void     serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override { throw_exc(); } \
     virtual uint32_t cls_id() const override                                                                      \

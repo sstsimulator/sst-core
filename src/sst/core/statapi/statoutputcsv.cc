@@ -31,9 +31,6 @@ bool
 StatisticOutputCSV::checkOutputParameters()
 {
     bool        foundKey;
-    std::string topHeaderFlag;
-    std::string simTimeFlag;
-    std::string rankFlag;
 
     // Review the output parameters and make sure they are correct, and
     // also setup internal variables
@@ -45,12 +42,9 @@ StatisticOutputCSV::checkOutputParameters()
     // Get the parameters
     m_Separator       = getOutputParameters().find<std::string>("separator", ", ");
     m_FilePath        = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.csv");
-    topHeaderFlag     = getOutputParameters().find<std::string>("outputtopheader", "1");
-    simTimeFlag       = getOutputParameters().find<std::string>("outputsimtime", "1");
-    rankFlag          = getOutputParameters().find<std::string>("outputrank", "1");
-    m_outputTopHeader = ("1" == topHeaderFlag);
-    m_outputSimTime   = ("1" == simTimeFlag);
-    m_outputRank      = ("1" == rankFlag);
+    m_outputTopHeader = getOutputParameters().find<bool>("outputtopheader", true);
+    m_outputSimTime   = getOutputParameters().find<bool>("outputsimtime", true);
+    m_outputRank      = getOutputParameters().find<bool>("outputrank", true);
 
     // Perform some checking on the parameters
     if ( 0 == m_Separator.length() ) {
@@ -362,6 +356,18 @@ StatisticOutputCSV::print(const char* fmt, ...)
         va_end(args);
     }
     return res;
+}
+
+void
+StatisticOutputCSV::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticFieldsOutput::serialize_order(ser);
+    ser& m_Separator;
+    ser& m_FilePath;
+    ser& m_outputRank;
+    ser& m_outputSimTime;
+    ser& m_outputTopHeader;
+    ser& m_useCompression;
 }
 
 } // namespace Statistics

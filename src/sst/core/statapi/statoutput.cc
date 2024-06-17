@@ -35,6 +35,13 @@ SST_ELI_DEFINE_INFO_EXTERN(StatisticOutput)
 StatisticOutput::~StatisticOutput() {}
 
 void
+StatisticOutput::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& m_statOutputName;
+    ser& m_outputParameters;
+}
+
+void
 StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
 {
     this->lock();
@@ -250,6 +257,11 @@ StatisticFieldsOutput::stopRegisterFields()
     m_currentFieldStatName = "";
 }
 
+void
+StatisticFieldsOutput::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticOutput::serialize_order(ser);
+}
 
 } // namespace Statistics
 } // namespace SST

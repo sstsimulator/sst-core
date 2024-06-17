@@ -27,6 +27,7 @@ set(SSTSerializationHeaders
     serialize_list.h
     serialize_map.h
     serialize_multiset.h
+    serialize_output.h
     serialize_packer.h
     serialize_priority_queue.h
     serializer_fwd.h

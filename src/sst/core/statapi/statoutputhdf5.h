@@ -48,6 +48,9 @@ public:
     StatisticOutputHDF5(Params& outputParameters);
 
     bool acceptsGroups() const override { return true; }
+    
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    NotSerializable(SST::Statistics::StatisticOutputHDF5)
 
 private:
     /** Perform a check of provided parameters
