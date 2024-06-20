@@ -8,6 +8,7 @@ EXTRA_DIST += \
     tests/testsuite_default_Links.py \
     tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_default_Module.py \
+    tests/testsuite_default_Output.py \
     tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
@@ -29,6 +30,7 @@ EXTRA_DIST += \
     tests/test_LookupTable.py \
     tests/test_LookupTable2.py \
     tests/test_MessageMesh.py \
+    tests/test_Output.py \
     tests/test_ParamComponent.py \
     tests/test_ParallelLoad.py \
     tests/test_RNGComponent.py \
@@ -55,6 +57,8 @@ EXTRA_DIST += \
     tests/refFiles/test_DistribComponent_expon.out \
     tests/refFiles/test_DistribComponent_gaussian.out \
     tests/refFiles/test_LookupTableComponent.out \
+    tests/refFiles/test_Output_TraceFunction.out \
+    tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
     tests/refFiles/test_MessageGeneratorComponent.out \
     tests/refFiles/test_MemPool_overflow.out \
