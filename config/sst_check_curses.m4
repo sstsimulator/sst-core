@@ -50,10 +50,20 @@ AC_DEFUN([SST_CHECK_CURSES],
             CPPFLAGS="$CPPFLAGS $CURSES_CPPFLAGS"
             LDFLAGS="$LDFLAGS $CURSES_LIBS"
 
-            dnl Check that the specific header exists and that the config-provided lib locations are correct.
+            dnl Check that the specific header exists and that plausible lib
+            dnl locations are correct.
             AC_LANG_PUSH([C++])
             AC_CHECK_HEADER([ncurses.h], [], [sst_check_curses_happy="no"])
-            AC_SEARCH_LIBS([initscr], [$CURSES_LIBS], [], [sst_check_curses_happy="no"])
+            dnl We cannot check that the config-provided lib names are
+            dnl correct, since those are not available at macro expansion
+            dnl time.  This is only necessary for platforms where libs are
+            dnl reported but are broken or don't actually exist.
+            AS_IF([test "$sst_check_curses_happy" != "no"],
+              [AC_CHECK_LIB([ncursesw], [initscr], [],
+                [AC_CHECK_LIB([ncurses], [initscr], [],
+                  [AC_CHECK_LIB([curses], [initscr], [],
+                    [sst_check_curses_happy="no"])])])
+               ])
             AC_LANG_POP([C++])
 
             CPPFLAGS="$CPPFLAGS_saved"
