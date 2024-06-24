@@ -15,7 +15,7 @@ def sstcreatemodel():
     sst.creategraph()
 
     if sst.verbose():
-	print "SST Random Number Generation Test Component Model"
+	print("SST Random Number Generation Test Component Model")
 
     id = sst.createcomponent("rng0", "coreTestElement.simpleRNGComponent")
     sst.addcompparam(id, "count", "1000")
