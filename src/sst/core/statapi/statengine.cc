@@ -642,23 +642,6 @@ StatisticProcessingEngine::serialize_order(SST::Core::Serialization::serializer&
     ser& m_statLoadLevel;
     ser& m_statGroups; // Going to have to revisit if changing partitioning - will stat groups need to be global? Are
                        // they global already?
-
-    // Maybe save
-    // typedef std::vector<StatisticBase*>           StatArray_t;   /*!< Array of Statistics */
-    // typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;     /*!< Map of simtimes to Statistic Arrays */
-    // typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t; /*!< Map of ComponentId's to StatInfo Arrays */
-
-    // StatArray_t   m_EventStatisticArray;  /*!< Array of Event Based Statistics */
-    // StatMap_t     m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
-    // StatMap_t     m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
-    // StatMap_t     m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
-    // CompStatMap_t m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
-
-    // Don't save
-    // m_output         Reset to default output in default constructor so don't need to save
-    // m_sim            Reset on restart
-    // m_defaultGroup   Reset on restart
-    // m_statOutputs    Saved & recreated by simulation object
 }
 
 } // namespace Statistics
