@@ -214,6 +214,7 @@ parseInput(std::string input)
                 "- Help : Displays this help message\n"
                 "- List {element.subelement} : Displays element libraries and component information\n"
                 "- Find {field} {search string} : Displays all components with the given search string in its field\n\n"
+                "- Quit : Exits the program\n\n"
                 "To see more detailed instructions, type in a command without additional parameters.\n\n";
         }
         else if ( command == "list" ) {
@@ -257,6 +258,9 @@ parseInput(std::string input)
                    "find compiledate Oct 17\n"
                    "find CATEGORY UNCATEGORIZED\n"
                    "find parameters rng";
+        }
+        else if ( command == "quit" ) {
+            return command;
         }
         else {
             text = getErrorText(command);
@@ -1115,8 +1119,10 @@ InteractiveWindow::getInput()
             if ( input != "" ) {
                 g_prevInput.push_front(input);
                 output = parseInput(input);
-                setInfoText(output);
 
+                if ( output == "quit" ) { break; }
+
+                setInfoText(output);
                 g_window.draw();
                 g_window.printInfo();
                 input    = "";
@@ -1185,6 +1191,7 @@ InteractiveWindow::getInput()
         // Make sure the cursor resets to the correct place
         g_window.resetCursor(input.size() + 1);
     }
+    endwin();
 }
 
 void
