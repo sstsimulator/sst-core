@@ -1,9 +1,9 @@
 // -*- mode: c++ -*-
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,12 +37,6 @@ namespace Interfaces {
  */
 class SimpleNetwork : public SubComponent
 {
-
-    // Variables needed until send/recvInitData() functions are
-    // removed in SST 14
-    bool delegate_send = false;
-    bool delegate_recv = false;
-
 public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
 
@@ -227,54 +221,17 @@ public:
     SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
 
     /**
-     * Sends a network request during the init() phase
-     */
-#if !SST_BUILDING_CORE
-    [[deprecated(
-        "sendInitData() has been deprecated and will be removed in SST 14.  Please use sendUntimedData() instead.")]]
-#endif
-    virtual void
-    sendInitData(Request* req);
-
-    /**
-     * Receive any data during the init() phase.
-     * @see SST::Link::recvInitData()
-     */
-#if !SST_BUILDING_CORE
-    [[deprecated(
-        "recvInitData() has been deprecated and will be removed in SST 14.  Please use recvUntimedData() instead.")]]
-#endif
-    virtual Request*
-    recvInitData();
-
-    /**
      * Sends a network request during untimed phases (init() and
      * complete()).
      * @see SST::Link::sendUntimedData()
-     *
-     * For now, simply call sendInitData.  Once that call is
-     * deprecated and removed, this will become a pure virtual
-     * function.  This means that when classes implement
-     * SimpleNetwork, they will need to overload both sendUntimedData
-     * and sendInitData with identical functionality (or having the
-     * Init version call the Untimed version) until sendInitData is
-     * removed in SST 14.0.
      */
-    virtual void sendUntimedData(Request* req);
+    virtual void sendUntimedData(Request* req) = 0;
 
     /**
      * Receive any data during untimed phases (init() and complete()).
      * @see SST::Link::recvUntimedData()
-     *
-     * For now, simply call recvInitData.  Once that call is
-     * deprecated and removed, this will become a pure virtual
-     * function.  This means that when classes implement
-     * SimpleNetwork, they will need to overload both recvUntimedData
-     * and recvInitData with identical functionality (or having the
-     * Init version call the Untimed version) until recvInitData is
-     * removed in SST 14.0.
      */
-    virtual Request* recvUntimedData();
+    virtual Request* recvUntimedData() = 0;
 
     // /**
     //  * Returns a handle to the underlying SST::Link

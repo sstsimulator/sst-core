@@ -2,7 +2,7 @@
 AC_INIT([SSTCore], [-dev], [wg-sst@sandia.gov])
 
 AC_PREREQ([2.59])
-AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2023])
+AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2024])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
@@ -39,6 +39,19 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 #AS_IF([test "x$found_cxx1y" = "xyes"],
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
 #        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
+
+# The combination of newer versions of Clang changing the default behavior
+# from `-ffp-contract=off` to `-ffp-contract=on` and running on ARM due to the
+# underlying FMA instruction lead to floating point
+# differences. (https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html#floating-point-support-in-clang)
+AC_LANG_PUSH([C++])
+AX_COMPILER_VENDOR
+AC_LANG_POP([C++])
+case "$ax_cv_cxx_compiler_vendor" in
+    clang)
+        CXXFLAGS="$CXXFLAGS -ffp-contract=off"
+        ;;
+esac
 
 SST_CHECK_PICKY
 AS_IF([test "x$use_picky" = "xyes"],

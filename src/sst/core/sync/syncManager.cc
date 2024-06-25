@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -82,6 +82,7 @@ class EmptyRankSync : public RankSync
 {
 public:
     EmptyRankSync(const RankInfo& num_ranks) : RankSync(num_ranks) { nextSyncTime = MAX_SIMTIME_T; }
+    EmptyRankSync() {} // For serialization
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
@@ -119,6 +120,9 @@ public:
     TimeConverter* getMaxPeriod() { return max_period; }
 
     uint64_t getDataSize() const override { return 0; }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { RankSync::serialize_order(ser); }
+    ImplementSerializable(SST::EmptyRankSync)
 };
 
 class EmptyThreadSync : public ThreadSync
@@ -128,6 +132,7 @@ public:
 
 public:
     EmptyThreadSync(Simulation_impl* sim) : sim(sim) { nextSyncTime = MAX_SIMTIME_T; }
+    EmptyThreadSync() {} // For serialization
     ~EmptyThreadSync() {}
 
     void before() override {}
@@ -143,6 +148,10 @@ public:
     {
         return nullptr;
     }
+
+    /** Serialization for checkpoint support */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { ThreadSync::serialize_order(ser); }
+    ImplementSerializable(EmptyThreadSync)
 };
 
 void
@@ -284,6 +293,13 @@ SyncManager::SyncManager(
     exit = sim->getExit();
 
     setPriority(SYNCPRIORITY);
+}
+
+SyncManager::SyncManager()
+{
+    sim = Simulation_impl::getSimulation();
+    // threadSync = new EmptyThreadSync(Simulation_impl::getSimulation());
+    // rankSync = new EmptyRankSync(num_ranks);
 }
 
 SyncManager::~SyncManager() {}
@@ -449,4 +465,32 @@ SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
     profile_tools->addProfileTool(tool);
 }
 
+void
+SyncManager::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Action::serialize_order(ser);
+
+    // AHHHHHHHHHHHHHHHHH
+    ser& rank;      // const causes problems
+    ser& num_ranks; // const again
+
+    ser& next_rankSync;
+    ser& threadSync;
+
+    ser& next_sync_type;
+    ser& min_part;
+
+    // FIXME: Need to actually figure out how to handle the static
+    // RankSync object.
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { rankSync = new EmptyRankSync(num_ranks); }
+
+    // No need to serialize
+    // RankExecBarrier
+    // LinkUntimedBarrier
+    // sim
+    // exit
+    // profile_tools
+
+    // static RankSync* rankSync;
+}
 } // namespace SST

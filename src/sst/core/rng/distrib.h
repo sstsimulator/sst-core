@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -12,6 +12,8 @@
 #ifndef SST_CORE_RNG_DISTRIB_H
 #define SST_CORE_RNG_DISTRIB_H
 
+#include "sst/core/serialization/serializable.h"
+
 namespace SST {
 namespace RNG {
 
@@ -19,7 +21,7 @@ namespace RNG {
  * \class RandomDistribution
  * Base class of statistical distributions in SST.
  */
-class RandomDistribution
+class RandomDistribution : public SST::Core::Serialization::serializable
 {
 
 public:
@@ -32,12 +34,16 @@ public:
     /**
         Destroys the distribution
     */
-    virtual ~RandomDistribution() {};
+    virtual ~RandomDistribution() {}
 
     /**
         Creates the base (abstract) class of a distribution
     */
-    RandomDistribution() {};
+    RandomDistribution() {}
+
+    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+
+    ImplementVirtualSerializable(SST::RNG::RandomDistribution)
 };
 
 using SSTRandomDistribution = SST::RNG::RandomDistribution;

@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -77,7 +77,7 @@ public:
         Gets the next double value in the distribution
         \return The next double value of the distribution (in this case a Gaussian distribution)
     */
-    double getNextDouble()
+    double getNextDouble() override
     {
         if ( usePair ) {
             usePair = false;
@@ -115,6 +115,29 @@ public:
         \return The standard deviation of the Gaussian distribution
     */
     double getStandardDev() { return stddev; }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    GaussianDistribution() : RandomDistribution() {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& mean;
+        ser& stddev;
+        ser& baseDistrib;
+        ser& unusedPair;
+        ser& usePair;
+        ser& deleteDistrib;
+    }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(SST::RNG::GaussianDistribution)
 
 protected:
     /**

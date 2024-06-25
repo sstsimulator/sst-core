@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -20,7 +20,6 @@
 #include "sst/core/output.h"
 #include "sst/core/profile/profiletool.h"
 #include "sst/core/rankInfo.h"
-#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
@@ -41,16 +40,15 @@ namespace SST {
 #define STATALLFLAG            "--ALLSTATS--"
 
 class Activity;
+class CheckpointAction;
 class Component;
 class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
-class SimulatorHeartbeat;
 class Link;
 class LinkMap;
 class Params;
-class SharedRegionManager;
 class SimulatorHeartbeat;
 class SyncBase;
 class SyncManager;
@@ -59,7 +57,6 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
-class SharedRegionManager;
 
 namespace Statistics {
 class StatisticOutput;
@@ -70,55 +67,55 @@ class StatisticProcessingEngine;
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation_impl : public Simulation
+class Simulation_impl
 {
 
 public:
     /********  Public API inherited from Simulation ********/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    SimulationRunMode getSimulationMode() const override { return runMode; };
+    SimulationRunMode getSimulationMode() const { return runMode; };
 
     /** Return the current simulation time as a cycle count*/
-    SimTime_t getCurrentSimCycle() const override;
+    SimTime_t getCurrentSimCycle() const;
 
     /** Return the end simulation time as a cycle count*/
-    SimTime_t getEndSimCycle() const override;
+    SimTime_t getEndSimCycle() const;
 
     /** Return the current priority */
-    int getCurrentPriority() const override;
+    int getCurrentPriority() const;
 
     /** Return the elapsed simulation time as a time */
-    UnitAlgebra getElapsedSimTime() const override;
+    UnitAlgebra getElapsedSimTime() const;
 
     /** Return the end simulation time as a time */
-    UnitAlgebra getEndSimTime() const override;
+    UnitAlgebra getEndSimTime() const;
 
     /** Get this instance's parallel rank */
-    RankInfo getRank() const override { return my_rank; }
+    RankInfo getRank() const { return my_rank; }
 
     /** Get the number of parallel ranks in the simulation */
-    RankInfo getNumRanks() const override { return num_ranks; }
+    RankInfo getNumRanks() const { return num_ranks; }
 
     /**
     Returns the output directory of the simulation
     @return Directory in which simulation outputs are placed
     */
-    std::string& getOutputDirectory() override { return output_directory; }
+    std::string& getOutputDirectory() { return output_directory; }
 
     /** Signifies that a library is required for this simulation.
      *  @param name Name of the library
      */
-    virtual void requireLibrary(const std::string& name) override;
+    void requireLibrary(const std::string& name);
 
     /** Causes the current status of the simulation to be printed to stderr.
      * @param fullStatus - if true, call printStatus() on all components as well
      *        as print the base Simulation's status
      */
-    virtual void printStatus(bool fullStatus) override;
+    void printStatus(bool fullStatus);
 
-    virtual double getRunPhaseElapsedRealTime() const override;
-    virtual double getInitPhaseElapsedRealTime() const override;
-    virtual double getCompletePhaseElapsedRealTime() const override;
+    double getRunPhaseElapsedRealTime() const;
+    double getInitPhaseElapsedRealTime() const;
+    double getCompletePhaseElapsedRealTime() const;
 
     /******** End Public API from Simulation ********/
 
@@ -182,6 +179,8 @@ public:
 
     /** Perform the setup() and run phases of the simulation. */
     void setup();
+
+    void prepare_for_run();
 
     void run();
 
@@ -280,6 +279,9 @@ public:
 
     TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
 
+    // registerClock function used during checkpoint/restart
+    void registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority);
+
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
 
@@ -291,6 +293,16 @@ public:
     /** Returns the next Cycle that the TImeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
 
+    /** Gets the clock the handler is registered with, represented by it's factor
+     *
+     * @param handler Clock handler to search for
+     *
+     * @return Factor of TimeConverter for the clock the specified
+     * handler is registered with.  If the handler is not currently
+     * registered with a clock, returns 0.
+     */
+    SimTime_t getClockForHandler(Clock::HandlerBase* handler);
+
     /** Return the Statistic Processing Engine associated with this Simulation */
     Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void);
 
@@ -301,7 +313,7 @@ public:
     // To enable main to set up globals
     friend int ::main(int argc, char** argv);
 
-    // Simulation_impl() {}
+    Simulation_impl() {}
     Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks);
     Simulation_impl(Simulation_impl const&); // Don't Implement
     void operator=(Simulation_impl const&);  // Don't implement
@@ -310,6 +322,9 @@ public:
      * @param cycles Frequency which is the base of the TimeConverter
      */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
+
+    void checkpoint();
+    void restart(Config* config);
 
     /** Factory used to generate the simulation components */
     static Factory* factory;
@@ -350,7 +365,8 @@ public:
     friend class SyncManager;
 
     TimeVortex*             timeVortex;
-    TimeConverter*          threadMinPartTC;
+    std::string             timeVortexType;
+    TimeConverter*          threadMinPartTC; // Unused...?
     Activity*               current_activity;
     static SimTime_t        minPart;
     static TimeConverter*   minPartTC;
@@ -362,7 +378,7 @@ public:
     clockMap_t              clockMap;
     oneShotMap_t            oneShotMap;
     static Exit*            m_exit;
-    SimulatorHeartbeat*     m_heartbeat;
+    SimulatorHeartbeat*     m_heartbeat = nullptr;
     bool                    endSim;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;
@@ -489,8 +505,7 @@ public:
     RankInfo my_rank;
     RankInfo num_ranks;
 
-    std::string                 output_directory;
-    static SharedRegionManager* sharedRegionManager;
+    std::string output_directory;
 
     double run_phase_start_time;
     double run_phase_total_time;
@@ -501,6 +516,16 @@ public:
 
     static std::unordered_map<std::thread::id, Simulation_impl*> instanceMap;
     static std::vector<Simulation_impl*>                         instanceVec;
+
+    /******** Checkpoint/restart tracking data structures ***********/
+    std::map<uintptr_t, Link*>     link_restart_tracking;
+    std::map<uintptr_t, uintptr_t> event_handler_restart_tracking;
+    CheckpointAction*              m_checkpoint         = nullptr;
+    uint32_t                       checkpoint_id        = 0;
+    std::string                    checkpointPrefix     = "";
+    std::string                    globalOutputFileName = "";
+
+    void printSimulationState();
 
     friend void wait_my_turn_start();
     friend void wait_my_turn_end();

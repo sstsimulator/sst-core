@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,8 +37,8 @@ public:
             ser.size(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -48,8 +48,8 @@ public:
             ser.pack(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -58,8 +58,8 @@ public:
             size_t size;
             ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
-                T t;
-                serialize<T>()(t, ser);
+                T    t;
+                ser& t;
                 v.insert(t);
             }
             break;
@@ -84,8 +84,8 @@ public:
             ser.size(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -95,8 +95,8 @@ public:
             ser.pack(size);
             iterator it, end = v.end();
             for ( it = v.begin(); it != end; ++it ) {
-                T& t = const_cast<T&>(*it);
-                serialize<T>()(t, ser);
+                T&   t = const_cast<T&>(*it);
+                ser& t;
             }
             break;
         }
@@ -105,8 +105,8 @@ public:
             size_t size;
             ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
-                T t;
-                serialize<T>()(t, ser);
+                T    t = {};
+                ser& t;
                 v.insert(t);
             }
             break;

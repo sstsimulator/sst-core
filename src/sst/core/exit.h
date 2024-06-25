@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -90,6 +90,13 @@ public:
 
     unsigned int getGlobalCount() { return global_count; }
 
+    /**
+     *
+     * TODO to enable different partitioning on restart, will need to associate m_thread_counts and
+     * m_idSet back to components so that a new Exit event can be generated on restart
+     */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Exit)
 private:
     Exit() {}                    // for serialization only
     Exit(const Exit&);           // Don't implement

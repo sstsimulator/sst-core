@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -31,6 +31,15 @@ private:
     std::map<std::string, Link*> linkMap;
     // const std::vector<std::string> * allowedPorts;
     std::vector<std::string>     selfPorts;
+
+    friend class SST::Core::Serialization::serialize_impl<LinkMap*>;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
+    {
+        ser& linkMap;
+        ser& selfPorts;
+    }
+
 
     // bool checkPort(const char *def, const char *offered) const
     // {

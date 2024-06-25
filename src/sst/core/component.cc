@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -41,15 +41,25 @@ Component::registerAsPrimaryComponent()
 void
 Component::primaryComponentDoNotEndSim()
 {
-    int thread = getSimulation()->getRank().thread;
+    int thread = Simulation_impl::getSimulation()->getRank().thread;
     Simulation_impl::getSimulation()->getExit()->refInc(getId(), thread);
 }
 
 void
 Component::primaryComponentOKToEndSim()
 {
-    int thread = getSimulation()->getRank().thread;
+    int thread = Simulation_impl::getSimulation()->getRank().thread;
     Simulation_impl::getSimulation()->getExit()->refDec(getId(), thread);
 }
+
+
+void
+Component::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent::serialize_order(ser);
+}
+
+// For serialization only
+Component::Component() : BaseComponent() {}
 
 } // namespace SST

@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -74,10 +74,12 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject*
 static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
 
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
-static PyObject* mlLoadModule(PyObject* self, PyObject* args);
+static PyObject* mlCreateModule(PyObject* self, PyObject* args);
+static PyObject* mlExecModule(PyObject* self, PyObject* args);
 
 static PyMethodDef mlMethods[] = { { "find_module", mlFindModule, METH_VARARGS, "Finds an SST Element Module" },
-                                   { "load_module", mlLoadModule, METH_VARARGS, "Loads an SST Element Module" },
+                                   { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
+                                   { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" },
                                    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
@@ -90,12 +92,10 @@ static PyTypeObject ModuleLoaderType = {
     sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
     0,                              /* tp_itemsize */
     nullptr,                        /* tp_dealloc */
-    SST_TP_VECTORCALL_OFFSET        /* Python3 only */
-        SST_TP_PRINT                /* Python2 only */
+    0,                              /* tp_vectorcall_offset */
     nullptr,                        /* tp_getattr */
     nullptr,                        /* tp_setattr */
-    SST_TP_COMPARE(nullptr)         /* Python2 only */
-    SST_TP_AS_SYNC                  /* Python3 only */
+    nullptr,                        /* tp_as_sync */
     nullptr,                        /* tp_repr */
     nullptr,                        /* tp_as_number */
     nullptr,                        /* tp_as_sequence */
@@ -110,7 +110,7 @@ static PyTypeObject ModuleLoaderType = {
     "SST Module Loader",            /* tp_doc */
     nullptr,                        /* tp_traverse */
     nullptr,                        /* tp_clear */
-    SST_TP_RICH_COMPARE(nullptr)    /* Python3 only */
+    nullptr,                        /* tp_rich_compare */
     0,                              /* tp_weaklistoffset */
     nullptr,                        /* tp_iter */
     nullptr,                        /* tp_iternext */
@@ -134,9 +134,10 @@ static PyTypeObject ModuleLoaderType = {
     nullptr,                        /* tp_weaklist */
     nullptr,                        /* tp_del */
     0,                              /* tp_version_tag */
-    SST_TP_FINALIZE                 /* Python3 only */
-        SST_TP_VECTORCALL           /* Python3 only */
-            SST_TP_PRINT_DEP        /* Python3.8 only */
+    nullptr,                        /* tp_finalize */
+    SST_TP_VECTORCALL               /* Python3.8+ */
+        SST_TP_PRINT_DEP            /* Python3.8 only */
+            SST_TP_WATCHED          /* Python3.12+ */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -203,23 +204,44 @@ static struct PyModuleDef emptyModDef
 #endif
 
 static PyObject*
-mlLoadModule(PyObject* UNUSED(self), PyObject* args)
+mlExecModule(PyObject* UNUSED(self), PyObject* args)
 {
-    char* name;
-    if ( !PyArg_ParseTuple(args, "s", &name) ) return nullptr;
+    return args;
+}
+
+static PyObject*
+mlCreateModule(PyObject* UNUSED(self), PyObject* args)
+{
+    PyObject* spec;
+    // The argument is a ModuleSpec, but I don't know how to check for
+    // that.  If we can find the right type, this would be similar to:
+
+    // if ( !PyArg_ParseTuple(args, "O!", &PyModuleSpec_Type, &spec) ) return nullptr;
+
+    // For now, we can just use PyObject_GetAttrString to get the
+    // right field from it.  If there is no name field, then it will
+    // error there.
+    if ( !PyArg_ParseTuple(args, "O", &spec) ) return nullptr;
+
+    PyObject*   nameobj;
+    const char* name;
+
+    nameobj = PyObject_GetAttrString(spec, "name");
+    if ( nameobj == nullptr ) { return nullptr; }
+    name = SST_ConvertToCppString(nameobj);
 
     if ( strncmp(name, "sst.", 4) ) {
         // We know how to handle only sst.<module>
         return nullptr; // ERROR!
     }
 
-    char* modName = name + 4; // sst.<modName>
+    const char* modName = name + 4; // sst.<modName>
 
     // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject*               mod   = nullptr;
-    if ( !pymod ) { mod = SST_PY_INIT_MODULE(name, emptyModMethods, emptyModDef); }
+    if ( !pymod ) { mod = PyModule_Create(&emptyModDef); }
     else {
         mod = static_cast<PyObject*>(pymod->load());
     }
@@ -312,7 +334,8 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
+        dict, SST_ConvertToPythonString("heartbeat-period"),
+        SST_ConvertToPythonString(cfg->heartbeat_period().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-directory"),
         SST_ConvertToPythonString(cfg->output_directory().c_str()));
@@ -364,6 +387,14 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
 #endif
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("force-rank-seq-startup"), SST_ConvertToPythonBool(cfg->rank_seq_startup()));
+
+    // Advanced options - checkpointing
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-period"),
+        SST_ConvertToPythonString(cfg->checkpoint_period().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-prefix"),
+        SST_ConvertToPythonString(cfg->checkpoint_prefix().c_str()));
 
     return dict;
 }
@@ -991,7 +1022,7 @@ PyInit_sst(void)
     }
 
     // Create the module
-    PyObject* module = SST_PY_INIT_MODULE("sst", sstModuleMethods, sstModuleDef);
+    PyObject* module = PyModule_Create(&sstModuleDef);
     if ( !module ) return nullptr;
 
     Py_INCREF(&PyModel_ComponentType);
@@ -1069,12 +1100,6 @@ SSTPythonModelDefinition::initModel(
 
         PyConfig_Clear(&config);
     }
-    // For 3.11 and on, we need to append the current working
-    // directory to the path
-    PyRun_SimpleString("import sys\n"
-                       "import sst\n"
-                       "sys.meta_path.append(sst.ModuleLoader())\n"
-                       "sys.path.append(\".\")");
 #else
     // Set arguments; Python3 takes wchar_t* arg instead of char*
     wchar_t** wargv = (wchar_t**)PyMem_Malloc(sizeof(wchar_t*) * argc);
@@ -1085,9 +1110,26 @@ SSTPythonModelDefinition::initModel(
     // Get the Python scripting engine started
     Py_Initialize();
     PySys_SetArgv(argc, wargv);
+#endif
+
     PyRun_SimpleString("import sys\n"
                        "import sst\n"
-                       "sys.meta_path.append(sst.ModuleLoader())\n");
+                       "import importlib\n"
+                       "import importlib.machinery\n"
+                       "spec = importlib.machinery.ModuleSpec(\"sst loader\", sst.ModuleLoader())\n"
+                       "class SSTModuleFinder:\n"
+                       "  def find_spec(self, fullname, path, target=None):\n"
+                       "    loader = sst.ModuleLoader()\n"
+                       "    found_loader = loader.find_module(fullname)\n"
+                       "    if found_loader:  return importlib.machinery.ModuleSpec(fullname, found_loader)\n"
+                       "    else: return None\n"
+                       "sys.meta_path.append(SSTModuleFinder())\n"
+                       "sys.path.append(\".\")");
+
+#if PY_MINOR_VERSION >= 11
+    // // For 3.11 and on, we need to append the current working
+    // // directory to the path
+    PyRun_SimpleString("sys.meta_path.append(sst.ModuleLoader())\n");
 #endif
 }
 

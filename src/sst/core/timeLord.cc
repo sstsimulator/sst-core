@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,6 +15,8 @@
 
 #include "sst/core/linkMap.h"
 #include "sst/core/output.h"
+#include "sst/core/serialization/serialize.h"
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
@@ -174,10 +176,49 @@ TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
     return parseCache[ts]->getFactor();
 }
 
+void
+TimeLord::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& timeBaseString;
+    ser& timeBase;
+    ser& tcMap;
+}
+
 UnitAlgebra
 TimeConverter::getPeriod() const
 {
     return Simulation_impl::getTimeLord()->getTimeBase() * factor;
 }
 
+void
+SST::Core::Serialization::serialize_impl<TimeConverter*>::operator()(
+    TimeConverter*& s, SST::Core::Serialization::serializer& ser)
+{
+    SimTime_t factor = 0;
+
+    switch ( ser.mode() ) {
+    case serializer::SIZER:
+    case serializer::PACK:
+        // If s is nullptr, just put in a 0, otherwise get the factor
+        if ( nullptr != s ) factor = s->getFactor();
+        ser& factor;
+        break;
+    case serializer::UNPACK:
+        ser& factor;
+
+        // If we put in a nullptr, return a nullptr
+        if ( factor == 0 ) {
+            s = nullptr;
+            return;
+        }
+        // Now get the TimeConverter for this factor.  Can only use
+        // public APIs since there is no friend relationship with the
+        // TimeLord.
+        TimeLord*   timelord = Simulation_impl::getTimeLord();
+        UnitAlgebra base     = timelord->getTimeBase();
+        base *= factor;
+        s = timelord->getTimeConverter(base);
+        break;
+    }
+}
 } // namespace SST

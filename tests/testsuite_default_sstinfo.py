@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2023 NTESS. Under the terms
+# Copyright 2009-2024 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2023, NTESS
+# Copyright (c) 2009-2024, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -79,6 +79,6 @@ class testcase_sstinfo(SSTTestCase):
 
         err_file_not_empty = os_test_file(errfile, expression='-s')
         if err_file_not_empty:
-            self.assertFalse(err_file_not_empty, "sst-info Test failed because the error file is not empty".format(cmd, rtn.result()))
+            self.assertFalse(err_file_not_empty, f"sst-info Test failed because the error file is not empty: {errfile}")
             with open(errfile, 'r') as f:
                 log_failure("FAILURE: sst-info cmdline {0}; error output =\n{1}".format(cmd, f.read()))

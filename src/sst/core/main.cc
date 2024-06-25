@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -313,7 +313,147 @@ doParallelCapableGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInf
     }
 }
 
-typedef struct
+static double
+start_graph_creation(
+    ConfigGraph*& graph, Config& cfg, Factory* factory, const RankInfo& world_size, const RankInfo& myRank)
+{
+    // Get a list of all the available SSTModelDescriptions
+    std::vector<std::string> models = ELI::InfoDatabase::getRegisteredElementNames<SSTModelDescription>();
+
+    // Create a map of extensions to the model that supports them
+    std::map<std::string, std::string> extension_map;
+    for ( auto x : models ) {
+        // auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
+        auto extensions = SSTModelDescription::getElementSupportedExtensions(x);
+        for ( auto y : extensions ) {
+            extension_map[y] = x;
+        }
+    }
+
+
+    // Create the model generator
+    SSTModelDescription* modelGen = nullptr;
+
+    force_rank_sequential_start(cfg.rank_seq_startup(), myRank, world_size);
+
+    if ( cfg.configFile() != "NONE" ) {
+        // Get the file extension by finding the last .
+        std::string extension = cfg.configFile().substr(cfg.configFile().find_last_of("."));
+
+        std::string model_name;
+        try {
+            model_name = extension_map.at(extension);
+        }
+        catch ( exception& e ) {
+            std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
+            return -1;
+        }
+
+        // If doing parallel load, make sure this model is parallel capable
+        if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
+            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
+                      << std::endl;
+            return -1;
+        }
+
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
+            modelGen = factory->Create<SSTModelDescription>(
+                model_name, cfg.configFile(), cfg.verbose(), &cfg, sst_get_cpu_time());
+        }
+    }
+
+
+    double start_graph_gen = sst_get_cpu_time();
+
+    // Only rank 0 will populate the graph, unless we are using
+    // parallel load.  In this case, all ranks will load the graph
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
+        try {
+            graph = modelGen->createConfigGraph();
+        }
+        catch ( std::exception& e ) {
+            g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
+        }
+    }
+    else {
+        graph = new ConfigGraph();
+    }
+
+
+    force_rank_sequential_stop(cfg.rank_seq_startup(), myRank, world_size);
+
+#ifdef SST_CONFIG_HAVE_MPI
+    // Config is done - broadcast it, unless we are parallel loading
+    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
+        try {
+            Comms::broadcast(cfg, 0);
+        }
+        catch ( std::exception& e ) {
+            g_output.fatal(CALL_INFO, -1, "Error encountered broadcasting configuration object: %s\n", e.what());
+        }
+    }
+#endif
+
+    // Delete the model generator
+    if ( modelGen ) {
+        delete modelGen;
+        modelGen = nullptr;
+    }
+
+    return start_graph_gen;
+}
+
+static double
+start_partitioning(
+    Config& cfg, const RankInfo& world_size, const RankInfo& myRank, Factory* factory, ConfigGraph* graph)
+{
+    ////// Start Partitioning //////
+    double start_part = sst_get_cpu_time();
+
+    if ( !cfg.parallel_load() ) {
+        // Normal partitioning
+
+        // // If this is a serial job, just use the single partitioner,
+        // // but the same code path
+        // if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
+
+        // Get the partitioner.  Built in partitioners are in the "sst" library.
+        SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner(), world_size, myRank, cfg.verbose());
+        try {
+            if ( partitioner->requiresConfigGraph() ) { partitioner->performPartition(graph); }
+            else {
+                PartitionGraph* pgraph;
+                if ( myRank.rank == 0 ) { pgraph = graph->getCollapsedPartitionGraph(); }
+                else {
+                    pgraph = new PartitionGraph();
+                }
+
+                if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
+                    partitioner->performPartition(pgraph);
+
+                    if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
+                }
+
+                delete pgraph;
+            }
+        }
+        catch ( std::exception& e ) {
+            g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
+        }
+
+        delete partitioner;
+    }
+
+    // Check the partitioning to make sure it is sane
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
+        if ( !graph->checkRanks(world_size) ) {
+            g_output.fatal(CALL_INFO, 1, "ERROR: Bad partitioning; partition included unknown ranks.\n");
+        }
+    }
+    return sst_get_cpu_time() - start_part;
+}
+
+struct SimThreadInfo_t
 {
     RankInfo     myRank;
     RankInfo     world_size;
@@ -328,8 +468,7 @@ typedef struct
     uint64_t    max_tv_depth;
     uint64_t    current_tv_depth;
     uint64_t    sync_data_size;
-
-} SimThreadInfo_t;
+};
 
 static void
 start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier)
@@ -337,7 +476,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // Setup Mempools
     Core::MemPoolAccessor::initializeLocalData(tid);
     info.myRank.thread = tid;
-    double start_build = sst_get_cpu_time();
 
     if ( tid ) {
         /* already did Thread Rank 0 in main() */
@@ -345,136 +483,150 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     }
 
     ////// Create Simulation Objects //////
-    SST::Simulation_impl* sim = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size);
+    SST::Simulation_impl* sim       = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size);
+    double                start_run = 0.0;
 
-    barrier.wait();
+    bool restart = info.config->load_from_checkpoint();
 
-    sim->processGraphInfo(*info.graph, info.myRank, info.min_part);
+    if ( !restart ) {
+        double start_build = sst_get_cpu_time();
 
-    barrier.wait();
 
-    force_rank_sequential_start(info.config->rank_seq_startup(), info.myRank, info.world_size);
-
-    barrier.wait();
-
-    // Perform the wireup.
-    if ( tid == 0 ) { do_statengine_static_initialization(info.graph, info.myRank); }
-    barrier.wait();
-
-    do_statengine_initialization(info.graph, sim, info.myRank);
-    barrier.wait();
-
-    // Prepare the links, which creates the ComponentInfo objects and
-    // Link and puts the links in the LinkMap for each ComponentInfo.
-#ifdef SST_COMPILE_MACOSX
-    // Some versions of clang on mac have an issue with deleting links
-    // that were created interleaved between threads, so force
-    // serialization of threads during link creation.  This has been
-    // confirmed on both Intel and ARM for Xcode 14 and 15.  We should
-    // revisit this in the future.  This is easy to see when running
-    // sst-benchmark with 1024 components and multiple threads.  At
-    // time of adding this code, the difference in delete times was
-    // 3-5 minutes versuses less than a second.
-    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
         barrier.wait();
-    }
-#else
-    do_link_preparation(info.graph, sim, info.myRank, info.min_part);
-#endif
-    barrier.wait();
 
-    // Create all the simulation components
-    do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
-    barrier.wait();
+        sim->processGraphInfo(*info.graph, info.myRank, info.min_part);
 
-    if ( tid == 0 ) { delete info.graph; }
+        barrier.wait();
 
-    force_rank_sequential_stop(info.config->rank_seq_startup(), info.myRank, info.world_size);
+        force_rank_sequential_start(info.config->rank_seq_startup(), info.myRank, info.world_size);
 
-    barrier.wait();
+        barrier.wait();
 
-    if ( info.myRank.thread == 0 ) { sim->exchangeLinkInfo(); }
+        // Perform the wireup.
+        if ( tid == 0 ) { do_statengine_static_initialization(info.graph, info.myRank); }
+        barrier.wait();
 
-    barrier.wait();
+        do_statengine_initialization(info.graph, sim, info.myRank);
+        barrier.wait();
 
-    double start_run = sst_get_cpu_time();
-    info.build_time  = start_run - start_build;
-
-#ifdef SST_CONFIG_HAVE_MPI
-    if ( tid == 0 && info.world_size.rank > 1 ) { MPI_Barrier(MPI_COMM_WORLD); }
-#endif
-
-    barrier.wait();
-
-    if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
-        if ( info.config->verbose() && 0 == tid ) {
-            g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
-
-            time_t     the_time = time(nullptr);
-            struct tm* now      = localtime(&the_time);
-
-            g_output.verbose(
-                CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n", (now->tm_year + 1900),
-                (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
-
-            if ( info.config->exit_after() > 0 ) {
-                time_t     stop_time = the_time + info.config->exit_after();
-                struct tm* end       = localtime(&stop_time);
-                g_output.verbose(
-                    CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
-                    (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
-
-                /* Set the alarm */
-                alarm(info.config->exit_after());
-            }
+        // Prepare the links, which creates the ComponentInfo objects and
+        // Link and puts the links in the LinkMap for each ComponentInfo.
+#ifdef SST_COMPILE_MACOSX
+        // Some versions of clang on mac have an issue with deleting links
+        // that were created interleaved between threads, so force
+        // serialization of threads during link creation.  This has been
+        // confirmed on both Intel and ARM for Xcode 14 and 15.  We should
+        // revisit this in the future.  This is easy to see when running
+        // sst-benchmark with 1024 components and multiple threads.  At
+        // time of adding this code, the difference in delete times was
+        // 3-5 minutes versuses less than a second.
+        for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
+            if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
+            barrier.wait();
         }
-        // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
-        sim->setStopAtCycle(info.config);
+#else
+        do_link_preparation(info.graph, sim, info.myRank, info.min_part);
+#endif
+        barrier.wait();
 
-        if ( tid == 0 && info.world_size.rank > 1 ) {
-            // If we are a MPI_parallel job, need to makes sure that all used
-            // libraries are loaded on all ranks.
+        // Create all the simulation components
+        do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
+        barrier.wait();
+
+        if ( tid == 0 ) { delete info.graph; }
+
+        force_rank_sequential_stop(info.config->rank_seq_startup(), info.myRank, info.world_size);
+
+        barrier.wait();
+
+        if ( info.myRank.thread == 0 ) { sim->exchangeLinkInfo(); }
+
+        barrier.wait();
+
+        start_run       = sst_get_cpu_time();
+        info.build_time = start_run - start_build;
+
 #ifdef SST_CONFIG_HAVE_MPI
-            set<string> lib_names;
-            set<string> other_lib_names;
-            Factory::getFactory()->getLoadedLibraryNames(lib_names);
-            // vector<set<string> > all_lib_names;
+        if ( tid == 0 && info.world_size.rank > 1 ) { MPI_Barrier(MPI_COMM_WORLD); }
+#endif
 
-            // Send my lib_names to the next lowest rank
-            if ( info.myRank.rank == (info.world_size.rank - 1) ) {
-                Comms::send(info.myRank.rank - 1, 0, lib_names);
-                lib_names.clear();
-            }
-            else {
-                Comms::recv(info.myRank.rank + 1, 0, other_lib_names);
-                for ( auto iter = other_lib_names.begin(); iter != other_lib_names.end(); ++iter ) {
-                    lib_names.insert(*iter);
+        barrier.wait();
+
+        if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
+            if ( info.config->verbose() && 0 == tid ) {
+                g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
+
+                time_t     the_time = time(nullptr);
+                struct tm* now      = localtime(&the_time);
+
+                g_output.verbose(
+                    CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n", (now->tm_year + 1900),
+                    (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+
+                if ( info.config->exit_after() > 0 ) {
+                    time_t     stop_time = the_time + info.config->exit_after();
+                    struct tm* end       = localtime(&stop_time);
+                    g_output.verbose(
+                        CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
+                        (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
+
+                    /* Set the alarm */
+                    alarm(info.config->exit_after());
                 }
-                if ( info.myRank.rank != 0 ) {
+            }
+            // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
+            sim->setStopAtCycle(info.config);
+
+            if ( tid == 0 && info.world_size.rank > 1 ) {
+                // If we are a MPI_parallel job, need to makes sure that all used
+                // libraries are loaded on all ranks.
+#ifdef SST_CONFIG_HAVE_MPI
+                set<string> lib_names;
+                set<string> other_lib_names;
+                Factory::getFactory()->getLoadedLibraryNames(lib_names);
+
+                // Send my lib_names to the next lowest rank
+                if ( info.myRank.rank == (info.world_size.rank - 1) ) {
                     Comms::send(info.myRank.rank - 1, 0, lib_names);
                     lib_names.clear();
                 }
-            }
+                else {
+                    Comms::recv(info.myRank.rank + 1, 0, other_lib_names);
+                    for ( auto iter = other_lib_names.begin(); iter != other_lib_names.end(); ++iter ) {
+                        lib_names.insert(*iter);
+                    }
+                    if ( info.myRank.rank != 0 ) {
+                        Comms::send(info.myRank.rank - 1, 0, lib_names);
+                        lib_names.clear();
+                    }
+                }
 
-            Comms::broadcast(lib_names, 0);
-            Factory::getFactory()->loadUnloadedLibraries(lib_names);
+                Comms::broadcast(lib_names, 0);
+                Factory::getFactory()->loadUnloadedLibraries(lib_names);
 #endif
+            }
+            barrier.wait();
+
+            sim->initialize();
+            barrier.wait();
+
+            /* Run Set */
+            sim->setup();
+            barrier.wait();
+
+            /* Finalize all the stat outputs */
+            do_statoutput_start_simulation(info.myRank);
+            barrier.wait();
+
+            sim->prepare_for_run();
         }
-        barrier.wait();
-
-        sim->initialize();
-        barrier.wait();
-
-        /* Run Set */
-        sim->setup();
-        barrier.wait();
-
-        /* Finalize all the stat outputs */
-        do_statoutput_start_simulation(info.myRank);
-        barrier.wait();
-
-        /* Run Simulation */
+    }
+    else {
+        // Finish parsing checkpoint for restart
+        sim->restart(info.config);
+    }
+    /* Run Simulation */
+    if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
         sim->run();
         barrier.wait();
 
@@ -495,8 +647,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         do_statoutput_end_simulation(info.myRank);
         barrier.wait();
     }
-
-    barrier.wait();
 
     info.simulated_time = sim->getEndSimTime();
     // g_output.output(CALL_INFO,"Simulation time = %s\n",info.simulated_time.toStringBestSI().c_str());
@@ -558,6 +708,7 @@ int
 main(int argc, char* argv[])
 {
 #ifdef SST_CONFIG_HAVE_MPI
+    // Initialize MPI
     MPI_Init(&argc, &argv);
 
     int myrank = 0;
@@ -568,7 +719,7 @@ main(int argc, char* argv[])
     RankInfo world_size(mysize, 1);
     RankInfo myRank(myrank, 0);
 #else
-    int      myrank = 0;
+    int myrank = 0;
     RankInfo world_size(1, 1);
     RankInfo myRank(0, 0);
 #endif
@@ -585,262 +736,304 @@ main(int argc, char* argv[])
         return 0;
     }
 
-    // Set the debug output location
-    Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+    // Check to see if we are doing a restart from a checkpoint
+    bool restart = cfg.load_from_checkpoint();
 
+    // If restarting, update config from checkpoint
+    uint32_t cpt_num_threads, cpt_num_ranks;
+    if ( restart ) {
+        size_t size;
+        char*  buffer;
 
+        SST::Core::Serialization::serializer ser;
+        ser.enable_pointer_tracking();
+        std::ifstream fs(cfg.configFile(), std::ios::binary);
+        if ( !fs.is_open() ) {
+            if ( fs.bad() ) {
+                fprintf(stderr, "Unable to open checkpoint file [%s]: badbit set\n", cfg.configFile().c_str());
+                return -1;
+            }
+            if ( fs.fail() ) {
+                fprintf(stderr, "Unable to open checkpoint file [%s]: %s\n", cfg.configFile().c_str(), strerror(errno));
+                return -1;
+            }
+            fprintf(stderr, "Unable to open checkpoint file [%s]: unknown error\n", cfg.configFile().c_str());
+            return -1;
+        }
+
+        fs.read(reinterpret_cast<char*>(&size), sizeof(size));
+        buffer = new char[size];
+        fs.read(buffer, size);
+
+        std::string cpt_lib_path, cpt_timebase, cpt_output_directory;
+        std::string cpt_output_core_prefix, cpt_debug_file, cpt_prefix;
+        int         cpt_output_verbose = 0;
+
+        ser.start_unpacking(buffer, size);
+        ser& cpt_num_ranks;
+        ser& cpt_num_threads;
+        ser& cpt_lib_path;
+        ser& cpt_timebase;
+        ser& cpt_output_directory;
+        ser& cpt_output_core_prefix;
+        ser& cpt_output_verbose;
+        ser& cpt_debug_file;
+        ser& cpt_prefix;
+
+        fs.close();
+        delete[] buffer;
+
+        // Error check that ranks & threads match after output is created
+        cfg.libpath_  = cpt_lib_path;
+        cfg.timeBase_ = cpt_timebase;
+        if ( !cfg.wasOptionSetOnCmdLine("output-directory") ) cfg.output_directory_ = cpt_output_directory;
+        if ( !cfg.wasOptionSetOnCmdLine("output-prefix-core") ) cfg.output_core_prefix_ = cpt_output_core_prefix;
+        if ( !cfg.wasOptionSetOnCmdLine("verbose") ) cfg.verbose_ = cpt_output_verbose;
+        if ( !cfg.wasOptionSetOnCmdLine("debug-file") ) cfg.debugFile_ = cpt_debug_file;
+        if ( !cfg.wasOptionSetOnCmdLine("checkpoint-prefix") ) cfg.checkpoint_prefix_ = cpt_prefix;
+
+        ////// Initialize global data //////
+
+        // These are initialized after graph creation in the non-restart path
+        world_size.thread = cfg.num_threads();
+        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+        Simulation_impl::getTimeLord()->init(cfg.timeBase());
+    }
+
+    // Check to see if the config file exists
+    cfg.checkConfigFile();
+
+    // If we are doing a parallel load with a file per rank, add the
+    // rank number to the file name before the extension
     if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
         addRankToFileName(cfg.configFile_, myRank.rank);
     }
-    cfg.checkConfigFile();
 
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
 
-    // Get a list of all the available SSTModelDescriptions
-    std::vector<std::string> models = ELI::InfoDatabase::getRegisteredElementNames<SSTModelDescription>();
-
-    // Create a map of extensions to the model that supports them
-    std::map<std::string, std::string> extension_map;
-    for ( auto x : models ) {
-        // auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
-        auto extensions = SSTModelDescription::getElementSupportedExtensions(x);
-        for ( auto y : extensions ) {
-            extension_map[y] = x;
-        }
+    if ( restart && (cfg.num_ranks() != cpt_num_ranks || cfg.num_threads() != cpt_num_threads) ) {
+        g_output.fatal(
+            CALL_INFO, 1,
+            "Rank or thread counts do not match checkpoint. "
+            "Checkpoint requires %" PRIu32 " ranks and %" PRIu32 " threads\n",
+            cpt_num_ranks, cpt_num_threads);
     }
-
-
-    // Create the model generator
-    SSTModelDescription* modelGen = nullptr;
-
-    // Get the memory before we create the graph
-    const uint64_t pre_graph_create_rss = maxGlobalMemSize();
-
-    force_rank_sequential_start(cfg.rank_seq_startup(), myRank, world_size);
-
-    double start = sst_get_cpu_time();
-
-    if ( cfg.configFile() != "NONE" ) {
-        // Get the file extension by finding the last .
-        std::string extension = cfg.configFile().substr(cfg.configFile().find_last_of("."));
-
-        std::string model_name;
-        try {
-            model_name = extension_map.at(extension);
-        }
-        catch ( exception& e ) {
-            std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
-            return -1;
-        }
-
-        // If doing parallel load, make sure this model is parallel capable
-        if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
-            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
-                      << std::endl;
-            return -1;
-        }
-
-        if ( myRank.rank == 0 || cfg.parallel_load() ) {
-            modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile(), cfg.verbose(), &cfg, start);
-        }
-    }
-
 
     ////// Start ConfigGraph Creation //////
-    ConfigGraph* graph = nullptr;
 
-    double start_graph_gen = sst_get_cpu_time();
-    graph                  = new ConfigGraph();
+    double       start    = sst_get_cpu_time();
+    ConfigGraph* graph    = nullptr;
+    SimTime_t    min_part = 0xffffffffffffffffl;
 
-    // Only rank 0 will populate the graph, unless we are using
-    // parallel load.  In this case, all ranks will load the graph
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
-        try {
-            graph = modelGen->createConfigGraph();
+    // If we aren't restarting, need to create the graph
+    if ( !restart ) {
+        // Get the memory before we create the graph
+        const uint64_t pre_graph_create_rss = maxGlobalMemSize();
+
+        double start_graph_gen = start_graph_creation(graph, cfg, factory, world_size, myRank);
+
+        ////// Initialize global data //////
+        // Config is updated from SDL, initialize globals
+
+        // Set the number of threads
+        world_size.thread = cfg.num_threads();
+
+        // Create global output object
+        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+
+        g_output.verbose(
+            CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
+            world_size.rank, world_size.thread);
+
+        // TimeLord must be initialized prior to postCreationCleanup() call
+        Simulation_impl::getTimeLord()->init(cfg.timeBase());
+
+        // Cleanup after graph creation
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
+
+            graph->postCreationCleanup();
+
+            // Check config graph to see if there are structural errors.
+            if ( graph->checkForStructuralErrors() ) {
+                g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
+            }
         }
-        catch ( std::exception& e ) {
-            g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
-        }
-    }
+        double graph_gen_time = sst_get_cpu_time() - start_graph_gen;
 
-    force_rank_sequential_stop(cfg.rank_seq_startup(), myRank, world_size);
+        // If verbose level is high enough, compute the total number
+        // components in the simulation.  NOTE: if parallel-load is
+        // enabled, then the parittioning won't actually happen and all
+        // ranks already have their parts of the graph.
+        uint64_t comp_count = 0;
+        if ( cfg.verbose() >= 1 ) {
+            if ( !cfg.parallel_load() && myRank.rank == 0 ) { comp_count = graph->getNumComponents(); }
+#ifdef SST_CONFIG_HAVE_MPI
+            else if ( cfg.parallel_load() ) {
+                uint64_t my_count = graph->getNumComponentsInMPIRank(myRank.rank);
+                MPI_Allreduce(&my_count, &comp_count, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
+            }
+#endif
+        }
+
+        if ( myRank.rank == 0 ) {
+            g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
+            g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", graph_gen_time);
+            g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
+        }
+
+        ////// End ConfigGraph Creation //////
 
 #ifdef SST_CONFIG_HAVE_MPI
-    // Config is done - broadcast it, unless we are parallel loading
-    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
-        try {
-            Comms::broadcast(cfg, 0);
-        }
-        catch ( std::exception& e ) {
-            g_output.fatal(CALL_INFO, -1, "Error encountered broadcasting configuration object: %s\n", e.what());
-        }
-    }
-#endif
-
-    world_size.thread = cfg.num_threads();
-
-    /* Build objects needed for startup */
-    Output::setWorldSize(world_size, myrank);
-    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
-
-    g_output.verbose(
-        CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
-        world_size.rank, world_size.thread);
-
-    // Delete the model generator
-    if ( modelGen ) {
-        delete modelGen;
-        modelGen = nullptr;
-    }
-
-    // Need to initialize TimeLord
-    Simulation_impl::getTimeLord()->init(cfg.timeBase());
-
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
-        graph->postCreationCleanup();
-
-        // Check config graph to see if there are structural errors.
-        if ( graph->checkForStructuralErrors() ) {
-            g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
-        }
-    }
-
-    double end_graph_gen = sst_get_cpu_time();
-
-    // If verbose level is high enough, compute the total number
-    // components in the simulation.  NOTE: if parallel-load is
-    // enabled, then the parittioning won't actually happen and all
-    // ranks already have their parts of the graph.
-    uint64_t comp_count = 0;
-    if ( cfg.verbose() >= 1 ) {
-        if ( !cfg.parallel_load() && myRank.rank == 0 ) { comp_count = graph->getNumComponents(); }
-#ifdef SST_CONFIG_HAVE_MPI
-        else if ( cfg.parallel_load() ) {
-            uint64_t my_count = graph->getNumComponentsInMPIRank(myRank.rank);
-            MPI_Allreduce(&my_count, &comp_count, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
+        // If we did a parallel load, check to make sure that all the
+        // ranks have the same thread count set (the python can change the
+        // thread count if not specified on the command line
+        if ( cfg.parallel_load() ) {
+            uint32_t max_thread_count = 0;
+            uint32_t my_thread_count  = cfg.num_threads();
+            MPI_Allreduce(&my_thread_count, &max_thread_count, 1, MPI_UINT32_T, MPI_MAX, MPI_COMM_WORLD);
+            if ( my_thread_count != max_thread_count ) {
+                g_output.fatal(
+                    CALL_INFO, 1, "Thread counts do no match across ranks for configuration using parallel loading\n");
+            }
         }
 #endif
-    }
-
-    if ( myRank.rank == 0 ) {
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-        g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", (end_graph_gen - start_graph_gen));
-        g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
-    }
-
-    ////// End ConfigGraph Creation //////
-#ifdef SST_CONFIG_HAVE_MPI
-    // If we did a parallel load, check to make sure that all the
-    // ranks have the same thread count set (the python can change the
-    // thread count if not specified on the command line
-    if ( cfg.parallel_load() ) {
-        uint32_t max_thread_count = 0;
-        uint32_t my_thread_count  = cfg.num_threads();
-        MPI_Allreduce(&my_thread_count, &max_thread_count, 1, MPI_UINT32_T, MPI_MAX, MPI_COMM_WORLD);
-        if ( my_thread_count != max_thread_count ) {
-            g_output.fatal(
-                CALL_INFO, 1, "Thread counts do no match across ranks for configuration using parallel loading\n");
-        }
-    }
-#endif
-
-    ////// Start Partitioning //////
-    double start_part = sst_get_cpu_time();
-
-    if ( !cfg.parallel_load() ) {
-        // Normal partitioning
 
         // If this is a serial job, just use the single partitioner,
         // but the same code path
         if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
 
-        // Get the partitioner.  Built in partitioners are in the "sst" library.
-        SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner(), world_size, myRank, cfg.verbose());
+        // Run the partitioner
+        double partitioning_time = start_partitioning(cfg, world_size, myRank, factory, graph);
 
-        try {
-            if ( partitioner->requiresConfigGraph() ) { partitioner->performPartition(graph); }
-            else {
-                PartitionGraph* pgraph;
-                if ( myRank.rank == 0 ) { pgraph = graph->getCollapsedPartitionGraph(); }
-                else {
-                    pgraph = new PartitionGraph();
+        const uint64_t post_graph_create_rss = maxGlobalMemSize();
+
+        if ( myRank.rank == 0 ) {
+            if ( !cfg.parallel_load() )
+                g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning took %lg seconds.\n", partitioning_time);
+            g_output.verbose(
+                CALL_INFO, 1, 0, "# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
+                (post_graph_create_rss - pre_graph_create_rss));
+            g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
+
+            // Output the partition information if user requests it
+            dump_partition(cfg, graph, world_size);
+        }
+        ////// End Partitioning //////
+
+        ////// Calculate Minimum Partitioning //////
+        SimTime_t local_min_part = 0xffffffffffffffffl;
+        if ( world_size.rank > 1 ) {
+            // Check the graph for the minimum latency crossing a partition boundary
+            if ( myRank.rank == 0 || cfg.parallel_load() ) {
+                ConfigComponentMap_t& comps = graph->getComponentMap();
+                ConfigLinkMap_t&      links = graph->getLinkMap();
+                // Find the minimum latency across a partition
+                for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
+                    ConfigLink* clink = *iter;
+                    RankInfo    rank[2];
+                    rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+                    rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
+                    if ( rank[0].rank == rank[1].rank ) continue;
+                    if ( clink->getMinLatency() < local_min_part ) { local_min_part = clink->getMinLatency(); }
                 }
-
-                if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
-                    partitioner->performPartition(pgraph);
-
-                    if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
-                }
-
-                delete pgraph;
             }
-        }
-        catch ( std::exception& e ) {
-            g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
-        }
-
-        delete partitioner;
-    }
-
-    // Check the partitioning to make sure it is sane
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
-        if ( !graph->checkRanks(world_size) ) {
-            g_output.fatal(CALL_INFO, 1, "ERROR: Bad partitioning; partition included unknown ranks.\n");
-        }
-    }
-    double         end_part              = sst_get_cpu_time();
-    const uint64_t post_graph_create_rss = maxGlobalMemSize();
-
-    if ( myRank.rank == 0 ) {
-        if ( !cfg.parallel_load() )
-            g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning took %lg seconds.\n", (end_part - start_part));
-        g_output.verbose(
-            CALL_INFO, 1, 0, "# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
-            (post_graph_create_rss - pre_graph_create_rss));
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-
-        // Output the partition information if user requests it
-        dump_partition(cfg, graph, world_size);
-    }
-
-    ////// End Partitioning //////
-
-    ////// Calculate Minimum Partitioning //////
-    SimTime_t local_min_part = 0xffffffffffffffffl;
-    SimTime_t min_part       = 0xffffffffffffffffl;
-    if ( world_size.rank > 1 ) {
-        // Check the graph for the minimum latency crossing a partition boundary
-        if ( myRank.rank == 0 || cfg.parallel_load() ) {
-            ConfigComponentMap_t& comps = graph->getComponentMap();
-            ConfigLinkMap_t&      links = graph->getLinkMap();
-            // Find the minimum latency across a partition
-            for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
-                ConfigLink* clink = *iter;
-                RankInfo    rank[2];
-                rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
-                rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
-                if ( rank[0].rank == rank[1].rank ) continue;
-                if ( clink->getMinLatency() < local_min_part ) { local_min_part = clink->getMinLatency(); }
-            }
-        }
 #ifdef SST_CONFIG_HAVE_MPI
 
-        // Fix for case that probably doesn't matter in practice, but
-        // does come up during some specific testing.  If there are no
-        // links that cross the boundary and we're a multi-rank job,
-        // we need to put in a sync interval to look for the exit
-        // conditions being met.
-        // if ( min_part == MAX_SIMTIME_T ) {
-        //     // std::cout << "No links cross rank boundary" << std::endl;
-        //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
-        // }
+            // Fix for case that probably doesn't matter in practice, but
+            // does come up during some specific testing.  If there are no
+            // links that cross the boundary and we're a multi-rank job,
+            // we need to put in a sync interval to look for the exit
+            // conditions being met.
+            // if ( min_part == MAX_SIMTIME_T ) {
+            //     // std::cout << "No links cross rank boundary" << std::endl;
+            //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
+            // }
 
-        MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
-        // Comms::broadcast(min_part, 0);
+            MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
+            // Comms::broadcast(min_part, 0);
 #endif
-    }
-    ////// End Calculate Minimum Partitioning //////
+        }
+        ////// End Calculate Minimum Partitioning //////
+
+        ////// Write out the graph, if requested //////
+        if ( myRank.rank == 0 ) {
+            doSerialOnlyGraphOutput(&cfg, graph);
+
+            if ( !cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
+        }
+
+        ////// Broadcast Graph //////
+#ifdef SST_CONFIG_HAVE_MPI
+        if ( world_size.rank > 1 && !cfg.parallel_load() ) {
+            try {
+                Comms::broadcast(Params::keyMap, 0);
+                Comms::broadcast(Params::keyMapReverse, 0);
+                Comms::broadcast(Params::nextKeyID, 0);
+                Comms::broadcast(Params::global_params, 0);
+
+                std::set<uint32_t> my_ranks;
+                std::set<uint32_t> your_ranks;
+
+                if ( 0 == myRank.rank ) {
+                    // Split the rank space in half
+                    for ( uint32_t i = 0; i < world_size.rank / 2; i++ ) {
+                        my_ranks.insert(i);
+                    }
+
+                    for ( uint32_t i = world_size.rank / 2; i < world_size.rank; i++ ) {
+                        your_ranks.insert(i);
+                    }
+
+                    // Need to send the your_ranks set and the proper
+                    // subgraph for further distribution
+                    // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                    ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
+                    int          dest       = *your_ranks.begin();
+                    Comms::send(dest, 0, your_ranks);
+                    Comms::send(dest, 0, *your_graph);
+                    your_ranks.clear();
+                    delete your_graph;
+                }
+                else {
+                    Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
+                    Comms::recv(MPI_ANY_SOURCE, 0, *graph);
+                }
+
+                while ( my_ranks.size() != 1 ) {
+                    // This means I have more data to pass on to other ranks
+                    std::set<uint32_t>::iterator mid = my_ranks.begin();
+                    for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
+                        ++mid;
+                    }
+
+                    your_ranks.insert(mid, my_ranks.end());
+                    my_ranks.erase(mid, my_ranks.end());
+
+                    // // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                    ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
+
+                    uint32_t dest = *your_ranks.begin();
+
+                    Comms::send(dest, 0, your_ranks);
+                    Comms::send(dest, 0, *your_graph);
+                    your_ranks.clear();
+                    delete your_graph;
+                }
+            }
+            catch ( std::exception& e ) {
+                g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
+            }
+        }
+#endif
+
+        ////// End Broadcast Graph //////
+        if ( cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
+    } // end if ( !restart )
 
     if ( cfg.enable_sig_handling() ) {
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT and TERM...\n");
@@ -850,80 +1043,6 @@ main(int argc, char* argv[])
         // Print out to say disabled?
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
     }
-
-    ////// Write out the graph, if requested //////
-    if ( myRank.rank == 0 ) {
-        doSerialOnlyGraphOutput(&cfg, graph);
-
-        if ( !cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
-    }
-
-    ////// Broadcast Graph //////
-#ifdef SST_CONFIG_HAVE_MPI
-    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
-        try {
-            Comms::broadcast(Params::keyMap, 0);
-            Comms::broadcast(Params::keyMapReverse, 0);
-            Comms::broadcast(Params::nextKeyID, 0);
-            Comms::broadcast(Params::global_params, 0);
-
-            std::set<uint32_t> my_ranks;
-            std::set<uint32_t> your_ranks;
-
-            if ( 0 == myRank.rank ) {
-                // Split the rank space in half
-                for ( uint32_t i = 0; i < world_size.rank / 2; i++ ) {
-                    my_ranks.insert(i);
-                }
-
-                for ( uint32_t i = world_size.rank / 2; i < world_size.rank; i++ ) {
-                    your_ranks.insert(i);
-                }
-
-                // Need to send the your_ranks set and the proper
-                // subgraph for further distribution
-                // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
-                int          dest       = *your_ranks.begin();
-                Comms::send(dest, 0, your_ranks);
-                Comms::send(dest, 0, *your_graph);
-                your_ranks.clear();
-                delete your_graph;
-            }
-            else {
-                Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
-                Comms::recv(MPI_ANY_SOURCE, 0, *graph);
-            }
-
-            while ( my_ranks.size() != 1 ) {
-                // This means I have more data to pass on to other ranks
-                std::set<uint32_t>::iterator mid = my_ranks.begin();
-                for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
-                    ++mid;
-                }
-
-                your_ranks.insert(mid, my_ranks.end());
-                my_ranks.erase(mid, my_ranks.end());
-
-                // // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
-
-                uint32_t dest = *your_ranks.begin();
-
-                Comms::send(dest, 0, your_ranks);
-                Comms::send(dest, 0, *your_graph);
-                your_ranks.clear();
-                delete your_graph;
-            }
-        }
-        catch ( std::exception& e ) {
-            g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
-        }
-    }
-#endif
-
-    ////// End Broadcast Graph //////
-    if ( cfg.parallel_output() ) { doParallelCapableGraphOutput(&cfg, graph, myRank, world_size); }
 
 
     ////// Create Simulation //////
@@ -1010,16 +1129,16 @@ main(int argc, char* argv[])
     MPI_Allreduce(&mempool_size, &global_mempool_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&active_activities, &global_active_activities, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
 #else
-    max_build_time            = build_time;
-    max_run_time              = run_time;
-    max_total_time            = total_time;
-    global_max_tv_depth       = local_max_tv_depth;
-    global_current_tv_depth   = local_current_tv_depth;
+    max_build_time = build_time;
+    max_run_time = run_time;
+    max_total_time = total_time;
+    global_max_tv_depth = local_max_tv_depth;
+    global_current_tv_depth = local_current_tv_depth;
     global_max_sync_data_size = 0;
     global_max_sync_data_size = 0;
-    max_mempool_size          = mempool_size;
-    global_mempool_size       = mempool_size;
-    global_active_activities  = active_activities;
+    max_mempool_size = mempool_size;
+    global_mempool_size = mempool_size;
+    global_active_activities = active_activities;
 #endif
 
     const uint64_t local_max_rss     = maxLocalMemSize();

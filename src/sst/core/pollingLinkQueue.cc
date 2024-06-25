@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -58,6 +58,33 @@ PollingLinkQueue::front()
 {
     if ( data.size() == 0 ) return nullptr;
     return *data.begin();
+}
+
+void
+PollingLinkQueue::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    switch ( ser.mode() ) {
+    case SST::Core::Serialization::serializer::SIZER:
+    case SST::Core::Serialization::serializer::PACK:
+    {
+        size_t size = data.size();
+        ser&   size;
+        for ( auto* x : data ) {
+            ser& x;
+        }
+        break;
+    }
+    case SST::Core::Serialization::serializer::UNPACK:
+    {
+        size_t    size;
+        ser&      size;
+        Activity* activity;
+        for ( size_t i = 0; i < size; ++i ) {
+            ser& activity;
+            data.insert(activity);
+        }
+    }
+    }
 }
 
 } // namespace SST

@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -43,8 +43,8 @@ struct setItem : public SST::Core::Serialization::serializable
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& key;
-        ser& value;
+        SST_SER(key);
+        SST_SER(value);
     }
 
     ImplementSerializable(SST::CoreTestSharedObjectsComponent::setItem);
@@ -74,7 +74,8 @@ public:
         { "late_write", "Controls whether a late write is done", "false" },
         { "publish", "Controls whether publish() is called or not", "true"},
         { "double_initialize", "If true, initialize() will be called twice", "false" },
-        { "late_initialize", "If true, initialize() will be called during setup instead of in constructor", "false" }
+        { "late_initialize", "If true, initialize() will be called during setup instead of in constructor", "false" },
+        { "checkpoint", "If true, SharedObject state will be printed in setup() and finish()", "false" }
     )
 
     // Optional since there is nothing to document
@@ -99,10 +100,15 @@ public:
 
     bool tick(SST::Cycle_t);
 
+    coreTestSharedObjectsComponent() : Component() {} // For serialization ONLY
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::CoreTestSharedObjectsComponent::coreTestSharedObjectsComponent)
+
 private:
     Output out;
 
     bool test_array;
+    bool test_bool_array;
     bool test_map;
     bool test_set;
 
@@ -114,8 +120,10 @@ private:
     bool late_write;
     bool pub;
     bool late_initialize;
+    bool checkpoint;
 
     Shared::SharedArray<int>    array;
+    Shared::SharedArray<bool>   bool_array;
     Shared::SharedMap<int, int> map;
     Shared::SharedSet<setItem>  set;
 };

@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -154,12 +154,14 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     outputJson["program_options"]["print-timing-info"]  = cfg->print_timing() ? "true" : "false";
     // Ignore stopAfter for now
     // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec();
-    outputJson["program_options"]["heartbeat-period"]   = cfg->heartbeatPeriod();
+    outputJson["program_options"]["heartbeat-period"]   = cfg->heartbeat_period();
     outputJson["program_options"]["timebase"]           = cfg->timeBase();
     outputJson["program_options"]["partitioner"]        = cfg->partitioner();
     outputJson["program_options"]["timeVortex"]         = cfg->timeVortex();
     outputJson["program_options"]["interthread-links"]  = cfg->interthread_links() ? "true" : "false";
     outputJson["program_options"]["output-prefix-core"] = cfg->output_core_prefix();
+    outputJson["program_options"]["checkpoint-period"]  = cfg->checkpoint_period();
+
 
     // Put in the global param sets
     for ( const auto& set : getGlobalParamSetNames() ) {

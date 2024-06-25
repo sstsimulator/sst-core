@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -46,13 +46,28 @@ public:
         value specified by the user
         \return Constant value specified by the user when creating the class
     */
-    double getNextDouble() { return mean; }
+    double getNextDouble() override { return mean; }
 
     /**
         Gets the constant value for the distribution
         \return Constant value specified by the user when creating the class
     */
     double getMean() { return mean; }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    ConstantDistribution() : RandomDistribution() {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& mean; }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(SST::RNG::ConstantDistribution)
 
 protected:
     /**

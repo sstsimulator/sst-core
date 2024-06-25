@@ -1,11 +1,11 @@
 # ~~~
 # SST-CORE src/sst/core CMake
 #
-# Copyright 2009-2023 NTESS. Under the terms
+# Copyright 2009-2024 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2023, NTESS
+# Copyright (c) 2009-2024, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -41,6 +41,7 @@ add_library(
   action.cc
   clock.cc
   baseComponent.cc
+  checkpointAction.cc
   component.cc
   componentExtension.cc
   componentInfo.cc
@@ -80,7 +81,7 @@ add_library(
   profile/eventHandlerProfileTool.cc
   profile/syncProfileTool.cc
   profile/profiletool.cc
-  serialization/serializable.cc
+  serialization/serializable_base.cc
   serialization/serialize_serializable.cc
   serialization/serializer.cc
   serialization/statics.cc

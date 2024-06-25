@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -134,7 +134,7 @@ public:
     /**
        Simulation period at which to print out a "heartbeat" message
     */
-    const std::string& heartbeatPeriod() const { return heartbeatPeriod_; }
+    const std::string& heartbeat_period() const { return heartbeat_period_; }
 
     /**
        The directory to be used for writting output files
@@ -216,7 +216,7 @@ public:
     bool parallel_load_mode_multi() const { return parallel_load_mode_multi_; }
 
     /**
-       Retruns the string equivalent for parallel-load: NONE (if
+       Returns the string equivalent for parallel-load: NONE (if
        parallel load is off), SINGLE or MULTI.
     */
     std::string parallel_load_str() const
@@ -225,6 +225,21 @@ public:
         if ( parallel_load_mode_multi_ ) return "MULTI";
         return "SINGLE";
     }
+
+    /**
+       Simulation period at which to create a checkpoint
+    */
+    const std::string& checkpoint_period() const { return checkpoint_period_; }
+
+    /**
+     * Returns whether the simulation will begin from a checkpoint (true) or not (false).
+     */
+    bool load_from_checkpoint() const { return load_from_checkpoint_; }
+
+    /**
+       Prefix for checkpoint filenames and directory
+    */
+    const std::string& checkpoint_prefix() const { return checkpoint_prefix_; }
 
     /**
        TimeVortex implementation to use
@@ -360,7 +375,7 @@ public:
         ser& stop_at_;
         ser& exit_after_;
         ser& partitioner_;
-        ser& heartbeatPeriod_;
+        ser& heartbeat_period_;
         ser& output_directory_;
         ser& output_core_prefix_;
 
@@ -390,6 +405,9 @@ public:
 #ifdef USE_MEMPOOL
         ser& event_dump_file_;
 #endif
+        ser& load_from_checkpoint_;
+        ser& checkpoint_period_;
+        ser& checkpoint_prefix_;
 
         ser& print_env_;
         ser& enable_sig_handling_;
@@ -444,7 +462,7 @@ private:
     std::string stop_at_;            /*!< When to stop the simulation */
     uint32_t    exit_after_;         /*!< When (wall-time) to stop the simulation */
     std::string partitioner_;        /*!< Partitioner to use */
-    std::string heartbeatPeriod_;    /*!< Sets the heartbeat period for the simulation */
+    std::string heartbeat_period_;   /*!< Sets the heartbeat period for the simulation */
     std::string output_directory_;   /*!< Output directory to dump all files to */
     std::string output_core_prefix_; /*!< Set the SST::Output prefix for the core */
 
@@ -482,6 +500,12 @@ private:
     std::string event_dump_file_; /*!< File to dump undeleted events to  */
 #endif
     bool rank_seq_startup_; /*!< Run simulation initialization phases one rank at a time */
+
+    // Advanced options - checkpoint
+    bool        load_from_checkpoint_; /*!< If true, load from checkpoint instead of config file */
+    std::string checkpoint_period_;    /*!< Simulated time interval to generate checkpoints at */
+    std::string checkpoint_prefix_;    /*!< Prefix for checkpoint filename and checkpoint directory */
+    std::string checkpoint_directory_; /*!< Directory to write checkpoints to */
 
     // Advanced options - envrionment
     bool enable_sig_handling_; /*!< Enable signal handling */

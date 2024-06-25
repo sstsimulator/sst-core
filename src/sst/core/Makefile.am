@@ -21,6 +21,7 @@ nobase_dist_sst_HEADERS = \
 	activity.h \
 	clock.h \
 	baseComponent.h \
+	checkpointAction.h \
 	component.h \
 	componentExtension.h \
 	componentInfo.h \
@@ -60,7 +61,6 @@ nobase_dist_sst_HEADERS = \
 	profile/syncProfileTool.h \
 	profile/componentProfileTool.h \
 	rankInfo.h \
-	simulation.h \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstpart.h \
@@ -87,16 +87,20 @@ nobase_dist_sst_HEADERS = \
 	eli/simpleInfo.h \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
-	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
+	serialization/serializable_base.h \
 	serialization/serializable_fwd.h \
 	serialization/serialize.h \
+	serialization/serialize_impl_fwd.h \
 	serialization/serialize_array.h \
+	serialization/serialize_atomic.h \
 	serialization/serialize_buffer_accessor.h \
 	serialization/serialize_deque.h \
 	serialization/serialize_list.h \
 	serialization/serialize_map.h \
+	serialization/serialize_multiset.h \
 	serialization/serialize_packer.h \
+	serialization/serialize_priority_queue.h \
 	serialization/serialize_serializable.h \
 	serialization/serialize_set.h \
 	serialization/serialize_sizer.h \
@@ -108,7 +112,6 @@ nobase_dist_sst_HEADERS = \
 	serialization/statics.h \
 	interfaces/TestEvent.h \
 	interfaces/stringEvent.h \
-	interfaces/simpleMem.h \
 	interfaces/stdMem.h \
 	interfaces/simpleNetwork.h \
 	interprocess/tunneldef.h \
@@ -160,6 +163,7 @@ sst_core_sources = \
 	action.cc \
 	clock.cc \
 	baseComponent.cc \
+	checkpointAction.cc \
 	component.cc \
 	componentExtension.cc \
 	componentInfo.cc \
@@ -207,13 +211,12 @@ sst_core_sources = \
 	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \
-	serialization/serializable.cc \
+	serialization/serializable_base.cc \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
-	interfaces/simpleMem.cc \
 	interfaces/stdMem.cc \
 	interfaces/simpleNetwork.cc \
 	interprocess/ipctunnel.cc \

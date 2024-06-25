@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -11,6 +11,8 @@
 
 #ifndef SST_CORE_RNG_RNG_H
 #define SST_CORE_RNG_RNG_H
+
+#include "sst/core/serialization/serializable.h"
 
 #include <stdint.h>
 
@@ -24,7 +26,7 @@ namespace RNG {
     implement an actual RNG itself only the base class which describes the methods each
     class will implement.
 */
-class Random
+class Random : public SST::Core::Serialization::serializable
 {
 
 public:
@@ -57,6 +59,9 @@ public:
         Destroys the random number generator
     */
     virtual ~Random() {}
+
+    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {};
+    ImplementVirtualSerializable(SST::RNG::Random)
 };
 
 } // namespace RNG

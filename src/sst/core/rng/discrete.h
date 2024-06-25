@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -62,6 +62,7 @@ public:
         \param baseDist The base random number generator to take the distribution from.
     */
     DiscreteDistribution(const double* probs, const uint32_t probsCount, SST::RNG::Random* baseDist) :
+        RandomDistribution(),
         probCount(probsCount)
     {
 
@@ -92,7 +93,7 @@ public:
         \return The next random double from the discrete distribution, this is the double converted of the index where
        the probability is located
     */
-    double getNextDouble()
+    double getNextDouble() override
     {
         const double nextD = baseDistrib->nextUniform();
 
@@ -104,6 +105,34 @@ public:
 
         return (double)index;
     }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    DiscreteDistribution() : RandomDistribution() {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& baseDistrib;
+        ser& deleteDistrib;
+        ser& probCount;
+
+        if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+            probabilities = (double*)malloc(sizeof(double) * probCount);
+        }
+
+        for ( uint32_t i = 0; i < probCount; i++ ) {
+            ser& probabilities[i];
+        }
+    }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(SST::RNG::DiscreteDistribution)
 
 protected:
     /**

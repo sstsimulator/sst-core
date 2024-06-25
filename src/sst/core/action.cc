@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -27,6 +27,12 @@ void
 Action::endSimulation(SimTime_t end)
 {
     Simulation_impl::getSimulation()->endSimulation(end);
+}
+
+void
+Action::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST::Activity::serialize_order(ser);
 }
 
 } // namespace SST

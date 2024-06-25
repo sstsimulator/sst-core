@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -39,8 +39,8 @@ public:
             iterator it, end = m.end();
             for ( it = m.begin(); it != end; ++it ) {
                 // keys are const values - annoyingly
-                serialize<Key>()(const_cast<Key&>(it->first), ser);
-                serialize<Value>()(it->second, ser);
+                ser& const_cast<Key&>(it->first);
+                ser & it->second;
             }
             break;
         }
@@ -50,8 +50,8 @@ public:
             ser.pack(size);
             iterator it, end = m.end();
             for ( it = m.begin(); it != end; ++it ) {
-                serialize<Key>()(const_cast<Key&>(it->first), ser);
-                serialize<Value>()(it->second, ser);
+                ser& const_cast<Key&>(it->first);
+                ser & it->second;
             }
             break;
         }
@@ -62,8 +62,8 @@ public:
             for ( size_t i = 0; i < size; ++i ) {
                 Key   k = {};
                 Value v = {};
-                serialize<Key>()(k, ser);
-                serialize<Value>()(v, ser);
+                ser&  k;
+                ser&  v;
                 m[k] = v;
             }
             break;
@@ -90,8 +90,8 @@ public:
             iterator it, end = m.end();
             for ( it = m.begin(); it != end; ++it ) {
                 // keys are const values - annoyingly
-                serialize<Key>()(const_cast<Key&>(it->first), ser);
-                serialize<Value>()(it->second, ser);
+                ser& const_cast<Key&>(it->first);
+                ser & it->second;
             }
             break;
         }
@@ -101,8 +101,8 @@ public:
             ser.pack(size);
             iterator it, end = m.end();
             for ( it = m.begin(); it != end; ++it ) {
-                serialize<Key>()(const_cast<Key&>(it->first), ser);
-                serialize<Value>()(it->second, ser);
+                ser& const_cast<Key&>(it->first);
+                ser & it->second;
             }
             break;
         }
@@ -113,8 +113,8 @@ public:
             for ( size_t i = 0; i < size; ++i ) {
                 Key   k = {};
                 Value v = {};
-                serialize<Key>()(k, ser);
-                serialize<Value>()(v, ser);
+                ser&  k;
+                ser&  v;
                 m[k] = v;
             }
             break;

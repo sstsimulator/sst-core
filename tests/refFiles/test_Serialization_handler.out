@@ -1,0 +1,66 @@
+WARNING: Building component "Component0" with no links assigned.
+internal value: 10
+
+internal value: 10
+metadata value: 1.2
+
+internal value: 10
+parameter value: 52
+
+internal value: 10
+parameter value: 53
+metadata value: 3.4
+
+internal value: 20
+Return value: 4
+
+internal value: 20
+metadata value: 5.6
+Return value: 5
+
+internal value: 20
+parameter value: 62
+Return value: 6
+
+internal value: 20
+parameter value: 63
+metadata value: 7.8
+Return value: 7
+
+Internal value for t1: 10
+
+internal value: 100
+
+internal value: 100
+metadata value: 1.2
+
+internal value: 100
+parameter value: 52
+
+internal value: 100
+parameter value: 53
+metadata value: 3.4
+
+internal value: 20
+Return value: 4
+
+internal value: 20
+metadata value: 5.6
+Return value: 5
+
+internal value: 20
+parameter value: 62
+Return value: 6
+
+internal value: 20
+parameter value: 63
+metadata value: 7.8
+Return value: 7
+
+internal value: 73
+parameter value: 17
+metadata value: 8.9
+internal value: 73
+parameter value: 17
+metadata value: 8.9
+Simulation is complete, simulated time: 0 s

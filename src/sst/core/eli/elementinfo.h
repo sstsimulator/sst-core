@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -405,14 +405,15 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
 // this class.  Sny local information will overwrite any inherited
 // information.  See comment for SST_ELI_DECLARE_BASE in elibase.h for
 // info on how __EliDerivedLevel is used.
-#define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)                                              \
-    static constexpr int __EliDerivedLevel = std::is_same<base, cls>::value ? __EliBaseLevel : __EliBaseLevel + 1; \
-    static bool          ELI_isLoaded()                                                                            \
-    {                                                                                                              \
-        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&                                              \
-               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();                                            \
-    }                                                                                                              \
-    SST_ELI_FORCE_INSTANTIATION(base, cls)                                                                         \
+#define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)         \
+    [[maybe_unused]] static constexpr int __EliDerivedLevel =                 \
+        std::is_same<base, cls>::value ? __EliBaseLevel : __EliBaseLevel + 1; \
+    static bool ELI_isLoaded()                                                \
+    {                                                                         \
+        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&         \
+               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();       \
+    }                                                                         \
+    SST_ELI_FORCE_INSTANTIATION(base, cls)                                    \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)
 
 #define SST_ELI_REGISTER_EXTERN(base, cls)                              \

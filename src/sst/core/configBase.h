@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -198,6 +198,14 @@ public:
          for information to be print (e.g. --help or -V, for example).
      */
     int parseCmdLine(int argc, char* argv[], bool ignore_unknown = false);
+
+    /**
+       Check to see if an option was set on the command line
+
+       @return True if option was set on command line, false
+       otherwise.  Will also return false if option is unknown.
+    */
+    bool wasOptionSetOnCmdLine(const std::string& option);
 
 private:
     std::vector<LongOption>                      options;

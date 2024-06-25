@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -67,7 +67,7 @@ public:
         Gets the next (random) double value in the distribution
         \return The next random double from the distribution
     */
-    double getNextDouble()
+    double getNextDouble() override
     {
         const double L = exp(-lambda);
         double       p = 1.0;
@@ -86,6 +86,26 @@ public:
         \return The lambda which the user created the distribution with
     */
     double getLambda() { return lambda; }
+
+    /**
+        Default constructor. FOR SERIALIZATION ONLY.
+     */
+    PoissonDistribution() : RandomDistribution(), lambda(1.0) {}
+
+    /**
+        Serialization function for checkpoint
+    */
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& const_cast<double&>(lambda);
+        ser& baseDistrib;
+        ser& deleteDistrib;
+    }
+
+    /**
+        Serialization macro
+    */
+    ImplementSerializable(PoissonDistribution)
 
 protected:
     /**

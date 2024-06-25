@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -18,10 +18,12 @@
 #include "sst/core/elemLoader.h"
 #include "sst/core/env/envconfig.h"
 #include "sst/core/env/envquery.h"
+#include "sst/core/model/element_python.h"
 #include "sst/core/sstpart.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -179,7 +181,7 @@ main(int argc, char* argv[])
 std::string
 convertToLower(std::string input)
 {
-    transform(input.begin(), input.end(), input.begin(), ::tolower);
+    std::transform(input.begin(), input.end(), input.begin(), ::tolower);
     return input;
 }
 
@@ -1046,6 +1048,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<Module>(os, enableFullElementOutput);
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
+    outputHumanReadable<SST::SSTElementPythonModule>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

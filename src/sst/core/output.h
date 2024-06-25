@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -13,6 +13,7 @@
 #define SST_CORE_OUTPUT_H
 
 #include <string.h>
+#include <vector>
 
 // UNCOMMENT OUT THIS LINE TO ENABLE THE DEBUG METHOD -OR_
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
@@ -22,7 +23,8 @@
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
-#include "sst/core/rankInfo.h"
+
+#include "sst/core/serialization/serializable.h"
 
 #include <cinttypes>
 #include <cstdio>
@@ -48,7 +50,7 @@ namespace SST {
  * stdout, stderr and/or sst debug file.  All components should
  * use this class to log any information.
  */
-class Output
+class Output : public SST::Core::Serialization::serializable
 {
 public:
     /** Choice of output location
@@ -475,6 +477,10 @@ public:
 
     static Output& getDefaultObject() { return m_defaultObject; }
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    ImplementSerializable(SST::Output)
+
 private:
     friend class TraceFunction;
     // Support Methods
@@ -500,10 +506,11 @@ private:
         return getDefaultObject();
     }
 
-    static void setWorldSize(const RankInfo& ri, int mpiRank)
+    static void setWorldSize(int num_ranks, int num_threads, int mpiRank)
     {
-        m_worldSize = ri;
-        m_mpiRank   = mpiRank;
+        m_worldSize_ranks   = num_ranks;
+        m_worldSize_threads = num_threads;
+        m_mpiRank           = mpiRank;
     }
 
     static void setThreadID(std::thread::id mach, uint32_t user) { m_threadMap.insert(std::make_pair(mach, user)); }
@@ -544,7 +551,9 @@ private:
     uint32_t    m_sstLocalFileAccessCount;
 
     static std::unordered_map<std::thread::id, uint32_t> m_threadMap;
-    static RankInfo                                      m_worldSize;
+    static int                                           m_worldSize_ranks;
+    static int                                           m_worldSize_threads;
+    // static RankInfo                                      m_worldSize;
     static int                                           m_mpiRank;
 };
 

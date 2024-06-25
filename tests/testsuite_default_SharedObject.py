@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2023 NTESS. Under the terms
+# Copyright 2009-2024 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2023, NTESS
+# Copyright (c) 2009-2024, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -110,6 +110,64 @@ class testcase_SharedObject(SSTTestCase):
 
     def test_SharedObject_array_late_initialize(self):
         self.sharedobject_test_template("array_late_initialize", 1, "--param=object_type:array --param=num_entities:12 --param=late_initialize:true")
+
+ # SharedArray<bool> Tests
+    # Full Initialization
+    #   single - only ID 0 initializes array
+    #     init_verify
+    #     fe_verify
+    #     no_verify
+    #   multi - also has ID N-1 initialize array
+    #     no conflict - both IDs write same data
+    #     conflict - IDs write different data
+    #       init_verify
+    #       fe_verify
+    #       no_verify
+    # Partial initialize (everyone initializes their own portion)
+    #   late_write = true
+    #   do not publish = true
+    #   nopub and late_write true
+    #   double_initialize
+    # Late_initialize
+
+    def test_SharedObject_bool_array_full_single_init(self):
+        self.sharedobject_test_template("bool_array_full_single_init", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true")
+
+    def test_SharedObject_bool_array_full_single_fe(self):
+        self.sharedobject_test_template("bool_array_full_single_fe", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=verify_mode:FE")
+
+    def test_SharedObject_bool_array_full_single_none(self):
+        self.sharedobject_test_template("bool_array_full_single_none", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=verify_mode:NONE")
+
+    def test_SharedObject_bool_array_full_multi(self):
+        self.sharedobject_test_template("bool_array_full_multi", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true")
+
+    def test_SharedObject_bool_array_full_multi_conflict_init(self):
+        self.sharedobject_test_template("bool_array_full_multi_conflict_init", 1, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+
+    def test_SharedObject_bool_array_full_multi_conflict_fe(self):
+        self.sharedobject_test_template("bool_array_full_multi_conflict_fe", 1, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:FE")
+
+    def test_SharedObject_bool_array_full_multi_conflict_none(self):
+        self.sharedobject_test_template("bool_array_full_multi_conflict_none", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:NONE")
+
+    def test_SharedObject_bool_array_partial(self):
+        self.sharedobject_test_template("bool_array_partial", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:false")
+
+    def test_SharedObject_bool_array_partial_nopub(self):
+        self.sharedobject_test_template("bool_array_partial_nopub", 0, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:false --param=publish:false")
+
+    def test_SharedObject_bool_array_partial_late(self):
+        self.sharedobject_test_template("bool_array_partial_late", 1, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:false --param=late_write:true")
+
+    def test_SharedObject_bool_array_partial_late_nopub(self):
+        self.sharedobject_test_template("bool_array_partial_late_nopub", 1, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:false --param=late_write:true --param=publish:false")
+
+    def test_SharedObject_bool_array_partial_doubleinit(self):
+        self.sharedobject_test_template("bool_array_partial_doubleinit", 1, "--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
+
+    def test_SharedObject_bool_array_late_initialize(self):
+        self.sharedobject_test_template("bool_array_late_initialize", 1, "--param=object_type:bool_array --param=num_entities:12 --param=late_initialize:true")
 
 
     # SharedMap Tests

@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -12,6 +12,7 @@
 #ifndef SST_CORE_TIMECONVERTER_H
 #define SST_CORE_TIMECONVERTER_H
 
+#include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
 
@@ -63,6 +64,15 @@ private:
     ~TimeConverter() {}
 
     TimeConverter() {} // Only needed to simplify serialization
+};
+
+template <>
+class SST::Core::Serialization::serialize_impl<TimeConverter*>
+{
+    template <class A>
+    friend class serialize;
+    // Function implemented in timeLord.cc
+    void operator()(TimeConverter*& s, SST::Core::Serialization::serializer& ser);
 };
 
 } // namespace SST

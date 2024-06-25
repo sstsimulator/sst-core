@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -41,8 +41,15 @@ public:
 
     SubCompInterface(ComponentId_t id) : SubComponent(id) {}
     SubCompInterface(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
+    SubCompInterface() : SubComponent() {}
     virtual ~SubCompInterface() {}
     virtual void clock(SST::Cycle_t) {}
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::SubComponent::serialize_order(ser);
+    }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompInterface)
 };
 
 class SubCompSlotInterface : public SubCompInterface
@@ -65,6 +72,10 @@ public:
     SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
     SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSlotInterface() {}
+
+    SubCompSlotInterface() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SubCompInterface::serialize_order(ser); }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompSlotInterface)
 };
 
 /* Our trivial component */
@@ -85,6 +96,7 @@ public:
         {"clock", "Clock Rate", "1GHz"},
         {"unnamed_subcomponent", "Unnamed SubComponent to load.  If empty, then a named subcomponent is loaded", ""},
         {"num_subcomps","Number of anonymous SubComponents to load.  Ignored if using name SubComponents.","1"},
+        {"verbose", "Verbosity level", "0"},
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
@@ -101,6 +113,14 @@ public:
     )
 
     SubComponentLoader(ComponentId_t id, SST::Params& params);
+
+    SubComponentLoader() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::Component::serialize_order(ser);
+        SST_SER(subComps)
+    }
+    ImplementSerializable(SST::CoreTestSubComponent::SubComponentLoader)
 
 private:
     bool                           tick(SST::Cycle_t);
@@ -121,7 +141,8 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        {"unnamed_subcomponent", "Unnamed SubComponent to load.  If empty, then a named subcomponent is loaded", ""}
+        {"unnamed_subcomponent", "Unnamed SubComponent to load.  If empty, then a named subcomponent is loaded", ""},
+        {"verbose", "Verbosity level", "0"},
     )
 
     // Only used when loading unnamed SubComponents
@@ -133,6 +154,14 @@ public:
         {"mySubCompSlot", "Test slot", "SST::CoreTestSubComponent::SubCompInterface" }
     )
 
+    SubCompSlot() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SubCompSlotInterface::serialize_order(ser);
+        SST_SER(subComps)
+    }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompSlot)
+
 private:
     std::vector<SubCompInterface*> subComps;
 
@@ -142,7 +171,7 @@ public:
     SubCompSlot(ComponentId_t id, std::string unnamed_sub);
 
     ~SubCompSlot() {}
-    void clock(Cycle_t);
+    void clock(Cycle_t) override;
 };
 
 // Add in some extra levels of ELI hierarchy for testing
@@ -164,7 +193,8 @@ public:
 
     SST_ELI_DOCUMENT_PARAMS(
         {"port_name", "Name of port to connect to", ""},
-        {"sendCount", "Number of Messages to Send", "10"}
+        {"sendCount", "Number of Messages to Send", "10"},
+        {"verbose",   "Verbosity level", "0"}
     )
 
     SST_ELI_DOCUMENT_PORTS(
@@ -182,9 +212,14 @@ public:
         {"numRecv", "# of msgs recv", "", 1},
     )
 
+
     SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
     SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSendRecvInterface() {}
+
+    SubCompSendRecvInterface() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SubCompInterface::serialize_order(ser); }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompSendRecvInterface)
 };
 
 class SubCompSender : public SubCompSendRecvInterface
@@ -216,18 +251,31 @@ public:
         {"test_slot", "Test slot", "" }
     )
 
+    SubCompSender() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SubCompSendRecvInterface::serialize_order(ser);
+        SST_SER(link)
+        SST_SER(nToSend)
+        SST_SER(nMsgSent)
+        SST_SER(totalMsgSent)
+        SST_SER(out)
+    }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompSender)
+
 private:
     Statistic<uint32_t>* nMsgSent;
     Statistic<uint32_t>* totalMsgSent;
     uint32_t             nToSend;
     SST::Link*           link;
+    SST::Output*         out;
 
 public:
     SubCompSender(ComponentId_t id, Params& params);
     // Direct API
     SubCompSender(ComponentId_t id, uint32_t nToSend, const std::string& port_name);
     ~SubCompSender() {}
-    void clock(Cycle_t);
+    void clock(Cycle_t) override;
 };
 
 class SubCompReceiver : public SubCompSendRecvInterface
@@ -261,9 +309,20 @@ public:
         SST_ELI_DELETE_SUBCOMPONENT_SLOT("test_slot")
     )
 
+    SubCompReceiver() {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SubCompSendRecvInterface::serialize_order(ser);
+        SST_SER(link)
+        SST_SER(nMsgReceived)
+        SST_SER(out);
+    }
+    ImplementSerializable(SST::CoreTestSubComponent::SubCompReceiver)
+
 private:
     Statistic<uint32_t>* nMsgReceived;
     SST::Link*           link;
+    SST::Output*         out;
 
     void handleEvent(SST::Event* ev);
 
@@ -271,7 +330,7 @@ public:
     SubCompReceiver(ComponentId_t id, Params& params);
     SubCompReceiver(ComponentId_t id, std::string port);
     ~SubCompReceiver() {}
-    void clock(Cycle_t);
+    void clock(Cycle_t) override;
 };
 
 } // namespace CoreTestSubComponent

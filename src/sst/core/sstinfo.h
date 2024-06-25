@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -289,7 +289,12 @@ public:
     /* Prints SST-info text to the info window */
     void printInfo();
 
-    void printConsole(const char* input) { wprintw(console, input); }
+    void printConsole(const char* input)
+    {
+        DISABLE_WARN_FORMAT_SECURITY
+        wprintw(console, input);
+        REENABLE_WARNING
+    }
     void resetCursor(int pos) { wmove(console, 1, pos); }
     int  getCursorPos() { return getcurx(console); }
 

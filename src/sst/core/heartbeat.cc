@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -114,6 +114,15 @@ SimulatorHeartbeat::execute(void)
             "\tMax Sync data size:              %s\n", global_max_sync_data_size_ua.toStringBestSI().c_str());
         sim_output.output("\tGlobal Sync data size:           %s\n", global_sync_data_size_ua.toStringBestSI().c_str());
     }
+}
+
+void
+SimulatorHeartbeat::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Action::serialize_order(ser);
+    ser& rank;
+    ser& m_period;
+    ser& lastTime;
 }
 
 } // namespace SST

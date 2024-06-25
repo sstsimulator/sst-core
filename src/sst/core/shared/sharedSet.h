@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -188,6 +188,29 @@ public:
     */
     inline const valT& mutex_find(const valT& value) const { return data->mutex_read(value); }
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::Shared::SharedObject::serialize_order(ser);
+        ser& published;
+        switch ( ser.mode() ) {
+        case SST::Core::Serialization::serializer::SIZER:
+        case SST::Core::Serialization::serializer::PACK:
+        {
+            std::string name = data->getName();
+            ser&        name;
+            break;
+        }
+        case SST::Core::Serialization::serializer::UNPACK:
+        {
+            std::string name;
+            ser&        name;
+            data = manager.getSharedObjectData<Data>(name);
+            break;
+        }
+        };
+    }
+    ImplementSerializable(SST::Shared::SharedSet<valT>)
+
 private:
     bool  published;
     Data* data;
@@ -204,12 +227,16 @@ private:
 
         verify_type verify;
 
+        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
         Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
-        ~Data() { delete change_set; }
+        ~Data()
+        {
+            if ( change_set ) delete change_set;
+        }
 
         void setVerify(verify_type v_type)
         {
@@ -270,6 +297,14 @@ private:
         // Functions inherited from SharedObjectData
         virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
         virtual void                   resetChangeSet() override { change_set->clear(); }
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            SharedObjectData::serialize_order(ser);
+            ser& set;
+        }
+
+        ImplementSerializable(SST::Shared::SharedSet<valT>::Data);
 
     private:
         class ChangeSet : public SharedObjectChangeSet

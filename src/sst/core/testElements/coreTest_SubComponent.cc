@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -32,7 +32,7 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) : Compo
 {
     std::string freq = params.find<std::string>("clock", "1GHz");
 
-    registerClock(freq, new Clock::Handler<SubComponentLoader>(this, &SubComponentLoader::tick));
+    registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this));
 
     std::string unnamed_sub  = params.find<std::string>("unnamed_subcomponent", "");
     int         num_subcomps = params.find<int>("num_subcomps", 1);
@@ -40,6 +40,7 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) : Compo
     if ( unnamed_sub != "" ) {
         for ( int i = 0; i < num_subcomps; ++i ) {
             params.insert("port_name", std::string("port") + std::to_string(i));
+            params.insert("verbose", params.find<std::string>("verbose", "0"));
             SubCompInterface* sci = loadAnonymousSubComponent<SubCompInterface>(
                 unnamed_sub, "mySubComp", i, ComponentInfo::SHARE_PORTS | ComponentInfo::INSERT_STATS, params);
             subComps.push_back(sci);
@@ -81,6 +82,7 @@ SubCompSlot::SubCompSlot(ComponentId_t id, Params& params) : SubCompSlotInterfac
     if ( unnamed_sub != "" ) {
         for ( int i = 0; i < num_subcomps; ++i ) {
             params.insert("port_name", std::string("slot_port") + std::to_string(i));
+            params.insert("verbose", params.find<std::string>("verbose", "0"));
             SubCompInterface* sci = loadAnonymousSubComponent<SubCompInterface>(
                 unnamed_sub, "mySubCompSlot", i, ComponentInfo::SHARE_PORTS | ComponentInfo::INSERT_STATS, params);
             subComps.push_back(sci);
@@ -130,6 +132,7 @@ SubCompSender::SubCompSender(ComponentId_t id, Params& params) : SubCompSendRecv
         totalMsgSent = NULL;
     }
     nToSend = params.find<uint32_t>("sendCount", 10);
+    out     = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);
 }
 
 void
@@ -142,6 +145,7 @@ SubCompSender::clock(Cycle_t cyc)
         if ( nMsgSent ) nMsgSent->addData(1);
         if ( totalMsgSent ) totalMsgSent->addData(1);
         nToSend--;
+        out->verbose(CALL_INFO, 1, 0, "Sent an event, %d more to send\n", nToSend);
     }
 }
 
@@ -159,10 +163,11 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) : SubCompSend
     else
         port_name = params.find<std::string>("port_name");
 
-    link = configureLink(port_name, new Event::Handler<SubCompReceiver>(this, &SubCompReceiver::handleEvent));
+    link = configureLink(port_name, new Event::Handler2<SubCompReceiver, &SubCompReceiver::handleEvent>(this));
     if ( !link ) { Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to configure port 'recvPort'\n"); }
     // registerTimeBase("1GHz", true);
     nMsgReceived = registerStatistic<uint32_t>("numRecv", "");
+    out          = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);
 }
 
 void
@@ -174,6 +179,7 @@ SubCompReceiver::clock(Cycle_t UNUSED(cyc))
 void
 SubCompReceiver::handleEvent(Event* ev)
 {
+    out->verbose(CALL_INFO, 1, 0, "Got an event\n");
     if ( nMsgReceived ) nMsgReceived->addData(1);
     delete ev;
 }

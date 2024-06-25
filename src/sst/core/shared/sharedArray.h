@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -12,6 +12,7 @@
 #ifndef SST_CORE_SHARED_SHAREDARRAY_H
 #define SST_CORE_SHARED_SHAREDARRAY_H
 
+#include "sst/core/serialization/serializable.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/sst_types.h"
 
@@ -207,6 +208,29 @@ public:
      */
     inline const T& mutex_read(int index) const { return data->mutex_read(index); }
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::Shared::SharedObject::serialize_order(ser);
+        ser& published;
+        switch ( ser.mode() ) {
+        case SST::Core::Serialization::serializer::SIZER:
+        case SST::Core::Serialization::serializer::PACK:
+        {
+            std::string name = data->getName();
+            ser&        name;
+            break;
+        }
+        case SST::Core::Serialization::serializer::UNPACK:
+        {
+            std::string name;
+            ser&        name;
+            data = manager.getSharedObjectData<Data>(name);
+            break;
+        }
+        };
+    }
+    ImplementSerializable(SST::Shared::SharedArray<T>)
+
 private:
     bool  published;
     Data* data;
@@ -224,12 +248,16 @@ private:
         T                 init;
         verify_type       verify;
 
+        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
         Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
-        ~Data() { delete change_set; }
+        ~Data()
+        {
+            if ( change_set ) delete change_set;
+        }
 
         /**
            Set the size of the array.  An element can only write up to the
@@ -327,6 +355,14 @@ private:
         // Functions inherited from SharedObjectData
         virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
         virtual void                   resetChangeSet() override { change_set->clear(); }
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            SharedObjectData::serialize_order(ser);
+            ser& array;
+        }
+
+        ImplementSerializable(SST::Shared::SharedArray<T>::Data);
 
     private:
         class ChangeSet : public SharedObjectChangeSet
@@ -449,10 +485,10 @@ public:
                 "This is a reserved value and cannot be passed in here. \n",
                 obj_name.c_str());
         }
-
         data    = manager.getSharedObjectData<Data>(obj_name);
         int ret = incShareCount(data);
-        if ( length != 0 ) data->setSize(length, init_value, v_type);
+        if ( length != 0 ) { data->setSize(length, init_value, v_type); }
+
         return ret;
     }
 
@@ -563,6 +599,29 @@ public:
      */
     inline bool mutex_read(int index) const { return data->mutex_read(index); }
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::Shared::SharedObject::serialize_order(ser);
+        ser& published;
+        switch ( ser.mode() ) {
+        case SST::Core::Serialization::serializer::SIZER:
+        case SST::Core::Serialization::serializer::PACK:
+        {
+            std::string name = data->getName();
+            ser&        name;
+            break;
+        }
+        case SST::Core::Serialization::serializer::UNPACK:
+        {
+            std::string name;
+            ser&        name;
+            data = manager.getSharedObjectData<Data>(name);
+            break;
+        }
+        };
+    }
+    ImplementSerializable(SST::Shared::SharedArray<bool>)
+
 private:
     bool  published;
     Data* data;
@@ -580,18 +639,22 @@ private:
         bool              init;
         verify_type       verify;
 
+        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {} // For serialization ONLY
         Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
-        ~Data() { delete change_set; }
+        ~Data()
+        {
+            if ( change_set ) delete change_set;
+        }
 
         /**
            Set the size of the array.  An element can only write up to the
            current size (reading or writing beyond the size will create
            undefined behavior).  However, an element can put in the size
-           it needs for it's writes and it will end up being the largest
+           it needs for its writes and it will end up being the largest
            size requested.  We use a vector underneatch the covers to
            manage the memory/copying of data.
         */
@@ -682,6 +745,15 @@ private:
         // Functions inherited from SharedObjectData
         virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
         virtual void                   resetChangeSet() override { change_set->clear(); }
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            SharedObjectData::serialize_order(ser);
+            ser& array;
+            // All other members are not needed past init()
+        }
+
+        ImplementSerializable(SST::Shared::SharedArray<bool>::Data);
 
     private:
         class ChangeSet : public SharedObjectChangeSet

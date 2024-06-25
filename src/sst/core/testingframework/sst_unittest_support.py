@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2009-2023 NTESS. Under the terms
+# Copyright 2009-2024 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2023, NTESS
+# Copyright (c) 2009-2024, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -1035,9 +1035,7 @@ class StartsWithFilter(LineFilter):
             Returns:
                 line if line does not start with the prefix and None if it does
         """
-        check_param_type("line", line, str)
-
-        if ( line.startswith(self._prefix) ):
+        if line.startswith(self._prefix):
             return None
         return line
 
@@ -1061,10 +1059,8 @@ class IgnoreAllAfterFilter(LineFilter):
             Returns:
                 line if line does not start with the prefix and None if it does
         """
-        check_param_type("line", line, str)
-
         if self._found: return None
-        if ( line.startswith(self._prefix) ):
+        if line.startswith(self._prefix):
             self._found = True
             if self._keep_line:
                 return line
@@ -1089,8 +1085,6 @@ class IgnoreWhiteSpaceFilter(LineFilter):
             Returns:
                 filtered line
         """
-        check_param_type("line", line, str)
-
         filtered_line = str()
         ws_stream = False
         for x in line:
@@ -1119,8 +1113,6 @@ class RemoveRegexFromLineFilter(LineFilter):
             Returns:
                 text from line minus any text that matched the regular expression
         """
-        check_param_type("line", line, str)
-
         match = re.search(self.regex, line)
         while match:
             line = line[:match.start()] + line[match.end():]
@@ -1180,7 +1172,6 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
 
     if sort:
         out_lines.sort()
-
 
     # Read in the reference file and optionally sort it
     with open(reffile) as fp:
@@ -1265,6 +1256,78 @@ def testing_compare_sorted_diff(test_name, outfile, reffile):
 
 
 ###
+
+
+
+def testing_compare_filtered_subset(outfile, reffile, filters=[]):
+    """Filter, and then determine if outfile is a subset of reffile
+
+        Args:
+            outfile (str): Path to the output file
+            reffile (str): Path to the reference file
+            filters (list): List of filters to apply to the lines of
+              the output and reference files. Filters will be applied
+              in order, but will break early if any filter returns None
+
+        Returns:
+            (bool) True if outfile is a subset of reffile
+
+    """
+
+    check_param_type("outfile", outfile, str)
+    check_param_type("reffile", reffile, str)
+
+    if issubclass(type(filters), LineFilter):
+        filters = [filters]
+    check_param_type("filters", filters, list)
+
+    if not os.path.isfile(outfile):
+        log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+        return False
+
+    if not os.path.isfile(reffile):
+        log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+        return False
+
+    # Read in the output file and filter
+    with open(outfile) as fp:
+        for filter in filters:
+            filter.reset()
+        out_lines = []
+        for line in fp:
+            filt_line = line
+            for filter in filters:
+                filt_line = filter.filter(filt_line)
+                if not filt_line:
+                    break;
+
+            if filt_line:
+                out_lines.append(filt_line)
+
+    # Read in the reference file and filter
+    with open(reffile) as fp:
+        for filter in filters:
+            filter.reset()
+        ref_lines = []
+        for line in fp:
+            filt_line = line
+            for filter in filters:
+                filt_line = filter.filter(filt_line)
+                if not filt_line:
+                    break;
+
+            if filt_line:
+                ref_lines.append(filt_line)
+
+    # Determine whether subset holds
+    if set(out_lines).issubset(set(ref_lines)):
+        return True
+    else:
+        return False
+
+
+###
+
 
 
 def testing_get_diff_data(test_name):

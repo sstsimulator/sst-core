@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -332,5 +332,16 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     msg_count = count;
 #endif
 }
+
+void
+RankSyncSerialSkip::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    RankSync::serialize_order(ser);
+    // TODO Do we need to keep anything from comm_map? Certainly don't need the struct
+    // ser& comm_map;
+    ser& mpiWaitTime;
+    ser& deserializeTime;
+}
+
 
 } // namespace SST

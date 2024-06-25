@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -155,4 +155,15 @@ MersenneRNG::seed(uint64_t seed)
 MersenneRNG::~MersenneRNG()
 {
     free(numbers);
+}
+
+void
+MersenneRNG::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& index;
+
+    // Mersenne's default constructor mallocs numbers so UNPACK does not need to
+    for ( int i = 0; i < 624; i++ ) {
+        ser& numbers[i];
+    }
 }

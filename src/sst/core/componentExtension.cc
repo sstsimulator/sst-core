@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -19,5 +19,14 @@ ComponentExtension::ComponentExtension(ComponentId_t id) : BaseComponent(id)
 {
     isExtension = true;
 }
+
+void
+ComponentExtension::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent::serialize_order(ser);
+}
+
+// For serialization only
+ComponentExtension::ComponentExtension() : BaseComponent() {}
 
 } // namespace SST

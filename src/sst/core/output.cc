@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -48,7 +48,8 @@ std::FILE*  Output::m_sstGlobalSimFileHandle      = nullptr;
 uint32_t    Output::m_sstGlobalSimFileAccessCount = 0;
 
 std::unordered_map<std::thread::id, uint32_t> Output::m_threadMap;
-RankInfo                                      Output::m_worldSize;
+int                                           Output::m_worldSize_ranks;
+int                                           Output::m_worldSize_threads;
 int                                           Output::m_mpiRank = 0;
 
 Output::Output(
@@ -472,7 +473,7 @@ Output::outputprintf(const char* format, va_list arg) const
 int
 Output::getMPIWorldSize() const
 {
-    return m_worldSize.rank;
+    return m_worldSize_ranks;
 }
 
 int
@@ -484,13 +485,35 @@ Output::getMPIWorldRank() const
 uint32_t
 Output::getNumThreads() const
 {
-    return m_worldSize.thread;
+    return m_worldSize_threads;
 }
 
 uint32_t
 Output::getThreadRank() const
 {
     return m_threadMap[std::this_thread::get_id()];
+}
+
+void
+Output::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& m_objInitialized;
+    ser& m_outputPrefix;
+    ser& m_verboseLevel;
+    ser& m_verboseMask;
+    ser& m_targetLoc;
+    ser& m_sstLocalFileName;
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK && m_objInitialized ) {
+        // Set Member Variables
+        m_sstLocalFileHandle       = nullptr;
+        m_sstLocalFileAccessCount  = 0;
+        m_targetFileHandleRef      = nullptr;
+        m_targetFileNameRef        = nullptr;
+        m_targetFileAccessCountRef = nullptr;
+
+        setTargetOutput(m_targetLoc);
+    }
 }
 
 
@@ -523,6 +546,7 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
     indent_array[indent] = '\0';
     output_obj.output(line, file, func, "%s%s enter function\n", indent_array.data(), function.c_str());
     indent_array[indent] = ' ';
+    fflush(stdout);
     trace_level++;
 }
 
@@ -535,6 +559,7 @@ TraceFunction::~TraceFunction()
     output_obj.output(
         line, file.c_str(), function.c_str(), "%s%s exit function\n", indent_array.data(), function.c_str());
     indent_array[indent] = ' ';
+    fflush(stdout);
 }
 
 void
@@ -553,6 +578,7 @@ TraceFunction::output(const char* format, ...) const
     va_start(arg, format);
     output_obj.outputprintf(line, file.c_str(), function.c_str(), buf, arg);
     va_end(arg);
+    fflush(stdout);
 }
 
 } // namespace SST

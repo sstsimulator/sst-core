@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -57,26 +57,14 @@ public:
         destroyed. A good place to print out statistics. */
     virtual void finish() override {}
 
-private:
+protected:
+    // For serialization only
+    SubComponent();
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
     friend class Component;
+    ImplementSerializable(SST::SubComponent)
 };
-
-namespace SUBCOMPONENT {
-
-// Very hackish way to get a deprecation warning for
-// SST_ELI_REGISTER_SUBCOMPONENT_DERIVED, but there are no standard ways to do this
-class sst_eli_fake_deprecated_class
-{
-public:
-    [[deprecated("SST_ELI_REGISTER_SUBCOMPONENT_DERIVED is deprecated and will be removed in SST 14. Please use the "
-                 "SST_ELI_REGISTER_SUBCOMPONENT macro")]] static constexpr int
-    fake_deprecated_function()
-    {
-        return 0;
-    }
-};
-
-} // namespace SUBCOMPONENT
 
 } // namespace SST
 
@@ -90,12 +78,6 @@ public:
 #define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(cls, base, ...) \
     SST_ELI_DECLARE_NEW_BASE(::base,::cls)                        \
     SST_ELI_NEW_BASE_CTOR(SST::ComponentId_t,SST::Params&,##__VA_ARGS__)
-
-#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls, lib, name, version, desc, interface) \
-    static const int SST_ELI_FAKE_VALUE =                                               \
-        SST::SUBCOMPONENT::sst_eli_fake_deprecated_class::fake_deprecated_function();   \
-    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
-    SST_ELI_INTERFACE_INFO(#interface)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls, lib, name, version, desc, interface)         \
     SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \

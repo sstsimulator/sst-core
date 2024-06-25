@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -56,6 +56,14 @@ public:
     {
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        Action::serialize_order(ser);
+        ser& message;
+        ser& print_message;
+    }
+    ImplementSerializable(SST::StopAction)
 };
 
 } // namespace SST

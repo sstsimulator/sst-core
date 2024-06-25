@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -13,6 +13,7 @@
 #define SST_CORE_LINK_H
 
 #include "sst/core/event.h"
+#include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
@@ -33,11 +34,25 @@ namespace Profile {
 class EventHandlerProfileTool;
 }
 
+class Link;
+
+template <>
+class SST::Core::Serialization::serialize_impl<Link*>
+{
+    template <class A>
+    friend class serialize;
+    // Function implemented in link.cc
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
+};
+
+
 /** Link between two components. Carries events */
 class alignas(64) Link
 {
     enum Type_t : uint16_t { POLL, HANDLER, SYNC, UNINITIALIZED };
     enum Mode_t : uint16_t { INIT, RUN, COMPLETE };
+
+    friend class SST::Core::Serialization::serialize_impl<Link*>;
 
 public:
     friend class LinkPair;
@@ -152,29 +167,6 @@ public:
      * @return nullptr if no Event is available
      */
     Event* recvUntimedData();
-
-    /** Send data during the init() or complete() phase.
-     * Same as sendUntimedData()
-     * @param init_data data to send
-     */
-    [[deprecated(
-        "sendInitData() has been deprecated and will be removed in SST 14.  Use sendUntimedData() instead")]] void
-    sendInitData(Event* init_data)
-    {
-        sendUntimedData(init_data);
-    }
-
-    /** Receive an event (if any) during the init() or complete() phase.
-     * Same as recvUntimedData()
-     * @return Event if one is available
-     * @return nullptr if no Event is available
-     */
-    [[deprecated(
-        "recvInitData() has been deprecated and will be removed in SST 14.  Use recvUntimedData() instead")]] Event*
-    recvInitData()
-    {
-        return recvUntimedData();
-    }
 
     /** Return whether link has been configured
      * @return whether link is configured

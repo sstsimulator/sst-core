@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -35,6 +35,7 @@ class ThreadSyncSimpleSkip : public ThreadSync
 public:
     /** Create a new ThreadSync object */
     ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim);
+    ThreadSyncSimpleSkip() {} // For serialization only
     ~ThreadSyncSimpleSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -56,6 +57,9 @@ public:
     uint64_t getDataSize() const;
 
     // static void disable() { disabled = true; barrier.disable(); }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::ThreadSyncSimpleSkip)
 
 private:
     // Stores the links until they can be intialized with the right

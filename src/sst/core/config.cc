@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -162,7 +162,7 @@ public:
     static int setHeartbeat(Config* cfg, const std::string& arg)
     {
         /* TODO: Error checking */
-        cfg->heartbeatPeriod_ = arg;
+        cfg->heartbeat_period_ = arg;
         return 0;
     }
 
@@ -451,6 +451,29 @@ public:
         return 0;
     }
 
+    // Advanced options - checkpointing
+
+    // Set frequency of checkpoint generation
+    static int setCheckpointPeriod(Config* cfg, const std::string& arg)
+    {
+        /* TODO: Error checking */
+        cfg->checkpoint_period_ = arg;
+        return 0;
+    }
+
+    // Set whether to load from checkpoint
+    static int setLoadFromCheckpoint(Config* cfg, const std::string& UNUSED(arg))
+    {
+        cfg->load_from_checkpoint_ = true;
+        return 0;
+    }
+
+    // Set the prefix for checkpoint files
+    static int setCheckpointPrefix(Config* cfg, const std::string& arg)
+    {
+        cfg->checkpoint_prefix_ = arg;
+        return 0;
+    }
 
     // Advanced options - environment
 
@@ -477,7 +500,7 @@ Config::print()
     std::cout << "stop_at = " << stop_at_ << std::endl;
     std::cout << "exit_after = " << exit_after_ << std::endl;
     std::cout << "partitioner = " << partitioner_ << std::endl;
-    std::cout << "heartbeatPeriod = " << heartbeatPeriod_ << std::endl;
+    std::cout << "heartbeat_period = " << heartbeat_period_ << std::endl;
     std::cout << "output_directory = " << output_directory_ << std::endl;
     std::cout << "output_core_prefix = " << output_core_prefix_ << std::endl;
     std::cout << "output_config_graph = " << output_config_graph_ << std::endl;
@@ -489,6 +512,9 @@ Config::print()
     std::cout << "output_partition = " << output_partition_ << std::endl;
     std::cout << "timeBase = " << timeBase_ << std::endl;
     std::cout << "parallel_load = " << parallel_load_ << std::endl;
+    std::cout << "load_checkpoint = " << load_from_checkpoint_ << std::endl;
+    std::cout << "checkpoint_period = " << checkpoint_period_ << std::endl;
+    std::cout << "checkpoint_prefix = " << checkpoint_prefix_ << std::endl;
     std::cout << "timeVortex = " << timeVortex_ << std::endl;
     std::cout << "interthread_links = " << interthread_links_ << std::endl;
 #ifdef USE_MEMPOOL
@@ -535,15 +561,15 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     // Basic Options
     first_rank_ = first_rank;
 
-    num_ranks_       = num_ranks;
-    num_threads_     = 1;
-    configFile_      = "NONE";
-    model_options_   = "";
-    print_timing_    = false;
-    stop_at_         = "0 ns";
-    exit_after_      = 0;
-    partitioner_     = "sst.linear";
-    heartbeatPeriod_ = "";
+    num_ranks_        = num_ranks;
+    num_threads_      = 1;
+    configFile_       = "NONE";
+    model_options_    = "";
+    print_timing_     = false;
+    stop_at_          = "0 ns";
+    exit_after_       = 0;
+    partitioner_      = "sst.linear";
+    heartbeat_period_ = "";
 
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
     getcwd(wd_buf, PATH_MAX);
@@ -589,6 +615,11 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     event_dump_file_ = "";
 #endif
     rank_seq_startup_ = false;
+
+    // Advanced Options - Checkpointing
+    checkpoint_period_    = "";
+    load_from_checkpoint_ = false;
+    checkpoint_prefix_    = "checkpoint";
 
     // Advanced Options - environment
     enable_sig_handling_ = true;
@@ -779,6 +810,21 @@ Config::insertOptions()
     DEF_FLAG(
         "disable-signal-handlers", 0, "Disable signal handlers",
         std::bind(&ConfigHelper::disableSigHandlers, this, _1));
+
+    /* Advanced Features - Checkpoint */
+    DEF_SECTION_HEADING("Advanced Options - Checkpointing (EXPERIMENTAL)");
+    DEF_ARG(
+        "checkpoint-period", 0, "PERIOD",
+        "Set frequency for checkpoints to be generated (this is an approximate timing and specified in simulated "
+        "time.",
+        std::bind(&ConfigHelper::setCheckpointPeriod, this, _1), true);
+    DEF_FLAG(
+        "load-checkpoint", 0,
+        "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",
+        std::bind(&ConfigHelper::setLoadFromCheckpoint, this, _1), false);
+    DEF_ARG(
+        "checkpoint-prefix", 0, "PREFIX", "Set prefix for checkpoint filenames.",
+        std::bind(&ConfigHelper::setCheckpointPrefix, this, _1), true);
 
     enableDashDashSupport(std::bind(&ConfigHelper::setModelOptions, this, _1));
     addPositionalCallback(std::bind(&Config::positionalCallback, this, _1, _2));

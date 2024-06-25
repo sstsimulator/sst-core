@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -24,43 +24,25 @@ namespace Serialization {
 
 namespace pvt {
 
-void size_serializable(serializable* s, serializer& ser);
+void size_serializable(serializable_base* s, serializer& ser);
 
-void pack_serializable(serializable* s, serializer& ser);
+void pack_serializable(serializable_base* s, serializer& ser);
 
-void unpack_serializable(serializable*& s, serializer& ser);
+void unpack_serializable(serializable_base*& s, serializer& ser);
 
 } // namespace pvt
 
-template <>
-class serialize<serializable*>
-{
-
-public:
-    void operator()(serializable*& s, serializer& ser)
-    {
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-            pvt::size_serializable(s, ser);
-            break;
-        case serializer::PACK:
-            pvt::pack_serializable(s, ser);
-            break;
-        case serializer::UNPACK:
-            pvt::unpack_serializable(s, ser);
-            break;
-        }
-    }
-};
 
 template <class T>
-class serialize<T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+class serialize_impl<
+    T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
 {
 
-public:
+    template <class A>
+    friend class serialize;
     void operator()(T*& s, serializer& ser)
     {
-        serializable* sp = static_cast<serializable*>(s);
+        serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
         case serializer::SIZER:
             pvt::size_serializable(sp, ser);
@@ -80,7 +62,7 @@ template <class T>
 void
 serialize_intrusive_ptr(T*& t, serializer& ser)
 {
-    serializable* s = t;
+    serializable_base* s = t;
     switch ( ser.mode() ) {
     case serializer::SIZER:
         pvt::size_serializable(s, ser);
@@ -96,9 +78,11 @@ serialize_intrusive_ptr(T*& t, serializer& ser)
 }
 
 template <class T>
-class serialize<T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+class serialize_impl<
+    T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
 {
-public:
+    template <class A>
+    friend class serialize;
     inline void operator()(T& t, serializer& ser)
     {
         // T* tmp = &t;
@@ -106,17 +90,6 @@ public:
         t.serialize_order(ser);
     }
 };
-
-// Hold off on trivially_serializable for now, as it's not really safe
-// in the case of inheritance
-//
-// template <class T>
-// class serialize <T, typename
-// std::enable_if<std::is_base_of<SST::Core::Serialization::trivially_serializable,T>::value>::type> { public:
-//     inline void operator()(T& t, serializer& ser){
-//         ser.primitive(t);
-//     }
-// };
 
 } // namespace Serialization
 } // namespace Core

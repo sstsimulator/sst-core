@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -407,6 +407,17 @@ ConfigBase::setOptionExternal(const string& entryName, const string& value)
     exit(-1);
     return false;
 }
+
+
+bool
+ConfigBase::wasOptionSetOnCmdLine(const std::string& name)
+{
+    for ( auto& option : options ) {
+        if ( !name.compare(option.opt.name) ) { return option.set_cmdline; }
+    }
+    return false;
+}
+
 
 bool
 ConfigBase::getAnnotation(const std::string& entryName, char annotation)

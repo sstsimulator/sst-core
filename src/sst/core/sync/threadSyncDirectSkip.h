@@ -1,8 +1,8 @@
-// Copyright 2009-2023 NTESS. Under the terms
+// Copyright 2009-2024 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2023, NTESS
+// Copyright (c) 2009-2024, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -34,6 +34,7 @@ class ThreadSyncDirectSkip : public ThreadSync
 public:
     /** Create a new ThreadSync object */
     ThreadSyncDirectSkip(int num_threads, int thread, Simulation_impl* sim);
+    ThreadSyncDirectSkip() {} // For serialization only
     ~ThreadSyncDirectSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -58,6 +59,9 @@ public:
     }
 
     uint64_t getDataSize() const;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::ThreadSyncDirectSkip)
 
 private:
     SimTime_t                        my_max_period;
