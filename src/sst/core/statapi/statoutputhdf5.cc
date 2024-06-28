@@ -34,11 +34,7 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     setStatisticOutputName("StatisticOutputHDF5");
 }
 
-StatisticOutputHDF5::StatisticOutputHDF5() :
-    StatisticFieldsOutput(), 
-    m_hFile(nullptr),
-    m_currentDataSet(nullptr)
-{}
+StatisticOutputHDF5::StatisticOutputHDF5() : StatisticFieldsOutput(), m_hFile(nullptr), m_currentDataSet(nullptr) {}
 
 bool
 StatisticOutputHDF5::checkOutputParameters()
@@ -631,8 +627,8 @@ void
 StatisticOutputHDF5::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     StatisticFieldsOutput::serialize_order(ser);
-    
-    if (ser.mode() == SST::Core::Serialization::serializer::UNPACK) {
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
         // Get the parameters
         std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
 

@@ -53,7 +53,7 @@ public:
 
     ImplementSerializable(SST::Statistics::StatisticOutputHDF5)
 
-private :
+private:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
      */
