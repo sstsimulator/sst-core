@@ -13,6 +13,7 @@
 
 import os
 import filecmp
+import subprocess
 
 from sst_unittest import *
 from sst_unittest_support import *
@@ -22,6 +23,8 @@ from sst_unittest_support import *
 
 module_init = 0
 module_sema = threading.Semaphore()
+
+have_h5 = sst_core_config_include_file_get_value_int("HAVE_HDF5", default=0, disable_warning=True) == 1
 
 def initializeTestModule_SingleInstance(class_inst):
     global module_init
@@ -73,8 +76,15 @@ class testcase_StatisticComponent(SSTTestCase):
         ref_group_stat_file_txt = "{0}/refFiles/test_StatisticsComponent_{1}_group_stats.txt".format(testsuitedir, testtype)
         out_group_stat_file_txt = "{0}/test_StatisticsComponent_{1}_group_stats.txt".format(outdir, testtype)
 
+        # Enable HDF5 test if available
+        options = ""
+        if have_h5:
+            options = "--model-options=\"hdf5\""
+            ref_group_stat_file_h5 = "{0}/refFiles/test_StatisticsComponent_{1}_group_stats.h5".format(testsuitedir, testtype)
+            out_group_stat_file_h5 = "{0}/test_StatisticsComponent_{1}_group_stats.h5".format(outdir, testtype)
+        
         # Perform the test
-        self.run_sst(sdlfile, outfile)
+        self.run_sst(sdlfile, outfile, other_args=options)
 
         # Combine the stat output files into a single file
         combine_per_rank_files(out_group_stat_file_txt)
@@ -91,3 +101,11 @@ class testcase_StatisticComponent(SSTTestCase):
 
         cmp_result = testing_compare_filtered_diff(testtype, out_group_stat_file_txt, ref_group_stat_file_txt, True)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(out_group_stat_file_txt, ref_group_stat_file_txt))
+
+        # Generate raw H5 output
+        if have_h5:
+            try:
+                subprocess.run(["h5diff",ref_group_stat_file_h5,out_group_stat_file_h5],check=True)
+            except subprocess.CalledProcessError as h5exc:
+                self.assertTrue(False, "Output/Compare file {0} does not match Reference File {1}. H5diff returned {2} {3}".format(ref_group_stat_file_h5, out_group_stat_file_h5,h5exc.returncode, h5exc.output))
+

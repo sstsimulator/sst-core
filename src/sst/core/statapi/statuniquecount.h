@@ -52,7 +52,7 @@ public:
 
     UniqueCountStatistic() : Statistic<T>() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser)
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<T>::serialize_order(ser);
         ser& uniqueSet;
