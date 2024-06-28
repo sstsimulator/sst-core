@@ -64,6 +64,7 @@ EXTRA_DIST += \
     tests/refFiles/test_RNGComponent_xorshift.out \
     tests/refFiles/test_StatisticsComponent_basic.out \
     tests/refFiles/test_StatisticsComponent_basic_group_stats.csv \
+    tests/refFiles/test_StatisticsComponent_basic_group_stats.h5 \
     tests/refFiles/test_StatisticsComponent_basic_group_stats.txt \
     tests/refFiles/test_Links_basic.out \
     tests/refFiles/test_Links_dangling.out \

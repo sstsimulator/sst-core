@@ -145,12 +145,12 @@ public:                                                                         
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
     }                                                                                                              \
     virtual const char* cls_name() const override { return #obj; }                                                 \
-    virtual uint32_t    cls_id() const                                                                             \
+    virtual uint32_t    cls_id() const override                                                                    \
     {                                                                                                              \
         throw_exc();                                                                                               \
         return 0;                                                                                                  \
     }                                                                                                              \
-    virtual std::string serialization_name() const                                                                 \
+    virtual std::string serialization_name() const override                                                        \
     {                                                                                                              \
         throw_exc();                                                                                               \
         return "";                                                                                                 \

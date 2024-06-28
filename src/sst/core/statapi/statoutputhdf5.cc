@@ -34,6 +34,8 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     setStatisticOutputName("StatisticOutputHDF5");
 }
 
+StatisticOutputHDF5::StatisticOutputHDF5() : StatisticFieldsOutput(), m_hFile(nullptr), m_currentDataSet(nullptr) {}
+
 bool
 StatisticOutputHDF5::checkOutputParameters()
 {
@@ -625,10 +627,15 @@ void
 StatisticOutputHDF5::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     StatisticFieldsOutput::serialize_order(ser);
-    // H5::H5File*                              m_hFile;
-    // DataSet*                                 m_currentDataSet;
-    // std::map<StatisticBase*, StatisticInfo*> m_statistics;
-    // std::map<std::string, GroupInfo>         m_statGroups;
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        // Get the parameters
+        std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
+
+        H5::Exception::dontPrint();
+
+        m_hFile = new H5::H5File(m_filePath, H5F_ACC_TRUNC);
+    }
 }
 
 

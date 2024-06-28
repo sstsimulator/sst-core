@@ -87,15 +87,15 @@ public:
      */
     static void static_setup(ConfigGraph* graph);
 
-    /** Called to nofiy StatOutputs that simulation has started
+    /** Called to notify StatOutputs that simulation has started
      */
     static void stat_outputs_simulation_start();
 
-    /** Called to nofiy StatOutputs that simulation has ended
+    /** Called to notify StatOutputs that simulation has ended
      */
     static void stat_outputs_simulation_end();
 
-    void serialize_order(SST::Core::Serialization::serializer& ser);
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticProcessingEngine)
 private:
     friend class SST::Simulation_impl;
