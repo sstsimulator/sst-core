@@ -70,7 +70,10 @@ class testcase_sstinfo(SSTTestCase):
         err_str = "Path to SST-INFO {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
-        cmd = 'timeout 1 {0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
+        if platform.system() == "Linux":
+            cmd = 'timeout 1 {0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
+        else:
+            cmd = 'gtimeout 1 {0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
         rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run()
         if rtn.result() != (0 or 124):
             self.assertEquals(rtn.result(), 0, "sst-info Test failed running cmdline {0} - return = {1}".format(cmd, rtn.result()))
