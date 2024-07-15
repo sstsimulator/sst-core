@@ -82,6 +82,7 @@ class testcase_StatisticComponent(SSTTestCase):
             options = "--model-options=\"hdf5\""
             ref_group_stat_file_h5 = "{0}/refFiles/test_StatisticsComponent_{1}_group_stats.h5".format(testsuitedir, testtype)
             out_group_stat_file_h5 = "{0}/test_StatisticsComponent_{1}_group_stats.h5".format(outdir, testtype)
+            reffile = "{0}/refFiles/test_StatisticsComponent_{1}_h5.out".format(testsuitedir, testtype)
         
         # Perform the test
         self.run_sst(sdlfile, outfile, other_args=options)
