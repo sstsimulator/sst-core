@@ -136,6 +136,29 @@ Params::print_all_params(Output& out, const std::string& prefix) const
     }
 }
 
+std::string
+Params::toString(const std::string& prefix) const
+{
+    std::stringstream str;
+    int               level = 0;
+    for ( auto map : data ) {
+        if ( level == 0 ) {
+            if ( !map->empty() ) str << "Local params:" << std::endl;
+            level++;
+        }
+        else if ( level == 1 ) {
+            str << "Global params:" << std::endl;
+            level++;
+        }
+
+        for ( auto value : *map ) {
+            str << "  " << prefix << "key=" << keyMapReverse[value.first] << ", value=" << value.second << std::endl;
+        }
+    }
+    return str.str();
+}
+
+
 void
 Params::insert(const std::string& key, const std::string& value, bool overwrite)
 {

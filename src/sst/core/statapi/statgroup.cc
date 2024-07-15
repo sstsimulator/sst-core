@@ -31,6 +31,7 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
     name(csg.name),
     output(const_cast<StatisticOutput*>(engine->getStatOutputs()[csg.outputID])),
     outputFreq(csg.outputFrequency),
+    outputId(csg.outputID),
     components(csg.components)
 {
 
@@ -45,6 +46,18 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
         statNames.push_back(kv.first);
     }
 }
+
+void
+StatisticGroup::restartGroup(StatisticProcessingEngine* engine)
+{
+    output = const_cast<StatisticOutput*>(engine->getStatOutputs()[outputId]);
+    if ( !output->acceptsGroups() ) {
+        Output::getDefaultObject().fatal(
+            CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
+            output->getStatisticOutputName().c_str());
+    }
+}
+
 
 bool
 StatisticGroup::containsStatistic(const StatisticBase* stat) const
@@ -70,6 +83,17 @@ StatisticGroup::addStatistic(StatisticBase* stat)
 {
     stats.push_back(stat);
     stat->setGroup(this);
+}
+
+void
+StatisticGroup::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ser& isDefault;
+    ser& name;
+    ser& outputFreq;
+    ser& outputId;
+    ser& components;
+    ser& statNames;
 }
 
 } // namespace Statistics

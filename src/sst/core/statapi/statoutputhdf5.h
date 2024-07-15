@@ -49,6 +49,10 @@ public:
 
     bool acceptsGroups() const override { return true; }
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
+    ImplementSerializable(SST::Statistics::StatisticOutputHDF5)
+
 private:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
@@ -107,7 +111,7 @@ private:
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
-    StatisticOutputHDF5() { ; } // For serialization
+    StatisticOutputHDF5(); // For serialization
 
 private:
     typedef union {

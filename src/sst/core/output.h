@@ -12,6 +12,8 @@
 #ifndef SST_CORE_OUTPUT_H
 #define SST_CORE_OUTPUT_H
 
+#include "sst/core/serialization/serializer_fwd.h"
+
 #include <string.h>
 #include <vector>
 
@@ -23,8 +25,6 @@
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
-
-#include "sst/core/serialization/serializable.h"
 
 #include <cinttypes>
 #include <cstdio>
@@ -50,7 +50,7 @@ namespace SST {
  * stdout, stderr and/or sst debug file.  All components should
  * use this class to log any information.
  */
-class Output : public SST::Core::Serialization::serializable
+class Output
 {
 public:
     /** Choice of output location
@@ -120,7 +120,7 @@ public:
     */
     Output(); // Default constructor
 
-    virtual ~Output();
+    ~Output();
 
     /** Initialize the object after construction
         @param prefix Prefix to be prepended to all strings emitted by calls to
@@ -477,9 +477,7 @@ public:
 
     static Output& getDefaultObject() { return m_defaultObject; }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-
-    ImplementSerializable(SST::Output)
+    void serialize_order(SST::Core::Serialization::serializer& ser);
 
 private:
     friend class TraceFunction;

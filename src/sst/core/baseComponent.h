@@ -1091,37 +1091,6 @@ public:
 namespace Core {
 namespace Serialization {
 
-template <class T>
-class serialize_impl<Statistic<T>*>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(Statistic<T>*& s, serializer& ser)
-    {
-        // For sizer and pack, only need to get the information needed
-        // to create a NullStatistic on unpack.
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-        case serializer::PACK:
-        {
-            BaseComponent* comp = s->getComponent();
-            ser&           comp;
-            break;
-        }
-        case serializer::UNPACK:
-        {
-            Params         params;
-            BaseComponent* comp;
-            ser&           comp;
-            s = Factory::getFactory()->CreateWithParams<Statistic<T>>(
-                "sst.NullStatistic", params, comp, "", "", params);
-            break;
-        }
-        }
-    }
-};
-
-
 namespace pvt {
 
 void size_basecomponent(serializable_base* s, serializer& ser);

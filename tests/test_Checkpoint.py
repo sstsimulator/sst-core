@@ -26,3 +26,20 @@ comp_c1.addParams({
 # Connect the components
 link = sst.Link("link")
 link.connect( (comp_c0, "port", "1us"), (comp_c1, "port", "1us") )
+
+# Stats config
+sst.setStatisticLoadLevel(3)
+sst.setStatisticOutput("sst.statOutputConsole")
+#sst.setStatisticOutput("sst.statOutputJSON", {"outputsimtime" : "1"})
+#sst.setStatisticOutput("sst.statOutputTxt")
+#sst.setStatisticOutput("sst.statOutputCSV", {
+#    "filepath" : "test_Checkpoint_stats.csv",
+#    "separator" : "; " })
+sst.enableStatisticForComponentName("c0", "rngvals",
+    {"type":"sst.HistogramStatistic",
+     "minvalue" : 0,
+     "binwidth" : 400000000,
+     "numbins" : 10,
+     "IncludeOutOfBounds" : "T"
+})
+sst.enableAllStatisticsForAllComponents({ "rate" : "100us" })
