@@ -12,6 +12,8 @@
 #ifndef SST_CORE_OUTPUT_H
 #define SST_CORE_OUTPUT_H
 
+#include "sst/core/serialization/serializer_fwd.h"
+
 #include <string.h>
 #include <vector>
 
@@ -42,15 +44,6 @@ namespace SST {
 #else
 #define CALL_INFO_LONG __LINE__, __FILE__, __FUNCTION__
 #endif
-
-namespace Core {
-namespace Serialization {
-
-class serializer;
-
-}
-} // namespace Core
-
 
 /**
  * Output object provides consistent method for outputting data to
@@ -127,7 +120,7 @@ public:
     */
     Output(); // Default constructor
 
-    virtual ~Output();
+    ~Output();
 
     /** Initialize the object after construction
         @param prefix Prefix to be prepended to all strings emitted by calls to

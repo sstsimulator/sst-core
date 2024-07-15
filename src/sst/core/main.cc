@@ -765,8 +765,12 @@ main(int argc, char* argv[])
         buffer = new char[size];
         fs.read(buffer, size);
 
-        std::string                     cpt_lib_path, cpt_timebase, cpt_output_directory;
-        std::string                     cpt_output_core_prefix, cpt_debug_file, cpt_prefix;
+        std::string                     cpt_lib_path;
+        std::string                     cpt_timebase;
+        std::string                     cpt_output_directory;
+        std::string                     cpt_output_core_prefix;
+        std::string                     cpt_debug_file;
+        std::string                     cpt_prefix;
         int                             cpt_output_verbose = 0;
         std::map<std::string, uint32_t> cpt_params_key_map;
         std::vector<std::string>        cpt_params_key_map_reverse;
