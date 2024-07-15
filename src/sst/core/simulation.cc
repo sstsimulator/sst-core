@@ -1466,7 +1466,6 @@ Simulation_impl::checkpoint()
 void
 Simulation_impl::restart(Config* cfg)
 {
-    TraceFunction                        trace(CALL_INFO, false, false);
     size_t                               size, buffer_size;
     char*                                buffer;
     SST::Core::Serialization::serializer ser;
@@ -1523,7 +1522,6 @@ Simulation_impl::restart(Config* cfg)
     ser& syncManager;
     ser& m_heartbeat;
 
-    trace.output("Getting statistics engine\n");
     // Get statistics engine
     ser& StatisticProcessingEngine::m_statOutputs;
     ser& stat_engine;
@@ -1539,8 +1537,6 @@ Simulation_impl::restart(Config* cfg)
 
     /* Fix-up global state before proceeding */
     timeLord.init(timeLord.timeBaseString);
-
-    trace.output("Beginning component extraction\n");
 
     /* Extract components */
     size_t compCount;
@@ -1568,7 +1564,6 @@ Simulation_impl::restart(Config* cfg)
     timeVortex->fixup_handlers();
 
     // Prepare stat engine for restart now that stats are registered
-    trace.output("Calling startOfSimulation on StatEngine\n");
     stat_engine.finalizeInitialization();
     if ( my_rank.thread == 0 ) { StatisticProcessingEngine::stat_outputs_simulation_start(); }
     stat_engine.startOfSimulation();
