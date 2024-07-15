@@ -88,6 +88,15 @@ REGISTER CLOCK #1 at 1 ns
 WARNING: Building component "StatGroupObj11" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1077, m_w = 1471
 REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj12" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1078, m_w = 1472
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj13" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1079, m_w = 1473
+REGISTER CLOCK #1 at 1 ns
+WARNING: Building component "StatGroupObj14" with no links assigned.
+Using Marsaglia Random Number Generator with seeds m_z = 1080, m_w = 1474
+REGISTER CLOCK #1 at 1 ns
  StatBasic0.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1034; SumSQ.u32 = 343326; Count.u64 = 5; Min.u32 = 2; Max.u32 = 376; 
  StatBasic4.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1115; SumSQ.u32 = 302501; Count.u64 = 5; Min.u32 = 112; Max.u32 = 358; 
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 6000; Sum.u32 = 1290; SumSQ.u32 = 344048; Count.u64 = 6; Min.u32 = 19; Max.u32 = 361; 
