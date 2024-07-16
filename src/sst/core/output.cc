@@ -24,6 +24,8 @@
 #include <atomic>
 #include <cerrno>
 #include <cinttypes>
+#include <cstring>
+#include <string>
 
 // System Headers
 #ifdef HAVE_EXECINFO_H

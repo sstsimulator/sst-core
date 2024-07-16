@@ -14,7 +14,7 @@
 
 #include "sst/core/serialization/serializer_fwd.h"
 
-#include <string.h>
+#include <string>
 #include <vector>
 
 // UNCOMMENT OUT THIS LINE TO ENABLE THE DEBUG METHOD -OR_
