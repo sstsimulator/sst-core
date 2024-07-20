@@ -1,0 +1,21 @@
+WARNING: Building component "Component0" with no links assigned.
+(0): void SST::CoreTestSerialization::testTraceFunction(int) enter function
+(0): | level = 0
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789012345678901234567890123456789
+(0): | 0123456789
+(0): | void SST::CoreTestSerialization::testTraceFunction(int) enter function
+(0): | | level = 1
+(0): | | void SST::CoreTestSerialization::testTraceFunction(int) enter function
+(0): | | | level = 2
+(0): | | | void SST::CoreTestSerialization::testTraceFunction(int) enter function
+(0): | | | | level = 3
+(0): | | | void SST::CoreTestSerialization::testTraceFunction(int) exit function
+(0): | | void SST::CoreTestSerialization::testTraceFunction(int) exit function
+(0): | void SST::CoreTestSerialization::testTraceFunction(int) exit function
+(0): void SST::CoreTestSerialization::testTraceFunction(int) exit function
+Simulation is complete, simulated time: 1 us

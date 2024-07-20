@@ -34,6 +34,8 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     setStatisticOutputName("StatisticOutputHDF5");
 }
 
+StatisticOutputHDF5::StatisticOutputHDF5() : StatisticFieldsOutput(), m_hFile(nullptr), m_currentDataSet(nullptr) {}
+
 bool
 StatisticOutputHDF5::checkOutputParameters()
 {
@@ -620,6 +622,22 @@ StatisticOutputHDF5::GroupInfo::GroupStat::finishGroupEntry()
     fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
     dataset->write(currentData.data(), *memType, memSpace, fspace);
 }
+
+void
+StatisticOutputHDF5::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    StatisticFieldsOutput::serialize_order(ser);
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        // Get the parameters
+        std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
+
+        H5::Exception::dontPrint();
+
+        m_hFile = new H5::H5File(m_filePath, H5F_ACC_TRUNC);
+    }
+}
+
 
 } // namespace Statistics
 } // namespace SST

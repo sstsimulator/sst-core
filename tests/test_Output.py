@@ -9,17 +9,18 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 import sst
+import sys
 
-def sstcreatemodel():
+sst.setProgramOption("stop-at", "1us");
 
-    sst.creategraph()
+ranks = sst.getMPIRankCount();
+threads = sst.getThreadCount();
 
-    if sst.verbose():
-	print("SST Random Number Generation Test Component Model")
+test = sys.argv[1]
 
-    id = sst.createcomponent("rng0", "coreTestElement.simpleRNGComponent")
-    sst.addcompparam(id, "count", "1000")
-    sst.addcompparam(id, "seed_w", "1447")
-    sst.addcompparam(id, "seed_z", "1053")
+num_components = ranks * threads
 
-    return 0
+for x in range(num_components):
+    comp = sst.Component("Component{0}".format(x), "coreTestElement.coreTestOutput")
+    comp.addParam("test", test)
+

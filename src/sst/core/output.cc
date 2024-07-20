@@ -24,6 +24,9 @@
 #include <atomic>
 #include <cerrno>
 #include <cinttypes>
+#include <cstdlib>
+#include <cstring>
+#include <string>
 
 // System Headers
 #ifdef HAVE_EXECINFO_H
@@ -521,43 +524,54 @@ thread_local std::vector<char> TraceFunction::indent_array(100, ' ');
 thread_local int               TraceFunction::trace_level = 0;
 
 TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info, bool activate) :
-    line(line),
-    file(file),
-    function(func),
-    indent_length(2),
-    active(activate)
+    line_(line),
+    file_(file),
+    function_(func),
+    indent_length_(2),
+    active_(activate && global_active_)
 {
-    if ( !active ) return;
+    if ( !active_ ) return;
     if ( print_sim_info ) {
-        RankInfo ri = Simulation_impl::getSimulation()->getNumRanks();
-        if ( ri.rank > 1 || ri.thread > 1 ) { output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT); }
-        else {
-            output_obj.init("(@t): ", 0, 0, Output::STDOUT);
+        Simulation_impl* sim = nullptr;
+        try {
+            sim = Simulation_impl::getSimulation();
         }
-        // rank = Simulation_impl::getSimulation()->getRank().rank;
-        // thread = Simulation_impl::getSimulation()->getRank().thread;
+        catch ( std::out_of_range& e ) {
+            // do nothing
+        }
+
+        if ( sim ) {
+            RankInfo ri = sim->getNumRanks();
+            if ( ri.rank > 1 || ri.thread > 1 ) { output_obj_.init("@x (@t): " /*prefix*/, 0, 0, Output::STDOUT); }
+            else {
+                output_obj_.init("(@t): ", 0, 0, Output::STDOUT);
+            }
+        }
+        else {
+            output_obj_.init("" /*prefix*/, 0, 0, Output::STDOUT);
+        }
     }
     else {
-        output_obj.init("" /*prefix*/, 0, 0, Output::STDOUT);
+        output_obj_.init("" /*prefix*/, 0, 0, Output::STDOUT);
     }
 
     // Set up the indent
-    int indent           = trace_level * indent_length;
+    int indent           = trace_level * indent_length_;
     indent_array[indent] = '\0';
-    output_obj.output(line, file, func, "%s%s enter function\n", indent_array.data(), function.c_str());
-    indent_array[indent] = ' ';
+    output_obj_.output(line_, file, func, "%s%s enter function\n", indent_array.data(), function_.c_str());
+    indent_array[indent] = indent_marker_;
     fflush(stdout);
     trace_level++;
 }
 
 TraceFunction::~TraceFunction()
 {
-    if ( !active ) return;
+    if ( !active_ ) return;
     trace_level--;
-    int indent           = trace_level * indent_length;
+    int indent           = trace_level * indent_length_;
     indent_array[indent] = '\0';
-    output_obj.output(
-        line, file.c_str(), function.c_str(), "%s%s exit function\n", indent_array.data(), function.c_str());
+    output_obj_.output(
+        line_, file_.c_str(), function_.c_str(), "%s%s exit function\n", indent_array.data(), function_.c_str());
     indent_array[indent] = ' ';
     fflush(stdout);
 }
@@ -565,20 +579,126 @@ TraceFunction::~TraceFunction()
 void
 TraceFunction::output(const char* format, ...) const
 {
-    if ( !active ) return;
+    if ( !active_ ) return;
     // Need to add the indent
-    char buf[200];
+    char* buf = new char[200];
 
-    int indent           = trace_level * indent_length;
+    int indent           = trace_level * indent_length_;
     indent_array[indent] = '\0';
-    snprintf(buf, 200, "%s%s", indent_array.data(), format);
+    std::string message(indent_array.data());
+
+    va_list args;
+    va_start(args, format);
+    size_t n = vsnprintf(buf, 200, format, args);
+    va_end(args);
+
+    if ( n >= 200 ) {
+        // Generated string longer than buffer
+        delete[] buf;
+        buf = new char[n + 1];
+        va_start(args, format);
+        vsnprintf(buf, n + 1, format, args);
+        va_end(args);
+    }
+
+    // Look for \n and print each line individually.  We do this so we
+    // can put the correct indent in and so that the prefix prints
+    // correctly.
+    size_t start_index = 0;
+    for ( size_t i = 0; i < n - 1; ++i ) {
+        if ( buf[i] == '\n' ) {
+            // Terminate string here, then change it back after printing
+            buf[i] = '\0';
+            output_obj_.outputprintf(
+                line_, file_.c_str(), function_.c_str(), "%s%s\n", indent_array.data(), &buf[start_index]);
+            buf[i]      = '\n';
+            start_index = i + 1;
+        }
+    }
+
+    // Print the rest of the string
+    output_obj_.outputprintf(line_, file_.c_str(), function_.c_str(), "%s%s", indent_array.data(), &buf[start_index]);
+
+    delete[] buf;
+
     indent_array[indent] = ' ';
 
-    va_list arg;
-    va_start(arg, format);
-    output_obj.outputprintf(line, file.c_str(), function.c_str(), buf, arg);
-    va_end(arg);
+    // output_obj_.outputprintf(line_, file_.c_str(), function_.c_str(), "%s", message.c_str());
+    // Since this class is for debug, force a flush after every output
     fflush(stdout);
 }
 
+// void
+// TraceFunction::output(const char* format, ...) const
+// {
+//     if ( !active_ ) return;
+//     // Need to add the indent
+//     char* buf = new char[200];
+
+//     int indent           = trace_level * indent_length_;
+//     indent_array[indent] = '\0';
+//     std::string message(indent_array.data());
+
+//     va_list args;
+//     va_start(args, format);
+//     size_t n = vsnprintf(buf, 200, format, args);
+//     va_end(args);
+
+//     if ( n >= 200 ) {
+//         // Generated string longer than buffer
+//         delete[] buf;
+//         buf = new char[n + 1];
+//         va_start(args, format);
+//         vsnprintf(buf, n+1, format, args);
+//         va_end(args);
+//     }
+
+//     // Replace all \n's with \n + indent_array to indent any new lines
+//     // in the string (unless the \n is the last character in the
+//     // string)
+//     size_t start_index = 0;
+//     for ( size_t i = 0; i < n - 1; ++i ) {
+//         if ( buf[i] == '\n' ) {
+//             message.append(&buf[start_index], i - start_index + 1);
+//             message.append(indent_array.data());
+//             start_index = i + 1;
+//         }
+//     }
+//     message.append(&buf[start_index], n - start_index);
+//     delete[] buf;
+
+//     indent_array[indent] = ' ';
+
+//     output_obj_.outputprintf(line_, file_.c_str(), function_.c_str(), "%s", message.c_str());
+//     fflush(stdout);
+// }
+
+
+// Functions to check for proper environment variable to turn on output
+// for TraceFunction
+bool
+is_trace_function_active()
+{
+    const char* var = getenv("SST_TRACEFUNCTION_ACTIVATE");
+    if ( var ) { return true; }
+    else {
+        return false;
+    }
+}
+
+char
+get_indent_marker()
+{
+    const char* var = getenv("SST_TRACEFUNCTION_INDENT_MARKER");
+    if ( var ) {
+        if ( strlen(var) > 0 )
+            return var[0];
+        else
+            return '|';
+    }
+    return ' ';
+}
+
+bool TraceFunction::global_active_ = is_trace_function_active();
+char TraceFunction::indent_marker_ = get_indent_marker();
 } // namespace SST

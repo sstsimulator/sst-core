@@ -33,10 +33,6 @@ class ConfigStatistic;
 class Simulation_impl;
 class TimeConverter;
 
-namespace Statistics {
-class StatisticInfo;
-}
-
 class ComponentInfo
 {
 

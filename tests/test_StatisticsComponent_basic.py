@@ -82,7 +82,17 @@ import sys
 #    - Output for stat groups
 #    - Enabling stats through stats groups
 
+# StatGroup4 tests the following:
+# - Statistic Groups
+# - HDF5 output type
+
 ########################################################################
+
+if len(sys.argv) > 1:
+    testH5 = sys.argv[1] == "hdf5"
+else:
+    testH5 = False
+
 ########################################################################
 
 # Set the partitioner to be round robin so elements of the same type
@@ -768,3 +778,63 @@ StatGroup3.setFrequency("29ns")
 
 # Set output
 StatGroup3.setOutput(StatOutput2)
+
+
+
+##### StatGroup4 - HDF5
+
+if testH5:
+
+    StatGroup4 = sst.StatisticGroup("StatGroup4")
+
+    StatGroupObj12 = sst.Component("StatGroupObj12", "coreTestElement.StatisticsComponent.int")
+
+    # Set Component Parameters
+    StatGroupObj12.addParams({
+        "rng" : "marsaglia",
+        "count" : "101",
+        "seed_w" : "1472",
+        "seed_z" : "1078"
+    })
+
+    StatGroupObj13 = sst.Component("StatGroupObj13", "coreTestElement.StatisticsComponent.int")
+
+    # Set Component Parameters
+    StatGroupObj13.addParams({
+        "rng" : "marsaglia",
+        "count" : "101",
+        "seed_w" : "1473",
+        "seed_z" : "1079"
+    })
+
+    # This component will test stat groups
+    StatGroupObj14 = sst.Component("StatGroupObj14", "coreTestElement.StatisticsComponent.int")
+
+    # Set Component Parameters
+    StatGroupObj14.addParams({
+          "rng" : "marsaglia",
+          "count" : "101",
+          "seed_w" : "1474",
+          "seed_z" : "1080"
+    })
+
+
+    # Add the components
+    StatGroup4.addComponent(StatGroupObj12);
+    StatGroup4.addComponent(StatGroupObj13);
+    StatGroup4.addComponent(StatGroupObj14);
+
+    # Add the stats
+    StatGroup4.addStatistic("stat1_U32", {
+        "type" : "sst.AccumulatorStatistic"})
+    StatGroup4.addStatistic("stat2_U64", {
+        "type" : "sst.AccumulatorStatistic",
+        "resetOnOutput" : True})
+
+    # Set dump frequency
+    StatGroup4.setFrequency("19ns")
+
+    # Set output
+    StatOutput4 = sst.StatisticOutput("sst.statOutputHDF5", {"filepath" : "test_StatisticsComponent_basic_group_stats.h5"})
+    StatGroup4.setOutput(StatOutput4)
+

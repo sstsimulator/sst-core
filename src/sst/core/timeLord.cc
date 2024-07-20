@@ -181,7 +181,6 @@ TimeLord::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     ser& timeBaseString;
     ser& timeBase;
-    ser& tcMap;
 }
 
 UnitAlgebra

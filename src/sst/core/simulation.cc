@@ -1297,6 +1297,9 @@ Simulation_impl::checkpoint()
     ser&        verbose;
     ser&        globalOutputFileName;
     ser&        checkpointPrefix;
+    ser&        Params::keyMap;
+    ser&        Params::keyMapReverse;
+    ser&        Params::nextKeyID;
 
     size        = ser.size();
     buffer_size = size;
@@ -1312,6 +1315,9 @@ Simulation_impl::checkpoint()
     ser& verbose;
     ser& globalOutputFileName;
     ser& checkpointPrefix;
+    ser& Params::keyMap;
+    ser& Params::keyMapReverse;
+    ser& Params::nextKeyID;
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer, size);
@@ -1359,6 +1365,11 @@ Simulation_impl::checkpoint()
     ser& syncManager;
     ser& m_heartbeat;
 
+    // Add statistics engine and associated state
+    // Individual statistics are checkpointing with component
+    ser& StatisticProcessingEngine::m_statOutputs;
+    ser& stat_engine;
+
     // Add shared regions
     ser& SharedObject::manager;
 
@@ -1397,6 +1408,12 @@ Simulation_impl::checkpoint()
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
+
+    // Add shared StatisticOutput vector
+
+    // Add statistic engine
+    ser& StatisticProcessingEngine::m_statOutputs;
+    ser& stat_engine;
 
     // Add shared regions
     ser& SharedObject::manager;
@@ -1504,6 +1521,14 @@ Simulation_impl::restart(Config* cfg)
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
+
+    // Get statistics engine
+    ser& StatisticProcessingEngine::m_statOutputs;
+    ser& stat_engine;
+
+    /* Initial fix up of stat engine, the rest is after components re-register statistics */
+    stat_engine.restart(this);
+
     // Add shared regions
     ser& SharedObject::manager;
     ser& clockMap;
@@ -1537,6 +1562,11 @@ Simulation_impl::restart(Config* cfg)
 
     // Need to clean up the handlers in the TimeVortex
     timeVortex->fixup_handlers();
+
+    // Prepare stat engine for restart now that stats are registered
+    stat_engine.finalizeInitialization();
+    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::stat_outputs_simulation_start(); }
+    stat_engine.startOfSimulation();
 }
 
 void

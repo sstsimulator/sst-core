@@ -38,6 +38,9 @@ public:
 
     static StatisticFieldTypeBase* getField(fieldType_t fieldType);
 
+    // This is not a quick lookup; intended for checkpoint/restart only
+    static fieldType_t getField(const char* fieldShortName);
+
     static void checkRegisterConflict(const char* oldName, const char* newName);
 
     static fieldType_t allocateFieldEnum();
