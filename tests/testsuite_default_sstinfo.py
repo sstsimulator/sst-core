@@ -20,6 +20,8 @@ from sst_unittest_support import *
 module_init = 0
 module_sema = threading.Semaphore()
 
+have_curses = sst_core_config_include_file_get_value_int("HAVE_CURSES", default=0, disable_warning=True) == 1
+
 def initializeTestModule_SingleInstance(class_inst):
     global module_init
     global module_sema
@@ -53,6 +55,7 @@ class testcase_sstinfo(SSTTestCase):
     def test_sstinfo_coretestelement(self):
         self.sstinfo_test_template("coreTestElement", "-q")
 
+    @unittest.skipIf(not have_curses, "Curses library not loaded, skipping interactive test")
     def test_sstinfo_interactive(self):
         self.sstinfo_test_template("interactive", "-i")
         
@@ -70,15 +73,19 @@ class testcase_sstinfo(SSTTestCase):
         err_str = "Path to SST-INFO {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
-        if platform.system() == "Linux":
-            cmd = 'timeout 1 {0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
-        else:
-            cmd = "perl -e 'alarm shift; exec @ARGV' 1 {0}/sst-info coreTestElement {1}".format(sst_app_path, flags)
-        rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run()
-        if rtn.result() != (0 or 124):
-            self.assertEquals(rtn.result(), 0, "sst-info Test failed running cmdline {0} - return = {1}".format(cmd, rtn.result()))
-            with open(outfile, 'r') as f:
-                log_failure("FAILURE: sst-info cmdline {0}; output =\n{1}".format(cmd, f.read()))
+        cmd = '{0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
+        rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run(timeout_sec = 1)
+
+        if testtype == "coreTestElement":
+            if rtn.result() != 0:
+                self.assertEqual(rtn.result(), 0, "sst-info Test failed running cmdline {0} - return = {1}".format(cmd, rtn.result()))
+                with open(outfile, 'r') as f:
+                    log_failure("FAILURE: sst-info cmdline {0}; output =\n{1}".format(cmd, f.read()))
+        elif testtype == "interactive":
+            if not rtn.timeout():
+                self.assertEqual(rtn.timeout(), False, "sst-info Test failed running cmdline {0} - timeout failed".format(cmd))
+                with open(outfile, 'r') as f:
+                    log_failure("FAILURE: sst-info cmdline {0}; output =\n{1}".format(cmd, f.read()))
 
         err_file_not_empty = os_test_file(errfile, expression='-s')
         if err_file_not_empty:
