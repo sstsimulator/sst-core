@@ -88,25 +88,24 @@ nobase_dist_sst_HEADERS = \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
 	serialization/serializable.h \
+	serialization/serialize_serializable.h \
 	serialization/serializable_base.h \
-	serialization/serializable_fwd.h \
 	serialization/serialize.h \
 	serialization/serialize_impl_fwd.h \
-	serialization/serialize_array.h \
-	serialization/serialize_atomic.h \
-	serialization/serialize_buffer_accessor.h \
-	serialization/serialize_deque.h \
-	serialization/serialize_list.h \
-	serialization/serialize_map.h \
-	serialization/serialize_multiset.h \
-	serialization/serialize_packer.h \
-	serialization/serialize_priority_queue.h \
-	serialization/serialize_serializable.h \
-	serialization/serialize_set.h \
-	serialization/serialize_sizer.h \
-	serialization/serialize_string.h \
-	serialization/serialize_unpacker.h \
-	serialization/serialize_vector.h \
+	serialization/impl/serialize_array.h \
+	serialization/impl/serialize_atomic.h \
+	serialization/impl/ser_buffer_accessor.h \
+	serialization/impl/serialize_deque.h \
+	serialization/impl/serialize_list.h \
+	serialization/impl/serialize_map.h \
+	serialization/impl/serialize_multiset.h \
+	serialization/impl/packer.h \
+	serialization/impl/serialize_priority_queue.h \
+	serialization/impl/serialize_set.h \
+	serialization/impl/sizer.h \
+	serialization/impl/serialize_string.h \
+	serialization/impl/unpacker.h \
+	serialization/impl/serialize_vector.h \
 	serialization/serializer.h \
 	serialization/serializer_fwd.h \
 	serialization/statics.h \
@@ -212,7 +211,7 @@ sst_core_sources = \
 	sstpart.cc \
 	timeVortex.cc \
 	serialization/serializable_base.cc \
-	serialization/serialize_serializable.cc \
+	serialization/serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \
 	sstinfo.h \
