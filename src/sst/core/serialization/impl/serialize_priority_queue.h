@@ -9,31 +9,48 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_SERIALIZATION_SERIALIZE_DEQUE_H
-#define SST_CORE_SERIALIZATION_SERIALIZE_DEQUE_H
+#ifndef SST_CORE_SERIALIZATION_IMPL_SERIALIZE_PRIORITY_QUEUE_H
+#define SST_CORE_SERIALIZATION_IMPL_SERIALIZE_PRIORITY_QUEUE_H
+
+#ifndef SST_INCLUDING_SERIALIZE_H
+#warning \
+    "The header file sst/core/serialization/impl/serialize_priority_queue.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
+#endif
 
 #include "sst/core/serialization/serializer.h"
 
-#include <deque>
+#include <queue>
 
 namespace SST {
 namespace Core {
 namespace Serialization {
 
-template <class T>
-class serialize<std::deque<T>>
+
+template <class T, class S, class C>
+class serialize<std::priority_queue<T, S, C>>
 {
-    typedef std::deque<T> Deque;
+    typedef std::priority_queue<T, S, C> Pqueue;
 
 public:
-    void operator()(Deque& v, serializer& ser)
+    S& getContainer(std::priority_queue<T, S, C>& q)
+    {
+        struct UnderlyingContainer : std::priority_queue<T, S, C>
+        {
+            static S& getUnderlyingContainer(std::priority_queue<T, S, C>& q) { return q.*&UnderlyingContainer::c; }
+        };
+        return UnderlyingContainer::getUnderlyingContainer(q);
+    }
+
+    void operator()(Pqueue& v, serializer& ser)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
             size_t size = v.size();
             ser.size(size);
-            for ( auto it = v.begin(); it != v.end(); ++it ) {
+
+            auto container = getContainer(v);
+            for ( auto it = container.begin(); it != container.end(); ++it ) {
                 T&   t = const_cast<T&>(*it);
                 ser& t;
             }
@@ -43,7 +60,9 @@ public:
         {
             size_t size = v.size();
             ser.pack(size);
-            for ( auto it = v.begin(); it != v.end(); ++it ) {
+
+            auto container = getContainer(v);
+            for ( auto it = container.begin(); it != container.end(); ++it ) {
                 T&   t = const_cast<T&>(*it);
                 ser& t;
             }
@@ -56,7 +75,7 @@ public:
             for ( size_t i = 0; i < size; ++i ) {
                 T    t = {};
                 ser& t;
-                v.push_back(t);
+                v.push(t);
             }
             break;
         }
@@ -68,4 +87,4 @@ public:
 } // namespace Core
 } // namespace SST
 
-#endif // SST_CORE_SERIALIZATION_SERIALIZE_DEQUE_H
+#endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_PRIORITY_QUEUE_H

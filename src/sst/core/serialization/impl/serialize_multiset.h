@@ -9,8 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_SERIALIZATION_SERIALIZE_MULTISET_H
-#define SST_CORE_SERIALIZATION_SERIALIZE_MULTISET_H
+#ifndef SST_CORE_SERIALIZATION_IMPL_SERIALIZE_MULTISET_H
+#define SST_CORE_SERIALIZATION_IMPL_SERIALIZE_MULTISET_H
+
+#ifndef SST_INCLUDING_SERIALIZE_H
+#warning \
+    "The header file sst/core/serialization/impl/serialize_multiset.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
+#endif
 
 #include "sst/core/serialization/serializer.h"
 
@@ -119,4 +124,4 @@ public:
 } // namespace Core
 } // namespace SST
 
-#endif // SST_CORE_SERIALIZATION_SERIALIZE_MULTISET_H
+#endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_MULTISET_H

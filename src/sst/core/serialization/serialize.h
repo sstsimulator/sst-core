@@ -332,14 +332,16 @@ operator|(serializer& ser, T& t)
 } // namespace Core
 } // namespace SST
 
-#include "sst/core/serialization/serialize_array.h"
-#include "sst/core/serialization/serialize_atomic.h"
-#include "sst/core/serialization/serialize_deque.h"
-#include "sst/core/serialization/serialize_list.h"
-#include "sst/core/serialization/serialize_map.h"
-#include "sst/core/serialization/serialize_priority_queue.h"
-#include "sst/core/serialization/serialize_set.h"
-#include "sst/core/serialization/serialize_string.h"
-#include "sst/core/serialization/serialize_vector.h"
+#define SST_INCLUDING_SERIALIZE_H
+#include "sst/core/serialization/impl/serialize_array.h"
+#include "sst/core/serialization/impl/serialize_atomic.h"
+#include "sst/core/serialization/impl/serialize_deque.h"
+#include "sst/core/serialization/impl/serialize_list.h"
+#include "sst/core/serialization/impl/serialize_map.h"
+#include "sst/core/serialization/impl/serialize_priority_queue.h"
+#include "sst/core/serialization/impl/serialize_set.h"
+#include "sst/core/serialization/impl/serialize_string.h"
+#include "sst/core/serialization/impl/serialize_vector.h"
+#undef SST_INCLUDING_SERIALIZE_H
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZE_H
