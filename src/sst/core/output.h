@@ -507,7 +507,7 @@ private:
 
     inline void outputprintf(const char* format, ...) const
     {
-        va_list(args);
+        va_list args;
         va_start(args, format);
         outputprintf(format, args);
         va_end(args);

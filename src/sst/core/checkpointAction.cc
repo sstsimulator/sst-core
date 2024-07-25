@@ -28,13 +28,23 @@ REENABLE_WARNING
 
 namespace SST {
 
-CheckpointAction::CheckpointAction(Config* UNUSED(cfg), int this_rank, Simulation_impl* sim, TimeConverter* period) :
+CheckpointAction::CheckpointAction(
+    Config* UNUSED(cfg), RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
     Action(),
-    rank(this_rank),
-    m_period(period)
+    rank_(this_rank),
+    period_(period),
+    generate_(false)
 {
-    sim->insertActivity(period->getFactor(), this);
-    if ( (0 == this_rank) ) { lastTime = sst_get_cpu_time(); }
+    next_sim_time_ = 0;
+    last_cpu_time_ = 0;
+
+    if ( period_ ) {
+        next_sim_time_ =
+            (period_->getFactor() * (sim->getCurrentSimCycle() / period_->getFactor())) + period_->getFactor();
+        sim->insertActivity(next_sim_time_, this);
+    }
+
+    if ( (0 == this_rank.rank) ) { last_cpu_time_ = sst_get_cpu_time(); }
 }
 
 CheckpointAction::~CheckpointAction() {}
@@ -43,20 +53,41 @@ void
 CheckpointAction::execute(void)
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    const double     now = sst_get_cpu_time();
+    createCheckpoint(sim);
 
-    if ( 0 == rank ) {
+    next_sim_time_ += period_->getFactor();
+    sim->insertActivity(next_sim_time_, this);
+}
+
+void
+CheckpointAction::createCheckpoint(Simulation_impl* sim)
+{
+
+    if ( 0 == rank_.rank ) {
+        const double now = sst_get_cpu_time();
         sim->getSimulationOutput().output(
             "# Simulation Checkpoint: Simulated Time %s (Real CPU time since last checkpoint %.5f seconds)\n",
-            sim->getElapsedSimTime().toStringBestSI().c_str(), (now - lastTime));
+            sim->getElapsedSimTime().toStringBestSI().c_str(), (now - last_cpu_time_));
 
-        lastTime = now;
+        last_cpu_time_ = now;
     }
 
     sim->checkpoint();
+}
 
-    SimTime_t next = sim->getCurrentSimCycle() + m_period->getFactor();
-    sim->insertActivity(next, this);
+void
+CheckpointAction::check()
+{
+    // TODO add logic for simulation-interval checkpoints in parallel
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    if ( generate_ ) { createCheckpoint(sim); }
+    generate_ = false;
+}
+
+void
+CheckpointAction::setCheckpoint()
+{
+    generate_ = true;
 }
 
 } // namespace SST

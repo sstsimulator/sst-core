@@ -61,6 +61,8 @@ nobase_dist_sst_HEADERS = \
 	profile/syncProfileTool.h \
 	profile/componentProfileTool.h \
 	rankInfo.h \
+	realtime.h \
+	realtimeAction.h \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstpart.h \
@@ -207,6 +209,7 @@ sst_core_sources = \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
 	module.cc \
+	realtime.cc \
 	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \

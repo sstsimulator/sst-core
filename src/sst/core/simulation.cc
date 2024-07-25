@@ -27,6 +27,7 @@
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/profile/syncProfileTool.h"
+#include "sst/core/realtime.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
@@ -94,6 +95,7 @@ Simulation_impl::minPartToTC(SimTime_t cycles) const
 Simulation_impl::~Simulation_impl()
 {
     // Clean up as best we can
+    delete checkpoint_action_;
 
     // Delete the timeVortex first.  This will delete all events left
     // in the queue, as well as the Sync, Exit and Clock objects.
@@ -138,15 +140,15 @@ Simulation_impl::~Simulation_impl()
 }
 
 Simulation_impl*
-Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks)
+Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart)
 {
     std::thread::id  tid      = std::this_thread::get_id();
-    Simulation_impl* instance = new Simulation_impl(config, my_rank, num_ranks);
+    Simulation_impl* instance = new Simulation_impl(config, my_rank, num_ranks, restart);
 
     std::lock_guard<std::mutex> lock(simulationMutex);
     instanceMap[tid] = instance;
-    instanceVec.resize(num_ranks.thread);
-    instanceVec[my_rank.thread] = instance;
+    instanceVec_.resize(num_ranks.thread);
+    instanceVec_[my_rank.thread] = instance;
     instance->intializeProfileTools(config->enabledProfiling());
 
     return instance;
@@ -160,63 +162,97 @@ Simulation_impl::shutdown()
     delete Simulation_impl::m_exit;
 }
 
-Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
+Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks, bool restart) :
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
     endSim(false),
     untimed_phase(0),
-    lastRecvdSignal(0),
-    shutdown_mode(SHUTDOWN_CLEAN),
-    wireUpFinished(false),
+    signal_arrived_(0),
+    shutdown_mode_(SHUTDOWN_CLEAN),
+    wireUpFinished_(false),
     runMode(cfg->runMode()),
     currentSimCycle(0),
     currentPriority(0),
     endSimCycle(0),
     my_rank(my_rank),
     num_ranks(num_ranks),
-    run_phase_start_time(0.0),
-    run_phase_total_time(0.0),
-    init_phase_start_time(0.0),
-    init_phase_total_time(0.0),
-    complete_phase_start_time(0.0),
-    complete_phase_total_time(0.0),
-    checkpointPrefix(cfg->checkpoint_prefix()),
+    run_phase_start_time_(0.0),
+    run_phase_total_time_(0.0),
+    init_phase_start_time_(0.0),
+    init_phase_total_time_(0.0),
+    complete_phase_start_time_(0.0),
+    complete_phase_total_time_(0.0),
+    checkpoint_id_(0),
+    checkpoint_prefix_(cfg->checkpoint_prefix()),
     globalOutputFileName(cfg->debugFile())
 {
+
     sim_output.init(cfg->output_core_prefix(), cfg->verbose(), 0, Output::STDOUT);
     output_directory = cfg->output_directory();
-    Params p;
-    // params get passed twice - both the params and a ctor argument
-    direct_interthread = cfg->interthread_links();
-    timeVortexType     = cfg->timeVortex();
-    if ( direct_interthread && num_ranks.thread > 1 ) timeVortexType = timeVortexType + ".ts";
-    timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
-    if ( my_rank.thread == 0 ) { m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1); }
 
-    if ( cfg->heartbeat_period() != "" && my_rank.thread == 0 ) {
-        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeat_period().c_str());
-        m_heartbeat =
-            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_period()));
+    // The state generated in this block is either not needed in the restart path
+    // or will be read from the checkpoint instead
+    if ( !restart ) {
+        Params p;
+        direct_interthread = cfg->interthread_links();
+        timeVortexType     = cfg->timeVortex();
+
+        if ( direct_interthread && num_ranks.thread > 1 ) timeVortexType = timeVortexType + ".ts";
+        timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
+        if ( my_rank.thread == 0 ) { m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1); }
+
+        if ( cfg->heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
+            sim_output.output(
+                "# Creating simulation heartbeat at simulated time period of %s.\n",
+                cfg->heartbeat_sim_period().c_str());
+            m_heartbeat =
+                new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_sim_period()));
+        }
+
+        if ( cfg->checkpoint_sim_period() != "" ) {
+            sim_output.output(
+                "# Creating simulation checkpoint at simulated time period of %s.\n",
+                cfg->checkpoint_sim_period().c_str());
+            checkpoint_action_ =
+                new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
+        }
+        else {
+            checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
+        }
+
+        real_time_ = new RealTimeManager(num_ranks);
     }
-
-    if ( cfg->checkpoint_period() != "" ) {
-        sim_output.output("# Creating simulation checkpoint at period of %s.\n", cfg->checkpoint_period().c_str());
-        m_checkpoint =
-            new CheckpointAction(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->checkpoint_period()));
-    }
-
-    // Need to create the thread sync if there is more than one thread
-    if ( num_ranks.thread > 1 ) {}
 }
 
 void
-Simulation_impl::setStopAtCycle(Config* cfg)
+Simulation_impl::setupSimActions(Config* cfg)
 {
+    // Sim time alarms
     SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
     if ( stopAt != 0 ) {
         StopAction* sa = new StopAction();
         sa->setDeliveryTime(stopAt);
         timeVortex->insert(sa);
+    }
+
+    // Signal handling - default
+    if ( !cfg->enable_sig_handling() ) return;
+
+    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.exit.emergency"), SIGINT);
+    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.exit.emergency"), SIGTERM);
+    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.status.core"), SIGUSR1);
+    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.status.all"), SIGUSR2);
+
+    if ( cfg->exit_after() != 0 ) {
+        real_time_->registerInterval(cfg->exit_after(), factory->Create<RealTimeAction>("sst.exit.clean"));
+    }
+
+    if ( cfg->checkpoint_wall_period() != 0 ) {
+        real_time_->registerInterval(cfg->checkpoint_wall_period(), factory->Create<RealTimeAction>("sst.checkpoint"));
+    }
+
+    if ( cfg->heartbeat_wall_period() != 0 ) {
+        real_time_->registerInterval(cfg->heartbeat_wall_period(), factory->Create<RealTimeAction>("sst.heartbeat"));
     }
 }
 
@@ -242,7 +278,7 @@ SimTime_t
 Simulation_impl::getLocalMinimumNextActivityTime()
 {
     SimTime_t ret = MAX_SIMTIME_T;
-    for ( auto&& instance : instanceVec ) {
+    for ( auto&& instance : instanceVec_ ) {
         SimTime_t next = instance->getNextActivityTime();
         if ( next < ret ) { ret = next; }
     }
@@ -308,8 +344,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
-    syncManager =
-        new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+    syncManager = new SyncManager(
+        my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies, real_time_);
 
     // Check to see if the SyncManager profile tool is installed
     auto tools = getProfileTool<Profile::SyncProfileTool>("sync");
@@ -509,7 +545,7 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     /*  TODO:  THREADING:  Clear only once everybody is done.
     graph.comps.clear();
     */
-    wireUpFinished = true;
+    wireUpFinished_ = true;
     // std::cout << "Done with performWireUp" << std::endl;
 
     // Need to finalize stats engine configuration
@@ -527,8 +563,8 @@ Simulation_impl::exchangeLinkInfo()
 void
 Simulation_impl::initialize()
 {
-    init_phase_start_time = sst_get_cpu_time();
-    bool done             = false;
+    init_phase_start_time_ = sst_get_cpu_time();
+    bool done              = false;
     initBarrier.wait();
     if ( my_rank.thread == 0 ) { SharedObject::manager.updateState(false); }
 
@@ -550,7 +586,7 @@ Simulation_impl::initialize()
         untimed_phase++;
     } while ( !done );
 
-    init_phase_total_time = sst_get_cpu_time() - init_phase_start_time;
+    init_phase_total_time_ = sst_get_cpu_time() - init_phase_start_time_;
 
     // Walk through all the links and call finalizeConfiguration
 
@@ -571,7 +607,7 @@ Simulation_impl::initialize()
 void
 Simulation_impl::complete()
 {
-    complete_phase_start_time = sst_get_cpu_time();
+    complete_phase_start_time_ = sst_get_cpu_time();
     completeBarrier.wait();
     untimed_phase = 0;
     // Walk through all the links and call prepareForComplete()
@@ -600,7 +636,7 @@ Simulation_impl::complete()
 
         untimed_phase++;
     } while ( !done );
-    complete_phase_total_time = sst_get_cpu_time() - complete_phase_start_time;
+    complete_phase_total_time_ = sst_get_cpu_time() - complete_phase_start_time_;
 }
 
 void
@@ -648,6 +684,9 @@ Simulation_impl::prepare_for_run()
     // Tell the Statistics Engine that the simulation is beginning
     stat_engine.startOfSimulation();
 
+    // Tell the real time manager that the simulation is beginning
+    real_time_->begin();
+
     std::string header = std::to_string(my_rank.rank);
     header += ", ";
     header += std::to_string(my_rank.thread);
@@ -671,7 +710,7 @@ Simulation_impl::run()
 #endif
 #endif
 
-    run_phase_start_time = sst_get_cpu_time();
+    run_phase_start_time_ = sst_get_cpu_time();
 
     // Will check to make sure time doesn't "go backwards".  This will
     // also catch the case of rollover (exceeding the 64-bit value
@@ -681,41 +720,29 @@ Simulation_impl::run()
     // If there was a fault, a message will be printed.
     bool time_fault = false;
     while ( LIKELY(!endSim && !time_fault) ) {
-        current_activity = timeVortex->pop();
 
+        current_activity     = timeVortex->pop();
         // Check for time fault
         SimTime_t event_time = current_activity->getDeliveryTime();
-        time_fault           = event_time < currentSimCycle;
+
+        time_fault = event_time < currentSimCycle;
 
         currentSimCycle = event_time;
+
         currentPriority = current_activity->getPriority();
+
         current_activity->execute();
 
 #if SST_PERIODIC_PRINT
         periodicCounter++;
 #endif
 
-        if ( UNLIKELY(0 != lastRecvdSignal) ) {
-            switch ( lastRecvdSignal ) {
-            case SIGUSR1:
-                printStatus(false);
-                break;
-            case SIGUSR2:
-                printStatus(true);
-                break;
-            case SIGALRM:
-            case SIGINT:
-            case SIGTERM:
-                shutdown_mode = SHUTDOWN_SIGNAL;
-                sim_output.output("EMERGENCY SHUTDOWN (%u,%u)!\n", my_rank.rank, my_rank.thread);
-                sim_output.output(
-                    "# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
-                endSim = true;
-                break;
-            default:
-                break;
-            }
-            lastRecvdSignal = 0;
+        if ( UNLIKELY(0 != signal_arrived_) ) {
+            // Signal handling does not block signals
+            // which means the signal handler *could* run in parallel
+            // with the checking/clearing. Should be OK.
+            signal_arrived_ = 0;
+            real_time_->notifySignal();
         }
 
 #if SST_PERIODIC_PRINT
@@ -750,7 +777,7 @@ Simulation_impl::run()
 
     runBarrier.wait(); // TODO<- Is this needed?
 
-    run_phase_total_time = sst_get_cpu_time() - run_phase_start_time;
+    run_phase_total_time_ = sst_get_cpu_time() - run_phase_start_time_;
 
     // If we have no links that are cut by a partition, we need to do
     // a final check to get the right simulated time.
@@ -782,15 +809,25 @@ Simulation_impl::emergencyShutdown()
 {
     std::lock_guard<std::mutex> lock(simulationMutex);
 
-    for ( auto&& instance : instanceVec ) {
-        instance->shutdown_mode = SHUTDOWN_EMERGENCY;
-        instance->endSim        = true;
+    for ( auto&& instance : instanceVec_ ) {
+        instance->shutdown_mode_ = SHUTDOWN_EMERGENCY;
+        instance->endSim         = true;
         //// Function not available with gcc 4.6
         // atomic_thread_fence(std::memory_order_acquire);
         for ( auto&& iter : instance->compInfoMap ) {
             if ( iter->getComponent() ) iter->getComponent()->emergencyShutdown();
         }
     }
+}
+
+void
+Simulation_impl::signalShutdown(bool abnormal)
+{
+    if ( abnormal ) { shutdown_mode_ = SHUTDOWN_SIGNAL; }
+    else {
+        shutdown_mode_ = SHUTDOWN_CLEAN;
+    }
+    endSim = true;
 }
 
 // If this version is called, we need to set the end time in the exit
@@ -837,7 +874,7 @@ Simulation_impl::finish()
 
     finishBarrier.wait();
 
-    switch ( shutdown_mode ) {
+    switch ( shutdown_mode_ ) {
     case SHUTDOWN_CLEAN:
         break;
     case SHUTDOWN_SIGNAL:
@@ -854,11 +891,11 @@ Simulation_impl::finish()
     stat_engine.endOfSimulation();
 }
 
+/* Signal monitor */
 void
-Simulation_impl::setSignal(int signal)
+Simulation_impl::notifySignal()
 {
-    for ( auto& instance : instanceVec )
-        instance->lastRecvdSignal = signal;
+    instanceVec_[0]->signal_arrived_ = 1;
 }
 
 void
@@ -879,30 +916,30 @@ Simulation_impl::printStatus(bool fullStatus)
 double
 Simulation_impl::getRunPhaseElapsedRealTime() const
 {
-    if ( run_phase_start_time == 0.0 ) return 0.0; // Not in run phase yet
-    if ( run_phase_total_time == 0.0 ) { return sst_get_cpu_time() - run_phase_start_time; }
+    if ( run_phase_start_time_ == 0.0 ) return 0.0; // Not in run phase yet
+    if ( run_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - run_phase_start_time_; }
     else {
-        return run_phase_total_time;
+        return run_phase_total_time_;
     }
 }
 
 double
 Simulation_impl::getInitPhaseElapsedRealTime() const
 {
-    if ( init_phase_start_time == 0.0 ) return 0.0; // Not in init phase yet
-    if ( init_phase_total_time == 0.0 ) { return sst_get_cpu_time() - init_phase_start_time; }
+    if ( init_phase_start_time_ == 0.0 ) return 0.0; // Not in init phase yet
+    if ( init_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - init_phase_start_time_; }
     else {
-        return init_phase_total_time;
+        return init_phase_total_time_;
     }
 }
 
 double
 Simulation_impl::getCompletePhaseElapsedRealTime() const
 {
-    if ( complete_phase_start_time == 0.0 ) return 0.0; // Not in complete phase yet
-    if ( complete_phase_total_time == 0.0 ) { return sst_get_cpu_time() - complete_phase_start_time; }
+    if ( complete_phase_start_time_ == 0.0 ) return 0.0; // Not in complete phase yet
+    if ( complete_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - complete_phase_start_time_; }
     else {
-        return complete_phase_total_time;
+        return complete_phase_total_time_;
     }
 }
 
@@ -1269,11 +1306,18 @@ Simulation_impl::intializeProfileTools(const std::string& config)
 }
 
 void
+Simulation_impl::scheduleCheckpoint()
+{
+    checkpoint_action_->setCheckpoint();
+}
+
+void
 Simulation_impl::checkpoint()
 {
-    std::string checkpoint_filename = std::to_string(currentSimCycle) + "_" + std::to_string(checkpoint_id) + ".sstcpt";
-    if ( checkpointPrefix != "" ) checkpoint_filename = checkpointPrefix + "_" + checkpoint_filename;
-    checkpoint_id++;
+    std::string checkpoint_filename =
+        std::to_string(currentSimCycle) + "_" + std::to_string(checkpoint_id_) + ".sstcpt";
+    if ( checkpoint_prefix_ != "" ) checkpoint_filename = checkpoint_prefix_ + "_" + checkpoint_filename;
+    checkpoint_id_++;
 
     std::ofstream fs(checkpoint_filename, std::ios::out | std::ios::binary);
 
@@ -1296,7 +1340,7 @@ Simulation_impl::checkpoint()
     uint32_t    verbose = sim_output.getVerboseLevel();
     ser&        verbose;
     ser&        globalOutputFileName;
-    ser&        checkpointPrefix;
+    ser&        checkpoint_prefix_;
     ser&        Params::keyMap;
     ser&        Params::keyMapReverse;
     ser&        Params::nextKeyID;
@@ -1314,7 +1358,7 @@ Simulation_impl::checkpoint()
     ser& prefix;
     ser& verbose;
     ser& globalOutputFileName;
-    ser& checkpointPrefix;
+    ser& checkpoint_prefix_;
     ser& Params::keyMap;
     ser& Params::keyMapReverse;
     ser& Params::nextKeyID;
@@ -1354,13 +1398,14 @@ Simulation_impl::checkpoint()
     ser& interThreadMinLatency;
     ser& endSim;
     ser& independent;
+    ser& timeVortexType; // Used by TimeVortex serialization
     // ser& sim_output;
     ser& runMode;
     ser& currentPriority;
     ser& endSimCycle;
     ser& output_directory;
-    ser& timeLord;
     // Actions that may also be in TV
+    ser& real_time_;
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
@@ -1398,13 +1443,14 @@ Simulation_impl::checkpoint()
     ser& interThreadMinLatency;
     ser& endSim;
     ser& independent;
+    ser& timeVortexType; // Used by TimeVortex serialization
     // ser& sim_output;
     ser& runMode;
     ser& currentPriority;
     ser& endSimCycle;
     ser& output_directory;
-    ser& timeLord;
     // Actions that may also be in TV
+    ser& real_time_;
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
@@ -1511,13 +1557,14 @@ Simulation_impl::restart(Config* cfg)
     ser& interThreadMinLatency;
     ser& endSim;
     ser& independent;
+    ser& timeVortexType; // Used by TimeVortex serialization
     // ser& sim_output;
     ser& runMode;
     ser& currentPriority;
     ser& endSimCycle;
     ser& output_directory;
-    ser& timeLord;
     // Actions that may also be in TV
+    ser& real_time_;
     ser& m_exit;
     ser& syncManager;
     ser& m_heartbeat;
@@ -1534,9 +1581,6 @@ Simulation_impl::restart(Config* cfg)
     ser& clockMap;
     // Last, get the timevortex
     ser& timeVortex;
-
-    /* Fix-up global state before proceeding */
-    timeLord.init(timeLord.timeBaseString);
 
     /* Extract components */
     size_t compCount;
@@ -1567,6 +1611,49 @@ Simulation_impl::restart(Config* cfg)
     stat_engine.finalizeInitialization();
     if ( my_rank.thread == 0 ) { StatisticProcessingEngine::stat_outputs_simulation_start(); }
     stat_engine.startOfSimulation();
+
+    // Create new checkpoint object
+    if ( cfg->checkpoint_sim_period() != "" ) {
+        sim_output.output(
+            "# Creating simulation checkpoint at simulated time period of %s.\n", cfg->checkpoint_sim_period().c_str());
+        checkpoint_action_ =
+            new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
+    }
+    else {
+        checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
+    }
+
+    // Resolve heartbeat -> overwrite with command line if present
+    if ( cfg->heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
+        if ( m_heartbeat ) delete m_heartbeat;
+        sim_output.output(
+            "# Creating simulation heartbeat at simulated time period of %s.\n", cfg->heartbeat_sim_period().c_str());
+        m_heartbeat =
+            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_sim_period()));
+    }
+    else if ( m_heartbeat ) {
+        m_heartbeat->schedule();
+    }
+
+    // Re-initialize real_time_
+    if ( !cfg->enable_sig_handling() ) return;
+
+    real_time_->registerSignal(new ExitEmergencyRealTimeAction(), SIGINT);
+    real_time_->registerSignal(new ExitEmergencyRealTimeAction(), SIGTERM);
+    real_time_->registerSignal(new CoreStatusRealTimeAction(), SIGUSR1);
+    real_time_->registerSignal(new ComponentStatusRealTimeAction(), SIGUSR2);
+
+    if ( cfg->exit_after() != 0 ) { real_time_->registerInterval(cfg->exit_after(), new ExitCleanRealTimeAction()); }
+
+    if ( cfg->checkpoint_wall_period() != 0 ) {
+        real_time_->registerInterval(cfg->checkpoint_wall_period(), new CheckpointRealTimeAction());
+    }
+
+    if ( cfg->heartbeat_wall_period() != 0 ) {
+        real_time_->registerInterval(cfg->heartbeat_wall_period(), new HeartbeatRealTimeAction());
+    }
+
+    real_time_->begin();
 }
 
 void
@@ -1603,11 +1690,10 @@ Simulation_impl::printSimulationState()
 
     // clockMap
     // oneShotMap
-    sim_output.output("shutdown_mode: %d\n", (int)shutdown_mode);
-    sim_output.output("wireUpFinished: %s\n", wireUpFinished ? "true" : "false");
+    sim_output.output("shutdown_mode: %d\n", (int)shutdown_mode_);
+    sim_output.output("wireUpFinished: %s\n", wireUpFinished_ ? "true" : "false");
     // timeLord
     // instanceMap
-    // instanceVec
 
     sim_output.output("\n\nPrinting ComponentInfoMap:\n");
     for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
@@ -1726,7 +1812,7 @@ SimTime_t                  Simulation_impl::minPart;
 
 /* Define statics (Simulation) */
 std::unordered_map<std::thread::id, Simulation_impl*> Simulation_impl::instanceMap;
-std::vector<Simulation_impl*>                         Simulation_impl::instanceVec;
+std::vector<Simulation_impl*>                         Simulation_impl::instanceVec_;
 std::atomic<int>                                      Simulation_impl::untimed_msg_count;
 Exit*                                                 Simulation_impl::m_exit;
 

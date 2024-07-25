@@ -44,6 +44,11 @@ public:
     void after() override;
     void execute(void) override;
 
+    /** Set signals to exchange during sync */
+    void setSignals(int end, int usr, int alrm) override;
+    /** Return exchanged signals after sync */
+    bool getSignals(int& end, int& usr, int& alrm) override;
+
     /** Cause an exchange of Untimed Data to occur */
     void processLinkUntimedData() override;
     /** Finish link configuration */
@@ -55,6 +60,7 @@ public:
     ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) override;
 
     uint64_t getDataSize() const;
+
 
     // static void disable() { disabled = true; barrier.disable(); }
 
@@ -78,6 +84,9 @@ private:
     double                           totalWaitTime;
     bool                             single_rank;
     Core::ThreadSafe::Spinlock       lock;
+    static int                       sig_end_;
+    static int                       sig_usr_;
+    static int                       sig_alrm_;
 };
 
 } // namespace SST

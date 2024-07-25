@@ -1,35 +1,40 @@
 import sst
 
 # Define the simulation components
-comp_c0 = sst.Component("c0", "coreTestElement.coreTestCheckpoint")
-comp_c0.addParams({
-      "starter" : 'T',
-      "counter" : 1000,
-      "clock_frequency" : "100 kHz",
-      "clock_duty_cycle" : 20,
-      "test_string" : "hi",
-      "dist_discrete_probs" : [0.1, 0.3, 0.1, 0.2, 0.3],
-      "output_prefix" : "c0 talking",
-      "output_verbose" : 1,
-})
+comp_count = 4   # Number of components
+start = 0        # This component should start the exchange
+comps = []
 
-comp_c1 = sst.Component("c1", "coreTestElement.coreTestCheckpoint")
-comp_c1.addParams({
-      "starter" : 'F',
+for x in range(0,comp_count):
+    comp = sst.Component("c" + str(x), "coreTestElement.coreTestCheckpoint")
+    comp.addParams({
       "clock_frequency" : "100 kHz",
       "clock_duty_cycle" : 15,
       "test_string" : "hello",
-      "output_prefix" : "c1 talking",
+      "output_prefix" : "c" + str(x) + " talking",
       "output_verbose" : 2,
-})
+      })
 
-# Connect the components
-link = sst.Link("link")
-link.connect( (comp_c0, "port", "1us"), (comp_c1, "port", "1us") )
+    if x == start:
+        comp.addParam("starter", True)
+        #comp.addParam("counter", 1000000)
+        #comp.addParam("counter", 1000000000)
+        comp.addParam("counter", 1000)
+        comp.addParam("clock_duty_cycle", 20)
+        comp.addParam("dist_discrete_probs", [0.1, 0.3, 0.1, 0.2, 0.3])
+    else:
+        comp.addParam("starter", False)
+    comps.append(comp)
+
+for x in range(0,comp_count):
+    next_x = (x+1) % comp_count
+    link = sst.Link("link" + str(x))
+    link.connect( ( comps[x], "port_right", "1us"), (comps[next_x], "port_left", "1us") )
 
 # Stats config
 sst.setStatisticLoadLevel(3)
 sst.setStatisticOutput("sst.statOutputConsole")
+#sst.setStatisticOutput("sst.statOutputHDF5")
 #sst.setStatisticOutput("sst.statOutputJSON", {"outputsimtime" : "1"})
 #sst.setStatisticOutput("sst.statOutputTxt")
 #sst.setStatisticOutput("sst.statOutputCSV", {
@@ -42,4 +47,5 @@ sst.enableStatisticForComponentName("c0", "rngvals",
      "numbins" : 10,
      "IncludeOutOfBounds" : "T"
 })
+#sst.enableAllStatisticsForAllComponents()
 sst.enableAllStatisticsForAllComponents({ "rate" : "100us" })

@@ -49,6 +49,7 @@ class Factory;
 class Link;
 class LinkMap;
 class Params;
+class RealTimeManager;
 class SimulatorHeartbeat;
 class SyncBase;
 class SyncManager;
@@ -139,16 +140,17 @@ public:
      * @param config - Configuration of the simulation
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
+     * @param restart - Whether this simulation is being restarted from a checkpoint (true) or not
      */
-    static Simulation_impl* createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
+    static Simulation_impl* createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
 
     /**
      * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
      */
     static void shutdown();
 
-    /** Sets an internal flag for signaling the simulation.  Used internally */
-    static void setSignal(int signal);
+    /** Sets an internal flag for signaling the simulation. Used by signal handler & thread 0. */
+    static void notifySignal();
 
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
@@ -168,8 +170,8 @@ public:
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
 
-    /** Set cycle count, which, if reached, will cause the simulation to halt. */
-    void setStopAtCycle(Config* cfg);
+    /** Setup external control actions (forced stops, signal handling */
+    void setupSimActions(Config* cfg);
 
     /** Perform the init() phase of simulation */
     void initialize();
@@ -262,13 +264,16 @@ public:
     /**
      * Returns true when the Wireup is finished.
      */
-    bool isWireUpFinished() { return wireUpFinished; }
+    bool isWireUpFinished() { return wireUpFinished_; }
 
     uint64_t getTimeVortexMaxDepth() const;
 
     uint64_t getTimeVortexCurrentDepth() const;
 
     uint64_t getSyncQueueDataSize() const;
+
+    /** Return the checkpoint event */
+    CheckpointAction* getCheckpointAction() const { return checkpoint_action_; }
 
     /******** API provided through BaseComponent only ***********/
 
@@ -314,7 +319,7 @@ public:
     friend int ::main(int argc, char** argv);
 
     Simulation_impl() {}
-    Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks);
+    Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
     Simulation_impl(Simulation_impl const&); // Don't Implement
     void operator=(Simulation_impl const&);  // Don't implement
 
@@ -323,6 +328,7 @@ public:
      */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
 
+    void scheduleCheckpoint();
     void checkpoint();
     void restart(Config* config);
 
@@ -348,13 +354,21 @@ public:
     TimeVortex* getTimeVortex() const { return timeVortex; }
 
     /** Emergency Shutdown
-     * Called when a SIGINT or SIGTERM has been seen
+     * Called when a fatal event has occurred
      */
     static void emergencyShutdown();
+
+    /** Signal Shutdown
+     * Called when a signal needs to terminate SST
+     * E.g., SIGINT or SIGTERM has been seen
+     * abnormal indicates whether this was unexpected or not
+     */
+    void signalShutdown(bool abnormal);
+
     /** Normal Shutdown
      */
-    void        endSimulation(void);
-    void        endSimulation(SimTime_t end);
+    void endSimulation(void);
+    void endSimulation(SimTime_t end);
 
     typedef enum {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
@@ -365,7 +379,7 @@ public:
     friend class SyncManager;
 
     TimeVortex*             timeVortex;
-    std::string             timeVortexType;
+    std::string             timeVortexType;  // Required for checkpoint
     TimeConverter*          threadMinPartTC; // Unused...?
     Activity*               current_activity;
     static SimTime_t        minPart;
@@ -379,18 +393,21 @@ public:
     oneShotMap_t            oneShotMap;
     static Exit*            m_exit;
     SimulatorHeartbeat*     m_heartbeat = nullptr;
+    CheckpointAction*       checkpoint_action_;
     bool                    endSim;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;
     unsigned int            untimed_phase;
-    volatile sig_atomic_t   lastRecvdSignal;
-    ShutdownMode_t          shutdown_mode;
-    bool                    wireUpFinished;
+    volatile sig_atomic_t   signal_arrived_; // true if a signal has arrived
+    ShutdownMode_t          shutdown_mode_;
+    bool                    wireUpFinished_;
+    RealTimeManager*        real_time_;
 
     /** TimeLord of the simulation */
     static TimeLord timeLord;
     /** Output */
     static Output   sim_output;
+
 
     /** Statistics Engine */
     SST::Statistics::StatisticProcessingEngine stat_engine;
@@ -507,22 +524,21 @@ public:
 
     std::string output_directory;
 
-    double run_phase_start_time;
-    double run_phase_total_time;
-    double init_phase_start_time;
-    double init_phase_total_time;
-    double complete_phase_start_time;
-    double complete_phase_total_time;
+    double run_phase_start_time_;
+    double run_phase_total_time_;
+    double init_phase_start_time_;
+    double init_phase_total_time_;
+    double complete_phase_start_time_;
+    double complete_phase_total_time_;
 
     static std::unordered_map<std::thread::id, Simulation_impl*> instanceMap;
-    static std::vector<Simulation_impl*>                         instanceVec;
+    static std::vector<Simulation_impl*>                         instanceVec_;
 
     /******** Checkpoint/restart tracking data structures ***********/
     std::map<uintptr_t, Link*>     link_restart_tracking;
     std::map<uintptr_t, uintptr_t> event_handler_restart_tracking;
-    CheckpointAction*              m_checkpoint         = nullptr;
-    uint32_t                       checkpoint_id        = 0;
-    std::string                    checkpointPrefix     = "";
+    uint32_t                       checkpoint_id_       = 0;
+    std::string                    checkpoint_prefix_   = "";
     std::string                    globalOutputFileName = "";
 
     void printSimulationState();

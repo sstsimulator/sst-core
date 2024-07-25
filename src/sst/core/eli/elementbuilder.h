@@ -403,8 +403,9 @@ struct CtorList<Base, void>
     SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase)             \
     SST_ELI_BUILDER_FXNS()
 
-#define SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN() \
-    SST_ELI_DEFAULT_CTOR_COMMON()             \
+#define SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN()            \
+    using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
+    SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase)             \
     SST_ELI_BUILDER_FXNS_EXTERN()
 
 #define SST_ELI_EXTEND_CTOR() using Ctor = ::SST::ELI::ExtendedCtor<LocalCtor, __ParentEliBase::Ctor>;

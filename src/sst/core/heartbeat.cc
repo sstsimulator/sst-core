@@ -34,15 +34,26 @@ SimulatorHeartbeat::SimulatorHeartbeat(
     rank(this_rank),
     m_period(period)
 {
-    sim->insertActivity(period->getFactor(), this);
+    SimTime_t next =
+        (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
+
+    sim->insertActivity(next, this);
+
     if ( (0 == this_rank) ) { lastTime = sst_get_cpu_time(); }
-    // if( (0 == this_rank) ) {
-    //     sim->insertActivity( period->getFactor(), this );
-    //     lastTime = sst_get_cpu_time();
-    // }
 }
 
 SimulatorHeartbeat::~SimulatorHeartbeat() {}
+
+void
+SimulatorHeartbeat::schedule()
+{
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    SimTime_t        next =
+        (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
+    sim->insertActivity(next, this);
+
+    if ( (0 == rank) ) { lastTime = sst_get_cpu_time(); }
+}
 
 void
 SimulatorHeartbeat::execute(void)

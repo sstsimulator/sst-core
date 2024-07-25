@@ -12,6 +12,7 @@ EXTRA_DIST += \
     tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_RNGComponent.py \
+    tests/testsuite_default_RealTime.py \
     tests/testsuite_default_SharedObject.py \
     tests/testsuite_default_Serialization.py \
     tests/testsuite_default_SubComponent.py \
@@ -45,6 +46,7 @@ EXTRA_DIST += \
     tests/test_MemPool_overflow.py \
     tests/test_MemPool_undeleted_items.py \
     tests/test_Module.py \
+    tests/test_RealTime.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \

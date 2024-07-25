@@ -314,6 +314,24 @@ public:
     }
 };
 
+// Replace with std::atomic_fetch_max at C++26
+template <typename T>
+void
+atomic_fetch_max(std::atomic<T>& max_value, T const& new_value) noexcept
+{
+    T old_value = max_value;
+    while ( old_value < new_value && !max_value.compare_exchange_weak(old_value, new_value) ) {}
+}
+
+// Replace with std::atomic_fetch_min at C++26
+template <typename T>
+void
+atomic_fetch_min(std::atomic<T>& max_value, T const& new_value) noexcept
+{
+    T old_value = max_value;
+    while ( old_value < new_value && !max_value.compare_exchange_weak(old_value, new_value) ) {}
+}
+
 } // namespace ThreadSafe
 } // namespace Core
 } // namespace SST

@@ -38,6 +38,7 @@ OS_DIST_CENTOS = "CENTOS"
 OS_DIST_RHEL = "RHEL"
 OS_DIST_TOSS = "TOSS"
 OS_DIST_UBUNTU = "UBUNTU"
+OS_DIST_ROCKY = "ROCKY"
 OS_DIST_UNDEF = "UNDEFINED"
 
 ################################################################################
@@ -215,6 +216,7 @@ def host_os_get_distribution_type():
             'RHEL' for Red Hat Enterprise Linux;
             'TOSS' for Toss;
             'UBUNTU' for Ubuntu;
+            'ROCKY' for Rocky;
             'UNDEFINED' an undefined OS.
     """
     k_type = host_os_get_kernel_type()
@@ -229,6 +231,8 @@ def host_os_get_distribution_type():
             return OS_DIST_TOSS
         if "ubuntu" in dist_name:
             return OS_DIST_UBUNTU
+        if "rocky" in dist_name:
+            return OS_DIST_ROCKY
     elif k_type == 'Darwin':
         return OS_DIST_OSX
     return OS_DIST_UNDEF
@@ -297,6 +301,15 @@ def host_os_is_ubuntu():
             (bool) True if OS Distribution is Ubuntu
     """
     return host_os_get_distribution_type() == OS_DIST_UBUNTU
+
+def host_os_is_rocky():
+    """ Check if OS distribution is Rocky
+
+        Returns:
+            (bool) True if OS Distribution is Rocky
+    """
+    return host_os_get_distribution_type() == OS_DIST_ROCKY
+
 
 ###
 
@@ -1686,6 +1699,9 @@ def _get_linux_distribution():
         # Until we have other OS's, this is Ubuntu.
         distname = "ubuntu"
         distver = _get_linux_version("/etc/lsb-release", " ")
+    elif os.path.isfile("/etc/rocky-release", " "):
+        distname = "rocky"
+        distver = _get_linux_version("/etc/rocky-release", " ")
     rtn_data = (distname, distver)
     return rtn_data
 

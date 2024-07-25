@@ -16,6 +16,7 @@
 #include "sst/core/config.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/output.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 
 #include <set>
@@ -35,22 +36,32 @@ public:
     /**
     Create a new checkpoint object for the simulation core to initiate checkpoints
     */
-    CheckpointAction(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter* period);
+    CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period);
     ~CheckpointAction();
 
-    NotSerializable(SST::CheckpointAction) // Going to have to fix this
+    /** Generate a checkpoint next time check() is called */
+    void setCheckpoint();
 
-        private :
+    /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
+    void execute(void) override;
 
-        CheckpointAction()
-    {}
+    /** Called by SyncManager to check whether a checkpoint should be generated */
+    void check();
+
+    NotSerializable(SST::CheckpointAction);
+
+private:
+    CheckpointAction() {}
     CheckpointAction(const CheckpointAction&);
 
-    void           operator=(CheckpointAction const&);
-    void           execute(void) override;
-    int            rank;
-    TimeConverter* m_period;
-    double         lastTime;
+    void operator=(CheckpointAction const&);
+    void createCheckpoint(Simulation_impl* sim); // The actual checkpoint operation
+
+    RankInfo       rank_;          // RankInfo for this thread/rank
+    TimeConverter* period_;        // Simulation time interval for scheduling or nullptr if not set
+    double         last_cpu_time_; // Last time a checkpoint was triggered
+    bool           generate_;      // Whether a checkpoint should be done next time check() is called
+    SimTime_t      next_sim_time_; // Next simulationt ime a checkpoint should trigger at or 0 if not applicable
 };
 
 } // namespace SST

@@ -36,6 +36,7 @@ class Component;
 class Module;
 class SubComponent;
 class BaseComponent;
+class RealTimeAction;
 namespace Partition {
 class SSTPartitioner;
 }
