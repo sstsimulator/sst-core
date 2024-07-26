@@ -4,28 +4,31 @@ AC_DEFUN([SST_CHECK_CURSES],
 [
   sst_check_curses_happy="yes"
 
-  AC_ARG_WITH([curses],
+  AC_ARG_WITH([ncurses],
     [AS_HELP_STRING([--with-ncurses@<:@=DIR or EXEC@:>@],
       [Use ncurses library found in DIR or associated with the ncursesN-config utility specified by EXEC])])
 
-  AS_IF([test "$with_curses" = "no"], [sst_check_curses_happy="no"])
+  AS_IF([test "$with_ncurses" = "no"], [sst_check_curses_happy="no"])
 
   NCURSES_CONFIG_EXE="no"
 
   dnl check if user provided a specific ncursesN-config
-  AS_IF([test ! -d "$with_curses"],
-    [AS_IF([test -x "$with_curses"],
-        [NCURSES_CONFIG_EXE=$with_curses])])
+  AS_IF([test ! -d "$with_ncurses"],
+    [AS_IF([test -x "$with_ncurses"],
+        [NCURSES_CONFIG_EXE=$with_ncurses])])
 
   dnl test ncursesN-config
   AS_IF([test $NCURSES_CONFIG_EXE = "no"],
-    [AS_IF([test -n "$with_curses"],
+    [AS_IF([test -n "$with_ncurses"],
         [AC_PATH_PROGS([NCURSES_CONFIG_EXE],
                        ["ncurses6-config" "ncursesw6-config" "ncurses5.4-config" "ncurses5-config"],
-                       ["no"], ["$with_curses/bin"])],
+                       ["no"], ["$with_ncurses/bin"])],
         [AC_PATH_PROGS([NCURSES_CONFIG_EXE],
                        ["ncurses6-config" "ncursesw6-config" "ncurses5.4-config" "ncurses5-config"],
                        ["no"])])])
+
+  AC_MSG_CHECKING([ncurses config binary exists])
+  AC_MSG_RESULT([$NCURSES_CONFIG_EXE])
 
   dnl don't continue if ncursesN-config can't be found rather than look for the
   dnl specific libraries
@@ -79,6 +82,6 @@ AC_DEFUN([SST_CHECK_CURSES],
   AC_MSG_CHECKING([for curses library])
   AC_MSG_RESULT([$sst_check_curses_happy])
 
-  AS_IF([test "$sst_check_curses_happy" = "no" -a ! -z "$with_curses" -a "$with_curses" != "no"], [$3])
+  AS_IF([test "$sst_check_curses_happy" = "no" -a ! -z "$with_ncurses" -a "$with_ncurses" != "no"], [$3])
   AS_IF([test "$sst_check_curses_happy" = "yes"], [$1], [$2])
 ])
