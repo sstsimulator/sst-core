@@ -61,10 +61,14 @@ AC_DEFUN([SST_CHECK_CURSES],
             dnl correct, since those are not available at macro expansion
             dnl time.  This is only necessary for platforms where libs are
             dnl reported but are broken or don't actually exist.
+            dnl
+            dnl If nothing is specified for `action-if-found`, the library
+            dnl will be added to LIBS, which is not correct for our use case.
+            curses_check_lib_tmp=""
             AS_IF([test "$sst_check_curses_happy" != "no"],
-              [AC_CHECK_LIB([ncursesw], [initscr], [],
-                [AC_CHECK_LIB([ncurses], [initscr], [],
-                  [AC_CHECK_LIB([curses], [initscr], [],
+              [AC_CHECK_LIB([ncursesw], [initscr], [curses_check_lib_tmp="ncursesw is valid"],
+                [AC_CHECK_LIB([ncurses], [initscr], [curses_check_lib_tmp="ncurses is valid"],
+                  [AC_CHECK_LIB([curses], [initscr], [curses_check_lib_tmp="curses is valid"],
                     [sst_check_curses_happy="no"])])])
                ])
             AC_LANG_POP([C++])
