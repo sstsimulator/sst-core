@@ -90,4 +90,10 @@ CheckpointAction::setCheckpoint()
     generate_ = true;
 }
 
+SimTime_t
+CheckpointAction::getNextCheckpointSimTime()
+{
+    return next_sim_time_;
+}
+
 } // namespace SST

@@ -95,7 +95,11 @@ Simulation_impl::minPartToTC(SimTime_t cycles) const
 Simulation_impl::~Simulation_impl()
 {
     // Clean up as best we can
-    delete checkpoint_action_;
+
+    // If checkpoint_action is triggered on sim time then it will
+    // be deleted when the timeVortex is deleted
+    if ( checkpoint_action_->getNextCheckpointSimTime() == 0 )
+        delete checkpoint_action_;
 
     // Delete the timeVortex first.  This will delete all events left
     // in the queue, as well as the Sync, Exit and Clock objects.

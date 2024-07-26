@@ -48,6 +48,9 @@ public:
     /** Called by SyncManager to check whether a checkpoint should be generated */
     void check();
 
+    /** Return next checkpoint time */
+    SimTime_t getNextCheckpointSimTime();
+
     NotSerializable(SST::CheckpointAction);
 
 private:
