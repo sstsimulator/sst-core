@@ -69,7 +69,10 @@ AC_DEFUN([SST_CHECK_CURSES],
               [AC_CHECK_LIB([ncursesw], [initscr], [curses_check_lib_tmp="ncursesw is valid"],
                 [AC_CHECK_LIB([ncurses], [initscr], [curses_check_lib_tmp="ncurses is valid"],
                   [AC_CHECK_LIB([curses], [initscr], [curses_check_lib_tmp="curses is valid"],
-                    [sst_check_curses_happy="no"])])])
+                    [sst_check_curses_happy="no"
+                     CURSES_CPPFLAGS=""
+                     CURSES_LIBS=""
+                    ])])])
                ])
             AC_LANG_POP([C++])
 
