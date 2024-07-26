@@ -11,7 +11,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/serialization/serialize_serializable.h"
+#include "sst/core/serialization/serializable.h"
 
 #include <iostream>
 

@@ -24,7 +24,6 @@
 
 import sys
 import os
-import platform
 import unittest
 import threading
 import time

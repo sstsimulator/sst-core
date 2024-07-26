@@ -20,6 +20,7 @@
 #include "sst/core/oneshot.h"
 #include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/serialization/serializable_base.h"
+#include "sst/core/serialization/serialize.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"

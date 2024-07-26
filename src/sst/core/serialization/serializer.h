@@ -12,9 +12,11 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZER_H
 #define SST_CORE_SERIALIZATION_SERIALIZER_H
 
-#include "sst/core/serialization/serialize_packer.h"
-#include "sst/core/serialization/serialize_sizer.h"
-#include "sst/core/serialization/serialize_unpacker.h"
+#define SST_INCLUDING_SERIALIZER_H
+#include "sst/core/serialization/impl/packer.h"
+#include "sst/core/serialization/impl/sizer.h"
+#include "sst/core/serialization/impl/unpacker.h"
+#undef SST_INCLUDING_SERIALIZER_H
 
 #include <cstdint>
 #include <cstring>

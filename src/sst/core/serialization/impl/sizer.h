@@ -9,8 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H
-#define SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H
+#ifndef SST_CORE_SERIALIZATION_IMPL_SIZER_H
+#define SST_CORE_SERIALIZATION_IMPL_SIZER_H
+
+#ifndef SST_INCLUDING_SERIALIZER_H
+#warning \
+    "The header file sst/core/serialization/impl/sizer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
+#endif
 
 #include "sst/core/warnmacros.h"
 
@@ -47,4 +52,4 @@ protected:
 } // namespace Core
 } // namespace SST
 
-#endif // SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H
+#endif // SST_CORE_SERIALIZATION_IMPL_SIZER_H

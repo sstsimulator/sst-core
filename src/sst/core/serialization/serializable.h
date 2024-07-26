@@ -13,6 +13,7 @@
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
 #include "sst/core/serialization/serializable_base.h"
+#include "sst/core/serialization/serialize.h"
 
 
 namespace SST {
@@ -35,10 +36,80 @@ public:
     virtual ~serializable() {}
 };
 
+namespace pvt {
+
+void size_serializable(serializable_base* s, serializer& ser);
+
+void pack_serializable(serializable_base* s, serializer& ser);
+
+void unpack_serializable(serializable_base*& s, serializer& ser);
+
+} // namespace pvt
+
+
+template <class T>
+class serialize_impl<
+    T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+{
+
+    template <class A>
+    friend class serialize;
+    void operator()(T*& s, serializer& ser)
+    {
+        serializable_base* sp = static_cast<serializable_base*>(s);
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+            pvt::size_serializable(sp, ser);
+            break;
+        case serializer::PACK:
+            pvt::pack_serializable(sp, ser);
+            break;
+        case serializer::UNPACK:
+            pvt::unpack_serializable(sp, ser);
+            break;
+        }
+        s = static_cast<T*>(sp);
+    }
+};
+
+template <class T>
+void
+serialize_intrusive_ptr(T*& t, serializer& ser)
+{
+    serializable_base* s = t;
+    switch ( ser.mode() ) {
+    case serializer::SIZER:
+        pvt::size_serializable(s, ser);
+        break;
+    case serializer::PACK:
+        pvt::pack_serializable(s, ser);
+        break;
+    case serializer::UNPACK:
+        pvt::unpack_serializable(s, ser);
+        t = dynamic_cast<T*>(s);
+        break;
+    }
+}
+
+template <class T>
+class serialize_impl<
+    T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+{
+    template <class A>
+    friend class serialize;
+    inline void operator()(T& t, serializer& ser)
+    {
+        // T* tmp = &t;
+        // serialize_intrusive_ptr(tmp, ser);
+        t.serialize_order(ser);
+    }
+};
+
+
 } // namespace Serialization
 } // namespace Core
 } // namespace SST
 
-#include "sst/core/serialization/serialize_serializable.h"
+//#include "sst/core/serialization/serialize_serializable.h"
 
 #endif
