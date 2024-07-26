@@ -326,10 +326,10 @@ atomic_fetch_max(std::atomic<T>& max_value, T const& new_value) noexcept
 // Replace with std::atomic_fetch_min at C++26
 template <typename T>
 void
-atomic_fetch_min(std::atomic<T>& max_value, T const& new_value) noexcept
+atomic_fetch_min(std::atomic<T>& min_value, T const& new_value) noexcept
 {
-    T old_value = max_value;
-    while ( old_value < new_value && !max_value.compare_exchange_weak(old_value, new_value) ) {}
+    T old_value = min_value;
+    while ( old_value > new_value && !min_value.compare_exchange_weak(old_value, new_value) ) {}
 }
 
 } // namespace ThreadSafe
