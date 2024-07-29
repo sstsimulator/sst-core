@@ -39,11 +39,6 @@ def initializeTestModule_SingleInstance(class_inst):
 
 class testcase_Config_input_output(SSTTestCase):
 
-    def initializeClass(self, testName):
-        super(type(self), self).initializeClass(testName)
-        # Put test based setup code here. it is called before testing starts
-        # NOTE: This method is called once for every test
-
     def setUp(self):
         super(type(self), self).setUp()
         initializeTestModule_SingleInstance(self)
