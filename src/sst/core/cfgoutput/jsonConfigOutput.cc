@@ -149,18 +149,20 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     json::ordered_json outputJson;
 
     // Put in the program options
-    outputJson["program_options"]["verbose"]            = std::to_string(cfg->verbose());
-    outputJson["program_options"]["stop-at"]            = cfg->stop_at();
-    outputJson["program_options"]["print-timing-info"]  = cfg->print_timing() ? "true" : "false";
+    outputJson["program_options"]["verbose"]                = std::to_string(cfg->verbose());
+    outputJson["program_options"]["stop-at"]                = cfg->stop_at();
+    outputJson["program_options"]["print-timing-info"]      = cfg->print_timing() ? "true" : "false";
     // Ignore stopAfter for now
     // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec();
-    outputJson["program_options"]["heartbeat-period"]   = cfg->heartbeat_period();
-    outputJson["program_options"]["timebase"]           = cfg->timeBase();
-    outputJson["program_options"]["partitioner"]        = cfg->partitioner();
-    outputJson["program_options"]["timeVortex"]         = cfg->timeVortex();
-    outputJson["program_options"]["interthread-links"]  = cfg->interthread_links() ? "true" : "false";
-    outputJson["program_options"]["output-prefix-core"] = cfg->output_core_prefix();
-    outputJson["program_options"]["checkpoint-period"]  = cfg->checkpoint_period();
+    outputJson["program_options"]["heartbeat-sim-period"]   = cfg->heartbeat_sim_period();
+    outputJson["program_options"]["heartbeat-wall-period"]  = std::to_string(cfg->heartbeat_wall_period());
+    outputJson["program_options"]["timebase"]               = cfg->timeBase();
+    outputJson["program_options"]["partitioner"]            = cfg->partitioner();
+    outputJson["program_options"]["timeVortex"]             = cfg->timeVortex();
+    outputJson["program_options"]["interthread-links"]      = cfg->interthread_links() ? "true" : "false";
+    outputJson["program_options"]["output-prefix-core"]     = cfg->output_core_prefix();
+    outputJson["program_options"]["checkpoint-sim-period"]  = cfg->checkpoint_sim_period();
+    outputJson["program_options"]["checkpoint-wall-period"] = std::to_string(cfg->checkpoint_wall_period());
 
 
     // Put in the global param sets

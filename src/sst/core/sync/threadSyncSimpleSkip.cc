@@ -178,6 +178,23 @@ ThreadSyncSimpleSkip::getDataSize() const
 }
 
 void
+ThreadSyncSimpleSkip::setSignals(int end, int usr, int alrm)
+{
+    sig_end_  = end;
+    sig_usr_  = usr;
+    sig_alrm_ = alrm;
+}
+
+bool
+ThreadSyncSimpleSkip::getSignals(int& end, int& usr, int& alrm)
+{
+    end  = sig_end_;
+    usr  = sig_usr_;
+    alrm = sig_alrm_;
+    return sig_end_ || sig_usr_ || sig_alrm_;
+}
+
+void
 ThreadSyncSimpleSkip::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     ThreadSync::serialize_order(ser);
@@ -197,5 +214,8 @@ ThreadSyncSimpleSkip::serialize_order(SST::Core::Serialization::serializer& ser)
 }
 
 Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
+int                       ThreadSyncSimpleSkip::sig_end_(0);
+int                       ThreadSyncSimpleSkip::sig_usr_(0);
+int                       ThreadSyncSimpleSkip::sig_alrm_(0);
 
 } // namespace SST

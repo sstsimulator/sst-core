@@ -169,7 +169,7 @@ class testcase_Checkpoint(SSTTestCase):
         else:
             sdlfile_generate = "{0}/test_{1}.py".format(testsuitedir,testtype)
         outfile_generate = "{0}/test_Checkpoint_{1}_generate.out".format(outdir, outstr)
-        options_checkpoint="--checkpoint-period={0} --checkpoint-prefix={1} --model-options='{2}'".format(cptfreq,teststr,modelparams)
+        options_checkpoint="--checkpoint-sim-period={0} --checkpoint-prefix={1} --model-options='{2}'".format(cptfreq,teststr,modelparams)
         self.run_sst(sdlfile_generate, outfile_generate, other_args=options_checkpoint)
 
         # Run from restart

@@ -76,6 +76,7 @@ public:
         // Testing output options
         { "output_prefix", "Prefix for output", ""},
         { "output_verbose", "Verbosity for output", "0"},
+        { "output_frequency", "How often, in terms of clock cycles, to generate output", "1"},
         // Testing RNG & distributions
         { "rng_seed_w",        "The first seed for marsaglia", "7" },
         { "rng_seed_z",        "The second seed for marsaglia", "5" },
@@ -90,7 +91,8 @@ public:
     )
 
     SST_ELI_DOCUMENT_PORTS(
-        {"port", "Link to the other coreTestCheckpoint", { "coreTestElement.coreTestCheckpointEvent", "" } }
+        {"port_left", "Link to another coreTestCheckpoint", { "coreTestElement.coreTestCheckpointEvent", "" } },
+        {"port_right", "Link to another coreTestCheckpoint", { "coreTestElement.coreTestCheckpointEvent", "" } }
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
@@ -100,13 +102,19 @@ public:
     )
 
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
-    ~coreTestCheckpoint();
+    virtual ~coreTestCheckpoint();
+
+    void init(unsigned phase) override;
 
     void setup() override;
+
+    void complete(unsigned phase) override;
 
     void finish() override;
 
     void printStatus(Output& out) override;
+
+    void emergencyShutdown() override;
 
     // Serialization functions and macro
     coreTestCheckpoint() : Component() {} // For serialization only
@@ -118,7 +126,8 @@ private:
     bool handleClock(Cycle_t cycle);
     void restartClock(SST::Event* ev);
 
-    SST::Link*          link;
+    SST::Link*          link_left;
+    SST::Link*          link_right;
     SST::Link*          self_link;
     TimeConverter*      clock_tc;
     Clock::HandlerBase* clock_handler;
@@ -127,6 +136,7 @@ private:
     uint32_t            counter;          // Unused after setup
     std::string         test_string;      // Test that string got serialized
     Output*             output;
+    int                 output_frequency;
 
     RNG::Random*             mersenne;
     RNG::Random*             marsaglia;

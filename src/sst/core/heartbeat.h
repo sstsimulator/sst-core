@@ -38,6 +38,9 @@ public:
     SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter* period);
     ~SimulatorHeartbeat();
 
+    // Used to re-schedule the new heartbeat event during restart
+    void schedule();
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::SimulatorHeartbeat)
 

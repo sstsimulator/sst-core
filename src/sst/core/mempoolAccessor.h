@@ -45,7 +45,7 @@ public:
     // Initialize the global mempool data structures
     static void initializeGlobalData(int num_threads, bool cache_align = false);
 
-    // Initialize the per thread mempool ata structures
+    // Initialize the per thread mempool data structures
     static void initializeLocalData(int thread);
 
     static void printUndeletedMemPoolItems(const std::string& header, Output& out);

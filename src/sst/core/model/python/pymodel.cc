@@ -335,7 +335,13 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("heartbeat-period"),
-        SST_ConvertToPythonString(cfg->heartbeat_period().c_str()));
+        SST_ConvertToPythonString(cfg->heartbeat_sim_period().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("heartbeat-sim-period"),
+        SST_ConvertToPythonString(cfg->heartbeat_sim_period().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("heartbeat-wall-period"),
+        SST_ConvertToPythonLong(cfg->heartbeat_wall_period()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-directory"),
         SST_ConvertToPythonString(cfg->output_directory().c_str()));
@@ -390,8 +396,14 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
 
     // Advanced options - checkpointing
     PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-sim-period"),
+        SST_ConvertToPythonString(cfg->checkpoint_sim_period().c_str()));
+    PyDict_SetItem(
         dict, SST_ConvertToPythonString("checkpoint-period"),
-        SST_ConvertToPythonString(cfg->checkpoint_period().c_str()));
+        SST_ConvertToPythonString(cfg->checkpoint_sim_period().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("checkpoint-wall-period"),
+        SST_ConvertToPythonLong(cfg->checkpoint_wall_period()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("checkpoint-prefix"),
         SST_ConvertToPythonString(cfg->checkpoint_prefix().c_str()));

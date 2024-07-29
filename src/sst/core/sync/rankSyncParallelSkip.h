@@ -50,6 +50,11 @@ public:
     /** Prepare for complete() stage */
     void prepareForComplete() override;
 
+    /** Set signals to exchange during sync */
+    void setSignals(int end, int usr, int alrm) override;
+    /** Return exchanged signals after sync */
+    bool getSignals(int& end, int& usr, int& alrm) override;
+
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
 
     uint64_t getDataSize() const override;
@@ -133,6 +138,9 @@ private:
     Core::ThreadSafe::Barrier allDoneBarrier;
 
     Core::ThreadSafe::Spinlock lock;
+    static int                 sig_end_;
+    static int                 sig_usr_;
+    static int                 sig_alrm_;
 };
 
 } // namespace SST

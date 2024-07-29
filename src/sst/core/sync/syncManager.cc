@@ -13,9 +13,11 @@
 
 #include "sst/core/sync/syncManager.h"
 
+#include "sst/core/checkpointAction.h"
 #include "sst/core/exit.h"
 #include "sst/core/objectComms.h"
 #include "sst/core/profile/syncProfileTool.h"
+#include "sst/core/realtime.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
@@ -39,10 +41,10 @@ REENABLE_WARNING
 namespace SST {
 
 // Static data members
-RankSync*                 SyncManager::rankSync = nullptr;
-Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
-Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
-SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
+RankSync*                 SyncManager::rankSync_ = nullptr;
+Core::ThreadSafe::Barrier SyncManager::RankExecBarrier_[6];
+Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier_[3];
+SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 
 #if SST_SYNC_PROFILING
 
@@ -56,7 +58,7 @@ SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
     auto sync_profile_stop = std::chrono::high_resolution_clock::now();                                       \
     auto sync_profile_count =                                                                                 \
         std::chrono::duration_cast<std::chrono::nanoseconds>(sync_profile_stop - sync_profile_start).count(); \
-    sim->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
+    sim_->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
 
 #else
 #define SST_SYNC_PROFILE_START                                               \
@@ -69,7 +71,7 @@ SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
     gettimeofday(&sync_profile_stop, NULL);                                                 \
     timersub(&sync_profile_stop, &sync_profile_start, &sync_profile_diff);                  \
     auto sync_profile_count = (sync_profile_diff.tv_usec + sync_profile_diff.tv_sec * 1e6); \
-    sim->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
+    sim_->incrementSyncTime(last_sync_type == RANK, sync_profile_count);
 
 #endif // SST_HIGH_RESOLUTION_CLOCK
 
@@ -115,6 +117,16 @@ public:
 
     void prepareForComplete() override {}
 
+    void setSignals(int UNUSED(end), int UNUSED(usr), int UNUSED(alrm)) override {}
+
+    bool getSignals(int& end, int& usr, int& alrm) override
+    {
+        end  = 0;
+        usr  = 0;
+        alrm = 0;
+        return false;
+    }
+
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
     TimeConverter* getMaxPeriod() { return max_period; }
@@ -141,6 +153,16 @@ public:
     void processLinkUntimedData() override {}
     void finalizeLinkConfigurations() override {}
     void prepareForComplete() override {}
+
+    void setSignals(int UNUSED(end), int UNUSED(usr), int UNUSED(alrm)) override {}
+
+    bool getSignals(int& end, int& usr, int& alrm) override
+    {
+        end  = 0;
+        usr  = 0;
+        alrm = 0;
+        return false;
+    }
 
     /** Register a Link which this Sync Object is responsible for */
     void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
@@ -190,7 +212,7 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
         link_maps[i].clear();
     }
 
-    for ( uint32_t i = my_rank + 1; i < num_ranks.rank; ++i ) {
+    for ( uint32_t i = my_rank + 1; i < num_ranks_.rank; ++i ) {
         // I'm the low rank, so send it first
         // std::map<std::string, uintptr_t> data;
         std::vector<std::pair<std::string, uintptr_t>> data;
@@ -247,59 +269,61 @@ private:
 
 SyncManager::SyncManager(
     const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
-    const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
+    const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
     Action(),
-    rank(rank),
-    num_ranks(num_ranks),
-    threadSync(nullptr),
-    min_part(min_part)
+    rank_(rank),
+    num_ranks_(num_ranks),
+    threadSync_(nullptr),
+    min_part_(min_part),
+    real_time_(real_time)
 {
-    sim = Simulation_impl::getSimulation();
+    sim_ = Simulation_impl::getSimulation();
 
-    if ( rank.thread == 0 ) {
-        for ( auto& b : RankExecBarrier ) {
-            b.resize(num_ranks.thread);
+    if ( rank_.thread == 0 ) {
+        for ( auto& b : RankExecBarrier_ ) {
+            b.resize(num_ranks_.thread);
         }
-        for ( auto& b : LinkUntimedBarrier ) {
-            b.resize(num_ranks.thread);
+        for ( auto& b : LinkUntimedBarrier_ ) {
+            b.resize(num_ranks_.thread);
         }
-        if ( min_part != MAX_SIMTIME_T ) {
-            if ( num_ranks.thread == 1 ) { rankSync = new RankSyncSerialSkip(num_ranks, minPartTC); }
+        if ( min_part_ != MAX_SIMTIME_T ) {
+            if ( num_ranks_.thread == 1 ) { rankSync_ = new RankSyncSerialSkip(num_ranks_, minPartTC); }
             else {
-                rankSync = new RankSyncParallelSkip(num_ranks, minPartTC);
+                rankSync_ = new RankSyncParallelSkip(num_ranks_, minPartTC);
             }
         }
         else {
-            rankSync = new EmptyRankSync(num_ranks);
+            rankSync_ = new EmptyRankSync(num_ranks_);
         }
     }
 
     // Need to check to see if there are any inter-thread
     // dependencies.  If not, EmptyThreadSync, otherwise use one
     // of the active threadsyncs.
-    SimTime_t interthread_minlat = sim->getInterThreadMinLatency();
-    if ( num_ranks.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
+    SimTime_t interthread_minlat = sim_->getInterThreadMinLatency();
+    if ( num_ranks_.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
         if ( Simulation_impl::getSimulation()->direct_interthread ) {
-            threadSync = new ThreadSyncDirectSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
+            threadSync_ = new ThreadSyncDirectSkip(num_ranks_.thread, rank_.thread, Simulation_impl::getSimulation());
         }
         else {
-            threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
+            threadSync_ = new ThreadSyncSimpleSkip(num_ranks_.thread, rank_.thread, Simulation_impl::getSimulation());
         }
     }
     else {
-        threadSync = new EmptyThreadSync(Simulation_impl::getSimulation());
+        threadSync_ = new EmptyThreadSync(Simulation_impl::getSimulation());
     }
 
-    exit = sim->getExit();
+    exit_       = sim_->getExit();
+    checkpoint_ = sim_->getCheckpointAction();
 
     setPriority(SYNCPRIORITY);
 }
 
 SyncManager::SyncManager()
 {
-    sim = Simulation_impl::getSimulation();
-    // threadSync = new EmptyThreadSync(Simulation_impl::getSimulation());
-    // rankSync = new EmptyRankSync(num_ranks);
+    sim_ = Simulation_impl::getSimulation();
+    // threadSync_ = new EmptyThreadSync(Simulation_impl::getSimulation());
+    // rankSync_ = new EmptyRankSync(num_ranks_);
 }
 
 SyncManager::~SyncManager() {}
@@ -318,82 +342,122 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, co
         // side of the link
 
         // For the local ThreadSync, just need to register the link
-        threadSync->registerLink(name, link);
+        threadSync_->registerLink(name, link);
 
         // Need to get target queue from the remote ThreadSync
-        ThreadSync* remoteSync = Simulation_impl::instanceVec[to_rank.thread]->syncManager->threadSync;
+        ThreadSync* remoteSync = Simulation_impl::instanceVec_[to_rank.thread]->syncManager->threadSync_;
         return remoteSync->registerRemoteLink(from_rank.thread, name, link);
     }
     else {
         // Different rank.  Send info onto the RankSync
-        return rankSync->registerLink(to_rank, from_rank, name, link);
+        return rankSync_->registerLink(to_rank, from_rank, name, link);
     }
 }
 
 void
 SyncManager::exchangeLinkInfo()
 {
-    rankSync->exchangeLinkInfo(rank.rank);
+    rankSync_->exchangeLinkInfo(rank_.rank);
 }
 
 void
 SyncManager::execute(void)
 {
-
     SST_SYNC_PROFILE_START
 
-    if ( profile_tools ) profile_tools->syncManagerStart();
+    if ( profile_tools_ ) profile_tools_->syncManagerStart();
 
-    switch ( next_sync_type ) {
+    bool signals_received;
+    int  sig_end;
+    int  sig_usr;
+    int  sig_alrm;
+
+    switch ( next_sync_type_ ) {
     case RANK:
         // Need to make sure all threads have reached the sync to
         // guarantee that all events have been sent to the appropriate
         // queues.
-        RankExecBarrier[0].wait();
+        RankExecBarrier_[0].wait();
+        // GV: At this point thread 0 is in the sync, new signals will be deferred to the next sync
 
         // For a rank sync, we will force a thread sync first.  This
         // will ensure that all events sent between threads will be
         // flushed into their respective TimeVortices.  We need to do
         // this to enable any skip ahead optimizations.
-        threadSync->before();
+        threadSync_->before();
 
         // Need to make sure everyone has made it through the mutex
         // and the min time computation is complete
-        RankExecBarrier[1].wait();
+        RankExecBarrier_[1].wait();
 
+        if ( rank_.thread == 0 ) {
+            real_time_->getSignals(sig_end, sig_usr, sig_alrm);
+            rankSync_->setSignals(sig_end, sig_usr, sig_alrm);
+        }
         // Now call the actual RankSync
-        rankSync->execute(rank.thread);
+        rankSync_->execute(rank_.thread);
 
-        RankExecBarrier[2].wait();
+        // Once out of rankSync, signals have been exchanged
+        RankExecBarrier_[2].wait();
 
         // Now call the threadSync after() call
-        threadSync->after();
+        threadSync_->after();
 
-        RankExecBarrier[3].wait();
+        // Handle signals
+        signals_received = rankSync_->getSignals(sig_end, sig_usr, sig_alrm);
 
-        if ( exit != nullptr && rank.thread == 0 ) exit->check();
+        RankExecBarrier_[3].wait();
 
-        RankExecBarrier[4].wait();
+        // Handle any signals
+        if ( sig_end )
+            real_time_->performSignal(sig_end);
+        else if ( signals_received ) {
+            if ( sig_usr ) real_time_->performSignal(sig_usr);
+            if ( sig_alrm ) real_time_->performSignal(sig_alrm);
+        }
 
-        if ( exit->getGlobalCount() == 0 ) { endSimulation(exit->getEndTime()); }
+        // Generate checkpoint if needed
+        checkpoint_->check();
+
+        if ( exit_ != nullptr && rank_.thread == 0 ) exit_->check();
+
+        RankExecBarrier_[4].wait();
+
+        if ( exit_->getGlobalCount() == 0 ) { endSimulation(exit_->getEndTime()); }
 
         break;
     case THREAD:
-
-        threadSync->execute();
-
-        if ( /*num_ranks.rank == 1*/ min_part == MAX_SIMTIME_T ) {
-            if ( exit->getRefCount() == 0 ) { endSimulation(exit->getEndTime()); }
+        if ( num_ranks_.rank == 1 && rank_.thread == 0 ) {
+            real_time_->getSignals(sig_end, sig_usr, sig_alrm);
+            threadSync_->setSignals(sig_end, sig_usr, sig_alrm);
         }
+        threadSync_->execute();
+
+        // Handle signals for multi-threaded runs/no MPI
+        if ( num_ranks_.rank == 1 ) {
+            signals_received = threadSync_->getSignals(sig_end, sig_usr, sig_alrm);
+            if ( sig_end )
+                real_time_->performSignal(sig_end);
+            else if ( signals_received ) {
+                if ( sig_usr ) real_time_->performSignal(sig_usr);
+                if ( sig_alrm ) real_time_->performSignal(sig_alrm);
+            }
+            checkpoint_->check();
+        }
+
+        if ( /*num_ranks_+.rank == 1*/ min_part_ == MAX_SIMTIME_T ) {
+            if ( exit_->getRefCount() == 0 ) { endSimulation(exit_->getEndTime()); }
+        }
+
 
         break;
     default:
         break;
     }
     computeNextInsert();
-    RankExecBarrier[5].wait();
+    RankExecBarrier_[5].wait();
 
-    if ( profile_tools ) profile_tools->syncManagerEnd();
+    if ( profile_tools_ ) profile_tools_->syncManagerEnd();
 
     SST_SYNC_PROFILE_STOP
 }
@@ -402,20 +466,20 @@ SyncManager::execute(void)
 void
 SyncManager::exchangeLinkUntimedData(std::atomic<int>& msg_count)
 {
-    LinkUntimedBarrier[0].wait();
-    threadSync->processLinkUntimedData();
-    LinkUntimedBarrier[1].wait();
-    rankSync->exchangeLinkUntimedData(rank.thread, msg_count);
-    LinkUntimedBarrier[2].wait();
+    LinkUntimedBarrier_[0].wait();
+    threadSync_->processLinkUntimedData();
+    LinkUntimedBarrier_[1].wait();
+    rankSync_->exchangeLinkUntimedData(rank_.thread, msg_count);
+    LinkUntimedBarrier_[2].wait();
 }
 
 /** Finish link configuration */
 void
 SyncManager::finalizeLinkConfigurations()
 {
-    threadSync->finalizeLinkConfigurations();
+    threadSync_->finalizeLinkConfigurations();
     // Only thread 0 should call finalize on rankSync
-    if ( rank.thread == 0 ) rankSync->finalizeLinkConfigurations();
+    if ( rank_.thread == 0 ) rankSync_->finalizeLinkConfigurations();
 
     // Need to figure out what sync comes first and insert object into
     // TimeVortex
@@ -426,21 +490,21 @@ SyncManager::finalizeLinkConfigurations()
 void
 SyncManager::prepareForComplete()
 {
-    threadSync->prepareForComplete();
+    threadSync_->prepareForComplete();
     // Only thread 0 should call finalize on rankSync
-    if ( rank.thread == 0 ) rankSync->prepareForComplete();
+    if ( rank_.thread == 0 ) rankSync_->prepareForComplete();
 }
 
 void
 SyncManager::computeNextInsert()
 {
-    if ( rankSync->getNextSyncTime() <= threadSync->getNextSyncTime() ) {
-        next_sync_type = RANK;
-        sim->insertActivity(rankSync->getNextSyncTime(), this);
+    if ( rankSync_->getNextSyncTime() <= threadSync_->getNextSyncTime() ) {
+        next_sync_type_ = RANK;
+        sim_->insertActivity(rankSync_->getNextSyncTime(), this);
     }
     else {
-        next_sync_type = THREAD;
-        sim->insertActivity(threadSync->getNextSyncTime(), this);
+        next_sync_type_ = THREAD;
+        sim_->insertActivity(threadSync_->getNextSyncTime(), this);
     }
 }
 
@@ -455,14 +519,14 @@ SyncManager::print(const std::string& header, Output& out) const
 uint64_t
 SyncManager::getDataSize() const
 {
-    return rankSync->getDataSize();
+    return rankSync_->getDataSize();
 }
 
 void
 SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
 {
-    if ( !profile_tools ) profile_tools = new SyncProfileToolList();
-    profile_tools->addProfileTool(tool);
+    if ( !profile_tools_ ) profile_tools_ = new SyncProfileToolList();
+    profile_tools_->addProfileTool(tool);
 }
 
 void
@@ -471,26 +535,26 @@ SyncManager::serialize_order(SST::Core::Serialization::serializer& ser)
     Action::serialize_order(ser);
 
     // AHHHHHHHHHHHHHHHHH
-    ser& rank;      // const causes problems
-    ser& num_ranks; // const again
+    ser& rank_;      // const causes problems
+    ser& num_ranks_; // const again
 
-    ser& next_rankSync;
-    ser& threadSync;
+    ser& next_rankSync_;
+    ser& threadSync_;
 
-    ser& next_sync_type;
-    ser& min_part;
+    ser& next_sync_type_;
+    ser& min_part_;
 
     // FIXME: Need to actually figure out how to handle the static
     // RankSync object.
-    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { rankSync = new EmptyRankSync(num_ranks); }
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { rankSync_ = new EmptyRankSync(num_ranks_); }
 
     // No need to serialize
-    // RankExecBarrier
-    // LinkUntimedBarrier
-    // sim
-    // exit
-    // profile_tools
+    // RankExecBarrier_
+    // LinkUntimedBarrier_
+    // sim_
+    // exit_
+    // profile_tools_
 
-    // static RankSync* rankSync;
+    // static RankSync* rankSync_;
 }
 } // namespace SST

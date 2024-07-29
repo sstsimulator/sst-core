@@ -176,13 +176,6 @@ TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
     return parseCache[ts]->getFactor();
 }
 
-void
-TimeLord::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    ser& timeBaseString;
-    ser& timeBase;
-}
-
 UnitAlgebra
 TimeConverter::getPeriod() const
 {

@@ -42,6 +42,7 @@ REENABLE_WARNING
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
 #include "sst/core/rankInfo.h"
+#include "sst/core/realtime.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stringize.h"
@@ -118,45 +119,6 @@ force_rank_sequential_stop(bool enable, const RankInfo& myRank, const RankInfo& 
     }
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-}
-
-static void
-SimulationSigHandler(int sig)
-{
-    Simulation_impl::setSignal(sig);
-    if ( sig == SIGINT || sig == SIGTERM ) {
-        signal(sig, SIG_DFL); // Restore default handler
-    }
-}
-
-static void
-setupSignals(uint32_t threadRank)
-{
-    if ( 0 == threadRank ) {
-        if ( SIG_ERR == signal(SIGUSR1, SimulationSigHandler) ) {
-            g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR1 signal handler failed.\n");
-        }
-        if ( SIG_ERR == signal(SIGUSR2, SimulationSigHandler) ) {
-            g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR2 signal handler failed\n");
-        }
-        if ( SIG_ERR == signal(SIGINT, SimulationSigHandler) ) {
-            g_output.fatal(CALL_INFO, 1, "Installation of SIGINT signal handler failed\n");
-        }
-        if ( SIG_ERR == signal(SIGALRM, SimulationSigHandler) ) {
-            g_output.fatal(CALL_INFO, 1, "Installation of SIGALRM signal handler failed\n");
-        }
-        if ( SIG_ERR == signal(SIGTERM, SimulationSigHandler) ) {
-            g_output.fatal(CALL_INFO, 1, "Installation of SIGTERM signal handler failed\n");
-        }
-
-        g_output.verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
-    }
-    else {
-        /* Other threads don't want to receive the signal */
-        sigset_t maskset;
-        sigfillset(&maskset);
-        pthread_sigmask(SIG_BLOCK, &maskset, nullptr);
-    }
 }
 
 static void
@@ -477,16 +439,11 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     Core::MemPoolAccessor::initializeLocalData(tid);
     info.myRank.thread = tid;
 
-    if ( tid ) {
-        /* already did Thread Rank 0 in main() */
-        setupSignals(tid);
-    }
+    bool restart = info.config->load_from_checkpoint();
 
     ////// Create Simulation Objects //////
-    SST::Simulation_impl* sim       = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size);
+    SST::Simulation_impl* sim = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size, restart);
     double                start_run = 0.0;
-
-    bool restart = info.config->load_from_checkpoint();
 
     if ( !restart ) {
         double start_build = sst_get_cpu_time();
@@ -562,20 +519,9 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 g_output.verbose(
                     CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n", (now->tm_year + 1900),
                     (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
-
-                if ( info.config->exit_after() > 0 ) {
-                    time_t     stop_time = the_time + info.config->exit_after();
-                    struct tm* end       = localtime(&stop_time);
-                    g_output.verbose(
-                        CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
-                        (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
-
-                    /* Set the alarm */
-                    alarm(info.config->exit_after());
-                }
             }
             // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
-            sim->setStopAtCycle(info.config);
+            sim->setupSimActions(info.config);
 
             if ( tid == 0 && info.world_size.rank > 1 ) {
                 // If we are a MPI_parallel job, need to makes sure that all used
@@ -622,9 +568,15 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         }
     }
     else {
+        double start_build = sst_get_cpu_time();
+
         // Finish parsing checkpoint for restart
         sim->restart(info.config);
+
+        start_run       = sst_get_cpu_time();
+        info.build_time = start_run - start_build;
     }
+
     /* Run Simulation */
     if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
         sim->run();
@@ -1050,8 +1002,8 @@ main(int argc, char* argv[])
     } // end if ( !restart )
 
     if ( cfg.enable_sig_handling() ) {
-        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT and TERM...\n");
-        setupSignals(0);
+        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT, ALRM, and TERM\n");
+        RealTimeManager::installSignalHandlers();
     }
     else {
         // Print out to say disabled?
@@ -1082,6 +1034,11 @@ main(int argc, char* argv[])
 
     double end_serial_build = sst_get_cpu_time();
 
+    /* Block signals for all threads */
+    sigset_t maskset;
+    sigfillset(&maskset);
+    pthread_sigmask(SIG_BLOCK, &maskset, nullptr);
+
     try {
         Output::setThreadID(std::this_thread::get_id(), 0);
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
@@ -1089,6 +1046,8 @@ main(int argc, char* argv[])
             Output::setThreadID(threads[i].get_id(), i);
         }
 
+        /* Unblock signals on thread 0 */
+        pthread_sigmask(SIG_UNBLOCK, &maskset, NULL);
         start_simulation(0, threadInfo[0], mainBarrier);
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
             threads[i].join();
