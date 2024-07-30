@@ -39,6 +39,11 @@ from test_engine_junit import JUnitTestSuite
 from test_engine_junit import junit_to_xml_report_file
 #from test_engine_junit import junit_to_xml_report_string
 
+if not sys.warnoptions:
+    import os, warnings
+    warnings.simplefilter("once") # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = "once" # Also affect subprocesses
+
 class SSTTestCase(unittest.TestCase):
     """ This class is main SSTTestCase class for the SST Testing Frameworks
 
@@ -57,8 +62,33 @@ class SSTTestCase(unittest.TestCase):
         parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
         self._testsuite_dirpath = parent_module_path
         #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
+        self.initializeClass(self.testname)
         self._start_test_time = time.time()
         self._stop_test_time = time.time()
+
+###
+
+    def initializeClass(self, testname):
+        """ The method is called by the Frameworks immediately before class is
+        initialized.
+
+        **NOTICE**:
+            If a derived class defines its own copy of this method, this
+            method (the parent method) MUST be called for proper operation
+            of the testing frameworks
+
+        **NOTE**:
+            (Single Thread Testing) - Called by frameworks.
+            (Concurrent Thread Testing) - Called by frameworks.
+
+        Args:
+            testname (str): Name of the test being initialized
+        """
+        # Placeholder method for overridden method in derived class
+        #log_forced("\nSSTTestCase: initializeClass() - {0}".format(testname))
+        from warnings import warn
+        warn("initializeClass() is deprecated and will be removed in SST 15.",
+             DeprecationWarning, stacklevel=2)
 
 ###
 
