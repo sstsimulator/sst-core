@@ -16,7 +16,7 @@ on:
 #       Any changes to this script will not be run until it is merged into
 #       the main repo.
 
-# This script is used to do a quick and dirty cmake-format v12 check on the
+# This script is used to do a cmake-format check on the
 # PR source repo to ensure it is formatted correctly.  It will initially set
 # the AT: WIP label to try to stop the Autottester from processing the PR, and
 # then perform the cmake-format test using a 3rd party action.  It will then
@@ -60,7 +60,7 @@ jobs:
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 

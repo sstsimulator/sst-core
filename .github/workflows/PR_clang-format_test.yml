@@ -60,7 +60,7 @@ jobs:
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         path: ./sst-core_source
         ref: ${{ github.event.pull_request.head.sha }}
