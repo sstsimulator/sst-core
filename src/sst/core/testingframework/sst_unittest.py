@@ -246,10 +246,10 @@ class SSTTestCase(unittest.TestCase):
                 sdl_file (str): The FilePath to the test SDL (python) file.
                 out_file (str): The FilePath to the finalized output file.
                 err_file (str): The FilePath to the finalized error file.
-                                Default = same directory as the output file.
+                                Default = same file as the output file.
                 mpi_out_files (str): The FilePath to the mpi run output files.
-                                     These will be merged into the out_file at
-                                     the end of a multi-rank run.
+                                     These will be merged into the out_file 
+                                     at the end of a multi-rank run.
                 other_args (str): Any other arguments used in the SST cmd
                                    that the caller wishes to use.
                 num_ranks (int): The number of ranks to run SST with.
@@ -336,10 +336,10 @@ class SSTTestCase(unittest.TestCase):
 
             numa_param = "-map-by numa:PE={0}".format(num_threads)
 
-            oscmd = "mpirun -np {0} {1} -output-filename {2} {3}".format(num_ranks,
-                                                                         numa_param,
-                                                                         mpiout_filename,
-                                                                         oscmd)
+            oscmd = "mpirun -np {0} {1} --output-filename {2} {3}".format(num_ranks,
+                                                                          numa_param,
+                                                                          mpiout_filename,
+                                                                          oscmd)
 
         # Identify the working directory that we are launching SST from
         final_wd = os.getcwd()
@@ -360,7 +360,8 @@ class SSTTestCase(unittest.TestCase):
                         error_file_path = err_file,
                         set_cwd = set_cwd).run(timeout_sec=timeout_sec, send_signal=send_signal, signal_sec=signal_sec)
         if num_ranks > 1:
-            testing_merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
+            testing_merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file, errorfilepath=err_file)
+
 
         # Look for runtime error conditions
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)

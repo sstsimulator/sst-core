@@ -697,6 +697,8 @@ main(int argc, char* argv[])
         size_t size;
         char*  buffer;
 
+        if ( cfg.checkConfigFile() == false ) { return -1; /* checkConfigFile provides error message */ }
+
         SST::Core::Serialization::serializer ser;
         ser.enable_pointer_tracking();
         std::ifstream fs(cfg.configFile(), std::ios::binary);
@@ -768,14 +770,14 @@ main(int argc, char* argv[])
         Params::nextKeyID     = cpt_params_next_key_id;
     }
 
-    // Check to see if the config file exists
-    cfg.checkConfigFile();
-
     // If we are doing a parallel load with a file per rank, add the
     // rank number to the file name before the extension
     if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
         addRankToFileName(cfg.configFile_, myRank.rank);
     }
+
+    // Check to see if the config file exists
+    if ( cfg.checkConfigFile() == false ) { return -1; /* checkConfigFile provides error message */ }
 
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());

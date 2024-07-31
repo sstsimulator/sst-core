@@ -512,7 +512,7 @@ AlrmSignalAction::execute()
     if ( alarm_manager_ && next_alarm_time != 0 ) { alarm(next_alarm_time); }
 }
 
-uint32_t                  AlrmSignalAction::elapsed_   = 0;
+uint32_t                  AlrmSignalAction::elapsed_ = 0;
 Core::ThreadSafe::Barrier AlrmSignalAction::exchange_barrier_;
 
 

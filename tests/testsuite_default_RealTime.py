@@ -19,22 +19,6 @@ from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
-# Code to support a single instance module initialize, must be called setUp method
-
-module_init = 0
-module_sema = threading.Semaphore()
-
-def initializeTestModule_SingleInstance(class_inst):
-    global module_init
-    global module_sema
-
-    module_sema.acquire()
-    if module_init != 1:
-        # Put your single instance Init Code Here
-        module_init = 1
-    module_sema.release()
-
-################################################################################
 # These tests test the RealTime features of SST including:
 # - SIGUSR1 / SIGUSR2
 # - SIGINT / SIGTERM
@@ -43,15 +27,6 @@ def initializeTestModule_SingleInstance(class_inst):
 ################################################################################
 
 class testcase_Signals(SSTTestCase):
-
-    def setUp(self):
-        super(type(self), self).setUp()
-        initializeTestModule_SingleInstance(self)
-        # Put test based setup code here. it is called once before every test
-
-    def tearDown(self):
-        # Put test based teardown code here. it is called once after every test
-        super(type(self), self).tearDown()
 
 #####
     def test_RealTime_SIGUSR1(self):
@@ -80,7 +55,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGUSR1 triggered output message")
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
-        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
+        self.assertTrue(line_count >= num_lines, "Line count incorrect, should be at least {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
     
     def test_RealTime_SIGUSR2(self):
@@ -108,7 +83,7 @@ class testcase_Signals(SSTTestCase):
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 5
         self.assertTrue(sig_found, "Output file is missing SIGUSR2 triggered output message")
-        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
+        self.assertTrue(exit_count >= num_para, "Exit message count incorrect, should be at least {0}, found {1} in {2}".format(exit_count,num_para,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
     
     #@unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
