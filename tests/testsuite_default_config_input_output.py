@@ -17,31 +17,15 @@ import sys
 from sst_unittest import *
 from sst_unittest_support import *
 
-################################################################################
-# Code to support a single instance module initialize, must be called setUp method
-
-module_init = 0
-module_sema = threading.Semaphore()
 
 have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
 
-def initializeTestModule_SingleInstance(class_inst):
-    global module_init
-    global module_sema
-
-    module_sema.acquire()
-    if module_init != 1:
-        # Put your single instance Init Code Here
-        module_init = 1
-    module_sema.release()
-
-################################################################################
 
 class testcase_Config_input_output(SSTTestCase):
 
     def setUp(self):
         super(type(self), self).setUp()
-        initializeTestModule_SingleInstance(self)
+        type(self).initializeTestModule_SingleInstance()
         # Put test based setup code here. it is called once before every test
 
     def tearDown(self):
