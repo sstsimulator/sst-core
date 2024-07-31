@@ -54,7 +54,6 @@ class testcase_Signals(SSTTestCase):
         super(type(self), self).tearDown()
 
 #####
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
     def test_RealTime_SIGUSR1(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -80,11 +79,10 @@ class testcase_Signals(SSTTestCase):
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGUSR1 triggered output message")
-        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
+        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
     
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
     def test_RealTime_SIGUSR2(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -113,6 +111,7 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
     
+    #@unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
     def test_RealTime_SIGINT(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -138,9 +137,10 @@ class testcase_Signals(SSTTestCase):
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGINT triggered output message")
-        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
+        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))        
 
+    #@unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
     def test_RealTime_SIGTERM(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -166,7 +166,7 @@ class testcase_Signals(SSTTestCase):
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGTERM triggered output message")
-        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
+        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))  
     
     def test_RealTime_SIGALRM(self):
@@ -200,5 +200,5 @@ class testcase_Signals(SSTTestCase):
         if ranks > 1:
             num_lines += 12 # Extra heartbeat output for MPI
         self.assertTrue(hb_count == 6, "Heartbeat count incorrect, should be 6, found {0} in {1}".format(hb_count,outfile))
-        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(exit_count,num_para,outfile))
+        self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))

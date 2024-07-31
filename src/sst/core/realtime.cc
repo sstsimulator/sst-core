@@ -463,7 +463,7 @@ AlrmSignalAction::begin(time_t UNUSED(scheduled_time))
     if ( rank_leader_ ) {
 #ifdef SST_CONFIG_HAVE_MPI
         // Broadcast elapsed time
-        MPI_Bcast(&last_time_, 1, MPI_UINT32_T, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&last_time_, sizeof(last_time_), MPI_BYTE, 0, MPI_COMM_WORLD);
 #endif
     }
     if ( num_ranks.thread > 1 ) {
@@ -513,7 +513,6 @@ AlrmSignalAction::execute()
 }
 
 uint32_t                  AlrmSignalAction::elapsed_   = 0;
-time_t                    AlrmSignalAction::last_time_ = 0;
 Core::ThreadSafe::Barrier AlrmSignalAction::exchange_barrier_;
 
 

@@ -579,7 +579,7 @@ private:
  stable API (i.e. the class can change at any time).
 
  NOTE: Output for TraceFunction will only be turned on if the
- SST_TRACEFUNCTION_ACTIVIATE envirnoment variable is set.
+ SST_TRACEFUNCTION_ACTIVATE envirnoment variable is set.
 
  You can also control whether or not an "indent marker" will be used
  by setting SST_TRACEFUNCTION_INDENT_MARKER. If the environment
