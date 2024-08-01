@@ -1372,13 +1372,15 @@ def testing_get_diff_data(test_name):
 ###
 
 
-def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
+def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, errorfilepath=None):
     """ Merge a group of common MPI files into an output file
+        This works for OpenMPI 4.x and 5.x ONLY
 
         Args:
-            filepath_wildcard (str): The wildcard Path to the files to be mreged
-            mpiout_filename (str): The name of the MPI output filename
-            outputfilepath (str): The output file path
+            filepath_wildcard (str): The wildcard Path to the files to be merged (OpenMPI 5.x)
+            mpiout_filename (str): The name of the MPI output directory (OpenMPI 4.x)
+            outputfilepath (str): The output file path for stdout
+            errorfilepath (str): The output file path for stderr. If none, stderr redirects to stdout.
     """
     check_param_type("filepath_wildcard", filepath_wildcard, str)
     check_param_type("mpiout_filename", mpiout_filename, str)
@@ -1387,6 +1389,9 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
     # Delete any output files that might exist
     cmd = "rm -rf {0}".format(outputfilepath)
     os.system(cmd)
+    if errorfilepath is not None:
+        cmd = "rm -rf {0}".format(errorfilepath)
+        os.system(cmd)
 
     # Check for existing mpiout_filepath (for OpenMPI V4)
     mpipath = "{0}/1".format(mpiout_filename)
@@ -1395,11 +1400,19 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
         for rankdir in dirItemList:
             mpirankoutdir = "{0}/{1}".format(mpipath, rankdir)
             mpioutfile = "{0}/{1}".format(mpirankoutdir, "stdout")
+            mpierrfile = "{0}/{1}".format(mpirankoutdir, "stderr")
+            
             if os.path.isdir(mpirankoutdir) and os.path.isfile(mpioutfile):
                 cmd = "cat {0} >> {1}".format(mpioutfile, outputfilepath)
                 os.system(cmd)
+            if os.path.isdir(mpirankoutdir) and os.path.isfile(mpierrfile):
+                if errorfilepath is None:
+                    cmd = "cat {0} >> {1}".format(mpierrfile, outputfilepath)
+                else:
+                    cmd = "cat {0} >> {1}".format(mpierrfile, errorfilepath)
+                os.system(cmd)
     else:
-        # Cat the files together normally (OpenMPI V2)
+        # Cat the files together normally (OpenMPI V5)
         cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
         os.system(cmd)
 

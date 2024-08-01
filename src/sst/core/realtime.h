@@ -140,7 +140,7 @@ private:
     std::vector<RealTimeIntervalAction> interval_actions_;
     bool                                alarm_manager_; /* The instance on thread 0/rank 0 is the manager */
     bool            rank_leader_; /* The instance on thread 0 of each rank participates in MPI exchanges */
-    static time_t   last_time_;   /* Last time a SIGALRM was received */
+    time_t          last_time_;   /* Last time a SIGALRM was received */
     static uint32_t elapsed_;     /* A static so that each threads' instance of this class share the same one */
     static Core::ThreadSafe::Barrier exchange_barrier_;
 };
