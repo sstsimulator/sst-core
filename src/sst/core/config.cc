@@ -588,7 +588,7 @@ public:
         catch ( UnitAlgebra::InvalidUnitType& e ) {
             fprintf(
                 stderr,
-                "Error parsing option: Argument passed to --checkpoint-period has invalid units. Units must be time (s "
+                "Error parsing option: Argument passed to --checkpoint-sim-period has invalid units. Units must be time (s "
                 "or Hz, SI prefix OK). Argument = [%s]\n",
                 arg.c_str());
             return -1;
@@ -977,6 +977,12 @@ Config::insertOptions()
         "the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the appropriate numbers for "
         "that value, lower case letters represent the units and are required for those formats.).",
         std::bind(&ConfigHelper::setCheckpointWallPeriod, this, _1), true);
+    DEF_ARG(
+        "checkpoint-period", 0, "PERIOD",
+        "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
+        "time units (s or Hz) and SI prefixes are accepted. This flag will eventually be removed in favor of "
+        "--checkpoint-sim-period",
+        std::bind(&ConfigHelper::setCheckpointSimPeriod, this, _1), true);
     DEF_ARG(
         "checkpoint-sim-period", 0, "PERIOD",
         "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
