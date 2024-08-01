@@ -47,11 +47,11 @@ jobs:
 
 # Set the WIP label immediately before testing
     - name: SET WIP Label before testing
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -60,7 +60,7 @@ jobs:
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         path: ./sst-core_source
         ref: ${{ github.event.pull_request.head.sha }}
@@ -81,11 +81,11 @@ jobs:
 
 # Label the Results - FOR FAILURE
     - name: ADD FAIL + WIP Label Results for Failure
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -94,11 +94,11 @@ jobs:
       if: ${{ failure() }}
 
     - name: REMOVE PASS Label Results for Failure
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -108,11 +108,11 @@ jobs:
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT FAIL
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -124,11 +124,11 @@ jobs:
 
 # Label the Results - FOR SUCCESS
     - name: ADD PASS Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -137,11 +137,11 @@ jobs:
       if: ${{ success() }}
 
     - name: REMOVE WIP Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -151,11 +151,11 @@ jobs:
       continue-on-error: true
 
     - name: REMOVE FAIL Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -165,11 +165,11 @@ jobs:
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT SUCCESS
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,

@@ -16,7 +16,7 @@ on:
 #       Any changes to this script will not be run until it is merged into
 #       the main repo.
 
-# This script is used to do a quick and dirty cmake-format v12 check on the
+# This script is used to do a cmake-format check on the
 # PR source repo to ensure it is formatted correctly.  It will initially set
 # the AT: WIP label to try to stop the Autottester from processing the PR, and
 # then perform the cmake-format test using a 3rd party action.  It will then
@@ -47,11 +47,11 @@ jobs:
 
 # Set the WIP label immediately before testing
     - name: SET WIP Label before testing
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -60,7 +60,7 @@ jobs:
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
@@ -77,11 +77,11 @@ jobs:
 
 # Label the Results - FOR FAILURE
     - name: ADD FAIL + WIP Label Results for Failure
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -90,11 +90,11 @@ jobs:
       if: ${{ failure() }}
 
     - name: REMOVE PASS Label Results for Failure
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -104,11 +104,11 @@ jobs:
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT FAIL
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -120,11 +120,11 @@ jobs:
 
 # Label the Results - FOR SUCCESS
     - name: ADD PASS Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -133,11 +133,11 @@ jobs:
       if: ${{ success() }}
 
     - name: REMOVE WIP Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -147,11 +147,11 @@ jobs:
       continue-on-error: true
 
     - name: REMOVE FAIL Label Results for Success
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -161,11 +161,11 @@ jobs:
       continue-on-error: true
 
     - name: ADD COMMENT ABOUT SUCCESS
-      uses: actions/github-script@v4
+      uses: actions/github-script@v7
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
