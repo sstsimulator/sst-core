@@ -588,7 +588,8 @@ public:
         catch ( UnitAlgebra::InvalidUnitType& e ) {
             fprintf(
                 stderr,
-                "Error parsing option: Argument passed to --checkpoint-sim-period has invalid units. Units must be time (s "
+                "Error parsing option: Argument passed to --checkpoint-sim-period has invalid units. Units must be "
+                "time (s "
                 "or Hz, SI prefix OK). Argument = [%s]\n",
                 arg.c_str());
             return -1;
