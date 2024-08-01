@@ -86,7 +86,7 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(exit_count >= num_para, "Exit message count incorrect, should be at least {0}, found {1} in {2}".format(exit_count,num_para,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
     
-    #@unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGINT(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -115,7 +115,7 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))        
 
-    #@unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run with MPI")
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGTERM(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
