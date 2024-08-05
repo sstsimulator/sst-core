@@ -36,7 +36,6 @@ class testcase_Signals(SSTTestCase):
 
     def setUp(self):
         super(type(self), self).setUp()
-        type(self).initializeTestModule_SingleInstance()
         # Put test based setup code here. it is called once before every test
 
     def tearDown(self):

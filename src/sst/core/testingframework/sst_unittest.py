@@ -53,15 +53,6 @@ class SSTTestCase(unittest.TestCase):
         This class is derived from Python's unittest.TestCase which provides an
         basic resource for how to develop tests for this frameworks.
     """
-    module_init = 0
-    module_sema = threading.Semaphore()
-
-    @classmethod
-    def initializeTestModule_SingleInstance(cls):
-        with cls.module_sema:
-            if cls.module_init != 1:
-                # Put your single instance Init Code Here
-                cls.module_init = 1
 
     def __init__(self, methodName):
         # NOTE: __init__ is called at startup for all tests before any
