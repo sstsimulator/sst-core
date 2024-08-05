@@ -42,6 +42,7 @@ nobase_dist_sst_HEADERS = \
 	exit.h \
 	factory.h \
 	from_string.h \
+	globalCounter.h \
 	heartbeat.h \
 	initQueue.h \
 	link.h \
