@@ -37,11 +37,6 @@ def initializeTestModule_SingleInstance(class_inst):
 
 class testcase_Checkpoint(SSTTestCase):
 
-    def initializeClass(self, testName):
-        super(type(self), self).initializeClass(testName)
-        # Put test based setup code here. it is called before testing starts
-        # NOTE: This method is called once for every test
-
     def setUp(self):
         super(type(self), self).setUp()
         initializeTestModule_SingleInstance(self)
@@ -168,8 +163,8 @@ class testcase_Checkpoint(SSTTestCase):
             sdlfile_generate = "{0}/subcomponent_tests/test_{1}.py".format(testsuitedir, testtype)
         else:
             sdlfile_generate = "{0}/test_{1}.py".format(testsuitedir,testtype)
-        outfile_generate = "{0}/test_Checkpoint_{1}_generate.out".format(outdir, outstr)
-        options_checkpoint="--checkpoint-period={0} --checkpoint-prefix={1} --model-options='{2}'".format(cptfreq,teststr,modelparams)
+        outfile_generate = "{0}/test_Checkpoint_{1}_generate.out".format(outdir,teststr)
+        options_checkpoint="--checkpoint-sim-period={0} --checkpoint-prefix={1} --model-options='{2}'".format(cptfreq,teststr,modelparams)
         self.run_sst(sdlfile_generate, outfile_generate, other_args=options_checkpoint)
 
         # Run from restart

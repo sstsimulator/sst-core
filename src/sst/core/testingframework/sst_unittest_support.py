@@ -38,6 +38,7 @@ OS_DIST_CENTOS = "CENTOS"
 OS_DIST_RHEL = "RHEL"
 OS_DIST_TOSS = "TOSS"
 OS_DIST_UBUNTU = "UBUNTU"
+OS_DIST_ROCKY = "ROCKY"
 OS_DIST_UNDEF = "UNDEFINED"
 
 ################################################################################
@@ -215,6 +216,7 @@ def host_os_get_distribution_type():
             'RHEL' for Red Hat Enterprise Linux;
             'TOSS' for Toss;
             'UBUNTU' for Ubuntu;
+            'ROCKY' for Rocky;
             'UNDEFINED' an undefined OS.
     """
     k_type = host_os_get_kernel_type()
@@ -229,6 +231,8 @@ def host_os_get_distribution_type():
             return OS_DIST_TOSS
         if "ubuntu" in dist_name:
             return OS_DIST_UBUNTU
+        if "rocky" in dist_name:
+            return OS_DIST_ROCKY
     elif k_type == 'Darwin':
         return OS_DIST_OSX
     return OS_DIST_UNDEF
@@ -297,6 +301,15 @@ def host_os_is_ubuntu():
             (bool) True if OS Distribution is Ubuntu
     """
     return host_os_get_distribution_type() == OS_DIST_UBUNTU
+
+def host_os_is_rocky():
+    """ Check if OS distribution is Rocky
+
+        Returns:
+            (bool) True if OS Distribution is Rocky
+    """
+    return host_os_get_distribution_type() == OS_DIST_ROCKY
+
 
 ###
 
@@ -1359,13 +1372,15 @@ def testing_get_diff_data(test_name):
 ###
 
 
-def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
+def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, errorfilepath=None):
     """ Merge a group of common MPI files into an output file
+        This works for OpenMPI 4.x and 5.x ONLY
 
         Args:
-            filepath_wildcard (str): The wildcard Path to the files to be mreged
-            mpiout_filename (str): The name of the MPI output filename
-            outputfilepath (str): The output file path
+            filepath_wildcard (str): The wildcard Path to the files to be merged (OpenMPI 5.x)
+            mpiout_filename (str): The name of the MPI output directory (OpenMPI 4.x)
+            outputfilepath (str): The output file path for stdout
+            errorfilepath (str): The output file path for stderr. If none, stderr redirects to stdout.
     """
     check_param_type("filepath_wildcard", filepath_wildcard, str)
     check_param_type("mpiout_filename", mpiout_filename, str)
@@ -1374,6 +1389,9 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
     # Delete any output files that might exist
     cmd = "rm -rf {0}".format(outputfilepath)
     os.system(cmd)
+    if errorfilepath is not None:
+        cmd = "rm -rf {0}".format(errorfilepath)
+        os.system(cmd)
 
     # Check for existing mpiout_filepath (for OpenMPI V4)
     mpipath = "{0}/1".format(mpiout_filename)
@@ -1382,11 +1400,19 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
         for rankdir in dirItemList:
             mpirankoutdir = "{0}/{1}".format(mpipath, rankdir)
             mpioutfile = "{0}/{1}".format(mpirankoutdir, "stdout")
+            mpierrfile = "{0}/{1}".format(mpirankoutdir, "stderr")
+            
             if os.path.isdir(mpirankoutdir) and os.path.isfile(mpioutfile):
                 cmd = "cat {0} >> {1}".format(mpioutfile, outputfilepath)
                 os.system(cmd)
+            if os.path.isdir(mpirankoutdir) and os.path.isfile(mpierrfile):
+                if errorfilepath is None:
+                    cmd = "cat {0} >> {1}".format(mpierrfile, outputfilepath)
+                else:
+                    cmd = "cat {0} >> {1}".format(mpierrfile, errorfilepath)
+                os.system(cmd)
     else:
-        # Cat the files together normally (OpenMPI V2)
+        # Cat the files together normally (OpenMPI V5)
         cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
         os.system(cmd)
 
@@ -1686,6 +1712,9 @@ def _get_linux_distribution():
         # Until we have other OS's, this is Ubuntu.
         distname = "ubuntu"
         distver = _get_linux_version("/etc/lsb-release", " ")
+    elif os.path.isfile("/etc/rocky-release", " "):
+        distname = "rocky"
+        distver = _get_linux_version("/etc/rocky-release", " ")
     rtn_data = (distname, distver)
     return rtn_data
 

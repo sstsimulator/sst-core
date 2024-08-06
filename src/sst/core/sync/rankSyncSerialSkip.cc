@@ -105,6 +105,23 @@ void
 RankSyncSerialSkip::prepareForComplete()
 {}
 
+void
+RankSyncSerialSkip::setSignals(int end, int usr, int alrm)
+{
+    sig_end_  = end;
+    sig_usr_  = usr;
+    sig_alrm_ = alrm;
+}
+
+bool
+RankSyncSerialSkip::getSignals(int& end, int& usr, int& alrm)
+{
+    end  = sig_end_;
+    usr  = sig_usr_;
+    alrm = sig_alrm_;
+    return sig_end_ || sig_usr_ || sig_alrm_;
+}
+
 uint64_t
 RankSyncSerialSkip::getDataSize() const
 {
@@ -125,7 +142,6 @@ void
 RankSyncSerialSkip::exchange(void)
 {
 #ifdef SST_CONFIG_HAVE_MPI
-
     // Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
     MPI_Request sreqs[2 * comm_map.size()];
@@ -239,6 +255,14 @@ RankSyncSerialSkip::exchange(void)
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 
     myNextSyncTime = min_time + max_period->getFactor();
+
+    int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
+    int32_t global_signals[3] = { 0, 0, 0 };
+    MPI_Allreduce(&local_signals, &global_signals, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    sig_end_  = global_signals[0];
+    sig_usr_  = global_signals[1];
+    sig_alrm_ = global_signals[2];
 #endif
 }
 
@@ -343,5 +367,8 @@ RankSyncSerialSkip::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& deserializeTime;
 }
 
+int RankSyncSerialSkip::sig_end_(0);
+int RankSyncSerialSkip::sig_usr_(0);
+int RankSyncSerialSkip::sig_alrm_(0);
 
 } // namespace SST

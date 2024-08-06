@@ -38,8 +38,13 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 
-    link = configureLink("port", new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
-    sst_assert(link, CALL_INFO, -1, "Could not configure link");
+    link_left =
+        configureLink("port_left", new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+    sst_assert(link_left, CALL_INFO, -1, "Could not configure left link");
+
+    link_right =
+        configureLink("port_right", new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+    sst_assert(link_right, CALL_INFO, -1, "Could not configure right link");
 
     test_string = params.find<std::string>("test_string", "");
 
@@ -60,6 +65,8 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     output = new Output(
         params.find<std::string>("output_prefix", ""), params.find<uint32_t>("output_verbose", 0), 0,
         Output::output_location_t::STDOUT);
+    output_frequency = params.find<int>("output_frequency", 1);
+    if ( output_frequency < 1 ) output_frequency = 1;
 
     // RNG & Distributions
     marsaglia =
@@ -92,9 +99,22 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
 coreTestCheckpoint::~coreTestCheckpoint() {}
 
 void
+coreTestCheckpoint::init(unsigned UNUSED(phase))
+{
+    output->output("%s, init()\n", getName().c_str());
+}
+
+void
 coreTestCheckpoint::setup()
 {
-    if ( counter > 0 ) link->send(new coreTestCheckpointEvent(counter));
+    output->output("%s, setup()\n", getName().c_str());
+    if ( counter > 0 ) link_right->send(new coreTestCheckpointEvent(counter));
+}
+
+void
+coreTestCheckpoint::complete(unsigned UNUSED(phase))
+{
+    output->output("%s, complete()\n", getName().c_str());
 }
 
 // Report state that should persist through checkpoint/restart
@@ -117,9 +137,9 @@ coreTestCheckpoint::handleEvent(Event* ev)
         getSimulationOutput().output("%s, OK to end simulation\n", getName().c_str());
         primaryComponentOKToEndSim();
     }
-    getSimulationOutput().output(
-        "%s, bounce %d, t=%" PRIu64 "\n", getName().c_str(), event->getCount(), getCurrentSimCycle());
-    link->send(event);
+    output->verbose(
+        CALL_INFO, 1, 0, "%s, bounce %d, t=%" PRIu64 "\n", getName().c_str(), event->getCount(), getCurrentSimCycle());
+    link_right->send(event);
     stat_eventcount->addData(1);
 }
 
@@ -127,20 +147,29 @@ coreTestCheckpoint::handleEvent(Event* ev)
 bool
 coreTestCheckpoint::handleClock(Cycle_t cycle)
 {
-    getSimulationOutput().output("Clock cycle count = %" PRIu64 "\n", cycle);
+    double   gauss_next     = dist_gauss->getNextDouble();
+    uint32_t mersenne_next  = mersenne->generateNextUInt32();
+    uint32_t marsaglia_next = marsaglia->generateNextUInt32();
+    uint32_t xorshift_next  = xorshift->generateNextUInt32();
+    double   const_next     = dist_const->getNextDouble();
+    double   discrete_next  = dist_discrete->getNextDouble();
+    double   expon_next     = dist_expon->getNextDouble();
+    double   poisson_next   = dist_poisson->getNextDouble();
+    double   uniform_next   = dist_uniform->getNextDouble();
 
-    double   distval = dist_gauss->getNextDouble();
-    uint32_t rngval  = mersenne->generateNextUInt32();
+    if ( (cycle % output_frequency) == 0 ) {
+        output->verbose(CALL_INFO, 2, 0, "Clock cycle count = %" PRIu64 "\n", cycle);
 
-    output->output(
-        "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia->generateNextUInt32(), rngval,
-        xorshift->generateNextUInt32());
-    output->output(
-        "Distributions: %f, %f, %f, %f, %f, %f\n", dist_const->getNextDouble(), dist_discrete->getNextDouble(),
-        dist_expon->getNextDouble(), distval, dist_poisson->getNextDouble(), dist_uniform->getNextDouble());
+        output->verbose(
+            CALL_INFO, 1, 0, "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia_next, mersenne_next,
+            xorshift_next);
+        output->verbose(
+            CALL_INFO, 1, 0, "Distributions: %f, %f, %f, %f, %f, %f\n", const_next, discrete_next, expon_next,
+            gauss_next, poisson_next, uniform_next);
+    }
 
-    stat_dist->addData(distval);
-    stat_rng->addData(rngval);
+    stat_dist->addData(gauss_next);
+    stat_rng->addData(mersenne_next);
 
     duty_cycle_count--;
     if ( duty_cycle_count == 0 ) {
@@ -164,15 +193,22 @@ coreTestCheckpoint::restartClock(Event* UNUSED(ev))
 void
 coreTestCheckpoint::printStatus(Output& out)
 {
-    out.output("Component Status: %s, %p, %" PRIu32 ", %s\n", getName().c_str(), link, counter, test_string.c_str());
+    out.output(
+        "Component Status: %s, %p, %" PRIu32 ", %s\n", getName().c_str(), link_right, counter, test_string.c_str());
 }
 
+void
+coreTestCheckpoint::emergencyShutdown()
+{
+    output->output("Component %s: Emergency Shutdown\n", getName().c_str());
+}
 
 void
 coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     SST::Component::serialize_order(ser);
-    SST_SER(link)
+    SST_SER(link_left)
+    SST_SER(link_right)
     SST_SER(self_link)
     SST_SER(clock_handler)
     SST_SER(clock_tc)
@@ -183,6 +219,7 @@ coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(counter);
     SST_SER(test_string);
     SST_SER(output);
+    SST_SER(output_frequency);
     SST_SER(mersenne)
     SST_SER(marsaglia)
     SST_SER(xorshift)

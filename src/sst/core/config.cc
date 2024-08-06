@@ -14,6 +14,7 @@
 #include "sst/core/config.h"
 
 #include "sst/core/env/envquery.h"
+#include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
 #include <cstdlib>
@@ -112,9 +113,6 @@ public:
     // exit after
     static int setExitAfter(Config* cfg, const std::string& arg)
     {
-        /* TODO: Error checking */
-        errno = 0;
-
         static const char* templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
         const size_t       n_templ     = sizeof(templates) / sizeof(templates[0]);
 #pragma GCC diagnostic push
@@ -126,9 +124,6 @@ public:
         for ( size_t i = 0; i < n_templ; i++ ) {
             memset(&res, '\0', sizeof(res));
             p = strptime(arg.c_str(), templates[i], &res);
-            fprintf(
-                stderr, "**** [%s]  p = %p ; *p = '%c', %u:%u:%u\n", templates[i], p, (p) ? *p : '\0', res.tm_hour,
-                res.tm_min, res.tm_sec);
             if ( p != nullptr && *p == '\0' ) {
                 cfg->exit_after_ = res.tm_sec;
                 cfg->exit_after_ += res.tm_min * 60;
@@ -139,7 +134,7 @@ public:
 
         fprintf(
             stderr,
-            "Failed to parse stop time [%s]\n"
+            "Error parsing option: Argument passed to --exit-after cannot be parsed. Argument = [%s]\n"
             "Valid formats are:\n",
             arg.c_str());
         for ( size_t i = 0; i < n_templ; i++ ) {
@@ -159,11 +154,74 @@ public:
     }
 
     // heart beat
-    static int setHeartbeat(Config* cfg, const std::string& arg)
+    static int setHeartbeatSimPeriod(Config* cfg, const std::string& arg)
     {
-        /* TODO: Error checking */
-        cfg->heartbeat_period_ = arg;
+        if ( arg == "" ) { return 0; }
+
+        try {
+            UnitAlgebra check(arg);
+            if ( !check.hasUnits("s") && !check.hasUnits("Hz") ) {
+                fprintf(
+                    stderr,
+                    "Error parsing option: Units passed to --heartbeat-sim-period must be time (s or Hz, SI prefix "
+                    "OK). Argument = "
+                    "[%s]\n",
+                    arg.c_str());
+                return -1;
+            }
+        }
+        catch ( UnitAlgebra::InvalidUnitType const& ) {
+            fprintf(
+                stderr, "Error parsing option: Invalid units passed to --heartbeat-sim-period. Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
+        catch ( ... ) {
+            fprintf(
+                stderr,
+                "Error parsing option: Argument passed to --heartbeat-sim-period cannot be parsed. Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
+
+        cfg->heartbeat_sim_period_ = arg;
         return 0;
+    }
+
+    static int setHeartbeatWallPeriod(Config* cfg, const std::string& arg)
+    {
+        if ( arg == "" ) { return 0; }
+
+        /* Parse time string into seconds if not already */
+        static const char* cpt_templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
+        const size_t       n_templ         = sizeof(cpt_templates) / sizeof(cpt_templates[0]);
+        struct tm          res             = {};
+        char*              p;
+        uint32_t           val;
+
+        for ( size_t i = 0; i < n_templ; i++ ) {
+            memset(&res, '\0', sizeof(res));
+            p = strptime(arg.c_str(), cpt_templates[i], &res);
+            if ( p != nullptr && *p == '\0' ) {
+                val = res.tm_sec;
+                val += res.tm_min * 60;
+                val += res.tm_hour * 60 * 60;
+
+                cfg->heartbeat_wall_period_ = val;
+
+                return 0;
+            }
+        }
+
+        fprintf(
+            stderr,
+            "Error parsing option: Argument passed to --heartbeat-wall-period could not be parsed. Argument = [%s]\n"
+            "Valid formats are:\n",
+            arg.c_str());
+        for ( size_t i = 0; i < n_templ; i++ ) {
+            fprintf(stderr, "\t%s\n", cpt_templates[i]);
+        }
+        return -1;
     }
 
     // output directory
@@ -301,8 +359,26 @@ public:
     // timebase
     static int setTimebase(Config* cfg, const std::string& arg)
     {
-        // TODO: Error checking.  Need to wait until UnitAlgebra
-        // switches to exceptions on errors instead of calling abort
+        try {
+            UnitAlgebra check(arg);
+            if ( !check.hasUnits("s") && !check.hasUnits("Hz") ) {
+                fprintf(
+                    stderr,
+                    "Error parsing option: Units passed to --timebase must be time (s or Hz). Argument = [%s]\n",
+                    arg.c_str());
+                return -1;
+            }
+        }
+        catch ( UnitAlgebra::InvalidUnitType const& ) {
+            fprintf(stderr, "Error parsing option: Invalid units passed to --timebase. Argument = [%s]\n", arg.c_str());
+            return -1;
+        }
+        catch ( ... ) {
+            fprintf(
+                stderr, "Error parsing option: Argument passed to --timebase cannot be parsed. Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
         cfg->timeBase_ = arg;
         return 0;
     }
@@ -454,11 +530,78 @@ public:
     // Advanced options - checkpointing
 
     // Set frequency of checkpoint generation
-    static int setCheckpointPeriod(Config* cfg, const std::string& arg)
+    static int setCheckpointWallPeriod(Config* cfg, const std::string& arg)
     {
-        /* TODO: Error checking */
-        cfg->checkpoint_period_ = arg;
-        return 0;
+        if ( arg == "" ) { return 0; }
+
+        /* Parse time string into seconds if not already */
+        static const char* cpt_templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
+        const size_t       n_templ         = sizeof(cpt_templates) / sizeof(cpt_templates[0]);
+        struct tm          res             = {};
+        char*              p;
+        uint32_t           val;
+
+        for ( size_t i = 0; i < n_templ; i++ ) {
+            memset(&res, '\0', sizeof(res));
+            p = strptime(arg.c_str(), cpt_templates[i], &res);
+            if ( p != nullptr && *p == '\0' ) {
+                val = res.tm_sec;
+                val += res.tm_min * 60;
+                val += res.tm_hour * 60 * 60;
+
+                cfg->checkpoint_wall_period_ = val;
+
+                return 0;
+            }
+        }
+
+        fprintf(
+            stderr,
+            "Error parsing option: Argument passed to --checkpoint-wall-period could not be parsed. Argument = [%s]\n"
+            "Valid formats are:\n",
+            arg.c_str());
+        for ( size_t i = 0; i < n_templ; i++ ) {
+            fprintf(stderr, "\t%s\n", cpt_templates[i]);
+        }
+        return -1;
+    }
+
+    static int setCheckpointSimPeriod(Config* cfg, const std::string& arg)
+    {
+        if ( arg == "" ) { return 0; }
+
+        try {
+            UnitAlgebra check(arg);
+            if ( check.hasUnits("s") || check.hasUnits("Hz") ) {
+                cfg->checkpoint_sim_period_ = arg;
+                return 0;
+            }
+            else {
+                fprintf(
+                    stderr,
+                    "Error parsing option: --checkpoint-sim-period requires time units (s or Hz, SI prefix OK). "
+                    "Argument = [%s]\n",
+                    arg.c_str());
+                return -1;
+            }
+        }
+        catch ( UnitAlgebra::InvalidUnitType& e ) {
+            fprintf(
+                stderr,
+                "Error parsing option: Argument passed to --checkpoint-sim-period has invalid units. Units must be "
+                "time (s "
+                "or Hz, SI prefix OK). Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
+        catch ( ... ) { /* Fall through */
+        }
+
+        fprintf(
+            stderr,
+            "Error parsing option: Argument passed to --checkpoint-sim-period could not be parsed. Argument = [%s]\n",
+            arg.c_str());
+        return -1;
     }
 
     // Set whether to load from checkpoint
@@ -500,7 +643,8 @@ Config::print()
     std::cout << "stop_at = " << stop_at_ << std::endl;
     std::cout << "exit_after = " << exit_after_ << std::endl;
     std::cout << "partitioner = " << partitioner_ << std::endl;
-    std::cout << "heartbeat_period = " << heartbeat_period_ << std::endl;
+    std::cout << "heartbeat_wall_period = " << heartbeat_wall_period_ << std::endl;
+    std::cout << "heartbeat_sim_period = " << heartbeat_sim_period_ << std::endl;
     std::cout << "output_directory = " << output_directory_ << std::endl;
     std::cout << "output_core_prefix = " << output_core_prefix_ << std::endl;
     std::cout << "output_config_graph = " << output_config_graph_ << std::endl;
@@ -513,7 +657,8 @@ Config::print()
     std::cout << "timeBase = " << timeBase_ << std::endl;
     std::cout << "parallel_load = " << parallel_load_ << std::endl;
     std::cout << "load_checkpoint = " << load_from_checkpoint_ << std::endl;
-    std::cout << "checkpoint_period = " << checkpoint_period_ << std::endl;
+    std::cout << "checkpoint_wall_period = " << checkpoint_wall_period_ << std::endl;
+    std::cout << "checkpoint_sim_period = " << checkpoint_sim_period_ << std::endl;
     std::cout << "checkpoint_prefix = " << checkpoint_prefix_ << std::endl;
     std::cout << "timeVortex = " << timeVortex_ << std::endl;
     std::cout << "interthread_links = " << interthread_links_ << std::endl;
@@ -561,15 +706,16 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     // Basic Options
     first_rank_ = first_rank;
 
-    num_ranks_        = num_ranks;
-    num_threads_      = 1;
-    configFile_       = "NONE";
-    model_options_    = "";
-    print_timing_     = false;
-    stop_at_          = "0 ns";
-    exit_after_       = 0;
-    partitioner_      = "sst.linear";
-    heartbeat_period_ = "";
+    num_ranks_             = num_ranks;
+    num_threads_           = 1;
+    configFile_            = "NONE";
+    model_options_         = "";
+    print_timing_          = false;
+    stop_at_               = "0 ns";
+    exit_after_            = 0;
+    partitioner_           = "sst.linear";
+    heartbeat_sim_period_  = "";
+    heartbeat_wall_period_ = 0;
 
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
     getcwd(wd_buf, PATH_MAX);
@@ -617,9 +763,10 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     rank_seq_startup_ = false;
 
     // Advanced Options - Checkpointing
-    checkpoint_period_    = "";
-    load_from_checkpoint_ = false;
-    checkpoint_prefix_    = "checkpoint";
+    checkpoint_wall_period_ = 0;
+    checkpoint_sim_period_  = "";
+    load_from_checkpoint_   = false;
+    checkpoint_prefix_      = "checkpoint";
 
     // Advanced Options - environment
     enable_sig_handling_ = true;
@@ -682,8 +829,7 @@ Config::insertOptions()
     DEF_ARG(
         "model-options", 0, "STR",
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
-        "will be "
-        "appended to the model options (or used as the model options if --model-options was not specified).",
+        "will be appended to the model options (or used as the model options if --model-options was not specified).",
         std::bind(&ConfigHelper::setModelOptions, this, _1), false);
     DEF_FLAG_OPTVAL(
         "print-timing-info", 0, "Print SST timing information", std::bind(&ConfigHelper::setPrintTiming, this, _1),
@@ -694,7 +840,7 @@ Config::insertOptions()
     DEF_ARG(
         "exit-after", 0, "TIME",
         "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
-        "seconds, with the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (captital letters are the "
+        "seconds, with the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the "
         "appropriate numbers for that value, lower case letters represent the units and are required for those "
         "formats).",
         std::bind(&ConfigHelper::setExitAfter, this, _1), true);
@@ -703,9 +849,21 @@ Config::insertOptions()
         std::bind(&ConfigHelper::setPartitioner, this, _1), true);
     DEF_ARG(
         "heartbeat-period", 0, "PERIOD",
-        "Set time for heartbeats to be published (these are approximate timings, published by the core, to update on "
-        "progress)",
-        std::bind(&ConfigHelper::setHeartbeat, this, _1), true);
+        "Set time for heartbeats to be published (these are approximate timings measured in simulation time, published "
+        "by the core, to update on progress)",
+        std::bind(&ConfigHelper::setHeartbeatSimPeriod, this, _1), true);
+    DEF_ARG(
+        "heartbeat-wall-period", 0, "PERIOD",
+        "Set approximate frequency for heartbeats (SST-Core progress updates) to be published in terms of wall (real) "
+        "time. PERIOD can be specified in hours, minutes, and seconds with "
+        "the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the appropriate numbers for "
+        "that value, lower case letters represent the units and are required for those formats.).",
+        std::bind(&ConfigHelper::setHeartbeatWallPeriod, this, _1), true);
+    DEF_ARG(
+        "heartbeat-sim-period", 0, "PERIOD",
+        "Set approximate frequency for heartbeats (SST-Core progress updates) to be published in terms of simulated "
+        "time. PERIOD must include time units (s or Hz) and SI prefixes are accepted.",
+        std::bind(&ConfigHelper::setHeartbeatSimPeriod, this, _1), true);
     DEF_ARG(
         "output-directory", 0, "DIR", "Directory into which all SST output files should reside",
         std::bind(&ConfigHelper::setOutputDir, this, _1), true);
@@ -726,8 +884,8 @@ Config::insertOptions()
     DEF_FLAG_OPTVAL(
         "parallel-output", 0,
         "Enable parallel output of configuration information.  This option is ignored for single rank jobs.  Must also "
-        "specify an output type (--output-config "
-        "and/or --output-json).  Note: this will also cause partition info to be output if set to true.",
+        "specify an output type (--output-config and/or --output-json).  Note: this will also cause partition info to "
+        "be output if set to true.",
         std::bind(&ConfigHelper::enableParallelOutput, this, _1), true);
 #endif
 
@@ -755,8 +913,8 @@ Config::insertOptions()
         "parallel-load", 0, "MODE",
         "Enable parallel loading of configuration. This option is ignored for single rank jobs.  Optional mode "
         "parameters are NONE, SINGLE and MULTI (default).  If NONE is specified, parallel-load is turned off. If "
-        "SINGLE is specified, the same file will be passed to all MPI "
-        "ranks.  If MULTI is specified, each MPI rank is required to have it's own file to load. Note, not all input "
+        "SINGLE is specified, the same file will be passed to all MPI ranks.  If MULTI is specified, each MPI rank is "
+        "required to have it's own file to load. Note, not all input "
         "formats support both types of file loading.",
         std::bind(&ConfigHelper::enableParallelLoadMode, this, _1), false);
 #endif
@@ -814,10 +972,23 @@ Config::insertOptions()
     /* Advanced Features - Checkpoint */
     DEF_SECTION_HEADING("Advanced Options - Checkpointing (EXPERIMENTAL)");
     DEF_ARG(
+        "checkpoint-wall-period", 0, "PERIOD",
+        "Set approximate frequency for checkpoints to be generated in terms of wall (real) time. PERIOD can be "
+        "specified in hours, minutes, and seconds with "
+        "the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the appropriate numbers for "
+        "that value, lower case letters represent the units and are required for those formats.).",
+        std::bind(&ConfigHelper::setCheckpointWallPeriod, this, _1), true);
+    DEF_ARG(
         "checkpoint-period", 0, "PERIOD",
-        "Set frequency for checkpoints to be generated (this is an approximate timing and specified in simulated "
-        "time.",
-        std::bind(&ConfigHelper::setCheckpointPeriod, this, _1), true);
+        "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
+        "time units (s or Hz) and SI prefixes are accepted. This flag will eventually be removed in favor of "
+        "--checkpoint-sim-period",
+        std::bind(&ConfigHelper::setCheckpointSimPeriod, this, _1), true);
+    DEF_ARG(
+        "checkpoint-sim-period", 0, "PERIOD",
+        "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
+        "time units (s or Hz) and SI prefixes are accepted.",
+        std::bind(&ConfigHelper::setCheckpointSimPeriod, this, _1), true);
     DEF_FLAG(
         "load-checkpoint", 0,
         "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",

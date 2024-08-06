@@ -23,7 +23,9 @@
 
 namespace SST {
 
+class CheckpointAction;
 class Exit;
+class RealTimeManager;
 class Simulation_impl;
 // class SyncBase;
 class ThreadSyncQueue;
@@ -37,7 +39,7 @@ class SyncProfileTool;
 class RankSync : public SST::Core::Serialization::serializable
 {
 public:
-    RankSync(RankInfo num_ranks) : num_ranks(num_ranks) { link_maps.resize(num_ranks.rank); }
+    RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
     RankSync() : max_period(nullptr) {}
     virtual ~RankSync() {}
 
@@ -50,6 +52,11 @@ public:
     virtual void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) = 0;
     virtual void finalizeLinkConfigurations()                                     = 0;
     virtual void prepareForComplete()                                             = 0;
+
+    /** Set signals to exchange during sync */
+    virtual void setSignals(int end, int usr, int alrm)    = 0;
+    /** Return exchanged signals after sync */
+    virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
@@ -67,7 +74,7 @@ public:
     }
     ImplementVirtualSerializable(SST::RankSync) protected : SimTime_t nextSyncTime;
     TimeConverter* max_period;
-    const RankInfo num_ranks;
+    const RankInfo num_ranks_;
 
     std::vector<std::map<std::string, uintptr_t>> link_maps;
 
@@ -96,6 +103,11 @@ public:
     virtual void processLinkUntimedData()     = 0;
     virtual void finalizeLinkConfigurations() = 0;
     virtual void prepareForComplete()         = 0;
+
+    /** Set signals to exchange during sync */
+    virtual void setSignals(int end, int usr, int alrm)    = 0;
+    /** Return exchanged signals after sync */
+    virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
@@ -136,7 +148,7 @@ class SyncManager : public Action
 public:
     SyncManager(
         const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
-        const std::vector<SimTime_t>& interThreadLatencies);
+        const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time);
     SyncManager(); // For serialization only
     virtual ~SyncManager();
 
@@ -163,23 +175,26 @@ public:
 private:
     enum sync_type_t { RANK, THREAD };
 
-    RankInfo                         rank;
-    RankInfo                         num_ranks;
-    static Core::ThreadSafe::Barrier RankExecBarrier[6];
-    static Core::ThreadSafe::Barrier LinkUntimedBarrier[3];
+    RankInfo                         rank_;
+    RankInfo                         num_ranks_;
+    static Core::ThreadSafe::Barrier RankExecBarrier_[6];
+    static Core::ThreadSafe::Barrier LinkUntimedBarrier_[3];
     // static SimTime_t min_next_time;
     // static int min_count;
 
-    static RankSync* rankSync;
-    static SimTime_t next_rankSync;
-    ThreadSync*      threadSync;
-    Exit*            exit;
-    Simulation_impl* sim;
+    static RankSync* rankSync_;
+    static SimTime_t next_rankSync_;
+    ThreadSync*      threadSync_;
+    Exit*            exit_;
+    Simulation_impl* sim_;
 
-    sync_type_t next_sync_type;
-    SimTime_t   min_part;
+    sync_type_t next_sync_type_;
+    SimTime_t   min_part_;
 
-    SyncProfileToolList* profile_tools = nullptr;
+    RealTimeManager*  real_time_;
+    CheckpointAction* checkpoint_;
+
+    SyncProfileToolList* profile_tools_ = nullptr;
 
     void computeNextInsert();
 };

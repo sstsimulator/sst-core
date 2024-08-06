@@ -23,6 +23,8 @@ import traceback
 import shlex
 import ast
 import inspect
+import signal
+from subprocess import TimeoutExpired
 
 import test_engine_globals
 
@@ -64,10 +66,11 @@ class OSCommand():
         self._validate_cmd_str(cmd_str)
         self._output_file_path = self._validate_output_path(output_file_path)
         self._error_file_path = self._validate_output_path(error_file_path)
-
+        self._signal = signal.NSIG
+        self._signal_sec = 3
 ####
 
-    def run(self, timeout_sec=60, **kwargs):
+    def run(self, timeout_sec=60, send_signal=signal.NSIG, signal_sec=3, **kwargs):
         """ Run a command then return and OSCmdRtn object.
 
             Args:
@@ -79,7 +82,9 @@ class OSCommand():
             raise ValueError("ERROR: Timeout must be an int or a float")
 
         self._timeout_sec = timeout_sec
-
+        self._signal = send_signal
+        self._signal_sec = signal_sec
+        
         # Build the thread that will monitor the subprocess with a timeout
         thread = threading.Thread(target=self._run_cmd_in_subprocess, kwargs=kwargs)
         thread.start()
@@ -129,6 +134,13 @@ class OSCommand():
                                              shell=self._use_shell,
                                              cwd = subprocess_path,
                                              **kwargs)
+            
+            if self._signal is not signal.NSIG:
+                try:
+                    self._run_output, self._run_error = self._process.communicate(timeout=self._signal_sec)
+                except TimeoutExpired:
+                    self._process.send_signal(self._signal)
+           
             self._run_output, self._run_error = self._process.communicate()
             self._run_status = self._process.returncode
 

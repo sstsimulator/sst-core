@@ -60,11 +60,11 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UN
 {
     max_period     = Simulation_impl::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
-    recv_count     = new int[num_ranks.thread];
-    for ( uint32_t i = 0; i < num_ranks.thread; i++ ) {
+    recv_count     = new int[num_ranks_.thread];
+    for ( uint32_t i = 0; i < num_ranks_.thread; i++ ) {
         recv_count[i] = 0;
     }
-    link_send_queue = new SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>[num_ranks.thread];
+    link_send_queue = new SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>[num_ranks_.thread];
 }
 
 RankSyncParallelSkip::~RankSyncParallelSkip()
@@ -138,6 +138,23 @@ RankSyncParallelSkip::finalizeLinkConfigurations()
 void
 RankSyncParallelSkip::prepareForComplete()
 {}
+
+void
+RankSyncParallelSkip::setSignals(int end, int usr, int alrm)
+{
+    sig_end_  = end;
+    sig_usr_  = usr;
+    sig_alrm_ = alrm;
+}
+
+bool
+RankSyncParallelSkip::getSignals(int& end, int& usr, int& alrm)
+{
+    end  = sig_end_;
+    usr  = sig_usr_;
+    alrm = sig_alrm_;
+    return sig_end_ || sig_usr_ || sig_alrm_;
+}
 
 uint64_t
 RankSyncParallelSkip::getDataSize() const
@@ -360,6 +377,15 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
 
     myNextSyncTime = min_time + max_period->getFactor();
 
+    /* Exchange signals */
+    int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
+    int32_t global_signals[3] = { 0, 0, 0 };
+    MPI_Allreduce(&local_signals, &global_signals, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    sig_end_  = global_signals[0];
+    sig_usr_  = global_signals[1];
+    sig_alrm_ = global_signals[2];
+
 #endif
 }
 
@@ -489,7 +515,7 @@ RankSyncParallelSkip::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& mpiWaitTime;
     ser& deserializeTime;
     ser& send_count;
-    for ( uint32_t i = 0; i < num_ranks.thread; i++ )
+    for ( uint32_t i = 0; i < num_ranks_.thread; i++ )
         ser& recv_count[i];
 
     ser& comm_send_map;
@@ -505,5 +531,8 @@ RankSyncParallelSkip::serialize_order(SST::Core::Serialization::serializer& ser)
     // lock
 }
 
+int RankSyncParallelSkip::sig_end_(0);
+int RankSyncParallelSkip::sig_usr_(0);
+int RankSyncParallelSkip::sig_alrm_(0);
 
 } // namespace SST

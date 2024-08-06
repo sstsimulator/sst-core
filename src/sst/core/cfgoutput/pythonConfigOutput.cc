@@ -229,7 +229,10 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
         outputFile, "sst.setProgramOption(\"print-timing-info\", \"%s\")\n", cfg->print_timing() ? "true" : "false");
     // Ignore stopAfter for now
     // fprintf(outputFile, "sst.setProgramOption(\"stopAfter\", \"%" PRIu32 "\")\n", cfg->stopAfterSec);
-    fprintf(outputFile, "sst.setProgramOption(\"heartbeat-period\", \"%s\")\n", cfg->heartbeat_period().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"heartbeat-sim-period\", \"%s\")\n", cfg->heartbeat_sim_period().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"heartbeat-wall-period\", \"%" PRIu32 "\")\n", cfg->heartbeat_wall_period());
     fprintf(outputFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase().c_str());
     fprintf(outputFile, "sst.setProgramOption(\"partitioner\", \"%s\")\n", cfg->partitioner().c_str());
     fprintf(outputFile, "sst.setProgramOption(\"timeVortex\", \"%s\")\n", cfg->timeVortex().c_str());
@@ -238,7 +241,11 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
         cfg->interthread_links() ? "true" : "false");
     fprintf(outputFile, "sst.setProgramOption(\"output-prefix-core\", \"%s\")\n", cfg->output_core_prefix().c_str());
 
-    fprintf(outputFile, "sst.setProgramOption(\"checkpoint-period\", \"%s\")\n", cfg->checkpoint_period().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"checkpoint-sim-period\", \"%s\")\n", cfg->checkpoint_sim_period().c_str());
+    fprintf(
+        outputFile, "sst.setProgramOption(\"checkpoint-wall-period\", \"%" PRIu32 "\")\n",
+        cfg->checkpoint_wall_period());
 
     // Output the global params
     fprintf(outputFile, "# Define the global parameter sets:\n");
