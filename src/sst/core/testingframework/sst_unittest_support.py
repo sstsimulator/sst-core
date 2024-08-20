@@ -26,6 +26,7 @@ import tarfile
 import shutil
 import difflib
 import configparser
+from typing import List, Sequence
 
 import test_engine_globals
 from test_engine_support import OSCommand
@@ -1134,8 +1135,41 @@ class RemoveRegexFromLineFilter(LineFilter):
         return line
 
 
+def _read_and_filter(
+    fileloc: str,
+    filters: Sequence[LineFilter],
+    sort: bool
+) -> List[str]:
+    lines = list()
+
+    with open(fileloc) as fp:
+        for filter in filters:
+            filter.reset()
+        for line in fp:
+            filt_line = line
+            for filter in filters:
+                filt_line = filter.filter(filt_line)
+                if not filt_line:
+                    break
+
+            if filt_line:
+                lines.append(filt_line)
+
+    if sort:
+        lines.sort()
+
+    return lines
+
+
 ### Diff functions
-def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filters=[]):
+def testing_compare_filtered_diff(
+    test_name: str,
+    outfile: str,
+    reffile: str,
+    sort: bool = False,
+    filters = list(),
+    do_statistics_comparison: bool = False,
+):
     """Filter, optionally sort and then compare 2 files for a difference.
 
         Args:
@@ -1168,41 +1202,9 @@ def testing_compare_filtered_diff(test_name, outfile, reffile, sort=False, filte
         log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
         return False
 
-    # Read in the output file and optionally sort it
-    with open(outfile) as fp:
-        for filter in filters:
-            filter.reset()
-        out_lines = []
-        for line in fp:
-            filt_line = line
-            for filter in filters:
-                filt_line = filter.filter(filt_line)
-                if not filt_line:
-                    break;
-
-            if filt_line:
-                out_lines.append(filt_line)
-
-    if sort:
-        out_lines.sort()
-
-    # Read in the reference file and optionally sort it
-    with open(reffile) as fp:
-        for filter in filters:
-            filter.reset()
-        ref_lines = []
-        for line in fp:
-            filt_line = line
-            for filter in filters:
-                filt_line = filter.filter(filt_line)
-                if not filt_line:
-                    break;
-
-            if filt_line:
-                ref_lines.append(filt_line)
-
-    if sort:
-        ref_lines.sort()
+    # Read in the output and reference files, and optionally sorting them
+    out_lines = _read_and_filter(outfile, filters, sort)
+    ref_lines = _read_and_filter(reffile, filters, sort)
 
     # Get the diff between the files
     diff = difflib.unified_diff(out_lines,ref_lines,outfile,reffile,n=1)
