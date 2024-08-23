@@ -1802,7 +1802,7 @@ def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
         if data_type == float:
             return core_conf_file_parser.getfloat(section, key)
         if data_type == bool:
-            return core_conf_file_parser.getbool(section, key)
+            return core_conf_file_parser.getboolean(section, key)
     except configparser.Error as exc_e:
         rtn_default = _handle_config_err(exc_e, default)
         if default is None:
