@@ -18,6 +18,7 @@ import signal
 from sst_unittest import *
 from sst_unittest_support import *
 
+
 ################################################################################
 # These tests test the RealTime features of SST including:
 # - SIGUSR1 / SIGUSR2
@@ -27,6 +28,19 @@ from sst_unittest_support import *
 ################################################################################
 
 class testcase_Signals(SSTTestCase):
+
+    def initializeClass(self, testName):
+        super(type(self), self).initializeClass(testName)
+        # Put test based setup code here. it is called before testing starts
+        # NOTE: This method is called once for every test
+
+    def setUp(self):
+        super(type(self), self).setUp()
+        # Put test based setup code here. it is called once before every test
+
+    def tearDown(self):
+        # Put test based teardown code here. it is called once after every test
+        super(type(self), self).tearDown()
 
 #####
     def test_RealTime_SIGUSR1(self):
