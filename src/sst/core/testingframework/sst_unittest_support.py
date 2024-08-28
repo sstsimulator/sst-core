@@ -32,6 +32,11 @@ import test_engine_globals
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
 
+if not sys.warnoptions:
+    import os, warnings
+    warnings.simplefilter("once") # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = "once" # Also affect subprocesses
+
 ################################################################################
 
 OS_DIST_OSX = "OSX"
@@ -136,6 +141,10 @@ def testing_is_PIN_Compiled():
     return rtn
 
 def testing_is_PIN2_used():
+    from warnings import warn
+    warn("testing_is_PIN2_used() is deprecated and will be removed in future versions of SST.",
+        DeprecationWarning, stacklevel=2)
+
     global pin_exec_path
     if testing_is_PIN_Compiled():
         if "/pin.sh" in pin_exec_path:
