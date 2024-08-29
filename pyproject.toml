@@ -1,0 +1,19 @@
+[tool.mypy]
+explicit_package_bases = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src/sst/core/testingframework"
+
+warn_unused_ignores = true
+
+warn_return_any = true
+warn_unused_configs = true
+
+disallow_untyped_defs = true
+
+exclude = [
+    '^scripts/',
+    '^tests/',
+]
+
+[[tool.mypy.overrides]]
+module = "sst"
+ignore_missing_imports = true
