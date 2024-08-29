@@ -22,6 +22,7 @@ import unittest
 import argparse
 import shutil
 import configparser
+from typing import Any, Dict, List
 
 import test_engine_globals
 from sst_unittest import *
@@ -103,12 +104,12 @@ MODE_TEST_SST_CORE = 1
 
 ################################################################################
 
-class TestEngine():
+class TestEngine:
     """ This is the main Test Engine, it will init arguments, parsed params,
         create output directories, and then Discover and Run the tests.
     """
 
-    def __init__(self, sst_core_bin_dir, test_mode):
+    def __init__(self, sst_core_bin_dir: str, test_mode: int) -> None:
         """ Initialize the TestEngine object, and parse the user arguments.
 
             Args:
@@ -209,7 +210,7 @@ class TestEngine():
 ################################################################################
 ################################################################################
 
-    def _parse_arguments(self):
+    def _parse_arguments(self) -> None:
         """ Parse the cmd line arguments."""
         # Build a parameter parser, adjust its help based upon the test type
         helpdesc = HELP_DESC.format(self._test_type_str)
@@ -357,7 +358,7 @@ class TestEngine():
 
 ####
 
-    def _display_startup_info(self):
+    def _display_startup_info(self) -> None:
         """ Display the Test Engine Startup Information"""
 
         ver = sys.version_info
@@ -437,7 +438,7 @@ class TestEngine():
 
 ####
 
-    def _create_all_output_directories(self):
+    def _create_all_output_directories(self) -> None:
         """ Create the output directories if needed"""
         top_dir = test_engine_globals.TESTOUTPUT_TOPDIRPATH
         run_dir = test_engine_globals.TESTOUTPUT_RUNDIRPATH
@@ -458,7 +459,7 @@ class TestEngine():
 
 ####
 
-    def _discover_testsuites(self):
+    def _discover_testsuites(self) -> None:
         """ Figure out the list of paths we are searching for testsuites.  The
             user may have given us a list via the cmd line, so that takes priority
         """
@@ -495,7 +496,7 @@ class TestEngine():
 
 ####
 
-    def _add_testsuites_from_identifed_paths(self):
+    def _add_testsuites_from_identifed_paths(self) -> None:
         """ Look at all the searchable testsuite paths in the list.  If its
             a file, try to add that testsuite directly.  If its a directory;
             add all testsuites that match the identifed testsuite types.
@@ -535,7 +536,7 @@ class TestEngine():
 
 ####
 
-    def _create_core_config_parser(self):
+    def _create_core_config_parser(self) -> configparser.RawConfigParser:
         """ Create an Core Configurtion (INI format) parser.  This will allow
             us to search the Core configuration looking for test file paths.
 
@@ -565,7 +566,7 @@ class TestEngine():
 
 ###
 
-    def _build_core_config_include_defs_dict(self):
+    def _build_core_config_include_defs_dict(self) -> Dict[str, str]:
         """ Create a dictionary of settings from the sst_config.h.
             This will allow us to search the includes that the core provides.
 
@@ -588,7 +589,7 @@ class TestEngine():
 
 ###
 
-    def _build_elem_config_include_defs_dict(self):
+    def _build_elem_config_include_defs_dict(self) -> Dict[str, str]:
         """ Create a dictionary of settings from the sst_element_config.h.
             This will allow us to search the includes that the elements provides.
             Note: The Frameworks is runnable even if elements are not built or
@@ -624,7 +625,7 @@ class TestEngine():
 
 ###
 
-    def _read_config_include_defs_dict(self, conf_include_path):
+    def _read_config_include_defs_dict(self, conf_include_path: str) -> Dict[str, str]:
         # Read in the file line by line and discard any lines
         # that do not start with "#define "
         rtn_dict = {}
@@ -647,7 +648,7 @@ class TestEngine():
 
 ###
 
-    def _build_list_of_testsuite_dirs(self):
+    def _build_list_of_testsuite_dirs(self) -> List[str]:
         """ Using a config file parser, build a list of Test Suite Dirs.
 
             Note: The discovery method of Test Suites is different
@@ -695,7 +696,7 @@ class TestEngine():
 
 ####
 
-    def _create_output_dir(self, out_dir):
+    def _create_output_dir(self, out_dir: str) -> bool:
         """ Look to see if an output dir exists.  If not, try to create it
             :param: out_dir = The path to the output directory.
 

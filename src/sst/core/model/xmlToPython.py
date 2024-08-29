@@ -13,10 +13,11 @@
 
 import xml.etree.ElementTree as ET
 import sys, os, re
+from typing import Dict
 
 import sst
 
-def printTree(indent, node):
+def printTree(indent: int, node: ET.Element) -> None:
     print("%sBegin %s: %r"%('  '*indent, node.tag, node.attrib))
     if node.text and len(node.text.strip()):
         print("%sText:  %s"%('  '*indent, node.text.strip()))
@@ -27,7 +28,7 @@ def printTree(indent, node):
 
 
 # Various global lookups
-sstVars = dict()
+sstVars: Dict[str, str] = dict()
 sstParams = dict()
 sstLinks = dict()
 
@@ -59,14 +60,14 @@ def processString(string: str) -> str:
     return string
 
 
-def getLink(name):
+def getLink(name: str) -> sst.Link:
     if name not in sstLinks:
         sstLinks[name] = sst.Link(name)
     return sstLinks[name]
 
 
 
-def getParamName(node):
+def getParamName(node: ET.Element) -> str:
     name = node.tag.strip()
     if name[0] == "{":
         ns, tag = name[1:].split("}")
@@ -127,7 +128,7 @@ def buildComp(compNode: ET.Element) -> None:
 
 
 
-def buildGraph(graph):
+def buildGraph(graph: ET.Element) -> None:
     for comp in graph.findall("component"):
         buildComp(comp)
 
