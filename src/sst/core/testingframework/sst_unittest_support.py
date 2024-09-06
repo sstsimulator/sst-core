@@ -1670,7 +1670,7 @@ def os_extract_tar(tarfilepath, targetdir="."):
             targetdir (str): Where to extract to [.]
 
         Returns:
-            (bool) True if wget is successful.
+            (bool) True if untar is successful.
     """
     if not os.path.isfile(tarfilepath):
         errmsg = "tar file{0} does not exist".format(tarfilepath)
@@ -1678,7 +1678,10 @@ def os_extract_tar(tarfilepath, targetdir="."):
         return False
     try:
         this_tar = tarfile.open(tarfilepath)
-        this_tar.extractall(targetdir)
+        if sys.version_info.minor >= 12:
+            this_tar.extractall(targetdir, filter="data")
+        else:
+            this_tar.extractall(targetdir)
         this_tar.close()
         return True
     except tarfile.TarError as exc_e:
