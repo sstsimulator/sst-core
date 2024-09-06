@@ -20,7 +20,14 @@ import unittest
 import traceback
 import threading
 import time
-from datetime import datetime
+import datetime
+
+if sys.version_info.minor >= 11:
+    def get_current_time():
+        return datetime.datetime.now(datetime.UTC)
+else:
+    def get_current_time():
+        return datetime.datetime.utcnow()
 
 ################################################################################
 
@@ -324,7 +331,7 @@ class SSTTextTestResult(unittest.TestResult):
         else:
             self._testcase_name = "FailedTest"
             self._testsuite_name = "FailedTest"
-        timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
+        timestamp = get_current_time().strftime("%Y_%m%d_%H:%M:%S.%f utc")
         self._junit_test_case = JUnitTestCase(self._test_name,
                                               self._testcase_name,
                                               timestamp=timestamp)
