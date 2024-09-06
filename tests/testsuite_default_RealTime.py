@@ -25,6 +25,10 @@ from sst_unittest_support import *
 # - SIGINT / SIGTERM
 # --exit-after option
 # --heartbeat-wall-period option
+#
+# Notes:
+#   - signal_sec=1 is too small to be reliably caught on some of the VMs
+#     and containers.
 ################################################################################
 
 class testcase_Signals(SSTTestCase):
@@ -50,7 +54,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR1.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=4", send_signal=signal.SIGUSR1, signal_sec=1)
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=10", send_signal=signal.SIGUSR1, signal_sec=5)
 
         line_count = 0
         exit_count = 0
@@ -79,7 +83,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR2.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=4", send_signal=signal.SIGUSR2, signal_sec=1)
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=10", send_signal=signal.SIGUSR2, signal_sec=5)
 
         line_count = 0
         exit_count = 0
@@ -108,7 +112,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGINT.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=4", send_signal=signal.SIGINT, signal_sec=1)
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=10", send_signal=signal.SIGINT, signal_sec=5)
 
         line_count = 0
         exit_count = 0
@@ -137,7 +141,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGTERM.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=4", send_signal=signal.SIGTERM, signal_sec=1)
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=10", send_signal=signal.SIGTERM, signal_sec=5)
 
         line_count = 0
         exit_count = 0
