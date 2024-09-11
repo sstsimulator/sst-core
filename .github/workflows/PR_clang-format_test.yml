@@ -67,7 +67,7 @@ jobs:
 
 #   Running the github action for clang format
     - name: Run Action clang-format-lint
-      uses: DoozyX/clang-format-lint-action@v0.12
+      uses: DoozyX/clang-format-lint-action@c71d0bf4e21876ebec3e5647491186f8797fde31 # v0.18.2
       with:
         source: './sst-core_source/'
         exclude: './sst-core_source/src/sst/core/libltdl ./sst-core_source/external ./sst-core_source/build'
