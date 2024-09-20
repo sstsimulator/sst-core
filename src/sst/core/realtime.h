@@ -197,7 +197,7 @@ public:
 
 private:
     bool serial_exec_;    // Whether execution is serial or parallel
-    bool can_checkpoint_; // Set to true if any Actions can trigger checkpoint
+    bool can_checkpoint_ = false; // Set to true if any Actions can trigger checkpoint
 
     /* The set of signal handlers for all signals */
     std::map<int, RealTimeAction*> signal_actions_;
