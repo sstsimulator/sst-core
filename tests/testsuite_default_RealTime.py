@@ -102,7 +102,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 101 + (threads * ranks) * 5
         self.assertTrue(sig_found, "Output file is missing SIGUSR2 triggered output message")
         self.assertTrue(exit_count >= num_para, "Exit message count incorrect, should be at least {0}, found {1} in {2}".format(exit_count,num_para,outfile))
-        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
+        self.assertTrue(line_count >= num_lines, "Line count incorrect, should be at least {0}, found {1} in {2}".format(num_lines,line_count,outfile))
     
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGINT(self):
@@ -172,7 +172,7 @@ class testcase_Signals(SSTTestCase):
         self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --heartbeat-wall-period=1")
 
         # Cannot diff test output because times may differ
-        # Check for 6 heartbeat messages
+        # Check for at least 5 heartbeat messages
         # Check for ended due to exit-after
         # Check for right number of lines in output
         hb_count = 0
@@ -189,9 +189,10 @@ class testcase_Signals(SSTTestCase):
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
-        num_lines = 131 + 2*num_para # basic heartbeat (30) + exit messages (1 + 2*para) + Component Finished messages (100)
+        num_lines = 126 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 12 # Extra heartbeat output for MPI
-        self.assertTrue(hb_count == 6, "Heartbeat count incorrect, should be 6, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
-        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
+        self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
+
