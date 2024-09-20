@@ -21,7 +21,10 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
-#include <filesystem>
+// #include <filesystem>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -214,26 +217,77 @@ uint32_t                  CheckpointAction::checkpoint_id = 0;
 
 namespace Checkpointing {
 
+/**
+   Function to see if a directory exists.  We need this bacause
+   std::filesystem isn't fully supported until GCC9.
+
+   @param dirName name of directory to check
+
+   @param include_files will also return true if a filename matches
+   the input name
+
+   @return true if dirName is a directory in the filesystem. If
+   include_files is set to true, this will also return true if a file
+   name matches the passed in name (i.e. the name is available for
+   use)
+
+*/
+bool
+doesDirectoryExist(const std::string& dirName, bool include_files)
+{
+    struct stat info;
+    if ( stat(dirName.c_str(), &info) != 0 ) {
+        // Directory does not exist
+        return false;
+    }
+    else if ( info.st_mode & S_IFDIR ) {
+        // Directory exists
+        return true;
+    }
+    else {
+        // Exists but it's a file, so return include_files
+        return include_files;
+    }
+}
+
+/**
+   Function to create a directory. We need this bacause
+   std::filesystem isn't fully supported until GCC9
+*/
+bool
+createDirectory(const std::string& dirName)
+{
+    if ( mkdir(dirName.c_str(), 0755) == 0 ) {
+        return true; // Directory created successfully
+    }
+    else {
+        return false; // Failed to create directory
+    }
+}
+
 std::string
 createUniqueDirectory(const std::string basename)
 {
     std::string dirName = basename;
 
     // Check if the directory exists
-    if ( std::filesystem::exists(dirName) ) {
+    // if ( std::filesystem::exists(dirName) ) {
+    if ( doesDirectoryExist(dirName, true) ) {
         // Append a unique random set of characters to the directory name
         std::string newDirName;
         int         num = 0;
         do {
             ++num;
             newDirName = dirName + "_" + std::to_string(num);
-        } while ( std::filesystem::exists(newDirName) ); // Ensure the new directory name is unique
+            // } while ( std::filesystem::exists(newDirName) ); // Ensure the new directory name is unique
+        } while ( doesDirectoryExist(newDirName, true) ); // Ensure the new directory name is unique
 
         dirName = newDirName;
     }
 
     // Create the directory
-    if ( !std::filesystem::create_directory(dirName) ) {
+    // if ( !std::filesystem::create_directory(dirName) ) {
+    if ( !createDirectory(dirName) ) {
         Simulation_impl::getSimulationOutput().fatal(
             CALL_INFO_LONG, 1, "Failed to create directory: %s\n", dirName.c_str());
     }
