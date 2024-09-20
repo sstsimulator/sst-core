@@ -13,6 +13,7 @@ import sys
 
 # Define SST core options
 sst.setProgramOption("stop-at", "10us")
+sst.setProgramOption("partitioner", "self")
 
 verbose = 0
 if len(sys.argv) > 1:
@@ -20,7 +21,7 @@ if len(sys.argv) > 1:
     
 # Set up senders using slots and user subcomponents
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
-loader0.addParam("clock", "1.5GHz")
+loader0.addParam("clock", "0.15GHz")
 loader0.addParam("verbose", verbose)
 loader0.enableAllStatistics()
 
@@ -88,5 +89,16 @@ link1_0.connect((sub0_1_0, "sendPort", "5ns"), (sub1_1_0, "recvPort", "5ns"))
 link1_1 = sst.Link("myLink1_1")
 link1_1.connect((sub0_1_1, "sendPort", "5ns"), (sub1_1_1, "recvPort", "5ns"))
 
+# Do the paritioning
+num_ranks = sst.getMPIRankCount()
+num_threads = sst.getThreadCount()
+
+loader0.setRank(0,0)
+if num_ranks >= 2:
+    loader1.setRank(1,0)
+elif num_threads > 1:
+    loader1.setRank(0,1)
+else:
+    loader1.setRank(0,0)
 
 sst.setStatisticLoadLevel(1)

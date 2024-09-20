@@ -36,7 +36,7 @@ namespace Profile {
 class SyncProfileTool;
 }
 
-class RankSync : public SST::Core::Serialization::serializable
+class RankSync
 {
 public:
     RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
@@ -60,19 +60,14 @@ public:
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
-    // void setMaxPeriod(TimeConverter* period) {max_period = period;}
+    virtual void setRestartTime(SimTime_t time) { nextSyncTime = time; }
+
     TimeConverter* getMaxPeriod() { return max_period; }
 
     virtual uint64_t getDataSize() const = 0;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        ser& nextSyncTime;
-        ser& max_period; // Unused
-        // ser& num_ranks; // const so a pain to serialize but don't need it
-        ser& link_maps;
-    }
-    ImplementVirtualSerializable(SST::RankSync) protected : SimTime_t nextSyncTime;
+protected:
+    SimTime_t      nextSyncTime;
     TimeConverter* max_period;
     const RankInfo num_ranks_;
 
@@ -87,11 +82,9 @@ public:
     inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
 
     inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
-
-private:
 };
 
-class ThreadSync : public SST::Core::Serialization::serializable
+class ThreadSync
 {
 public:
     ThreadSync() : max_period(nullptr) {}
@@ -110,6 +103,7 @@ public:
     virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
+    virtual void      setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
     void           setMaxPeriod(TimeConverter* period) { max_period = period; }
     TimeConverter* getMaxPeriod() { return max_period; }
@@ -118,16 +112,8 @@ public:
     virtual void           registerLink(const std::string& name, Link* link)                = 0;
     virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        ser& nextSyncTime;
-        ser& max_period; // Unused
-    }
-    ImplementVirtualSerializable(SST::ThreadSync)
-
-        protected :
-
-        SimTime_t nextSyncTime;
+protected:
+    SimTime_t      nextSyncTime;
     TimeConverter* max_period;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
@@ -139,15 +125,13 @@ public:
     inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
 
     inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
-
-private:
 };
 
 class SyncManager : public Action
 {
 public:
     SyncManager(
-        const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
+        const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
         const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time);
     SyncManager(); // For serialization only
     virtual ~SyncManager();
@@ -168,19 +152,24 @@ public:
 
     uint64_t getDataSize() const;
 
+    void setRestartTime(SimTime_t time)
+    {
+        rankSync_->setRestartTime(time);
+        threadSync_->setRestartTime(time);
+    }
+
     void addProfileTool(Profile::SyncProfileTool* tool);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::SyncManager)
+    NotSerializable(SST::SyncManager)
+
 private:
+    // Enum to track the next sync type
     enum sync_type_t { RANK, THREAD };
 
     RankInfo                         rank_;
     RankInfo                         num_ranks_;
-    static Core::ThreadSafe::Barrier RankExecBarrier_[6];
+    static Core::ThreadSafe::Barrier RankExecBarrier_[5];
     static Core::ThreadSafe::Barrier LinkUntimedBarrier_[3];
-    // static SimTime_t min_next_time;
-    // static int min_count;
 
     static RankSync* rankSync_;
     static SimTime_t next_rankSync_;
@@ -196,7 +185,8 @@ private:
 
     SyncProfileToolList* profile_tools_ = nullptr;
 
-    void computeNextInsert();
+    void computeNextInsert(SimTime_t next_checkpoint_time = MAX_SIMTIME_T);
+    void setupSyncObjects();
 };
 
 } // namespace SST

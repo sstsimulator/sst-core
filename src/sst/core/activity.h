@@ -155,6 +155,9 @@ public:
     /** Returns the queue order associated with this activity */
     inline uint64_t getQueueOrder() const { return queue_order; }
 
+    virtual bool isEvent() { return false; }
+    virtual bool isAction() { return false; }
+
     /** Get a string represenation of the event.  The default version
      * will just use the name of the class, retrieved through the
      * cls_name() function inherited from the serialzable class, which

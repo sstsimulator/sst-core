@@ -32,33 +32,33 @@ namespace SST {
 using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
 
-SyncQueue::SyncQueue() : ActivityQueue(), buffer(nullptr), buf_size(0) {}
+RankSyncQueue::RankSyncQueue(RankInfo to_rank) : SyncQueue(to_rank), buffer(nullptr), buf_size(0) {}
 
-SyncQueue::~SyncQueue() {}
+RankSyncQueue::~RankSyncQueue() {}
 
 bool
-SyncQueue::empty()
+RankSyncQueue::empty()
 {
     std::lock_guard<Spinlock> lock(slock);
     return activities.empty();
 }
 
 int
-SyncQueue::size()
+RankSyncQueue::size()
 {
     std::lock_guard<Spinlock> lock(slock);
     return activities.size();
 }
 
 void
-SyncQueue::insert(Activity* activity)
+RankSyncQueue::insert(Activity* activity)
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
 }
 
 Activity*
-SyncQueue::pop()
+RankSyncQueue::pop()
 {
     // NEED TO FATAL
     // if ( data.size() == 0 ) return nullptr;
@@ -70,21 +70,21 @@ SyncQueue::pop()
 }
 
 Activity*
-SyncQueue::front()
+RankSyncQueue::front()
 {
     // NEED TO FATAL
     return nullptr;
 }
 
 void
-SyncQueue::clear()
+RankSyncQueue::clear()
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.clear();
 }
 
 char*
-SyncQueue::getData()
+RankSyncQueue::getData()
 {
     std::lock_guard<Spinlock> lock(slock);
 
@@ -98,14 +98,14 @@ SyncQueue::getData()
 
     SST_EVENT_PROFILE_SIZE(activities.size(), size)
 
-    if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
+    if ( buf_size < (size + sizeof(RankSyncQueue::Header)) ) {
         if ( buffer != nullptr ) { delete[] buffer; }
 
-        buf_size = size + sizeof(SyncQueue::Header);
+        buf_size = size + sizeof(RankSyncQueue::Header);
         buffer   = new char[buf_size];
     }
 
-    ser.start_packing(buffer + sizeof(SyncQueue::Header), size);
+    ser.start_packing(buffer + sizeof(RankSyncQueue::Header), size);
 
     ser& activities;
 
@@ -116,7 +116,7 @@ SyncQueue::getData()
     activities.clear();
 
     // Set the size field in the header
-    static_cast<SyncQueue::Header*>(static_cast<void*>(buffer))->buffer_size = size + sizeof(SyncQueue::Header);
+    static_cast<RankSyncQueue::Header*>(static_cast<void*>(buffer))->buffer_size = size + sizeof(RankSyncQueue::Header);
 
     return buffer;
 }

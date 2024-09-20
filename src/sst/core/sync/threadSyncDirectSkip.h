@@ -15,7 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
-#include "sst/core/sync/threadSyncQueue.h"
+#include "sst/core/sync/syncQueue.h"
 
 #include <unordered_map>
 
@@ -64,9 +64,6 @@ public:
     }
 
     uint64_t getDataSize() const;
-
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::ThreadSyncDirectSkip)
 
 private:
     SimTime_t                        my_max_period;

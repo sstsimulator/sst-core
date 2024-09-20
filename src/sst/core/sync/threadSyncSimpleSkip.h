@@ -15,7 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
-#include "sst/core/sync/threadSyncQueue.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
 #include <unordered_map>
@@ -63,9 +63,6 @@ public:
 
 
     // static void disable() { disabled = true; barrier.disable(); }
-
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::ThreadSyncSimpleSkip)
 
 private:
     // Stores the links until they can be intialized with the right

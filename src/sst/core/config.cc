@@ -614,8 +614,66 @@ public:
     // Set the prefix for checkpoint files
     static int setCheckpointPrefix(Config* cfg, const std::string& arg)
     {
+        if ( arg == "" ) {
+            fprintf(stderr, "Error, checkpoint-prefix must not be an empty string\n");
+            return -1;
+        }
         cfg->checkpoint_prefix_ = arg;
         return 0;
+    }
+
+    static std::string getCheckpointPrefixExtHelp()
+    {
+        std::string msg = "Checkpointing:\n\n";
+        msg.append("The checkpoint prefix is used in the naming of the directories and files created by the "
+                   "checkpoint engine.  If no checkpoint prefix is set, sst will simply use \"checkpoint\"."
+                   "In the following explanation, <prefix> will be used to represent the "
+                   "prefix set with the --checkpoint-prefix option.  On sst start, the checkpoint engine will "
+                   "create a directory with the name <prefix> to hold all the checkpoint files.  If <prefix> "
+                   "already exists, the it will append _N, where N starts at 1 and increases by one until a "
+                   "directory name that doesn't already exist is reached (i.e. <prefix>_1, <prefix>_2, etc.).\n");
+
+        msg.append("\nWithin the checkpoint directory, each checkpoint will create its own subdirectory with "
+                   "the form <prefix>_<checkpoint_id>_<simulated_time>, where checkpoint_id starts at 0 and "
+                   "increments by one for each checkpoint.  Within this directory, there are three types of "
+                   "files:\n\n");
+
+        msg.append("Registry file: The file containes a list of some "
+                   "of the global parameters from the sst run, followed by a list of all other files that "
+                   "are a part of the checkpoint. The two files, described below, are the globals file and "
+                   "the serialized data from each of the threads in the simulation.  After each of the serialized "
+                   "data files, each Component that was in that partition is listed, along with its offset to the "
+                   "location in the file for the Components serialized data. this file is named the same as the "
+                   "directory with a .sstcpt extension:\n"
+                   "    <prefix>_<checkpoint_id>_<simulated_time>.sstcpt.\n\n");
+
+        msg.append("Globals file: This contains the serialized binary data needed at sst startup time that is "
+                   "needed by all partitions. This file is named:\n"
+                   "    <prefix>_<checkpoint_id>_<simulated time>_globals.bin\n\n");
+
+        msg.append("Serialized data files: these are the files that hold all of the data for each thread of "
+                   "execution in the original run.  The files are named by rank:\n"
+                   "    <prefix>_<checkpoint_id>_<simulated_time>_<rank>_<thread>.bin\n\n");
+
+        msg.append("A sample directory structure using a checkpoint prefix of \"checkpoint\" using two ranks "
+                   "with one thread each would look something like:\n\n"
+                   "current working directory\n"
+                   "|--checkpoint\n"
+                   "   |--checkpoint_0_1000\n"
+                   "      |--checkpoint_0_1000.sstcpt\n"
+                   "      |--checkpoint_0_1000_globals.bin\n"
+                   "      |--checkpoint_0_1000_0_0.bin\n"
+                   "      |--checkpoint_0_1000_1_0.bin\n"
+                   "   |--checkpoint_1_2000\n"
+                   "      |--checkpoint_1_2000.sstcpt\n"
+                   "      |--checkpoint_1_2000_globals.bin\n"
+                   "      |--checkpoint_1_2000_0_0.bin\n"
+                   "      |--checkpoint_1_2000_1_0.bin\n\n");
+
+        msg.append("When restarting from a checkpoint, the registry file (*.sstcpt) should be specified as the "
+                   "input file.\n");
+
+        return msg;
     }
 
     // Advanced options - environment
@@ -993,9 +1051,12 @@ Config::insertOptions()
         "load-checkpoint", 0,
         "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",
         std::bind(&ConfigHelper::setLoadFromCheckpoint, this, _1), false);
-    DEF_ARG(
-        "checkpoint-prefix", 0, "PREFIX", "Set prefix for checkpoint filenames.",
-        std::bind(&ConfigHelper::setCheckpointPrefix, this, _1), true);
+    DEF_ARG_EH(
+        "checkpoint-prefix", 0, "PREFIX",
+        "Set prefix for checkpoint filenames. The checkpoint prefix defaults to checkpoint if this option is not set "
+        "and checkpointing is enabled.",
+        std::bind(&ConfigHelper::setCheckpointPrefix, this, _1), std::bind(&ConfigHelper::getCheckpointPrefixExtHelp),
+        true);
 
     enableDashDashSupport(std::bind(&ConfigHelper::setModelOptions, this, _1));
     addPositionalCallback(std::bind(&Config::positionalCallback, this, _1, _2));
@@ -1072,5 +1133,12 @@ Config::setOptionFromModel(const string& entryName, const string& value)
     return false;
 }
 
+bool
+Config::canInitiateCheckpoint()
+{
+    if ( checkpoint_wall_period_ != 0 ) return true;
+    if ( checkpoint_sim_period_ != "" ) return true;
+    return false;
+}
 
 } // namespace SST

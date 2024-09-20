@@ -31,95 +31,61 @@ class testcase_Checkpoint(SSTTestCase):
 #####
     parallelerr = "Test only suports serial execution"
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint(self):
-        self.checkpoint_test_template("Checkpoint", "500us", "500000000_0")
-    
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
+        self.checkpoint_test_template("Checkpoint", "500us", "0_500000000")
+
     def test_Checkpoint_SubComponent_sc_2a(self):
-        self.checkpoint_test_template("sc_2a", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2a", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_SubComponent_sc_2u2u(self):
-        self.checkpoint_test_template("sc_2u2u", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2u2u", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_2u(self):
-        self.checkpoint_test_template("sc_2u", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2u", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_a(self):
-        self.checkpoint_test_template("sc_a", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_a", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_u2u(self):
-        self.checkpoint_test_template("sc_u2u", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_u2u", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_u(self):
-        self.checkpoint_test_template("sc_u", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_u", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_2u2a(self):
-        self.checkpoint_test_template("sc_2u2a", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2u2a", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_2ua(self):
-        self.checkpoint_test_template("sc_2ua", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2ua", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_2uu(self):
-        self.checkpoint_test_template("sc_2uu", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_2uu", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_u2a(self):
-        self.checkpoint_test_template("sc_u2a", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_u2a", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_ua(self):
-        self.checkpoint_test_template("sc_ua", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_ua", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_sc_uu(self):
-        self.checkpoint_test_template("sc_uu", "2500ns", "2500000_0", subcomp=True, modelparams="1")
+        self.checkpoint_test_template("sc_uu", "2500ns", "0_2500000", subcomp=True, modelparams="1")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_SharedObject_array(self):
-        self.checkpoint_test_template("SharedObject", "6ns", "6000_0", modelparams="--param=object_type:array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_array")
-   
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
+        self.checkpoint_test_template("SharedObject", "6ns", "0_6000", modelparams="--param=object_type:array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_array")
+
     def test_Checkpoint_SharedObject_bool_array(self):
-        self.checkpoint_test_template("SharedObject", "6ns", "6000_0", modelparams="--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_bool_array")
+        self.checkpoint_test_template("SharedObject", "6ns", "0_6000", modelparams="--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_bool_array")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_SharedObject_map(self):
-        self.checkpoint_test_template("SharedObject", "6ns", "6000_0", modelparams="--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_map")
+        self.checkpoint_test_template("SharedObject", "6ns", "0_6000", modelparams="--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_map")
 
-    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
-    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_SharedObject_set(self):
-        self.checkpoint_test_template("SharedObject", "6ns", "6000_0", modelparams="--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_set")
+        self.checkpoint_test_template("SharedObject", "6ns", "0_6000", modelparams="--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_set")
 
     @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
     @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_Module(self):
-        self.checkpoint_test_template("Module", "25us", "50000000_1")
+        self.checkpoint_test_template("Module", "25us", "1_50000000")
 
 #####
     # testtype: which test to run
@@ -134,7 +100,7 @@ class testcase_Checkpoint(SSTTestCase):
 
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         if outstr != "":
             teststr = outstr
         else:
@@ -150,7 +116,7 @@ class testcase_Checkpoint(SSTTestCase):
         self.run_sst(sdlfile_generate, outfile_generate, other_args=options_checkpoint)
 
         # Run from restart
-        sdlfile_restart = "{0}/{1}_{2}.sstcpt".format(outdir,teststr,cptrestart)
+        sdlfile_restart = "{0}/{1}/{1}_{2}/{1}_{2}.sstcpt".format(outdir,teststr,cptrestart)
         outfile_restart = "{0}/test_Checkpoint_{1}_restart.out".format(outdir, teststr)
         options_restart = "--load-checkpoint"
         self.run_sst(sdlfile_restart, outfile_restart, other_args=options_restart)
