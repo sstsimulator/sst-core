@@ -41,7 +41,6 @@
 #include "sst/core/warnmacros.h"
 
 #include <cinttypes>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
