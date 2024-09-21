@@ -229,6 +229,10 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
             checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
         }
     }
+    else {
+        // Direct interthread links not yet supported with checkpointing
+        direct_interthread = false;
+    }
     real_time_ = new RealTimeManager(num_ranks);
 }
 

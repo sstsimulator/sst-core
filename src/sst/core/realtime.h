@@ -196,7 +196,7 @@ public:
     ImplementSerializable(SST::RealTimeManager)
 
 private:
-    bool serial_exec_;    // Whether execution is serial or parallel
+    bool serial_exec_;            // Whether execution is serial or parallel
     bool can_checkpoint_ = false; // Set to true if any Actions can trigger checkpoint
 
     /* The set of signal handlers for all signals */
