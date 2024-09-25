@@ -29,7 +29,13 @@ if __name__ == "__main__":
 
     num_entities = int(params["num_entities"])
 
+    link = sst.Link("left0")
+    last_link = link
     for x in range(num_entities):
         comp = sst.Component("obj%d"%x, "coreTestElement.coreTestSharedObjectsComponent")
         comp.addParams(params)
         comp.addParam("myid",x)
+        comp.addLink(last_link, "left", "4ns")
+        if x == (num_entities - 1): last_link = link
+        else: last_link = sst.Link("left{0}".format((x+1)))
+        comp.addLink(last_link, "right", "4ns")

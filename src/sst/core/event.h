@@ -119,6 +119,8 @@ public:
 
 #endif
 
+    bool isEvent() final { return true; }
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Activity::serialize_order(ser);

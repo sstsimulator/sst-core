@@ -328,8 +328,25 @@ public:
      */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
 
-    void scheduleCheckpoint();
-    void checkpoint();
+    std::string initializeCheckpointInfrastructure(const std::string& prefix);
+    void        scheduleCheckpoint();
+
+    /**
+       Write the partition specific checkpoint data
+     */
+    void checkpoint(const std::string& checkpoint_filename);
+
+    /**
+       Append partitions registry information
+     */
+    void checkpoint_append_registry(const std::string& registry_name, const std::string& blob_name);
+
+    /**
+       Write the global data to a binary file and create the registry
+       and write the header info
+     */
+    void checkpoint_write_globals(
+        int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
     void restart(Config* config);
 
     /** Factory used to generate the simulation components */
@@ -394,6 +411,7 @@ public:
     static Exit*            m_exit;
     SimulatorHeartbeat*     m_heartbeat = nullptr;
     CheckpointAction*       checkpoint_action_;
+    static std::string      checkpoint_directory_;
     bool                    endSim;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;
@@ -402,6 +420,11 @@ public:
     ShutdownMode_t          shutdown_mode_;
     bool                    wireUpFinished_;
     RealTimeManager*        real_time_;
+
+    /**
+       vector to hold offsets of component blobs in checkpoint files
+     */
+    std::vector<std::pair<ComponentId_t, uint64_t>> component_blob_offsets_;
 
     /** TimeLord of the simulation */
     static TimeLord timeLord;

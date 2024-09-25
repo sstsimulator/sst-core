@@ -27,14 +27,14 @@ REENABLE_WARNING
 
 namespace SST {
 
-class SyncQueue;
+class RankSyncQueue;
 class TimeConverter;
 
 class RankSyncParallelSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
+    RankSyncParallelSkip(RankInfo num_ranks);
     RankSyncParallelSkip() {} // For serialization
     virtual ~RankSyncParallelSkip();
 
@@ -57,10 +57,9 @@ public:
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
 
-    uint64_t getDataSize() const override;
+    void setRestartTime(SimTime_t time) override;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::RankSyncParallelSkip)
+    uint64_t getDataSize() const override;
 
 private:
     static SimTime_t myNextSyncTime;
@@ -71,10 +70,10 @@ private:
 
     struct comm_send_pair : public SST::Core::Serialization::serializable
     {
-        RankInfo   to_rank;
-        SyncQueue* squeue; // SyncQueue
-        char*      sbuf;
-        uint32_t   remote_size;
+        RankInfo       to_rank;
+        RankSyncQueue* squeue; // RankSyncQueue
+        char*          sbuf;
+        uint32_t       remote_size;
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {

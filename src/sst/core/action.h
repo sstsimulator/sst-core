@@ -29,6 +29,8 @@ public:
     Action() {}
     ~Action() {}
 
+    bool isAction() final { return true; }
+
 protected:
     /** Called to signal to the Simulation object to end the simulation */
     void endSimulation();

@@ -157,6 +157,7 @@ StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
   - ImplementSerializable
+  - NotSerializable
 TabWidth:        8
 UseCRLF:         false
 UseTab:          Never
@@ -194,6 +195,7 @@ WhitespaceSensitiveMacros:
   - SST_ELI_REGISTER_SUBCOMPONENT
   - SST_ELI_REGISTER_SUBCOMPONENT_DERIVED
   - SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API
+  - SST_ELI_REGISTER_REALTIME_ACTION
   - STRINGIZE
   - PP_STRINGIZE
   - BOOST_PP_STRINGIZE

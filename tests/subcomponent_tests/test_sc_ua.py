@@ -13,6 +13,7 @@ import sys
 
 # Define SST core options
 sst.setProgramOption("stop-at", "10us")
+sst.setProgramOption("partitioner","self")
 
 verbose = 0
 if len(sys.argv) > 1:
@@ -45,5 +46,17 @@ sub1.enableAllStatistics()
 link = sst.Link("myLink1")
 link.connect((sub0, "slot_port0", "5ns"), (sub1, "slot_port0", "5ns"))
 
+
+# Do the paritioning
+num_ranks = sst.getMPIRankCount()
+num_threads = sst.getThreadCount()
+
+loader0.setRank(0,0)
+if num_ranks >= 2:
+    loader1.setRank(1,0)
+elif num_threads > 1:
+    loader1.setRank(0,1)
+else:
+    loader1.setRank(0,0)
 
 sst.setStatisticLoadLevel(1)

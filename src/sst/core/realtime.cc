@@ -537,6 +537,7 @@ void
 RealTimeManager::registerSignal(RealTimeAction* action, int signum)
 {
     signal_actions_.insert(std::make_pair(signum, action));
+    if ( action->canInitiateCheckpoint() ) can_checkpoint_ = true;
 }
 
 void
@@ -548,6 +549,7 @@ RealTimeManager::registerInterval(uint32_t interval, RealTimeAction* action)
     }
 
     static_cast<AlrmSignalAction*>(signal_actions_[SIGALRM])->addIntervalAction(interval, action);
+    if ( action->canInitiateCheckpoint() ) can_checkpoint_ = true;
 }
 
 void

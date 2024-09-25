@@ -18,6 +18,7 @@
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/threadsafe.h"
 
 #include <set>
 
@@ -25,6 +26,32 @@ namespace SST {
 
 class Simulation_impl;
 class TimeConverter;
+
+namespace Checkpointing {
+/* Utility functions needed to manage directories */
+
+/**
+   Creates a directory of the specified basename. If a directory named
+   basename already exists, it will append an _N to the end,
+   incrementing N from 1 until it finds an unused name.
+ */
+std::string createUniqueDirectory(const std::string basename);
+
+/**
+   Removes a directory.  For safety, this will recurse and remove each
+   file individually instead of issuing an rm -r.  It will not follow
+   links, but will simply remove the link.
+ */
+void removeDirectory(const std::string name);
+
+/**
+   Initializes the infrastructure needed for checkpointing.  Uses the
+   createUniqueDirectory() function to create the directory, then
+   broadcasts the name to all ranks.
+ */
+std::string initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank);
+
+} // namespace Checkpointing
 
 /**
   \class CheckpointAction
@@ -46,10 +73,13 @@ public:
     void execute(void) override;
 
     /** Called by SyncManager to check whether a checkpoint should be generated */
-    void check();
+    SimTime_t check(SimTime_t current_time);
 
     /** Return next checkpoint time */
     SimTime_t getNextCheckpointSimTime();
+
+    static Core::ThreadSafe::Barrier barrier;
+    static uint32_t                  checkpoint_id;
 
     NotSerializable(SST::CheckpointAction);
 

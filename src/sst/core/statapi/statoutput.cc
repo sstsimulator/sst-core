@@ -239,9 +239,11 @@ StatisticFieldsOutput::getFieldTypeShortName(fieldType_t type)
 void
 StatisticFieldsOutput::registerStatistic(StatisticBase* stat)
 {
+    this->lock();
     startRegisterFields(stat);
     stat->registerOutputFields(this);
     stopRegisterFields();
+    this->unlock();
 }
 
 // Start / Stop of register

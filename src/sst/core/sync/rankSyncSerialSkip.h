@@ -20,14 +20,14 @@
 
 namespace SST {
 
-class SyncQueue;
+class RankSyncQueue;
 class TimeConverter;
 
 class RankSyncSerialSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncSerialSkip(RankInfo num_ranks, TimeConverter* minPartTC);
+    RankSyncSerialSkip(RankInfo num_ranks);
     RankSyncSerialSkip() {} // For serialization
     virtual ~RankSyncSerialSkip();
 
@@ -50,10 +50,9 @@ public:
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
 
-    uint64_t getDataSize() const override;
+    void setRestartTime(SimTime_t time) override;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::RankSyncSerialSkip)
+    uint64_t getDataSize() const override;
 
 private:
     static SimTime_t myNextSyncTime;
@@ -63,10 +62,10 @@ private:
 
     struct comm_pair : public SST::Core::Serialization::serializable
     {
-        SyncQueue* squeue; // SyncQueue
-        char*      rbuf;   // receive buffer
-        uint32_t   local_size;
-        uint32_t   remote_size;
+        RankSyncQueue* squeue; // RankSyncQueue
+        char*          rbuf;   // receive buffer
+        uint32_t       local_size;
+        uint32_t       remote_size;
 
         void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
         ImplementSerializable(comm_pair)

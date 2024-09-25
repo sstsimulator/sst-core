@@ -35,10 +35,20 @@ public:
 
     RealTimeAction();
 
-    /* Optional function called just before run loop starts. Passes in the next scheduled time of the event or 0 if the
-     * event is not scheduled */
+    /* Optional function called just before run loop starts. Passes in
+     * the next scheduled time of the event or 0 if the event is not
+     * scheduled */
     virtual void begin(time_t UNUSED(scheduled_time)) {}
     virtual void execute() = 0;
+
+    /* Attribute functions that let the core know when certain actions
+     * need to be planned for */
+
+    /**
+       Let's the core know if this action may trigger a checkpoint so
+       that all the checkpoint infrastructure can be initialized.
+     */
+    virtual bool canInitiateCheckpoint() { return false; }
 
     /* Accessors for core state that signal handlers may need
      * These accessors return per-thread information unless noted in a comment
