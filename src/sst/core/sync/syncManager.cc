@@ -21,8 +21,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/sync/threadSyncDirectSkip.h"
-#include "sst/core/sync/threadSyncQueue.h"
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
@@ -42,7 +42,7 @@ namespace SST {
 
 // Static data members
 RankSync*                 SyncManager::rankSync_ = nullptr;
-Core::ThreadSafe::Barrier SyncManager::RankExecBarrier_[6];
+Core::ThreadSafe::Barrier SyncManager::RankExecBarrier_[5];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier_[3];
 SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 
@@ -133,8 +133,8 @@ public:
 
     uint64_t getDataSize() const override { return 0; }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { RankSync::serialize_order(ser); }
-    ImplementSerializable(SST::EmptyRankSync)
+    // Don't want to reset time for Empty Sync
+    void setRestartTime(SimTime_t UNUSED(time)) override {}
 };
 
 class EmptyThreadSync : public ThreadSync
@@ -171,9 +171,10 @@ public:
         return nullptr;
     }
 
+    // Don't want to reset time for Empty Sync
+    void setRestartTime(SimTime_t UNUSED(time)) override {}
+
     /** Serialization for checkpoint support */
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ThreadSync::serialize_order(ser); }
-    ImplementSerializable(EmptyThreadSync)
 };
 
 void
@@ -266,19 +267,9 @@ private:
     std::vector<Profile::SyncProfileTool*> tools;
 };
 
-
-SyncManager::SyncManager(
-    const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
-    const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
-    Action(),
-    rank_(rank),
-    num_ranks_(num_ranks),
-    threadSync_(nullptr),
-    min_part_(min_part),
-    real_time_(real_time)
+void
+SyncManager::setupSyncObjects()
 {
-    sim_ = Simulation_impl::getSimulation();
-
     if ( rank_.thread == 0 ) {
         for ( auto& b : RankExecBarrier_ ) {
             b.resize(num_ranks_.thread);
@@ -287,9 +278,9 @@ SyncManager::SyncManager(
             b.resize(num_ranks_.thread);
         }
         if ( min_part_ != MAX_SIMTIME_T ) {
-            if ( num_ranks_.thread == 1 ) { rankSync_ = new RankSyncSerialSkip(num_ranks_, minPartTC); }
+            if ( num_ranks_.thread == 1 ) { rankSync_ = new RankSyncSerialSkip(num_ranks_); }
             else {
-                rankSync_ = new RankSyncParallelSkip(num_ranks_, minPartTC);
+                rankSync_ = new RankSyncParallelSkip(num_ranks_);
             }
         }
         else {
@@ -312,6 +303,21 @@ SyncManager::SyncManager(
     else {
         threadSync_ = new EmptyThreadSync(Simulation_impl::getSimulation());
     }
+}
+
+SyncManager::SyncManager(
+    const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
+    const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
+    Action(),
+    rank_(rank),
+    num_ranks_(num_ranks),
+    threadSync_(nullptr),
+    min_part_(min_part),
+    real_time_(real_time)
+{
+    sim_ = Simulation_impl::getSimulation();
+
+    setupSyncObjects();
 
     exit_       = sim_->getExit();
     checkpoint_ = sim_->getCheckpointAction();
@@ -322,8 +328,6 @@ SyncManager::SyncManager(
 SyncManager::SyncManager()
 {
     sim_ = Simulation_impl::getSimulation();
-    // threadSync_ = new EmptyThreadSync(Simulation_impl::getSimulation());
-    // rankSync_ = new EmptyRankSync(num_ranks_);
 }
 
 SyncManager::~SyncManager() {}
@@ -372,6 +376,8 @@ SyncManager::execute(void)
     int  sig_usr;
     int  sig_alrm;
 
+    SimTime_t next_checkpoint_time = MAX_SIMTIME_T;
+
     switch ( next_sync_type_ ) {
     case RANK:
         // Need to make sure all threads have reached the sync to
@@ -394,7 +400,9 @@ SyncManager::execute(void)
             real_time_->getSignals(sig_end, sig_usr, sig_alrm);
             rankSync_->setSignals(sig_end, sig_usr, sig_alrm);
         }
-        // Now call the actual RankSync
+        // Now call the actual RankSync.  No barrier needed here
+        // because all threads will wait on thread 0 before doing
+        // anything
         rankSync_->execute(rank_.thread);
 
         // Once out of rankSync, signals have been exchanged
@@ -406,8 +414,6 @@ SyncManager::execute(void)
         // Handle signals
         signals_received = rankSync_->getSignals(sig_end, sig_usr, sig_alrm);
 
-        RankExecBarrier_[3].wait();
-
         // Handle any signals
         if ( sig_end )
             real_time_->performSignal(sig_end);
@@ -417,11 +423,16 @@ SyncManager::execute(void)
         }
 
         // Generate checkpoint if needed
-        checkpoint_->check();
+        next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+
+        // No barrier needed. Either the check failed and no
+        // checkpoint happened, so no global activity, or the
+        // checkpoint happened and the last thing that happens in the
+        // checkpoint code is a barrier.
 
         if ( exit_ != nullptr && rank_.thread == 0 ) exit_->check();
 
-        RankExecBarrier_[4].wait();
+        RankExecBarrier_[3].wait();
 
         if ( exit_->getGlobalCount() == 0 ) { endSimulation(exit_->getEndTime()); }
 
@@ -442,7 +453,7 @@ SyncManager::execute(void)
                 if ( sig_usr ) real_time_->performSignal(sig_usr);
                 if ( sig_alrm ) real_time_->performSignal(sig_alrm);
             }
-            checkpoint_->check();
+            next_checkpoint_time = checkpoint_->check(getDeliveryTime());
         }
 
         if ( /*num_ranks_+.rank == 1*/ min_part_ == MAX_SIMTIME_T ) {
@@ -454,8 +465,8 @@ SyncManager::execute(void)
     default:
         break;
     }
-    computeNextInsert();
-    RankExecBarrier_[5].wait();
+    computeNextInsert(next_checkpoint_time);
+    RankExecBarrier_[4].wait();
 
     if ( profile_tools_ ) profile_tools_->syncManagerEnd();
 
@@ -483,6 +494,7 @@ SyncManager::finalizeLinkConfigurations()
 
     // Need to figure out what sync comes first and insert object into
     // TimeVortex
+    if ( num_ranks_.rank == 1 && num_ranks_.thread == 1 ) return;
     computeNextInsert();
 }
 
@@ -496,16 +508,32 @@ SyncManager::prepareForComplete()
 }
 
 void
-SyncManager::computeNextInsert()
+SyncManager::computeNextInsert(SimTime_t next_checkpoint_time)
 {
-    if ( rankSync_->getNextSyncTime() <= threadSync_->getNextSyncTime() ) {
+    SimTime_t next_rank_sync   = rankSync_->getNextSyncTime();
+    SimTime_t next_thread_sync = threadSync_->getNextSyncTime();
+
+    SimTime_t next_sync_time = next_thread_sync;
+    next_sync_type_          = THREAD;
+
+    if ( next_rank_sync <= next_thread_sync ) {
         next_sync_type_ = RANK;
-        sim_->insertActivity(rankSync_->getNextSyncTime(), this);
+        next_sync_time  = next_rank_sync;
     }
-    else {
-        next_sync_type_ = THREAD;
-        sim_->insertActivity(threadSync_->getNextSyncTime(), this);
+
+    if ( next_checkpoint_time < next_sync_time ) {
+        next_sync_time = next_checkpoint_time;
+        if ( next_rank_sync == MAX_SIMTIME_T ) {
+            // Single rank job
+            next_sync_type_ = THREAD;
+        }
+        else {
+            // If using multiple ranks, must do a full rank sync
+            next_sync_type_ = RANK;
+        }
     }
+
+    sim_->insertActivity(next_sync_time, this);
 }
 
 void
@@ -529,32 +557,4 @@ SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
     profile_tools_->addProfileTool(tool);
 }
 
-void
-SyncManager::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    Action::serialize_order(ser);
-
-    // AHHHHHHHHHHHHHHHHH
-    ser& rank_;      // const causes problems
-    ser& num_ranks_; // const again
-
-    ser& next_rankSync_;
-    ser& threadSync_;
-
-    ser& next_sync_type_;
-    ser& min_part_;
-
-    // FIXME: Need to actually figure out how to handle the static
-    // RankSync object.
-    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { rankSync_ = new EmptyRankSync(num_ranks_); }
-
-    // No need to serialize
-    // RankExecBarrier_
-    // LinkUntimedBarrier_
-    // sim_
-    // exit_
-    // profile_tools_
-
-    // static RankSync* rankSync_;
-}
 } // namespace SST

@@ -49,3 +49,14 @@ sst.enableStatisticForComponentName("c0", "rngvals",
 })
 #sst.enableAllStatisticsForAllComponents()
 sst.enableAllStatisticsForAllComponents({ "rate" : "100us" })
+
+# Ensure that this will work for all parallelism.  The only case we
+# need to worry about is if comp_count <= num_threads and we have more
+# than one rank.
+num_threads = sst.getThreadCount()
+num_ranks = sst.getMPIRankCount()
+if num_threads >= comp_count and num_ranks > 1:
+    sst.setProgramOption("partitioner","self")
+    for x,comp in enumerate(comps):
+        comp.setRank(x % num_ranks, x // num_ranks)
+

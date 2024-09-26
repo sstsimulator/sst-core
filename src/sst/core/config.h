@@ -372,6 +372,9 @@ public:
     // executes.
 
 
+    /** Get whether or not any of the checkpoint options were turned on */
+    bool canInitiateCheckpoint();
+
     /** Print to stdout the current configuration */
     void print();
 

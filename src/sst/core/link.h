@@ -280,6 +280,10 @@ private:
     void finalizeConfiguration();
     void prepareForComplete();
 
+    std::string
+    createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankInfo remote_rank, uintptr_t remote_ptr);
+
+
     void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata);
 
 

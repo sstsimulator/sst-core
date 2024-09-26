@@ -102,23 +102,6 @@ ThreadSyncDirectSkip::getSignals(int& end, int& usr, int& alrm)
 }
 
 
-void
-ThreadSyncDirectSkip::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    ThreadSync::serialize_order(ser);
-    ser& my_max_period;
-    ser& num_threads;
-    ser& thread;
-    ser& localMinimumNextActivityTime;
-    ser& totalWaitTime;
-    ser& single_rank;
-
-    // No need to serialize
-    // sim
-    // barrier
-}
-
-
 Core::ThreadSafe::Barrier ThreadSyncDirectSkip::barrier[3];
 int                       ThreadSyncDirectSkip::sig_end_(0);
 int                       ThreadSyncDirectSkip::sig_usr_(0);

@@ -35,7 +35,7 @@ class ExitCleanRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ExitCleanRealTimeAction, "sst", "exit.clean", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        ExitCleanRealTimeAction, "sst", "rt.exit.clean", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes an immediate, but non-emergency shutdown. This is the default action for the "
         "'--exit-after' option.")
 
@@ -49,8 +49,9 @@ class ExitEmergencyRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ExitEmergencyRealTimeAction, "sst", "exit.emergency", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        ExitEmergencyRealTimeAction, "sst", "rt.exit.emergency", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes an emergency shutdown. This is the default action for SIGTERM and SIGINT.")
+
     ExitEmergencyRealTimeAction();
     virtual void execute() override;
 };
@@ -60,8 +61,9 @@ class CoreStatusRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        CoreStatusRealTimeAction, "sst", "status.core", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        CoreStatusRealTimeAction, "sst", "rt.status.core", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST-Core to print its status. This is the default action for SIGUSR1.")
+
     CoreStatusRealTimeAction();
     void execute() override;
 };
@@ -71,9 +73,10 @@ class ComponentStatusRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ComponentStatusRealTimeAction, "sst", "status.all", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        ComponentStatusRealTimeAction, "sst", "rt.status.all", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST-Core to print its status along with component status. This is the default "
         "action for SIGUSR2.")
+
     ComponentStatusRealTimeAction();
     void execute() override;
 };
@@ -83,12 +86,15 @@ class CheckpointRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        CheckpointRealTimeAction, "sst", "checkpoint", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        CheckpointRealTimeAction, "sst", "rt.checkpoint", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a checkpoint. This is the default action for the "
         "'--checkpoint-wall-period' option.")
+
     CheckpointRealTimeAction();
     virtual void execute() override;
     virtual void begin(time_t scheduled_time) override;
+
+    bool canInitiateCheckpoint() override { return true; }
 };
 
 /* Action to generate a heartbeat message */
@@ -96,9 +102,10 @@ class HeartbeatRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        HeartbeatRealTimeAction, "sst", "heartbeat", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        HeartbeatRealTimeAction, "sst", "rt.heartbeat", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a heartbeat message (status and some resource usage information). "
         "This is the default action for the '--heartbeat-wall-period' option.")
+
     HeartbeatRealTimeAction();
     virtual void execute() override;
     virtual void begin(time_t scheduled_time) override;
@@ -179,11 +186,18 @@ public:
     /* SyncManager request to get signals. Also clears local signals */
     bool getSignals(int& sig_end, int& sig_usr, int& sig_alrm);
 
+    /**
+       Check whether or not any of the Actions registered with the
+       manager can initiate a checkpoint.
+     */
+    bool canInitiateCheckpoint() { return can_checkpoint_; }
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::RealTimeManager)
 
 private:
-    bool serial_exec_; // Whether execution is serial or parallel
+    bool serial_exec_;            // Whether execution is serial or parallel
+    bool can_checkpoint_ = false; // Set to true if any Actions can trigger checkpoint
 
     /* The set of signal handlers for all signals */
     std::map<int, RealTimeAction*> signal_actions_;

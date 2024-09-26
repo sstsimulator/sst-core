@@ -31,8 +31,9 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     sim(sim),
     totalWaitTime(0.0)
 {
+    RankInfo rank = sim->getRank();
     for ( int i = 0; i < num_threads; i++ ) {
-        queues.push_back(new ThreadSyncQueue());
+        queues.push_back(new ThreadSyncQueue(rank));
     }
 
     if ( sim->getRank().thread == 0 ) {
@@ -192,25 +193,6 @@ ThreadSyncSimpleSkip::getSignals(int& end, int& usr, int& alrm)
     usr  = sig_usr_;
     alrm = sig_alrm_;
     return sig_end_ || sig_usr_ || sig_alrm_;
-}
-
-void
-ThreadSyncSimpleSkip::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    ThreadSync::serialize_order(ser);
-    ser& my_max_period;
-    ser& num_threads;
-    ser& thread;
-    ser& localMinimumNextActivityTime;
-    ser& totalWaitTime;
-    ser& single_rank;
-
-    // No need to serialize
-    // link_map - unused after construction
-    // sim - regenerate
-    // barrier - regenerate & guarantee empty during checkpoint
-    // lock - regenerate
-    // queues - empty
 }
 
 Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];

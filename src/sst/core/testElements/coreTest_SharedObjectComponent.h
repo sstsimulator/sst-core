@@ -84,6 +84,9 @@ public:
 
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PORTS(
+        {"left", "Link to the component to the left", { "" } },
+        {"right", "Link to the component to the right", { "" } }
+
     )
 
     // Optional since there is nothing to document
