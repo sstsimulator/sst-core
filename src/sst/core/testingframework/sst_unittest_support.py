@@ -32,6 +32,7 @@ import test_engine_globals
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
 
+from warnings import warn
 if not sys.warnoptions:
     import os, warnings
     warnings.simplefilter("once") # Change the filter in this process
@@ -188,6 +189,8 @@ def host_os_get_system_node_name():
         Returns:
             (str) Returns the system node name
     """
+    warn("host_os_get_system_node_name() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.node()
 
 ###
@@ -198,6 +201,8 @@ def host_os_get_kernel_type():
         Returns:
             (str) 'Linux' or 'Darwin' as the Kernel Type
     """
+    warn("host_os_get_kernel_type() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.system()
 
 def host_os_get_kernel_release():
@@ -206,6 +211,8 @@ def host_os_get_kernel_release():
         Returns:
             (str) Kernel Release Number.  Note: This is not the same as OS version
     """
+    warn("host_os_get_kernel_release() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.release()
 
 def host_os_get_kernel_arch():
@@ -214,6 +221,8 @@ def host_os_get_kernel_arch():
         Returns:
             (str) 'x86_64' on Linux; 'i386' on OSX as the Kernel Architecture
     """
+    warn("host_os_get_kernel_arch() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.machine()
 
 def host_os_get_distribution_type():
@@ -270,6 +279,8 @@ def host_os_is_osx():
         Returns:
             (bool) True if OS Distribution is OSX
     """
+    warn("host_os_is_osx() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_OSX
 
 def host_os_is_linux():
@@ -278,6 +289,8 @@ def host_os_is_linux():
         Returns:
             (bool) True if OS Distribution is Linux
     """
+    warn("host_os_is_linux() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return not host_os_get_distribution_type() == OS_DIST_OSX
 
 def host_os_is_centos():
@@ -286,6 +299,8 @@ def host_os_is_centos():
         Returns:
             (bool) True if OS Distribution is CentOS
     """
+    warn("host_os_is_centos() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_CENTOS
 
 def host_os_is_rhel():
@@ -294,6 +309,8 @@ def host_os_is_rhel():
         Returns:
             (bool) True if OS Distribution is RHEL
     """
+    warn("host_os_is_rhel() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_RHEL
 
 def host_os_is_toss():
@@ -302,6 +319,8 @@ def host_os_is_toss():
         Returns:
             (bool) True if OS Distribution is Toss
     """
+    warn("host_os_is_toss() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_TOSS
 
 def host_os_is_ubuntu():
@@ -310,6 +329,8 @@ def host_os_is_ubuntu():
         Returns:
             (bool) True if OS Distribution is Ubuntu
     """
+    warn("host_os_is_ubuntu() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_UBUNTU
 
 def host_os_is_rocky():
@@ -318,6 +339,8 @@ def host_os_is_rocky():
         Returns:
             (bool) True if OS Distribution is Rocky
     """
+    warn("host_os_is_rocky() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_ROCKY
 
 
@@ -329,6 +352,8 @@ def host_os_get_num_cores_on_system():
         Returns:
             (int) Number of cores on the system
     """
+    warn("host_os_get_num_cores_on_system() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     num_cores = multiprocessing.cpu_count()
     return num_cores
 
