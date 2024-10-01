@@ -188,6 +188,8 @@ public:
     // arguments
     static bool parseBoolean(const std::string& arg, bool& success, const std::string& option);
 
+    static uint32_t parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option);
+
     virtual ~ConfigBase() {}
 
     /**

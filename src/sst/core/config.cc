@@ -57,7 +57,6 @@ public:
         return 1; /* Should not continue, but clean exit */
     }
 
-
     // num_threads
     static int setNumThreads(Config* cfg, const std::string& arg)
     {
@@ -113,34 +112,10 @@ public:
     // exit after
     static int setExitAfter(Config* cfg, const std::string& arg)
     {
-        static const char* templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
-        const size_t       n_templ     = sizeof(templates) / sizeof(templates[0]);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-        struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
-#pragma GCC diagnostic pop
-        char* p;
-
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            memset(&res, '\0', sizeof(res));
-            p = strptime(arg.c_str(), templates[i], &res);
-            if ( p != nullptr && *p == '\0' ) {
-                cfg->exit_after_ = res.tm_sec;
-                cfg->exit_after_ += res.tm_min * 60;
-                cfg->exit_after_ += res.tm_hour * 60 * 60;
-                return 0;
-            }
-        }
-
-        fprintf(
-            stderr,
-            "Error parsing option: Argument passed to --exit-after cannot be parsed. Argument = [%s]\n"
-            "Valid formats are:\n",
-            arg.c_str());
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            fprintf(stderr, "\t%s\n", templates[i]);
-        }
-
+        if ( arg == "" ) { return 0; }
+        bool success     = false;
+        cfg->exit_after_ = cfg->parseWallTimeToSeconds(arg, success, "--exit-after");
+        if ( success ) return 0;
         return -1;
     }
 
@@ -192,35 +167,9 @@ public:
     {
         if ( arg == "" ) { return 0; }
 
-        /* Parse time string into seconds if not already */
-        static const char* cpt_templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
-        const size_t       n_templ         = sizeof(cpt_templates) / sizeof(cpt_templates[0]);
-        struct tm          res             = {};
-        char*              p;
-        uint32_t           val;
-
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            memset(&res, '\0', sizeof(res));
-            p = strptime(arg.c_str(), cpt_templates[i], &res);
-            if ( p != nullptr && *p == '\0' ) {
-                val = res.tm_sec;
-                val += res.tm_min * 60;
-                val += res.tm_hour * 60 * 60;
-
-                cfg->heartbeat_wall_period_ = val;
-
-                return 0;
-            }
-        }
-
-        fprintf(
-            stderr,
-            "Error parsing option: Argument passed to --heartbeat-wall-period could not be parsed. Argument = [%s]\n"
-            "Valid formats are:\n",
-            arg.c_str());
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            fprintf(stderr, "\t%s\n", cpt_templates[i]);
-        }
+        bool success                = false;
+        cfg->heartbeat_wall_period_ = cfg->parseWallTimeToSeconds(arg, success, "--heartbeat-wall-period");
+        if ( success ) return 0;
         return -1;
     }
 
@@ -428,7 +377,8 @@ public:
     // Advanced options - profiling
     static int enableProfiling(Config* cfg, const std::string& arg)
     {
-        cfg->enabled_profiling_ = arg;
+        if ( cfg->enabled_profiling_ != "" ) { cfg->enabled_profiling_ += ";"; }
+        cfg->enabled_profiling_ += arg;
         return 0;
     }
 
@@ -481,7 +431,7 @@ public:
         msg.append("     point: profiling point to load the tool into\n");
         msg.append("\n");
         msg.append("Profiling tools can all be enabled in a single instance of --enable-profiling, or you can use "
-                   "multiple instances of --enable-profiling can be used to enable more than one profiling tool.  It "
+                   "multiple instances of --enable-profiling to enable more than one profiling tool.  It "
                    "is also possible to attach more than one profiling tool to a given profiling point.\n");
         msg.append("\n");
         msg.append("Examples:\n");
@@ -533,36 +483,9 @@ public:
     static int setCheckpointWallPeriod(Config* cfg, const std::string& arg)
     {
         if ( arg == "" ) { return 0; }
-
-        /* Parse time string into seconds if not already */
-        static const char* cpt_templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
-        const size_t       n_templ         = sizeof(cpt_templates) / sizeof(cpt_templates[0]);
-        struct tm          res             = {};
-        char*              p;
-        uint32_t           val;
-
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            memset(&res, '\0', sizeof(res));
-            p = strptime(arg.c_str(), cpt_templates[i], &res);
-            if ( p != nullptr && *p == '\0' ) {
-                val = res.tm_sec;
-                val += res.tm_min * 60;
-                val += res.tm_hour * 60 * 60;
-
-                cfg->checkpoint_wall_period_ = val;
-
-                return 0;
-            }
-        }
-
-        fprintf(
-            stderr,
-            "Error parsing option: Argument passed to --checkpoint-wall-period could not be parsed. Argument = [%s]\n"
-            "Valid formats are:\n",
-            arg.c_str());
-        for ( size_t i = 0; i < n_templ; i++ ) {
-            fprintf(stderr, "\t%s\n", cpt_templates[i]);
-        }
+        bool success                 = false;
+        cfg->checkpoint_wall_period_ = cfg->parseWallTimeToSeconds(arg, success, "--checkpoint-wall-period");
+        if ( success ) return 0;
         return -1;
     }
 
@@ -684,6 +607,55 @@ public:
         cfg->enable_sig_handling_ = false;
         return 0;
     }
+
+    // Set SIGUSR1 handler
+    static int setSigUsr1(Config* cfg, const std::string& arg)
+    {
+        cfg->sigusr1_ = arg;
+        return 0;
+    }
+
+    // Set SIGUSR2 handler
+    static int setSigUsr2(Config* cfg, const std::string& arg)
+    {
+        cfg->sigusr2_ = arg;
+        return 0;
+    }
+
+    // Set SIGALRM handler(s)
+    static int setSigAlrm(Config* cfg, const std::string& arg)
+    {
+        if ( cfg->sigalrm_ != "" ) { cfg->sigalrm_ += ";"; }
+        cfg->sigalrm_ += arg;
+        return 0;
+    }
+
+    // Extended help for SIGALRM
+    static std::string getSignalExtHelp()
+    {
+        std::string msg = "RealTime Actions [EXPERIMENTAL]:\n\n";
+        msg.append("  RealTimeActions are actions that execute in response to system signals SIGUSR1, SIGUSR2, and/or "
+                   "SIGALRM. "
+                   "The following actions are available from SST core or custom actions may also be defined.\n"
+                   "   - sst.rt.exit.clean: Exits SST normally.\n"
+                   "   - sst.rt.exit.emergency: Exists SST in an emergency state. Triggered on SIGINT and SIGTERM.\n"
+                   "   - sst.rt.status.core: Reports brief state of SST core.\n"
+                   "   - sst.rt.status.all: Reports state of SST core and every simulated component.\n"
+                   "   - sst.rt.checkpoint: Creates a checkpoint.\n"
+                   "   - sst.rt.heartbeat: Reports state of SST core and some profiling state (e.g., memory usage).\n");
+        msg.append(
+            "  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using '--sigusr2=<handler>'"
+            " If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and --sigusr2=sst.rt.status.all.\n");
+        msg.append("  Actions can be bound to SIGALRM by specifying '--sigalrm=ACTION(interval=TIME)' where ACTION is "
+                   "the action and TIME is a wall-clock time in the format HH:MM:SS, MM:SS, SS, Hh, Mm, or Ss. Capital "
+                   "letters represent numerics and lower case are units and required for those formats. Multiple "
+                   "actions can be separated by semicolons or multiple instances of --sigalrm can be used.\n");
+        msg.append("  Examples:\n");
+        msg.append("    --sigusr1=sst.rt.checkpoint\n");
+        msg.append("    --sigusr2=sst.rt.heartbeat\n");
+        msg.append("    --sigalrm=\"sst.rt.checkpoint(interval=2h);sst.rt.heartbeat(interval=30m)\"\n");
+        return msg;
+    }
 };
 
 
@@ -750,6 +722,9 @@ Config::print()
     std::cout << "rank_seq_startup_ " << rank_seq_startup_ << std::endl;
     std::cout << "print_env" << print_env_ << std::endl;
     std::cout << "enable_sig_handling = " << enable_sig_handling_ << std::endl;
+    std::cout << "sigusr1 = " << sigusr1_ << std::endl;
+    std::cout << "sigusr2 = " << sigusr2_ << std::endl;
+    std::cout << "sigalrm = " << sigalrm_ << std::endl;
     std::cout << "no_env_config = " << no_env_config_ << std::endl;
 }
 
@@ -828,6 +803,9 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
 
     // Advanced Options - environment
     enable_sig_handling_ = true;
+    sigusr1_             = "sst.rt.status.core";
+    sigusr2_             = "sst.rt.status.all";
+    sigalrm_             = "";
 
     insertOptions();
 }
@@ -1026,6 +1004,17 @@ Config::insertOptions()
     DEF_FLAG(
         "disable-signal-handlers", 0, "Disable signal handlers",
         std::bind(&ConfigHelper::disableSigHandlers, this, _1));
+    DEF_ARG_EH(
+        "sigusr1", 0, "MODULE", "Select handler for SIGUSR1 signal. See extended help for detail.",
+        std::bind(&ConfigHelper::setSigUsr1, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
+    DEF_ARG_EH(
+        "sigusr2", 0, "MODULE", "Select handler for SIGUSR2 signal. See extended help for detail.",
+        std::bind(&ConfigHelper::setSigUsr2, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
+    DEF_ARG_EH(
+        "sigalrm", 0, "MODULE",
+        "Select handler for SIGALRM signals.  Argument is a semicolon separated list specifying the "
+        "handlers to register along with a time interval for each. See extended help for detail.",
+        std::bind(&ConfigHelper::setSigAlrm, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
 
     /* Advanced Features - Checkpoint */
     DEF_SECTION_HEADING("Advanced Options - Checkpointing (EXPERIMENTAL)");

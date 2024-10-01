@@ -367,6 +367,21 @@ public:
     */
     bool enable_sig_handling() const { return enable_sig_handling_; }
 
+    /**
+     * SIGUSR1 handler
+     */
+    const std::string& sigusr1() const { return sigusr1_; }
+
+    /**
+     * SIGUSR2 handler
+     */
+    const std::string& sigusr2() const { return sigusr2_; }
+
+    /**
+     * SIGALRM handler(s)
+     */
+    const std::string& sigalrm() const { return sigalrm_; }
+
     // This option is used by the SST wrapper found in
     // bootshare.{h,cc} and is never actually accessed once sst.x
     // executes.
@@ -423,8 +438,11 @@ public:
         ser& checkpoint_sim_period_;
         ser& checkpoint_prefix_;
 
-        ser& print_env_;
         ser& enable_sig_handling_;
+        ser& sigusr1_;
+        ser& sigusr2_;
+        ser& sigalrm_;
+        ser& print_env_;
         ser& no_env_config_;
     }
     ImplementSerializable(SST::Config);
@@ -524,8 +542,11 @@ private:
     std::string checkpoint_prefix_; /*!< Prefix for checkpoint filename and checkpoint directory */
     std::string checkpoint_directory_; /*!< Directory to write checkpoints to */
 
-    // Advanced options - envrionment
-    bool enable_sig_handling_; /*!< Enable signal handling */
+    // Advanced options - environment
+    bool        enable_sig_handling_; /*!< Enable signal handling */
+    std::string sigusr1_;             /*!< RealTimeAction to call on a SIGUSR1 */
+    std::string sigusr2_;             /*!< RealTimeAction to call on a SIGUSR2 */
+    std::string sigalrm_;             /*!< RealTimeAction(s) to call on a SIGALRM */
     // bool print_env_;  ** in ConfigShared
     // bool no_env_config_; ** in ConfigShared
 };

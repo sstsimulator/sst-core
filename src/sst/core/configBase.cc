@@ -57,6 +57,39 @@ ConfigBase::parseBoolean(const std::string& arg, bool& success, const std::strin
     }
 }
 
+uint32_t
+ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option)
+{
+    static const char* templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
+    const size_t       n_templ     = sizeof(templates) / sizeof(templates[0]);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+    struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
+#pragma GCC diagnostic pop
+    char*    p;
+    uint32_t seconds;
+
+    for ( size_t i = 0; i < n_templ; i++ ) {
+        memset(&res, '\0', sizeof(res));
+        p = strptime(arg.c_str(), templates[i], &res);
+        if ( p != nullptr && *p == '\0' ) {
+            seconds = res.tm_sec;
+            seconds += res.tm_min * 60;
+            seconds += res.tm_hour * 60 * 60;
+            success = true;
+            return seconds;
+        }
+    }
+    fprintf(
+        stderr, "ERROR: Argument passed to \"%s\" could not be parsed. Argument = [%s]\nValid formats are:\n",
+        option.c_str(), arg.c_str());
+    for ( size_t i = 0; i < n_templ; i++ ) {
+        fprintf(stderr, "\t%s\n", templates[i]);
+    }
+    success = false;
+    // Let caller handle error
+    return 0;
+}
 
 void
 ConfigBase::addOption(
