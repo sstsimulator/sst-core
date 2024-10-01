@@ -26,7 +26,7 @@ import tarfile
 import shutil
 import difflib
 import configparser
-from typing import List, Sequence
+from typing import List, Sequence, Type
 
 import test_engine_globals
 from test_engine_support import OSCommand
@@ -426,6 +426,8 @@ def sst_core_config_include_file_get_value_int(define, default=None, disable_war
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_core_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
                                               "sst_config.h", define, default, int, disable_warning)
 
@@ -446,8 +448,27 @@ def sst_core_config_include_file_get_value_str(define, default=None, disable_war
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_core_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
                                               "sst_config.h", define, default, str, disable_warning)
+
+###
+
+def sst_core_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+    """Retrieve a define from the SST Core Configuration Include File (sst_config.h)
+
+    Args:
+        define (str): The define to look for
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+        disable_warning (bool): Disable the warning if define not found
+
+    Returns:
+        Value for specified define
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+                                              "sst_config.h", define, default, type, disable_warning)
 
 ################################################################################
 # SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
@@ -468,6 +489,8 @@ def sst_elements_config_include_file_get_value_int(define, default=None, disable
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_elements_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
                                               "sst_element_config.h", define, default, int, disable_warning)
 
@@ -488,8 +511,27 @@ def sst_elements_config_include_file_get_value_str(define, default=None, disable
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_elements_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
                                               "sst_element_config.h", define, default, str, disable_warning)
+
+###
+
+def sst_elements_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+    """Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
+
+    Args:
+        define (str): The define to look for
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+        disable_warning (bool): Disable the warning if define not found
+
+    Returns:
+        Value for specified define
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+                                              "sst_element_config.h", define, default, type, disable_warning)
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
@@ -509,6 +551,8 @@ def sstsimulator_conf_get_value_str(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, str)
 
 ###
@@ -527,6 +571,8 @@ def sstsimulator_conf_get_value_int(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, int)
 
 ###
@@ -545,6 +591,8 @@ def sstsimulator_conf_get_value_float(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_float() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, float)
 
 ###
@@ -566,7 +614,25 @@ def sstsimulator_conf_get_value_bool(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_bool() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, bool)
+
+###
+
+def sstsimulator_conf_get_value(section: str, key: str, type: Type, default=None):
+    """Get the configuration value from the SST Configuration File (sstsimulator.conf)
+
+    Args:
+        section (str): The [section] to look for the key
+        key (str): The key to find
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+
+    Returns:
+        Value for section[key]
+    """
+    return _get_sstsimulator_conf_value(section, key, default, type)
 
 ###
 
