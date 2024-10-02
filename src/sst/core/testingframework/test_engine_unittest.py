@@ -155,7 +155,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             Returns:
                 True if all tests passing with no errors, false otherwise
         """
-        return run_results.wasSuccessful and \
+        return run_results.wasSuccessful() and \
         len(run_results.failures) == 0 and \
         len(run_results.errors) == 0 and \
         len(run_results.unexpectedSuccesses) == 0 and \
