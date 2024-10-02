@@ -35,8 +35,8 @@ sstLinks = dict()
 # Some regular expressions
 sdlRE = re.compile("<sdl([^/]*?)/>")
 commentRE = re.compile("<!--.*?-->", re.DOTALL)
-eqRE = re.compile("(<[^>]+?\w+)=([^\"\'][^\\s/>]*)")  # This one is suspect
-namespaceRE = re.compile("<\s*((\w+):\w+)")
+eqRE = re.compile(r"(<[^>]+?\w+)=([^\"\'][^\\s/>]*)")  # This one is suspect
+namespaceRE = re.compile(r"<\s*((\w+):\w+)")
 
 envVarRE = re.compile("\\${(.*?)}", re.DOTALL)
 sstVarRE = re.compile("\\$([^{][a-zA-Z0-9_]+)", re.DOTALL)
