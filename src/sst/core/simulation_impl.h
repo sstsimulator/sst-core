@@ -171,7 +171,10 @@ public:
     void exchangeLinkInfo();
 
     /** Setup external control actions (forced stops, signal handling */
-    void setupSimActions(Config* cfg);
+    void setupSimActions(Config* cfg, bool restart = false);
+
+    /** Helper for signal string parsing */
+    bool parseSignalString(std::string& arg, std::string& name, Params& params);
 
     /** Perform the init() phase of simulation */
     void initialize();
@@ -437,7 +440,7 @@ public:
 
     /** Performance Tracking Information **/
 
-    void intializeProfileTools(const std::string& config);
+    void initializeProfileTools(const std::string& config);
 
     std::map<std::string, SST::Profile::ProfileTool*> profile_tools;
     // Maps the component profile points to profiler names

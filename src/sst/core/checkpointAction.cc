@@ -71,6 +71,7 @@ CheckpointAction::CheckpointAction(
 
 CheckpointAction::~CheckpointAction() {}
 
+// Generate checkpoint on simulation time period
 void
 CheckpointAction::execute(void)
 {
@@ -182,6 +183,7 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
     }
 }
 
+// SyncManager check whether a checkpoint needs to be generated
 SimTime_t
 CheckpointAction::check(SimTime_t current_time)
 {

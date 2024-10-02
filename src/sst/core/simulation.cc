@@ -158,7 +158,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
-    instance->intializeProfileTools(config->enabledProfiling());
+    instance->initializeProfileTools(config->enabledProfiling());
 
     return instance;
 }
@@ -237,14 +237,16 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
 }
 
 void
-Simulation_impl::setupSimActions(Config* cfg)
+Simulation_impl::setupSimActions(Config* cfg, bool restart)
 {
     // Sim time alarms
-    SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
-    if ( stopAt != 0 ) {
-        StopAction* sa = new StopAction();
-        sa->setDeliveryTime(stopAt);
-        timeVortex->insert(sa);
+    if ( !restart ) {
+        SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
+        if ( stopAt != 0 ) {
+            StopAction* sa = new StopAction();
+            sa->setDeliveryTime(stopAt);
+            timeVortex->insert(sa);
+        }
     }
 
     // Signal handling - default
@@ -252,8 +254,8 @@ Simulation_impl::setupSimActions(Config* cfg)
 
     real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.exit.emergency"), SIGINT);
     real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.exit.emergency"), SIGTERM);
-    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.status.core"), SIGUSR1);
-    real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.status.all"), SIGUSR2);
+    real_time_->registerSignal(factory->Create<RealTimeAction>(cfg->sigusr1()), SIGUSR1);
+    real_time_->registerSignal(factory->Create<RealTimeAction>(cfg->sigusr2()), SIGUSR2);
 
     if ( cfg->exit_after() != 0 ) {
         real_time_->registerInterval(cfg->exit_after(), factory->Create<RealTimeAction>("sst.rt.exit.clean"));
@@ -267,6 +269,90 @@ Simulation_impl::setupSimActions(Config* cfg)
     if ( cfg->heartbeat_wall_period() != 0 ) {
         real_time_->registerInterval(cfg->heartbeat_wall_period(), factory->Create<RealTimeAction>("sst.rt.heartbeat"));
     }
+
+    if ( cfg->sigalrm() != "" ) {
+        std::string alarmstr = cfg->sigalrm();
+        while ( alarmstr != "" ) {
+            Params      params;
+            std::string action;
+            bool        found;
+            parseSignalString(alarmstr, action, params);
+            std::string interval = params.find<std::string>("interval", "", found);
+            if ( !found ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1,
+                    "ERROR: Action '%s' passed to '--sigalrm' does not have required 'interval' parameter.",
+                    action.c_str());
+            }
+
+            bool     success      = false;
+            uint32_t interval_sec = cfg->parseWallTimeToSeconds(interval, success, "--sigalrm");
+
+            if ( !success ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1,
+                    "ERROR: --sigalrm option invalid. Interval parameter for '%s' could not be parsed. Argument = [%s]",
+                    action.c_str(), interval.c_str());
+            }
+            real_time_->registerInterval(interval_sec, factory->Create<RealTimeAction>(action));
+        }
+    }
+}
+
+// Remove the first signal handler from a string and parse
+// Modifies the input string to remove the signal handler
+bool
+Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& params)
+{
+    if ( arg == "" ) return false;
+
+    // Remove first handler from arg
+    auto        delim = arg.find(';');
+    std::string handler;
+    if ( delim != std::string::npos ) {
+        handler = arg.substr(0, delim);
+        arg.erase(0, delim + 1);
+    }
+    else {
+        handler = arg;
+        arg     = "";
+    }
+
+    // Check for parameters and parse if needed
+    if ( handler.find("(") != std::string::npos ) { // Handler has parameters type(...)
+        if ( handler.substr(handler.size() - 1, 1) != ")" ) {
+            sim_output.fatal(
+                CALL_INFO, 1,
+                "ERROR: Invalid format for parsing signal handler option string. Found '(' in '%s' but string does not "
+                "end with ')'",
+                handler.c_str());
+        }
+
+        // Split string and remove open/close parentheses
+        delim                = handler.find("(");
+        std::string paramstr = handler.substr(delim + 1, handler.length() - delim - 2);
+        handler              = handler.substr(0, delim);
+
+        if ( paramstr.length() > 0 ) {
+            std::vector<std::string> pairs;
+            SST::tokenize(pairs, paramstr, ",", true);
+            for ( auto& y : pairs ) {
+                std::vector<std::string> kv;
+                SST::tokenize(kv, y, "=", true);
+                if ( kv.size() < 2 ) {
+                    sim_output.fatal(
+                        CALL_INFO_LONG, 1,
+                        "ERROR: Invalid format for params (%s) passed to signal handler option, format should be "
+                        "key=value\n",
+                        y.c_str());
+                }
+                params.insert(kv[0], kv[1]);
+            }
+        }
+    }
+
+    name = handler;
+    return true;
 }
 
 Component*
@@ -1167,8 +1253,9 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     finishBarrier.resize(nthr);
 }
 
+
 void
-Simulation_impl::intializeProfileTools(const std::string& config)
+Simulation_impl::initializeProfileTools(const std::string& config)
 {
     if ( config == "" ) return;
     // Need to parse the profile string.  Format is:
@@ -1322,6 +1409,9 @@ void
 Simulation_impl::scheduleCheckpoint()
 {
     checkpoint_action_->setCheckpoint();
+
+    // Trigger checkpoint immediately in serial simulations
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) { checkpoint_action_->check(currentSimCycle); }
 }
 
 
@@ -1746,23 +1836,7 @@ Simulation_impl::restart(Config* cfg)
         m_heartbeat->schedule();
     }
 
-    // Re-initialize real_time_
-    if ( !cfg->enable_sig_handling() ) return;
-
-    real_time_->registerSignal(new ExitEmergencyRealTimeAction(), SIGINT);
-    real_time_->registerSignal(new ExitEmergencyRealTimeAction(), SIGTERM);
-    real_time_->registerSignal(new CoreStatusRealTimeAction(), SIGUSR1);
-    real_time_->registerSignal(new ComponentStatusRealTimeAction(), SIGUSR2);
-
-    if ( cfg->exit_after() != 0 ) { real_time_->registerInterval(cfg->exit_after(), new ExitCleanRealTimeAction()); }
-
-    if ( cfg->checkpoint_wall_period() != 0 ) {
-        real_time_->registerInterval(cfg->checkpoint_wall_period(), new CheckpointRealTimeAction());
-    }
-
-    if ( cfg->heartbeat_wall_period() != 0 ) {
-        real_time_->registerInterval(cfg->heartbeat_wall_period(), new HeartbeatRealTimeAction());
-    }
+    setupSimActions(cfg, true);
 
     real_time_->begin();
 }
