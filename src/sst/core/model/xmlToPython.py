@@ -42,19 +42,21 @@ envVarRE = re.compile("\\${(.*?)}", re.DOTALL)
 sstVarRE = re.compile("\\$([^{][a-zA-Z0-9_]+)", re.DOTALL)
 
 
-def processString(str):
+def processString(string: str) -> str:
     """Process a string, replacing variables and env. vars with their values"""
-    def replaceSSTVar(matchobj):
+    def replaceSSTVar(matchobj: re.Match) -> str:
         varname = matchobj.group(1)
         return sstVars[varname]
 
-    def replaceEnvVar(matchobj):
+    def replaceEnvVar(matchobj: re.Match) -> str:
         varname = matchobj.group(1)
-        return os.getenv(varname)
+        var = os.getenv(varname)
+        assert var is not None
+        return var
 
-    str = envVarRE.sub(replaceEnvVar, str)
-    str = sstVarRE.sub(replaceSSTVar, str)
-    return str
+    string = envVarRE.sub(replaceEnvVar, string)
+    string = sstVarRE.sub(replaceSSTVar, string)
+    return string
 
 
 def getLink(name):
@@ -72,26 +74,26 @@ def getParamName(node):
     return name
 
 
-def processParamSets(set):
-    for group in set:
+def processParamSets(groups: ET.Element) -> None:
+    for group in groups:
         params = dict()
         for p in group:
-            params[getParamName(p)] = processString(p.text.strip())
+            params[getParamName(p)] = processString(p.text.strip())  # type: ignore
         sstParams[group.tag] = params
 
 
-def processVars(varNode):
+def processVars(varNode: ET.Element) -> None:
     for var in varNode:
-        sstVars[var.tag] = processString(var.text.strip())
+        sstVars[var.tag] = processString(var.text.strip())  # type: ignore
 
-def processConfig(cfg):
-    for line in cfg.text.strip().splitlines():
+def processConfig(cfg: ET.Element) -> None:
+    for line in cfg.text.strip().splitlines():  # type: ignore
         var, val = line.split('=')
         sst.setProgramOption(var, processString(val)) # strip quotes
 
 
 
-def buildComp(compNode):
+def buildComp(compNode: ET.Element) -> None:
     name = processString(compNode.attrib['name'])
     type = processString(compNode.attrib['type'])
     comp = sst.Component(name, type)
@@ -99,12 +101,12 @@ def buildComp(compNode):
     # Process Parameters
     paramsNode = compNode.find("params")
     params = dict()
-    if paramsNode != None:
+    if paramsNode is not None:
         if "include" in paramsNode.attrib:
             for paramInc in paramsNode.attrib['include'].split(','):
                 params.update(sstParams[processString(paramInc)])
         for p in paramsNode:
-            params[getParamName(p)] = processString(p.text.strip())
+            params[getParamName(p)] = processString(p.text.strip())  # type: ignore
 
     comp.addParams(params)
 
@@ -131,23 +133,23 @@ def buildGraph(graph):
 
 
 
-def build(root):
+def build(root: ET.Element) -> None:
     paramSets = root.find("param_include")
-    vars = root.find("variables")
+    variables = root.find("variables")
     cfg = root.find("config")
     timebase = root.find("timebase")
     graph = root.find("sst")
 
 
-    if None != vars:
-        processVars(vars)
-    if None != paramSets:
+    if variables is not None:
+        processVars(variables)
+    if paramSets is not None:
         processParamSets(paramSets)
-    if None != timebase:
-        sst.setProgramOption('timebase', timebase.text.strip())
-    if None != cfg:
+    if timebase is not None:
+        sst.setProgramOption('timebase', timebase.text.strip())  # type: ignore
+    if cfg is not None:
         processConfig(cfg)
-    if None != graph:
+    if graph is not None:
         buildGraph(graph)
 
 
