@@ -1418,6 +1418,7 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, 
             outputfilepath (str): The output file path for stdout
             errorfilepath (str): The output file path for stderr. If none, stderr redirects to stdout.
     """
+
     check_param_type("filepath_wildcard", filepath_wildcard, str)
     check_param_type("mpiout_filename", mpiout_filename, str)
     check_param_type("outputfilepath", outputfilepath, str)
@@ -1449,8 +1450,15 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, 
                 os.system(cmd)
     else:
         # Cat the files together normally (OpenMPI V5)
-        cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
-        os.system(cmd)
+        # MPI 5.x - name.testfile.prterun-platform-PID@rank.thread.out or .err
+        if errorfilepath is None:
+            cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
+            os.system(cmd)
+        else:
+            cmd = "cat {0}.out > {1}".format(filepath_wildcard, outputfilepath)
+            os.system(cmd)
+            cmd = "cat {0}.err > {1}".format(filepath_wildcard, errorfilepath)
+            os.system(cmd)
 
 ###
 
