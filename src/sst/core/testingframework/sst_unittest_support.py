@@ -26,12 +26,13 @@ import tarfile
 import shutil
 import difflib
 import configparser
-from typing import List, Sequence
+from typing import List, Sequence, Type
 
 import test_engine_globals
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
 
+from warnings import warn
 if not sys.warnoptions:
     import os, warnings
     warnings.simplefilter("once") # Change the filter in this process
@@ -188,6 +189,8 @@ def host_os_get_system_node_name():
         Returns:
             (str) Returns the system node name
     """
+    warn("host_os_get_system_node_name() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.node()
 
 ###
@@ -198,6 +201,8 @@ def host_os_get_kernel_type():
         Returns:
             (str) 'Linux' or 'Darwin' as the Kernel Type
     """
+    warn("host_os_get_kernel_type() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.system()
 
 def host_os_get_kernel_release():
@@ -206,6 +211,8 @@ def host_os_get_kernel_release():
         Returns:
             (str) Kernel Release Number.  Note: This is not the same as OS version
     """
+    warn("host_os_get_kernel_release() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.release()
 
 def host_os_get_kernel_arch():
@@ -214,6 +221,8 @@ def host_os_get_kernel_arch():
         Returns:
             (str) 'x86_64' on Linux; 'i386' on OSX as the Kernel Architecture
     """
+    warn("host_os_get_kernel_arch() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return platform.machine()
 
 def host_os_get_distribution_type():
@@ -270,6 +279,8 @@ def host_os_is_osx():
         Returns:
             (bool) True if OS Distribution is OSX
     """
+    warn("host_os_is_osx() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_OSX
 
 def host_os_is_linux():
@@ -278,6 +289,8 @@ def host_os_is_linux():
         Returns:
             (bool) True if OS Distribution is Linux
     """
+    warn("host_os_is_linux() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return not host_os_get_distribution_type() == OS_DIST_OSX
 
 def host_os_is_centos():
@@ -286,6 +299,8 @@ def host_os_is_centos():
         Returns:
             (bool) True if OS Distribution is CentOS
     """
+    warn("host_os_is_centos() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_CENTOS
 
 def host_os_is_rhel():
@@ -294,6 +309,8 @@ def host_os_is_rhel():
         Returns:
             (bool) True if OS Distribution is RHEL
     """
+    warn("host_os_is_rhel() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_RHEL
 
 def host_os_is_toss():
@@ -302,6 +319,8 @@ def host_os_is_toss():
         Returns:
             (bool) True if OS Distribution is Toss
     """
+    warn("host_os_is_toss() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_TOSS
 
 def host_os_is_ubuntu():
@@ -310,6 +329,8 @@ def host_os_is_ubuntu():
         Returns:
             (bool) True if OS Distribution is Ubuntu
     """
+    warn("host_os_is_ubuntu() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_UBUNTU
 
 def host_os_is_rocky():
@@ -318,6 +339,8 @@ def host_os_is_rocky():
         Returns:
             (bool) True if OS Distribution is Rocky
     """
+    warn("host_os_is_rocky() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_ROCKY
 
 
@@ -329,6 +352,8 @@ def host_os_get_num_cores_on_system():
         Returns:
             (int) Number of cores on the system
     """
+    warn("host_os_get_num_cores_on_system() is deprecated and will be removed in future versions of SST.",
+         DeprecationWarning, stacklevel=2)
     num_cores = multiprocessing.cpu_count()
     return num_cores
 
@@ -401,6 +426,8 @@ def sst_core_config_include_file_get_value_int(define, default=None, disable_war
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_core_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
                                               "sst_config.h", define, default, int, disable_warning)
 
@@ -421,8 +448,27 @@ def sst_core_config_include_file_get_value_str(define, default=None, disable_war
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_core_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
                                               "sst_config.h", define, default, str, disable_warning)
+
+###
+
+def sst_core_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+    """Retrieve a define from the SST Core Configuration Include File (sst_config.h)
+
+    Args:
+        define (str): The define to look for
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+        disable_warning (bool): Disable the warning if define not found
+
+    Returns:
+        Value for specified define
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+                                              "sst_config.h", define, default, type, disable_warning)
 
 ################################################################################
 # SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
@@ -443,6 +489,8 @@ def sst_elements_config_include_file_get_value_int(define, default=None, disable
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_elements_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
                                               "sst_element_config.h", define, default, int, disable_warning)
 
@@ -463,8 +511,27 @@ def sst_elements_config_include_file_get_value_str(define, default=None, disable
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
+    warn("sst_elements_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
                                               "sst_element_config.h", define, default, str, disable_warning)
+
+###
+
+def sst_elements_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+    """Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
+
+    Args:
+        define (str): The define to look for
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+        disable_warning (bool): Disable the warning if define not found
+
+    Returns:
+        Value for specified define
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+                                              "sst_element_config.h", define, default, type, disable_warning)
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
@@ -484,6 +551,8 @@ def sstsimulator_conf_get_value_str(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_str() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, str)
 
 ###
@@ -502,6 +571,8 @@ def sstsimulator_conf_get_value_int(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_int() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, int)
 
 ###
@@ -520,6 +591,8 @@ def sstsimulator_conf_get_value_float(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_float() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, float)
 
 ###
@@ -541,7 +614,25 @@ def sstsimulator_conf_get_value_bool(section, key, default=None):
         Raises:
             SSTTestCaseException: if no data AND default is not provided
     """
+    warn("sstsimulator_conf_get_value_bool() is deprecated and will be removed in future versions of SST. \
+         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
     return _get_sstsimulator_conf_value(section, key, default, bool)
+
+###
+
+def sstsimulator_conf_get_value(section: str, key: str, type: Type, default=None):
+    """Get the configuration value from the SST Configuration File (sstsimulator.conf)
+
+    Args:
+        section (str): The [section] to look for the key
+        key (str): The key to find
+        type (Type): The expected type of the return value
+        default (optional): Default Return if failure occurs
+
+    Returns:
+        Value for section[key]
+    """
+    return _get_sstsimulator_conf_value(section, key, default, type)
 
 ###
 
@@ -1393,6 +1484,7 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, 
             outputfilepath (str): The output file path for stdout
             errorfilepath (str): The output file path for stderr. If none, stderr redirects to stdout.
     """
+
     check_param_type("filepath_wildcard", filepath_wildcard, str)
     check_param_type("mpiout_filename", mpiout_filename, str)
     check_param_type("outputfilepath", outputfilepath, str)
@@ -1424,8 +1516,15 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, 
                 os.system(cmd)
     else:
         # Cat the files together normally (OpenMPI V5)
-        cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
-        os.system(cmd)
+        # MPI 5.x - name.testfile.prterun-platform-PID@rank.thread.out or .err
+        if errorfilepath is None:
+            cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
+            os.system(cmd)
+        else:
+            cmd = "cat {0}.out > {1}".format(filepath_wildcard, outputfilepath)
+            os.system(cmd)
+            cmd = "cat {0}.err > {1}".format(filepath_wildcard, errorfilepath)
+            os.system(cmd)
 
 ###
 
