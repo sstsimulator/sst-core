@@ -1545,7 +1545,7 @@ def testing_remove_component_warning_from_file(input_filepath):
 ### OS Basic Or Equivalent Commands
 ################################################################################
 
-def os_simple_command(os_cmd, run_dir=None):
+def os_simple_command(os_cmd, run_dir=None, **kwargs):
     """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput).
 
         NOTE: Simple command cannot have pipes or redirects
@@ -1561,11 +1561,11 @@ def os_simple_command(os_cmd, run_dir=None):
     check_param_type("os_cmd", os_cmd, str)
     if run_dir is not None:
         check_param_type("run_dir", run_dir, str)
-    rtn = OSCommand(os_cmd, set_cwd=run_dir).run()
+    rtn = OSCommand(os_cmd, set_cwd=run_dir).run(**kwargs)
     rtn_data = (rtn.result(), rtn.output())
     return rtn_data
 
-def os_ls(directory=".", echo_out=True):
+def os_ls(directory=".", echo_out=True, **kwargs):
     """ Perform an simple ls -lia shell command and dump output to screen.
 
         Args:
@@ -1577,12 +1577,12 @@ def os_ls(directory=".", echo_out=True):
     """
     check_param_type("directory", directory, str)
     cmd = "ls -lia {0}".format(directory)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_pwd(echo_out=True):
+def os_pwd(echo_out=True, **kwargs):
     """ Perform an simple pwd shell command and dump output to screen.
 
         Args:
@@ -1592,12 +1592,12 @@ def os_pwd(echo_out=True):
             (str) Output from pwd command
     """
     cmd = "pwd"
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_cat(filepath, echo_out=True):
+def os_cat(filepath, echo_out=True, **kwargs):
     """ Perform an simple cat shell command and dump output to screen.
 
         Args:
@@ -1608,7 +1608,7 @@ def os_cat(filepath, echo_out=True):
     """
     check_param_type("filepath", filepath, str)
     cmd = "cat {0}".format(filepath)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
@@ -1664,7 +1664,7 @@ def os_awk_print(in_str, fields_index_list):
         finalstrdata +=  "{0} ".format(split_list[field_index])
     return finalstrdata
 
-def os_wc(in_file, fields_index_list=[]):
+def os_wc(in_file, fields_index_list=[], **kwargs):
     """ Run a wc (equivalent) command on a file and then extract specific
         fields of the result as a string.
 
@@ -1681,13 +1681,13 @@ def os_wc(in_file, fields_index_list=[]):
     for index, field_index in enumerate(fields_index_list):
         check_param_type("field_index - {0}".format(index), field_index, int)
     cmd = "wc {0}".format(in_file)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     wc_out = rtn.output()
     if fields_index_list:
         wc_out = os_awk_print(wc_out, fields_index_list)
     return wc_out
 
-def os_test_file(file_path, expression="-e"):
+def os_test_file(file_path, expression="-e", **kwargs):
     """ Run a shell 'test' command on a file.
 
         Args:
@@ -1701,7 +1701,7 @@ def os_test_file(file_path, expression="-e"):
     check_param_type("expression", expression, str)
     if os.path.exists(file_path):
         cmd = "test {0} {1}".format(expression, file_path)
-        rtn = OSCommand(cmd).run()
+        rtn = OSCommand(cmd).run(**kwargs)
         log_debug("Test cmd = {0}; rtn = {1}".format(cmd, rtn.result()))
         return rtn.result() == 0
     else:
