@@ -76,7 +76,7 @@ class OSCommand():
             Args:
                 timeout_sec (int): The maximum runtime in seconds before thread
                                    will be terminated and a timeout error will occur.
-                kwargs: Extra parameters
+                kwargs: Extra parameters e.g., timeout_sec to override the default timeout
         """
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout must be an int or a float")
