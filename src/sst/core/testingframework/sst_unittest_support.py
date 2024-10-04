@@ -361,7 +361,7 @@ def host_os_get_num_cores_on_system():
 # SST Skipping Support
 ################################################################################
 
-def testing_check_is_scenario_filtering_enabled(scenario_name):
+def _testing_check_is_scenario_filtering_enabled(scenario_name):
     """ Determine if a scenario filter name is enabled
 
         Args:
@@ -384,7 +384,7 @@ def skip_on_scenario(scenario_name, reason):
     """
     check_param_type("scenario_name", scenario_name, str)
     check_param_type("reason", reason, str)
-    if not testing_check_is_scenario_filtering_enabled(scenario_name):
+    if not _testing_check_is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)
 
