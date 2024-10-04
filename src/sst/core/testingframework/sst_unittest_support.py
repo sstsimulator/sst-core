@@ -1825,7 +1825,7 @@ def _get_linux_distribution():
         # Until we have other OS's, this is Ubuntu.
         distname = "ubuntu"
         distver = _get_linux_version("/etc/lsb-release", " ")
-    elif os.path.isfile("/etc/rocky-release", " "):
+    elif os.path.isfile("/etc/rocky-release"):
         distname = "rocky"
         distver = _get_linux_version("/etc/rocky-release", " ")
     rtn_data = (distname, distver)
