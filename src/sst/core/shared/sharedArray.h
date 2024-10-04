@@ -348,8 +348,7 @@ private:
         inline const T& mutex_read(int index) const
         {
             std::lock_guard<std::mutex> lock(mtx);
-            auto                        ret = array[index];
-            return ret;
+            return array[index];
         }
 
         // Functions inherited from SharedObjectData
