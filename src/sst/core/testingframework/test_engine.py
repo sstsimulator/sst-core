@@ -368,7 +368,7 @@ class TestEngine():
         sstcoreversion = rtn.output()
         sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
 
-        num_cores = host_os_get_num_cores_on_system()
+        num_cores = multiprocessing.cpu_count()
 
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
             concurrent_txt = "[CONCURRENTLY ({0} Testing Threads)]".\
@@ -394,7 +394,7 @@ class TestEngine():
         # Check to see if we are using up all the cores on the system
         # in concurrent mode, warn user of possible failures
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            num_cores_avail = host_os_get_num_cores_on_system()
+            num_cores_avail = multiprocessing.cpu_count()
             threads_used = test_engine_globals.TESTENGINE_THREADLIMIT
             ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
             cores_used = threads_used * ranks_used
@@ -598,8 +598,9 @@ class TestEngine():
                 A dict object of defines from the sst_element_config.h file.
         """
         # ID the path to the sst element configuration file
-        build_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
+        build_root = sstsimulator_conf_get_value("SST_ELEMENT_LIBRARY",
                                                     "SST_ELEMENT_LIBRARY_BUILDDIR",
+                                                    str,
                                                     "undefined")
         # If the element root is not found, then elements have not yet been registerd
         if build_root == "undefined":

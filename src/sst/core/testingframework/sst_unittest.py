@@ -304,7 +304,7 @@ class SSTTestCase(unittest.TestCase):
             mpiout_filename = mpi_out_files
 
         # Get the path to sst binary application
-        sst_app_path = sstsimulator_conf_get_value_str('SSTCore', 'bindir', default="UNDEFINED")
+        sst_app_path = sstsimulator_conf_get_value('SSTCore', 'bindir', str, default="UNDEFINED")
         err_str = "Path to SST {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
@@ -323,7 +323,7 @@ class SSTTestCase(unittest.TestCase):
                                                  sdl_file)
 
         # Update the os launch command if we are running multi-rank
-        num_cores = host_os_get_num_cores_on_system()
+        num_cores = multiprocessing.cpu_count()
 
         # Perform any multi-rank checks/setup
         mpi_avail = False
