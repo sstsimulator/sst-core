@@ -315,8 +315,7 @@ private:
         inline const valT& mutex_read(const keyT& key)
         {
             std::lock_guard<std::mutex> lock(mtx);
-            auto                        ret = map.at(key);
-            return ret;
+            return map.at(key);
         }
 
         // Functions inherited from SharedObjectData
