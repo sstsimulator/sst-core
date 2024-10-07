@@ -402,7 +402,7 @@ def skip_on_sstsimulator_conf_empty_str(section, key, reason):
     check_param_type("section", section, str)
     check_param_type("key", key, str)
     check_param_type("reason", reason, str)
-    rtn_str = sstsimulator_conf_get_value_str(section, key, "")
+    rtn_str = sstsimulator_conf_get_value(section, key, str, "")
     if rtn_str != "":
         return lambda func: func
     return unittest.skip(reason)
