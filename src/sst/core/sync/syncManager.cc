@@ -495,7 +495,10 @@ SyncManager::finalizeLinkConfigurations()
     // Need to figure out what sync comes first and insert object into
     // TimeVortex
     if ( num_ranks_.rank == 1 && num_ranks_.thread == 1 ) return;
-    computeNextInsert();
+    if ( checkpoint_ )
+        computeNextInsert(checkpoint_->getNextCheckpointSimTime());
+    else
+        computeNextInsert();
 }
 
 /** Prepare for complete() phase */
