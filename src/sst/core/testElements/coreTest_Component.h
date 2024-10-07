@@ -116,8 +116,8 @@ public:
     coreTestComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestComponent();
 
-    void setup() {}
-    void finish() { printf("Component Finished.\n"); }
+    void setup() override {}
+    void finish() override { printf("Component Finished.\n"); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTestComponent::coreTestComponent)

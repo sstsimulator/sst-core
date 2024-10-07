@@ -1616,7 +1616,6 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     // Actions that may also be in TV
     ser& real_time_;
     if ( my_rank.thread == 0 ) { ser& m_exit; }
-    initBarrier.wait();
     ser& m_heartbeat;
 
     // Add shared StatisticOutput vector
@@ -1751,6 +1750,7 @@ Simulation_impl::restart(Config* cfg)
     // Actions that may also be in TV
     ser& real_time_;
     if ( my_rank.thread == 0 ) { ser& m_exit; }
+    initBarrier.wait();
 
     // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
     if ( cfg->checkpoint_sim_period() != "" ) {
