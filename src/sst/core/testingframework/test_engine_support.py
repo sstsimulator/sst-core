@@ -25,12 +25,13 @@ import ast
 import inspect
 import signal
 from subprocess import TimeoutExpired
+from typing import Any, Dict, List, Optional
 
 import test_engine_globals
 
 ################################################################################
 
-class OSCommand():
+class OSCommand:
     """ Enables to run subprocess commands in a different thread with a TIMEOUT option.
         This will return a OSCommandResult object.
 

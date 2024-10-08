@@ -15,6 +15,11 @@
 """
 import os
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import configparser
+
 # Verbose Defines
 VERBOSE_QUIET = 0
 VERBOSE_NORMAL = 1
@@ -49,7 +54,7 @@ TESTENGINE_TESTNOTESLIST = None
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
-def init_test_engine_globals():
+def init_test_engine_globals() -> None:
     """ Initialize the test global variables """
     global TESTRUN_TESTRUNNINGFLAG
     global TESTRUN_SINGTHREAD_TESTSUITE_NAME

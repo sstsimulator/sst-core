@@ -35,7 +35,7 @@ TEST_SST_CORE = 1
 
 ################################################################################
 
-def startup_and_run(sst_core_bin_dir, test_mode):
+def startup_and_run(sst_core_bin_dir: str, test_mode: int) -> None:
     """ This is the main entry point for loading and running the SST Test Frameworks
         Engine.
 
@@ -138,7 +138,7 @@ def _generic_exception_handler(exc_e):
 
 ####
 
-def _verify_test_frameworks_is_available(sst_core_frameworks_dir):
+def _verify_test_frameworks_is_available(sst_core_frameworks_dir: str) -> None:
     """ Ensure that all test framework files are available.
         :param: sst_core_frameworks_dir = Dir of the test frameworks
     """

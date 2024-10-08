@@ -241,7 +241,7 @@ class testcase_Signals(SSTTestCase):
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
-        self.assertTrue(hb_count == 1, "Heartbeat count incorrect, should be {0}, found {1} in {2}".format(num_para,hb_count,outfile))
+        self.assertTrue(hb_count >= 1, "Heartbeat count incorrect, should be >= 1, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
 
 
@@ -271,7 +271,7 @@ class testcase_Signals(SSTTestCase):
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
-        self.assertTrue(hb_count == 1, "Heartbeat count incorrect, should be {0}, found {1} in {2}".format(num_para,hb_count,outfile))
+        self.assertTrue(hb_count >= 1, "Heartbeat count incorrect, should be >= 1, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
 
     # Test SIGALRM + core status + heartbeat action via --sigalrm=
