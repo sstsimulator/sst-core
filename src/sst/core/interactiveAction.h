@@ -20,14 +20,14 @@
 namespace SST {
 
 /**
-  \class CheckpointAction
-    A recurring event to trigger checkpoint generation
+  \class InteractiveAction An event to trigger interactive mode.  This
+    is a "one shot" event and will delete itself on execute()
 */
 class InteractiveAction : public Action
 {
 public:
     /**
-    Create a new checkpoint object for the simulation core to initiate checkpoints
+       Create a new InteractiveAction object for the simulation core to initiate interactive mode
     */
     InteractiveAction(Simulation_impl* sim, const std::string& msg) : Action(), sim_(sim), msg_(msg)
     {
@@ -36,7 +36,7 @@ public:
 
     ~InteractiveAction() {}
 
-    /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
+    /** Called by TimeVortex to trigger interactive mode. */
     void execute() override
     {
         sim_->enter_interactive_ = true;
