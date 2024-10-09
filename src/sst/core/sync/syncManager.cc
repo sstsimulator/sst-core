@@ -51,7 +51,7 @@ SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 #if SST_HIGH_RESOLUTION_CLOCK
 #define SST_SYNC_PROFILE_START                                  \
     auto sim                = Simulation_impl::getSimulation(); \
-    auto last_sync_type     = next_sync_type;                   \
+    auto last_sync_type     = next_sync_type_;                   \
     auto sync_profile_start = std::chrono::high_resolution_clock::now();
 
 #define SST_SYNC_PROFILE_STOP                                                                                 \
@@ -63,7 +63,7 @@ SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 #else
 #define SST_SYNC_PROFILE_START                                               \
     auto           sim            = Simulation_impl::getSimulation();        \
-    auto           last_sync_type = next_sync_type;                          \
+    auto           last_sync_type = next_sync_type_;                          \
     struct timeval sync_profile_stop, sync_profile_start, sync_profile_diff; \
     gettimeofday(&sync_profile_start, NULL);
 
