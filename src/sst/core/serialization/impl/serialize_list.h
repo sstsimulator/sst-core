@@ -26,7 +26,7 @@ namespace Core {
 namespace Serialization {
 
 template <class T>
-class serialize<std::list<T>>
+class serialize_impl<std::list<T>>
 {
     typedef std::list<T> List;
 
@@ -68,7 +68,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(List& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 

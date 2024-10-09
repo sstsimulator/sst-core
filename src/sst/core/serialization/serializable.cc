@@ -57,6 +57,18 @@ unpack_serializable(serializable_base*& s, serializer& ser)
     }
 }
 
+void
+map_serializable(serializable_base*& s, serializer& ser, const char* name)
+{
+    if ( s ) {
+        SST::Core::Serialization::ObjectMap* obj_map = new SST::Core::Serialization::ObjectMapClass(s, s->cls_name());
+        ser.report_object_map(obj_map);
+        ser.mapper().map_hierarchy_start(name, obj_map);
+        s->serialize_order(ser);
+        ser.mapper().map_hierarchy_end();
+    }
+}
+
 } // namespace pvt
 } // namespace Serialization
 } // namespace Core

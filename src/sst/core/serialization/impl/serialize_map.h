@@ -20,14 +20,19 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <map>
+#include <string>
 #include <unordered_map>
 
 namespace SST {
 namespace Core {
 namespace Serialization {
 
+/**
+   Class used to map std::map
+ */
+
 template <class Key, class Value>
-class serialize<std::map<Key, Value>>
+class serialize_impl<std::map<Key, Value>>
 {
     typedef std::map<Key, Value> Map;
 
@@ -73,7 +78,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Map& UNUSED(m), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 
@@ -124,7 +137,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Map& UNUSED(m), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 

@@ -79,7 +79,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Pqueue& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 

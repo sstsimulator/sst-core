@@ -49,7 +49,7 @@ public:
     /**
      * Represents both network sends and receives
      */
-    class Request : public SST::Core::Serialization::serializable, SST::Core::Serialization::serializable_type<Request>
+    class Request : public SST::Core::Serialization::serializable
     {
 
     public:

@@ -85,6 +85,9 @@ class SST::Core::Serialization::serialize_impl<TimeVortex*>
         case serializer::UNPACK:
             TV::pvt::unpack_timevortex(s, ser);
             break;
+        case serializer::MAP:
+            // Add your code here
+            break;
         }
     }
 };

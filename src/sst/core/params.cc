@@ -284,6 +284,9 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
         for ( auto x : globals )
             data.push_back(&global_params[x]);
         break;
+    case SST::Core::Serialization::serializer::MAP:
+        // This function not called in mapping mode
+        break;
     }
 }
 

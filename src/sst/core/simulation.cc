@@ -21,6 +21,8 @@
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"
 #include "sst/core/heartbeat.h"
+#include "sst/core/interactiveAction.h"
+#include "sst/core/interactiveConsole.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/output.h"
@@ -28,6 +30,7 @@
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/realtime.h"
+#include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
@@ -234,6 +237,9 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
         direct_interthread = false;
     }
     real_time_ = new RealTimeManager(num_ranks);
+
+    interactive_type_  = cfg->interactive_console();
+    interactive_start_ = cfg->interactive_start_time();
 }
 
 void
@@ -809,6 +815,37 @@ Simulation_impl::run()
 #endif
 #endif
 
+    // Setup interactive mode (only in serial jobs for now)
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
+        if ( interactive_type_ != "" ) { initialize_interactive_console(interactive_type_); }
+        if ( interactive_start_ != "" ) {
+            if ( nullptr == interactive_ ) {
+                sim_output.fatal(
+                    CALL_INFO, 1,
+                    "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
+                    "interactive action that should be used.\n");
+            }
+            try {
+                UnitAlgebra time(interactive_start_);
+                printf("%s\n", time.toStringBestSI().c_str());
+                SimTime_t offset;
+                if ( time.isValueZero() ) { offset = 0; }
+                else {
+                    TimeConverter* tc = timeLord.getTimeConverter(time);
+                    offset            = tc->getFactor();
+                }
+
+                InteractiveAction* act =
+                    new InteractiveAction(this, format_string("Interctive start at %" PRI_SIMTIME, offset));
+                act->setDeliveryTime(currentSimCycle + offset);
+                timeVortex->insert(act);
+            }
+            catch ( std::exception& e ) {
+                sim_output.fatal(CALL_INFO, 1, "Invalid format for time in interactive start: %s\n", e.what());
+            }
+        }
+    }
+
     run_phase_start_time_ = sst_get_cpu_time();
 
     // Will check to make sure time doesn't "go backwards".  This will
@@ -836,12 +873,21 @@ Simulation_impl::run()
         periodicCounter++;
 #endif
 
-        if ( UNLIKELY(0 != signal_arrived_) ) {
-            // Signal handling does not block signals
-            // which means the signal handler *could* run in parallel
-            // with the checking/clearing. Should be OK.
-            signal_arrived_ = 0;
-            real_time_->notifySignal();
+        // If logic is strange, but we only want one potential branch
+        // in the main loop.  If one of the unlikely cases is hit, we
+        // can differentiate then
+        if ( UNLIKELY(0 != signal_arrived_ || enter_interactive_) ) {
+            if ( 0 != signal_arrived_ ) {
+                // Signal handling does not block signals
+                // which means the signal handler *could* run in parallel
+                // with the checking/clearing. Should be OK.
+                signal_arrived_ = 0;
+                real_time_->notifySignal();
+            }
+            if ( enter_interactive_ ) {
+                enter_interactive_ = false;
+                if ( interactive_ != nullptr ) interactive_->execute(interactive_msg_);
+            }
         }
 
 #if SST_PERIODIC_PRINT
@@ -1405,6 +1451,25 @@ Simulation_impl::initializeProfileTools(const std::string& config)
 #endif
 }
 
+SST::Core::Serialization::ObjectMap*
+Simulation_impl::getComponentObjectMap()
+{
+    SST::Core::Serialization::serializer      ser;
+    SST::Core::Serialization::ObjectMapClass* obj_map = new SST::Core::Serialization::ObjectMapClass();
+    // ser.enable_pointer_tracking();
+    // ser.start_mapping(obj_map);
+    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
+        ComponentInfo* compinfo = *comp;
+        // // ser&           compinfo->component;
+        // sst_map_object(ser, compinfo->component, compinfo->getName().c_str());
+        obj_map->addVariable(
+            compinfo->getName(), new SST::Core::Serialization::ObjectMapDeferred<BaseComponent>(
+                                     compinfo->component, compinfo->component->cls_name()));
+    }
+    return obj_map;
+}
+
+
 void
 Simulation_impl::scheduleCheckpoint()
 {
@@ -1840,6 +1905,23 @@ Simulation_impl::restart(Config* cfg)
 
     real_time_->begin();
 }
+
+void
+Simulation_impl::initialize_interactive_console(const std::string& type)
+{
+
+    // Need to parse the type string to see if there are any parameters
+    std::string actual_type = type;
+    SST::Params p;
+    // For now, just ignore parameters
+    // size_t index = type.find_first_of('(');
+    // if ( index != std::string::npos ) {
+    //     size_t end_index =
+    // }
+
+    interactive_ = factory->Create<InteractiveConsole>(actual_type, p);
+}
+
 
 void
 Simulation_impl::printSimulationState()

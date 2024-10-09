@@ -15,6 +15,7 @@
 #
 
 set(SSTSerializationImplHeaders
+    mapper.h
     packer.h
     ser_buffer_accessor.h
     serialize_array.h
@@ -30,7 +31,7 @@ set(SSTSerializationImplHeaders
     sizer.h
     unpacker.h)
 
-install(FILES ${SSTSerializationImplHeaders}
-        DESTINATION "include/sst/core/serialization/impl")
+#install(FILES ${SSTSerializationImplHeaders}
+#        DESTINATION "include/sst/core/serialization/impl")
 
 # EOF

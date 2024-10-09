@@ -207,6 +207,9 @@ public:
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
+        case SST::Core::Serialization::serializer::MAP:
+            // Add your code here
+            break;
         };
     }
     ImplementSerializable(SST::Shared::SharedSet<valT>)

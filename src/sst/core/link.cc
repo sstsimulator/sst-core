@@ -116,9 +116,12 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             if ( s->type == Link::POLL ) {
                 // If I'm a polling link, I need to serialize my
                 // pair's send_queue.  For HANDLER and SYNC links, the
-                // send_queue will be reinitialized after restart
+                // send_queue will be reinitialized after restart.
                 PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
-                ser&              queue;
+                // PollingLinkQueues don't work with the serialization
+                // functions.  Call things directly.
+                // ser&              queue;
+                queue->serialize_order(ser);
             }
 
             // Now serialize the handler
@@ -194,7 +197,10 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
                 // pair's send_queue.  For HANDLER and SYNC links, the
                 // send_queue will be reinitialized after restart
                 PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
-                ser&              queue;
+                // PollingLinkQueues don't work with the serialization
+                // functions.  Call things directly.
+                // ser&              queue;
+                queue->serialize_order(ser);
             }
 
             // My handler is stored in pair_link->delivery_info
@@ -285,7 +291,11 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
                 // own send_queue variable and swap once we have both
                 // links.
                 PollingLinkQueue* queue;
-                ser&              queue;
+                // PollingLinkQueues don't work with the serialization
+                // functions.  Call things directly.
+                // ser&              queue;
+                queue = new PollingLinkQueue();
+                queue->serialize_order(ser);
                 pair_link->send_queue = queue;
             }
             else {
@@ -375,7 +385,11 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
                 // own send_queue variable and swap once we have both
                 // links.
                 PollingLinkQueue* queue;
-                ser&              queue;
+                // PollingLinkQueues don't work with the serialization
+                // functions.  Call things directly.
+                // ser&              queue;
+                queue = new PollingLinkQueue();
+                queue->serialize_order(ser);
                 s->send_queue = queue;
             }
             else {
@@ -412,9 +426,18 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             // ser & s->profile_tools;
         }
         break;
+    case serializer::MAP:
+        // This version of the function is not called in mapping mode.
+        break;
     }
 }
 
+void
+SST::Core::Serialization::serialize_impl<Link*>::operator()(
+    Link*& UNUSED(s), SST::Core::Serialization::serializer& UNUSED(ser), const char* UNUSED(name))
+{
+    // TODO: Implement Link mapping mode
+}
 
 /**
  * Null Event.  Used when nullptr is passed into any of the send

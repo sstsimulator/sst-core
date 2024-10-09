@@ -177,6 +177,14 @@ RealTimeAction::simulationCheckpoint()
     Simulation_impl::getSimulation()->scheduleCheckpoint();
 }
 
+void
+RealTimeAction::initiateInteractive(const std::string& msg)
+{
+    Simulation_impl* sim    = Simulation_impl::getSimulation();
+    sim->enter_interactive_ = true;
+    sim->interactive_msg_   = msg;
+}
+
 
 /************ ExitCleanRealTimeAction ***********/
 

@@ -72,7 +72,7 @@ class SST::Core::Serialization::serialize_impl<TimeConverter*>
     template <class A>
     friend class serialize;
     // Function implemented in timeLord.cc
-    void operator()(TimeConverter*& s, SST::Core::Serialization::serializer& ser);
+    void operator()(TimeConverter*& s, SST::Core::Serialization::serializer& ser, const char* name = nullptr);
 };
 
 } // namespace SST

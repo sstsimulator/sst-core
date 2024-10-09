@@ -69,7 +69,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Set& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 
@@ -116,7 +124,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Set& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 

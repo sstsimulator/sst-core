@@ -17,6 +17,8 @@
 add_subdirectory(impl)
 
 set(SSTSerializationHeaders
+    objectMap.h
+    objectMapDeferred.h
     serializable.h
     serializable_base.h
     serialize.h

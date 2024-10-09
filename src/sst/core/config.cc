@@ -461,6 +461,21 @@ public:
         return cfg->runMode_ != SimulationRunMode::UNKNOWN ? 0 : -1;
     }
 
+    static int setInteractiveConsole(Config* cfg, const std::string& arg)
+    {
+        cfg->interactive_console_ = arg;
+        return 0;
+    }
+
+    static int setInteractiveStartTime(Config* cfg, const std::string& arg)
+    {
+        if ( arg == "" )
+            cfg->interactive_start_time_ = "0";
+        else
+            cfg->interactive_start_time_ = arg;
+        return 0;
+    }
+
     // dump undeleted events
 #ifdef USE_MEMPOOL
     static int setWriteUndeleted(Config* cfg, const std::string& arg)
@@ -716,6 +731,9 @@ Config::print()
         break;
     }
 
+    std::cout << "interactive_console = " << interactive_console_ << std::endl;
+    std::cout << "interactive_start_time = " << interactive_start_time_ << std::endl;
+
 #ifdef USE_MEMPOOL
     std::cout << "event_dump_file = " << event_dump_file_ << std::endl;
 #endif
@@ -789,7 +807,9 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     profiling_output_  = "stdout";
 
     // Advanced Options - Debug
-    runMode_ = SimulationRunMode::BOTH;
+    runMode_                = SimulationRunMode::BOTH;
+    interactive_console_    = "";
+    interactive_start_time_ = "";
 #ifdef USE_MEMPOOL
     event_dump_file_ = "";
 #endif
@@ -986,6 +1006,19 @@ Config::insertOptions()
     DEF_ARG(
         "run-mode", 0, "MODE", "Set run mode [ init | run | both (default)]",
         std::bind(&ConfigHelper::setRunMode, this, _1), true);
+    DEF_ARG(
+        "interactive-console", 0, "ACTION",
+        "[EXPERIMENTAL] Set console to use for interactive mode. NOTE: This currently only works for serial jobs and "
+        "this option will be ignored for parallel runs.",
+        std::bind(&ConfigHelper::setInteractiveConsole, this, _1), true);
+    DEF_ARG_OPTVAL(
+        "interactive-start", 0, "TIME",
+        "[EXPERIMENTAL] Drop into interactive mode at specified simulated time.  If no time is specified, or the time "
+        "is 0, then it will "
+        "drop into interactive mode before any events are processed in the main run loop. This option is ignored if no "
+        "interactive console was set. NOTE: This currently only works for serial jobs and this option will be ignored "
+        "for parallel runs.",
+        std::bind(&ConfigHelper::setInteractiveStartTime, this, _1), true);
 #ifdef USE_MEMPOOL
     DEF_ARG(
         "output-undeleted-events", 0, "FILE",

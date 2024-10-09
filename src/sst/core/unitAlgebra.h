@@ -15,6 +15,7 @@
 #define SST_CORE_UNITALGEBRA_H
 
 #include "sst/core/decimal_fixedpoint.h"
+#include "sst/core/serialization/objectMap.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/sst_types.h"
@@ -103,9 +104,7 @@ public:
  * Allows operations such as multiplying a frequency by 2.
  *
  */
-class UnitAlgebra :
-    public SST::Core::Serialization::serializable,
-    public SST::Core::Serialization::serializable_type<UnitAlgebra>
+class UnitAlgebra /*: public SST::Core::Serialization::serializable */
 {
 private:
     Units       unit;
@@ -227,7 +226,7 @@ public:
     double      getDoubleValue() const;
     bool        isValueZero() const;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void serialize_order(SST::Core::Serialization::serializer& ser) /* override */
     {
         // Do the unit
         ser& unit.numerator;
@@ -251,9 +250,12 @@ public:
             value = sst_big_num(s);
             break;
         }
+        case SST::Core::Serialization::serializer::MAP:
+            // Add your code here
+            break;
         }
     }
-    ImplementSerializable(SST::UnitAlgebra)
+    // ImplementSerializable(SST::UnitAlgebra)
 
 public:
     /** Base exception for all exception classes in UnitAlgebra
@@ -402,6 +404,81 @@ operator<<(std::ostream& os, const Units& r)
     os << r.toString();
     return os;
 }
+
+
+namespace Core {
+namespace Serialization {
+
+template <>
+class ObjectMapFundamental<UnitAlgebra> : public ObjectMap
+{
+protected:
+    /**
+       Address of the variable for reading and writing
+     */
+    UnitAlgebra* addr_ = nullptr;
+
+public:
+    std::string get() override { return addr_->toStringBestSI(); }
+    void        set_impl(const std::string& value) override { addr_->init(value); }
+
+    // We'll act like we're a fundamental type
+    bool isFundamental() override { return true; }
+
+    /**
+       Get the address of the variable represented by the ObjectMap
+
+       @return Address of varaible
+     */
+    void* getAddr() override { return addr_; }
+
+
+    /**
+       Get the list of child variables contained in this ObjectMap,
+       which in this case will be empty.
+
+       @return Refernce to vector containing ObjectMaps for this
+       ObjectMap's child variables. This vector will be empty because
+       fundamentals have no children
+     */
+    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
+
+    ObjectMapFundamental(UnitAlgebra* addr) : ObjectMap(), addr_(addr) {}
+
+    std::string getType() override { return demangle_name(typeid(UnitAlgebra).name()); }
+};
+
+template <>
+class serialize_impl<UnitAlgebra>
+{
+    template <class A>
+    friend class serialize;
+
+    void operator()(UnitAlgebra& ua, serializer& ser)
+    {
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+        case serializer::PACK:
+        case serializer::UNPACK:
+            ua.serialize_order(ser);
+            break;
+        case serializer::MAP:
+            // Add your code here
+            break;
+        }
+    }
+
+    void operator()(UnitAlgebra& ua, serializer& ser, const char* name)
+    {
+        ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
+        ser.mapper().map_primitive(name, obj_map);
+    }
+};
+
+
+} // namespace Serialization
+} // namespace Core
+
 
 } // namespace SST
 

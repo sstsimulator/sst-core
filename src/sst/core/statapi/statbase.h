@@ -607,7 +607,7 @@ class serialize_impl<Statistics::Statistic<T>*>
 {
     template <class A>
     friend class serialize;
-    void operator()(Statistics::Statistic<T>*& s, serializer& ser)
+    void operator()(Statistics::Statistic<T>*& s, serializer& ser, const char* UNUSED(name) = nullptr)
     {
         // For sizer and pack, need to get the information needed
         // to create a new statistic of the correct type on unpack.
@@ -642,8 +642,16 @@ class serialize_impl<Statistics::Statistic<T>*>
             if ( stattype != "sst.NullStatistic" ) { SST::Stat::pvt::registerStatWithEngineOnRestart(s); }
             break;
         }
+        case serializer::MAP:
+            // Mapping mode not supported for stats
+            break;
         }
     }
+
+    // void operator()(Statistics::Statistic<T>*& UNUSED(s), serializer& UNUSED(ser), const char* UNUSED(name))
+    // {
+    //     // Mapping mode not supported for stats
+    // }
 };
 
 } // namespace Serialization
