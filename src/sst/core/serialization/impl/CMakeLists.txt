@@ -15,6 +15,7 @@
 #
 
 set(SSTSerializationImplHeaders
+    mapper.h
     packer.h
     ser_buffer_accessor.h
     serialize_array.h

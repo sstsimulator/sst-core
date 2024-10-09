@@ -63,6 +63,7 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) : Compo
 bool
 SubComponentLoader::tick(Cycle_t cyc)
 {
+    count++;
     for ( auto sub : subComps ) {
         sub->clock(cyc);
     }

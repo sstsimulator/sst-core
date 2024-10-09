@@ -47,6 +47,15 @@ class SubComponentSlotInfo;
 class TimeConverter;
 class UnitAlgebra;
 
+
+namespace Core {
+namespace Serialization {
+namespace pvt {
+class SerializeBaseComponentHelper;
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
+
 /**
  * Main component object for the simulation.
  */
@@ -357,6 +366,8 @@ protected:
             return false;
         }
     }
+
+    void initiateInteractive(const std::string& msg);
 
 private:
     ImplementSerializable(SST::BaseComponent)
@@ -878,6 +889,9 @@ protected:
     std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
 private:
+    friend class Core::Serialization::pvt::SerializeBaseComponentHelper;
+
+
     ComponentInfo*   my_info     = nullptr;
     Simulation_impl* sim_        = nullptr;
     bool             isExtension = false;
@@ -1094,12 +1108,20 @@ namespace Serialization {
 
 namespace pvt {
 
-void size_basecomponent(serializable_base* s, serializer& ser);
+class SerializeBaseComponentHelper
+{
+public:
+    static void size_basecomponent(serializable_base* s, serializer& ser);
 
-void pack_basecomponent(serializable_base* s, serializer& ser);
+    static void pack_basecomponent(serializable_base* s, serializer& ser);
 
-void unpack_basecomponent(serializable_base*& s, serializer& ser);
+    static void unpack_basecomponent(serializable_base*& s, serializer& ser);
+
+    static void map_basecomponent(serializable_base*& s, serializer& ser, const char* name);
+};
+
 } // namespace pvt
+
 
 template <class T>
 class serialize_impl<T*, typename std::enable_if<std::is_base_of<SST::BaseComponent, T>::value>::type>
@@ -1111,16 +1133,25 @@ class serialize_impl<T*, typename std::enable_if<std::is_base_of<SST::BaseCompon
         serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
         case serializer::SIZER:
-            pvt::size_basecomponent(sp, ser);
+            pvt::SerializeBaseComponentHelper::size_basecomponent(sp, ser);
             break;
         case serializer::PACK:
-            pvt::pack_basecomponent(sp, ser);
+            pvt::SerializeBaseComponentHelper::pack_basecomponent(sp, ser);
             break;
         case serializer::UNPACK:
-            pvt::unpack_basecomponent(sp, ser);
+            pvt::SerializeBaseComponentHelper::unpack_basecomponent(sp, ser);
+            break;
+        case serializer::MAP:
+            // Add your code here
             break;
         }
         s = static_cast<T*>(sp);
+    }
+
+    void operator()(T*& s, serializer& ser, const char* name)
+    {
+        serializable_base* sp = static_cast<serializable_base*>(s);
+        pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, name);
     }
 };
 

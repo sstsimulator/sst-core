@@ -12,47 +12,48 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZE_H
 #define SST_CORE_SERIALIZATION_SERIALIZE_H
 
+#include "sst/core/from_string.h"
+#include "sst/core/serialization/objectMap.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
 
 #include <atomic>
 #include <iostream>
+#include <type_traits>
 #include <typeinfo>
 
 namespace SST {
 namespace Core {
 namespace Serialization {
 
+// Workaround for use with static_assert(), since static_assert(false)
+// will always assert, even when in an untaken if constexpr path.
+// This can be used in any serialize_impl class, if needed/
+template <class>
+constexpr bool dependent_false = false;
+
 /**
-   Base serialize class.  This is the default, which if hit will
-   static_assert.  All other instances are partial specializations of
-   this class and do all the real serialization.
+   Base serialize class.
+
+   This class also acts as the default case, which if hit will check
+   to see if this is an otherwise uncaught non-polymorphic class. If
+   it is, it will just attempt to call the serialize_order() function.
+   All other instances are partial specializations of this class and
+   do all the real serialization.
  */
 template <class T, class Enable = void>
 class serialize_impl
 {
 public:
-    // inline void operator()(T& UNUSED(t), serializer& UNUSED(ser))
-    // {
-    //     // If the default gets called, then it's actually invalid
-    //     // because we don't know how to serialize it.
-
-    //     // This is a bit strange, but if I just do a
-    //     // static_assert(false) it always triggers, but if I use
-    //     // std::is_* then it seems to only trigger if something expands
-    //     // to this version of the template.
-    //     // static_assert(false,"Trying to serialize an object that is not serializable.");
-    //     static_assert(std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-    //     static_assert(!std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-    // }
-
     inline void operator()(T& t, serializer& ser)
     {
         // This is the fall through case.  Check to see if it's a pointer:
         if constexpr ( std::is_pointer_v<T> ) {
             // If it falls through to the default, let's check to see if it's
             // a non-polymorphic class and try to call serialize_order
-            if constexpr ( std::is_class_v<std::remove_pointer<T>> && !std::is_polymorphic_v<std::remove_pointer<T>> ) {
+            if constexpr (
+                std::is_class_v<typename std::remove_pointer<T>::type> &&
+                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
                 if ( ser.mode() == serializer::UNPACK ) {
                     t = new typename std::remove_pointer<T>::type();
                     ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
@@ -60,9 +61,7 @@ public:
                 t->serialize_order(ser);
             }
             else {
-                static_assert(std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-                static_assert(
-                    !std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
+                static_assert(dependent_false<T>, "Trying to serialize an object that is not serializable.");
             }
         }
         else {
@@ -70,34 +69,58 @@ public:
             // a non-polymorphic class and try to call serialize_order
             if constexpr ( std::is_class_v<T> && !std::is_polymorphic_v<T> ) { t.serialize_order(ser); }
             else {
-                static_assert(std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-                static_assert(
-                    !std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
+                static_assert(dependent_false<T>, "Trying to serialize an object that is not serializable.");
+            }
+        }
+    }
+
+    inline void operator()(T& t, serializer& ser, const char* name)
+    {
+        // This is the fall through case.  Check to see if it's a pointer:
+        if constexpr ( std::is_pointer_v<T> ) {
+            // If it falls through to the default, let's check to see if it's
+            // a non-polymorphic class and try to call serialize_order
+            if constexpr (
+                std::is_class_v<typename std::remove_pointer<T>::type> &&
+                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
+                if ( ser.mode() == serializer::UNPACK ) {
+                    t = new typename std::remove_pointer<T>::type();
+                    ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
+                }
+                if ( ser.mode() == serializer::MAP ) {
+                    // No need to map a nullptr
+                    if ( nullptr == t ) return;
+                    SST::Core::Serialization::ObjectMap* map =
+                        new SST::Core::Serialization::ObjectMapClass(t, typeid(T).name());
+                    ser.report_object_map(map);
+                    ser.mapper().map_hierarchy_start(name, map);
+                }
+                t->serialize_order(ser);
+                if ( ser.mode() == serializer::MAP ) ser.mapper().map_hierarchy_end();
+            }
+            else {
+                static_assert(dependent_false<T>, "Trying to serialize an object that is not serializable.");
+            }
+        }
+        else {
+            // If it falls through to the default, let's check to see if it's
+            // a non-polymorphic class and try to call serialize_order
+            if constexpr ( std::is_class_v<T> && !std::is_polymorphic_v<T> ) {
+                if ( ser.mode() == serializer::MAP ) {
+                    SST::Core::Serialization::ObjectMap* map =
+                        new SST::Core::Serialization::ObjectMapClass(&t, typeid(T).name());
+                    ser.report_object_map(map);
+                    ser.mapper().map_hierarchy_start(name, map);
+                }
+                t.serialize_order(ser);
+                if ( ser.mode() == serializer::MAP ) ser.mapper().map_hierarchy_end();
+            }
+            else {
+                static_assert(dependent_false<T>, "Trying to serialize an object that is not serializable.");
             }
         }
     }
 };
-
-
-// template <class T>
-// class serialize_impl<T*,std::enable_if_t<std::is_base_of<SST::Core::Serialization::serializable, T>::value, bool> =
-// true>
-// {
-// public:
-//    inline void operator()(T& t, serializer& ser)
-//    {
-//        // If it falls through to the default, let's check to see if it's
-//        // a non-polymorphic class and try to call serialize_order
-//        if constexpr ( std::is_class_v<T> && !std::is_polymorphic_v<T> /*&& std::is_same_v<typename
-//        MethodDetect<decltype( T::serialize_order() )>::type, void>*/)  {
-//            t.serialize_order(ser);
-//        }
-//        else {
-//            static_assert(std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-//            static_assert(!std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
-//        }
-//    }
-// };
 
 
 /**
@@ -111,6 +134,7 @@ class serialize
 {
 public:
     inline void operator()(T& t, serializer& ser) { return serialize_impl<T>()(t, ser); }
+    inline void operator()(T& t, serializer& ser, const char* name) { return serialize_impl<T>()(t, ser, name); }
 
     /**
        This will track the pointer to the object if pointer tracking
@@ -164,6 +188,9 @@ public:
             ser.report_real_pointer(ptr_stored, ptr);
 
             serialize_impl<T>()(t, ser);
+        case serializer::MAP:
+            // Add your code here
+            break;
         }
     }
 };
@@ -202,6 +229,7 @@ public:
             if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser); }
             break;
         case serializer::UNPACK:
+        {
             // Get the ptr and check to see if we've already deserialized
             uintptr_t ptr_stored;
             ser.unpack(ptr_stored);
@@ -222,18 +250,49 @@ public:
                 ser.report_real_pointer(ptr_stored, reinterpret_cast<uintptr_t>(t));
             }
         }
+        case serializer::MAP:
+            // Add your code here
+            break;
+        }
+    }
+
+    inline void operator()(T*& t, serializer& ser, const char* name)
+    {
+        // We are a pointer, need to see if tracking is turned on
+        // if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T*>()(t, ser);
+        // The name version of the function is only used in mapping
+        // mode.  If it's not mapping mode, it's an error.
+        // TODO: Add error and exit
+        if ( ser.mode() != serializer::MAP ) return;
+
+        ObjectMap* map = ser.check_pointer_map(reinterpret_cast<uintptr_t>(t));
+        if ( map != nullptr ) {
+            // If we've already seen this object, just add the
+            // existing ObjectMap to the parent.
+            ser.mapper().map_existing_object(name, map);
+            return;
+        }
+        serialize_impl<T*>()(t, ser, name);
     }
 };
+
 
 /**
    Version of serialize that works for fundamental types and enums.
  */
+
 template <class T>
 class serialize_impl<T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
 {
     template <class A>
     friend class serialize;
     inline void operator()(T& t, serializer& ser) { ser.primitive(t); }
+
+    inline void operator()(T& t, serializer& ser, const char* name)
+    {
+        ObjectMapFundamental<T>* obj_map = new ObjectMapFundamental<T>(&t);
+        ser.mapper().map_primitive(name, obj_map);
+    }
 };
 
 /**
@@ -249,6 +308,12 @@ class serialize_impl<bool>
         int bval = t;
         ser.primitive(bval);
         t = bool(bval);
+    }
+
+    inline void operator()(bool& t, serializer& ser, const char* name)
+    {
+        ObjectMapFundamental<bool>* obj_map = new ObjectMapFundamental<bool>(&t);
+        ser.mapper().map_primitive(name, obj_map);
     }
 };
 
@@ -277,6 +342,9 @@ class serialize_impl<T*, typename std::enable_if<std::is_fundamental<T>::value |
         case serializer::UNPACK:
             t = new T();
             ser.primitive(*t);
+            break;
+        case serializer::MAP:
+            // Add your code here
             break;
         }
     }
@@ -313,8 +381,9 @@ class serialize_impl<std::pair<U, V>>
 //     }
 // };
 
-// All calls to serialize objects need to go through this function so
-// that pointer tracking can be done
+// All calls to serialize objects need to go through one of the
+// following functions, or through the serialize<T> template so that
+// pointer tracking can be done.
 template <class T>
 inline void
 operator&(serializer& ser, T& t)
@@ -328,10 +397,32 @@ operator|(serializer& ser, T& t)
 {
     serialize<T>().serialize_and_track_pointer(t, ser);
 }
+
+template <class T>
+inline void
+sst_map_object(serializer& ser, T& t, const char* name)
+{
+    // This function is only used in mapping mode.  If we're not in
+    // mapping mode, we will just call into the basic
+    // serialize<T>()(t,ser) path.
+    if ( ser.mode() == serializer::MAP ) { serialize<T>()(t, ser, name); }
+    else {
+        serialize<T>()(t, ser);
+    }
+}
+
+// Serialization macros for checkpoint/debug serialization
+// #define SST_SER(obj)        ser& obj;
+#define SST_SER(obj)        sst_map_object(ser, obj, #obj);
+#define SST_SER_AS_PTR(obj) ser | obj;
+
 } // namespace Serialization
 } // namespace Core
 } // namespace SST
 
+// These includes have guards to print warnings if they are included
+// independent of this file.  Set the #define that will disable the
+// warnings.
 #define SST_INCLUDING_SERIALIZE_H
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
@@ -342,6 +433,8 @@ operator|(serializer& ser, T& t)
 #include "sst/core/serialization/impl/serialize_set.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_vector.h"
+// Reenble warnings for including the above file independent of this
+// file.
 #undef SST_INCLUDING_SERIALIZE_H
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZE_H

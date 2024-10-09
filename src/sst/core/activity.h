@@ -25,6 +25,7 @@
 #include <unordered_map>
 
 // Default Priority Settings
+#define INTERACTIVEPRIOIRTY    0
 #define THREADSYNCPRIORITY     20
 #define SYNCPRIORITY           25
 #define STOPACTIONPRIORITY     30

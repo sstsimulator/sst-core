@@ -33,6 +33,14 @@ class ConfigStatistic;
 class Simulation_impl;
 class TimeConverter;
 
+namespace Core {
+namespace Serialization {
+namespace pvt {
+class SerializeBaseComponentHelper;
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
+
 class ComponentInfo
 {
 
@@ -55,6 +63,7 @@ private:
     friend class Simulation_impl;
     friend class BaseComponent;
     friend class ComponentInfoMap;
+    friend class Core::Serialization::pvt::SerializeBaseComponentHelper;
 
     /**
        Component ID.
@@ -203,6 +212,12 @@ public:
             real_comp = real_comp->parent_info;
         return real_comp->getName();
     }
+
+    /**
+       Get the short name for this SubComponent (name not including
+       any parents, so just slot_name[index])
+     */
+    inline std::string getShortName() const { return name.substr(name.find_last_of(':') + 1); }
 
     inline const std::string& getSlotName() const { return slot_name; }
 

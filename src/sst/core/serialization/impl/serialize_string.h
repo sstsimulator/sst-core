@@ -23,11 +23,55 @@ namespace SST {
 namespace Core {
 namespace Serialization {
 
+class ObjectMapString : public ObjectMap
+{
+protected:
+    std::string* addr_;
+
+public:
+    /**
+       Get the address of the represented object
+
+       @return address of represented object
+     */
+    void* getAddr() override { return addr_; }
+
+    std::string get() override { return *addr_; }
+
+    void set_impl(const std::string& value) override { *addr_ = value; }
+
+    virtual bool isFundamental() override { return true; }
+
+    /**
+       Get the list of child variables contained in this ObjectMap,
+       which in this case will be empty.
+
+       @return Refernce to vector containing ObjectMaps for this
+       ObjectMap's child variables. This vector will be empty because
+       strings have no children
+     */
+    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
+
+    std::string getType() override
+    {
+        // The demangled name for std::string is ridiculously long, so
+        // just return "std::string"
+        return "std::string";
+    }
+
+    ObjectMapString(std::string* addr) : ObjectMap(), addr_(addr) {}
+};
+
 template <>
 class serialize_impl<std::string>
 {
 public:
     void operator()(std::string& str, serializer& ser) { ser.string(str); }
+    void operator()(std::string& str, serializer& ser, const char* name)
+    {
+        ObjectMapString* obj_map = new ObjectMapString(&str);
+        ser.mapper().map_primitive(name, obj_map);
+    }
 };
 
 } // namespace Serialization

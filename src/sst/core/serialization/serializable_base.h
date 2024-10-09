@@ -134,6 +134,7 @@ protected:
     static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
 };
 
+
 template <class T>
 class serializable_type
 {};
@@ -279,10 +280,6 @@ const uint32_t serializable_builder_impl<T>::cls_id_ =
 #define SerializableName(obj) #obj
 
 #define DeclareSerializable(obj)
-
-// Serialization macros for checkpoint/debug serialization
-#define SST_SER(obj)        ser& obj;
-#define SST_SER_AS_PTR(obj) ser | obj;
 
 //#include "sst/core/serialization/serialize_serializable_base.h"
 

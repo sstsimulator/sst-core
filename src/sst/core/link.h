@@ -43,6 +43,7 @@ class SST::Core::Serialization::serialize_impl<Link*>
     friend class serialize;
     // Function implemented in link.cc
     void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, const char* name);
 };
 
 

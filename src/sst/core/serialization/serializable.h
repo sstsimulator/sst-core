@@ -44,6 +44,8 @@ void pack_serializable(serializable_base* s, serializer& ser);
 
 void unpack_serializable(serializable_base*& s, serializer& ser);
 
+void map_serializable(serializable_base*& s, serializer& ser, const char* name);
+
 } // namespace pvt
 
 
@@ -67,6 +69,29 @@ class serialize_impl<
         case serializer::UNPACK:
             pvt::unpack_serializable(sp, ser);
             break;
+        case serializer::MAP:
+            // No mapping without a name
+            break;
+        }
+        s = static_cast<T*>(sp);
+    }
+
+    void operator()(T*& s, serializer& ser, const char* name)
+    {
+        serializable_base* sp = static_cast<serializable_base*>(s);
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+            pvt::size_serializable(sp, ser);
+            break;
+        case serializer::PACK:
+            pvt::pack_serializable(sp, ser);
+            break;
+        case serializer::UNPACK:
+            pvt::unpack_serializable(sp, ser);
+            break;
+        case serializer::MAP:
+            pvt::map_serializable(sp, ser, name);
+            break;
         }
         s = static_cast<T*>(sp);
     }
@@ -88,6 +113,9 @@ serialize_intrusive_ptr(T*& t, serializer& ser)
         pvt::unpack_serializable(s, ser);
         t = dynamic_cast<T*>(s);
         break;
+    case serializer::MAP:
+        // Add your code here
+        break;
     }
 }
 
@@ -102,6 +130,16 @@ class serialize_impl<
         // T* tmp = &t;
         // serialize_intrusive_ptr(tmp, ser);
         t.serialize_order(ser);
+    }
+
+    inline void operator()(T& UNUSED(t), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Need to figure out how to handle mapping mode for
+        // classes inheriting from serializable that are not pointers.
+        // For the core, this really only applies to SharedObjects,
+        // which may actually need their own specific serialization.
+
+        // For now mapping mode won't provide any data
     }
 };
 
