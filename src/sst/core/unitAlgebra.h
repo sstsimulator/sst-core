@@ -16,7 +16,7 @@
 
 #include "sst/core/decimal_fixedpoint.h"
 #include "sst/core/serialization/objectMap.h"
-#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serialize.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
@@ -28,7 +28,6 @@
 
 namespace SST {
 
-// typedef decimal_fixedpoint<3,3> sst_dec_float;
 typedef decimal_fixedpoint<3, 3> sst_big_num;
 
 /**
@@ -104,7 +103,7 @@ public:
  * Allows operations such as multiplying a frequency by 2.
  *
  */
-class UnitAlgebra /*: public SST::Core::Serialization::serializable */
+class UnitAlgebra
 {
 private:
     Units       unit;
@@ -255,7 +254,6 @@ public:
             break;
         }
     }
-    // ImplementSerializable(SST::UnitAlgebra)
 
 public:
     /** Base exception for all exception classes in UnitAlgebra
