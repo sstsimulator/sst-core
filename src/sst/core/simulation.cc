@@ -1537,7 +1537,9 @@ Simulation_impl::checkpoint_write_globals(
     std::ofstream fs_reg(registry_filename, std::ios::out);
 
     /* Section 1: Checkpoint info */
-    fs_reg << "## Checkpoint #" << checkpoint_id << " at time " << currentSimCycle << "\n" << std::endl;
+    fs_reg << "## Checkpoint #" << checkpoint_id << " at time " << currentSimCycle << " ("
+           << getElapsedSimTime().toStringBestSI() << ")\n"
+           << std::endl;
 
     /* Section 2: Config options */
     fs_reg << "## Configuaration Options" << std::endl;
@@ -1580,7 +1582,8 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
     // Write out the component offsets
     fs << "\n** (" << my_rank.rank << ":" << my_rank.thread << "): " << blob_name << std::endl;
     for ( auto x : component_blob_offsets_ ) {
-        fs << x.first << " : " << x.second << std::endl;
+        std::string name = getComponent(x.first)->getName();
+        fs << x.first << " : " << x.second << " (" << name << ")" << std::endl;
     }
     fs.close();
 }

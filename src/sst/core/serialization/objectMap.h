@@ -15,9 +15,6 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
-// REMOVE ME
-#include "sst/core/output.h"
-
 #include <string>
 #include <vector>
 

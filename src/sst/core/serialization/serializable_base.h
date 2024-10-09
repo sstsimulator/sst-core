@@ -136,7 +136,8 @@ protected:
 
 
 template <class T>
-class [[deprecated("serializable_type is deprecated and will be removed in SST 15")]] serializable_type {};
+class serializable_type
+{};
 
 #define ImplementVirtualSerializable(obj)                                                                          \
 public:                                                                                                            \
