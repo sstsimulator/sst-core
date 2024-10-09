@@ -31,7 +31,7 @@ set(SSTSerializationImplHeaders
     sizer.h
     unpacker.h)
 
-#install(FILES ${SSTSerializationImplHeaders}
-#        DESTINATION "include/sst/core/serialization/impl")
+install(FILES ${SSTSerializationImplHeaders}
+        DESTINATION "include/sst/core/serialization/impl")
 
 # EOF
