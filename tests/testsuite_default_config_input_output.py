@@ -18,7 +18,7 @@ from sst_unittest import *
 from sst_unittest_support import *
 
 
-have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
+have_mpi = sst_core_config_include_file_get_value(define="SST_CONFIG_HAVE_MPI", type=int, default=0, disable_warning=True) == 1
 
 
 class testcase_Config_input_output(SSTTestCase):

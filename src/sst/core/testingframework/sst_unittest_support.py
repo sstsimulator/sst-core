@@ -132,8 +132,8 @@ def testing_is_PIN_loaded() -> bool:
 
 def testing_is_PIN_Compiled() -> bool:
     global pin_exec_path
-    pin_crt = sst_elements_config_include_file_get_value_int("HAVE_PINCRT", 0, True)
-    pin_exec = sst_elements_config_include_file_get_value_str("PINTOOL_EXECUTABLE", "", True)
+    pin_crt = sst_elements_config_include_file_get_value(define="HAVE_PINCRT", type=int, default=0, disable_warning=True)
+    pin_exec = sst_elements_config_include_file_get_value(define="PINTOOL_EXECUTABLE", type=str, default="", disable_warning=True)
     #log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
     #log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
     pin_exec_path = pin_exec
@@ -238,7 +238,7 @@ def host_os_get_distribution_type() -> str:
             'ROCKY' for Rocky;
             'UNDEFINED' an undefined OS.
     """
-    k_type = host_os_get_kernel_type()
+    k_type = platform.system()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
@@ -262,7 +262,7 @@ def host_os_get_distribution_version() -> str:
         Returns:
             (str) The OS distribution version
     """
-    k_type = host_os_get_kernel_type()
+    k_type = platform.system()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         return lin_dist[1]

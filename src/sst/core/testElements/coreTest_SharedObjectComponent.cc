@@ -110,9 +110,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             array.write(myid, myid);
         }
         if ( pub ) array.publish();
-        int readval = array.mutex_read(myid);
-        if ( !full_initialization && readval != myid ) {
-            out.fatal(CALL_INFO, 100, "ERROR: SharedArray does not contain expected data\n");
+        if ( !full_initialization ) {
+            int readval = array.mutex_read(myid);
+            if ( readval != myid ) { out.fatal(CALL_INFO, 100, "ERROR: SharedArray does not contain expected data\n"); }
         }
     }
     else if ( test_bool_array && !late_initialize ) {
