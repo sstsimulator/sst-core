@@ -130,6 +130,11 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     // Index in tokens array where we may find the variable name
     size_t var_index = 1;
 
+    if ( tokens.size() < 2 ) {
+        printf("Invalid format for print command (print [-rN] [<obj>])\n");
+        return;
+    }
+
     // See if have a -r or not
     int         recurse = 0;
     std::string tok     = tokens[1];
