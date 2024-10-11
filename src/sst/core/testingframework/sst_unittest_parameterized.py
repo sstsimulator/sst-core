@@ -39,20 +39,8 @@ import inspect
 import warnings
 from functools import wraps
 from types import MethodType as MethodType
-from collections import namedtuple
-
-try:
-    from collections import OrderedDict as MaybeOrderedDict
-except ImportError:
-    MaybeOrderedDict = dict
-
-from unittest import TestCase
-
-try:
-    from unittest import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        pass
+from collections import namedtuple, OrderedDict
+from unittest import SkipTest, TestCase
 
 
 lzip = lambda *a: list(zip(*a))
@@ -166,9 +154,8 @@ class param(_param):
         return "param(*%r, **%r)" %self
 
 
-class QuietOrderedDict(MaybeOrderedDict):
-    """ When OrderedDict is available, use it to make sure that the kwargs in
-        doc strings are consistently ordered. """
+class QuietOrderedDict(OrderedDict):
+    """ Have an OrderedDict visually represented as a dict. """
     __str__ = dict.__str__
     __repr__ = dict.__repr__
 

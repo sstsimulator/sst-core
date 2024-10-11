@@ -74,6 +74,7 @@ ser_sizer::size_string(std::string& str)
 
 } // namespace pvt
 
+
 void
 serializer::string(std::string& str)
 {
@@ -93,6 +94,8 @@ serializer::string(std::string& str)
         unpacker_.unpack_string(str);
         break;
     }
+    case MAP:
+        break;
     }
 }
 

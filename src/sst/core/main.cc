@@ -72,6 +72,7 @@ using namespace SST::Partition;
 using namespace std;
 using namespace SST;
 
+
 static SST::Output g_output;
 
 
@@ -586,7 +587,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
             sim->prepare_for_run();
         }
-    }
+    } // end if !restart
     else {
         double start_build = sst_get_cpu_time();
 
@@ -681,6 +682,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     delete sim;
 }
+
 
 int
 main(int argc, char* argv[])

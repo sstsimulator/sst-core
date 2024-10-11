@@ -130,7 +130,7 @@ public:
     int  getValue() { return value; }
     void setValue(int val) { value = val; }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& value; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(value); }
 
     ImplementSerializable(SST::CoreTestSerialization::pointed_to_class);
 };
@@ -152,8 +152,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& value;
-        ser& pointed_to;
+        SST_SER(value);
+        SST_SER(pointed_to);
     }
 
     ImplementSerializable(SST::CoreTestSerialization::shell);
@@ -220,7 +220,7 @@ struct HandlerTest : public SST::Core::Serialization::serializable
     HandlerTest(int in) : value(in) {}
     HandlerTest() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& value; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(value); }
     ImplementSerializable(HandlerTest)
 };
 
@@ -249,8 +249,8 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& value;
-        ser& handler;
+        SST_SER(value);
+        SST_SER(handler);
     }
 
     ImplementSerializable(RecursiveSerializationTest)
@@ -418,19 +418,19 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
 
         // Get the size
         ser.start_sizing();
-        ser&   vec;
+        SST_SER(vec);
         size_t size = ser.size();
 
         char* buffer = new char[size];
 
         // Serialize
         ser.start_packing(buffer, size);
-        ser& vec;
+        SST_SER(vec);
 
         // Deserialize
         std::vector<shell*> vec_out;
         ser.start_unpacking(buffer, size);
-        ser& vec_out;
+        SST_SER(vec_out);
 
         // Now check the results
 
@@ -514,15 +514,15 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
 
         // Going to serialize t1, but not t2.  It should get automatically
         // serialized when the handlers pointing to it are serialized.
-        ser& t1;
-        ser& h000;
-        ser& h001;
-        ser& h010;
-        ser& h011;
-        ser& h100;
-        ser& h101;
-        ser& h110;
-        ser& h111;
+        SST_SER(t1);
+        SST_SER(h000);
+        SST_SER(h001);
+        SST_SER(h010);
+        SST_SER(h011);
+        SST_SER(h100);
+        SST_SER(h101);
+        SST_SER(h110);
+        SST_SER(h111);
 
 
         size_t size   = ser.size();
@@ -531,15 +531,15 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // Serialize
         ser.start_packing(buffer, size);
 
-        ser& t1;
-        ser& h000;
-        ser& h001;
-        ser& h010;
-        ser& h011;
-        ser& h100;
-        ser& h101;
-        ser& h110;
-        ser& h111;
+        SST_SER(t1);
+        SST_SER(h000);
+        SST_SER(h001);
+        SST_SER(h010);
+        SST_SER(h011);
+        SST_SER(h100);
+        SST_SER(h101);
+        SST_SER(h110);
+        SST_SER(h111);
 
         // Delete the original objects
         delete t1;
@@ -567,15 +567,15 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
 
         ser.start_unpacking(buffer, size);
 
-        ser& t1_out;
-        ser& h000_out;
-        ser& h001_out;
-        ser& h010_out;
-        ser& h011_out;
-        ser& h100_out;
-        ser& h101_out;
-        ser& h110_out;
-        ser& h111_out;
+        SST_SER(t1_out);
+        SST_SER(h000_out);
+        SST_SER(h001_out);
+        SST_SER(h010_out);
+        SST_SER(h011_out);
+        SST_SER(h100_out);
+        SST_SER(h101_out);
+        SST_SER(h110_out);
+        SST_SER(h111_out);
 
         std::cout << "Internal value for t1: " << t1_out->value << std::endl;
         std::cout << std::endl;
@@ -616,7 +616,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         (*rst->handler)(17);
 
         ser.start_sizing();
-        ser& rst;
+        SST_SER(rst);
 
         size   = ser.size();
         buffer = new char[size + 10];
@@ -624,11 +624,11 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // Serialize
         ser.start_packing(buffer, size);
 
-        ser& rst;
+        SST_SER(rst);
 
         RecursiveSerializationTest* rst_out;
         ser.start_unpacking(buffer, size);
-        ser& rst_out;
+        SST_SER(rst_out);
 
         (*rst_out->handler)(17);
     }
@@ -648,7 +648,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
 
         // // Get the size
         ser.start_sizing();
-        ser | info;
+        SST_SER_AS_PTR(info);
 
 
         size_t size   = ser.size();
@@ -656,12 +656,12 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
 
         // Serialize
         ser.start_packing(buffer, size);
-        ser | info;
+        SST_SER_AS_PTR(info);
 
         ComponentInfo info2;
 
         ser.start_unpacking(buffer, size);
-        ser | info2;
+        SST_SER_AS_PTR(info2);
 
         info2.test_printComponentInfoHierarchy();
     }

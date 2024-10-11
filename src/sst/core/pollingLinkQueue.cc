@@ -84,6 +84,9 @@ PollingLinkQueue::serialize_order(SST::Core::Serialization::serializer& ser)
             data.insert(activity);
         }
     }
+    case SST::Core::Serialization::serializer::MAP:
+        // This version of function not called in mapping mode
+        break;
     }
 }
 

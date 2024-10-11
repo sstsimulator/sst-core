@@ -15,7 +15,7 @@ from sst_unittest import *
 from sst_unittest_support import *
 
 
-have_curses = sst_core_config_include_file_get_value_int("HAVE_CURSES", default=0, disable_warning=True) == 1
+have_curses = sst_core_config_include_file_get_value(define="HAVE_CURSES", type=int, default=0, disable_warning=True) == 1
 
 
 class testcase_sstinfo(SSTTestCase):
@@ -47,7 +47,7 @@ class testcase_sstinfo(SSTTestCase):
         errfile = "{0}/test_sstinfo_{1}.err".format(outdir, testtype)
 
         # Get the path to sst-info binary application
-        sst_app_path = sstsimulator_conf_get_value_str('SSTCore', 'bindir', default="UNDEFINED")
+        sst_app_path = sstsimulator_conf_get_value(section='SSTCore', key='bindir', type=str, default="UNDEFINED")
         err_str = "Path to SST-INFO {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 

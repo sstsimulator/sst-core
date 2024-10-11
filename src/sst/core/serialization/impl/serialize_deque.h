@@ -26,7 +26,7 @@ namespace Core {
 namespace Serialization {
 
 template <class T>
-class serialize<std::deque<T>>
+class serialize_impl<std::deque<T>>
 {
     typedef std::deque<T> Deque;
 
@@ -65,7 +65,15 @@ public:
             }
             break;
         }
+        case serializer::MAP:
+            // The version of function not called in mapping mode
+            break;
         }
+    }
+
+    void operator()(Deque& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Add support for mapping mode
     }
 };
 

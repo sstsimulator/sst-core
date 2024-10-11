@@ -327,6 +327,16 @@ public:
         return "UNKNOWN";
     }
 
+    /**
+       Get the InteractiveAction to use for interactive mode
+     */
+    std::string interactive_console() const { return interactive_console_; }
+
+    /**
+       Get the time to start interactive mode
+    */
+    std::string interactive_start_time() const { return interactive_start_time_; }
+
 
 #ifdef USE_MEMPOOL
     /**
@@ -430,6 +440,8 @@ public:
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
+        ser& interactive_console_;
+        ser& interactive_start_time_;
 #ifdef USE_MEMPOOL
         ser& event_dump_file_;
 #endif
@@ -528,7 +540,9 @@ private:
     std::string profiling_output_;  /*!< Location to write profiling data */
 
     // Advanced options - debug
-    SimulationRunMode runMode_; /*!< Run Mode (Init, Both, Run-only) */
+    SimulationRunMode runMode_;                /*!< Run Mode (Init, Both, Run-only) */
+    std::string       interactive_console_;    /*!< Action to use for interactive mode */
+    std::string       interactive_start_time_; /*!< Time to drop into interactive mode */
 #ifdef USE_MEMPOOL
     std::string event_dump_file_; /*!< File to dump undeleted events to  */
 #endif

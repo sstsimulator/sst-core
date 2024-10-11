@@ -89,6 +89,11 @@ class serialize_impl<T[N], typename std::enable_if<std::is_fundamental<T>::value
     template <class A>
     friend class serialize;
     void operator()(T arr[N], serializer& ser) { ser.array<T, N>(arr); }
+
+    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 /**
@@ -106,6 +111,11 @@ class serialize_impl<T[N], typename std::enable_if<!std::is_fundamental<T>::valu
             ser& arr[i];
         }
     }
+
+    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 /***  For dynamically allocated arrays ***/
@@ -122,6 +132,11 @@ class serialize_impl<
     template <class A>
     friend class serialize;
     void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
+
+    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 /**
@@ -142,6 +157,11 @@ class serialize_impl<
             ser& arr[i];
         }
     }
+
+    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 /**
@@ -154,6 +174,12 @@ class serialize_impl<pvt::ser_array_wrapper<void, IntType>>
     template <class A>
     friend class serialize;
     void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
+
+    void
+    operator()(pvt::ser_array_wrapper<void, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 /***   Other Specializations (raw_ptr and trivially_serializable)  ***/
@@ -170,6 +196,11 @@ class serialize_impl<pvt::raw_ptr_wrapper<TPtr>>
     template <class A>
     friend class serialize;
     void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser) { ser.primitive(ptr.bufptr); }
+
+    void operator()(pvt::raw_ptr_wrapper<TPtr> UNUSED(ptr), serializer& UNUSED(ser), const char* UNUSED(name))
+    {
+        // TODO: Implement mapping mode
+    }
 };
 
 // Needed only because the default version in serialize.h can't get

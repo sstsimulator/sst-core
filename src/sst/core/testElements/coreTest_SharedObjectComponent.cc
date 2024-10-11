@@ -76,8 +76,7 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     late_initialize = params.find<bool>("late_initialize", "false");
 
     // Get the verify mode
-    std::string mode = params.find<std::string>("verify_mode", "INIT");
-
+    std::string               mode   = params.find<std::string>("verify_mode", "INIT");
     SharedObject::verify_type v_type = SharedObject::INIT_VERIFY;
     if ( mode == "FE" )
         v_type = SharedObject::FE_VERIFY;
@@ -111,6 +110,10 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             array.write(myid, myid);
         }
         if ( pub ) array.publish();
+        if ( !full_initialization ) {
+            int readval = array.mutex_read(myid);
+            if ( readval != myid ) { out.fatal(CALL_INFO, 100, "ERROR: SharedArray does not contain expected data\n"); }
+        }
     }
     else if ( test_bool_array && !late_initialize ) {
         if ( full_initialization ) {
@@ -134,6 +137,12 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             bool_array.write(myid, myid % 2);
         }
         if ( pub ) bool_array.publish();
+        if ( !full_initialization ) {
+            bool readval = bool_array.mutex_read(myid);
+            if ( readval != myid % 2 ) {
+                out.fatal(CALL_INFO, 100, "ERROR: SharedArray<bool> does not contain expected data\n");
+            }
+        }
     }
     else if ( test_map && !late_initialize ) {
         if ( full_initialization ) {
@@ -151,6 +160,10 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             map.write(myid, myid);
         }
         if ( pub ) map.publish();
+        if ( !full_initialization ) {
+            int readval = map.mutex_read(myid);
+            if ( readval != myid ) { out.fatal(CALL_INFO, 100, "ERROR: SharedMap does not contain expected data\n"); }
+        }
     }
     else if ( test_set && !late_initialize ) {
         if ( full_initialization ) {
@@ -168,6 +181,11 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             set.insert(setItem(myid, myid));
         }
         if ( pub ) set.publish();
+
+        SharedSet<setItem>::const_iterator it = set.mutex_find(setItem(myid, myid));
+        if ( !full_initialization && it == set.end() ) {
+            out.fatal(CALL_INFO, 100, "ERROR: SharedSet does not contain expected data\n");
+        }
     }
 
     registerAsPrimaryComponent();

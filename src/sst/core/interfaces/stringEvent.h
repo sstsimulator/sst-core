@@ -21,7 +21,7 @@ namespace Interfaces {
 /**
  * Simple event to pass strings between components
  */
-class StringEvent : public SST::Event, public SST::Core::Serialization::serializable_type<StringEvent>
+class StringEvent : public SST::Event
 {
 public:
     StringEvent() {} // For serialization only

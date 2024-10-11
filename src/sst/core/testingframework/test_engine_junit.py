@@ -47,10 +47,7 @@ import sys
 import re
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
-
-def _iteritems(_d, **kw):
-    """ Py3 iteritems() """
-    return iter(_d.items(**kw))
+from typing import IO, List, Mapping, Optional
 
 ################################################################################
 
@@ -385,7 +382,7 @@ def junit_to_xml_report_string(test_suites, prettyprint=True, encoding=None):
         for key in ["time"]:
             attributes[key] += float(ts_xml.get(key, 0))
         xml_element.append(ts_xml)
-    for key, value in _iteritems(attributes):
+    for key, value in attributes.items():
         xml_element.set(key, str(value))
 
     # Add the name of the testing Frameworks

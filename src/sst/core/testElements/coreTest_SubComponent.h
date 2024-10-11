@@ -118,11 +118,13 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Component::serialize_order(ser);
+        SST_SER(count)
         SST_SER(subComps)
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubComponentLoader)
 
 private:
+    uint32_t                       count = 0;
     bool                           tick(SST::Cycle_t);
     std::vector<SubCompInterface*> subComps;
 };

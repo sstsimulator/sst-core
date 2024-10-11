@@ -20,7 +20,7 @@ namespace Interfaces {
 /**  Test Event
  *   Useful for early-testing of components.
  */
-class TestEvent : public SST::Event, public SST::Core::Serialization::serializable_type<TestEvent>
+class TestEvent : public SST::Event
 {
 public:
     TestEvent();

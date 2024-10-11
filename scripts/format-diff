@@ -3,6 +3,7 @@
 import sys
 import re
 from subprocess import check_output,STDOUT
+from typing import List
 
 choke_points = [
   "ser &",
@@ -11,11 +12,11 @@ choke_points = [
 commit  = sys.argv[1]
 paths = sys.argv[2:]
 
-def getoutput(cmd_arr):
+def getoutput(cmd_arr: List[str]) -> str:
     result = check_output(cmd_arr,stderr=STDOUT,stdin=None).decode("utf-8").rstrip("\n")
     return result
 
-def format_diff(commit, path):
+def format_diff(commit: str, path: str) -> None:
   cmd = ["git", "diff", commit, "HEAD", path ]
   diff_text = getoutput(cmd)
 

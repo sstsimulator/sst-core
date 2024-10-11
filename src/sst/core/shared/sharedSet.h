@@ -62,7 +62,7 @@ public:
        @return returns the number of instances that have intialized
        themselve before this instance on this MPI rank.
      */
-    int initialize(const std::string& obj_name, verify_type v_type)
+    int initialize(const std::string& obj_name, verify_type v_type = FE_VERIFY)
     {
         if ( data ) {
             Private::getSimulationOutput().fatal(
@@ -184,9 +184,9 @@ public:
 
        @param value value to search for
 
-       @return read-only iterator to data reference by value
+       @return read-only iterator to data referenced by value
     */
-    inline const valT& mutex_find(const valT& value) const { return data->mutex_read(value); }
+    inline const_iterator mutex_find(const valT& value) const { return data->mutex_find(value); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -207,6 +207,9 @@ public:
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
+        case SST::Core::Serialization::serializer::MAP:
+            // Add your code here
+            break;
         };
     }
     ImplementSerializable(SST::Shared::SharedSet<valT>)
@@ -280,14 +283,14 @@ private:
 
         // Inline the read since it may be called often during run().
         // This read is not protected from data races in the case
-        // where the set may be simulataeously written by another
+        // where the set may be simultaneously written by another
         // thread.  If there is a danger of simultaneous access
-        // during init, use the mutex_read function until after the
+        // during init, use the mutex_find function until after the
         // init phase.
         inline const_iterator find(const valT& value) { return set.find(value); }
 
         // Mutexed read for use if you are resizing the array as you go
-        inline const valT& mutex_find(const valT& value)
+        inline const_iterator mutex_find(const valT& value)
         {
             std::lock_guard<std::mutex> lock(mtx);
             auto                        ret = set.find(value);

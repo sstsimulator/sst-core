@@ -267,6 +267,9 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
         }
         break;
     }
+    case SST::Core::Serialization::serializer::MAP:
+        // Add your code here
+        break;
     }
 
     // Only the parent Component will call serialize_comp directly.

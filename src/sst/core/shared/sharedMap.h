@@ -239,6 +239,9 @@ public:
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
+        case SST::Core::Serialization::serializer::MAP:
+            // Add your code here
+            break;
         };
     }
     ImplementSerializable(SST::Shared::SharedMap<keyT, valT>)
@@ -315,8 +318,7 @@ private:
         inline const valT& mutex_read(const keyT& key)
         {
             std::lock_guard<std::mutex> lock(mtx);
-            auto                        ret = map.at(key);
-            return ret;
+            return map.at(key);
         }
 
         // Functions inherited from SharedObjectData

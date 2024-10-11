@@ -25,12 +25,13 @@ import ast
 import inspect
 import signal
 from subprocess import TimeoutExpired
+from typing import Any, Dict, List, Optional
 
 import test_engine_globals
 
 ################################################################################
 
-class OSCommand():
+class OSCommand:
     """ Enables to run subprocess commands in a different thread with a TIMEOUT option.
         This will return a OSCommandResult object.
 
@@ -76,7 +77,7 @@ class OSCommand():
             Args:
                 timeout_sec (int): The maximum runtime in seconds before thread
                                    will be terminated and a timeout error will occur.
-                kwargs: Extra parameters
+                kwargs: Extra parameters e.g., timeout_sec to override the default timeout
         """
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout must be an int or a float")

@@ -28,6 +28,7 @@ import unittest
 import threading
 import signal
 import time
+from typing import Optional
 
 import test_engine_globals
 from sst_unittest_support import *
@@ -40,7 +41,7 @@ from test_engine_junit import junit_to_xml_report_file
 #from test_engine_junit import junit_to_xml_report_string
 
 if not sys.warnoptions:
-    import os, warnings
+    import warnings
     warnings.simplefilter("once") # Change the filter in this process
     os.environ["PYTHONWARNINGS"] = "once" # Also affect subprocesses
 
@@ -54,12 +55,12 @@ class SSTTestCase(unittest.TestCase):
         basic resource for how to develop tests for this frameworks.
     """
 
-    def __init__(self, methodName):
+    def __init__(self, methodName: str) -> None:
         # NOTE: __init__ is called at startup for all tests before any
         #       setUpModules(), setUpClass(), setUp() and the like are called.
         super(SSTTestCase, self).__init__(methodName)
         self.testname = methodName
-        parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+        parent_module_path: str = os.path.dirname(sys.modules[self.__class__.__module__].__file__)  # type: ignore
         self._testsuite_dirpath = parent_module_path
         #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
         self.initializeClass(self.testname)
@@ -68,7 +69,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def initializeClass(self, testname):
+    def initializeClass(self, testname: str) -> None:
         """ The method is called by the Frameworks immediately before class is
         initialized.
 
@@ -92,7 +93,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def setUp(self):
+    def setUp(self) -> None:
         """ The method is called by the Frameworks immediately before a test is run
 
         **NOTICE**:
@@ -115,7 +116,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """ The method is called by the Frameworks immediately after a test finishes
 
         **NOTICE**:
@@ -136,7 +137,7 @@ class SSTTestCase(unittest.TestCase):
 ###
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """ This method is called by the Frameworks immediately before the TestCase starts
 
         **NOTICE**:
@@ -154,7 +155,7 @@ class SSTTestCase(unittest.TestCase):
 ###
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """ This method is called by the Frameworks immediately after a TestCase finishes
 
         **NOTICE**:
@@ -171,7 +172,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_testsuite_name(self):
+    def get_testsuite_name(self) -> str:
         """ Return the testsuite (module) name
 
         Returns:
@@ -181,7 +182,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_testcase_name(self):
+    def get_testcase_name(self) -> str:
         """ Return the testcase name
 
         Returns:
@@ -190,7 +191,7 @@ class SSTTestCase(unittest.TestCase):
         return "{0}".format(strqual(self.__class__))
 ###
 
-    def get_testsuite_dir(self):
+    def get_testsuite_dir(self) -> str:
         """ Return the directory path of the testsuite that is being run
 
         Returns:
@@ -200,7 +201,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_test_output_run_dir(self):
+    def get_test_output_run_dir(self) -> str:
         """ Return the path of the test output run directory
 
         Returns:
@@ -210,7 +211,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_test_output_tmp_dir(self):
+    def get_test_output_tmp_dir(self) -> str:
         """ Return the path of the test tmp directory
 
         Returns:
@@ -220,7 +221,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_test_runtime_sec(self):
+    def get_test_runtime_sec(self) -> float:
         """ Return the current runtime (walltime) of the test
 
         Returns:
@@ -304,7 +305,7 @@ class SSTTestCase(unittest.TestCase):
             mpiout_filename = mpi_out_files
 
         # Get the path to sst binary application
-        sst_app_path = sstsimulator_conf_get_value_str('SSTCore', 'bindir', default="UNDEFINED")
+        sst_app_path = sstsimulator_conf_get_value('SSTCore', 'bindir', str, default="UNDEFINED")
         err_str = "Path to SST {0}; does not exist...".format(sst_app_path)
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
@@ -323,7 +324,7 @@ class SSTTestCase(unittest.TestCase):
                                                  sdl_file)
 
         # Update the os launch command if we are running multi-rank
-        num_cores = host_os_get_num_cores_on_system()
+        num_cores = multiprocessing.cpu_count()
 
         # Perform any multi-rank checks/setup
         mpi_avail = False
@@ -377,7 +378,7 @@ class SSTTestCase(unittest.TestCase):
 ### Module level support
 ################################################################################
 
-def setUpModule():
+def setUpModule() -> None:
     """ Perform setup functions before the testing Module loads.
 
         This function is called by the Frameworks before tests in any TestCase
@@ -400,7 +401,7 @@ def setUpModule():
 
 ###
 
-def tearDownModule():
+def tearDownModule() -> None:
     """ Perform teardown functions immediately after a testing Module finishes.
 
         This function is called by the Frameworks after all tests in all TestCases

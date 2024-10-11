@@ -26,7 +26,7 @@ import tarfile
 import shutil
 import difflib
 import configparser
-from typing import List, Sequence, Type
+from typing import Any, Callable, Dict, List, Optional, Sequence, Type, Tuple, Union
 
 import test_engine_globals
 from test_engine_support import OSCommand
@@ -57,10 +57,10 @@ pin_exec_path = ""
 class SSTTestCaseException(Exception):
     """ Generic Exception support for SSTTestCase
     """
-    def __init__(self, value):
+    def __init__(self, value: Exception) -> None:
         super(SSTTestCaseException, self).__init__(value)
         self.value = value
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self.value)
 
 ################################################################################
@@ -69,7 +69,7 @@ class SSTTestCaseException(Exception):
 # Commandline Information Functions
 ################################################################################
 
-def testing_check_is_in_debug_mode():
+def testing_check_is_in_debug_mode() -> bool:
     """ Identify if test frameworks is in debug mode
 
         Returns:
@@ -79,7 +79,7 @@ def testing_check_is_in_debug_mode():
 
 ###
 
-def testing_check_is_in_log_failures_mode():
+def testing_check_is_in_log_failures_mode() -> bool:
     """ Identify if test frameworks is in log failures mode
 
         Returns:
@@ -89,7 +89,7 @@ def testing_check_is_in_log_failures_mode():
 
 ###
 
-def testing_check_is_in_concurrent_mode():
+def testing_check_is_in_concurrent_mode() -> bool:
     """ Identify if test frameworks is in concurrent mode
 
         Returns:
@@ -99,7 +99,7 @@ def testing_check_is_in_concurrent_mode():
 
 ###
 
-def testing_check_get_num_ranks():
+def testing_check_get_num_ranks() -> int:
     """ Get the number of ranks defined to be run during testing
 
         Returns:
@@ -109,7 +109,7 @@ def testing_check_get_num_ranks():
 
 ###
 
-def testing_check_get_num_threads():
+def testing_check_get_num_threads() -> int:
     """ Get the number of threads defined to be run during testing
 
         Returns:
@@ -121,7 +121,7 @@ def testing_check_get_num_threads():
 # PIN Information Functions
 ################################################################################
 
-def testing_is_PIN_loaded():
+def testing_is_PIN_loaded() -> bool:
     # Look to see if PIN is available
     pindir_found = False
     pin_path = os.environ.get('INTEL_PIN_DIRECTORY')
@@ -130,10 +130,10 @@ def testing_is_PIN_loaded():
     #log_debug("testing_is_PIN_loaded() - Intel_PIN_Path = {0}; Valid Dir = {1}".format(pin_path, pindir_found))
     return pindir_found
 
-def testing_is_PIN_Compiled():
+def testing_is_PIN_Compiled() -> bool:
     global pin_exec_path
-    pin_crt = sst_elements_config_include_file_get_value_int("HAVE_PINCRT", 0, True)
-    pin_exec = sst_elements_config_include_file_get_value_str("PINTOOL_EXECUTABLE", "", True)
+    pin_crt = sst_elements_config_include_file_get_value(define="HAVE_PINCRT", type=int, default=0, disable_warning=True)
+    pin_exec = sst_elements_config_include_file_get_value(define="PINTOOL_EXECUTABLE", type=str, default="", disable_warning=True)
     #log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
     #log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
     pin_exec_path = pin_exec
@@ -141,7 +141,7 @@ def testing_is_PIN_Compiled():
     #log_debug("testing_is_PIN_Compiled() - Rtn {0}".format(rtn))
     return rtn
 
-def testing_is_PIN2_used():
+def testing_is_PIN2_used() -> bool:
     from warnings import warn
     warn("testing_is_PIN2_used() is deprecated and will be removed in future versions of SST.",
         DeprecationWarning, stacklevel=2)
@@ -158,7 +158,7 @@ def testing_is_PIN2_used():
         #log_debug("testing_is_PIN2_used() - Rtn False because PIN Not Compiled")
         return False
 
-def testing_is_PIN3_used():
+def testing_is_PIN3_used() -> bool:
     global pin_exec_path
     if testing_is_PIN_Compiled():
         if testing_is_PIN2_used():
@@ -183,7 +183,7 @@ def testing_is_PIN3_used():
 # System Information Functions
 ################################################################################
 
-def host_os_get_system_node_name():
+def host_os_get_system_node_name() -> str:
     """ Get the node name of the system
 
         Returns:
@@ -195,7 +195,7 @@ def host_os_get_system_node_name():
 
 ###
 
-def host_os_get_kernel_type():
+def host_os_get_kernel_type() -> str:
     """ Get the Kernel Type
 
         Returns:
@@ -205,7 +205,7 @@ def host_os_get_kernel_type():
          DeprecationWarning, stacklevel=2)
     return platform.system()
 
-def host_os_get_kernel_release():
+def host_os_get_kernel_release() -> str:
     """ Get the Kernel Release number
 
         Returns:
@@ -215,7 +215,7 @@ def host_os_get_kernel_release():
          DeprecationWarning, stacklevel=2)
     return platform.release()
 
-def host_os_get_kernel_arch():
+def host_os_get_kernel_arch() -> str:
     """ Get the Kernel System Arch
 
         Returns:
@@ -225,7 +225,7 @@ def host_os_get_kernel_arch():
          DeprecationWarning, stacklevel=2)
     return platform.machine()
 
-def host_os_get_distribution_type():
+def host_os_get_distribution_type() -> str:
     """ Get the os distribution type
 
         Returns:
@@ -238,7 +238,7 @@ def host_os_get_distribution_type():
             'ROCKY' for Rocky;
             'UNDEFINED' an undefined OS.
     """
-    k_type = host_os_get_kernel_type()
+    k_type = platform.system()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
@@ -256,13 +256,13 @@ def host_os_get_distribution_type():
         return OS_DIST_OSX
     return OS_DIST_UNDEF
 
-def host_os_get_distribution_version():
+def host_os_get_distribution_version() -> str:
     """ Get the os distribution version
 
         Returns:
             (str) The OS distribution version
     """
-    k_type = host_os_get_kernel_type()
+    k_type = platform.system()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         return lin_dist[1]
@@ -273,7 +273,7 @@ def host_os_get_distribution_version():
 
 ###
 
-def host_os_is_osx():
+def host_os_is_osx() -> bool:
     """ Check if OS distribution is OSX
 
         Returns:
@@ -283,7 +283,7 @@ def host_os_is_osx():
          DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_OSX
 
-def host_os_is_linux():
+def host_os_is_linux() -> bool:
     """ Check if OS distribution is Linux
 
         Returns:
@@ -293,7 +293,7 @@ def host_os_is_linux():
          DeprecationWarning, stacklevel=2)
     return not host_os_get_distribution_type() == OS_DIST_OSX
 
-def host_os_is_centos():
+def host_os_is_centos() -> bool:
     """ Check if OS distribution is CentOS
 
         Returns:
@@ -303,7 +303,7 @@ def host_os_is_centos():
          DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_CENTOS
 
-def host_os_is_rhel():
+def host_os_is_rhel() -> bool:
     """ Check if OS distribution is RHEL
 
         Returns:
@@ -313,7 +313,7 @@ def host_os_is_rhel():
          DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_RHEL
 
-def host_os_is_toss():
+def host_os_is_toss() -> bool:
     """ Check if OS distribution is Toss
 
         Returns:
@@ -323,7 +323,7 @@ def host_os_is_toss():
          DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_TOSS
 
-def host_os_is_ubuntu():
+def host_os_is_ubuntu()-> bool:
     """ Check if OS distribution is Ubuntu
 
         Returns:
@@ -333,7 +333,7 @@ def host_os_is_ubuntu():
          DeprecationWarning, stacklevel=2)
     return host_os_get_distribution_type() == OS_DIST_UBUNTU
 
-def host_os_is_rocky():
+def host_os_is_rocky() -> bool:
     """ Check if OS distribution is Rocky
 
         Returns:
@@ -346,7 +346,7 @@ def host_os_is_rocky():
 
 ###
 
-def host_os_get_num_cores_on_system():
+def host_os_get_num_cores_on_system() -> int:
     """ Get number of cores on the system
 
         Returns:
@@ -361,7 +361,7 @@ def host_os_get_num_cores_on_system():
 # SST Skipping Support
 ################################################################################
 
-def testing_check_is_scenario_filtering_enabled(scenario_name):
+def _testing_check_is_scenario_filtering_enabled(scenario_name: str) -> bool:
     """ Determine if a scenario filter name is enabled
 
         Args:
@@ -375,7 +375,7 @@ def testing_check_is_scenario_filtering_enabled(scenario_name):
 
 ###
 
-def skip_on_scenario(scenario_name, reason):
+def skip_on_scenario(scenario_name: str, reason: str) -> Callable:
     """ Skip a test if a scenario filter name is enabled
 
         Args:
@@ -384,13 +384,13 @@ def skip_on_scenario(scenario_name, reason):
     """
     check_param_type("scenario_name", scenario_name, str)
     check_param_type("reason", reason, str)
-    if not testing_check_is_scenario_filtering_enabled(scenario_name):
+    if not _testing_check_is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)
 
 ###
 
-def skip_on_sstsimulator_conf_empty_str(section, key, reason):
+def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> Callable:
     """ Skip a test if a section/key in the sstsimulator.conf file is missing an
         entry
 
@@ -402,7 +402,7 @@ def skip_on_sstsimulator_conf_empty_str(section, key, reason):
     check_param_type("section", section, str)
     check_param_type("key", key, str)
     check_param_type("reason", reason, str)
-    rtn_str = sstsimulator_conf_get_value_str(section, key, "")
+    rtn_str = sstsimulator_conf_get_value(section, key, str, "")
     if rtn_str != "":
         return lambda func: func
     return unittest.skip(reason)
@@ -411,7 +411,7 @@ def skip_on_sstsimulator_conf_empty_str(section, key, reason):
 # SST Core Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
 
-def sst_core_config_include_file_get_value_int(define, default=None, disable_warning = False):
+def sst_core_config_include_file_get_value_int(define: str, default: int = None, disable_warning: bool = False) -> int:
     """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
         Args:
@@ -433,7 +433,11 @@ def sst_core_config_include_file_get_value_int(define, default=None, disable_war
 
 ###
 
-def sst_core_config_include_file_get_value_str(define, default=None, disable_warning = False):
+def sst_core_config_include_file_get_value_str(
+    define: str,
+    default: str = None,
+    disable_warning: bool = False,
+) -> str:
     """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
         Args:
@@ -455,7 +459,12 @@ def sst_core_config_include_file_get_value_str(define, default=None, disable_war
 
 ###
 
-def sst_core_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+def sst_core_config_include_file_get_value(
+    define: str,
+    type: Type,
+    default: Any = None,
+    disable_warning: bool = False,
+) -> Any:
     """Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
     Args:
@@ -474,7 +483,11 @@ def sst_core_config_include_file_get_value(define: str, type: Type, default=None
 # SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
 ################################################################################
 
-def sst_elements_config_include_file_get_value_int(define, default=None, disable_warning = False):
+def sst_elements_config_include_file_get_value_int(
+    define: str,
+    default: int = None,
+    disable_warning: bool = False,
+) -> int:
     """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
 
         Args:
@@ -496,7 +509,11 @@ def sst_elements_config_include_file_get_value_int(define, default=None, disable
 
 ###
 
-def sst_elements_config_include_file_get_value_str(define, default=None, disable_warning = False):
+def sst_elements_config_include_file_get_value_str(
+    define: str,
+    default: str = None,
+    disable_warning: bool = False,
+) -> str:
     """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
 
         Args:
@@ -518,7 +535,12 @@ def sst_elements_config_include_file_get_value_str(define, default=None, disable
 
 ###
 
-def sst_elements_config_include_file_get_value(define: str, type: Type, default=None, disable_warning: bool=False):
+def sst_elements_config_include_file_get_value(
+    define: str,
+    type: Type,
+    default: Any = None,
+    disable_warning: bool = False
+) -> Any:
     """Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
 
     Args:
@@ -537,7 +559,7 @@ def sst_elements_config_include_file_get_value(define: str, type: Type, default=
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
 
-def sstsimulator_conf_get_value_str(section, key, default=None):
+def sstsimulator_conf_get_value_str(section: str, key: str, default: str = None) -> str:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -557,7 +579,7 @@ def sstsimulator_conf_get_value_str(section, key, default=None):
 
 ###
 
-def sstsimulator_conf_get_value_int(section, key, default=None):
+def sstsimulator_conf_get_value_int(section: str, key: str, default: int = None) -> int:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -577,7 +599,7 @@ def sstsimulator_conf_get_value_int(section, key, default=None):
 
 ###
 
-def sstsimulator_conf_get_value_float(section, key, default=None):
+def sstsimulator_conf_get_value_float(section: str, key: str, default: float = None) -> float:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -597,7 +619,7 @@ def sstsimulator_conf_get_value_float(section, key, default=None):
 
 ###
 
-def sstsimulator_conf_get_value_bool(section, key, default=None):
+def sstsimulator_conf_get_value_bool(section: str, key: str, default: bool = None) -> bool:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         NOTE: "1", "yes", "true", and "on" will return True;
@@ -620,7 +642,7 @@ def sstsimulator_conf_get_value_bool(section, key, default=None):
 
 ###
 
-def sstsimulator_conf_get_value(section: str, key: str, type: Type, default=None):
+def sstsimulator_conf_get_value(section: str, key: str, type: Type, default: Any = None) -> Any:
     """Get the configuration value from the SST Configuration File (sstsimulator.conf)
 
     Args:
@@ -636,7 +658,7 @@ def sstsimulator_conf_get_value(section: str, key: str, type: Type, default=None
 
 ###
 
-def sstsimulator_conf_get_sections():
+def sstsimulator_conf_get_sections() -> List[str]:
     """ Retrieve a list of sections that exist in the SST Configuration File (sstsimulator.conf)
 
         Returns:
@@ -653,7 +675,7 @@ def sstsimulator_conf_get_sections():
 
 ###
 
-def sstsimulator_conf_get_section_keys(section):
+def sstsimulator_conf_get_section_keys(section: str) -> List[str]:
     """ Retrieve a list of keys under a section that exist in the
         SST Configuration File  (sstsimulator.conf)
 
@@ -675,7 +697,7 @@ def sstsimulator_conf_get_section_keys(section):
 
 ###
 
-def sstsimulator_conf_get_all_keys_values_from_section(section):
+def sstsimulator_conf_get_all_keys_values_from_section(section: str) -> List[Tuple[str, str]]:
     """ Retrieve a list of tuples that contain all the key - value pairs
         under a section that exists in the SST Configuration File (sstsimulator.conf)
 
@@ -697,7 +719,7 @@ def sstsimulator_conf_get_all_keys_values_from_section(section):
 
 ###
 
-def sstsimulator_conf_does_have_section(section):
+def sstsimulator_conf_does_have_section(section: str) -> bool:
     """ Check if the SST Configuration File (sstsimulator.conf) has a defined
         section
 
@@ -719,7 +741,7 @@ def sstsimulator_conf_does_have_section(section):
 
 ###
 
-def sstsimulator_conf_does_have_key(section, key):
+def sstsimulator_conf_does_have_key(section: str, key: str) -> bool:
     """ Check if the SST Configuration File (sstsimulator.conf) has a defined key
         within a section
         Args:
@@ -744,7 +766,7 @@ def sstsimulator_conf_does_have_key(section, key):
 # Logging Functions
 ################################################################################
 
-def log(logstr):
+def log(logstr: str) -> None:
     """ Log a general message.
 
         This will not output unless we are outputing in >= normal mode.
@@ -758,7 +780,7 @@ def log(logstr):
 
 ###
 
-def log_forced(logstr):
+def log_forced(logstr: str) -> None:
     """ Log a general message, no matter what the verbosity is.
 
         if in the middle of testing, it will precede with a '\\n' to slip
@@ -775,7 +797,7 @@ def log_forced(logstr):
 
 ###
 
-def log_debug(logstr):
+def log_debug(logstr: str) -> None:
     """ Log a 'DEBUG:' message.
 
         Log will only happen if in debug verbosity mode.
@@ -789,7 +811,7 @@ def log_debug(logstr):
 
 ###
 
-def log_failure(logstr):
+def log_failure(logstr: str) -> None:
     """ Log a test failure.
 
         Log will only happen if in log failure mode.
@@ -808,7 +830,7 @@ def log_failure(logstr):
 
 ###
 
-def log_info(logstr, forced=True):
+def log_info(logstr: str, forced: bool = True) -> None:
     """ Log a 'INFO:' message.
 
         Args:
@@ -824,7 +846,7 @@ def log_info(logstr, forced=True):
         log(finalstr)
 ###
 
-def log_error(logstr):
+def log_error(logstr: str) -> None:
     """ Log a 'ERROR:' message.
 
         Log will occur no matter what the verbosity is
@@ -839,7 +861,7 @@ def log_error(logstr):
 
 ###
 
-def log_warning(logstr):
+def log_warning(logstr: str) -> None:
     """ Log a 'WARNING:' message.
 
         Log will occur no matter what the verbosity is
@@ -853,7 +875,7 @@ def log_warning(logstr):
 
 ###
 
-def log_fatal(errstr):
+def log_fatal(errstr: str) -> None:
     """ Log a 'FATAL:' message.
 
         Log will occur no matter what the verbosity is and
@@ -869,7 +891,7 @@ def log_fatal(errstr):
 
 ###
 
-def log_testing_note(note_str):
+def log_testing_note(note_str: str) -> None:
     """ Log a testing note
 
         Add a testing note that will be displayed at the end of the test run
@@ -892,7 +914,7 @@ def log_testing_note(note_str):
 ### Testing Directories
 ################################################################################
 
-def test_output_get_run_dir():
+def test_output_get_run_dir() -> str:
     """ Return the path of the output run directory
 
         Returns:
@@ -902,7 +924,7 @@ def test_output_get_run_dir():
 
 ###
 
-def test_output_get_tmp_dir():
+def test_output_get_tmp_dir() -> str:
     """ Return the path of the output tmp directory
 
         Returns:
@@ -980,7 +1002,7 @@ def combine_per_rank_files(filename, header_lines_to_remove=0, remove_header_fro
             fp.write(line)
 
 
-def testing_parse_stat(line):
+def testing_parse_stat(line: str) -> Optional[List[Union[str, int, float]]]:
     """ Return a parsed statistic or 'None' if the line does not match a known statistic format
 
         This function will recognize an Accumulator statistic in statOutputConsole format that is generated by
@@ -1014,7 +1036,13 @@ def testing_parse_stat(line):
         return None
     return stat
 
-def testing_stat_output_diff(outfile, reffile, ignore_lines=[], tol_stats={}, new_stats=False):
+def testing_stat_output_diff(
+    outfile: str,
+    reffile: str,
+    ignore_lines: List[str] = [],
+    tol_stats: Dict[str, float] = {},
+    new_stats: bool = False,
+) -> Tuple[bool, List, List]:
     """ Perform a diff of statistic outputs with special handling based on arguments
         This diff is not sensitive to line ordering
 
@@ -1127,20 +1155,20 @@ class LineFilter:
         Returns:
             (bool) Filtered line or None if line should be removed
     """
-    def filter(self, line):
+    def filter(self, line: str) -> Optional[str]:
         pass
 
-    def reset(self):
+    def reset(self) -> None:
         pass
 
 
 class StartsWithFilter(LineFilter):
     """ Filters out any line that starts with a specified string
     """
-    def __init__(self, prefix):
+    def __init__(self, prefix: str) -> None:
         self._prefix = prefix;
 
-    def filter(self, line):
+    def filter(self, line: str) -> Optional[str]:
         """ Checks to see if the line starts with the prefix specified in constructor
 
             Args:
@@ -1156,15 +1184,15 @@ class StartsWithFilter(LineFilter):
 class IgnoreAllAfterFilter(LineFilter):
     """ Filters out any line that starts with a specified string and all lines after it
     """
-    def __init__(self, prefix, keep_line = False):
+    def __init__(self, prefix: str, keep_line: bool = False) -> None:
         self._prefix = prefix;
         self._keep_line = keep_line
         self._found = False
 
-    def reset(self):
+    def reset(self) -> None:
         self._found = False
 
-    def filter(self, line):
+    def filter(self, line: str) -> Optional[str]:
         """ Checks to see if the line starts with the prefix specified in constructor
 
             Args:
@@ -1187,10 +1215,10 @@ class IgnoreWhiteSpaceFilter(LineFilter):
     space.  Newlines are not filtered.
 
     """
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def filter(self, line):
+    def filter(self, line: str) -> Optional[str]:
         """ Converts any stream of whitespace to a single space.
 
             Args:
@@ -1215,10 +1243,10 @@ class IgnoreWhiteSpaceFilter(LineFilter):
 class RemoveRegexFromLineFilter(LineFilter):
     """Filters out portions of line that match the specified regular expression
     """
-    def __init__(self, expr):
+    def __init__(self, expr: str) -> None:
         self.regex = expr
 
-    def filter(self,line):
+    def filter(self, line: str) -> Optional[str]:
         """ Removes all text before the specified prefix.
 
             Args:
@@ -1267,9 +1295,9 @@ def testing_compare_filtered_diff(
     outfile: str,
     reffile: str,
     sort: bool = False,
-    filters = list(),
+    filters: List[LineFilter] = list(),
     do_statistics_comparison: bool = False,
-):
+) -> bool:
     """Filter, optionally sort and then compare 2 files for a difference.
 
         Args:
@@ -1291,7 +1319,7 @@ def testing_compare_filtered_diff(
     check_param_type("reffile", reffile, str)
 
     if issubclass(type(filters), LineFilter):
-        filters = [filters]
+        filters = [filters]  # type: ignore
     check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
@@ -1326,7 +1354,7 @@ def testing_compare_filtered_diff(
 ###
 
 
-def testing_compare_diff(test_name, outfile, reffile, ignore_ws=False):
+def testing_compare_diff(test_name: str, outfile: str, reffile: str, ignore_ws: bool = False) -> bool:
     """ compare 2 files for a diff.
 
         Args:
@@ -1351,7 +1379,7 @@ def testing_compare_diff(test_name, outfile, reffile, ignore_ws=False):
 ###
 
 
-def testing_compare_sorted_diff(test_name, outfile, reffile):
+def testing_compare_sorted_diff(test_name: str, outfile: str, reffile: str) -> bool:
     """ Sort and then compare 2 files for a difference.
 
         Args:
@@ -1374,7 +1402,7 @@ def testing_compare_sorted_diff(test_name, outfile, reffile):
 
 
 
-def testing_compare_filtered_subset(outfile, reffile, filters=[]):
+def testing_compare_filtered_subset(outfile: str, reffile: str, filters: List[LineFilter] = []) -> bool:
     """Filter, and then determine if outfile is a subset of reffile
 
         Args:
@@ -1393,7 +1421,7 @@ def testing_compare_filtered_subset(outfile, reffile, filters=[]):
     check_param_type("reffile", reffile, str)
 
     if issubclass(type(filters), LineFilter):
-        filters = [filters]
+        filters = [filters]  # type: ignore
     check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
@@ -1445,7 +1473,7 @@ def testing_compare_filtered_subset(outfile, reffile, filters=[]):
 
 
 
-def testing_get_diff_data(test_name):
+def testing_get_diff_data(test_name: str) -> str:
     """ Return the diff data file from a regular diff. This should be used
         after a call to testing_compare_sorted_diff(),
         testing_compare_diff() or testing_compare_filtered_diff to
@@ -1474,7 +1502,12 @@ def testing_get_diff_data(test_name):
 ###
 
 
-def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, errorfilepath=None):
+def testing_merge_mpi_files(
+    filepath_wildcard: str,
+    mpiout_filename: str,
+    outputfilepath: str,
+    errorfilepath: Optional[str] = None,
+) -> None:
     """ Merge a group of common MPI files into an output file
         This works for OpenMPI 4.x and 5.x ONLY
 
@@ -1528,7 +1561,7 @@ def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath, 
 
 ###
 
-def testing_remove_component_warning_from_file(input_filepath):
+def testing_remove_component_warning_from_file(input_filepath: str) -> None:
     """ Remove SST Component warnings from a file
 
         This will re-write back to the file with the removed warnings
@@ -1545,7 +1578,7 @@ def testing_remove_component_warning_from_file(input_filepath):
 ### OS Basic Or Equivalent Commands
 ################################################################################
 
-def os_simple_command(os_cmd, run_dir=None):
+def os_simple_command(os_cmd: str, run_dir: Optional[str] = None, **kwargs) -> Tuple[int, str]:
     """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput).
 
         NOTE: Simple command cannot have pipes or redirects
@@ -1561,11 +1594,11 @@ def os_simple_command(os_cmd, run_dir=None):
     check_param_type("os_cmd", os_cmd, str)
     if run_dir is not None:
         check_param_type("run_dir", run_dir, str)
-    rtn = OSCommand(os_cmd, set_cwd=run_dir).run()
+    rtn = OSCommand(os_cmd, set_cwd=run_dir).run(**kwargs)
     rtn_data = (rtn.result(), rtn.output())
     return rtn_data
 
-def os_ls(directory=".", echo_out=True):
+def os_ls(directory: str = ".", echo_out: bool = True, **kwargs) -> str:
     """ Perform an simple ls -lia shell command and dump output to screen.
 
         Args:
@@ -1577,12 +1610,12 @@ def os_ls(directory=".", echo_out=True):
     """
     check_param_type("directory", directory, str)
     cmd = "ls -lia {0}".format(directory)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_pwd(echo_out=True):
+def os_pwd(echo_out: bool = True, **kwargs) -> str:
     """ Perform an simple pwd shell command and dump output to screen.
 
         Args:
@@ -1592,12 +1625,12 @@ def os_pwd(echo_out=True):
             (str) Output from pwd command
     """
     cmd = "pwd"
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_cat(filepath, echo_out=True):
+def os_cat(filepath: str, echo_out: bool = True, **kwargs) -> str:
     """ Perform an simple cat shell command and dump output to screen.
 
         Args:
@@ -1608,12 +1641,12 @@ def os_cat(filepath, echo_out=True):
     """
     check_param_type("filepath", filepath, str)
     cmd = "cat {0}".format(filepath)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     if echo_out:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_symlink_file(srcdir, destdir, filename):
+def os_symlink_file(srcdir: str, destdir: str, filename: str) -> None:
     """ Create a symlink of a file
 
         Args:
@@ -1628,7 +1661,7 @@ def os_symlink_file(srcdir, destdir, filename):
     dstfilepath = "{0}/{1}".format(destdir, filename)
     os.symlink(srcfilepath, dstfilepath)
 
-def os_symlink_dir(srcdir, destdir):
+def os_symlink_dir(srcdir: str, destdir: str) -> None:
     """ Create a symlink of a directory
 
         Args:
@@ -1639,7 +1672,7 @@ def os_symlink_dir(srcdir, destdir):
     check_param_type("destdir", destdir, str)
     os.symlink(srcdir, destdir)
 
-def os_awk_print(in_str, fields_index_list):
+def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
     """ Perform an awk / print (equivalent) command which returns specific
         fields of an input string as a string.
 
@@ -1664,7 +1697,7 @@ def os_awk_print(in_str, fields_index_list):
         finalstrdata +=  "{0} ".format(split_list[field_index])
     return finalstrdata
 
-def os_wc(in_file, fields_index_list=[]):
+def os_wc(in_file: str, fields_index_list: List[int] = [], **kwargs) -> str:
     """ Run a wc (equivalent) command on a file and then extract specific
         fields of the result as a string.
 
@@ -1681,13 +1714,13 @@ def os_wc(in_file, fields_index_list=[]):
     for index, field_index in enumerate(fields_index_list):
         check_param_type("field_index - {0}".format(index), field_index, int)
     cmd = "wc {0}".format(in_file)
-    rtn = OSCommand(cmd).run()
+    rtn = OSCommand(cmd).run(**kwargs)
     wc_out = rtn.output()
     if fields_index_list:
         wc_out = os_awk_print(wc_out, fields_index_list)
     return wc_out
 
-def os_test_file(file_path, expression="-e"):
+def os_test_file(file_path: str, expression: str = "-e", **kwargs) -> bool:
     """ Run a shell 'test' command on a file.
 
         Args:
@@ -1701,14 +1734,20 @@ def os_test_file(file_path, expression="-e"):
     check_param_type("expression", expression, str)
     if os.path.exists(file_path):
         cmd = "test {0} {1}".format(expression, file_path)
-        rtn = OSCommand(cmd).run()
+        rtn = OSCommand(cmd).run(**kwargs)
         log_debug("Test cmd = {0}; rtn = {1}".format(cmd, rtn.result()))
         return rtn.result() == 0
     else:
         log_error("File {0} does not exist".format(file_path))
         return False
 
-def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams=""):
+def os_wget(
+    fileurl: str,
+    targetdir: str,
+    num_tries: int = 3,
+    secsbetweentries: int = 10,
+    wgetparams: str = "",
+) -> bool:
     """ Perform a wget command to download a file from a url.
 
         Args:
@@ -1770,7 +1809,7 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
 
     return wget_success
 
-def os_extract_tar(tarfilepath, targetdir="."):
+def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
     """ Extract directories/files from a tar file.
 
         Args:
@@ -1801,7 +1840,7 @@ def os_extract_tar(tarfilepath, targetdir="."):
 ### Platform Specific Support Functions
 ################################################################################
 
-def _get_linux_distribution():
+def _get_linux_distribution() -> Tuple[str, str]:
     """ Return the linux distribution info as a tuple"""
     # The method linux_distribution is depricated in deprecated in Py3.5
     _linux_distribution = getattr(platform, 'linux_distribution', None)
@@ -1825,7 +1864,7 @@ def _get_linux_distribution():
         # Until we have other OS's, this is Ubuntu.
         distname = "ubuntu"
         distver = _get_linux_version("/etc/lsb-release", " ")
-    elif os.path.isfile("/etc/rocky-release", " "):
+    elif os.path.isfile("/etc/rocky-release"):
         distname = "rocky"
         distver = _get_linux_version("/etc/rocky-release", " ")
     rtn_data = (distname, distver)
@@ -1833,7 +1872,7 @@ def _get_linux_distribution():
 
 ###
 
-def _get_linux_version(filepath, sep):
+def _get_linux_version(filepath: str, sep: str) -> str:
     """ return the linux OS version as a string"""
     # Find the first digit + period in the tokenized string list
     with open(filepath, 'r') as filehandle:
@@ -1855,8 +1894,14 @@ def _get_linux_version(filepath, sep):
 ### Generic Internal Support Functions
 ################################################################################
 
-def _get_sst_config_include_file_value(include_dict, include_source, define, default=None,
-                                       data_type=str, disable_warning = False):
+def _get_sst_config_include_file_value(
+        include_dict: Dict[str, Union[str, int]],
+        include_source: str,
+        define: str,
+        default: Optional[Union[str, int]] = None,
+        data_type: Type = str,
+        disable_warning: bool = False,
+) -> Optional[Union[str, int]]:
     """ Retrieve a define from an SST Configuration Include File (sst_config.h or sst-element_config.h)
        include_dict (dict): The dictionary to search for the define
        include_source (str): The name of the include file we are searching
@@ -1929,7 +1974,7 @@ def _handle_config_err(exc_e, default_rtn_data):
 
 ###
 
-def _remove_lines_with_string_from_file(removestring, input_filepath):
+def _remove_lines_with_string_from_file(removestring: str, input_filepath: str) -> None:
     bad_strings = [removestring]
 
     # Create a temp file

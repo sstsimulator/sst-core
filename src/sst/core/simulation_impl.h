@@ -46,6 +46,7 @@ class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
+class InteractiveConsole;
 class Link;
 class LinkMap;
 class Params;
@@ -64,6 +65,10 @@ class StatisticOutput;
 class StatisticProcessingEngine;
 } // namespace Statistics
 
+namespace Serialization {
+class ObjectMap;
+} // namespace Serialization
+
 /**
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
@@ -72,6 +77,8 @@ class Simulation_impl
 {
 
 public:
+    SST::Core::Serialization::ObjectMap* getComponentObjectMap();
+
     /********  Public API inherited from Simulation ********/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
     SimulationRunMode getSimulationMode() const { return runMode; };
@@ -352,6 +359,8 @@ public:
         int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
     void restart(Config* config);
 
+    void initialize_interactive_console(const std::string& type);
+
     /** Factory used to generate the simulation components */
     static Factory* factory;
 
@@ -423,6 +432,11 @@ public:
     ShutdownMode_t          shutdown_mode_;
     bool                    wireUpFinished_;
     RealTimeManager*        real_time_;
+    std::string             interactive_type_  = "";
+    std::string             interactive_start_ = "";
+    InteractiveConsole*     interactive_       = nullptr;
+    bool                    enter_interactive_ = false;
+    std::string             interactive_msg_;
 
     /**
        vector to hold offsets of component blobs in checkpoint files

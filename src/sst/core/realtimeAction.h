@@ -93,6 +93,8 @@ public:
 
     /** Generate a checkpoint */
     void simulationCheckpoint();
+
+    void initiateInteractive(const std::string& msg);
 };
 
 } // namespace SST
