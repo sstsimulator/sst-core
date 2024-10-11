@@ -154,7 +154,7 @@ public:
     /**
        Get the list of child variables contained in this ObjectMap
 
-       @return Refernce to vector containing ObjectMaps for this
+       @return Reference to vector containing ObjectMaps for this
        ObjectMap's child variables. Fundamental types will return the
        same empty vector.
      */
