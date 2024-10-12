@@ -47,7 +47,7 @@ private:
     // directory as far as we can.
     std::vector<std::string> name_stack;
 
-    SST::Core::Serialization::ObjectMap* obj_;
+    SST::Core::Serialization::ObjectMap* obj_ = nullptr;
     bool                                 done = false;
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);

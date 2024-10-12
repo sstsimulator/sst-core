@@ -836,7 +836,7 @@ Simulation_impl::run()
                 }
 
                 InteractiveAction* act =
-                    new InteractiveAction(this, format_string("Interctive start at %" PRI_SIMTIME, offset));
+                    new InteractiveAction(this, format_string("Interactive start at %" PRI_SIMTIME, offset));
                 act->setDeliveryTime(currentSimCycle + offset);
                 timeVortex->insert(act);
             }
