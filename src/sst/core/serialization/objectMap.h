@@ -56,7 +56,7 @@ struct ObjectMapMetaData
    to map the variables for objects.  This allows access to read and
    write the mapped variables.  ObjectMaps for fundamental types are
    templated because they need the type information embedded in the
-   code do they can read and print the values.
+   code so they can read and print the values.
  */
 class ObjectMap
 {
@@ -75,7 +75,7 @@ protected:
        be added.  The metadata contains a pointer to the parent and
        the name of this object in the context of the parent. When the
        object selects its parent, then this field is set to nullptr.
-       If this object is selected and the metadata is non a nullptr,
+       If this object is selected and the metadata is not a nullptr,
        then we have hit a loop in the data structure.
 
        Under normal circumstances, the metadata allows you to get the
@@ -382,11 +382,11 @@ public:
 
 private:
     /**
-       Called to active this ObjectMap
+       Called to activate this ObjectMap
 
        @param parent ObjectMap parent of this ObjectMap
 
-       @param name Name of this ObjectMap in the contect of the parent
+       @param name Name of this ObjectMap in the context of the parent
      */
     inline void activate(ObjectMap* parent, const std::string& name)
     {
@@ -408,7 +408,7 @@ private:
     /**
        Find a variable in this object map
 
-       @parem name Name of variable to find
+       @param name Name of variable to find
 
        @return ObjectMap representing the requested variable if it is
        found, nullptr otherwise
