@@ -24,12 +24,14 @@ namespace Serialization {
 
 class ObjectMap;
 
-// Metadata object that each ObjectMap has a pointer to in order to
-// track the hierarchy information while traversing the data
-// structures.  This is used because a given object can be pointed to
-// by multiple other objects, so we need to track the "path" through
-// which we got to the object so we can traverse back up the object
-// hierarchy.
+/**
+   Metadata object that each ObjectMap has a pointer to in order to
+   track the hierarchy information while traversing the data
+   structures.  This is used because a given object can be pointed to
+   by multiple other objects, so we need to track the "path" through
+   which we got to the object so we can traverse back up the object
+   hierarchy.
+*/
 struct ObjectMapMetaData
 {
     /**
@@ -50,13 +52,11 @@ struct ObjectMapMetaData
 };
 
 /**
-   Class created by the serializer mapping mode used to map the
-   variables for objects.  This allows access to read and write the
-   mapped variables.  The base class is used for non-fundamental and
-   non-container types, but there is a templated child class used for
-   fundameentals and containers.  The templating is needed so that the
-   type information can be embedded in the code for reading and
-   writing.
+   Base class for objects created by the serializer mapping mode used
+   to map the variables for objects.  This allows access to read and
+   write the mapped variables.  ObjectMaps for fundamental types are
+   templated because they need the type information embedded in the
+   code do they can read and print the values.
  */
 class ObjectMap
 {
@@ -73,9 +73,10 @@ protected:
        Metedata object for walking the object hierarchy.  When this
        object is selected by a parent object, a metadata object will
        be added.  The metadata contains a pointer to the parent and
-       the name of this object in the context of the parent. If this
-       object is selected and the metadata is non a nullptr, then we
-       have hit a loop in the data structure.
+       the name of this object in the context of the parent. When the
+       object selects its parent, then this field is set to nullptr.
+       If this object is selected and the metadata is non a nullptr,
+       then we have hit a loop in the data structure.
 
        Under normal circumstances, the metadata allows you to get the
        full path of the object according to how you walked the
@@ -96,6 +97,8 @@ protected:
     /**
        Function implemented by derived classes to implement set(). No
        need to check for read_only, that is done in set().
+
+       @param value Value to set the object to expressed as a string
     */
     virtual void set_impl(const std::string& UNUSED(value)) {}
 
@@ -103,9 +106,21 @@ protected:
        Function that will get called when this object is selected
      */
     virtual void activate_callback() {}
+
+    /**
+       Function that will get called when this object is de-selected
+       (i.e selectParent() is called)
+     */
     virtual void deactivate_callback() {}
 
 private:
+    /**
+       Reference counter so the object knows when to delete itself.
+       ObjectMaps should not be deleted directly, rather the
+       decRefCount() function should be called when the object is no
+       longer needed and the object will delete itself if refCount_
+       reaches 0.
+     */
     int32_t refCount_ = 1;
 
 public:
@@ -115,12 +130,29 @@ public:
     ObjectMap() {}
 
 
+    /**
+       Returns true if this ObjectMap is read-only
+
+       @return true if ObjectMap is read-only, false otherwise
+     */
     inline bool isReadOnly() { return read_only_; }
-    inline void setReadOnly() { read_only_ = true; }
+
+    /**
+       Set the read-only state of the object.  NOTE: If the ObjectMap
+       is created as read-only, setting the state back to false could
+       lead to unexpected results.  Setting the state to false should
+       only be done by the same object that set it to true.
+
+       @param state Read-only state to set this ObjectMap to.  Defaults to treu.
+     */
+    inline void setReadOnly(bool state = true) { read_only_ = state; }
 
 
     /**
-       Get the name of the variable represented by this ObjectMap
+       Get the name of the variable represented by this ObjectMap.  If
+       this ObjectMap has no metadata registered (i.e. it was not
+       selected by another ObjectMap), then an empty string will be
+       returned, since it has no name.
 
        @return Name of variable
      */
@@ -129,7 +161,10 @@ public:
 
     /**
        Get the full hierarchical name of the variable represented by
-       this ObjectMap, based on the path taken to get to this object.
+       this ObjectMap, based on the path taken to get to this
+       object. If this ObjectMap has no metadata registered (i.e. it
+       was not selected by another ObjectMap), then an empty string
+       will be returned, since it has no name.
 
        @return Full hierarchical name of variable
      */
@@ -236,7 +271,7 @@ public:
        the specified value, which is represented as a string.  The
        templated child classes for fundamentals will know how to
        convert the string to a value of the approproprite type.  NOTE:
-       this fucntion is only value for ObjectMaps that represent
+       this fucntion is only valid for ObjectMaps that represent
        fundamental types or classes treated as fundamentatl types.
 
        @param value Value to set the object to represented as a string
@@ -301,12 +336,14 @@ public:
 
 
     /**
-       Destructor
+       Destructor.  NOTE: delete should not be called directly on
+       ObjectMaps, rather devRefCount() should be called when the
+       object is no longer needed.
      */
     virtual ~ObjectMap() {}
 
     /**
-       Static function to demangle type names returned from typeid<T>.name()
+       Static function to demangle type names returned from typeid(T).name()
 
        @param name typename returned from typid<T>.name()
 
@@ -344,12 +381,22 @@ public:
 
 
 private:
+    /**
+       Called to active this ObjectMap
+
+       @param parent ObjectMap parent of this ObjectMap
+
+       @param name Name of this ObjectMap in the contect of the parent
+     */
     inline void activate(ObjectMap* parent, const std::string& name)
     {
         mdata_ = new ObjectMapMetaData(parent, name);
         activate_callback();
     }
 
+    /**
+       Deactivate this object
+     */
     inline void deactivate()
     {
         delete mdata_;
@@ -357,6 +404,15 @@ private:
         deactivate_callback();
     }
 
+
+    /**
+       Find a variable in this object map
+
+       @parem name Name of variable to find
+
+       @return ObjectMap representing the requested variable if it is
+       found, nullptr otherwise
+     */
     inline ObjectMap* findVariable(const std::string& name)
     {
         const std::vector<std::pair<std::string, ObjectMap*>>& variables = getVariables();
@@ -366,6 +422,15 @@ private:
         return nullptr;
     }
 
+    /**
+       Function called by list to recurse the object hierarchy
+
+       @param name Name of current ObjectMap
+
+       @param level Current level of recursion
+
+       @param recurse Number of levels deep to recurse
+    */
     std::string listRecursive(const std::string& name, int level, int recurse);
 };
 
@@ -382,9 +447,18 @@ protected:
      */
     std::vector<std::pair<std::string, ObjectMap*>> variables_;
 
+    /**
+       Default constructor
+     */
     ObjectMapWithChildren() : ObjectMap() {}
 
 public:
+    /**
+       Destructor.  Should not be called directly (i.e. do not call
+       delete on the object).  Call decRefCount() when object is no
+       longer needed.  This will also call decRefCount() on all its
+       children.
+     */
     ~ObjectMapWithChildren()
     {
         for ( auto obj : variables_ ) {
@@ -395,6 +469,8 @@ public:
 
     /**
        Adds a variable to this ObjectMap
+
+       @param name Name of the object in the context of this ObjectMap
 
        @param obj ObjectMap to add as a variable
      */
@@ -424,8 +500,18 @@ public:
 class ObjectMapHierarchyOnly : public ObjectMapWithChildren
 {
 public:
+    /**
+       Default constructor
+     */
     ObjectMapHierarchyOnly() : ObjectMapWithChildren() {}
 
+
+    /**
+       Destructor.  Should not be called directly (i.e. do not call
+       delete on the object).  Call decRefCount() when object is no
+       longer needed.  This will also call decRefCount() on all its
+       children.
+     */
     ~ObjectMapHierarchyOnly() {}
 
     /**
@@ -455,7 +541,7 @@ class ObjectMapClass : public ObjectMapWithChildren
 protected:
     /**
        Type of the variable as given by the demangled version of
-       typeif<T>.name() for the type.
+       typeid(T).name() for the type.
      */
     std::string type_;
 
@@ -465,14 +551,30 @@ protected:
     void* addr_ = nullptr;
 
 public:
+    /**
+       Default constructor
+     */
     ObjectMapClass() : ObjectMapWithChildren() {}
 
+    /**
+       Constructor
+
+       @param addr Address of the object represented by this ObjectMap
+
+       @param type Type of this object as return by typeid(T).name()
+     */
     ObjectMapClass(void* addr, const std::string& type) :
         ObjectMapWithChildren(),
         type_(demangle_name(type.c_str())),
         addr_(addr)
     {}
 
+    /**
+       Destructor.  Should not be called directly (i.e. do not call
+       delete on the object).  Call decRefCount() when object is no
+       longer needed.  This will also call decRefCount() on all its
+       children.
+     */
     ~ObjectMapClass() {}
 
     /**
@@ -492,10 +594,14 @@ public:
 
 
 /**
-   ObjectMap object fundamental types, and classes treated as
+   ObjectMap representing fundamental types, and classes treated as
    fundamental types.  In order for an object to be treated as a
    fundamental, it must be printable using std::to_string() and
-   assignable using SST::Core::from_string().
+   assignable using SST::Core::from_string(). If this is not true, it
+   is possible to create a template specialization for the type
+   desired to be treated as a fundamental.  The specialiation will
+   need to provide the functions for getting and setting the values as
+   a string.
 */
 template <typename T>
 class ObjectMapFundamental : public ObjectMap
@@ -507,9 +613,25 @@ protected:
     T* addr_ = nullptr;
 
 public:
+    /**
+       Get the value of the object as a string
+     */
     virtual std::string get() override { return std::to_string(*addr_); }
-    virtual void        set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
+    /**
+       Set the value of the object represented as a string
+
+       @param value Value to set the underlying object to represented
+       as a string
+     */
+    virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
+
+
+    /**
+       Returns true as object is a fundamental
+
+       @return true
+     */
     bool isFundamental() override { return true; }
 
     /**
@@ -532,8 +654,20 @@ public:
 
     ObjectMapFundamental(T* addr) : ObjectMap(), addr_(addr) {}
 
+    /**
+       Destructor.  Should not be called directly (i.e. do not call
+       delete on the object).  Call decRefCount() when object is no
+       longer needed.  This will also call decRefCount() on all its
+       children.
+     */
     ~ObjectMapFundamental() {}
 
+    /**
+       Return the type represented by this ObjectMap as given by the
+       demangled version of typeid(T).name()
+
+       @return type of underlying object
+     */
     std::string getType() override { return demangle_name(typeid(T).name()); }
 };
 

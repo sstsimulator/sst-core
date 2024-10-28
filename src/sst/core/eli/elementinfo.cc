@@ -15,6 +15,10 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 namespace SST {
 
 /**************************************************************************
@@ -128,7 +132,7 @@ void
 ProvidesParams::init()
 {
     for ( auto& item : params_ ) {
-        allowedKeys.insert(item.name);
+        allowedKeys.push_back(item.name);
     }
 }
 

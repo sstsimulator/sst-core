@@ -13,7 +13,6 @@
 #define SST_CORE_PARAM_H
 
 #include "sst/core/from_string.h"
-#include "sst/core/output.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/threadsafe.h"
@@ -34,6 +33,7 @@ namespace SST {
 
 class ConfigGraph;
 class ConfigComponent;
+class Output;
 class SSTModelDescription;
 
 namespace Core {
@@ -834,7 +834,7 @@ public:
      * @param keys   Set of keys to consider valid to add to the stack
      *               of legal keys
      */
-    void pushAllowedKeys(const KeySet_t& keys);
+    void pushAllowedKeys(const std::vector<std::string>& keys);
 
     /**
      * Removes the most recent set of keys considered allowed

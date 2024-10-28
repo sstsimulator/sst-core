@@ -12,6 +12,9 @@
 #ifndef SST_CORE_ELI_INTERFACE_INFO_H
 #define SST_CORE_ELI_INTERFACE_INFO_H
 
+#include <iostream>
+#include <string>
+
 namespace SST {
 namespace ELI {
 

@@ -13,6 +13,8 @@
 
 #include "sst/core/sstpart.h"
 
+#include "sst/core/output.h"
+
 namespace SST {
 namespace Partition {
 

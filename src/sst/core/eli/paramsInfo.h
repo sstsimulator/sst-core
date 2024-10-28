@@ -13,7 +13,6 @@
 #define SST_CORE_ELI_PARAMS_INFO_H
 
 #include "sst/core/eli/elibase.h"
-#include "sst/core/params.h"
 
 #include <string>
 #include <vector>
@@ -62,7 +61,7 @@ public:
         }
     }
 
-    const Params::KeySet_t& getParamNames() const { return allowedKeys; }
+    const std::vector<std::string>& getParamNames() const { return allowedKeys; }
 
 protected:
     template <class T>
@@ -74,7 +73,7 @@ protected:
 private:
     void init();
 
-    Params::KeySet_t              allowedKeys;
+    std::vector<std::string>      allowedKeys;
     std::vector<ElementInfoParam> params_;
 };
 
