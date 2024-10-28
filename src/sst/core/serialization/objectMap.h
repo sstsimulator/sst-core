@@ -70,7 +70,7 @@ protected:
     static std::vector<std::pair<std::string, ObjectMap*>> emptyVars;
 
     /**
-       Metedata object for walking the object hierarchy.  When this
+       Metadata object for walking the object hierarchy.  When this
        object is selected by a parent object, a metadata object will
        be added.  The metadata contains a pointer to the parent and
        the name of this object in the context of the parent. When the
@@ -89,14 +89,14 @@ protected:
 
 
     /**
-       Indicates wheter or not the variable is read-only
+       Indicates whether or not the variable is read-only
      */
     bool read_only_ = false;
 
 
     /**
        Function implemented by derived classes to implement set(). No
-       need to check for read_only, that is done in set().
+       need to check for read-only, that is done in set().
 
        @param value Value to set the object to expressed as a string
     */
@@ -108,7 +108,7 @@ protected:
     virtual void activate_callback() {}
 
     /**
-       Function that will get called when this object is de-selected
+       Function that will get called when this object is deactivated
        (i.e selectParent() is called)
      */
     virtual void deactivate_callback() {}
@@ -131,7 +131,7 @@ public:
 
 
     /**
-       Returns true if this ObjectMap is read-only
+       Check to see if this object is read-only
 
        @return true if ObjectMap is read-only, false otherwise
      */
@@ -143,7 +143,7 @@ public:
        lead to unexpected results.  Setting the state to false should
        only be done by the same object that set it to true.
 
-       @param state Read-only state to set this ObjectMap to.  Defaults to treu.
+       @param state Read-only state to set this ObjectMap to.  Defaults to true.
      */
     inline void setReadOnly(bool state = true) { read_only_ = state; }
 
@@ -181,7 +181,7 @@ public:
     /**
        Get the address of the variable represented by the ObjectMap
 
-       @return Address of varaible
+       @return Address of variable
      */
     virtual void* getAddr() = 0;
 
@@ -197,12 +197,15 @@ public:
 
 
     /**
-       Increament the reference counter for this object map
+       Increment the reference counter for this ObjectMap. When
+       keeping a pointer to the ObjectMap, incRefCount() should be
+       called to indicate usage.  When done, call decRefCount() to
+       indicate it is no longer needed.
      */
     void incRefCount() { refCount_++; }
 
     /**
-       Decreament the reference counter for this object map.  If this
+       Decrement the reference counter for this ObjectMap.  If this
        reference count reaches zero, the object will delete itself.
        NOTE: delete should not be called directly on this object and
        should only be done automatically using decRefCount().
@@ -244,7 +247,7 @@ public:
 
 
     /**
-       Adds a varaible to this ObjectMap.  NOTE: calls to this
+       Adds a variable to this ObjectMap.  NOTE: calls to this
        function will be ignore if isFundamental() returns true.
 
        @param name Name of the object in the context of the parent class
@@ -260,7 +263,8 @@ public:
     /**
        Get the value of the variable as a string.  NOTE: this function
        is only valid for ObjectMaps that represent fundamental types
-       or classes treated as fundamental types.
+       or classes treated as fundamental types (i.e. isFundamental()
+       returns true).
 
        @return Value of the represented variable as a string
      */
@@ -271,10 +275,11 @@ public:
        the specified value, which is represented as a string.  The
        templated child classes for fundamentals will know how to
        convert the string to a value of the approproprite type.  NOTE:
-       this fucntion is only valid for ObjectMaps that represent
-       fundamental types or classes treated as fundamentatl types.
+       this function is only valid for ObjectMaps that represent
+       fundamental types or classes treated as fundamentatl types
+       (i.e. isFundamental() returns true).
 
-       @param value Value to set the object to represented as a string
+       @param value Value to set the object to, represented as a string
 
     */
     void set(const std::string& value)
@@ -293,7 +298,8 @@ public:
 
        @param var Name of variable
 
-       @return Value of the specified variable as a string
+       @return Value of the specified variable, represented as a
+       string
      */
     virtual std::string get(const std::string& var);
 
@@ -301,16 +307,16 @@ public:
        Sets the value of the specified variable to the specified
        value, which is represented as a string.  The templated child
        classes for fundamentals will know how to convert the string to
-       a value of the approproprite type.  NOTE: this fucntion is only
-       valuid for ObjectMaps that represent non-fundamental types or
+       a value of the approproprite type.  NOTE: this function is only
+       valid for ObjectMaps that represent non-fundamental types or
        classes not treated as fundamentatl types (i.e. they must have
-       childrent).
+       children).
 
        @param var Name of variable
 
        @param value Value to set var to represented as a string
 
-       @param[out] found Set to true if  var is found, set to false otherwise
+       @param[out] found Set to true if var is found, set to false otherwise
 
        @param[out] read_only Set to true if var is read-only, set to false otherwise
 
@@ -337,7 +343,7 @@ public:
 
     /**
        Destructor.  NOTE: delete should not be called directly on
-       ObjectMaps, rather devRefCount() should be called when the
+       ObjectMaps, rather decRefCount() should be called when the
        object is no longer needed.
      */
     virtual ~ObjectMap() {}
@@ -345,7 +351,7 @@ public:
     /**
        Static function to demangle type names returned from typeid(T).name()
 
-       @param name typename returned from typid<T>.name()
+       @param name typename returned from typeid(T).name()
 
        @return demangled name
      */
@@ -354,13 +360,14 @@ public:
     /**
        Create a string that lists information for the specified
        variable.  This will list all child variables, including the
-       values for any children that are fundamentals.
+       values for any children that are fundamentals, up to the
+       specified recursion depth.
 
-       @param name name of variable to list
+       @param name Name of variable to list
 
        @param[out] found Set to true if variable is found, set to false otherwise
 
-       @param recurse number of levels to recurse (default is 0)
+       @param recurse Number of levels to recurse (default is 0)
 
        @return String representing this object and any children
        included based on the value of recurse
@@ -370,9 +377,10 @@ public:
     /**
        Create a string that lists information for the current object.
        This will list all child variables, including the values for
-       any children that are fundamentals.
+       any children that are fundamentals, up to the specified
+       recursion depth.
 
-       @param recurse number of levels to recurse (default is 0)
+       @param recurse Number of levels to recurse (default is 0)
 
        @return String representing this object and any children
        included based on the value of recurse
@@ -382,7 +390,8 @@ public:
 
 private:
     /**
-       Called to activate this ObjectMap
+       Called to activate this ObjectMap.  This will create the
+       metadata object and call activate_callback().
 
        @param parent ObjectMap parent of this ObjectMap
 
@@ -395,7 +404,8 @@ private:
     }
 
     /**
-       Deactivate this object
+       Deactivate this object.  This will remove and delete the
+       metadata and call deactivate_callback().
      */
     inline void deactivate()
     {
@@ -483,9 +493,10 @@ public:
     /**
        Get the list of child variables contained in this ObjectMap
 
-       @return Refernce to vector containing ObjectMaps for this
+       @return Reference to vector containing ObjectMaps for this
        ObjectMap's child variables. pair.first is the name of the
-       variable in the context of this object.
+       variable in the context of this object. pair.second is a
+       pointer to the ObjectMap.
      */
     const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return variables_; }
 };
@@ -599,7 +610,7 @@ public:
    fundamental, it must be printable using std::to_string() and
    assignable using SST::Core::from_string(). If this is not true, it
    is possible to create a template specialization for the type
-   desired to be treated as a fundamental.  The specialiation will
+   desired to be treated as a fundamental.  The specialization will
    need to provide the functions for getting and setting the values as
    a string.
 */
@@ -621,7 +632,7 @@ public:
     /**
        Set the value of the object represented as a string
 
-       @param value Value to set the underlying object to represented
+       @param value Value to set the underlying object to, represented
        as a string
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
@@ -637,7 +648,7 @@ public:
     /**
        Get the address of the variable represented by the ObjectMap
 
-       @return Address of varaible
+       @return Address of variable
      */
     void* getAddr() override { return addr_; }
 
