@@ -32,6 +32,7 @@
 #include <dlfcn.h>
 #include <getopt.h>
 #include <list>
+#include <string>
 #include <sys/stat.h>
 
 using namespace std;
@@ -88,6 +89,7 @@ retry:
     owner->LinkEndChild(comment);
 }
 
+namespace impl {
 /** Trim whitespace from strings */
 inline std::string
 trim(std::string s)
@@ -96,6 +98,7 @@ trim(std::string s)
     s.erase(s.find_last_not_of(" \t\n\r\f\v") + 1);
     return s;
 }
+} // namespace impl
 
 class OverallOutputter
 {
@@ -900,7 +903,7 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                 std::string        temp;
                 std::istringstream stream(mapTag);
                 std::getline(stream, temp, '(');
-                std::string infoTag = trim(temp);
+                std::string infoTag = impl::trim(temp);
 
                 // Search for correct tag
                 if ( infoTag == tag ) {

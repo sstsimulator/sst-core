@@ -54,12 +54,12 @@ public:
         Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
-        Params::KeySet_t allowedKeySet;
-        allowedKeySet.insert("minvalue");
-        allowedKeySet.insert("binwidth");
-        allowedKeySet.insert("numbins");
-        allowedKeySet.insert("dumpbinsonoutput");
-        allowedKeySet.insert("includeoutofbounds");
+        std::vector<std::string> allowedKeySet;
+        allowedKeySet.push_back("minvalue");
+        allowedKeySet.push_back("binwidth");
+        allowedKeySet.push_back("numbins");
+        allowedKeySet.push_back("dumpbinsonoutput");
+        allowedKeySet.push_back("includeoutofbounds");
         statParams.pushAllowedKeys(allowedKeySet);
 
         // Process the Parameters

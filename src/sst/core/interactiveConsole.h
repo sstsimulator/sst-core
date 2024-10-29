@@ -26,6 +26,7 @@
 
 namespace SST {
 
+class Params;
 class Simulation_impl;
 class TimeConverter;
 

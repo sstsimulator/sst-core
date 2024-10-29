@@ -14,6 +14,7 @@
 
 #include "sst/core/params.h"
 
+#include "sst/core/output.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <map>
@@ -223,9 +224,13 @@ Params::contains(const key_type& k) const
 }
 
 void
-Params::pushAllowedKeys(const KeySet_t& keys)
+Params::pushAllowedKeys(const std::vector<std::string>& keys)
 {
-    allowedKeys.push_back(keys);
+    KeySet_t key_set;
+    for ( auto x : keys ) {
+        key_set.insert(x);
+    }
+    allowedKeys.push_back(key_set);
 }
 
 void
