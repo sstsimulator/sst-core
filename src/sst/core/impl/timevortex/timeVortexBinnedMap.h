@@ -12,6 +12,8 @@
 #ifndef SST_CORE_IMPL_TIMEVORTEX_TIMEVORTEXBINNEDMAP_H
 #define SST_CORE_IMPL_TIMEVORTEX_TIMEVORTEXBINNEDMAP_H
 
+#include "sst/core/threadsafe.h"
+
 #include <atomic>
 #include <queue>
 #include <sst/core/timeVortex.h>

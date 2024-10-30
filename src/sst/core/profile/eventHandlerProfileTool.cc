@@ -14,6 +14,7 @@
 #include "sst/core/profile/eventHandlerProfileTool.h"
 
 #include "sst/core/output.h"
+#include "sst/core/params.h"
 #include "sst/core/sst_types.h"
 
 #include <chrono>

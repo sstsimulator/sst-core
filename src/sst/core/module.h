@@ -16,6 +16,9 @@
 #include "sst/core/serialization/serializable.h"
 
 namespace SST {
+
+class Params;
+
 /**
    Module is a tag class used with the loadModule function.
  */

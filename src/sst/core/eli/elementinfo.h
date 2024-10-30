@@ -24,7 +24,6 @@
 #include "sst/core/eli/simpleInfo.h"
 #include "sst/core/eli/statsInfo.h"
 #include "sst/core/eli/subcompSlotInfo.h"
-#include "sst/core/params.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 

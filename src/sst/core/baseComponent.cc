@@ -106,8 +106,7 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc)
 void
 BaseComponent::pushValidParams(Params& params, const std::string& type)
 {
-    const Params::KeySet_t& keyset = Factory::getFactory()->getParamNames(type);
-    params.pushAllowedKeys(keyset);
+    params.pushAllowedKeys(Factory::getFactory()->getParamNames(type));
 }
 
 void
@@ -790,12 +789,12 @@ void
 BaseComponent::configureAllowedStatParams(SST::Params& params)
 {
     // Identify what keys are Allowed in the parameters
-    Params::KeySet_t allowedKeySet;
-    allowedKeySet.insert("type");
-    allowedKeySet.insert("rate");
-    allowedKeySet.insert("startat");
-    allowedKeySet.insert("stopat");
-    allowedKeySet.insert("resetOnRead");
+    std::vector<std::string> allowedKeySet;
+    allowedKeySet.push_back("type");
+    allowedKeySet.push_back("rate");
+    allowedKeySet.push_back("startat");
+    allowedKeySet.push_back("stopat");
+    allowedKeySet.push_back("resetOnRead");
     params.pushAllowedKeys(allowedKeySet);
 }
 

@@ -13,6 +13,7 @@
 #define SST_CORE_IMPL_TIMEVORTEX_TIMEVORTEXPQ_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/threadsafe.h"
 #include "sst/core/timeVortex.h"
 
 #include <functional>

@@ -12,6 +12,8 @@
 #ifndef SST_CORE_ELI_DEFAULTINFO_H
 #define SST_CORE_ELI_DEFAULTINFO_H
 
+#include "sst/core/eli/elibase.h"
+
 #include <string>
 #include <vector>
 

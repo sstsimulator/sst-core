@@ -13,6 +13,7 @@
 #define SST_CORE_MODEL_SSTMODEL_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/params.h"
 #include "sst/core/warnmacros.h"
 
 namespace SST {
