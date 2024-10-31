@@ -513,7 +513,7 @@ class SSTTextTestResult(unittest.TestResult):
 ####
 
     def _is_test_of_type_ssttestcase(self, test):
-        """ Detirmine if this is is within a valid SSTTestCase object by
+        """ Determine if this is is within a valid SSTTestCase object by
             checking if a unique SSTTestCase function exists
             return: True if this is a test within a valid SSTTestCase object
         """
