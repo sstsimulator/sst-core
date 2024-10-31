@@ -23,7 +23,7 @@ num_routers = x_size * y_size
         
 # Set up a map of links with accessor
 links = dict()
-def getLink(leftName, rightName):
+def getLink(leftName: str, rightName: str) -> sst.Link:
     name = "link_%s_%s"%(leftName, rightName)
     if name not in links:
         links[name] = sst.Link(name)
