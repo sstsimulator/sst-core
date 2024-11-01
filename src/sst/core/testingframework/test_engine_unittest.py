@@ -513,7 +513,7 @@ class SSTTextTestResult(unittest.TestResult):
 ####
 
     def _is_test_of_type_ssttestcase(self, test):
-        """ Detirmine if this is is within a valid SSTTestCase object by
+        """ Determine if this is is within a valid SSTTestCase object by
             checking if a unique SSTTestCase function exists
             return: True if this is a test within a valid SSTTestCase object
         """
@@ -673,7 +673,7 @@ class SSTTestSuiteResultData:
         self._tests_passing: List[SSTTestCase] = []
         self._tests_failing: List[SSTTestCase] = []
         self._tests_errored: List[SSTTestCase] = []
-        self._tests_skiped: List[SSTTestCase] = []
+        self._tests_skipped: List[SSTTestCase] = []
         self._tests_expectedfailed: List[SSTTestCase] = []
         self._tests_unexpectedsuccess: List[SSTTestCase] = []
 
@@ -691,7 +691,7 @@ class SSTTestSuiteResultData:
 
     def add_skip(self, test: SSTTestCase) -> None:
         """ Add a test to the skip record"""
-        self._tests_skiped.append(test)
+        self._tests_skipped.append(test)
 
     def add_expected_failure(self, test: SSTTestCase) -> None:
         """ Add a test to the expected failure record"""
@@ -713,9 +713,9 @@ class SSTTestSuiteResultData:
         """ Return the tests errored list"""
         return self._tests_errored
 
-    def get_skiped(self) -> List[SSTTestCase]:
+    def get_skipped(self) -> List[SSTTestCase]:
         """ Return the tests skipped list"""
-        return self._tests_skiped
+        return self._tests_skipped
 
     def get_expectedfailed(self) -> List[SSTTestCase]:
         """ Return the expected failed list"""
@@ -768,7 +768,7 @@ class SSTTestSuitesResultsDict:
                 log(" - FAILED  : {0}".format(testname))
             for testname in self.testsuitesresultsdict[tmtc_name].get_errored():
                 log(" - ERROR   : {0}".format(testname))
-            for testname in self.testsuitesresultsdict[tmtc_name].get_skiped():
+            for testname in self.testsuitesresultsdict[tmtc_name].get_skipped():
                 log(" - SKIPPED : {0}".format(testname))
             for testname in self.testsuitesresultsdict[tmtc_name].get_expectedfailed():
                 log(" - EXPECTED FAILED    : {0}".format(testname))
