@@ -1016,18 +1016,24 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
     if ( lib ) {
         // Only print if there is something of that type in the library
         if ( lib->numEntries() != 0 ) {
-            os << BaseType::ELI_baseName() << "s (" << lib->numEntries() << " total)\n";
+            os << BaseType::ELI_baseName() << "s (" << lib->numEntries(true) << " total)\n";
             int idx = 0;
             // lib->getMap returns a map<string, BaseInfo*>.  BaseInfo is
             // actually a Base::BuilderInfo and the implementation is in
             // BuildInfoImpl
             for ( auto& pair : lib->getMap() ) {
-                bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
+                // Need to skip aliases, unless it was specifically
+                // called out (this will be the case if printAll is
+                // false, but shouldPrintElement() is true)
+                bool is_alias = (pair.second->getAlias() == pair.first);
+                bool print    = (!is_alias && printAll) ||
+                             (is_alias && !printAll && shouldPrintElement(getLibraryName(), pair.first));
+
                 if ( print ) {
                     os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
                     if ( g_configuration.doVerbose() ) pair.second->toString(os);
                 }
-                ++idx;
+                if ( print ) ++idx;
                 if ( print ) os << std::endl;
             }
         }
@@ -1066,9 +1072,11 @@ SSTLibraryInfo::outputXML(TiXmlElement* XMLLibraryElement)
         for ( auto& pair : lib->getMap() ) {
             TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
             XMLElement->SetAttribute("Index", idx);
-            pair.second->outputXML(XMLElement);
-            XMLLibraryElement->LinkEndChild(XMLElement);
-            idx++;
+            if ( pair.first != pair.second->getAlias() ) {
+                pair.second->outputXML(XMLElement);
+                XMLLibraryElement->LinkEndChild(XMLElement);
+                idx++;
+            }
         }
     }
     else {

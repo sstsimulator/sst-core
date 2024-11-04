@@ -148,7 +148,8 @@ public:
     /**
        @return A boolean indicated successfully added
     */
-    static bool addLoader(const std::string& lib, const std::string& name, LibraryLoader* loader);
+    static bool
+    addLoader(const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader);
 
     static const LibraryMap& getLoaders();
 
