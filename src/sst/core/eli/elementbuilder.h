@@ -61,6 +61,12 @@ public:
         return addLoader(name_, elem, alias, fact);
     }
 
+    bool addBuilder(const std::string& elem, BaseBuilder* fact)
+    {
+        readdBuilder(elem, "", fact);
+        return addLoader(name_, elem, "", fact);
+    }
+
     template <class NewBase>
     using ChangeBase = BuilderLibrary<NewBase, CtorArgs...>;
 

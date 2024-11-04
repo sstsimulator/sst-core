@@ -20,18 +20,6 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
-struct GetAlias
-{
-    static std::string get() { return ""; }
-};
-
-template <class T>
-struct GetAlias<T, typename MethodDetect<decltype(T::ELI_getAlias())>::type>
-{
-    static std::string get() { return T::ELI_getAlias(); }
-};
-
 class ProvidesDefaultInfo
 {
     friend class ModuleDocOldEli;
