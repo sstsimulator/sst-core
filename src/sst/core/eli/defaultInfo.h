@@ -32,6 +32,7 @@ public:
     const std::string&      getCompileFile() const { return file_; }
     const std::string&      getCompileDate() const { return date_; }
     const std::vector<int>& getELICompiledVersion() const;
+    const std::string&      getAlias() const { return alias_; }
 
     std::string getELIVersionString() const;
 
@@ -40,6 +41,7 @@ public:
     template <class XMLNode>
     void outputXML(XMLNode* node) const
     {
+        if ( !getAlias().empty() ) node->SetAttribute("Alias", getAlias().c_str());
         node->SetAttribute("Name", getName().c_str());
         node->SetAttribute("Description", getDescription().c_str());
     }
@@ -51,7 +53,8 @@ public:
         desc_(T::ELI_getDescription()),
         version_(T::ELI_getVersion()),
         file_(T::ELI_getCompileFile()),
-        date_(T::ELI_getCompileDate())
+        date_(T::ELI_getCompileDate()),
+        alias_(GetAlias<T>::get())
     {}
 
 protected:
@@ -67,6 +70,7 @@ private:
     std::string      file_;
     std::string      date_;
     std::vector<int> compiled_;
+    std::string      alias_;
 };
 
 } // namespace ELI
@@ -100,5 +104,8 @@ private:
     {                                \
         __VA_ARGS__                  \
     }
+
+#define SST_ELI_REGISTER_ALIAS(alias) \
+    static std::string ELI_getAlias() { return alias; }
 
 #endif // SST_CORE_ELI_DEFAULTINFO_H

@@ -237,6 +237,8 @@ public:
         SST::CoreTestSubComponent::SubCompSendRecvInterface
     )
 
+    SST_ELI_REGISTER_ALIAS("SubCompSender_alias")
+
     SST_ELI_DOCUMENT_PARAMS(
     )
 
