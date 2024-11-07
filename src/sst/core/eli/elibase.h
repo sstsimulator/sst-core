@@ -148,13 +148,29 @@ public:
     /**
        @return A boolean indicated successfully added
     */
-    static bool addLoader(const std::string& lib, const std::string& name, LibraryLoader* loader);
+    static bool
+    addLoader(const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader);
 
     static const LibraryMap& getLoaders();
 
 private:
     static std::unique_ptr<LibraryMap> loaders_;
 };
+
+// Template used to get aliases.  Needed because the ELI_getAlias()
+// function may not exist.
+template <class T, class Enable = void>
+struct GetAlias
+{
+    static std::string get() { return ""; }
+};
+
+template <class T>
+struct GetAlias<T, typename MethodDetect<decltype(T::ELI_getAlias())>::type>
+{
+    static std::string get() { return T::ELI_getAlias(); }
+};
+
 
 } // namespace ELI
 } // namespace SST
