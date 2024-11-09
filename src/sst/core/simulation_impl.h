@@ -16,6 +16,7 @@
 
 #include "sst/core/clock.h"
 #include "sst/core/componentInfo.h"
+#include "sst/core/exit.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/output.h"
 #include "sst/core/profile/profiletool.h"
@@ -243,7 +244,7 @@ public:
         if ( nullptr != i ) { return i->getComponent(); }
         else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
-            exit(1);
+            SST_Exit(1);
         }
     }
 
@@ -255,7 +256,7 @@ public:
         if ( nullptr != i ) { return i; }
         else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
-            exit(1);
+            SST_Exit(1);
         }
     }
 
