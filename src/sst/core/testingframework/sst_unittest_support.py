@@ -1311,10 +1311,10 @@ class RemoveRegexFromLineFilter(LineFilter):
             Returns:
                 text from line minus any text that matched the regular expression
         """
-        match = re.search(self.regex, line)
-        while match:
-            line = line[:match.start()] + line[match.end():]
-            match = re.search(self.regex, line)
+        mtch = re.search(self.regex, line)
+        while mtch:
+            line = line[: mtch.start()] + line[mtch.end() :]
+            mtch = re.search(self.regex, line)
 
         return line
 
