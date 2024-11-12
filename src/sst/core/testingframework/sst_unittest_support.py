@@ -1347,7 +1347,7 @@ def testing_compare_filtered_diff(
     outfile: str,
     reffile: str,
     sort: bool = False,
-    filters: List[LineFilter] = list(),
+    filters: Union[LineFilter, List[LineFilter]] = list(),
     do_statistics_comparison: bool = False,
 ) -> bool:
     """Filter, optionally sort and then compare 2 files for a difference.
@@ -1369,8 +1369,6 @@ def testing_compare_filtered_diff(
     check_param_type("test_name", test_name, str)
     check_param_type("outfile", outfile, str)
     check_param_type("reffile", reffile, str)
-
-    # Handle callers that violate the type annotation.
     if isinstance(filters, LineFilter):
         filters = [filters]
     check_param_type("filters", filters, list)
@@ -1458,7 +1456,7 @@ def testing_compare_sorted_diff(test_name: str, outfile: str, reffile: str) -> b
 
 
 def testing_compare_filtered_subset(
-    outfile: str, reffile: str, filters: List[LineFilter] = list()
+    outfile: str, reffile: str, filters: Union[LineFilter, List[LineFilter]] = list()
 ) -> bool:
     """Filter, and then determine if outfile is a subset of reffile
 
@@ -1476,8 +1474,6 @@ def testing_compare_filtered_subset(
 
     check_param_type("outfile", outfile, str)
     check_param_type("reffile", reffile, str)
-
-    # Handle callers that violate the type annotation.
     if isinstance(filters, LineFilter):
         filters = [filters]
     check_param_type("filters", filters, list)
