@@ -1490,41 +1490,12 @@ def testing_compare_filtered_subset(
         log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
         return False
 
-    # Read in the output file and filter
-    with open(outfile) as fp:
-        for filter in filters:
-            filter.reset()
-        out_lines = []
-        for line in fp:
-            filt_line = line
-            for filter in filters:
-                filt_line = filter.filter(filt_line)
-                if not filt_line:
-                    break;
-
-            if filt_line:
-                out_lines.append(filt_line)
-
-    # Read in the reference file and filter
-    with open(reffile) as fp:
-        for filter in filters:
-            filter.reset()
-        ref_lines = []
-        for line in fp:
-            filt_line = line
-            for filter in filters:
-                filt_line = filter.filter(filt_line)
-                if not filt_line:
-                    break;
-
-            if filt_line:
-                ref_lines.append(filt_line)
+    # Read in the output and reference files and filter them
+    out_lines = _read_and_filter(outfile, filters, sort=False)
+    ref_lines = _read_and_filter(reffile, filters, sort=False)
 
     # Determine whether subset holds
-    if set(out_lines).issubset(set(ref_lines)):
-        return True
-    else:
-        return False
+    return set(out_lines).issubset(set(ref_lines))
 
 
 ###
