@@ -1874,14 +1874,8 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
 ################################################################################
 
 def _get_linux_distribution() -> Tuple[str, str]:
-    """ Return the linux distribution info as a tuple"""
-    # The method linux_distribution is depricated in deprecated in Py3.5
-    _linux_distribution = getattr(platform, 'linux_distribution', None)
-        # This is the easy method for Py2 - p3.7.
-    if _linux_distribution is not None:
-        return _linux_distribution()
-
-    # We need to do this the hard way, NOTE: order of checking is important
+    """Return the linux distribution info as a tuple"""
+    # NOTE: order of checking is important
     distname = "undefined"
     distver = "undefined"
     if os.path.isfile("/etc/toss-release"):
