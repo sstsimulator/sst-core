@@ -1072,7 +1072,7 @@ def testing_parse_stat(line: str) -> Optional[List[Union[str, int, float]]]:
     """
     cons_accum = re.compile(r' ([\w.]+)\.(\w+) : Accumulator : Sum.(\w+) = ([\d.]+); SumSQ.\w+ = ([\d.]+); Count.\w+ = ([\d.]+); Min.\w+ = ([\d.]+); Max.\w+ = ([\d.]+);')
     m = cons_accum.match(line)
-    if m == None:
+    if m is None:
         return None
 
     stat = [m.group(1), m.group(2)]
@@ -1131,7 +1131,7 @@ def testing_stat_output_diff(
         for line in lines:
             if not any(x in line for x in ignore_lines):
                 stat = testing_parse_stat(line)
-                if stat != None:
+                if stat is not None:
                     ref_stats.append(stat)
                 else:
                     ref_lines.append(line)
@@ -1142,7 +1142,7 @@ def testing_stat_output_diff(
         for line in lines:
             if not any(x in line for x in ignore_lines):
                 stat = testing_parse_stat(line)
-                if stat == None: # Not a statistic
+                if stat is None:  # Not a statistic
                     if line not in ref_lines:
                         out_lines.append(line)
                     else:
