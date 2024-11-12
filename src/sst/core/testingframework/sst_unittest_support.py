@@ -26,7 +26,7 @@ import tarfile
 import shutil
 import difflib
 import configparser
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type, Tuple, Union
+from typing import Any, Callable, List, Mapping, Optional, Sequence, Type, TypeVar, Tuple, Union
 
 import test_engine_globals
 from test_engine_support import OSCommand
@@ -57,7 +57,7 @@ pin_exec_path = ""
 class SSTTestCaseException(Exception):
     """ Generic Exception support for SSTTestCase
     """
-    def __init__(self, value: Exception) -> None:
+    def __init__(self, value: Union[Exception, str]) -> None:
         super(SSTTestCaseException, self).__init__(value)
         self.value = value
     def __str__(self) -> str:
@@ -411,7 +411,11 @@ def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> 
 # SST Core Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
 
-def sst_core_config_include_file_get_value_int(define: str, default: int = None, disable_warning: bool = False) -> int:
+def sst_core_config_include_file_get_value_int(
+    define: str,
+    default: Optional[int] = None,
+    disable_warning: bool = False,
+) -> int:
     """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
         Args:
@@ -428,14 +432,20 @@ def sst_core_config_include_file_get_value_int(define: str, default: int = None,
     """
     warn("sst_core_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
          Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
-                                              "sst_config.h", define, default, int, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+        include_source="sst_config.h",
+        define=define,
+        default=default,
+        data_type=int,
+        disable_warning=disable_warning,
+    )
 
 ###
 
 def sst_core_config_include_file_get_value_str(
     define: str,
-    default: str = None,
+    default: Optional[str] = None,
     disable_warning: bool = False,
 ) -> str:
     """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
@@ -454,17 +464,26 @@ def sst_core_config_include_file_get_value_str(
     """
     warn("sst_core_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
          Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
-                                              "sst_config.h", define, default, str, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+        include_source="sst_config.h",
+        define=define,
+        default=default,
+        data_type=str,
+        disable_warning=disable_warning,
+    )
 
 ###
 
+T_include = TypeVar("T_include", str, int)
+
+
 def sst_core_config_include_file_get_value(
     define: str,
-    type: Type,
-    default: Any = None,
+    type: Type[T_include],
+    default: Optional[T_include] = None,
     disable_warning: bool = False,
-) -> Any:
+) -> T_include:
     """Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
     Args:
@@ -476,8 +495,15 @@ def sst_core_config_include_file_get_value(
     Returns:
         Value for specified define
     """
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
-                                              "sst_config.h", define, default, type, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+        include_source="sst_config.h",
+        define=define,
+        default=default,
+        data_type=type,
+        disable_warning=disable_warning,
+    )
+
 
 ################################################################################
 # SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
@@ -485,7 +511,7 @@ def sst_core_config_include_file_get_value(
 
 def sst_elements_config_include_file_get_value_int(
     define: str,
-    default: int = None,
+    default: Optional[int] = None,
     disable_warning: bool = False,
 ) -> int:
     """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
@@ -504,14 +530,20 @@ def sst_elements_config_include_file_get_value_int(
     """
     warn("sst_elements_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
          Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
-                                              "sst_element_config.h", define, default, int, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+        include_source="sst_element_config.h",
+        define=define,
+        default=default,
+        data_type=int,
+        disable_warning=disable_warning,
+    )
 
 ###
 
 def sst_elements_config_include_file_get_value_str(
     define: str,
-    default: str = None,
+    default: Optional[str] = None,
     disable_warning: bool = False,
 ) -> str:
     """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
@@ -530,17 +562,23 @@ def sst_elements_config_include_file_get_value_str(
     """
     warn("sst_elements_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
          Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
-                                              "sst_element_config.h", define, default, str, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+        include_source="sst_element_config.h",
+        define=define,
+        default=default,
+        data_type=str,
+        disable_warning=disable_warning,
+    )
 
 ###
 
 def sst_elements_config_include_file_get_value(
     define: str,
-    type: Type,
-    default: Any = None,
-    disable_warning: bool = False
-) -> Any:
+    type: Type[T_include],
+    default: Optional[T_include] = None,
+    disable_warning: bool = False,
+) -> T_include:
     """Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
 
     Args:
@@ -552,14 +590,21 @@ def sst_elements_config_include_file_get_value(
     Returns:
         Value for specified define
     """
-    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
-                                              "sst_element_config.h", define, default, type, disable_warning)
+    return _get_sst_config_include_file_value(
+        include_dict=test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+        include_source="sst_element_config.h",
+        define=define,
+        default=default,
+        data_type=type,
+        disable_warning=disable_warning,
+    )
+
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
 
-def sstsimulator_conf_get_value_str(section: str, key: str, default: str = None) -> str:
+def sstsimulator_conf_get_value_str(section: str, key: str, default: Optional[str] = None) -> str:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -575,11 +620,11 @@ def sstsimulator_conf_get_value_str(section: str, key: str, default: str = None)
     """
     warn("sstsimulator_conf_get_value_str() is deprecated and will be removed in future versions of SST. \
          Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section, key, default, str)
+    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=str)
 
 ###
 
-def sstsimulator_conf_get_value_int(section: str, key: str, default: int = None) -> int:
+def sstsimulator_conf_get_value_int(section: str, key: str, default: Optional[int] = None) -> int:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -595,11 +640,13 @@ def sstsimulator_conf_get_value_int(section: str, key: str, default: int = None)
     """
     warn("sstsimulator_conf_get_value_int() is deprecated and will be removed in future versions of SST. \
          Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section, key, default, int)
+    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=int)
 
 ###
 
-def sstsimulator_conf_get_value_float(section: str, key: str, default: float = None) -> float:
+def sstsimulator_conf_get_value_float(
+    section: str, key: str, default: Optional[float] = None
+) -> float:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         Args:
@@ -615,11 +662,13 @@ def sstsimulator_conf_get_value_float(section: str, key: str, default: float = N
     """
     warn("sstsimulator_conf_get_value_float() is deprecated and will be removed in future versions of SST. \
          Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section, key, default, float)
+    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=float)
 
 ###
 
-def sstsimulator_conf_get_value_bool(section: str, key: str, default: bool = None) -> bool:
+def sstsimulator_conf_get_value_bool(
+    section: str, key: str, default: Optional[bool] = None
+) -> bool:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
 
         NOTE: "1", "yes", "true", and "on" will return True;
@@ -638,11 +687,16 @@ def sstsimulator_conf_get_value_bool(section: str, key: str, default: bool = Non
     """
     warn("sstsimulator_conf_get_value_bool() is deprecated and will be removed in future versions of SST. \
          Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section, key, default, bool)
+    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=bool)
 
 ###
 
-def sstsimulator_conf_get_value(section: str, key: str, type: Type, default: Any = None) -> Any:
+T_conf = TypeVar("T_conf", str, int, float, bool)
+
+
+def sstsimulator_conf_get_value(
+    section: str, key: str, type: Type[T_conf], default: Optional[T_conf] = None
+) -> T_conf:
     """Get the configuration value from the SST Configuration File (sstsimulator.conf)
 
     Args:
@@ -654,7 +708,7 @@ def sstsimulator_conf_get_value(section: str, key: str, type: Type, default: Any
     Returns:
         Value for section[key]
     """
-    return _get_sstsimulator_conf_value(section, key, default, type)
+    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=type)
 
 ###
 
@@ -935,7 +989,9 @@ def test_output_get_tmp_dir() -> str:
 ################################################################################
 ### Testing Support
 ################################################################################
-def combine_per_rank_files(filename, header_lines_to_remove=0, remove_header_from_first_file=False):
+def combine_per_rank_files(
+    filename: str, header_lines_to_remove: int = 0, remove_header_from_first_file: bool = False
+) -> None:
     """Combines per rank files into a single file.
 
     This assumes that filename will be the base name with format
@@ -1040,7 +1096,7 @@ def testing_stat_output_diff(
     outfile: str,
     reffile: str,
     ignore_lines: List[str] = [],
-    tol_stats: Dict[str, float] = {},
+    tol_stats: Mapping[str, float] = {},
     new_stats: bool = False,
 ) -> Tuple[bool, List, List]:
     """ Perform a diff of statistic outputs with special handling based on arguments
@@ -1116,8 +1172,8 @@ def testing_stat_output_diff(
                         continue
 
                     diffs = False
-                    tol = tol_stats[stat[1]]
-                    for i, t in enumerate(tol):
+                    tol = tol_stats[stat[1]]  # type: ignore [index]
+                    for i, t in enumerate(tol):  # type: ignore [arg-type, var-annotated]
                         if t != 'X' and ((rstat[2+i] - t) > stat[2+i] or (rstat[2+i] + t) < stat[2+i]):
                             diffs = True
                             break
@@ -1263,11 +1319,7 @@ class RemoveRegexFromLineFilter(LineFilter):
         return line
 
 
-def _read_and_filter(
-    fileloc: str,
-    filters: Sequence[LineFilter],
-    sort: bool
-) -> List[str]:
+def _read_and_filter(fileloc: str, filters: Sequence[LineFilter], sort: bool) -> List[str]:
     lines = list()
 
     with open(fileloc) as fp:
@@ -1276,7 +1328,7 @@ def _read_and_filter(
         for line in fp:
             filt_line = line
             for filter in filters:
-                filt_line = filter.filter(filt_line)
+                filt_line = filter.filter(filt_line)  # type: ignore [assignment]
                 if not filt_line:
                     break
 
@@ -1318,8 +1370,9 @@ def testing_compare_filtered_diff(
     check_param_type("outfile", outfile, str)
     check_param_type("reffile", reffile, str)
 
-    if issubclass(type(filters), LineFilter):
-        filters = [filters]  # type: ignore
+    # Handle callers that violate the type annotation.
+    if isinstance(filters, LineFilter):
+        filters = [filters]
     check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
@@ -1354,7 +1407,9 @@ def testing_compare_filtered_diff(
 ###
 
 
-def testing_compare_diff(test_name: str, outfile: str, reffile: str, ignore_ws: bool = False) -> bool:
+def testing_compare_diff(
+    test_name: str, outfile: str, reffile: str, ignore_ws: bool = False
+) -> bool:
     """ compare 2 files for a diff.
 
         Args:
@@ -1402,7 +1457,9 @@ def testing_compare_sorted_diff(test_name: str, outfile: str, reffile: str) -> b
 
 
 
-def testing_compare_filtered_subset(outfile: str, reffile: str, filters: List[LineFilter] = []) -> bool:
+def testing_compare_filtered_subset(
+    outfile: str, reffile: str, filters: List[LineFilter] = list()
+) -> bool:
     """Filter, and then determine if outfile is a subset of reffile
 
         Args:
@@ -1420,8 +1477,9 @@ def testing_compare_filtered_subset(outfile: str, reffile: str, filters: List[Li
     check_param_type("outfile", outfile, str)
     check_param_type("reffile", reffile, str)
 
-    if issubclass(type(filters), LineFilter):
-        filters = [filters]  # type: ignore
+    # Handle callers that violate the type annotation.
+    if isinstance(filters, LineFilter):
+        filters = [filters]
     check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
@@ -1578,7 +1636,11 @@ def testing_remove_component_warning_from_file(input_filepath: str) -> None:
 ### OS Basic Or Equivalent Commands
 ################################################################################
 
-def os_simple_command(os_cmd: str, run_dir: Optional[str] = None, **kwargs) -> Tuple[int, str]:
+def os_simple_command(
+    os_cmd: str,
+    run_dir: Optional[str] = None,
+    **kwargs: Any,
+) -> Tuple[int, str]:
     """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput).
 
         NOTE: Simple command cannot have pipes or redirects
@@ -1598,7 +1660,7 @@ def os_simple_command(os_cmd: str, run_dir: Optional[str] = None, **kwargs) -> T
     rtn_data = (rtn.result(), rtn.output())
     return rtn_data
 
-def os_ls(directory: str = ".", echo_out: bool = True, **kwargs) -> str:
+def os_ls(directory: str = ".", echo_out: bool = True, **kwargs: Any) -> str:
     """ Perform an simple ls -lia shell command and dump output to screen.
 
         Args:
@@ -1615,7 +1677,7 @@ def os_ls(directory: str = ".", echo_out: bool = True, **kwargs) -> str:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_pwd(echo_out: bool = True, **kwargs) -> str:
+def os_pwd(echo_out: bool = True, **kwargs: Any) -> str:
     """ Perform an simple pwd shell command and dump output to screen.
 
         Args:
@@ -1630,7 +1692,7 @@ def os_pwd(echo_out: bool = True, **kwargs) -> str:
         log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_cat(filepath: str, echo_out: bool = True, **kwargs) -> str:
+def os_cat(filepath: str, echo_out: bool = True, **kwargs: Any) -> str:
     """ Perform an simple cat shell command and dump output to screen.
 
         Args:
@@ -1697,7 +1759,7 @@ def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
         finalstrdata +=  "{0} ".format(split_list[field_index])
     return finalstrdata
 
-def os_wc(in_file: str, fields_index_list: List[int] = [], **kwargs) -> str:
+def os_wc(in_file: str, fields_index_list: List[int] = [], **kwargs: Any) -> str:
     """ Run a wc (equivalent) command on a file and then extract specific
         fields of the result as a string.
 
@@ -1720,7 +1782,7 @@ def os_wc(in_file: str, fields_index_list: List[int] = [], **kwargs) -> str:
         wc_out = os_awk_print(wc_out, fields_index_list)
     return wc_out
 
-def os_test_file(file_path: str, expression: str = "-e", **kwargs) -> bool:
+def os_test_file(file_path: str, expression: str = "-e", **kwargs: Any) -> bool:
     """ Run a shell 'test' command on a file.
 
         Args:
@@ -1791,7 +1853,7 @@ def os_wget(
             continue
 
         if os.path.isfile(wgetoutfile):
-            with open(wgetoutfile, "rb") as wgetfile:
+            with open(wgetoutfile) as wgetfile:
                 wgetoutput = "".join(wgetfile.readlines()[1:])
 
             log_debug("wget output:\n{0}".format(wgetoutput))
@@ -1895,13 +1957,14 @@ def _get_linux_version(filepath: str, sep: str) -> str:
 ################################################################################
 
 def _get_sst_config_include_file_value(
-        include_dict: Dict[str, Union[str, int]],
-        include_source: str,
-        define: str,
-        default: Optional[Union[str, int]] = None,
-        data_type: Type = str,
-        disable_warning: bool = False,
-) -> Optional[Union[str, int]]:
+    *,
+    include_dict: Mapping[str, Union[str, int]],
+    include_source: str,
+    define: str,
+    data_type: Type[T_include],
+    default: Optional[T_include] = None,
+    disable_warning: bool = False,
+) -> T_include:
     """ Retrieve a define from an SST Configuration Include File (sst_config.h or sst-element_config.h)
        include_dict (dict): The dictionary to search for the define
        include_source (str): The name of the include file we are searching
@@ -1922,20 +1985,23 @@ def _get_sst_config_include_file_value(
     try:
         rtn_data = include_dict[define]
     except KeyError as exc_e:
-        errmsg = ("Reading Config include file {0}") \
-                 + (" - Cannot find #define {1}".format(include_source, exc_e))
-        if disable_warning == False:
+        errmsg = f"Reading Config include file {include_source} - Cannot find #define {exc_e}"
+        if not disable_warning:
             log_warning(errmsg)
         if default is None:
             raise SSTTestCaseException(exc_e)
         rtn_data = default
-    if data_type == int:
-        rtn_data = int(rtn_data)
-    return rtn_data
+    return data_type(rtn_data)
 
 ###
 
-def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
+def _get_sstsimulator_conf_value(
+    *,
+    section: str,
+    key: str,
+    data_type: Type[T_conf],
+    default: Optional[T_conf] = None,
+) -> T_conf:
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        section (str): The [section] to look for the key
        key (str): The key to find
@@ -1951,23 +2017,27 @@ def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
         check_param_type("default", default, data_type)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
-        if data_type == str:
-            return core_conf_file_parser.get(section, key)
-        if data_type == int:
-            return core_conf_file_parser.getint(section, key)
-        if data_type == float:
-            return core_conf_file_parser.getfloat(section, key)
-        if data_type == bool:
-            return core_conf_file_parser.getboolean(section, key)
+        if data_type is str:
+            return core_conf_file_parser.get(section, key)  # type: ignore [return-value]
+        if data_type is int:
+            return core_conf_file_parser.getint(section, key)  # type: ignore [return-value]
+        if data_type is float:
+            return core_conf_file_parser.getfloat(section, key)  # type: ignore [return-value]
+        if data_type is bool:
+            return core_conf_file_parser.getboolean(section, key)  # type: ignore [return-value]
     except configparser.Error as exc_e:
         rtn_default = _handle_config_err(exc_e, default)
         if default is None:
             raise SSTTestCaseException(exc_e)
+    # to satisfy mypy
+    assert rtn_default is not None
     return rtn_default
 
 ###
 
-def _handle_config_err(exc_e, default_rtn_data):
+def _handle_config_err(
+    exc_e: configparser.Error, default_rtn_data: Optional[T_conf]
+) -> Optional[T_conf]:
     errmsg = "Reading SST-Core Config file sstsimulator.conf - {0}".format(exc_e)
     log_warning(errmsg)
     return default_rtn_data
