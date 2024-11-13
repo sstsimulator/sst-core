@@ -37,6 +37,9 @@ extern int main(int argc, char** argv);
 
 namespace SST {
 
+// Function to exit, guarding against race conditions if multiple threads call it
+[[noreturn]] void SST_Exit(int exit_code);
+
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
 #define STATALLFLAG            "--ALLSTATS--"
 
@@ -603,9 +606,6 @@ private:
 void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
 
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
-
-// Function to exit, guarding against race conditions if multiple threads call it
-[[noreturn]] void SST_Exit(int exit_code);
 
 } // namespace SST
 
