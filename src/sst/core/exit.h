@@ -117,8 +117,6 @@ private:
     bool single_rank;
 };
 
-[[noreturn]] void SST_Exit(int exit_code);
-
 } // namespace SST
 
 #endif // SST_CORE_EXIT_H

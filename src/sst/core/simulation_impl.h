@@ -604,6 +604,9 @@ void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int tota
 
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
 
+// Function to exit, guarding against race conditions if multiple threads call it
+[[noreturn]] void SST_Exit(int exit_code);
+
 } // namespace SST
 
 #endif // SST_CORE_SIMULATION_IMPL_H
