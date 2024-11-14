@@ -394,7 +394,8 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+    [[noreturn]] void
+    fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
     // GET / SET METHODS

@@ -43,7 +43,14 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
+#include <mpi.h>
+REENABLE_WARNING
+#endif
+
 #include <cinttypes>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -2063,6 +2070,25 @@ Simulation_impl::printPerformanceInfo()
 #endif // SST_SYNC_PROFILING
 }
 #endif
+
+[[noreturn]] void
+SST_Exit(int exit_code)
+{
+    // Make sure only one thread calls MPI_Abort() or exit() in the
+    // case where two threads call fatal() at the same time
+    // Only one thread initializes the function-local static variable
+    // Other threads are blocked
+
+#ifdef SST_CONFIG_HAVE_MPI
+    // If MPI exists, abort
+    static int exit_once = (MPI_Abort(MPI_COMM_WORLD, exit_code), 0);
+#else
+    static int exit_once = (exit(exit_code), 0);
+#endif
+
+    // Should never get here
+    std::terminate();
+}
 
 /* Define statics */
 Factory*                   Simulation_impl::factory;
