@@ -43,6 +43,12 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
+#include <mpi.h>
+REENABLE_WARNING
+#endif
+
 #include <cinttypes>
 #include <exception>
 #include <fstream>

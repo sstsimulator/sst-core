@@ -17,7 +17,6 @@
 #include "sst/core/output.h"
 
 // Core Headers
-#include "sst/core/exit.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
