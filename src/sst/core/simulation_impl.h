@@ -16,6 +16,7 @@
 
 #include "sst/core/clock.h"
 #include "sst/core/componentInfo.h"
+#include "sst/core/exit.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/output.h"
 #include "sst/core/profile/profiletool.h"
@@ -35,6 +36,9 @@
 extern int main(int argc, char** argv);
 
 namespace SST {
+
+// Function to exit, guarding against race conditions if multiple threads call it
+[[noreturn]] void SST_Exit(int exit_code);
 
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
 #define STATALLFLAG            "--ALLSTATS--"
@@ -243,7 +247,7 @@ public:
         if ( nullptr != i ) { return i->getComponent(); }
         else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
-            exit(1);
+            SST_Exit(1);
         }
     }
 
@@ -255,7 +259,7 @@ public:
         if ( nullptr != i ) { return i; }
         else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
-            exit(1);
+            SST_Exit(1);
         }
     }
 

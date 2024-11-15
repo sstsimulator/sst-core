@@ -41,9 +41,6 @@ REENABLE_WARNING
 
 namespace SST {
 
-// Atomic to control access to calling MPI_Abort or exit() in fatal() call
-std::atomic<int> fatal_count = 0;
-
 // Initialize The Static Member Variables
 Output      Output::m_defaultObject;
 std::string Output::m_sstGlobalSimFileName        = "";
@@ -159,7 +156,7 @@ Output::getOutputLocation() const
     return m_targetLoc;
 }
 
-void
+[[noreturn]] void
 Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
 {
     va_list     arg1;
@@ -217,18 +214,7 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
 
     Simulation_impl::emergencyShutdown();
 
-    int count = fatal_count.fetch_add(1);
-
-    // Make sure only one thread calls MPI_Abort() or exit() in the
-    // case where two threads call fatal() at the same time
-    if ( count == 0 ) {
-#ifdef SST_CONFIG_HAVE_MPI
-        // If MPI exists, abort
-        MPI_Abort(MPI_COMM_WORLD, exit_code);
-#else
-        exit(exit_code);
-#endif
-    }
+    SST_Exit(exit_code);
 }
 
 void
