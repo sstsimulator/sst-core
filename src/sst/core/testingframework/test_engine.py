@@ -139,7 +139,7 @@ class TestEngine:
 
 ####
 
-    def discover_and_run_tests(self):
+    def discover_and_run_tests(self) -> int:
         """ Create the output directories, then discover the tests, and then
             run them using pythons unittest module
 
@@ -183,17 +183,17 @@ class TestEngine:
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
             if not test_runner.did_tests_pass(sst_tests_results):
-                exit(1)
-            exit(0)
+                return 1
+            return 0
 
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
-        exit(2)
+        return 2
 
 ####
 
-    def _build_tests_list_helper(self, suite):
+    def _build_tests_list_helper(self, suite: SSTTestSuite) -> List[Any]:
         """
             A helper function to split the tests for the ConcurrentTestSuite into
             some number of concurrently executing sub-suites. _build_tests_list_helper
