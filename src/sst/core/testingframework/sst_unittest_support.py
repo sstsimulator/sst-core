@@ -375,7 +375,11 @@ def _testing_check_is_scenario_filtering_enabled(scenario_name: str) -> bool:
 
 ###
 
-def skip_on_scenario(scenario_name: str, reason: str) -> Callable:
+# Used for unittest.skip decorator; taken from
+# https://github.com/python/typeshed/blob/8cdc1c141b0b9fb617da87319b23206151ab9954/stdlib/unittest/case.pyi#L35
+_FT = TypeVar("_FT", bound=Callable[..., Any])
+
+def skip_on_scenario(scenario_name: str, reason: str) -> Callable[[_FT], _FT]:
     """ Skip a test if a scenario filter name is enabled
 
         Args:
@@ -390,7 +394,7 @@ def skip_on_scenario(scenario_name: str, reason: str) -> Callable:
 
 ###
 
-def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> Callable:
+def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> Callable[[_FT], _FT]:
     """ Skip a test if a section/key in the sstsimulator.conf file is missing an
         entry
 
@@ -1098,7 +1102,7 @@ def testing_stat_output_diff(
     ignore_lines: List[str] = [],
     tol_stats: Mapping[str, float] = {},
     new_stats: bool = False,
-) -> Tuple[bool, List, List]:
+) -> Tuple[bool, List[List[Union[str, int, float]]], List[List[str]]]:
     """ Perform a diff of statistic outputs with special handling based on arguments
         This diff is not sensitive to line ordering
 
