@@ -90,7 +90,7 @@ Entry = Dict[str, Optional[str]]
 
 ################################################################################
 
-class JUnitTestSuite(object):
+class JUnitTestSuite:
     """
     Suite of test cases.
     Can handle unicode strings or binary strings if their encoding is provided.
@@ -277,7 +277,7 @@ class JUnitTestSuite(object):
 
 ####
 
-class JUnitTestCase(object):
+class JUnitTestCase:
     """A JUnit test case with a result and possibly some stdout or stderr"""
 
     def __init__(
