@@ -441,11 +441,12 @@ def junit_to_xml_report_string(
     if prettyprint:
         # minidom.parseString() works just on correctly encoded binary strings
         xml_string = xml_string.encode(encoding or "utf-8")
-        xml_string = xml.dom.minidom.parseString(xml_string)
+        xml_string_document = xml.dom.minidom.parseString(xml_string)
         # toprettyxml() produces unicode if no encoding is being passed
         # or binary string with an encoding
-        xml_string = xml_string.toprettyxml(encoding=encoding)
-        if encoding:
+        xml_string = xml_string_document.toprettyxml(encoding=encoding)
+        if isinstance(xml_string, bytes):
+            assert encoding is not None
             xml_string = xml_string.decode(encoding)
         # is unicode now
     return xml_string
