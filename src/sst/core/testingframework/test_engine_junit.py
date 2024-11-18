@@ -198,35 +198,35 @@ class JUnitTestSuite:
             stderr_element.text = _junit_decode(self.stderr, encoding)
 
         # test cases
-        for case in self.test_cases:
+        for test_case in self.test_cases:
             test_case_attributes = dict()
-            test_case_attributes["name"] = _junit_decode(case.name, encoding)
-            if case.assertions:
+            test_case_attributes["name"] = _junit_decode(test_case.name, encoding)
+            if test_case.assertions:
                 # Number of assertions in the test case
-                test_case_attributes["assertions"] = "%d" % case.assertions
-            if case.elapsed_sec:
-                test_case_attributes["time"] = "%f" % case.elapsed_sec
-            if case.timestamp:
-                test_case_attributes["timestamp"] = _junit_decode(case.timestamp, encoding)
-            if case.classname:
-                test_case_attributes["classname"] = _junit_decode(case.classname, encoding)
-            if case.status:
-                test_case_attributes["status"] = _junit_decode(case.status, encoding)
-            if case.category:
-                test_case_attributes["class"] = _junit_decode(case.category, encoding)
-            if case.file:
-                test_case_attributes["file"] = _junit_decode(case.file, encoding)
-            if case.line:
-                test_case_attributes["line"] = _junit_decode(case.line, encoding)
-            if case.log:
-                test_case_attributes["log"] = _junit_decode(case.log, encoding)
-            if case.url:
-                test_case_attributes["url"] = _junit_decode(case.url, encoding)
+                test_case_attributes["assertions"] = "%d" % test_case.assertions  # type: ignore [str-format]
+            if test_case.elapsed_sec:
+                test_case_attributes["time"] = "%f" % test_case.elapsed_sec
+            if test_case.timestamp:
+                test_case_attributes["timestamp"] = _junit_decode(test_case.timestamp, encoding)
+            if test_case.classname:
+                test_case_attributes["classname"] = _junit_decode(test_case.classname, encoding)
+            if test_case.status:
+                test_case_attributes["status"] = _junit_decode(test_case.status, encoding)
+            if test_case.category:
+                test_case_attributes["class"] = _junit_decode(test_case.category, encoding)
+            if test_case.file:
+                test_case_attributes["file"] = _junit_decode(test_case.file, encoding)
+            if test_case.line:
+                test_case_attributes["line"] = _junit_decode(test_case.line, encoding)
+            if test_case.log:
+                test_case_attributes["log"] = _junit_decode(test_case.log, encoding)
+            if test_case.url:
+                test_case_attributes["url"] = _junit_decode(test_case.url, encoding)
 
             test_case_element = ET.SubElement(xml_element, "testcase", test_case_attributes)
 
             # failures
-            for failure in case.failures:
+            for failure in test_case.failures:
                 if failure["output"] or failure["message"]:
                     attrs = {"type": "failure"}
                     if failure["message"]:
@@ -239,7 +239,7 @@ class JUnitTestSuite:
                     test_case_element.append(failure_element)
 
             # errors
-            for error in case.errors:
+            for error in test_case.errors:
                 if error["message"] or error["output"]:
                     attrs = {"type": "error"}
                     if error["message"]:
@@ -252,7 +252,7 @@ class JUnitTestSuite:
                     test_case_element.append(error_element)
 
             # skippeds
-            for skipped in case.skipped:
+            for skipped in test_case.skipped:
                 attrs = {"type": "skipped"}
                 if skipped["message"]:
                     attrs["message"] = _junit_decode(skipped["message"], encoding)
@@ -262,15 +262,15 @@ class JUnitTestSuite:
                 test_case_element.append(skipped_element)
 
             # test stdout
-            if case.stdout:
+            if test_case.stdout:
                 stdout_element = ET.Element("system-out")
-                stdout_element.text = _junit_decode(case.stdout, encoding)
+                stdout_element.text = _junit_decode(test_case.stdout, encoding)
                 test_case_element.append(stdout_element)
 
             # test stderr
-            if case.stderr:
+            if test_case.stderr:
                 stderr_element = ET.Element("system-err")
-                stderr_element.text = _junit_decode(case.stderr, encoding)
+                stderr_element.text = _junit_decode(test_case.stderr, encoding)
                 test_case_element.append(stderr_element)
 
         return xml_element
