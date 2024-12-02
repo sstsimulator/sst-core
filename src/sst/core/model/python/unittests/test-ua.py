@@ -98,7 +98,7 @@ ua4 = ua3
 ua3_id_before = id(ua3)
 ua3 /= ua2
 if id(ua3) == ua3_id_before:
-    print("ERROR: \= operator returned the same object")
+    print(r"ERROR: \= operator returned the same object")
 print(ua3)
 print(ua4)
 

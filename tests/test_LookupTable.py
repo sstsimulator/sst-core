@@ -11,10 +11,11 @@
 import sst
 import inspect, os, sys
 
-
+currentframe = inspect.currentframe()
+assert currentframe is not None
 params = dict({
     # Set filename to the name of this file
-    "filename" : inspect.getfile(inspect.currentframe())
+    "filename" : inspect.getfile(currentframe)
     })
 
 for i in range(10):
