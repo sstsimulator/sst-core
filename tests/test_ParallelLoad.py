@@ -24,7 +24,7 @@ parallel_load = options["parallel-load"]
         
 # Set up a map of links with accessor
 links = dict()
-def getLink(leftName, rightName):
+def getLink(leftName: str, rightName: str) -> sst.Link:
     name = "link_%s_%s"%(leftName, rightName)
     #print(my_rank, name)
     if name not in links:
