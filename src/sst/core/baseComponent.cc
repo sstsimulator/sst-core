@@ -794,7 +794,7 @@ BaseComponent::configureAllowedStatParams(SST::Params& params)
     allowedKeySet.push_back("rate");
     allowedKeySet.push_back("startat");
     allowedKeySet.push_back("stopat");
-    allowedKeySet.push_back("resetOnRead");
+    allowedKeySet.push_back("resetOnOutput");
     params.pushAllowedKeys(allowedKeySet);
 }
 

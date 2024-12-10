@@ -228,6 +228,7 @@ public:
     class Write;            /* Request to write data */
     class WriteResp;        /* Response to write requests */
     class FlushAddr;        /* Flush an address from cache */
+    class FlushCache;       /* Flush an entire cache */
     class FlushResp;        /* Response to flush request */
     class ReadLock;         /* Read and lock an address */
     class WriteUnlock;      /* Write and unlock an address */
@@ -509,6 +510,46 @@ public:
         uint32_t tid;   /* Thread ID */
     };
 
+    /* Flush an entire cache
+     * Write back dirty data to memory, invalidate data in cache
+     * Response type is FlushResp
+     */
+    class FlushCache : public Request
+    {
+    public:
+        FlushCache(
+            uint32_t depth = std::numeric_limits<uint32_t>::max(), flags_t flags = 0, Addr instPtr = 0,
+            uint32_t tid = 0) :
+            Request(flags),
+            depth(depth),
+            iPtr(instPtr),
+            tid(tid)
+        {}
+        virtual ~FlushCache() {}
+
+        virtual Request* makeResponse() override { return new FlushResp(this); }
+
+        virtual bool needsResponse() override { return true; }
+
+        SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+
+        void handle(RequestHandler* handler) override { return handler->handle(this); }
+
+        std::string getString() override
+        {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: FlushCache, Flags: [" << getFlagString() << "], ";
+            str << "Depth: " << std::dec << depth << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec
+                << tid;
+            return str.str();
+        }
+
+        uint32_t depth; /* How many levels down the memory hierarchy this flush should propagate. E.g., 1 = L1 only, 2 =
+                           L1 + L2, etc. */
+        Addr     iPtr;  /* Instruction pointer */
+        uint32_t tid;   /* Thread ID */
+    };
+
     /** Response to a flush request.
      * Flushes can occasionally fail, check getSuccess() to determine success.
      */
@@ -532,6 +573,14 @@ public:
             size(fl->size),
             iPtr(fl->iPtr),
             tid(fl->tid)
+        {}
+        FlushResp(FlushCache* fc, flags_t newFlags = 0) :
+            Request(fc->getID(), fc->getAllFlags() | newFlags),
+            pAddr(0),
+            vAddr(0),
+            size(0),
+            iPtr(fc->iPtr),
+            tid(fc->tid)
         {}
         virtual ~FlushResp() {}
 
@@ -1049,11 +1098,19 @@ public:
         virtual ~RequestConverter() {}
 
         /* Built in command converters */
-        virtual SST::Event* convert(Read* request)             = 0;
-        virtual SST::Event* convert(ReadResp* request)         = 0;
-        virtual SST::Event* convert(Write* request)            = 0;
-        virtual SST::Event* convert(WriteResp* request)        = 0;
-        virtual SST::Event* convert(FlushAddr* request)        = 0;
+        virtual SST::Event* convert(Read* request)      = 0;
+        virtual SST::Event* convert(ReadResp* request)  = 0;
+        virtual SST::Event* convert(Write* request)     = 0;
+        virtual SST::Event* convert(WriteResp* request) = 0;
+        virtual SST::Event* convert(FlushAddr* request) = 0;
+        /* convert(FlushCache) temporarily has a default implementation for backward compatibility
+         * It will transition to pure virtual in SST 16
+         */
+        virtual SST::Event* convert(FlushCache* UNUSED(request))
+        {
+            Output out("", 0, 0, Output::STDERR);
+            out.fatal(CALL_INFO, -1, "Error: Event converter for FlushCache requests is not implemented.\n");
+        }
         virtual SST::Event* convert(FlushResp* request)        = 0;
         virtual SST::Event* convert(ReadLock* request)         = 0;
         virtual SST::Event* convert(WriteUnlock* request)      = 0;
@@ -1092,6 +1149,10 @@ public:
         virtual void handle(FlushAddr* UNUSED(request))
         {
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for FlushAddr requests is not implemented\n");
+        }
+        virtual void handle(FlushCache* UNUSED(request))
+        {
+            out->fatal(CALL_INFO, -1, "Error: RequestHandler for FlushCache requests is not implemented\n");
         }
         virtual void handle(FlushResp* UNUSED(request))
         {
