@@ -1098,12 +1098,18 @@ public:
         virtual ~RequestConverter() {}
 
         /* Built in command converters */
-        virtual SST::Event* convert(Read* request)             = 0;
-        virtual SST::Event* convert(ReadResp* request)         = 0;
-        virtual SST::Event* convert(Write* request)            = 0;
-        virtual SST::Event* convert(WriteResp* request)        = 0;
-        virtual SST::Event* convert(FlushAddr* request)        = 0;
-        virtual SST::Event* convert(FlushCache* request)       = 0;
+        virtual SST::Event* convert(Read* request)      = 0;
+        virtual SST::Event* convert(ReadResp* request)  = 0;
+        virtual SST::Event* convert(Write* request)     = 0;
+        virtual SST::Event* convert(WriteResp* request) = 0;
+        virtual SST::Event* convert(FlushAddr* request) = 0;
+        /* convert(FlushCache) temporarily has a default implementation for backward compatibility
+         * It will transition to pure virtual in SST 16
+         */
+        virtual SST::Event* convert(FlushCache* request)
+        {
+            out->fatal(CALL_INFO, -1, "Error: Event converter for FlushCache requests is not implemented.\n");
+        }
         virtual SST::Event* convert(FlushResp* request)        = 0;
         virtual SST::Event* convert(ReadLock* request)         = 0;
         virtual SST::Event* convert(WriteUnlock* request)      = 0;
