@@ -513,8 +513,6 @@ public:
     /* Flush an entire cache
      * Write back dirty data to memory, invalidate data in cache
      * Response type is FlushResp
-     * inv = false: Write back dirty data to memory, leave clean data in cache
-     * inv = true: Write back dirty data to memory, invalidate data in cache
      */
     class FlushCache : public Request
     {
