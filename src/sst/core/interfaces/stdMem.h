@@ -1106,9 +1106,10 @@ public:
         /* convert(FlushCache) temporarily has a default implementation for backward compatibility
          * It will transition to pure virtual in SST 16
          */
-        virtual SST::Event* convert(FlushCache* request)
+        virtual SST::Event* convert(FlushCache* UNUSED(request))
         {
-            out->fatal(CALL_INFO, -1, "Error: Event converter for FlushCache requests is not implemented.\n");
+            Output out("", 0, 0, Output::STDERR);
+            out.fatal(CALL_INFO, -1, "Error: Event converter for FlushCache requests is not implemented.\n");
         }
         virtual SST::Event* convert(FlushResp* request)        = 0;
         virtual SST::Event* convert(ReadLock* request)         = 0;
