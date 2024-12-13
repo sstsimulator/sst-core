@@ -127,19 +127,13 @@ def testing_is_PIN_loaded() -> bool:
     pin_path = os.environ.get('INTEL_PIN_DIRECTORY')
     if pin_path is not None:
         pindir_found = os.path.isdir(pin_path)
-    #log_debug("testing_is_PIN_loaded() - Intel_PIN_Path = {0}; Valid Dir = {1}".format(pin_path, pindir_found))
     return pindir_found
 
 def testing_is_PIN_Compiled() -> bool:
     global pin_exec_path
-    pin_crt = sst_elements_config_include_file_get_value(define="HAVE_PINCRT", type=int, default=0, disable_warning=True)
     pin_exec = sst_elements_config_include_file_get_value(define="PINTOOL_EXECUTABLE", type=str, default="", disable_warning=True)
-    #log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
-    #log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
     pin_exec_path = pin_exec
-    rtn = pin_exec != ""
-    #log_debug("testing_is_PIN_Compiled() - Rtn {0}".format(rtn))
-    return rtn
+    return pin_exec != ""
 
 def testing_is_PIN2_used() -> bool:
     from warnings import warn
@@ -148,35 +142,25 @@ def testing_is_PIN2_used() -> bool:
 
     global pin_exec_path
     if testing_is_PIN_Compiled():
-        if "/pin.sh" in pin_exec_path:
-            #log_debug("testing_is_PIN2_used() - Rtn True because pin.sh is found")
-            return True
-        else:
-            #log_debug("testing_is_PIN2_used() - Rtn False because pin.sh not found")
-            return False
+        return "/pin.sh" in pin_exec_path
     else:
-        #log_debug("testing_is_PIN2_used() - Rtn False because PIN Not Compiled")
         return False
 
 def testing_is_PIN3_used() -> bool:
     global pin_exec_path
     if testing_is_PIN_Compiled():
         if testing_is_PIN2_used():
-            #log_debug("testing_is_PIN3_used() - Rtn False because PIN2 is used")
             return False
         else:
             # Make sure pin is at the end of the string
             pinstr = "/pin"
             idx = pin_exec_path.rfind(pinstr)
             if idx == -1:
-                #log_debug("testing_is_PIN3_used() - Rtn False because 'pin' is not in path")
                 return False
             else:
-                found_pin = (idx+len(pinstr)) == len(pin_exec_path)
-                #log_debug("testing_is_PIN3_used() - Rtn {0} comparing path lengths".format(found_pin))
+                found_pin = (idx + len(pinstr)) == len(pin_exec_path)
                 return found_pin
     else:
-        #log_debug("testing_is_PIN3_used() - Rtn False because PIN Not Compiled")
         return False
 
 ################################################################################
