@@ -129,7 +129,7 @@ BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler
     for ( auto* tool : tools ) {
         ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
         // Add the receive profiler to the handler
-        handler->addProfileTool(tool, mdata);
+        handler->attachTool(tool, mdata);
     }
 
     // if regAll is true set tc as the default for the component and
@@ -295,10 +295,10 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
 
                 // Add the receive profiler to the handler
-                if ( tool->profileReceives() ) handler->addProfileTool(tool, mdata);
+                if ( tool->profileReceives() ) handler->attachTool(tool, mdata);
 
                 // Add the send profiler to the link
-                if ( tool->profileSends() ) tmp->addProfileTool(tool, mdata);
+                if ( tool->profileSends() ) tmp->attachTool(tool, mdata);
             }
         }
         if ( nullptr != time_base )

@@ -63,6 +63,18 @@ enum class SimulationRunMode {
     BOTH     /*!< Default.  Both initialize and Run the simulation */
 };
 
+/**
+   Struct used as a base class for all AttachPoint metadata passed to
+   registration functions.  Needed so that dynamic cast can be used
+   since different tools may pass different metadata through the
+   AttachPoints.
+ */
+struct AttachPointMetaData
+{
+    AttachPointMetaData() {}
+    virtual ~AttachPointMetaData() {}
+};
+
 } // namespace SST
 
 #endif // SST_CORE_SST_TYPES_H

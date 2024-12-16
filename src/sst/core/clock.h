@@ -120,7 +120,7 @@ private:
 };
 
 
-class ClockHandlerMetaData : public HandlerMetaData
+class ClockHandlerMetaData : public AttachPointMetaData
 {
 public:
     const ComponentId_t comp_id;
