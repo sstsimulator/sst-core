@@ -1,3 +1,4 @@
+# type: ignore
 # -*- coding: utf-8 -*-
 ##
 ##Unless stated otherwise in the source files, all code is copyright 2010 David

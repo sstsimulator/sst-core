@@ -45,11 +45,11 @@ sstVarRE = re.compile("\\$([^{][a-zA-Z0-9_]+)", re.DOTALL)
 
 def processString(string: str) -> str:
     """Process a string, replacing variables and env. vars with their values"""
-    def replaceSSTVar(matchobj: re.Match) -> str:
+    def replaceSSTVar(matchobj: re.Match[str]) -> str:
         varname = matchobj.group(1)
         return sstVars[varname]
 
-    def replaceEnvVar(matchobj: re.Match) -> str:
+    def replaceEnvVar(matchobj: re.Match[str]) -> str:
         varname = matchobj.group(1)
         var = os.getenv(varname)
         assert var is not None

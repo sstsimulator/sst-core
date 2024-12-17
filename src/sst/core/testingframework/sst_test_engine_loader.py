@@ -72,7 +72,7 @@ def startup_and_run(sst_core_bin_dir: str, test_mode: int) -> None:
             sys.exit(1)
 
         t_e = test_engine.TestEngine(sst_core_bin_dir, test_mode)
-        t_e.discover_and_run_tests()
+        sys.exit(t_e.discover_and_run_tests())
 
     except Exception as exc_e:
         # NOTE: This is a generic catchall handler for any unhandled exception
@@ -80,7 +80,7 @@ def startup_and_run(sst_core_bin_dir: str, test_mode: int) -> None:
 
 ###############
 
-def _generic_exception_handler(exc_e):
+def _generic_exception_handler(exc_e: Exception) -> None:
 
     # Dump Exception info to the a log file
     log_filename = "./sst_test_frameworks_crashreport.log"
@@ -91,7 +91,7 @@ def _generic_exception_handler(exc_e):
         log_handler = RotatingFileHandler(log_filename, mode='a',
                                           maxBytes=10*1024*1024,
                                           backupCount=10,
-                                          encoding=None, delay=0)
+                                          encoding=None, delay=False)
         log_handler.setFormatter(log_formatter)
         crashlogger.addHandler(log_handler)
         crashlogger.setLevel(logging.DEBUG)
