@@ -177,7 +177,7 @@ protected:
     virtual returnT operator_impl(argT) = 0;
 
 public:
-    ~SSTHandlerBase() {}
+    virtual ~SSTHandlerBase() {}
 
     inline returnT operator()(argT arg)
     {
@@ -342,7 +342,7 @@ protected:
     virtual void operator_impl(argT) = 0;
 
 public:
-    ~SSTHandlerBase() {}
+    virtual ~SSTHandlerBase() {}
 
     inline void operator()(argT arg)
     {
@@ -476,7 +476,7 @@ protected:
     virtual returnT operator_impl() = 0;
 
 public:
-    ~SSTHandlerBase() {}
+    virtual ~SSTHandlerBase() {}
 
     inline returnT operator()()
     {
@@ -590,7 +590,7 @@ protected:
     virtual void operator_impl() = 0;
 
 public:
-    ~SSTHandlerBase() {}
+    virtual ~SSTHandlerBase() {}
 
     inline void operator()()
     {

@@ -11,7 +11,7 @@ EXTRA_DIST += \
     tests/testsuite_default_Output.py \
     tests/testsuite_default_ParamComponent.py \
     tests/testsuite_default_PerfComponent.py \
-    tests/testsuite_default_Profilng.py \
+    tests/testsuite_default_Profiling.py \
     tests/testsuite_default_RNGComponent.py \
     tests/testsuite_default_RealTime.py \
     tests/testsuite_default_SharedObject.py \

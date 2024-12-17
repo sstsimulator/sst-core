@@ -59,7 +59,7 @@ public:
        Attach point for inspecting, modifying or dropping events
        sent on the Link.
 
-       NOTE: Using the Link::AttachPoint will noticably affect the
+       NOTE: Using the Link::AttachPoint will noticeably affect the
        performance of sending events on Links and it is recommended
        that, if possible, Event::HandlerBase::AttachPoint or
        Event::HandlerBase::InterceptPoint be used instead.
@@ -68,7 +68,7 @@ public:
     {
     public:
         /**
-           Function that will be called when a attach point is
+           Function that will be called when an attach point is
            registered with the tool implementing the attach point.
            The metadata passed in will be dependent on what type of
            tool this is attached to.  The uintptr_t returned from this
