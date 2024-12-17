@@ -30,16 +30,25 @@ class testcase_Profiling(SSTTestCase):
 
 ###
 
+    parallelerr = "Test only suports serial execution"
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
+    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_event_global(self):
         self.profiling_test_template("event_global", "events:sst.profile.handler.event.count(level=global)[event]")
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
+    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_event_component(self):
         self.profiling_test_template("event_component", "events:sst.profile.handler.event.count(level=component)[event]")
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
+    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_event_subcomponent(self):
         self.profiling_test_template("event_subcomponent", "events:sst.profile.handler.event.count(level=subcomponent)[event]")
 
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
+    @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_event_type(self):
         self.profiling_test_template("event_type", "events:sst.profile.handler.event.count(level=type)[event]")
 
