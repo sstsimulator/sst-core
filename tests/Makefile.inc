@@ -65,7 +65,7 @@ EXTRA_DIST += \
     tests/refFiles/test_Profiling_event_global.out \
     tests/refFiles/test_Profiling_event_type.out \
     tests/refFiles/test_Profiling_event_component.out \
-    tests/refFiles/test_Profiling_event_subcomponet.out \
+    tests/refFiles/test_Profiling_event_subcomponent.out \
     tests/refFiles/test_MessageGeneratorComponent.out \
     tests/refFiles/test_MemPool_overflow.out \
     tests/refFiles/test_MemPool_undeleted_items.out \
