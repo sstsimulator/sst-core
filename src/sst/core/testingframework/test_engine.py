@@ -22,12 +22,14 @@ import unittest
 import argparse
 import shutil
 import configparser
-from typing import Any, Dict, List
+import multiprocessing
+from typing import Any, Dict, List, Union
 
 import test_engine_globals
 from sst_unittest import *
 from sst_unittest_support import *
 from test_engine_unittest import *
+from test_engine_support import OSCommand
 
 ################################################################################
 
@@ -120,10 +122,10 @@ class TestEngine:
         self._fail_fast = False
         self._keep_output_dir = False
         self._list_discovered_testsuites_mode = False
-        self._list_of_searchable_testsuite_paths = []
-        self._list_of_specific_testnames = []
-        self._testsuite_types_list = []
-        self._testsuite_wildcards_list = []
+        self._list_of_searchable_testsuite_paths: List[str] = []
+        self._list_of_specific_testnames: List[str] = []
+        self._testsuite_types_list: List[str] = []
+        self._testsuite_wildcards_list: List[str] = []
         self._sst_core_bin_dir = sst_core_bin_dir
         self._test_mode = test_mode
         self._sst_full_test_suite = unittest.TestSuite()
@@ -204,7 +206,7 @@ class TestEngine:
             Args:
                 suite (SSTTestSuite): The suites to be split up.
         """
-        tests = list(iterate_tests(suite))
+        tests = list(iterate_tests(suite))  # type: ignore [name-defined]
         return tests
 
 ################################################################################
@@ -297,7 +299,7 @@ class TestEngine:
 
 ####
 
-    def _decode_parsed_arguments(self, args, parser):
+    def _decode_parsed_arguments(self, args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
         """ Decode the parsed arguments into their class or global variables.
 
             Args:
@@ -720,7 +722,13 @@ class TestEngine:
 
 ####
 
-    def _dump_testsuite_list(self, suite, log_normal=False, show_suites=False, iterlevel=0):
+    def _dump_testsuite_list(
+        self,
+        suite: Union[unittest.TestSuite, unittest.TestCase],
+        log_normal: bool = False,
+        show_suites: bool = False,
+        iterlevel: int = 0,
+    ) -> None:
         """ Recursively log all tests in a TestSuite.
 
             Args:
@@ -744,7 +752,10 @@ class TestEngine:
 
 ####
 
-    def _prune_unwanted_tests(self, suite):
+    def _prune_unwanted_tests(
+        self,
+        suite: Union[unittest.TestSuite, unittest.TestCase],
+    ) -> unittest.TestSuite:
         """ Recursively remove any tests that dont match the name
 
             Args:
