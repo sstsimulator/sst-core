@@ -1994,16 +1994,18 @@ Simulation_impl::printProfilingInfo(FILE* fp)
     // Print out a header if printing to stdout
     if ( fp == stdout && my_rank.rank == 0 && my_rank.thread == 0 ) {
         fprintf(fp, "\n------------------------------------------------------------\n");
-        fprintf(fp, "Profiling Output:\n");
+        fprintf(fp, "Profiling Output:\n\n");
     }
+
+    fprintf(fp, "-----------------------------\n");
 
     // Print the rank and thread.  Profiling output is serialized
     // through both ranks and threads.
-    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n", my_rank.rank, my_rank.thread);
+    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n\n", my_rank.rank, my_rank.thread);
 
     for ( auto tool : profile_tools ) {
-        fprintf(fp, "\n");
         tool.second->outputData(fp);
+        fprintf(fp, "\n");
     }
 
     // Print footer if printing on stdout

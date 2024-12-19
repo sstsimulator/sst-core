@@ -23,7 +23,7 @@ namespace SST {
 namespace Profile {
 
 
-EventHandlerProfileTool::EventHandlerProfileTool(const std::string& name, Params& params) : HandlerProfileToolAPI(name)
+EventHandlerProfileTool::EventHandlerProfileTool(const std::string& name, Params& params) : ProfileTool(name)
 {
     std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
@@ -46,7 +46,7 @@ EventHandlerProfileTool::EventHandlerProfileTool(const std::string& name, Params
 }
 
 std::string
-EventHandlerProfileTool::getKeyForHandler(const HandlerMetaData& mdata)
+EventHandlerProfileTool::getKeyForHandler(const AttachPointMetaData& mdata)
 {
     const EventHandlerMetaData& data = dynamic_cast<const EventHandlerMetaData&>(mdata);
 
@@ -78,19 +78,25 @@ EventHandlerProfileToolCount::EventHandlerProfileToolCount(const std::string& na
 {}
 
 uintptr_t
-EventHandlerProfileToolCount::registerHandler(const HandlerMetaData& mdata)
+EventHandlerProfileToolCount::registerHandler(const AttachPointMetaData& mdata)
+{
+    return reinterpret_cast<uintptr_t>(&counts_[getKeyForHandler(mdata)]);
+}
+
+uintptr_t
+EventHandlerProfileToolCount::registerLinkAttachTool(const AttachPointMetaData& mdata)
 {
     return reinterpret_cast<uintptr_t>(&counts_[getKeyForHandler(mdata)]);
 }
 
 void
-EventHandlerProfileToolCount::handlerStart(uintptr_t key)
+EventHandlerProfileToolCount::beforeHandler(uintptr_t key, const Event* UNUSED(event))
 {
     reinterpret_cast<event_data_t*>(key)->recv_count++;
 }
 
 void
-EventHandlerProfileToolCount::eventSent(uintptr_t key, Event* UNUSED(ev))
+EventHandlerProfileToolCount::eventSent(uintptr_t key, Event*& UNUSED(ev))
 {
     reinterpret_cast<event_data_t*>(key)->send_count++;
 }
@@ -120,7 +126,14 @@ EventHandlerProfileToolTime<T>::EventHandlerProfileToolTime(const std::string& n
 
 template <typename T>
 uintptr_t
-EventHandlerProfileToolTime<T>::registerHandler(const HandlerMetaData& mdata)
+EventHandlerProfileToolTime<T>::registerHandler(const AttachPointMetaData& mdata)
+{
+    return reinterpret_cast<uintptr_t>(&times_[getKeyForHandler(mdata)]);
+}
+
+template <typename T>
+uintptr_t
+EventHandlerProfileToolTime<T>::registerLinkAttachTool(const AttachPointMetaData& mdata)
 {
     return reinterpret_cast<uintptr_t>(&times_[getKeyForHandler(mdata)]);
 }

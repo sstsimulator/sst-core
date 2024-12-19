@@ -216,7 +216,6 @@ sst_core_sources = \
 	unitAlgebra.cc \
 	module.cc \
 	realtime.cc \
-	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \
 	serialization/objectMap.cc \

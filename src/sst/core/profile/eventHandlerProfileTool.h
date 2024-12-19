@@ -14,6 +14,7 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
+#include "sst/core/link.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/warnmacros.h"
@@ -26,10 +27,10 @@ namespace SST {
 namespace Profile {
 
 
-class EventHandlerProfileTool : public HandlerProfileToolAPI
+class EventHandlerProfileTool : public ProfileTool, public Event::HandlerBase::AttachPoint, public Link::AttachPoint
 {
 public:
-    SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(SST::Profile::EventHandlerProfileTool, SST::HandlerProfileToolAPI, Params&)
+    SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(SST::Profile::EventHandlerProfileTool, SST::Profile::ProfileTool, Params&)
 
     SST_ELI_DOCUMENT_PARAMS(
         { "level", "Level at which to track profile (global, type, component, subcomponent)", "type" },
@@ -42,13 +43,19 @@ public:
 
     EventHandlerProfileTool(const std::string& name, Params& params);
 
-    virtual void eventSent(uintptr_t UNUSED(key), Event* UNUSED(ev)) {}
 
     bool profileSends() { return profile_sends_; }
     bool profileReceives() { return profile_receives_; }
 
+    // Default implementations of attach point functions for profile
+    // tools that don't use them
+    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(event)) override {}
+    void afterHandler(uintptr_t UNUSED(key)) override {}
+    void eventSent(uintptr_t UNUSED(key), Event*& UNUSED(ev)) override {}
+
+
 protected:
-    std::string getKeyForHandler(const HandlerMetaData& mdata);
+    std::string getKeyForHandler(const AttachPointMetaData& mdata);
 
     Profile_Level profile_level_;
     bool          track_ports_;
@@ -86,10 +93,11 @@ public:
 
     virtual ~EventHandlerProfileToolCount() {}
 
-    uintptr_t registerHandler(const HandlerMetaData& mdata) override;
+    uintptr_t registerHandler(const AttachPointMetaData& mdata) override;
+    uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
-    void handlerStart(uintptr_t key) override;
-    void eventSent(uintptr_t UNUSED(key), Event* UNUSED(ev)) override;
+    void beforeHandler(uintptr_t key, const SST::Event* event) override;
+    void eventSent(uintptr_t UNUSED(key), Event*& UNUSED(ev)) override;
 
     void outputData(FILE* fp) override;
 
@@ -118,11 +126,12 @@ public:
 
     virtual ~EventHandlerProfileToolTime() {}
 
-    uintptr_t registerHandler(const HandlerMetaData& mdata) override;
+    uintptr_t registerHandler(const AttachPointMetaData& mdata) override;
+    uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
-    void handlerStart(uintptr_t UNUSED(key)) override { start_time_ = T::now(); }
+    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(event)) override { start_time_ = T::now(); }
 
-    void handlerEnd(uintptr_t key) override
+    void afterHandler(uintptr_t key) override
     {
         auto          total_time = T::now() - start_time_;
         event_data_t* entry      = reinterpret_cast<event_data_t*>(key);
@@ -130,7 +139,7 @@ public:
         entry->recv_count++;
     }
 
-    void eventSent(uintptr_t key, Event* UNUSED(ev)) override { reinterpret_cast<event_data_t*>(key)->send_count++; }
+    void eventSent(uintptr_t key, Event*& UNUSED(ev)) override { reinterpret_cast<event_data_t*>(key)->send_count++; }
 
     void outputData(FILE* fp) override;
 

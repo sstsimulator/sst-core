@@ -461,28 +461,6 @@ private:
 };
 
 
-class LinkSendProfileToolList
-{
-public:
-    LinkSendProfileToolList() {}
-
-    inline void eventSent(Event* ev)
-    {
-        for ( auto& x : tools ) {
-            x.first->eventSent(x.second, ev);
-        }
-    }
-
-    void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata)
-    {
-        auto key = tool->registerHandler(mdata);
-        tools.push_back(std::make_pair(tool, key));
-    }
-
-private:
-    std::vector<std::pair<SST::Profile::EventHandlerProfileTool*, uintptr_t>> tools;
-};
-
 Link::Link(LinkId_t tag) :
     send_queue(nullptr),
     delivery_info(0),
@@ -631,7 +609,7 @@ Link::replaceFunctor(Event::HandlerBase* functor)
     type = HANDLER;
     if ( pair_link->delivery_info ) {
         auto* handler = reinterpret_cast<Event::HandlerBase*>(pair_link->delivery_info);
-        functor->transferProfilingInfo(handler);
+        functor->transferAttachedToolInfo(handler);
         delete handler;
     }
     pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
@@ -663,7 +641,13 @@ Link::send_impl(SimTime_t delay, Event* event)
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 
-    if ( profile_tools ) profile_tools->eventSent(event);
+    if ( profile_tools ) {
+        for ( auto& x : *profile_tools ) {
+            x.first->eventSent(x.second, event);
+            // Check to see if the event was deleted.  If so, return.
+            if ( nullptr == event ) return;
+        }
+    }
     send_queue->insert(event);
 }
 
@@ -803,10 +787,11 @@ Link::createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankI
 }
 
 void
-Link::addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata)
+Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
 {
-    if ( !profile_tools ) profile_tools = new LinkSendProfileToolList();
-    profile_tools->addProfileTool(tool, mdata);
+    if ( !profile_tools ) profile_tools = new ToolList();
+    auto key = tool->registerLinkAttachTool(mdata);
+    profile_tools->push_back(std::make_pair(tool, key));
 }
 
 

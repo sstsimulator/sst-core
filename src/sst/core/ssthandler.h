@@ -20,38 +20,6 @@ namespace SST {
 
 class Params;
 
-/**
-   Just a tag class for the various metadata that will need to be
-   stored in the simulation object to allow ProfileTools to get the
-   data they need.
- */
-class HandlerMetaData
-{
-public:
-    virtual ~HandlerMetaData() {}
-};
-
-
-/**
-   Base class for Profile tools for Handlers
-*/
-class HandlerProfileToolAPI : public Profile::ProfileTool
-{
-public:
-    // Register with ELI as base API
-    SST_ELI_REGISTER_PROFILETOOL_API(SST::HandlerProfileToolAPI, Params&)
-
-protected:
-    HandlerProfileToolAPI(const std::string& name) : Profile::ProfileTool(name) {}
-    ~HandlerProfileToolAPI() {}
-
-public:
-    virtual uintptr_t registerHandler(const HandlerMetaData& mdata) = 0;
-
-    virtual void handlerStart(uintptr_t UNUSED(key)) {}
-    virtual void handlerEnd(uintptr_t UNUSED(key)) {}
-};
-
 // This file contains base classes for use as various handlers (object
 // encapsulating callback functions) in SST.  These handlers are
 // checkpointable and encapsulate a pointer to an object and a pointer
@@ -74,7 +42,7 @@ public:
 
 // Note: Until support for legacy handlers are removed, the new-style
 // handlers should use Handler2Base and Handler2 as the preferred
-// names.  After legacy support is remoed with SST 15, both Handler
+// names.  After legacy support is removed with SST 15, both Handler
 // and Handler2 should both point to the new style handlers.  Handler2
 // will be deprecated from SST 15 until SST 16, when Handler will be
 // the approved name.
@@ -121,162 +89,565 @@ public:
 // new Class::Handler2<Class, &Class::callback_function, int>(this, 1)
 
 
-/// Functor classes for Event handling
+/**********************************************************************
+ * Base class templates for handlers.  The base functionlity includes
+ * the common API for all handlers.  It also includes management of
+ * attach points.
+ *
+ * There are 4 total expansions of the template across 2 classes,
+ * based on whether their return and arg values are void or non-void.
+ * Each of these also define the appropriate Attach and/or Intercept
+ * points.
+ **********************************************************************/
 
-class SSTHandlerBaseProfile : public SST::Core::Serialization::serializable
+/**
+   Base template for handlers which take a class defined argument.
+
+   This default expansion covers the case of non-void return
+   type. This version does not support intercepts.
+*/
+template <typename returnT, typename argT>
+class SSTHandlerBase : public SST::Core::Serialization::serializable
 {
-protected:
-    // This class will hold the id for the handler and the profiling
-    // tools attached to it, if profiling is enabled for this handler.
-    class HandlerProfileToolList
+public:
+    /**
+       Attach Point to get notified when a handler starts and stops.
+       This class is used in conjuction with a Tool type base class to
+       create various tool types to attach to the handler.
+    */
+    class AttachPoint
     {
-        static std::atomic<HandlerId_t> id_counter;
-        HandlerId_t                     my_id;
-
     public:
-        HandlerProfileToolList();
-
-        void handlerStart()
-        {
-            for ( auto& x : tools )
-                x.first->handlerStart(x.second);
-        }
-        void handlerEnd()
-        {
-            for ( auto& x : tools )
-                x.first->handlerEnd(x.second);
-        }
+        AttachPoint() {}
+        virtual ~AttachPoint() {}
 
         /**
-           Adds a profile tool the the list and registers this handler
-           with the profile tool
-         */
-        void addProfileTool(HandlerProfileToolAPI* tool, const HandlerMetaData& mdata)
-        {
-            auto key = tool->registerHandler(mdata);
-            tools.push_back(std::make_pair(tool, key));
-        }
+           Function that will be called when a handler is registered
+           with the tool implementing the attach point.  The metadata
+           passed in will be dependent on what type of tool this is
+           attached to.  The uintptr_t returned from this function
+           will be passed into the beforeHandler() and afterHandler()
+           functions.
 
-        HandlerId_t getId() { return my_id; }
+           @param mdata Metadata to be passed into the tool
 
+           @return Opaque key that will be passed back into
+           beforeHandler() and afterHandler() to identify the source
+           of the calls
+        */
+        virtual uintptr_t registerHandler(const AttachPointMetaData& mdata) = 0;
 
-    private:
-        std::vector<std::pair<HandlerProfileToolAPI*, uintptr_t>> tools;
+        /**
+           Function to be called before the handler is called.
+
+           @key uintptr_t returned from registerHandler() when handler
+           was registered with the tool
+
+           @arg argument that will be passed to the handler function.
+           If argT is a pointer, this will be passed as a const
+           pointer, if not, it will be passed as a const reference
+        */
+        virtual void beforeHandler(
+            uintptr_t                                                                                    key,
+            std::conditional_t<std::is_pointer_v<argT>, const std::remove_pointer_t<argT>*, const argT&> arg) = 0;
+
+        /**
+           Function to be called after the handler is called.  The key
+           passed in is the uintptr_t returned from registerHandler()
+
+           @param key uintptr_t returned from registerHandler() when
+           handler was registered with the tool
+
+           @param ret_value value that was returned by the handler. If
+           retunT is a pointer, this will be passed as a const
+           pointer, if not, it will be passed as a const reference
+        */
+        virtual void afterHandler(
+            uintptr_t key,
+            std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
+                ret_value) = 0;
     };
 
-    // List of profiling tools attached to this handler
-    HandlerProfileToolList* profile_tools;
+private:
+    using ToolList           = std::vector<std::pair<AttachPoint*, uintptr_t>>;
+    ToolList* attached_tools = nullptr;
 
-
-public:
-    SSTHandlerBaseProfile() : profile_tools(nullptr) {}
-
-    virtual ~SSTHandlerBaseProfile()
-    {
-        if ( profile_tools ) delete profile_tools;
-    }
-
-    void addProfileTool(HandlerProfileToolAPI* tool, const HandlerMetaData& mdata)
-    {
-        if ( !profile_tools ) profile_tools = new HandlerProfileToolList();
-        profile_tools->addProfileTool(tool, mdata);
-    }
-
-    void transferProfilingInfo(SSTHandlerBaseProfile* handler)
-    {
-        if ( handler->profile_tools ) {
-            profile_tools          = handler->profile_tools;
-            handler->profile_tools = nullptr;
-        }
-    }
-
-    /**
-       Get the ID for this Handler.  Handler IDs are only used for
-       profiling, so if this function is called, it will also set
-       things up to accept ProfileTools.
-    */
-    HandlerId_t getId()
-    {
-        if ( !profile_tools ) profile_tools = new HandlerProfileToolList();
-        return profile_tools->getId();
-    }
-
-    ImplementVirtualSerializable(SSTHandlerBaseProfile)
-};
-
-
-/// Handlers with 1 handler defined argument to callback from caller
-template <typename returnT, typename argT>
-class SSTHandlerBase : public SSTHandlerBaseProfile
-{
+protected:
     // Implementation of operator() to be done in child classes
     virtual returnT operator_impl(argT) = 0;
 
 public:
-    ~SSTHandlerBase() {}
+    virtual ~SSTHandlerBase() {}
 
     inline returnT operator()(argT arg)
     {
-        if ( profile_tools ) {
-            if constexpr ( std::is_void_v<returnT> ) {
-                profile_tools->handlerStart();
-                operator_impl(arg);
-                profile_tools->handlerEnd();
-                return;
-            }
-            else {
-                profile_tools->handlerStart();
-                auto ret = operator_impl(arg);
-                profile_tools->handlerEnd();
-                return ret;
-            }
-        }
-        return operator_impl(arg);
+        if ( !attached_tools ) return operator_impl(arg);
+
+        // Tools attached
+        for ( auto& x : *attached_tools )
+            x.first->beforeHandler(x.second, arg);
+
+        returnT ret = operator_impl(arg);
+
+        for ( auto& x : *attached_tools )
+            x.first->afterHandler(x.second, ret);
+
+        return ret;
     }
+
+    /**
+       Attaches a tool to the AttachPoint
+
+       @param tool Tool to attach
+
+       @param mdata Metadata to pass to the tool
+    */
+    void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
+    {
+        if ( !attached_tools ) attached_tools = new ToolList();
+
+        auto key = tool->registerHandler(mdata);
+        attached_tools->push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Transfers attached tools from existing handler
+     */
+    void transferAttachedToolInfo(SSTHandlerBase* handler)
+    {
+        if ( handler->attached_tools ) {
+            attached_tools          = handler->attached_tools;
+            handler->attached_tools = nullptr;
+        }
+    }
+
+private:
     ImplementVirtualSerializable(SSTHandlerBase)
 };
 
 
-/// Handlers with no arguments to callback from caller
-template <typename returnT>
-class SSTHandlerBase<returnT, void> : public SSTHandlerBaseProfile
+/**
+   Base template for handlers which take an class defined argument.
+
+   This expansion covers the case of void return type. This version
+   supports intercepts.
+*/
+template <typename argT>
+class SSTHandlerBase<void, argT> : public SST::Core::Serialization::serializable
 {
+public:
+    /**
+       Attach Point to get notified when a handler starts and stops.
+       This class is used in conjuction with a Tool type base class to
+       create various tool types to attach to the handler.
+    */
+    class AttachPoint
+    {
+    public:
+        AttachPoint() {}
+        virtual ~AttachPoint() {}
+
+        /**
+           Function that will be called when a handler is registered
+           with the tool implementing the attach point.  The metadata
+           passed in will be dependent on what type of tool this is
+           attached to.  The uintptr_t returned from this function
+           will be passed into the beforeHandler() and afterHandler()
+           functions.
+
+           @param mdata Metadata to be passed into the tool
+
+           @return Opaque key that will be passed back into
+           beforeHandler() and afterHandler() to identify the source
+           of the calls
+        */
+        virtual uintptr_t registerHandler(const AttachPointMetaData& mdata) = 0;
+
+        /**
+           Function to be called before the handler is called.
+
+           @key uintptr_t returned from registerHandler() when handler
+           was registered with the tool
+
+           @arg argument that will be passed to the handler function.
+           If argT is a pointer, this will be passed as a const
+           pointer, if not, it will be passed as a const reference
+        */
+        virtual void beforeHandler(
+            uintptr_t                                                                                    key,
+            std::conditional_t<std::is_pointer_v<argT>, const std::remove_pointer_t<argT>*, const argT&> arg) = 0;
+
+        /**
+           Function to be called after the handler is called.  The key
+           passed in is the uintptr_t returned from registerHandler()
+
+           @param key uintptr_t returned from registerHandler() when
+           handler was registered with the tool
+        */
+        virtual void afterHandler(uintptr_t key) = 0;
+    };
+
+
+    /**
+       Attach Point to intercept the data being delivered by a
+       Handler.  Class is not usable for Handlers that don't take a
+       parameter and/or return a value
+    */
+    class InterceptPoint
+    {
+    public:
+        /**
+           Function that will be called when a handler is registered
+           with the tool implementing the intercept attach point.  The
+           metadata passed in will be dependent on what type of tool
+           this is attached to.  The uintptr_t returned from this
+           function will be passed into the intercept() function.
+
+           @param mdata Metadata to be passed into the tool
+
+           @return Opaque key that will be passed back into
+           intercept() calls
+        */
+        virtual uintptr_t registerHandlerIntercept(const AttachPointMetaData& mdata) = 0;
+
+        /**
+           Function that will be called before the event handler to
+           let the attach point intercept the data.  The data can be
+           modified, and if cancel is set to true, the handler will
+           not be executed.  If cancel is set to true and the
+           ownership of a pointer is passed by the call to the
+           handler, then the function should also delete the data.
+
+           @param key Key that was returned from
+           registerHandlerIntercept() function
+
+           @param data Data that is to be passed to the handler
+
+           @param[out] cancel Set to true if the handler delivery
+           should be cancelled.
+        */
+        virtual void interceptHandler(uintptr_t key, argT& data, bool& cancel) = 0;
+    };
+
+private:
+    struct ToolList
+    {
+        std::vector<std::pair<AttachPoint*, uintptr_t>>    attach_tools;
+        std::vector<std::pair<InterceptPoint*, uintptr_t>> intercept_tools;
+    };
+    ToolList* attached_tools = nullptr;
 
 protected:
+    // Implementation of operator() to be done in child classes
+    virtual void operator_impl(argT) = 0;
+
+public:
+    virtual ~SSTHandlerBase() {}
+
+    inline void operator()(argT arg)
+    {
+        if ( !attached_tools ) return operator_impl(arg);
+
+        // Tools attached
+        for ( auto& x : attached_tools->attach_tools )
+            x.first->beforeHandler(x.second, arg);
+
+        // Check any intercepts
+
+        bool cancel = false;
+        for ( auto& x : attached_tools->intercept_tools ) {
+            x.first->interceptHandler(x.second, arg, cancel);
+            if ( cancel ) {
+                // Handler cancelled; need to break since arg may
+                // no longer be valid and no other intercepts
+                // should be called
+                break;
+            }
+        }
+        if ( !cancel ) { operator_impl(arg); }
+
+        for ( auto& x : attached_tools->attach_tools )
+            x.first->afterHandler(x.second);
+
+        return;
+    }
+
+
+    /**
+       Attaches a tool to the AttachPoint
+
+       @param tool Tool to attach
+
+       @param mdata Metadata to pass to the tool
+    */
+    void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
+    {
+        if ( !attached_tools ) attached_tools = new ToolList();
+
+        auto key = tool->registerHandler(mdata);
+        attached_tools->attach_tools.push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Transfers attached tools from existing handler
+     */
+    void transferAttachedToolInfo(SSTHandlerBase* handler)
+    {
+        if ( handler->attached_tools ) {
+            attached_tools          = handler->attached_tools;
+            handler->attached_tools = nullptr;
+        }
+    }
+
+private:
+    ImplementVirtualSerializable(SSTHandlerBase)
+};
+
+
+/**
+   Base template for handlers which don't take a class defined
+   argument.
+
+   This expansion covers the case of non-void return type. This
+   version does not support intercepts.
+*/
+template <typename returnT>
+class SSTHandlerBase<returnT, void> : public SST::Core::Serialization::serializable
+{
+public:
+    /**
+       Attach Point to get notified when a handler starts and stops.
+       This class is used in conjuction with a Tool type base class to
+       create various tool types to attach to the handler.
+    */
+    class AttachPoint
+    {
+    public:
+        AttachPoint() {}
+        virtual ~AttachPoint() {}
+
+        /**
+           Function that will be called when a handler is registered
+           with the tool implementing the attach point.  The metadata
+           passed in will be dependent on what type of tool this is
+           attached to.  The uintptr_t returned from this function
+           will be passed into the beforeHandler() and afterHandler()
+           functions.
+
+           @param mdata Metadata to be passed into the tool
+
+           @return Opaque key that will be passed back into
+           beforeHandler() and afterHandler() to identify the source
+           of the calls
+        */
+        virtual uintptr_t registerHandler(const AttachPointMetaData& mdata) = 0;
+
+        /**
+           Function to be called before the handler is called.
+
+           @key uintptr_t returned from registerHandler() when handler
+           was registered with the tool
+        */
+        virtual void beforeHandler(uintptr_t key) = 0;
+
+        /**
+           Function to be called after the handler is called.  The key
+           passed in is the uintptr_t returned from registerHandler()
+
+           @param key uintptr_t returned from registerHandler() when
+           handler was registered with the tool
+
+           @param ret_value value that was returned by the handler. If
+           retunT is a pointer, this will be passed as a const
+           pointer, if not, it will be passed as a const reference
+        */
+        virtual void afterHandler(
+            uintptr_t key,
+            std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
+                ret_value) = 0;
+    };
+
+private:
+    using ToolList           = std::vector<std::pair<AttachPoint*, uintptr_t>>;
+    ToolList* attached_tools = nullptr;
+
+protected:
+    // Implementation of operator() to be done in child classes
     virtual returnT operator_impl() = 0;
 
 public:
-    SSTHandlerBase() {}
-
-    /** Handler function */
     virtual ~SSTHandlerBase() {}
 
     inline returnT operator()()
     {
-        if ( profile_tools ) {
-            if constexpr ( std::is_void_v<returnT> ) {
-                profile_tools->handlerStart();
-                operator_impl();
-                profile_tools->handlerEnd();
-                return;
-            }
-            else {
-                profile_tools->handlerStart();
-                auto ret = operator_impl();
-                profile_tools->handlerEnd();
-                return ret;
-            }
+        if ( attached_tools ) {
+            for ( auto& x : *attached_tools )
+                x.first->beforeHandler(x.second);
+
+            returnT ret = operator_impl();
+
+            for ( auto& x : *attached_tools )
+                x.first->afterHandler(x.second, ret);
+
+            return ret;
         }
         return operator_impl();
     }
+
+    /**
+       Attaches a tool to the AttachPoint
+
+       @param tool Tool to attach
+
+       @param mdata Metadata to pass to the tool
+    */
+    void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
+    {
+        if ( !attached_tools ) attached_tools = new ToolList();
+
+        auto key = tool->registerHandler(mdata);
+        attached_tools->push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Transfers attached tools from existing handler
+     */
+    void transferAttachedToolInfo(SSTHandlerBase* handler)
+    {
+        if ( handler->attached_tools ) {
+            attached_tools          = handler->attached_tools;
+            handler->attached_tools = nullptr;
+        }
+    }
+
+private:
     ImplementVirtualSerializable(SSTHandlerBase)
 };
 
 
-/**************************************
- * Legacy Handlers
- **************************************/
+/**
+   Base template for handlers which don't take a class defined
+   argument.
 
+   This expansion covers the case of void return type. This version
+   does not support intercepts.
+*/
+template <>
+class SSTHandlerBase<void, void> : public SST::Core::Serialization::serializable
+{
+public:
+    /**
+       Attach Point to get notified when a handler starts and stops.
+       This class is used in conjuction with a Tool type base class to
+       create various tool types to attach to the handler.
+    */
+    class AttachPoint
+    {
+    public:
+        AttachPoint() {}
+        virtual ~AttachPoint() {}
+
+        /**
+           Function that will be called when a handler is registered
+           with the tool implementing the attach point.  The metadata
+           passed in will be dependent on what type of tool this is
+           attached to.  The uintptr_t returned from this function
+           will be passed into the beforeHandler() and afterHandler()
+           functions.
+
+           @param mdata Metadata to be passed into the tool
+
+           @return Opaque key that will be passed back into
+           beforeHandler() and afterHandler() to identify the source
+           of the calls
+        */
+        virtual uintptr_t registerHandler(const AttachPointMetaData& mdata) = 0;
+
+        /**
+           Function to be called before the handler is called.
+
+           @key uintptr_t returned from registerHandler() when handler
+           was registered with the tool
+        */
+        virtual void beforeHandler(uintptr_t key) = 0;
+
+        /**
+           Function to be called after the handler is called.  The key
+           passed in is the uintptr_t returned from registerHandler()
+
+           @param key uintptr_t returned from registerHandler() when
+           handler was registered with the tool
+        */
+        virtual void afterHandler(uintptr_t key) = 0;
+    };
+
+private:
+    using ToolList           = std::vector<std::pair<AttachPoint*, uintptr_t>>;
+    ToolList* attached_tools = nullptr;
+
+protected:
+    // Implementation of operator() to be done in child classes
+    virtual void operator_impl() = 0;
+
+public:
+    virtual ~SSTHandlerBase() {}
+
+    inline void operator()()
+    {
+        if ( attached_tools ) {
+            for ( auto& x : *attached_tools )
+                x.first->beforeHandler(x.second);
+
+            operator_impl();
+
+            for ( auto& x : *attached_tools )
+                x.first->afterHandler(x.second);
+
+            return;
+        }
+        return operator_impl();
+    }
+
+    /**
+       Attaches a tool to the AttachPoint
+
+       @param tool Tool to attach
+
+       @param mdata Metadata to pass to the tool
+    */
+    void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
+    {
+        if ( !attached_tools ) attached_tools = new ToolList();
+
+        auto key = tool->registerHandler(mdata);
+        attached_tools->push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Transfers attached tools from existing handler
+     */
+    void transferAttachedToolInfo(SSTHandlerBase* handler)
+    {
+        if ( handler->attached_tools ) {
+            attached_tools          = handler->attached_tools;
+            handler->attached_tools = nullptr;
+        }
+    }
+
+private:
+    ImplementVirtualSerializable(SSTHandlerBase)
+};
+
+
+/**********************************************************************
+ * Legacy Handlers
+ *
+ * These handlers do not support checkpointing and will be removed in
+ * SST 15.
+ **********************************************************************/
+
+template <typename returnT>
+using SSTHandlerBaseNoArgs = SSTHandlerBase<returnT, void>;
 /**
  * Handler class with user-data argument
  */
@@ -332,68 +703,6 @@ public:
     NotSerializable(SSTHandler)
 };
 
-/// Handlers with no arguments to callback from caller
-template <typename returnT>
-class SSTHandlerBaseNoArgs : public SSTHandlerBaseProfile
-{
-
-protected:
-    virtual returnT operator_impl() = 0;
-
-public:
-    SSTHandlerBaseNoArgs() {}
-
-    /** Handler function */
-    virtual ~SSTHandlerBaseNoArgs() {}
-
-    inline returnT operator()()
-    {
-        if ( profile_tools ) {
-            if constexpr ( std::is_void_v<returnT> ) {
-                profile_tools->handlerStart();
-                operator_impl();
-                profile_tools->handlerEnd();
-                return;
-            }
-            else {
-                profile_tools->handlerStart();
-                auto ret = operator_impl();
-                profile_tools->handlerEnd();
-                return ret;
-            }
-        }
-        return operator_impl();
-    }
-    ImplementVirtualSerializable(SSTHandlerBaseNoArgs)
-};
-
-
-template <>
-class SSTHandlerBaseNoArgs<void> : public SSTHandlerBaseProfile
-{
-
-protected:
-    virtual void operator_impl() = 0;
-
-public:
-    SSTHandlerBaseNoArgs() {}
-
-    /** Handler function */
-    virtual ~SSTHandlerBaseNoArgs() {}
-
-    inline void operator()()
-    {
-        if ( profile_tools ) {
-            profile_tools->handlerStart();
-            operator_impl();
-            profile_tools->handlerEnd();
-            return;
-        }
-        return operator_impl();
-    }
-
-    ImplementVirtualSerializable(SSTHandlerNoArgs)
-};
 
 /**
  * Event Handler class with user-data argument
@@ -414,7 +723,7 @@ public:
      * @param data - Additional argument to pass to handler
      */
     SSTHandlerNoArgs(classT* const object, PtrMember member, dataT data) :
-        SSTHandlerBaseNoArgs<returnT>(),
+        SSTHandlerBase<returnT, void>(),
         object(object),
         member(member),
         data(data)
@@ -443,7 +752,7 @@ public:
      * @param member - Member function to call as the handler
      */
     SSTHandlerNoArgs(classT* const object, PtrMember member) :
-        SSTHandlerBaseNoArgs<returnT>(),
+        SSTHandlerBase<returnT, void>(),
         member(member),
         object(object)
     {}
@@ -454,9 +763,11 @@ public:
 };
 
 
-/**************************************
- * New style Handlers
- **************************************/
+/**********************************************************************
+ * New Style Handlers
+ *
+ * These handlers support checkpointing
+ **********************************************************************/
 
 /**
    Base template for the class.  If this one gets chosen, then there
@@ -466,7 +777,7 @@ template <typename returnT, typename argT, typename classT, typename dataT, auto
 class SSTHandler2 : public SSTHandlerBase<returnT, argT>
 {
 
-    // This has to be dependent on a tenplate, otherwise it always
+    // This has to be dependent on a template, otherwise it always
     // assers.  Need to make sure it covers both cases to assert
     // if this template is expanded.
     static_assert(std::is_fundamental<dataT>::value, "Mismatched handler templates.");
@@ -479,8 +790,6 @@ class SSTHandler2 : public SSTHandlerBase<returnT, argT>
  */
 template <typename returnT, typename argT, typename classT, typename dataT, returnT (classT::*funcT)(argT, dataT)>
 class SSTHandler2<returnT, argT, classT, dataT, funcT> : public SSTHandlerBase<returnT, argT>
-// template <typename returnT, typename argT, typename classT, typename dataT, auto funcT>
-// class SSTHandler2 : public SSTHandlerBase<returnT, argT>
 {
 private:
     classT* object;
@@ -595,36 +904,6 @@ public:
 
     ImplementSerializable(SSTHandler2)
 };
-
-#if 0
-
-/**
- * Event Handler class with no user-data.
- */
-template <typename returnT, typename classT>
-class SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
-{
-private:
-    typedef returnT (classT::*PtrMember)();
-    const PtrMember member;
-    classT*         object;
-
-public:
-    /** Constructor
-     * @param object - Pointer to Object upon which to call the handler
-     * @param member - Member function to call as the handler
-     */
-    SSTHandlerNoArgs(classT* const object, PtrMember member) :
-        SSTHandlerBaseNoArgs<returnT>(),
-        member(member),
-        object(object)
-    {}
-
-    void operator_impl() override { return (object->*member)(); }
-
-    NotSerializable(SSTHandlerNoArgs)
-};
-#endif
 
 } // namespace SST
 

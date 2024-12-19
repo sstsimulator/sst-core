@@ -217,7 +217,7 @@ private:
     ImplementSerializable(SST::EmptyEvent)
 };
 
-class EventHandlerMetaData : public HandlerMetaData
+class EventHandlerMetaData : public AttachPointMetaData
 {
 public:
     const ComponentId_t comp_id;
