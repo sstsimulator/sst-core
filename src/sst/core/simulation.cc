@@ -2088,7 +2088,9 @@ SST_Exit(int exit_code)
     static int exit_once = (exit(exit_code), 0);
 #endif
 
-    // Should never get here
+    // Should never get here, but need to use exit_once to avoid
+    // compiler warning
+    printf("exit_once = %d\n", exit_once);
     std::terminate();
 }
 

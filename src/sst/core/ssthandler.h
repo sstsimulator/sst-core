@@ -389,6 +389,21 @@ public:
     }
 
     /**
+       Attaches a tool to the AttachPoint
+
+       @param tool Tool to attach
+
+       @param mdata Metadata to pass to the tool
+    */
+    void attachInterceptTool(InterceptPoint* tool, const AttachPointMetaData& mdata)
+    {
+        if ( !attached_tools ) attached_tools = new ToolList();
+
+        auto key = tool->registerHandlerIntercept(mdata);
+        attached_tools->intercept_tools.push_back(std::make_pair(tool, key));
+    }
+
+    /**
        Transfers attached tools from existing handler
      */
     void transferAttachedToolInfo(SSTHandlerBase* handler)
