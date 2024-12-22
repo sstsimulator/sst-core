@@ -23,7 +23,7 @@ namespace SST {
 namespace Profile {
 
 
-ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) : HandlerProfileToolAPI(name)
+ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) : ProfileTool(name)
 {
     std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
@@ -41,7 +41,7 @@ ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params
 }
 
 std::string
-ClockHandlerProfileTool::getKeyForHandler(const HandlerMetaData& mdata)
+ClockHandlerProfileTool::getKeyForHandler(const AttachPointMetaData& mdata)
 {
     const ClockHandlerMetaData& data = dynamic_cast<const ClockHandlerMetaData&>(mdata);
 
@@ -71,13 +71,13 @@ ClockHandlerProfileToolCount::ClockHandlerProfileToolCount(const std::string& na
 {}
 
 uintptr_t
-ClockHandlerProfileToolCount::registerHandler(const HandlerMetaData& mdata)
+ClockHandlerProfileToolCount::registerHandler(const AttachPointMetaData& mdata)
 {
     return reinterpret_cast<uintptr_t>(&counts_[getKeyForHandler(mdata)]);
 }
 
 void
-ClockHandlerProfileToolCount::handlerStart(uintptr_t key)
+ClockHandlerProfileToolCount::beforeHandler(uintptr_t key, const Cycle_t& UNUSED(cycle))
 {
     (*reinterpret_cast<uint64_t*>(key))++;
 }
@@ -101,7 +101,7 @@ ClockHandlerProfileToolTime<T>::ClockHandlerProfileToolTime(const std::string& n
 
 template <typename T>
 uintptr_t
-ClockHandlerProfileToolTime<T>::registerHandler(const HandlerMetaData& mdata)
+ClockHandlerProfileToolTime<T>::registerHandler(const AttachPointMetaData& mdata)
 {
     return reinterpret_cast<uintptr_t>(&times_[getKeyForHandler(mdata)]);
 }

@@ -28,7 +28,6 @@ class LinkPair;
 class Simulation_impl;
 
 class UnitAlgebra;
-class LinkSendProfileToolList;
 
 namespace Profile {
 class EventHandlerProfileTool;
@@ -56,6 +55,43 @@ class alignas(64) Link
     friend class SST::Core::Serialization::serialize_impl<Link*>;
 
 public:
+    /**
+       Attach point for inspecting, modifying or dropping events
+       sent on the Link.
+
+       NOTE: Using the Link::AttachPoint will noticeably affect the
+       performance of sending events on Links and it is recommended
+       that, if possible, Event::HandlerBase::AttachPoint or
+       Event::HandlerBase::InterceptPoint be used instead.
+     */
+    class AttachPoint
+    {
+    public:
+        /**
+           Function that will be called when an attach point is
+           registered with the tool implementing the attach point.
+           The metadata passed in will be dependent on what type of
+           tool this is attached to.  The uintptr_t returned from this
+           function will be passed into the eventSent() function.
+
+           @param mdata Metadata to be passed into the tool
+
+           @return Opaque key that will be passed back into
+           eventSent() to identify the source of the call
+         */
+        virtual uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) = 0;
+
+        /**
+           Function that will be called when an event is sent on a
+           link with registered attach points.  If ev is set to
+           nullptr, then the event will not be delivered and the tool
+           should delete the original event.
+
+           @param key Opaque key returned from registerLinkAttachTool()
+         */
+        virtual void eventSent(uintptr_t key, Event*& ev) = 0;
+    };
+
     friend class LinkPair;
     friend class RankSync;
     friend class ThreadSync;
@@ -285,10 +321,11 @@ private:
     createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankInfo remote_rank, uintptr_t remote_ptr);
 
 
-    void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata);
+    void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata);
 
 
-    LinkSendProfileToolList* profile_tools;
+    using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;
+    ToolList* profile_tools;
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

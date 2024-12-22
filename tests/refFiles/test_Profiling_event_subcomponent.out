@@ -1,0 +1,92 @@
+15 received 39587 messages
+14 received 39778 messages
+13 received 40293 messages
+12 received 40349 messages
+11 received 39780 messages
+10 received 40013 messages
+9 received 40303 messages
+8 received 40432 messages
+7 received 39715 messages
+6 received 39834 messages
+5 received 40182 messages
+4 received 40600 messages
+3 received 39372 messages
+2 received 39561 messages
+1 received 39952 messages
+0 received 40185 messages
+
+------------------------------------------------------------
+Profiling Output:
+
+-----------------------------
+Rank = 0, thread = 0:
+
+events
+Name, recv count
+component0:ports[0], 9908
+component0:ports[1], 9888
+component0:ports[2]:port, 10280
+component0:ports[3]:port, 10109
+component10:ports[0], 9981
+component10:ports[1], 10137
+component10:ports[2]:port, 9962
+component10:ports[3]:port, 9933
+component11:ports[0], 10082
+component11:ports[1], 9970
+component11:ports[2]:port, 9773
+component11:ports[3]:port, 9955
+component12:ports[0], 10184
+component12:ports[1], 10030
+component12:ports[2]:port, 10083
+component12:ports[3]:port, 10052
+component13:ports[0], 9893
+component13:ports[1], 10086
+component13:ports[2]:port, 10209
+component13:ports[3]:port, 10105
+component14:ports[0], 9881
+component14:ports[1], 10025
+component14:ports[2]:port, 9868
+component14:ports[3]:port, 10004
+component15:ports[0], 9948
+component15:ports[1], 9999
+component15:ports[2]:port, 9850
+component15:ports[3]:port, 9790
+component1:ports[0], 9848
+component1:ports[1], 10180
+component1:ports[2]:port, 9865
+component1:ports[3]:port, 10059
+component2:ports[0], 9833
+component2:ports[1], 9902
+component2:ports[2]:port, 9903
+component2:ports[3]:port, 9923
+component3:ports[0], 9877
+component3:ports[1], 9769
+component3:ports[2]:port, 9824
+component3:ports[3]:port, 9902
+component4:ports[0], 10287
+component4:ports[1], 10108
+component4:ports[2]:port, 10161
+component4:ports[3]:port, 10044
+component5:ports[0], 9941
+component5:ports[1], 10313
+component5:ports[2]:port, 9993
+component5:ports[3]:port, 9935
+component6:ports[0], 9829
+component6:ports[1], 10042
+component6:ports[2]:port, 9884
+component6:ports[3]:port, 10079
+component7:ports[0], 9903
+component7:ports[1], 10058
+component7:ports[2]:port, 9952
+component7:ports[3]:port, 9802
+component8:ports[0], 10068
+component8:ports[1], 10054
+component8:ports[2]:port, 10204
+component8:ports[3]:port, 10106
+component9:ports[0], 10155
+component9:ports[1], 10139
+component9:ports[2]:port, 10025
+component9:ports[3]:port, 9984
+
+------------------------------------------------------------
+Simulation is complete, simulated time: 10 us
