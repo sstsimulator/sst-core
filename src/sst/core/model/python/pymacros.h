@@ -46,6 +46,12 @@ REENABLE_WARNING
 #define SST_TP_WATCHED
 #endif
 
+#if PY_MINOR_VERSION >= 13
+#define SST_TP_VERSIONS_USED 0,
+#else
+#define SST_TP_VERSIONS_USED
+#endif
+
 // Number protocol macros
 #define SST_NB_DIVIDE(x)
 #define SST_NB_COERCE

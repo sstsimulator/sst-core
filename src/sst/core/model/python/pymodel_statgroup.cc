@@ -214,6 +214,7 @@ PyTypeObject PyModel_StatGroupType = {
     SST_TP_VECTORCALL                     /* Python3.8+ */
         SST_TP_PRINT_DEP                  /* Python3.8 only */
             SST_TP_WATCHED                /* Python3.12+ */
+                SST_TP_VERSIONS_USED      /* Python3.13+ only */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -347,6 +348,7 @@ PyTypeObject PyModel_StatOutputType = {
     SST_TP_VECTORCALL                      /* Python3.8+ */
         SST_TP_PRINT_DEP                   /* Python3.8 only */
             SST_TP_WATCHED                 /* Python3.12+ */
+                SST_TP_VERSIONS_USED       /* Python3.13+ only */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
