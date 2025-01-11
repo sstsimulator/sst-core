@@ -88,56 +88,57 @@ DISABLE_WARN_DEPRECATED_DECLARATION
 #endif
 #endif
 static PyTypeObject ModuleLoaderType = {
-    SST_PY_OBJ_HEAD "ModuleLoader", /* tp_name */
-    sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
-    0,                              /* tp_itemsize */
-    nullptr,                        /* tp_dealloc */
-    0,                              /* tp_vectorcall_offset */
-    nullptr,                        /* tp_getattr */
-    nullptr,                        /* tp_setattr */
-    nullptr,                        /* tp_as_sync */
-    nullptr,                        /* tp_repr */
-    nullptr,                        /* tp_as_number */
-    nullptr,                        /* tp_as_sequence */
-    nullptr,                        /* tp_as_mapping */
-    nullptr,                        /* tp_hash */
-    nullptr,                        /* tp_call */
-    nullptr,                        /* tp_str */
-    nullptr,                        /* tp_getattro */
-    nullptr,                        /* tp_setattro */
-    nullptr,                        /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags */
-    "SST Module Loader",            /* tp_doc */
-    nullptr,                        /* tp_traverse */
-    nullptr,                        /* tp_clear */
-    nullptr,                        /* tp_rich_compare */
-    0,                              /* tp_weaklistoffset */
-    nullptr,                        /* tp_iter */
-    nullptr,                        /* tp_iternext */
-    mlMethods,                      /* tp_methods */
-    nullptr,                        /* tp_members */
-    nullptr,                        /* tp_getset */
-    nullptr,                        /* tp_base */
-    nullptr,                        /* tp_dict */
-    nullptr,                        /* tp_descr_get */
-    nullptr,                        /* tp_descr_set */
-    0,                              /* tp_dictoffset */
-    nullptr,                        /* tp_init */
-    nullptr,                        /* tp_alloc */
-    nullptr,                        /* tp_new */
-    nullptr,                        /* tp_free */
-    nullptr,                        /* tp_is_gc */
-    nullptr,                        /* tp_bases */
-    nullptr,                        /* tp_mro */
-    nullptr,                        /* tp_cache */
-    nullptr,                        /* tp_subclasses */
-    nullptr,                        /* tp_weaklist */
-    nullptr,                        /* tp_del */
-    0,                              /* tp_version_tag */
-    nullptr,                        /* tp_finalize */
-    SST_TP_VECTORCALL               /* Python3.8+ */
-        SST_TP_PRINT_DEP            /* Python3.8 only */
-            SST_TP_WATCHED          /* Python3.12+ */
+    SST_PY_OBJ_HEAD "ModuleLoader",  /* tp_name */
+    sizeof(ModuleLoaderPy_t),        /* tp_basicsize */
+    0,                               /* tp_itemsize */
+    nullptr,                         /* tp_dealloc */
+    0,                               /* tp_vectorcall_offset */
+    nullptr,                         /* tp_getattr */
+    nullptr,                         /* tp_setattr */
+    nullptr,                         /* tp_as_sync */
+    nullptr,                         /* tp_repr */
+    nullptr,                         /* tp_as_number */
+    nullptr,                         /* tp_as_sequence */
+    nullptr,                         /* tp_as_mapping */
+    nullptr,                         /* tp_hash */
+    nullptr,                         /* tp_call */
+    nullptr,                         /* tp_str */
+    nullptr,                         /* tp_getattro */
+    nullptr,                         /* tp_setattro */
+    nullptr,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,              /* tp_flags */
+    "SST Module Loader",             /* tp_doc */
+    nullptr,                         /* tp_traverse */
+    nullptr,                         /* tp_clear */
+    nullptr,                         /* tp_rich_compare */
+    0,                               /* tp_weaklistoffset */
+    nullptr,                         /* tp_iter */
+    nullptr,                         /* tp_iternext */
+    mlMethods,                       /* tp_methods */
+    nullptr,                         /* tp_members */
+    nullptr,                         /* tp_getset */
+    nullptr,                         /* tp_base */
+    nullptr,                         /* tp_dict */
+    nullptr,                         /* tp_descr_get */
+    nullptr,                         /* tp_descr_set */
+    0,                               /* tp_dictoffset */
+    nullptr,                         /* tp_init */
+    nullptr,                         /* tp_alloc */
+    nullptr,                         /* tp_new */
+    nullptr,                         /* tp_free */
+    nullptr,                         /* tp_is_gc */
+    nullptr,                         /* tp_bases */
+    nullptr,                         /* tp_mro */
+    nullptr,                         /* tp_cache */
+    nullptr,                         /* tp_subclasses */
+    nullptr,                         /* tp_weaklist */
+    nullptr,                         /* tp_del */
+    0,                               /* tp_version_tag */
+    nullptr,                         /* tp_finalize */
+    SST_TP_VECTORCALL                /* Python3.8+ */
+        SST_TP_PRINT_DEP             /* Python3.8 only */
+            SST_TP_WATCHED           /* Python3.12+ */
+                SST_TP_VERSIONS_USED /* Python3.13+ */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
