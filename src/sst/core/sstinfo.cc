@@ -1026,8 +1026,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
                 // called out (this will be the case if printAll is
                 // false, but shouldPrintElement() is true)
                 bool is_alias = (pair.second->getAlias() == pair.first);
-                bool print    = (!is_alias && printAll) ||
-                             (is_alias && !printAll && shouldPrintElement(getLibraryName(), pair.first));
+                bool print = (!is_alias && printAll) || (!printAll && shouldPrintElement(getLibraryName(), pair.first));
 
                 if ( print ) {
                     os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
