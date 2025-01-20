@@ -219,9 +219,9 @@ PyTypeObject PyModel_StatType = {
     0,                               /* tp_version_tag */
     nullptr,                         /* tp_finalize */
     SST_TP_VECTORCALL                /* Python3.8+ */
-        SST_TP_PRINT_DEP             /* Python3.8 only */
-            SST_TP_WATCHED           /* Python3.12+ */
-                SST_TP_VERSIONS_USED /* Python3.13+ only */
+    SST_TP_PRINT_DEP                 /* Python3.8 only */
+    SST_TP_WATCHED                   /* Python3.12+ */
+    SST_TP_VERSIONS_USED             /* Python3.13+ only */
 };
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

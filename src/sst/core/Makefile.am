@@ -331,6 +331,7 @@ include model/Makefile.inc
 include shared/Makefile.inc
 include impl/Makefile.inc
 include sync/Makefile.inc
+include util/Makefile.inc
 include testingframework/Makefile.inc
 include testElements/Makefile.inc
 

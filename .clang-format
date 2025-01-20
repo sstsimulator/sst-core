@@ -204,5 +204,9 @@ WhitespaceSensitiveMacros:
   - CF_SWIFT_NAME
   - SST_SER
   - SST_SER_AS_PTR
+  - SST_TP_VECTORCALL
+  - SST_TP_PRINT_DEP
+  - SST_TP_WATCHED
+  - SST_TP_VERSIONS_USED
 ...
 
