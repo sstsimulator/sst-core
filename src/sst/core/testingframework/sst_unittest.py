@@ -302,8 +302,7 @@ class SSTTestCase(unittest.TestCase):
             check_param_type("num_threads", num_threads, int)
         if global_args is not None:
             check_param_type("global_args", global_args, str)
-        if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
-            raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
+        check_param_type("timeout_sec", timeout_sec, int)
         if expected_rc is not None:
             check_param_type("expected_rc", expected_rc, int)
 
