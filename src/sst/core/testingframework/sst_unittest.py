@@ -59,11 +59,10 @@ class SSTTestCase(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         # NOTE: __init__ is called at startup for all tests before any
         #       setUpModules(), setUpClass(), setUp() and the like are called.
-        super(SSTTestCase, self).__init__(methodName)
+        super().__init__(methodName)
         self.testname = methodName
-        parent_module_path: str = os.path.dirname(sys.modules[self.__class__.__module__].__file__)  # type: ignore
+        parent_module_path: str = os.path.dirname(sys.modules[self.__class__.__module__].__file__)  # type: ignore [assignment,type-var]
         self._testsuite_dirpath = parent_module_path
-        #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
         self.initializeClass(self.testname)
         self._start_test_time = time.time()
         self._stop_test_time = time.time()
@@ -196,7 +195,7 @@ class SSTTestCase(unittest.TestCase):
         """ Return the directory path of the testsuite that is being run
 
         Returns:
-            (str)The path of the testsite directory
+            (str) The path of the testsite directory
         """
         return self._testsuite_dirpath
 
@@ -332,8 +331,8 @@ class SSTTestCase(unittest.TestCase):
         numa_param = ""
         if num_ranks > 1:
             # Check to see if mpirun is available
-            rtn = os.system("which mpirun > /dev/null 2>&1")
-            if rtn == 0:
+            rtn_mpirun = os.system("which mpirun > /dev/null 2>&1")
+            if rtn_mpirun == 0:
                 mpi_avail = True
 
             numa_param = "-map-by numa:PE={0}".format(num_threads)
