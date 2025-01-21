@@ -28,6 +28,7 @@ import unittest
 import threading
 import signal
 import time
+import multiprocessing
 from typing import Optional
 
 import test_engine_globals
