@@ -235,9 +235,23 @@ class SSTTestCase(unittest.TestCase):
 ### Method to run an SST simulation
 ################################################################################
 
-    def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
-                other_args="", num_ranks=None, num_threads=None, global_args=None,
-                timeout_sec=120, expected_rc=0, check_sdl_file=True, send_signal=signal.NSIG, signal_sec=3):
+    def run_sst(
+        self,
+        sdl_file: str,
+        out_file: str,
+        err_file: Optional[str] = None,
+        set_cwd: Optional[str] = None,
+        mpi_out_files: str = "",
+        other_args: str = "",
+        num_ranks: Optional[int] = None,
+        num_threads: Optional[int] = None,
+        global_args: Optional[str] = None,
+        timeout_sec: int = 120,
+        expected_rc: int = 0,
+        check_sdl_file: bool = True,
+        send_signal: int = signal.NSIG,
+        signal_sec: int = 3
+    ) -> str:
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
             timeouts.  On an error or timeout, a SSTTestCase.assert() will be generated
@@ -433,7 +447,7 @@ def tearDownModule() -> None:
 
 ###################
 
-def setUpModuleConcurrent(test):
+def setUpModuleConcurrent(test: SSTTestCase) -> None:
     """ Perform setup functions before the testing Module loads.
 
         This function is called by the Frameworks before tests in any TestCase
@@ -461,7 +475,7 @@ def setUpModuleConcurrent(test):
 
 ###
 
-def tearDownModuleConcurrent(test):
+def tearDownModuleConcurrent(test: SSTTestCase) -> None:
     """ Perform teardown functions immediately after a testing Module finishes.
 
         This function is called by the Frameworks after all tests in all TestCases
