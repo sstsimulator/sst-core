@@ -9,7 +9,7 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 import sst
-import inspect, os, sys
+import inspect
 
 currentframe = inspect.currentframe()
 assert currentframe is not None
