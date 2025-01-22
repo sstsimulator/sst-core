@@ -79,16 +79,16 @@ def processParamSets(groups: ET.Element) -> None:
     for group in groups:
         params = dict()
         for p in group:
-            params[getParamName(p)] = processString(p.text.strip())  # type: ignore
+            params[getParamName(p)] = processString(p.text.strip())  # type: ignore [union-attr]
         sstParams[group.tag] = params
 
 
 def processVars(varNode: ET.Element) -> None:
     for var in varNode:
-        sstVars[var.tag] = processString(var.text.strip())  # type: ignore
+        sstVars[var.tag] = processString(var.text.strip())  # type: ignore [union-attr]
 
 def processConfig(cfg: ET.Element) -> None:
-    for line in cfg.text.strip().splitlines():  # type: ignore
+    for line in cfg.text.strip().splitlines():  # type: ignore [union-attr]
         var, val = line.split('=')
         sst.setProgramOption(var, processString(val)) # strip quotes
 
@@ -107,7 +107,7 @@ def buildComp(compNode: ET.Element) -> None:
             for paramInc in paramsNode.attrib['include'].split(','):
                 params.update(sstParams[processString(paramInc)])
         for p in paramsNode:
-            params[getParamName(p)] = processString(p.text.strip())  # type: ignore
+            params[getParamName(p)] = processString(p.text.strip())  # type: ignore [union-attr]
 
     comp.addParams(params)
 
@@ -147,7 +147,7 @@ def build(root: ET.Element) -> None:
     if paramSets is not None:
         processParamSets(paramSets)
     if timebase is not None:
-        sst.setProgramOption('timebase', timebase.text.strip())  # type: ignore
+        sst.setProgramOption('timebase', timebase.text.strip())  # type: ignore [union-attr]
     if cfg is not None:
         processConfig(cfg)
     if graph is not None:
