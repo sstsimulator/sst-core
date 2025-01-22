@@ -25,7 +25,7 @@ import ast
 import inspect
 import signal
 from subprocess import TimeoutExpired
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 import test_engine_globals
 
@@ -40,8 +40,14 @@ class OSCommand:
     """
 ###
 
-    def __init__(self, cmd_str, output_file_path=None, error_file_path=None,
-                 set_cwd=None, use_shell=False):
+    def __init__(
+        self,
+        cmd_str: str,
+        output_file_path: Optional[str] = None,
+        error_file_path: Optional[str] = None,
+        set_cwd: Optional[str] = None,
+        use_shell: bool = False,
+    ) -> None:
         """
             Args:
                 cmd_str (str): The command to be executed
@@ -55,10 +61,13 @@ class OSCommand:
         """
         self._output_file_path = None
         self._error_file_path = None
-        self._cmd_str = None
-        self._process = None
+        self._cmd_str = [""]
+        self._process: subprocess.Popen[str] = None  # type: ignore [assignment]
         self._timeout_sec = 60
-        self._run_status = None
+        # Use an invalid return code rather than None to identify an
+        # unintialized value.
+        self._run_status_sentinel = -999
+        self._run_status = self._run_status_sentinel
         self._run_output = ''
         self._run_error = ''
         self._run_timeout = False
@@ -71,7 +80,12 @@ class OSCommand:
         self._signal_sec = 3
 ####
 
-    def run(self, timeout_sec=60, send_signal=signal.NSIG, signal_sec=3, **kwargs):
+    def run(self,
+        timeout_sec: int = 60,
+        send_signal: int = signal.NSIG,
+        signal_sec: int = 3,
+        **kwargs: Any,
+    ) -> "OSCommandResult":
         """ Run a command then return and OSCmdRtn object.
 
             Args:
@@ -79,8 +93,7 @@ class OSCommand:
                                    will be terminated and a timeout error will occur.
                 kwargs: Extra parameters e.g., timeout_sec to override the default timeout
         """
-        if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
-            raise ValueError("ERROR: Timeout must be an int or a float")
+        check_param_type("timeout_sec", timeout_sec, int)
 
         self._timeout_sec = timeout_sec
         self._signal = send_signal
@@ -92,6 +105,7 @@ class OSCommand:
         thread.join(self._timeout_sec)
         if thread.is_alive():
             self._run_timeout = True
+            assert self._process is not None
             self._process.kill()
             thread.join()
 
@@ -102,7 +116,7 @@ class OSCommand:
 
 ####
 
-    def _run_cmd_in_subprocess(self, **kwargs):
+    def _run_cmd_in_subprocess(self, **kwargs: Any) -> None:
         """ Run the command in a subprocess """
         file_out = None
         file_err = None
@@ -163,20 +177,17 @@ class OSCommand:
 
 ####
 
-    def _validate_cmd_str(self, cmd_str):
+    def _validate_cmd_str(self, cmd_str: str) -> None:
         """ Validate the cmd_str """
-        if isinstance(cmd_str, str):
-            if cmd_str != "":
-                cmd_str = shlex.split(cmd_str)
-            else:
-                raise ValueError("ERROR: OSCommand() cmd_str must not be empty")
-        else:
+        if not isinstance(cmd_str, str):
             raise ValueError("ERROR: OSCommand() cmd_str must be a string")
-        self._cmd_str = cmd_str
+        elif not cmd_str:
+            raise ValueError("ERROR: OSCommand() cmd_str must not be empty")
+        self._cmd_str = shlex.split(cmd_str)
 
 ####
 
-    def _validate_output_path(self, file_path):
+    def _validate_output_path(self, file_path: Optional[str]) -> Optional[str]:
         """ Validate the output file path """
         if file_path is not None:
             dirpath = os.path.abspath(os.path.dirname(file_path))
@@ -188,12 +199,12 @@ class OSCommand:
 
 ################################################################################
 
-class OSCommandResult():
+class OSCommandResult:
     """ This class returns result data about the OSCommand that was executed """
-    def __init__(self, cmd_str, status, output, error, timeout):
+    def __init__(self, cmd_str: List[str], status: int, output: str, error: str, timeout: bool) -> None:
         """
             Args:
-                cmd_str (str): The command to be executed
+                cmd_str (list[str]): The command to be executed
                 status (int): The return status of the command execution.
                 output (str): The standard output of the command execution.
                 error (str): The error output of the command execution.
@@ -207,7 +218,7 @@ class OSCommandResult():
 
 ####
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         rtn_str = (("Cmd = {0}; Status = {1}; Timeout = {2}; ") +
                    ("Error = {3}; Output = {4}")).format(self._run_cmd_str, \
                     self._run_status, self._run_timeout, self._run_error, \
@@ -216,24 +227,24 @@ class OSCommandResult():
 
 ####
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
 ####
 
-    def cmd(self):
+    def cmd(self) -> List[str]:
         """ return the command that was run """
         return self._run_cmd_str
 
 ####
 
-    def result(self):
+    def result(self) -> int:
         """ return the run status result """
         return self._run_status
 
 ####
 
-    def output(self):
+    def output(self) -> str:
         """ return the run output result """
         # Sometimes the output can be a unicode or a byte string - convert it
         if isinstance(self._run_output, bytes):
@@ -242,7 +253,7 @@ class OSCommandResult():
 
 ####
 
-    def error(self):
+    def error(self) -> str:
         """ return the run error output result """
         # Sometimes the output can be a unicode or a byte string - convert it
         if isinstance(self._run_error, bytes):
@@ -251,13 +262,13 @@ class OSCommandResult():
 
 ####
 
-    def timeout(self):
+    def timeout(self) -> bool:
         """ return true if the run timed out """
         return self._run_timeout
 
 ################################################################################
 
-def check_param_type(varname, vardata, datatype):
+def check_param_type(varname: str, vardata: Any, datatype: Type[Any]) -> None:
     """ Validate a parameter to ensure it is of the correct type.
 
         Args:
@@ -278,11 +289,11 @@ def check_param_type(varname, vardata, datatype):
 
 ################################################################################
 
-def strclass(cls):
+def strclass(cls: Type[Any]) -> str:
     """ Return the classname of a class"""
     return "%s" % (cls.__module__)
 
-def strqual(cls):
+def strqual(cls: Type[Any]) -> str:
     """ Return the qualname of a class"""
     return "%s" % (_qualname(cls))
 
