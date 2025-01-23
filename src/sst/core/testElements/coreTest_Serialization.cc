@@ -35,17 +35,48 @@ namespace CoreTestSerialization {
 
 
 template <typename T>
-bool
-checkSimpleSerializeDeserialize(T data)
+struct checkSimpleSerializeDeserialize
 {
-    auto buffer = SST::Comms::serialize(data);
-    T    result;
-    SST::Comms::deserialize(buffer, result);
-    DISABLE_WARN_MAYBE_UNINITIALIZED
-    bool ret = data == result;
-    REENABLE_WARNING
-    return ret;
+    static bool check(T data)
+    {
+        auto buffer = SST::Comms::serialize(data);
+        T    result;
+        SST::Comms::deserialize(buffer, result);
+        DISABLE_WARN_MAYBE_UNINITIALIZED
+        bool ret = data == result;
+        REENABLE_WARNING
+        return ret;
+    }
 };
+
+template <typename T>
+struct checkSimpleSerializeDeserialize<T*>
+{
+    static bool check(T data)
+    {
+        T*   input  = &data;
+        auto buffer = SST::Comms::serialize(input);
+        T*   result;
+        SST::Comms::deserialize(buffer, result);
+        DISABLE_WARN_MAYBE_UNINITIALIZED
+        bool ret = data == *result;
+        REENABLE_WARNING
+        return ret;
+    }
+
+    static bool check_nullptr()
+    {
+        T*   input  = nullptr;
+        auto buffer = SST::Comms::serialize(input);
+        T*   result;
+        SST::Comms::deserialize(buffer, result);
+        DISABLE_WARN_MAYBE_UNINITIALIZED
+        bool ret = result == nullptr;
+        REENABLE_WARNING
+        return ret;
+    }
+};
+
 
 template <typename T>
 bool
@@ -275,42 +306,113 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // Simple Data Types
         // int8, int16, int32, int64, uint8, uint16, uint32, uint64, float, double, pair<int, int>, string
 
-        passed = checkSimpleSerializeDeserialize<int8_t>(rng->generateNextInt32());
+        passed = checkSimpleSerializeDeserialize<int8_t>::check(rng->generateNextInt32());
         if ( !passed ) out.output("ERROR: int8_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<int16_t>(rng->generateNextInt32());
+        passed = checkSimpleSerializeDeserialize<int16_t>::check(rng->generateNextInt32());
         if ( !passed ) out.output("ERROR: int16_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<int32_t>(rng->generateNextInt32());
+        passed = checkSimpleSerializeDeserialize<int32_t>::check(rng->generateNextInt32());
         if ( !passed ) out.output("ERROR: int32_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<int64_t>(rng->generateNextInt64());
+        passed = checkSimpleSerializeDeserialize<int64_t>::check(rng->generateNextInt64());
         if ( !passed ) out.output("ERROR: int64_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<uint8_t>(rng->generateNextUInt32());
+        passed = checkSimpleSerializeDeserialize<uint8_t>::check(rng->generateNextUInt32());
         if ( !passed ) out.output("ERROR: uint8_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<uint16_t>(rng->generateNextUInt32());
+        passed = checkSimpleSerializeDeserialize<uint16_t>::check(rng->generateNextUInt32());
         if ( !passed ) out.output("ERROR: uint16_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<uint32_t>(rng->generateNextUInt32());
+        passed = checkSimpleSerializeDeserialize<uint32_t>::check(rng->generateNextUInt32());
         if ( !passed ) out.output("ERROR: uint32_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<uint64_t>(rng->generateNextUInt64());
+        passed = checkSimpleSerializeDeserialize<uint64_t>::check(rng->generateNextUInt64());
         if ( !passed ) out.output("ERROR: uint64_t did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<float>(rng->nextUniform() * 1000);
+        passed = checkSimpleSerializeDeserialize<float>::check(rng->nextUniform() * 1000);
         if ( !passed ) out.output("ERROR: float did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<double>(rng->nextUniform() * 1000000);
+        passed = checkSimpleSerializeDeserialize<double>::check(rng->nextUniform() * 1000000);
         if ( !passed ) out.output("ERROR: double did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize<std::string>("test string");
+        passed = checkSimpleSerializeDeserialize<std::string>::check("test string");
         if ( !passed ) out.output("ERROR: string did not serialize/deserialize properly\n");
 
-        passed = checkSimpleSerializeDeserialize(
+        passed = checkSimpleSerializeDeserialize<std::pair<int32_t, int32_t>>::check(
             std::make_pair<int32_t, int32_t>(rng->generateNextInt32(), rng->generateNextInt32()));
         if ( !passed ) out.output("ERROR: pair<int32_t,int32_t> did not serialize/deserialize properly\n");
+    }
+    else if ( test == "pod_ptr" ) {
+        // Test pointers to POD (plain old data) types
+
+        // Simple Data Types
+        // int8, int16, int32, int64, uint8, uint16, uint32, uint64, float, double, string
+        passed = checkSimpleSerializeDeserialize<int8_t*>::check(rng->generateNextInt32());
+        if ( !passed ) out.output("ERROR: int8_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int8_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: int8_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int16_t*>::check(rng->generateNextInt32());
+        if ( !passed ) out.output("ERROR: int16_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int16_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: int16_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int32_t*>::check(rng->generateNextInt32());
+        if ( !passed ) out.output("ERROR: int32_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int32_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: int32_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int64_t*>::check(rng->generateNextInt64());
+        if ( !passed ) out.output("ERROR: int64_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<int64_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: int64_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint8_t*>::check(rng->generateNextUInt32());
+        if ( !passed ) out.output("ERROR: uint8_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint8_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: uint8_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint16_t*>::check(rng->generateNextUInt32());
+        if ( !passed ) out.output("ERROR: uint16_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint16_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: uint16_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint32_t*>::check(rng->generateNextUInt32());
+        if ( !passed ) out.output("ERROR: uint32_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint32_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: uint32_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint64_t*>::check(rng->generateNextUInt64());
+        if ( !passed ) out.output("ERROR: uint64_t* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<uint64_t*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: uint64_t* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<float*>::check(rng->nextUniform() * 1000);
+        if ( !passed ) out.output("ERROR: float* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<float*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: float* nullptr did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<double*>::check(rng->nextUniform() * 1000000);
+        if ( !passed ) out.output("ERROR: double* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<double*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: double* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<std::string*>::check("test string");
+        if ( !passed ) out.output("ERROR: string* did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<std::string*>::check_nullptr();
+        if ( !passed ) out.output("ERROR: string* nullptr did not serialize/deserialize properly\n");
     }
     else if ( test == "ordered_containers" ) {
         // Ordered Containers

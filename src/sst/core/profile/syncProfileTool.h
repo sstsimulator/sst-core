@@ -13,6 +13,7 @@
 #define SST_CORE_PROFILE_SYNCPROFILETOOL_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/profile/profiletool.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/warnmacros.h"

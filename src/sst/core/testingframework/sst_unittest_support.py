@@ -1191,6 +1191,10 @@ def testing_stat_output_diff(
 
 ### Built in LineFilters for filtering diffs
 class LineFilter:
+    def __init__(self):
+        self.apply_to_ref_file = True
+        self.apply_to_out_file = True
+
     """ Base class for filtering lines in diffs
 
         Args:
@@ -1210,6 +1214,7 @@ class StartsWithFilter(LineFilter):
     """ Filters out any line that starts with a specified string
     """
     def __init__(self, prefix: str) -> None:
+        super().__init__()
         self._prefix = prefix;
 
     def filter(self, line: str) -> Optional[str]:
@@ -1229,6 +1234,7 @@ class IgnoreAllAfterFilter(LineFilter):
     """ Filters out any line that starts with a specified string and all lines after it
     """
     def __init__(self, prefix: str, keep_line: bool = False) -> None:
+        super().__init__()
         self._prefix = prefix;
         self._keep_line = keep_line
         self._found = False
@@ -1254,12 +1260,44 @@ class IgnoreAllAfterFilter(LineFilter):
         return line
 
 
+class IgnoreAllBeforeFilter(LineFilter):
+    """ Filters out any line that starts with a specified string and all lines before it
+    """
+    def __init__(self, prefix: str, keep_line: bool = False) -> None:
+        super().__init__()
+        self._prefix = prefix;
+        self._keep_line = keep_line
+        self._found = False
+
+    def reset(self) -> None:
+        self._found = False
+
+    def filter(self, line: str) -> Optional[str]:
+        """ Checks to see if the line starts with the prefix specified in constructor
+
+            Args:
+                line (str): Line to check
+
+            Returns:
+                line if line does not start with the prefix and None if it does
+        """
+        if self._found: return line
+        if line.startswith(self._prefix):
+            self._found = True
+            if self._keep_line:
+                return line
+            return None
+        return None
+
+
+
 class IgnoreWhiteSpaceFilter(LineFilter):
     """Converts any stream of whitespace (space or tabs) to a single
     space.  Newlines are not filtered.
 
     """
     def __init__(self) -> None:
+        super().__init__()
         pass
 
     def filter(self, line: str) -> Optional[str]:
@@ -1288,6 +1326,7 @@ class RemoveRegexFromLineFilter(LineFilter):
     """Filters out portions of line that match the specified regular expression
     """
     def __init__(self, expr: str) -> None:
+        super().__init__()
         self.regex = expr
 
     def filter(self, line: str) -> Optional[str]:
@@ -1307,7 +1346,7 @@ class RemoveRegexFromLineFilter(LineFilter):
         return line
 
 
-def _read_and_filter(fileloc: str, filters: Sequence[LineFilter], sort: bool) -> List[str]:
+def _read_and_filter(fileloc: str, filters: Sequence[LineFilter], sort: bool, is_ref: bool) -> List[str]:
     lines = list()
 
     with open(fileloc) as fp:
@@ -1316,9 +1355,10 @@ def _read_and_filter(fileloc: str, filters: Sequence[LineFilter], sort: bool) ->
         for line in fp:
             filt_line = line
             for filter in filters:
-                filt_line = filter.filter(filt_line)  # type: ignore [assignment]
-                if not filt_line:
-                    break
+                if (is_ref and filter.apply_to_ref_file) or (not is_ref and filter.apply_to_out_file):
+                     filt_line = filter.filter(filt_line)  # type: ignore [assignment]
+                     if not filt_line:
+                         break
 
             if filt_line:
                 lines.append(filt_line)
@@ -1370,8 +1410,8 @@ def testing_compare_filtered_diff(
         return False
 
     # Read in the output and reference files, and optionally sorting them
-    out_lines = _read_and_filter(outfile, filters, sort)
-    ref_lines = _read_and_filter(reffile, filters, sort)
+    out_lines = _read_and_filter(outfile, filters, sort, False)
+    ref_lines = _read_and_filter(reffile, filters, sort, True)
 
     # Get the diff between the files
     diff = difflib.unified_diff(out_lines,ref_lines,outfile,reffile,n=1)
@@ -1475,8 +1515,8 @@ def testing_compare_filtered_subset(
         return False
 
     # Read in the output and reference files and filter them
-    out_lines = _read_and_filter(outfile, filters, sort=False)
-    ref_lines = _read_and_filter(reffile, filters, sort=False)
+    out_lines = _read_and_filter(outfile, filters, sort=False, is_ref=False)
+    ref_lines = _read_and_filter(reffile, filters, sort=False, is_ref=True)
 
     # Determine whether subset holds
     return set(out_lines).issubset(set(ref_lines))

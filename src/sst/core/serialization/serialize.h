@@ -202,7 +202,52 @@ public:
     inline void operator()(T*& t, serializer& ser)
     {
         // We are a pointer, need to see if tracking is turned on
-        if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T*>()(t, ser);
+        if ( !ser.is_pointer_tracking_enabled() ) {
+            // Handle nullptr
+            char null_char = (nullptr == t ? 0 : 1);
+            switch ( ser.mode() ) {
+            case serializer::SIZER:
+                // We will always put in a char to tell whether or not
+                // this is nullptr.
+                ser.size(null_char);
+
+                // If this is a nullptr, then we are done
+                if ( null_char == 0 ) return;
+
+                // Not nullptr, so we need to serialize the object
+                serialize_impl<T*>()(t, ser);
+                break;
+            case serializer::PACK:
+                // We will always put in a char to tell whether or not
+                // this is nullptr.
+                ser.pack(null_char);
+
+                // If this is a nullptr, then we are done
+                if ( null_char == 0 ) return;
+
+                // Not nullptr, so we need to serialize the object
+                serialize_impl<T*>()(t, ser);
+                break;
+            case serializer::UNPACK:
+            {
+                // Get the ptr and check to see if we've already deserialized
+                ser.unpack(null_char);
+
+                // Check to see if this was a nullptr
+                if ( 0 == null_char ) {
+                    t = nullptr;
+                    return;
+                }
+                // Not nullptr, so deserialize
+                serialize_impl<T*>()(t, ser);
+            }
+            case serializer::MAP:
+                // If this version of serialize gets called in mapping
+                // mode, there is nothing to do
+                break;
+            }
+            return;
+        }
 
         uintptr_t ptr = reinterpret_cast<uintptr_t>(t);
         if ( nullptr == t ) ptr = 0;

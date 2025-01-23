@@ -13,6 +13,7 @@
 #define SST_CORE_LINK_H
 
 #include "sst/core/event.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
@@ -90,6 +91,28 @@ public:
            @param key Opaque key returned from registerLinkAttachTool()
          */
         virtual void eventSent(uintptr_t key, Event*& ev) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerLinkAttachTool, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate the any
+           state and reinitialize the passed in key reference to the
+           proper state to continue to make valid calls to
+           eventSent().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the eventSent() function.
+         */
+        virtual void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key);
     };
 
     friend class LinkPair;
@@ -325,7 +348,7 @@ private:
 
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;
-    ToolList* profile_tools;
+    ToolList* attached_tools;
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

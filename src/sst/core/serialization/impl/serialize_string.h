@@ -74,6 +74,24 @@ public:
     }
 };
 
+template <>
+class serialize_impl<std::string*>
+{
+public:
+    void operator()(std::string*& str, serializer& ser)
+    {
+        // Nullptr is checked for in serialize<T>(), so just serialize
+        // as if it was non-pointer
+        if ( ser.mode() == serializer::UNPACK ) { str = new std::string(); }
+        ser.string(*str);
+    }
+    void operator()(std::string*& str, serializer& ser, const char* name)
+    {
+        ObjectMapString* obj_map = new ObjectMapString(str);
+        ser.mapper().map_primitive(name, obj_map);
+    }
+};
+
 } // namespace Serialization
 } // namespace Core
 } // namespace SST

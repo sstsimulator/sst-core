@@ -121,6 +121,14 @@ public:
 
     bool isEvent() final { return true; }
 
+    void copyAllDeliveryInfo(const Activity* act) final
+    {
+        Activity::copyAllDeliveryInfo(act);
+        const Event* ev = static_cast<const Event*>(act);
+        delivery_info   = ev->delivery_info;
+    }
+
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Activity::serialize_order(ser);
