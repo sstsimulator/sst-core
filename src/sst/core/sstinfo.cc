@@ -1,8 +1,8 @@
-// Copyright 2009-2024 NTESS. Under the terms
+// Copyright 2009-2025 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2024, NTESS
+// Copyright (c) 2009-2025, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -1026,8 +1026,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
                 // called out (this will be the case if printAll is
                 // false, but shouldPrintElement() is true)
                 bool is_alias = (pair.second->getAlias() == pair.first);
-                bool print    = (!is_alias && printAll) ||
-                             (is_alias && !printAll && shouldPrintElement(getLibraryName(), pair.first));
+                bool print = (!is_alias && printAll) || (!printAll && shouldPrintElement(getLibraryName(), pair.first));
 
                 if ( print ) {
                     os << "   " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
