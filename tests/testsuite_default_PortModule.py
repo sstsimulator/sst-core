@@ -193,12 +193,14 @@ class testcase_PortModule(SSTTestCase):
             suffix = "{1}_{2}".format(outdir,testtype,bind_at)
             subcomp_str = ""
             
-        outfile = "{0}/test_Serialization_{1}.out".format(outdir,suffix)
-            
         options = "--model-options=\"--{0} --{1}{2}\"".format(testtype,bind_at,subcomp_str)
 
         if checkpoint:
             options += " --checkpoint-sim-period=1.2us --checkpoint-prefix=ckpt_PortModule_{0}".format(suffix)
+            outfile = "{0}/test_PortModule_{1}_ckpt.out".format(outdir,suffix)
+        else:
+            outfile = "{0}/test_PortModule_{1}.out".format(outdir,suffix)
+
         
         self.run_sst(sdlfile, outfile, other_args=options)
 
@@ -211,7 +213,7 @@ class testcase_PortModule(SSTTestCase):
             # Need to rerun from the checkpoint, then compare this output against the reffile
             options = "--load-checkpoint"
             sdlfile = "{0}/ckpt_PortModule_{1}/ckpt_PortModule_{1}_0_1200000/ckpt_PortModule_{1}_0_1200000.sstcpt".format(outdir,suffix)
-            outfile = "{0}/test_Serialization_checkpoint_{1}.out".format(outdir,suffix)
+            outfile = "{0}/test_PortModule_{1}_restart.out".format(outdir,suffix)
 
             self.run_sst(sdlfile, outfile, other_args=options)
 
