@@ -20,3 +20,39 @@ module = [
     "testtools.testsuite",
 ]
 ignore_missing_imports = true
+
+[tool.ruff]
+cache-dir = "build/.ruff_cache"
+line-length = 100
+# This should be 3.6 but is not supported with the newest versions of ruff.
+target-version = "py37"
+
+[tool.ruff.lint]
+ignore = [
+    "E401",
+    "E402",
+    "E701",
+    "E703",
+    "E713",
+    "E722",
+    "E731",
+    "F401",
+    "F403",
+    "F405",
+    "F523",
+    "F841",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["sst"]
+lines-after-imports = 2
+section-order = [
+    "future",
+    "standard-library",
+    "first-party",
+    "third-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
