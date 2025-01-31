@@ -147,7 +147,7 @@ private:
     Link* left_;
     Link* right_;
 
-    PortSubComponent* sub_;
+    PortSubComponent* sub_ = nullptr;
 
     coreTestPortModuleComponent() {}                                 // for serialization only
     coreTestPortModuleComponent(const coreTestPortModuleComponent&); // do not implement
