@@ -100,10 +100,9 @@ public:
            serialization.  During SIZE and PACK phases of
            serialization, the tool needs to store out any information
            that will be needed to recreate data that is reliant on the
-           key.  On UNPACK, the function needs to recreate the any
-           state and reinitialize the passed in key reference to the
-           proper state to continue to make valid calls to
-           eventSent().
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to eventSent().
 
            Since not all tools will be serializable, there is a
            default, empty implementation.

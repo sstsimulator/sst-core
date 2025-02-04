@@ -406,7 +406,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         if ( !passed ) out.output("ERROR: double* did not serialize/deserialize properly\n");
 
         passed = checkSimpleSerializeDeserialize<double*>::check_nullptr();
-        if ( !passed ) out.output("ERROR: double* did not serialize/deserialize properly\n");
+        if ( !passed ) out.output("ERROR: double* nullptr did not serialize/deserialize properly\n");
 
         passed = checkSimpleSerializeDeserialize<std::string*>::check("test string");
         if ( !passed ) out.output("ERROR: string* did not serialize/deserialize properly\n");

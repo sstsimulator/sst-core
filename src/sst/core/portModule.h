@@ -1,8 +1,8 @@
-// Copyright 2009-2024 NTESS. Under the terms
+// Copyright 2009-2025 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2024, NTESS
+// Copyright (c) 2009-2025, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -280,4 +280,4 @@ private:
 #define SST_ELI_REGISTER_PORTMODULE(cls, lib, name, version, desc) \
     SST_ELI_REGISTER_DERIVED(SST::PortModule,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)
 
-#endif // SST_CORE_SUBCOMPONENT_H
+#endif // SST_CORE_PORTMODULE_H
