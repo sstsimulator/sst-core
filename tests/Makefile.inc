@@ -20,6 +20,7 @@ EXTRA_DIST += \
     tests/testsuite_default_UnitAlgebra.py \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
+    tests/testsuite_default_PortModule.py \
     tests/testsuite_testengine_testing.py \
     tests/test_Checkpoint.py \
     tests/test_Component.py \
@@ -46,6 +47,7 @@ EXTRA_DIST += \
     tests/test_MemPool_overflow.py \
     tests/test_MemPool_undeleted_items.py \
     tests/test_Module.py \
+    tests/test_PortModule.py \
     tests/test_RealTime.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
@@ -62,6 +64,12 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction.out \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
+    tests/refFiles/test_PortModule_drop.out \
+    tests/refFiles/test_PortModule_modify.out \
+    tests/refFiles/test_PortModule_pass.out \
+    tests/refFiles/test_PortModule_replace.out \
+    tests/refFiles/test_PortModule_randomdrop_recv.out \
+    tests/refFiles/test_PortModule_randomdrop_send.out \
     tests/refFiles/test_Profiling_event_global.out \
     tests/refFiles/test_Profiling_event_type.out \
     tests/refFiles/test_Profiling_event_component.out \

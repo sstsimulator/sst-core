@@ -18,6 +18,7 @@
 #include "sst/core/event.h"
 #include "sst/core/factory.h"
 #include "sst/core/oneshot.h"
+#include "sst/core/portModule.h"
 #include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/serialization/serializable_base.h"
 #include "sst/core/serialization/serialize.h"
@@ -145,15 +146,27 @@ public:
     /** Return the base simulation Output class instance */
     Output&     getSimulationOutput() const;
 
-    /** return the time since the simulation began in units specified by
-        the parameter.
-        @param tc TimeConverter specifying the units */
-    SimTime_t        getCurrentSimTime(TimeConverter* tc) const;
-    /** return the time since the simulation began in the default timebase */
+    /**
+       Return the simulated time since the simulation began in units specified by
+       the parameter.
+
+       @param tc TimeConverter specifying the units
+    */
+    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
+
+    /**
+       Return the simulated time since the simulation began in the
+       default timebase
+    */
     inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info->defaultTimeBase); }
-    /** return the time since the simulation began in timebase specified
-        @param base Timebase frequency in SI Units */
-    SimTime_t        getCurrentSimTime(const std::string& base) const;
+
+    /**
+       Return the simulated time since the simulation began in
+       timebase specified
+
+       @param base Timebase frequency in SI Units
+    */
+    SimTime_t getCurrentSimTime(const std::string& base) const;
 
     /** Utility function to return the time since the simulation began in nanoseconds */
     SimTime_t getCurrentSimTimeNano() const;
@@ -901,10 +914,11 @@ private:
     std::vector<Clock::HandlerBase*> clock_handlers;
 
     void  addSelfLink(const std::string& name);
-    Link* getLinkFromParentSharedPort(const std::string& port);
+    Link* getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules);
 
     using StatNameMap = std::map<std::string, std::map<std::string, Statistics::StatisticBase*>>;
 
+    std::vector<PortModule*>                            portModules;
     std::map<StatisticId_t, Statistics::StatisticBase*> m_explicitlyEnabledSharedStats;
     std::map<StatisticId_t, StatNameMap>                m_explicitlyEnabledUniqueStats;
     StatNameMap                                         m_enabledAllStats;

@@ -12,7 +12,6 @@
 #ifndef SST_CORE_SSTHANDLER_H
 #define SST_CORE_SSTHANDLER_H
 
-#include "sst/core/profile/profiletool.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 
@@ -166,6 +165,31 @@ public:
             uintptr_t key,
             std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
                 ret_value) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerHandler, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to beforeHandler()
+           and afterHandler().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the
+           beforeHandler() and afterHandler() functions.
+         */
+        virtual void
+        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        {}
     };
 
 private:
@@ -175,6 +199,58 @@ private:
 protected:
     // Implementation of operator() to be done in child classes
     virtual returnT operator_impl(argT) = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        switch ( ser.mode() ) {
+        case Core::Serialization::serializer::SIZER:
+        case Core::Serialization::serializer::PACK:
+        {
+            ToolList tools;
+            if ( attached_tools ) {
+                for ( auto x : *attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeHandlerAttachPointKey(ser, x.second);
+                }
+            }
+            break;
+        }
+        case Core::Serialization::serializer::UNPACK:
+        {
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                attached_tools = new ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    ap->serializeHandlerAttachPointKey(ser, key);
+                    attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                attached_tools = nullptr;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 
 public:
     virtual ~SSTHandlerBase() {}
@@ -285,6 +361,31 @@ public:
            handler was registered with the tool
         */
         virtual void afterHandler(uintptr_t key) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerHandler, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to beforeHandler()
+           and afterHandler().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the
+           beforeHandler() and afterHandler() functions.
+         */
+        virtual void
+        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        {}
     };
 
 
@@ -306,7 +407,7 @@ public:
            @param mdata Metadata to be passed into the tool
 
            @return Opaque key that will be passed back into
-           intercept() calls
+           interceptHandler() calls
         */
         virtual uintptr_t registerHandlerIntercept(const AttachPointMetaData& mdata) = 0;
 
@@ -327,6 +428,30 @@ public:
            should be cancelled.
         */
         virtual void interceptHandler(uintptr_t key, argT& data, bool& cancel) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerHandlerIntercept, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to
+           interceptHandler().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the interceptHandler() function.
+         */
+        virtual void
+        serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        {}
     };
 
 private:
@@ -340,6 +465,96 @@ private:
 protected:
     // Implementation of operator() to be done in child classes
     virtual void operator_impl(argT) = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        switch ( ser.mode() ) {
+        case Core::Serialization::serializer::SIZER:
+        case Core::Serialization::serializer::PACK:
+        {
+            ToolList tools;
+            if ( attached_tools ) {
+                for ( auto x : attached_tools->attach_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.attach_tools.push_back(x);
+                    }
+                }
+                for ( auto x : attached_tools->intercept_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.intercept_tools.push_back(x);
+                    }
+                }
+            }
+
+            // Serialize AttachPoint tools
+            size_t tool_count = tools.attach_tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools.attach_tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeHandlerAttachPointKey(ser, x.second);
+                }
+            }
+            // Serialize InterceptPoint tools
+            tool_count = tools.intercept_tools.size();
+            ser& tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools.intercept_tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeHandlerInterceptPointKey(ser, x.second);
+                }
+            }
+            break;
+        }
+        case Core::Serialization::serializer::UNPACK:
+        {
+            // Get serialized AttachPoint tools
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                attached_tools = new ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    ap->serializeHandlerAttachPointKey(ser, key);
+                    attached_tools->attach_tools.emplace_back(ap, key);
+                }
+            }
+            else {
+                attached_tools = nullptr;
+            }
+
+            // Get serialized InterceptPoint tools
+            ser& tool_count;
+            if ( tool_count > 0 ) {
+                if ( nullptr == attached_tools ) attached_tools = new ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    InterceptPoint*                         ip = dynamic_cast<InterceptPoint*>(tool);
+                    ip->serializeHandlerInterceptPointKey(ser, key);
+                    attached_tools->intercept_tools.emplace_back(ip, key);
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 
 public:
     virtual ~SSTHandlerBase() {}
@@ -480,6 +695,31 @@ public:
             uintptr_t key,
             std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
                 ret_value) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerHandler, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to beforeHandler()
+           and afterHandler().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the
+           beforeHandler() and afterHandler() functions.
+         */
+        virtual void
+        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        {}
     };
 
 private:
@@ -489,6 +729,59 @@ private:
 protected:
     // Implementation of operator() to be done in child classes
     virtual returnT operator_impl() = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        switch ( ser.mode() ) {
+        case Core::Serialization::serializer::SIZER:
+        case Core::Serialization::serializer::PACK:
+        {
+            ToolList tools;
+            if ( attached_tools ) {
+                for ( auto x : *attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeHandlerAttachPointKey(ser, x.second);
+                }
+            }
+            break;
+        }
+        case Core::Serialization::serializer::UNPACK:
+        {
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                attached_tools = new ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    ap->serializeHandlerAttachPointKey(ser, key);
+                    attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                attached_tools = nullptr;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
 
 public:
     virtual ~SSTHandlerBase() {}
@@ -594,6 +887,31 @@ public:
            handler was registered with the tool
         */
         virtual void afterHandler(uintptr_t key) = 0;
+
+        /**
+           Function that will be called to handle the key returned
+           from registerHandler, if the AttachPoint tool is
+           serializable.  This is needed because the key is opaque to
+           the Link, so it doesn't know how to handle it during
+           serialization.  During SIZE and PACK phases of
+           serialization, the tool needs to store out any information
+           that will be needed to recreate data that is reliant on the
+           key.  On UNPACK, the function needs to recreate any state
+           and reinitialize the passed in key reference to the proper
+           state to continue to make valid calls to beforeHandler()
+           and afterHandler().
+
+           Since not all tools will be serializable, there is a
+           default, empty implementation.
+
+           @param ser Serializer to use for serialization
+
+           @param key Key that would be passed into the
+           beforeHandler() and afterHandler() functions.
+         */
+        virtual void
+        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        {}
     };
 
 private:
@@ -603,6 +921,58 @@ private:
 protected:
     // Implementation of operator() to be done in child classes
     virtual void operator_impl() = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        switch ( ser.mode() ) {
+        case Core::Serialization::serializer::SIZER:
+        case Core::Serialization::serializer::PACK:
+        {
+            ToolList tools;
+            if ( attached_tools ) {
+                for ( auto x : *attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeHandlerAttachPointKey(ser, x.second);
+                }
+            }
+            break;
+        }
+        case Core::Serialization::serializer::UNPACK:
+        {
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                attached_tools = new ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    ap->serializeHandlerAttachPointKey(ser, key);
+                    attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                attached_tools = nullptr;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 
 public:
     virtual ~SSTHandlerBase() {}
@@ -823,7 +1193,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        // SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        SSTHandlerBase<returnT, argT>::serialize_order(ser);
         ser& object;
         ser& data;
     }
@@ -853,7 +1223,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        // SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        SSTHandlerBase<returnT, argT>::serialize_order(ser);
         ser& object;
     }
 
@@ -883,7 +1253,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        // SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        SSTHandlerBase<returnT, void>::serialize_order(ser);
         ser& object;
         ser& data;
     }
@@ -913,7 +1283,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        // SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        SSTHandlerBase<returnT, void>::serialize_order(ser);
         ser& object;
     }
 

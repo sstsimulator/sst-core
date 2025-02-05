@@ -27,6 +27,7 @@ class BaseComponent;
 class ComponentInfoMap;
 class LinkMap;
 
+class ConfigPortModule;
 class ConfigComponent;
 class ConfigStatistic;
 
@@ -116,10 +117,11 @@ private:
 
     TimeConverter* defaultTimeBase;
 
-    std::map<StatisticId_t, ConfigStatistic>* statConfigs;
-    std::map<std::string, StatisticId_t>*     enabledStatNames;
-    bool                                      enabledAllStats;
-    const ConfigStatistic*                    allStatConfig;
+    std::map<std::string, std::vector<ConfigPortModule>>* portModules;
+    std::map<StatisticId_t, ConfigStatistic>*             statConfigs;
+    std::map<std::string, StatisticId_t>*                 enabledStatNames;
+    bool                                                  enabledAllStats;
+    const ConfigStatistic*                                allStatConfig;
 
     uint8_t statLoadLevel;
 

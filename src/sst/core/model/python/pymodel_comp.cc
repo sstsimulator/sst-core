@@ -221,6 +221,27 @@ compAddLink(PyObject* self, PyObject* args)
 }
 
 static PyObject*
+compAddPortModule(PyObject* self, PyObject* args)
+{
+    ConfigComponent* c = getComp(self);
+    if ( nullptr == c ) return nullptr;
+    PyErr_Clear();
+    // we can have 2 or 3 arguments
+    // mandatory port
+    // mandatory type
+    // optional parameters
+
+    char*     port = nullptr;
+    char*     type = nullptr;
+    PyObject* py_params;
+    if ( !PyArg_ParseTuple(args, "ss|O", &port, &type, &py_params) ) return nullptr;
+    auto params = pythonToCppParams(py_params);
+    c->addPortModule(port, type, params);
+
+    return SST_ConvertToPythonLong(0);
+}
+
+static PyObject*
 compGetFullName(PyObject* self, PyObject* UNUSED(args))
 {
     return SST_ConvertToPythonString(getComp(self)->getFullName().c_str());
@@ -539,6 +560,7 @@ static PyMethodDef componentMethods[] = {
     { "setRank", compSetRank, METH_VARARGS, "Sets which rank on which this component should sit" },
     { "setWeight", compSetWeight, METH_O, "Sets the weight of the component" },
     { "addLink", compAddLink, METH_VARARGS, "Connects this component to a Link" },
+    { "addPortModule", compAddPortModule, METH_VARARGS, "Connect Port Module to this component" },
     { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name of the component." },
     { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
     { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,

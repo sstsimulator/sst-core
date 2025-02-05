@@ -18,6 +18,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
+#include "sst/core/portModule.h"
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/serialization/serialize.h"
@@ -87,6 +88,11 @@ BaseComponent::~BaseComponent()
             sim_->getSimulationOutput().output(
                 "Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
         }
+    }
+
+    // Delete any portModules
+    for ( auto port : portModules ) {
+        delete port;
     }
 }
 
@@ -221,7 +227,7 @@ BaseComponent::isPortConnected(const std::string& name) const
 // child and remove it from my linkmap.  The child will insert it into
 // their link map.
 Link*
-BaseComponent::getLinkFromParentSharedPort(const std::string& port)
+BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules)
 {
     LinkMap* myLinks = my_info->getLinkMap();
 
@@ -237,6 +243,16 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
             // it from my link map and return it to the child.
             if ( !tmp->isConfigured() ) {
                 myLinks->removeLink(port);
+                // Need to see if there are any associated PortModules
+                if ( my_info->portModules != nullptr ) {
+                    auto it = my_info->portModules->find(port);
+                    if ( it != my_info->portModules->end() ) {
+                        // Found PortModules, swap them into
+                        // port_modules and remove from my map
+                        port_modules.swap(it->second);
+                        my_info->portModules->erase(it);
+                    }
+                }
                 return tmp;
             }
         }
@@ -246,7 +262,9 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
     // parent shared with me and if so, call
     // getLinkFromParentSharedPort on them
 
-    if ( my_info->sharesPorts() ) { return my_info->parent_info->component->getLinkFromParentSharedPort(port); }
+    if ( my_info->sharesPorts() ) {
+        return my_info->parent_info->component->getLinkFromParentSharedPort(port, port_modules);
+    }
     else {
         return nullptr;
     }
@@ -266,7 +284,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
     // with parents if sharing is turned on
     if ( nullptr == tmp ) {
         if ( my_info->sharesPorts() ) {
-            tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name);
+            std::vector<ConfigPortModule> port_modules;
+            tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name, port_modules);
             // If I got a link from my parent, I need to put it in my
             // link map
             if ( nullptr != tmp ) {
@@ -277,6 +296,15 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 myLinks->insertLink(name, tmp);
                 // Need to set the link's defaultTimeBase to nullptr
                 tmp->setDefaultTimeBase(nullptr);
+
+                // Need to see if I got any port_modules, if so, need
+                // to add them to my_info->portModules
+                if ( port_modules.size() > 0 ) {
+                    if ( nullptr == my_info->portModules ) {
+                        my_info->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
+                    }
+                    (*my_info->portModules)[name].swap(port_modules);
+                }
             }
         }
     }
@@ -301,6 +329,29 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 if ( tool->profileSends() ) tmp->attachTool(tool, mdata);
             }
         }
+
+        // Check for PortModules
+        if ( my_info->portModules != nullptr ) {
+            auto it = my_info->portModules->find(name);
+            if ( it != my_info->portModules->end() ) {
+                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
+                for ( auto& portModule : it->second ) {
+                    auto* pm = Factory::getFactory()->CreateWithParams<PortModule>(
+                        portModule.type, portModule.params, portModule.params);
+                    pm->setComponent(this);
+                    if ( pm->installOnSend() ) tmp->attachTool(pm, mdata);
+                    if ( pm->installOnReceive() ) {
+                        if ( handler )
+                            handler->attachInterceptTool(pm, mdata);
+                        else
+                            fatal(
+                                CALL_INFO_LONG, 1, "ERROR: Trying to install a receive PortModule on a Polling Link\n");
+                    }
+                    portModules.push_back(pm);
+                }
+            }
+        }
+
         if ( nullptr != time_base )
             tmp->setDefaultTimeBase(time_base);
         else
