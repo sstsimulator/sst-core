@@ -33,46 +33,46 @@ class SmartTextFormatter
     /**
        List of tab stops
      */
-    std::vector<int> tabStops;
+    std::vector<int> tab_stops_;
 
     /**
        Width of the terminal.  Lines will be wrapped at this width
      */
-    int terminalWidth;
+    int terminal_width_;
 
     /**
        The output string that is being built up with calls to append
      */
-    std::string output;
+    std::string output_;
 
     /**
        Used to hold the current whitespace between words
      */
-    std::string spaces;
+    std::string spaces_;
 
     /**
        Used to hold the current word
      */
-    std::string word;
+    std::string word_;
 
     /**
        Position (column) that the next character will write at in the
        current line
      */
-    int currentPosition = 0;
+    int current_position_ = 0;
 
     /**
        True if the last character was a vertical tab.  This is needed
        because two vertical tabs in a row will pop the most recent
        indent
      */
-    bool last_char_vert_tab = false;
+    bool last_char_vert_tab_ = false;
 
     /**
        Stack of indents.  Add an indent at the currentPosition by
        using \v.  Pop the most recent indent with \v\v.
      */
-    std::vector<size_t> indent = { 0 };
+    std::vector<size_t> indent_ = { 0 };
 
 public:
     /**
