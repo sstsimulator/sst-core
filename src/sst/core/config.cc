@@ -435,7 +435,7 @@ public:
                    "that SST uses and import the coverage module without error.\n");
 
         msg.append(
-            "\t3.\t\vSet the environment variable SST_CONFIG_PYTHON_COVERAGE to a value or 1, yes, on, true or t; or "
+            "\t3.\t\vSet the environment variable SST_CONFIG_PYTHON_COVERAGE to a value of 1, yes, on, true or t; or "
             "invoke coverage on the command line by using the command line option --enable-python-coverage.\n\n");
 
         msg.append("Then invoke SST as normal using the python model configuration file for which you want to measure "
