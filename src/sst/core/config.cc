@@ -373,6 +373,14 @@ public:
         return 0;
     }
 
+#if PY_MINOR_VERSION >= 9
+    // enable Python coverage
+    static int enablePythonCoverage(Config* cfg, const std::string& UNUSED(arg))
+    {
+        cfg->enable_python_coverage_ = true;
+        return 0;
+    }
+#endif
 
     // Advanced options - profiling
     static int enableProfiling(Config* cfg, const std::string& arg)
@@ -407,6 +415,35 @@ public:
                    "increase (conversely, the maximum frequency that can be represented will increase).");
         return msg;
     }
+
+#if PY_MINOR_VERSION >= 9
+    static std::string getPythonCoverageExtHelp()
+    {
+        std::string msg = "Python Coverage (EXPERIMENTAL):\n\n";
+
+        msg.append("NOTE: This feature is considered experimental until we can complete further testing.\n\n");
+
+        msg.append("If you are using python configuration (model definition) files as part of a larger project and are "
+                   "interested in measuring code coverage of a test/example/application suite, you can instruct sst to "
+                   "enable the python coverage module when launching python configuration files as part of a "
+                   "simulation invocation.  To do so, you need three things:\n\n");
+
+        msg.append("\t1.\t\vInstall python’s coverage module (via an OS package or pip) on your system "
+                   "<https://pypi.org/project/coverage/>\n");
+
+        msg.append("\t2.\t\vEnsure that the \"coverage\" command is in your path and that you can invoke the python "
+                   "that SST uses and import the coverage module without error.\n");
+
+        msg.append(
+            "\t3.\t\vSet the environment variable SST_CONFIG_PYTHON_COVERAGE to a value of 1, yes, on, true or t; or "
+            "invoke coverage on the command line by using the command line option --enable-python-coverage.\n\n");
+
+        msg.append("Then invoke SST as normal using the python model configuration file for which you want to measure "
+                   "coverage.\n");
+
+        return msg;
+    }
+#endif
 
     static std::string getProfilingExtHelp()
     {
@@ -802,6 +839,10 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
 #endif
     debugFile_ = "/dev/null";
 
+#if PY_MINOR_VERSION >= 9
+    enable_python_coverage_ = false;
+#endif
+
     // Advance Options - Profiling
     enabled_profiling_ = "";
     profiling_output_  = "stdout";
@@ -989,6 +1030,16 @@ Config::insertOptions()
         "debug-file", 0, "FILE", "File where debug output will go", std::bind(&ConfigHelper::setDebugFile, this, _1),
         true);
     addLibraryPathOptions();
+
+#if PY_MINOR_VERSION >= 9
+    DEF_FLAG_EH(
+        "enable-python-coverage", 0,
+        "[EXPERIMENTAL] Causes the base Python interpreter to activate the coverage.Coverage object. This option can "
+        "also be turned "
+        "on by setting the environment variable SST_CONFIG_PYTHON_COVERAGE to true.",
+        std::bind(&ConfigHelper::enablePythonCoverage, this, _1), std::bind(&ConfigHelper::getPythonCoverageExtHelp),
+        false);
+#endif
 
     /* Advanced Features - Profiling */
     DEF_SECTION_HEADING("Advanced Options - Profiling (EXPERIMENTAL)");

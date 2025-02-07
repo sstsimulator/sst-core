@@ -86,6 +86,9 @@ struct AnnotationInfo
     addOption({ longName, optional_argument, 0, shortName }, "[" argName "]", text, func, { __VA_ARGS__ });
 
 // Macros that include extended help
+#define DEF_FLAG_EH(longName, shortName, text, func, eh, ...) \
+    addOption({ longName, no_argument, 0, shortName }, "", text, func, { __VA_ARGS__ }, eh);
+
 #define DEF_ARG_EH(longName, shortName, argName, text, func, eh, ...) \
     addOption({ longName, required_argument, 0, shortName }, argName, text, func, { __VA_ARGS__ }, eh);
 
