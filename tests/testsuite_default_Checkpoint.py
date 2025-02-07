@@ -29,7 +29,7 @@ class testcase_Checkpoint(SSTTestCase):
         super(type(self), self).tearDown()
 
 #####
-    parallelerr = "Test only suports serial execution"
+    parallelerr = "Test only supports serial execution"
 
     def test_Checkpoint(self) -> None:
         self.checkpoint_test_template("Checkpoint", "500us", "0_500000000")

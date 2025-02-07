@@ -33,6 +33,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_pod(self):
         self.serialization_test_template("pod")
 
+    def test_Serialization_pod_ptr(self):
+        self.serialization_test_template("pod_ptr")
+
     def test_Serialization_ordered_containers(self):
         self.serialization_test_template("ordered_containers")
 

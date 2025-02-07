@@ -1,0 +1,23 @@
+# Creating simulation checkpoint at simulated time period of 1.2us.
+(111000) Got a modified event
+(211000) Got a modified event
+(311000) Got a modified event
+(411000) Got a modified event
+(511000) Got a modified event
+(611000) Got a modified event
+(711000) Got a modified event
+(811000) Got a modified event
+(911000) Got a modified event
+(1011000) Got a modified event
+(1111000) Got a modified event
+# Simulation Checkpoint: Simulated Time 1.2 us (Real CPU time since last checkpoint 0.00113 seconds)
+(1211000) Got a modified event
+(1311000) Got a modified event
+(1411000) Got a modified event
+(1511000) Got a modified event
+(1611000) Got a modified event
+(1711000) Got a modified event
+(1811000) Got a modified event
+(1911000) Got a modified event
+(2011000) Got a modified event
+Simulation is complete, simulated time: 2.111 us

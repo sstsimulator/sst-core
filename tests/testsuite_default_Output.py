@@ -87,7 +87,8 @@ class testcase_Output(SSTTestCase):
                     
 class TraceFunctionFilter(LineFilter):
     def __init__(self, prefix):
-        self._prefix = prefix;
+        super().__init__()
+        self._prefix = prefix
 
     def filter(self, line):
         """

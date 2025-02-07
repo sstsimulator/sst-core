@@ -1,0 +1,25 @@
+# Creating simulation checkpoint at simulated time period of 1.2us.
+(111000) Got an unmodified event
+(211000) comp11/left: Dropping event on receive
+(311000) Got an unmodified event
+(411000) Got an unmodified event
+(511000) comp11/left: Dropping event on receive
+(611000) Got an unmodified event
+(711000) comp11/left: Dropping event on receive
+(811000) comp11/left: Dropping event on receive
+(911000) Got an unmodified event
+(1011000) comp11/left: Dropping event on receive
+(1111000) Got an unmodified event
+# Simulation Checkpoint: Simulated Time 1.2 us (Real CPU time since last checkpoint 0.00119 seconds)
+(1211000) Got an unmodified event
+(1311000) Got an unmodified event
+(1411000) comp11/left: Dropping event on receive
+(1511000) comp11/left: Dropping event on receive
+(1611000) comp11/left: Dropping event on receive
+(1711000) Got an unmodified event
+(1811000) comp11/left: Dropping event on receive
+(1911000) Got an unmodified event
+(2011000) Got an unmodified event
+(2111000) comp11/left: Dropping event on receive
+(2211000) comp11/left: Dropping event on receive
+Simulation is complete, simulated time: 2.311 us

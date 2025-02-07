@@ -213,6 +213,27 @@ public:
 
 typedef SparseVectorMap<LinkId_t, ConfigLink*> ConfigLinkMap_t;
 
+/**
+   Class that represents a PortModule in ConfigGraph
+ */
+class ConfigPortModule : public SST::Core::Serialization::serializable
+{
+public:
+    std::string type;
+    Params      params;
+
+    ConfigPortModule() = default;
+    ConfigPortModule(const std::string& type, const Params& params) : type(type), params(params) {}
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& type;
+        ser& params;
+    }
+    ImplementSerializable(SST::ConfigPortModule)
+};
+
+
 /** Represents the configuration of a generic component */
 class ConfigComponent : public SST::Core::Serialization::serializable
 {
@@ -231,9 +252,10 @@ public:
     uint8_t               statLoadLevel; /*!< Statistic load level for this component */
     // std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
 
-    std::map<std::string, StatisticId_t> enabledStatNames;
-    bool                                 enabledAllStats;
-    ConfigStatistic                      allStatConfig;
+    std::map<std::string, std::vector<ConfigPortModule>> portModules;
+    std::map<std::string, StatisticId_t>                 enabledStatNames;
+    bool                                                 enabledAllStats;
+    ConfigStatistic                                      allStatConfig;
 
     std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
@@ -290,6 +312,7 @@ public:
     std::vector<std::string> getParamsLocalKeys() const { return params.getLocalKeys(); }
     std::vector<std::string> getSubscribedGlobalParamSets() const { return params.getSubscribedGlobalParamSets(); }
 
+    void addPortModule(const std::string& port, const std::string& type, const Params& params);
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -311,6 +334,7 @@ public:
         ser& enabledStatNames;
         ser& enabledAllStats;
         ser& statistics;
+        ser& portModules;
         ser& enabledAllStats;
         ser& allStatConfig;
         ser& statLoadLevel;
