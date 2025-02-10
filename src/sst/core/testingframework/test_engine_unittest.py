@@ -20,7 +20,7 @@ import traceback
 import threading
 import time
 import datetime
-from typing import Any, Callable, Dict, Iterable, List, Optional, TextIO, Tuple, Type, Union, TYPE_CHECKING
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 from unittest import TestCase, TestResult, TestSuite, TextTestResult, TextTestRunner
 
 if TYPE_CHECKING:
@@ -125,7 +125,7 @@ class SSTTextTestRunner(TextTestRunner):
 
     def __init__(
         self,
-        stream: Optional[TextIO] = sys.stderr,
+        stream: Any = sys.stderr,
         descriptions: bool = True,
         verbosity: int = 1,
         failfast: bool = False,
@@ -149,7 +149,7 @@ class SSTTextTestRunner(TextTestRunner):
 
 ###
 
-    def run(self, test: Union[TestSuite, TestCase]) -> TextTestResult:
+    def run(self, test: Union[TestSuite, TestCase]) -> TestResult:
         """ Run the tests."""
         testing_start_time = time.time()
         runresults = super().run(test)
@@ -300,7 +300,6 @@ class SSTTextTestResult(TextTestResult):
         self._testcase_name = "undefined_testcasename"
         self._testsuite_name = "undefined_testsuitename"
         self._junit_test_case: JUnitTestCase = None  # type: ignore [assignment]
-        assert hasattr(stream, "writeln")
         self.stream = stream
         self.showAll = verbosity > 1
         self.dots = verbosity == 1
@@ -661,7 +660,7 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
         self,
         test: SSTTestCase,
         process_result: "testtools.testresult.real.ThreadsafeForwardingResult",
-        testqueue: Queue[TestCase],
+        testqueue: "Queue[TestCase]",
     ) -> None:
         """Support running a single test concurrently
 
