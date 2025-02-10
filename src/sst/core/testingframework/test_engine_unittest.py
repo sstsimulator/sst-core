@@ -587,7 +587,14 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
                          passed to ``run()``.  NOT USED IN TestSuite
 
         """
-        super().__init__(suite, make_tests=make_tests, wrap_result=wrap_result)
+        # This separation is required for the case when `testtools` is not
+        # installed, regardless of whether or not testing is performed
+        # concurrently.
+        if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
+            # Ignore make_tests and wrap_results
+            super().__init__(suite)
+        else:
+            super().__init__(suite, make_tests, wrap_result)
 
 ####
 
