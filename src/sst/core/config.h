@@ -16,6 +16,8 @@
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 
+// Pull in the patchlevel for Python so we can check Python version
+#include <patchlevel.h>
 #include <string>
 
 /* Forward declare for Friendship */
@@ -288,6 +290,14 @@ public:
        const std::string& addLibPath() const { return addLibPath_; }
     */
 
+
+#if PY_MINOR_VERSION >= 9
+    /**
+       Controls whether the Python coverage object will be loaded
+     */
+    bool enablePythonCoverage() const { return enable_python_coverage_; }
+#endif
+
     // Advanced options - Profiling
 
     /**
@@ -437,6 +447,9 @@ public:
         ser& debugFile_;
         ser& libpath_;
         ser& addlibpath_;
+#if PY_MINOR_VERSION >= 9
+        ser& enable_python_coverage_;
+#endif
         ser& enabled_profiling_;
         ser& profiling_output_;
         ser& runMode_;
@@ -534,6 +547,9 @@ private:
     std::string debugFile_; /*!< File to which debug information should be written */
     // std::string libpath_;  ** in ConfigShared
     // std::string addLibPath_; ** in ConfigShared
+#if PY_MINOR_VERSION >= 9
+    bool enable_python_coverage_; /*!< Enable the Python coverage module */
+#endif
 
     // Advanced options - profiling
     std::string enabled_profiling_; /*!< Enabled default profiling points */

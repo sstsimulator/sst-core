@@ -51,7 +51,7 @@ from_string(const std::string& input)
                 return false;
             }
             else {
-                throw new std::invalid_argument("from_string: no valid conversion");
+                throw std::invalid_argument("from_string: no valid conversion");
             }
         }
         else if ( std::is_same<unsigned long, T>::value ) {

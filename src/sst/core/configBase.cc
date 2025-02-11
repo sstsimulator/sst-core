@@ -14,6 +14,7 @@
 #include "sst/core/configBase.h"
 
 #include "sst/core/env/envquery.h"
+#include "sst/core/util/smartTextFormatter.h"
 #include "sst/core/warnmacros.h"
 
 #include <cstdlib>
@@ -284,9 +285,12 @@ ConfigBase::printExtHelp(const std::string& option)
         fprintf(stderr, "No additional help found for option \"%s\"\n", option.c_str());
     }
     else {
+        Util::SmartTextFormatter formatter({ 2, 5, 8 }, 1);
+
         std::function<std::string(void)>& func = extra_help_map[option];
         std::string                       help = func();
-        fprintf(stderr, "%s\n", help.c_str());
+        formatter.append(help);
+        fprintf(stderr, "%s\n", formatter.str().c_str());
     }
 
     return 1; /* Should not continue */
