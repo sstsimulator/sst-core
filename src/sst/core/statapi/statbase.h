@@ -392,7 +392,9 @@ public:
     SST_ELI_DOCUMENT_PARAMS(
         {"rate",    "Frequency at which to output statistic. Must include units. 0ns = output at end of simulation only.", "0ns" },
         {"startat", "Time at which to enable data collection in this statistic. Must include units. 0ns = always enabled.", "0ns"},
-        {"stopat",  "Time at which to disable data collection in this statistic. 0ns = always enabled.", "0ns"})
+        {"stopat",  "Time at which to disable data collection in this statistic. 0ns = always enabled.", "0ns"},
+        {"resetOnOutput", "Whether to reset the statistic's values after each output.", "False"}
+    )
 
     using Datum = T;
     using StatisticCollector<T>::addData_impl;
