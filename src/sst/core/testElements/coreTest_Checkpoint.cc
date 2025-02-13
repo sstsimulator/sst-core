@@ -94,6 +94,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     stat_eventcount = registerStatistic<uint32_t>("eventcount");
     stat_rng        = registerStatistic<uint32_t>("rngvals");
     stat_dist       = registerStatistic<double>("distvals");
+    stat_null       = registerStatistic<uint32_t>("nullstat");
 }
 
 coreTestCheckpoint::~coreTestCheckpoint() {}
@@ -170,7 +171,7 @@ coreTestCheckpoint::handleClock(Cycle_t cycle)
 
     stat_dist->addData(gauss_next);
     stat_rng->addData(mersenne_next);
-
+    stat_null->addData(1);
     duty_cycle_count--;
     if ( duty_cycle_count == 0 ) {
         duty_cycle_count = duty_cycle;
@@ -232,6 +233,7 @@ coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(stat_eventcount)
     SST_SER(stat_rng)
     SST_SER(stat_dist)
+    SST_SER(stat_null)
 }
 
 

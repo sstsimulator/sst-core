@@ -127,13 +127,11 @@ private:
     void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
     void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
 
-    bool           handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
-    bool           handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
-    void           handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
-    void           handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
-    StatisticBase* isStatisticInCompStatMap(
-        const std::string& compName, const ComponentId_t& compId, const std::string& statName,
-        const std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
+    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
+    bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
+    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
+    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
+
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
     void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 

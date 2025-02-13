@@ -61,14 +61,14 @@ public:
         m_sum_sq = static_cast<NumberBase>(0);
         m_min    = std::numeric_limits<NumberBase>::max();
         m_max    = std::numeric_limits<NumberBase>::min();
-
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("Accumulator");
     }
 
     ~AccumulatorStatistic() {}
 
     AccumulatorStatistic() : Statistic<NumberBase>() {} // For serialization only
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -216,6 +216,8 @@ private:
     StatisticOutput::fieldHandle_t h_count;
     StatisticOutput::fieldHandle_t h_max;
     StatisticOutput::fieldHandle_t h_min;
+
+    inline static const std::string stat_type_ = "Accumulator";
 };
 
 } // namespace Statistics

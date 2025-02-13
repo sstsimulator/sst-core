@@ -98,7 +98,8 @@ public:
     SST_ELI_DOCUMENT_STATISTICS(
         {"eventcount", "Total number of events received", "events", 1},
         {"rngvals", "Numbers from RNG", "number", 2},
-        {"distvals", "Numbers from distribution", "number", 3}
+        {"distvals", "Numbers from distribution", "number", 3},
+        {"nullstat", "Test that non-enabled stats are checkpointed correctly", "number", 5}
     )
 
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
@@ -151,6 +152,7 @@ private:
     Statistic<uint32_t>* stat_eventcount;
     Statistic<uint32_t>* stat_rng;
     Statistic<double>*   stat_dist;
+    Statistic<uint32_t>* stat_null;
 };
 
 } // namespace CoreTestCheckpoint

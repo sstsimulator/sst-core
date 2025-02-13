@@ -733,7 +733,7 @@ BaseComponent::createEnabledAllStatistic(
 
     // a matching statistic was not found
     auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, true, std::move(fxn));
-    m_enabledAllStats[name][statSubId] = stat;
+    if ( !stat->isNullStatistic() ) { m_enabledAllStats[name][statSubId] = stat; }
     return stat;
 }
 
