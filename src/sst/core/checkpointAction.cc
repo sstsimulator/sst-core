@@ -87,7 +87,8 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 {
     if ( 0 == rank_.rank ) {
         const double now = sst_get_cpu_time();
-        sim->getSimulationOutput().output(
+        sim->getSimulationOutput().verbose(
+            CALL_INFO, 0, 1,
             "# Simulation Checkpoint: Simulated Time %s (Real CPU time since last checkpoint %.5f seconds)\n",
             sim->getElapsedSimTime().toStringBestSI().c_str(), (now - last_cpu_time_));
 

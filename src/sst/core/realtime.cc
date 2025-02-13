@@ -263,7 +263,8 @@ CheckpointRealTimeAction::execute()
     Output   sim_output = getSimulationOutput();
     RankInfo rank       = getRank();
 
-    sim_output.output(
+    sim_output.verbose(
+        CALL_INFO, 1, 0,
         "Creating checkpoint at simulated time %s (rank=%u,thread=%u).\n", getElapsedSimTime().toStringBestSI().c_str(),
         rank.rank, rank.thread);
     simulationCheckpoint();

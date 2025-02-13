@@ -229,7 +229,8 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
         }
 
         if ( cfg->checkpoint_sim_period() != "" ) {
-            sim_output.output(
+            sim_output.verbose(
+                CALL_INFO, 1, 0,
                 "# Creating simulation checkpoint at simulated time period of %s.\n",
                 cfg->checkpoint_sim_period().c_str());
             checkpoint_action_ =
@@ -1829,7 +1830,8 @@ Simulation_impl::restart(Config* cfg)
 
     // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
     if ( cfg->checkpoint_sim_period() != "" ) {
-        sim_output.output(
+        sim_output.verbose(
+            CALL_INFO, 1, 0,
             "# Creating simulation checkpoint at simulated time period of %s.\n", cfg->checkpoint_sim_period().c_str());
         checkpoint_action_ =
             new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
