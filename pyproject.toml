@@ -21,6 +21,9 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.pyright]
+pythonVersion = "3.6"
+
 [tool.ruff]
 cache-dir = "build/.ruff_cache"
 line-length = 100
