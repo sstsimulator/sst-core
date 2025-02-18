@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct GetParams
 {
     static const std::vector<SST::ElementInfoParam>& get()
@@ -31,7 +31,7 @@ struct GetParams
 };
 
 template <class T>
-struct GetParams<T, typename MethodDetect<decltype(T::ELI_getParams())>::type>
+struct GetParams<T, std::void_t<decltype(T::ELI_getParams())>>
 {
     static const std::vector<SST::ElementInfoParam>& get() { return T::ELI_getParams(); }
 };

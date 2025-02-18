@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename T, typename = void>
 struct InfoProfilePoints
 {
     static const std::vector<SST::ElementInfoProfilePoint>& get()
@@ -31,7 +31,7 @@ struct InfoProfilePoints
 };
 
 template <class T>
-struct InfoProfilePoints<T, typename MethodDetect<decltype(T::ELI_getProfilePoints())>::type>
+struct InfoProfilePoints<T, std::void_t<decltype(T::ELI_getProfilePoints())>>
 {
     static const std::vector<SST::ElementInfoProfilePoint>& get() { return T::ELI_getProfilePoints(); }
 };

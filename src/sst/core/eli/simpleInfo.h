@@ -28,9 +28,9 @@ template <int num, typename InfoType>
 struct SimpleInfoPlaceHolder
 {};
 
-//  Class to check for an ELI_getSimpleInfo Function.  The
-//  MethodDetect way to detect a member function doesn't seem to work
-//  for functions with specific type signatures and we need to
+//  Class to check for an ELI_getSimpleInfo Function. The std::void_t<
+//  decltype()> way to detect a member function's type doesn't seem to
+//  work for functions with specific type signatures and we need to
 //  differentiate between the various versions using the first
 //  parameter to the function (index + type).
 template <class T, int index, class InfoType>
