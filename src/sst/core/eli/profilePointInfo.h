@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <typename T, typename = void>
+template <typename, typename = void>
 struct InfoProfilePoints
 {
     static const std::vector<SST::ElementInfoProfilePoint>& get()
