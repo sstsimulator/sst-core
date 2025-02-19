@@ -632,8 +632,7 @@ BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statistic
 }
 
 void
-BaseComponent::configureCollectionMode(
-    Statistics::StatisticBase* statistic, const std::string& name)
+BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name)
 {
     StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     Output&                   out                = Simulation_impl::getSimulationOutput();

@@ -94,7 +94,7 @@ StatisticBase::StatisticBase(
 
     /* Parameter: rate */
     try {
-        UnitAlgebra rate = stat_params.find<UnitAlgebra>("rate", "0ns");
+        UnitAlgebra rate        = stat_params.find<UnitAlgebra>("rate", "0ns");
         // units are error checked by BaseComponent::configureCollectionMode
         info_->collection_rate_ = rate;
     }

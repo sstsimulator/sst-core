@@ -782,8 +782,7 @@ protected:
 private:
     SimTime_t processCurrentTimeWithUnderflowedBase(const std::string& base) const;
 
-    void
-    configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name);
+    void configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name);
 
     /**
      * @brief findExplicitlyEnabledStatistic
