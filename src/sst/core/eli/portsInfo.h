@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoPorts
 {
     static const std::vector<SST::ElementInfoPort>& get()
@@ -30,8 +30,8 @@ struct InfoPorts
     }
 };
 
-template <class T>
-struct InfoPorts<T, typename MethodDetect<decltype(T::ELI_getPorts())>::type>
+template <typename T>
+struct InfoPorts<T, std::void_t<decltype(T::ELI_getPorts())>>
 {
     static const std::vector<SST::ElementInfoPort>& get() { return T::ELI_getPorts(); }
 };
