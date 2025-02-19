@@ -95,11 +95,7 @@ StatisticBase::StatisticBase(
     /* Parameter: rate */
     try {
         UnitAlgebra rate = stat_params.find<UnitAlgebra>("rate", "0ns");
-        if ( !rate.hasUnits("s") ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-                CALL_INFO, 1, "ERROR: Statistic %s - param 'rate' = '%s'; must be in units of seconds; exiting...\n",
-                getFullStatName().c_str(), rate.toStringBestSI().c_str());
-        }
+        // units are error checked by BaseComponent::configureCollectionMode
         info_->collection_rate_ = rate;
     }
     catch ( UnitAlgebra::UnitAlgebraException& exc ) {

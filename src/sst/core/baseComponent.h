@@ -783,7 +783,7 @@ private:
     SimTime_t processCurrentTimeWithUnderflowedBase(const std::string& base) const;
 
     void
-    configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name);
+    configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name);
 
     /**
      * @brief findExplicitlyEnabledStatistic

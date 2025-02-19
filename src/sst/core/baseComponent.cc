@@ -633,12 +633,11 @@ BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statistic
 
 void
 BaseComponent::configureCollectionMode(
-    Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name)
+    Statistics::StatisticBase* statistic, const std::string& name)
 {
     StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     Output&                   out                = Simulation_impl::getSimulationOutput();
-    std::string               statRateParam      = params.find<std::string>("rate", "0ns");
-    UnitAlgebra               collectionRate(statRateParam);
+    UnitAlgebra               collectionRate     = statistic->getCollectionRate();
 
     // make sure we have a valid collection rate
     // Check that the Collection Rate is a valid unit type that we can use
@@ -715,7 +714,7 @@ BaseComponent::createStatistic(
     cpp_params.insert(python_params);
     std::string type = cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
     auto*       stat = fxn(this, engine, type, name, subId, cpp_params);
-    configureCollectionMode(stat, cpp_params, name);
+    configureCollectionMode(stat, name);
     engine->registerStatisticWithEngine(stat);
     return stat;
 }
