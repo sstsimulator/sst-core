@@ -15,7 +15,7 @@
 
 #include "sst/core/eli/elibase.h"
 
-#include <sstream>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -35,16 +35,14 @@ static const std::vector<int> SST_ELI_COMPILED_VERSION = { 0, 9, 0 };
 std::string
 ProvidesDefaultInfo::getELIVersionString() const
 {
-    std::stringstream stream;
-    bool              first = true;
-    for ( int item : SST_ELI_COMPILED_VERSION ) {
-        if ( first )
-            first = false;
-        else
-            stream << ".";
-        stream << item;
+    std::string str;
+    const char* delim = "";
+    for ( auto item : SST_ELI_COMPILED_VERSION ) {
+        str += delim;
+        delim = ".";
+        str += std::to_string(item);
     }
-    return stream.str();
+    return str;
 }
 
 const std::vector<int>&
