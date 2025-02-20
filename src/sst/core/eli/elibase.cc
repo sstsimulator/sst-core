@@ -22,8 +22,6 @@ namespace ELI {
 
 std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_ {};
 
-static const std::vector<int> SST_ELI_COMPILED_VERSION = { 0, 9, 0 };
-
 bool
 LoadedLibraries::addLoader(
     const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader)

@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoStats
 {
     static const std::vector<SST::ElementInfoStatistic>& get()
@@ -30,8 +30,8 @@ struct InfoStats
     }
 };
 
-template <class T>
-struct InfoStats<T, typename MethodDetect<decltype(T::ELI_getStatistics())>::type>
+template <typename T>
+struct InfoStats<T, std::void_t<decltype(T::ELI_getStatistics())>>
 {
     static const std::vector<SST::ElementInfoStatistic>& get() { return T::ELI_getStatistics(); }
 };

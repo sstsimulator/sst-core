@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoSubs
 {
     static const std::vector<SST::ElementInfoSubComponentSlot>& get()
@@ -31,7 +31,7 @@ struct InfoSubs
 };
 
 template <class T>
-struct InfoSubs<T, typename MethodDetect<decltype(T::ELI_getSubComponentSlots())>::type>
+struct InfoSubs<T, std::void_t<decltype(T::ELI_getSubComponentSlots())>>
 {
     static const std::vector<SST::ElementInfoSubComponentSlot>& get() { return T::ELI_getSubComponentSlots(); }
 };

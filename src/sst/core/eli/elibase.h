@@ -122,12 +122,6 @@ combineEliInfo(std::vector<T>& base, const std::vector<T>& add)
     base.swap(combined);
 }
 
-template <class T>
-struct MethodDetect
-{
-    using type = void;
-};
-
 struct LibraryLoader
 {
     virtual void load() = 0;
@@ -156,14 +150,14 @@ private:
 
 // Template used to get aliases.  Needed because the ELI_getAlias()
 // function may not exist.
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct GetAlias
 {
     static std::string get() { return ""; }
 };
 
-template <class T>
-struct GetAlias<T, typename MethodDetect<decltype(T::ELI_getAlias())>::type>
+template <typename T>
+struct GetAlias<T, std::void_t<decltype(T::ELI_getAlias())>>
 {
     static std::string get() { return T::ELI_getAlias(); }
 };
