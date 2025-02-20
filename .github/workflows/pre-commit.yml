@@ -75,7 +75,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: '**CLANG-FORMAT TEST - FAILED** (on last commit): <br>Run > ./scripts/clang-format-test.sh using clang-format v12 to check formatting'
+                body: '**PRE-COMMIT - FAILED** (on last commit): <br>Run `pre-commit run -a` to apply fixes'
               })
         if: ${{ failure() }}
 
@@ -133,6 +133,6 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: '**CLANG-FORMAT TEST - PASSED**'
+                body: '**PRE-COMMIT - PASSED**'
               })
         if: ${{ success() }}
