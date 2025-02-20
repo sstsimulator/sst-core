@@ -13,6 +13,126 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
+      # Set the WIP label immediately before testing
+      - name: SET WIP Label before testing
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['AT: WIP']
+              })
+
+      # Get this user's SST-core repo/branch
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      # Run all the pre-commit checks: clang-format, cmake-format, ...
       - uses: actions/setup-python@v5
       - uses: pre-commit/action@v3.0.1
+
+      #############################################
+      # LABEL RESULTS - USING actions/github-script
+      #############################################
+
+      # Label the Results - FOR FAILURE
+      - name: ADD FAIL + WIP Label Results for Failure
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['AT: CLANG-FORMAT FAIL', 'AT: WIP']
+              })
+        if: ${{ failure() }}
+
+      - name: REMOVE PASS Label Results for Failure
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'AT: CLANG-FORMAT PASS'
+              })
+        if: ${{ failure() }}
+        continue-on-error: true
+
+      - name: ADD COMMENT ABOUT FAIL
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '**CLANG-FORMAT TEST - FAILED** (on last commit): <br>Run > ./scripts/clang-format-test.sh using clang-format v12 to check formatting'
+              })
+        if: ${{ failure() }}
+
+
+      #############################
+
+      # Label the Results - FOR SUCCESS
+      - name: ADD PASS Label Results for Success
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['AT: CLANG-FORMAT PASS']
+              })
+        if: ${{ success() }}
+
+      - name: REMOVE WIP Label Results for Success
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'AT: WIP'
+              })
+        if: ${{ success() }}
+        continue-on-error: true
+
+      - name: REMOVE FAIL Label Results for Success
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'AT: CLANG-FORMAT FAIL'
+              })
+        if: ${{ success() }}
+        continue-on-error: true
+
+      - name: ADD COMMENT ABOUT SUCCESS
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '**CLANG-FORMAT TEST - PASSED**'
+              })
+        if: ${{ success() }}
