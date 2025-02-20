@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <list>
@@ -88,7 +89,7 @@ namespace ELI {
 
 // Function used to combine the parent and child ELI information.
 // This function only works for items that have a 'name' and a
-// 'description' field (which is all of them at time of function
+// 'description/value' field (which is all of them at time of function
 // writing).  You can delete a parent's info by adding an entry in the
 // child with the same name and a nullptr in the description.  Each
 // info item should include a macro of the format SST_ELI_DELETE_* to
@@ -98,33 +99,28 @@ namespace ELI {
 // the ElementInfo* classes have const data members so deleting from
 // the vector does not compile (copy constructor is deleted).
 template <typename T>
-static void
-combineEliInfo(std::vector<T>& base, std::vector<T>& add)
+void
+combineEliInfo(std::vector<T>& base, const std::vector<T>& add)
 {
     std::vector<T> combined;
     // Add in any item that isn't already defined
-    for ( auto x : add ) {
-        bool add = true;
-        for ( auto y : base ) {
-            if ( !strcmp(x.name, y.name) ) {
-                add = false;
-                break;
-            }
-        }
-        if ( add ) combined.emplace_back(x);
+    for ( auto& x : add ) {
+        if ( std::none_of(base.begin(), base.end(), [&](auto& y) { return !strcmp(x.name, y.name); }) )
+            combined.emplace_back(x);
     }
 
     // Now add all the locals.  We will skip any one that has nullptr
     // in the description field
-    for ( auto x : base ) {
-        if ( x.description != nullptr ) { combined.emplace_back(x); }
+    for ( auto& x : base ) {
+        if constexpr ( std::is_same_v<T, ElementInfoAttribute> ) {
+            if ( x.value != nullptr ) combined.emplace_back(x);
+        }
+        else {
+            if ( x.description != nullptr ) combined.emplace_back(x);
+        }
     }
     base.swap(combined);
 }
-
-// ELI combine function for Attributes which don't have a description
-// field
-void combineEliInfo(std::vector<ElementInfoAttribute>& base, std::vector<ElementInfoAttribute>& add);
 
 struct LibraryLoader
 {

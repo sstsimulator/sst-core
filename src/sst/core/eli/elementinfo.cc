@@ -135,31 +135,5 @@ ProvidesParams::init()
     }
 }
 
-// ELI combine function for Attributes which don't have a description
-// field
-void
-combineEliInfo(std::vector<ElementInfoAttribute>& base, std::vector<ElementInfoAttribute>& add)
-{
-    std::vector<ElementInfoAttribute> combined;
-    // Add in any item that isn't already defined
-    for ( auto x : add ) {
-        bool add = true;
-        for ( auto y : base ) {
-            if ( !strcmp(x.name, y.name) ) {
-                add = false;
-                break;
-            }
-        }
-        if ( add ) combined.emplace_back(x);
-    }
-
-    // Now add all the locals.  We will skip any one that has nullptr
-    // in the description field
-    for ( auto x : base ) {
-        if ( x.value != nullptr ) { combined.emplace_back(x); }
-    }
-    base.swap(combined);
-}
-
 } // namespace ELI
 } // namespace SST
