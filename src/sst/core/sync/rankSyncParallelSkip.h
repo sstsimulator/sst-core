@@ -108,10 +108,10 @@ private:
         ImplementSerializable(comm_recv_pair)
     };
 
-    typedef std::map<RankInfo, comm_send_pair> comm_send_map_t;
-    typedef std::map<RankInfo, comm_recv_pair> comm_recv_map_t;
-    // typedef std::map<LinkId_t, Link*>          link_map_t;
-    typedef std::map<std::string, uintptr_t>   link_map_t;
+    using comm_send_map_t = std::map<RankInfo, comm_send_pair>;
+    using comm_recv_map_t = std::map<RankInfo, comm_recv_pair>;
+    // using link_map_t = std::map<LinkId_t, Link*>;
+    using link_map_t      = std::map<std::string, uintptr_t>;
 
     // TimeConverter* period;
     comm_send_map_t comm_send_map;

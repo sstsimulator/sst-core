@@ -46,7 +46,7 @@ class ComponentInfo
 {
 
 public:
-    typedef std::vector<ConfigStatistic> statEnableList_t; /*!< List of Enabled Statistics */
+    using statEnableList_t = std::vector<ConfigStatistic>; /*!< List of Enabled Statistics */
 
     // Share Flags for SubComponent loading
     static const uint64_t SHARE_PORTS  = 0x1;
@@ -290,8 +290,8 @@ private:
     std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID> dataByID;
 
 public:
-    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator
-        const_iterator;
+    using const_iterator =
+        std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator;
 
     const_iterator begin() const { return dataByID.begin(); }
 

@@ -130,7 +130,7 @@ public:
     virtual ~serializable_base() {}
 
 protected:
-    typedef enum { ConstructorFlag } cxn_flag_t;
+    enum cxn_flag_t { ConstructorFlag };
     static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
 };
 
@@ -243,8 +243,8 @@ public:
 class serializable_factory
 {
 protected:
-    typedef std::unordered_map<long, serializable_builder*> builder_map;
-    static builder_map*                                     builders_;
+    using builder_map = std::unordered_map<long, serializable_builder*>;
+    static builder_map* builders_;
 
 public:
     static serializable_base* get_serializable(uint32_t cls_id);

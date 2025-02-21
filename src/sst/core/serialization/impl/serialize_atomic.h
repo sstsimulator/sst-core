@@ -28,7 +28,7 @@ namespace Serialization {
 template <class T>
 class serialize_impl<std::atomic<T>>
 {
-    typedef std::atomic<T> Value;
+    using Value = std::atomic<T>;
 
 public:
     void operator()(Value& v, serializer& ser)

@@ -39,10 +39,10 @@ class checkForELI_getSimpleInfoFunction
     template <typename F, F>
     struct check;
 
-    typedef char Match;
-    typedef long NotMatch;
+    using Match    = char;
+    using NotMatch = long;
 
-    typedef const InfoType& (*functionsig)(SimpleInfoPlaceHolder<index, InfoType>);
+    using functionsig = const InfoType& (*)(SimpleInfoPlaceHolder<index, InfoType>);
 
     template <typename F>
     static Match HasFunction(check<functionsig, &F::ELI_getSimpleInfo>*);

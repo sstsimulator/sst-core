@@ -103,7 +103,7 @@ public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::StandardMem,TimeConverter*,HandlerBase*)
 
     /** All Addresses can be 64-bit */
-    typedef uint64_t Addr;
+    using Addr = uint64_t;
 #define PRI_ADDR PRIx64
 
     /**
@@ -112,8 +112,8 @@ public:
     class Request
     {
     public:
-        typedef uint64_t id_t;
-        typedef uint32_t flags_t;
+        using id_t    = uint64_t;
+        using flags_t = uint32_t;
 
         /** Flags that modify requests.
          * Each bit in a 32-bit field (flags_t) defines a seperate flag.

@@ -28,7 +28,7 @@ namespace Serialization {
 template <class T>
 class serialize_impl<std::deque<T>>
 {
-    typedef std::deque<T> Deque;
+    using Deque = std::deque<T>;
 
 public:
     void operator()(Deque& v, serializer& ser)

@@ -46,7 +46,7 @@ class StatisticBase
 {
 public:
     /** Statistic collection mode */
-    typedef enum { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END } StatMode_t;
+    enum StatMode_t { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END };
 
     // Enable/Disable of Statistic
     /** Enable Statistic for collections */

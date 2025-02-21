@@ -193,7 +193,7 @@ NO_VARIABLE:
         }
     }
 
-    typedef std::map<uint32_t, std::string>::const_iterator const_iterator; /*!< Const Iterator type */
+    using const_iterator = std::map<uint32_t, std::string>::const_iterator; /*!< Const Iterator type */
 
     const std::string& getString(const std::string& name, bool& found) const;
 
@@ -229,8 +229,8 @@ NO_VARIABLE:
     void getDelimitedTokens(const std::string& value, char delim, std::vector<std::string>& tokens) const;
 
 public:
-    typedef std::string                    key_type; /*!< Type of key (string) */
-    typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
+    using key_type = std::string;                    /*!< Type of key (string) */
+    using KeySet_t = std::set<key_type, KeyCompare>; /*!< Type of a set of keys */
 
     /**
      * Enable or disable parameter verification on an instance

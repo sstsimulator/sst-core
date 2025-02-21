@@ -29,12 +29,12 @@ namespace Serialization {
 template <class T>
 class serialize<std::set<T>>
 {
-    typedef std::set<T> Set;
+    using Set = std::set<T>;
 
 public:
     void operator()(Set& v, serializer& ser)
     {
-        typedef typename std::set<T>::iterator iterator;
+        using iterator = typename Set::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
@@ -84,12 +84,12 @@ public:
 template <class T>
 class serialize<std::unordered_set<T>>
 {
-    typedef std::unordered_set<T> Set;
+    using Set = std::unordered_set<T>;
 
 public:
     void operator()(Set& v, serializer& ser)
     {
-        typedef typename std::unordered_set<T>::iterator iterator;
+        using iterator = typename Set::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {

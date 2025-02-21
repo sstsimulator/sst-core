@@ -39,7 +39,7 @@ namespace SST {
 class SSTInfoConfig : public ConfigShared
 {
 public:
-    typedef std::multimap<std::string, std::string> FilterMap_t;
+    using FilterMap_t = std::multimap<std::string, std::string>;
     /** Create a new SSTInfo configuration and parse the Command Line. */
     SSTInfoConfig(bool suppress_print);
     ~SSTInfoConfig();

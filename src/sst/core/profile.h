@@ -28,7 +28,7 @@ namespace Profile {
 #define CLOCK std::chrono::steady_clock
 #endif
 
-typedef CLOCK::time_point ProfData_t;
+using ProfData_t = CLOCK::time_point;
 
 inline ProfData_t
 now()
@@ -50,7 +50,7 @@ getElapsed(const ProfData_t& since)
 }
 
 #else
-typedef double ProfData_t;
+using ProfData_t = double;
 
 inline ProfData_t
 now()

@@ -55,7 +55,7 @@ class serialize_impl<std::vector<T>>
     template <class A>
     friend class serialize;
 
-    typedef std::vector<T> Vector;
+    using Vector = std::vector<T>;
 
     void operator()(Vector& v, serializer& ser)
     {
@@ -110,7 +110,7 @@ class serialize_impl<std::vector<bool>>
     template <class A>
     friend class serialize;
 
-    typedef std::vector<bool> Vector;
+    using Vector = std::vector<bool>;
 
     void operator()(Vector& v, serializer& ser)
     {

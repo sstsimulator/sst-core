@@ -59,7 +59,7 @@ public:
     virtual void fixup_handlers() override;
 
 private:
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>> dataType_t;
+    using dataType_t = std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>>;
 
     template <class T, class S, class C>
     S& getContainer(std::priority_queue<T, S, C>& q)
