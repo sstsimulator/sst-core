@@ -95,7 +95,7 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
 void
 ConfigBase::addOption(
     struct option opt, const char* argname, const char* desc, std::function<int(const char* arg)> callback,
-    std::vector<bool> annotations, std::function<std::string(void)> ext_help)
+    std::vector<bool> annotations, std::function<std::string()> ext_help)
 {
     // Put this into the options vector
     options.emplace_back(opt, argname, desc, callback, false, annotations, ext_help, false);
@@ -143,7 +143,7 @@ ConfigBase::addHeading(const char* desc)
     struct option     opt = { "", optional_argument, 0, 0 };
     std::vector<bool> vec;
     options.emplace_back(
-        opt, "", desc, std::function<int(const char* arg)>(), true, vec, std::function<std::string(void)>(), false);
+        opt, "", desc, std::function<int(const char* arg)>(), true, vec, std::function<std::string()>(), false);
 }
 
 std::string
@@ -287,8 +287,8 @@ ConfigBase::printExtHelp(const std::string& option)
     else {
         Util::SmartTextFormatter formatter({ 2, 5, 8 }, 1);
 
-        std::function<std::string(void)>& func = extra_help_map[option];
-        std::string                       help = func();
+        std::function<std::string()>& func = extra_help_map[option];
+        std::string                   help = func();
         formatter.append(help);
         fprintf(stderr, "%s\n", formatter.str().c_str());
     }

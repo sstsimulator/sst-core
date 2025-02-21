@@ -169,7 +169,7 @@ public:
         }
     }
 
-    // For void*, we get sizeof(void), which errors.
+    // For void*, we get sizeof(), which errors.
     // Create a wrapper that casts to char* and uses above
     template <typename Int>
     void binary(void*& buffer, Int& size)

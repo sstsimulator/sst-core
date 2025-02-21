@@ -140,7 +140,7 @@ public:
     ActivityQueue*
          registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
     void exchangeLinkInfo();
-    void execute(void) override;
+    void execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkUntimedData(std::atomic<int>& msg_count);

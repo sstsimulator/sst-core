@@ -162,8 +162,8 @@ public:
     ~MemPoolTestComponent() {}
 
     void eventHandler(Event* ev, int port);
-    void setup(void) override;
-    void finish(void) override;
+    void setup() override;
+    void finish() override;
     void complete(unsigned int phase) override;
 
 private:

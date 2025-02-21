@@ -311,7 +311,7 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, double data)
 
 
 bool
-StatisticOutputTextBase::openFile(void)
+StatisticOutputTextBase::openFile()
 {
     if ( !outputsToFile() ) {
         m_hFile = stdout;
@@ -349,7 +349,7 @@ StatisticOutputTextBase::openFile(void)
 }
 
 void
-StatisticOutputTextBase::closeFile(void)
+StatisticOutputTextBase::closeFile()
 {
     if ( !outputsToFile() ) return;
     if ( m_useCompression ) {

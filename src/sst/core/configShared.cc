@@ -83,7 +83,7 @@ ConfigShared::addVerboseOptions(bool sdl_avail)
 
  */
 std::string
-ConfigShared::getLibPath(void) const
+ConfigShared::getLibPath() const
 {
     std::string fullLibPath;
 

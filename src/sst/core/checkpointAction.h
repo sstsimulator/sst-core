@@ -70,7 +70,7 @@ public:
     void setCheckpoint();
 
     /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
-    void execute(void) override;
+    void execute() override;
 
     /** Called by SyncManager to check whether a checkpoint should be generated */
     SimTime_t check(SimTime_t current_time);

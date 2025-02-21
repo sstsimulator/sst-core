@@ -236,7 +236,7 @@ public:
     // /**
     //  * Returns a handle to the underlying SST::Link
     //  */
-    // virtual Link* getLink(void) const = 0;
+    // virtual Link* getLink() const = 0;
 
     /**
      * Send a Request to the network.
