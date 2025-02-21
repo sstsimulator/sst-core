@@ -12,8 +12,7 @@
 #ifndef SST_CORE_MATH_SQRT_H
 #define SST_CORE_MATH_SQRT_H
 
-namespace SST {
-namespace Math {
+namespace SST::Math {
 
 // Implements uint32_t square root based on algorithm from:
 // Reference: http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
@@ -42,7 +41,6 @@ square_root(const uint32_t input)
     return res;
 };
 
-} // namespace Math
-} // namespace SST
+} // namespace SST::Math
 
 #endif // SST_CORE_MATH_SQRT_H

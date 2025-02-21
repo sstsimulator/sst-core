@@ -15,8 +15,7 @@
 
 #include "sst/core/testElements/coreTest_ClockerComponent.h"
 
-namespace SST {
-namespace CoreTestClockerComponent {
+namespace SST::CoreTestClockerComponent {
 
 coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& params) : Component(id)
 {
@@ -58,7 +57,8 @@ coreTestClockerComponent::coreTestClockerComponent() : Component(-1)
     // for serialization only
 }
 
-bool coreTestClockerComponent::tick(Cycle_t)
+bool
+coreTestClockerComponent::tick(Cycle_t)
 {
     clock_count--;
 
@@ -117,5 +117,4 @@ coreTestClockerComponent::Oneshot2Callback()
 }
 
 // Serialization
-} // namespace CoreTestClockerComponent
-} // namespace SST
+} // namespace SST::CoreTestClockerComponent

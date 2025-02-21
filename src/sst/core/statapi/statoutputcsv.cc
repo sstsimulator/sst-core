@@ -15,8 +15,7 @@
 
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
 {
@@ -370,5 +369,4 @@ StatisticOutputCSV::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& m_useCompression;
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

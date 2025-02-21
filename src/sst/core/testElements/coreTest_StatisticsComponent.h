@@ -19,8 +19,7 @@ using namespace SST;
 using namespace SST::RNG;
 using namespace SST::Statistics;
 
-namespace SST {
-namespace CoreTestStatisticsComponent {
+namespace SST::CoreTestStatisticsComponent {
 
 class StatisticsComponentInt : public SST::Component
 {
@@ -142,7 +141,6 @@ private:
     Statistic<double>* stat3_F64; // For testing stat sharing
 };
 
-} // namespace CoreTestStatisticsComponent
-} // namespace SST
+} // namespace SST::CoreTestStatisticsComponent
 
 #endif // SST_CORE_CORETEST_STATISTICSCOMPONENT_H

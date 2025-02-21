@@ -17,8 +17,6 @@
 
 #include <functional>
 
-using namespace std;
-
 namespace SST {
 
 ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose) :

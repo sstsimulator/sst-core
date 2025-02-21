@@ -16,9 +16,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Core {
-namespace Profile {
+namespace SST::Core::Profile {
 
 #ifdef __SST_ENABLE_PROFILE__
 
@@ -72,8 +70,6 @@ getElapsed(const ProfData_t& UNUSED(since))
 
 #endif
 
-} // namespace Profile
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Profile
 
 #endif // SST_CORE_CORE_PROFILE_H

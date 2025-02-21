@@ -15,8 +15,7 @@
 
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) : StatisticFieldsOutput(outputParameters) {}
 
@@ -448,5 +447,4 @@ StatisticOutputConsole::serialize_order(SST::Core::Serialization::serializer& se
     StatisticOutputTextBase::serialize_order(ser);
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

@@ -16,8 +16,7 @@
 
 #include <type_traits>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <class Base, class... Args>
 struct Builder
@@ -333,8 +332,7 @@ struct CtorList<Base, void>
     }
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 #define ELI_CTOR(...)      std::tuple<__VA_ARGS__>
 #define ELI_DEFAULT_CTOR() std::tuple<>

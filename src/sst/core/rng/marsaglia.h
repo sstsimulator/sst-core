@@ -24,8 +24,7 @@
 #define MARSAGLIA_INT32_MAX  2147483647L
 #define MARSAGLIA_INT64_MAX  9223372036854775807LL
 
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 /**
     \class MarsagliaRNG marsaglia.h "sst/core/rng/marsaglia.h"
 
@@ -37,7 +36,7 @@ namespace RNG {
         For more information see the Multiply-with-carry Random Number Generator article
     at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
-class MarsagliaRNG : public SST::RNG::Random
+class MarsagliaRNG : public Random
 {
 
 public:
@@ -119,7 +118,6 @@ private:
     unsigned int m_w;
 };
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_MARSAGLIA_H

@@ -22,8 +22,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace SST {
-namespace CoreTestLookupTableComponent {
+namespace SST::CoreTestLookupTableComponent {
 
 coreTestLookupTableComponent::coreTestLookupTableComponent(SST::ComponentId_t id, SST::Params& params) : Component(id)
 {
@@ -81,7 +80,8 @@ void
 coreTestLookupTableComponent::finish()
 {}
 
-bool coreTestLookupTableComponent::tick(SST::Cycle_t)
+bool
+coreTestLookupTableComponent::tick(SST::Cycle_t)
 {
     bool                done    = false;
     static const size_t nPerRow = 8;
@@ -107,5 +107,4 @@ bool coreTestLookupTableComponent::tick(SST::Cycle_t)
     return false;
 }
 
-} // namespace CoreTestLookupTableComponent
-} // namespace SST
+} // namespace SST::CoreTestLookupTableComponent

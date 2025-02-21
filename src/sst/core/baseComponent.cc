@@ -919,9 +919,7 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     }
 }
 
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace Core::Serialization::pvt {
 
 static const long null_ptr_id = -1;
 
@@ -997,9 +995,6 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
     ser.mapper().map_hierarchy_end(); // obj_map
 }
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-
+} // namespace Core::Serialization::pvt
 
 } // namespace SST

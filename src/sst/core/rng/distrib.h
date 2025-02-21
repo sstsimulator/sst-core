@@ -14,8 +14,7 @@
 
 #include "sst/core/serialization/serializable.h"
 
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
  * \class RandomDistribution
@@ -46,9 +45,8 @@ public:
     ImplementVirtualSerializable(SST::RNG::RandomDistribution)
 };
 
-using SSTRandomDistribution = SST::RNG::RandomDistribution;
+using SSTRandomDistribution = RandomDistribution;
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_DISTRIB_H

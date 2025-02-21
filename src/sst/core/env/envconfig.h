@@ -21,9 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Environment {
+namespace SST::Core::Environment {
 
 /***
 \class EnvironmentConfigGroup envconfig.h "sst/core/env/envconfig.h"
@@ -122,8 +120,6 @@ private:
     std::map<std::string, EnvironmentConfigGroup*> groups;
 };
 
-} // namespace Environment
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Environment
 
 #endif // SST_CORE_ENV_ENVCONFIG_H

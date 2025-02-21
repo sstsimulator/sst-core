@@ -15,8 +15,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statoutput.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 /**
     \class StatisticOutputJSON
@@ -120,7 +119,6 @@ private:
     int         m_curIndentLevel;
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTJSON_H

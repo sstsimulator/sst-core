@@ -26,8 +26,6 @@
 #include <fstream>
 #include <string.h>
 
-using namespace std;
-
 namespace {
 // bool zero_latency_warning = false;
 
@@ -931,7 +929,7 @@ ConfigGraph::findStatistic(StatisticId_t id) const
 ConfigGraph*
 ConfigGraph::getSubGraph(uint32_t start_rank, uint32_t end_rank)
 {
-    set<uint32_t> rank_set;
+    std::set<uint32_t> rank_set;
     for ( uint32_t i = start_rank; i <= end_rank; i++ ) {
         rank_set.insert(i);
     }
@@ -1392,7 +1390,7 @@ PartitionComponent::print(std::ostream& os, const PartitionGraph* graph) const
     for ( ComponentIdMap_t::const_iterator git = group.begin(); git != group.end(); ++git ) {
         os << *git << " ";
     }
-    os << ")" << endl;
+    os << ")" << std::endl;
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
     os << "  thread = " << rank.thread << std::endl;

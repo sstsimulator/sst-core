@@ -17,10 +17,7 @@
 #include "mersenne.h"
 #include "rng.h"
 
-using namespace SST::RNG;
-
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class GaussianDistribution gaussian.h "sst/core/rng/gaussian.h"
@@ -53,7 +50,7 @@ public:
        deviation. \param mn The mean of the Gaussian distribution \param sd The standard deviation of the Gaussian
        distribution \param baseRNG The random number generator as the base of the distribution
     */
-    GaussianDistribution(double mn, double sd, SST::RNG::Random* baseRNG) : RandomDistribution()
+    GaussianDistribution(double mn, double sd, Random* baseRNG) : RandomDistribution()
     {
 
         mean   = mn;
@@ -151,7 +148,7 @@ protected:
     /**
         The base random number generator for the distribution
     */
-    SST::RNG::Random* baseDistrib;
+    Random* baseDistrib;
     /**
         Random numbers for the distribution are read in pairs, this stores the second of the pair
     */
@@ -168,9 +165,8 @@ protected:
     bool deleteDistrib;
 };
 
-using SSTGaussianDistribution = SST::RNG::GaussianDistribution;
+using SSTGaussianDistribution = GaussianDistribution;
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_GAUSSIAN_H

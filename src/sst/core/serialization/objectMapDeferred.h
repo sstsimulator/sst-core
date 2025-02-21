@@ -14,11 +14,7 @@
 
 #include "sst/core/serialization/serializer.h"
 
-
-namespace SST {
-namespace Core {
-namespace Serialization {
-
+namespace SST::Core::Serialization {
 
 /**
    ObjectMap version that will delay building the internal data
@@ -120,9 +116,6 @@ private:
     std::string type_ = "";
 };
 
-
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_OBJECTMAPDEFERRED_H

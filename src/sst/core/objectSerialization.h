@@ -16,9 +16,7 @@
 
 #include <vector>
 
-namespace SST {
-
-namespace Comms {
+namespace SST::Comms {
 
 template <typename dataType>
 std::vector<char>
@@ -75,8 +73,6 @@ deserialize(char* buffer, int blen, dataType& tgt)
     ser& tgt;
 }
 
-} // namespace Comms
-
-} // namespace SST
+} // namespace SST::Comms
 
 #endif // SST_CORE_OBJECTSERIALIZATION_H

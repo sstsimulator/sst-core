@@ -16,8 +16,7 @@
 #include "sst/core/event.h"
 #include "sst/core/subcomponent.h"
 
-namespace SST {
-namespace CoreTestPortModule {
+namespace SST::CoreTestPortModule {
 
 class PortSubComponent;
 
@@ -113,7 +112,7 @@ public:
 
     SST_ELI_DOCUMENT_PORTS(
         {"left", "Link to the left. Will only receive on left port.  If nothing is attached to the left port, the component will send sendcount events.", { "" } },
-        {"right", "Link to the right. Will only send on right port.  If nothing is connect to the right port, the component will check the types of the events recieved.", { "" } }  
+        {"right", "Link to the right. Will only send on right port.  If nothing is connect to the right port, the component will check the types of the events recieved.", { "" } }
     )
 
     SST_ELI_DOCUMENT_PARAMS(
@@ -194,7 +193,6 @@ private:
     ImplementSerializable(SST::CoreTestPortModule::PortSubComponent)
 };
 
-} // namespace CoreTestPortModule
-} // namespace SST
+} // namespace SST::CoreTestPortModule
 
 #endif // SST_CORE_CORETEST_PORTMODULE_H

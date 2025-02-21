@@ -23,9 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file.
  * This class creates the tunnel for the parent/master process
@@ -118,8 +116,6 @@ private:
     TunnelType* tunnel;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_TUNNEL_MMAP_PARENT_H

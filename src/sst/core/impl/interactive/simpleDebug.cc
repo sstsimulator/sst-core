@@ -16,9 +16,7 @@
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
-namespace SST {
-namespace IMPL {
-namespace Interactive {
+namespace SST::IMPL::Interactive {
 
 SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) : InteractiveConsole() {}
 
@@ -289,7 +287,4 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     }
 }
 
-
-} // namespace Interactive
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Interactive

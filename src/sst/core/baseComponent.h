@@ -49,13 +49,9 @@ class TimeConverter;
 class UnitAlgebra;
 
 
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
+}
 
 /**
  * Main component object for the simulation.
@@ -1117,11 +1113,9 @@ public:
     }
 };
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 namespace pvt {
-
 class SerializeBaseComponentHelper
 {
 public:
@@ -1169,8 +1163,7 @@ class serialize_impl<T*, typename std::enable_if<std::is_base_of<SST::BaseCompon
     }
 };
 
-} // namespace Serialization
-} // namespace Core
+} // namespace Core::Serialization
 
 } // namespace SST
 

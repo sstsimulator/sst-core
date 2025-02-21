@@ -25,7 +25,7 @@ REENABLE_WARNING
 
 namespace SST {
 class ConfigComponent;
-} // namespace SST
+}
 
 extern "C" {
 

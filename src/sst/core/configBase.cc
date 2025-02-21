@@ -29,8 +29,6 @@
 #define E_OK 0
 #endif
 
-using namespace std;
-
 namespace SST {
 
 bool
@@ -431,7 +429,7 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
 
 
 bool
-ConfigBase::setOptionExternal(const string& entryName, const string& value)
+ConfigBase::setOptionExternal(const std::string& entryName, const std::string& value)
 {
     // NOTE: print outs in this function will not be suppressed
     for ( auto& option : options ) {

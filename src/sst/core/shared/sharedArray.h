@@ -18,8 +18,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedArray class.  The class is templated to allow for an array
@@ -808,7 +807,7 @@ private:
         };
     };
 };
-} // namespace Shared
-} // namespace SST
+
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDARRAY_H

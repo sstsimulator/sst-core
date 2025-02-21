@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 class ProvidesDefaultInfo
 {
@@ -73,8 +72,7 @@ private:
     std::string      alias_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 #define SST_ELI_INSERT_COMPILE_INFO()                     \
     static const std::string& ELI_getCompileDate()        \

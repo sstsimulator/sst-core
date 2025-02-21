@@ -13,12 +13,11 @@
 
 #include "sst/core/eli/elibase.h"
 
-namespace SST {
+namespace SST::ELI {
 
 /**************************************************************************
   BaseElementInfo class functions
 **************************************************************************/
-namespace ELI {
 
 std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_ {};
 
@@ -48,5 +47,4 @@ LoadedLibraries::isLoaded(const std::string& name)
     }
 }
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI

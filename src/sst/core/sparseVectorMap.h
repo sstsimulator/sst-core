@@ -800,9 +800,7 @@ public:
 
 } // namespace SST
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <typename keyT, typename classT>
 class serialize<SST::SparseVectorMap<keyT, classT>>
@@ -810,8 +808,6 @@ class serialize<SST::SparseVectorMap<keyT, classT>>
 public:
     void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser) { ser& v.data; }
 };
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SPARSEVECTORMAP_H

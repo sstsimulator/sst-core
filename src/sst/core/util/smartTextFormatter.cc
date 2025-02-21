@@ -18,11 +18,7 @@
 #include <unistd.h>
 #include <vector>
 
-
-using namespace std;
-
-namespace SST {
-namespace Util {
+namespace SST::Util {
 
 void
 SmartTextFormatter::clear()
@@ -241,5 +237,4 @@ SmartTextFormatter::getTerminalWidth()
     return w.ws_col > 0 ? w.ws_col : 80;
 }
 
-} // namespace Util
-} // namespace SST
+} // namespace SST::Util

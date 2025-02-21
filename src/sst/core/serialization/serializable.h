@@ -15,11 +15,7 @@
 #include "sst/core/serialization/serializable_base.h"
 #include "sst/core/serialization/serialize.h"
 
-
-namespace SST {
-namespace Core {
-namespace Serialization {
-
+namespace SST::Core::Serialization {
 
 class serializable : public serializable_base
 {
@@ -143,10 +139,7 @@ class serialize_impl<
     }
 };
 
-
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 //#include "sst/core/serialization/serialize_serializable.h"
 

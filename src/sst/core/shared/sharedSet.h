@@ -17,8 +17,7 @@
 
 #include <set>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedSet class.  The class is templated to allow for an array
@@ -348,7 +347,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDSET_H

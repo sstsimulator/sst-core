@@ -16,8 +16,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class JSONConfigGraphOutput : public ConfigGraphOutput
 {
@@ -27,7 +26,6 @@ public:
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_JSON_CONFIG_OUTPUT_H

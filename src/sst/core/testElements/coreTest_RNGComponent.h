@@ -18,8 +18,7 @@
 using namespace SST;
 using namespace SST::RNG;
 
-namespace SST {
-namespace CoreTestRNGComponent {
+namespace SST::CoreTestRNGComponent {
 
 class coreTestRNGComponent : public SST::Component
 {
@@ -74,7 +73,6 @@ private:
     int         rng_count;
 };
 
-} // namespace CoreTestRNGComponent
-} // namespace SST
+} // namespace SST::CoreTestRNGComponent
 
 #endif // SST_CORE_CORETEST_RNGCOMPONENT_H
