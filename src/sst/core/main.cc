@@ -546,8 +546,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 // If we are a MPI_parallel job, need to makes sure that all used
                 // libraries are loaded on all ranks.
 #ifdef SST_CONFIG_HAVE_MPI
-                set<string> lib_names;
-                set<string> other_lib_names;
+                std::set<std::string> lib_names;
+                std::set<std::string> other_lib_names;
                 Factory::getFactory()->getLoadedLibraryNames(lib_names);
 
                 // Send my lib_names to the next lowest rank
