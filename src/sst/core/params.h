@@ -317,8 +317,7 @@ public:
      * converted to type T, an invalid_argument exception is thrown.
      */
     template <class T>
-    typename std::enable_if<not std::is_same<std::string, T>::value, T>::type
-    find(const std::string& k, T default_value, bool& found) const
+    std::enable_if_t<!std::is_same_v<std::string, T>, T> find(const std::string& k, T default_value, bool& found) const
     {
         return find_impl<T>(k, default_value, found);
     }
@@ -350,7 +349,7 @@ public:
      *   specified as a string literal
      */
     template <class T>
-    typename std::enable_if<std::is_same<bool, T>::value, T>::type
+    std::enable_if_t<std::is_same_v<bool, T>, T>
     find(const std::string& k, const char* default_value, bool& found) const
     {
         if ( nullptr == default_value ) { return find_impl<T>(k, static_cast<T>(0), found); }
@@ -399,8 +398,7 @@ public:
      *   specified as a string literal
      */
     template <class T>
-    typename std::enable_if<std::is_same<bool, T>::value, T>::type
-    find(const std::string& k, const char* default_value) const
+    std::enable_if_t<std::is_same_v<bool, T>, T> find(const std::string& k, const char* default_value) const
     {
         bool tmp;
         if ( nullptr == default_value ) { return find_impl<T>(k, static_cast<T>(0), tmp); }
@@ -433,7 +431,7 @@ public:
      * @param found - set to true if the the parameter was found
      */
     template <class T>
-    typename std::enable_if<not std::is_same<bool, T>::value, T>::type find(const std::string& k, bool& found) const
+    std::enable_if_t<!std::is_same_v<bool, T>, T> find(const std::string& k, bool& found) const
     {
         T default_value = T();
         return find_impl<T>(k, default_value, found);

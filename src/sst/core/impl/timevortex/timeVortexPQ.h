@@ -79,7 +79,7 @@ private:
     uint64_t max_depth;
 
     // Need current depth to be atomic if we are thread safe
-    typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type current_depth;
+    std::conditional_t<TS, std::atomic<uint64_t>, uint64_t> current_depth;
 
     CACHE_ALIGNED(SST::Core::ThreadSafe::Spinlock, slock);
 };

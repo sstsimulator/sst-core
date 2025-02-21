@@ -217,7 +217,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr)
+    decimal_fixedpoint(T init, std::enable_if_t<std::is_unsigned_v<T>>* = nullptr)
     {
         from_uint64(init);
     }
@@ -228,8 +228,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(
-        T init, typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type* = nullptr)
+    decimal_fixedpoint(T init, std::enable_if_t<std::is_signed_v<T> && std::is_integral_v<T>>* = nullptr)
     {
         if ( init < 0 ) {
             from_uint64(-init);
@@ -246,7 +245,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr)
+    decimal_fixedpoint(const T init, std::enable_if_t<std::is_floating_point_v<T>>* = nullptr)
     {
         from_double(init);
     }
@@ -408,7 +407,7 @@ public:
        Templated conversion function for unsigned types.
      */
     template <typename T>
-    T convert_to(typename std::enable_if<std::is_unsigned<T>::value>::type* = 0) const
+    T convert_to(std::enable_if_t<std::is_unsigned_v<T>>* = nullptr) const
     {
         return static_cast<T>(toUnsignedLong());
     }
@@ -417,7 +416,7 @@ public:
        Templated conversion function for signed integral types.
      */
     template <typename T>
-    T convert_to(typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type* = 0) const
+    T convert_to(std::enable_if_t<std::is_signed_v<T> && std::is_integral_v<T>>* = nullptr) const
     {
         return static_cast<T>(toLong());
     }
@@ -426,7 +425,7 @@ public:
        Templated conversion function for floating point types.
      */
     template <typename T>
-    T convert_to(typename std::enable_if<std::is_floating_point<T>::value>::type* = 0) const
+    T convert_to(std::enable_if_t<std::is_floating_point_v<T>>* = nullptr) const
     {
         return static_cast<T>(toDouble());
     }

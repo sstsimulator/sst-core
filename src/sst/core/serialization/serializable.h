@@ -50,8 +50,7 @@ void map_serializable(serializable_base*& s, serializer& ser, const char* name);
 
 
 template <class T>
-class serialize_impl<
-    T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::Core::Serialization::serializable, T>>>
 {
 
     template <class A>
@@ -120,8 +119,7 @@ serialize_intrusive_ptr(T*& t, serializer& ser)
 }
 
 template <class T>
-class serialize_impl<
-    T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+class serialize_impl<T, std::enable_if_t<std::is_base_of_v<SST::Core::Serialization::serializable, T>>>
 {
     template <class A>
     friend class serialize;

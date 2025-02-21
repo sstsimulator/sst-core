@@ -27,7 +27,7 @@ namespace Shared {
 template <typename valT>
 class SharedSet : public SharedObject
 {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedSet");
+    static_assert(!std::is_pointer_v<valT>, "Cannot use a pointer type as value with SharedSet");
 
     // Forward declaration.  Defined below
     class Data;

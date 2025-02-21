@@ -1138,7 +1138,7 @@ public:
 
 
 template <class T>
-class serialize_impl<T*, typename std::enable_if<std::is_base_of<SST::BaseComponent, T>::value>::type>
+class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, T>>>
 {
     template <class A>
     friend class serialize;
