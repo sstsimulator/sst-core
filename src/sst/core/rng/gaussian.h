@@ -140,11 +140,11 @@ protected:
     /**
         The mean of the Gaussian distribution
     */
-    double            mean;
+    double  mean;
     /**
         The standard deviation of the Gaussian distribution
     */
-    double            stddev;
+    double  stddev;
     /**
         The base random number generator for the distribution
     */
@@ -152,11 +152,11 @@ protected:
     /**
         Random numbers for the distribution are read in pairs, this stores the second of the pair
     */
-    double            unusedPair;
+    double  unusedPair;
     /**
         Random numbers for the distribution are read in pairs, this tells the code to use the second of the pair
     */
-    bool              usePair;
+    bool    usePair;
 
     /**
         Controls whether the destructor deletes the distribution (we need to ensure we do this IF we created the

@@ -102,7 +102,7 @@ protected:
     /**
         Sets the lambda of the exponential distribution.
     */
-    double            lambda;
+    double  lambda;
     /**
         Sets the base random number generator for the distribution.
     */

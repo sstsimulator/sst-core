@@ -36,9 +36,7 @@ public:
         \param probs An array of probabilities for each outcome
         \param probsCount The number of discrete outcomes
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount) :
-        RandomDistribution(),
-        probCount(probsCount)
+    DiscreteDistribution(const double* probs, const uint32_t probsCount) : RandomDistribution(), probCount(probsCount)
     {
 
         probabilities   = (double*)malloc(sizeof(double) * probsCount);

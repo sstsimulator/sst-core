@@ -80,8 +80,7 @@ void
 coreTestLookupTableComponent::finish()
 {}
 
-bool
-coreTestLookupTableComponent::tick(SST::Cycle_t)
+bool coreTestLookupTableComponent::tick(SST::Cycle_t)
 {
     bool                done    = false;
     static const size_t nPerRow = 8;

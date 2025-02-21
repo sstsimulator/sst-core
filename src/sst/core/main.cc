@@ -135,7 +135,7 @@ dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo& size)
                 cfg.component_partition_file().c_str());
         }
 
-        std::ofstream            graph_file(cfg.component_partition_file().c_str());
+        std::ofstream         graph_file(cfg.component_partition_file().c_str());
         ConfigComponentMap_t& component_map = graph->getComponentMap();
 
         for ( uint32_t i = 0; i < size.rank; i++ ) {

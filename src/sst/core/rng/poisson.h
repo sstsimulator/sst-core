@@ -108,11 +108,11 @@ protected:
     /**
         Sets the lambda of the Poisson distribution.
     */
-    const double      lambda;
+    const double lambda;
     /**
         Sets the base random number generator for the distribution.
     */
-    Random* baseDistrib;
+    Random*      baseDistrib;
 
     /**
         Controls whether the base distribution should be deleted when this class is destructed.
