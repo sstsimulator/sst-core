@@ -27,7 +27,7 @@ namespace Shared {
 template <typename keyT, typename valT>
 class SharedMap : public SharedObject
 {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedMap");
+    static_assert(!std::is_pointer_v<valT>, "Cannot use a pointer type as value with SharedMap");
 
     // Forward declaration.  Defined below
     class Data;

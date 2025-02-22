@@ -81,14 +81,14 @@ private:
 } // namespace SST
 
 // clang-format off
-#define SST_ELI_DOCUMENT_PARAMS(...)                                                                               \
-    static const std::vector<SST::ElementInfoParam>& ELI_getParams()                                               \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoParam> var    = { __VA_ARGS__ };                                        \
-        auto parent = SST::ELI::GetParams<                                                                         \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_PARAMS(...)                                                                           \
+    static const std::vector<SST::ElementInfoParam>& ELI_getParams()                                           \
+    {                                                                                                          \
+        static std::vector<SST::ElementInfoParam> var    = { __VA_ARGS__ };                                    \
+        auto parent = SST::ELI::GetParams<                                                                     \
+            std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                                 \
+        return var;                                                                                            \
     }
 // clang-format on
 

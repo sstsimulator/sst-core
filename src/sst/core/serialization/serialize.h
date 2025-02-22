@@ -29,8 +29,8 @@ namespace Serialization {
 // Workaround for use with static_assert(), since static_assert(false)
 // will always assert, even when in an untaken if constexpr path.
 // This can be used in any serialize_impl class, if needed/
-template <class>
-constexpr bool dependent_false = false;
+template <typename...>
+inline constexpr bool dependent_false = false;
 
 /**
    Base serialize class.
@@ -52,10 +52,9 @@ public:
             // If it falls through to the default, let's check to see if it's
             // a non-polymorphic class and try to call serialize_order
             if constexpr (
-                std::is_class_v<typename std::remove_pointer<T>::type> &&
-                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
+                std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>> ) {
                 if ( ser.mode() == serializer::UNPACK ) {
-                    t = new typename std::remove_pointer<T>::type();
+                    t = new std::remove_pointer_t<T>();
                     ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
                 }
                 t->serialize_order(ser);
@@ -81,10 +80,9 @@ public:
             // If it falls through to the default, let's check to see if it's
             // a non-polymorphic class and try to call serialize_order
             if constexpr (
-                std::is_class_v<typename std::remove_pointer<T>::type> &&
-                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
+                std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>> ) {
                 if ( ser.mode() == serializer::UNPACK ) {
-                    t = new typename std::remove_pointer<T>::type();
+                    t = new std::remove_pointer_t<T>();
                     ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
                 }
                 if ( ser.mode() == serializer::MAP ) {
@@ -327,7 +325,7 @@ public:
  */
 
 template <class T>
-class serialize_impl<T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -371,7 +369,7 @@ class serialize_impl<bool>
    independent copy after deserialization.
  */
 template <class T>
-class serialize_impl<T*, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T*, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -416,7 +414,7 @@ class serialize_impl<std::pair<U, V>>
 //    a serialize_order function
 //  */
 // template <class T>
-// class serialize_impl<T, typename std::enable_if<std::is_class<T>::value && !std::is_polymorphic<T>::value>::type>
+// class serialize_impl<T, std::enable_if_t<std::is_class_v<T> && !std::is_polymorphic_v<T>>>
 // {
 //     template <class A>
 //     friend class serialize;
