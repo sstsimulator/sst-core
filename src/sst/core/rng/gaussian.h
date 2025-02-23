@@ -165,8 +165,8 @@ protected:
     bool deleteDistrib;
 };
 
-using SSTGaussianDistribution = GaussianDistribution;
-
 } // namespace SST::RNG
+
+using SSTGaussianDistribution = SST::RNG::GaussianDistribution;
 
 #endif // SST_CORE_RNG_GAUSSIAN_H

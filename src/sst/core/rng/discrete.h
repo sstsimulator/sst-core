@@ -151,8 +151,8 @@ protected:
     uint32_t probCount;
 };
 
-using SSTDiscreteDistribution = DiscreteDistribution;
-
 } // namespace SST::RNG
+
+using SSTDiscreteDistribution = SST::RNG::DiscreteDistribution;
 
 #endif // SST_CORE_RNG_DISCRETE_H

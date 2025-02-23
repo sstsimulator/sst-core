@@ -45,8 +45,8 @@ public:
     ImplementVirtualSerializable(SST::RNG::RandomDistribution)
 };
 
-using SSTRandomDistribution = RandomDistribution;
-
 } // namespace SST::RNG
+
+using SSTRandomDistribution = SST::RNG::RandomDistribution;
 
 #endif // SST_CORE_RNG_DISTRIB_H

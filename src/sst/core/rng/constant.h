@@ -73,8 +73,8 @@ protected:
     double mean;
 };
 
-using SSTConstantDistribution = ConstantDistribution;
-
 } // namespace SST::RNG
+
+using SSTConstantDistribution = SST::RNG::ConstantDistribution;
 
 #endif // SST_CORE_RNG_CONSTANT_H

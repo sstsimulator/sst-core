@@ -114,8 +114,8 @@ protected:
     bool deleteDistrib;
 };
 
-using SSTExponentialDistribution = ExponentialDistribution;
-
 } // namespace SST::RNG
+
+using SSTExponentialDistribution = SST::RNG::ExponentialDistribution;
 
 #endif // SST_CORE_RNG_EXPON_H

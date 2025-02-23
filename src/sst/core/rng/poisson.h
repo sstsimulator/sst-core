@@ -120,8 +120,8 @@ protected:
     bool deleteDistrib;
 };
 
-using SSTPoissonDistribution = PoissonDistribution;
-
 } // namespace SST::RNG
+
+using SSTPoissonDistribution = SST::RNG::PoissonDistribution;
 
 #endif // SST_CORE_RNG_POISSON_H

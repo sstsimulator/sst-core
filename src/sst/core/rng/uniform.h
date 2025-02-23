@@ -131,8 +131,8 @@ protected:
     double probPerBin;
 };
 
-using SSTUniformDistribution = UniformDistribution;
-
 } // namespace SST::RNG
+
+using SSTUniformDistribution = SST::RNG::UniformDistribution;
 
 #endif // SST_CORE_RNG_UNIFORM_H
