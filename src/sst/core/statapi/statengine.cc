@@ -109,7 +109,6 @@ bool
 StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() ) return true;
-
     auto* comp = stat->getComponent();
     if ( comp == nullptr ) {
         m_output.verbose(
@@ -153,6 +152,7 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     }
 
     // Make sure that the wireup has not been completed
+    // If it has, stat output must support dynamic registration
     if ( true == Simulation_impl::getSimulation()->isWireUpFinished() ) {
         if ( !group.output->supportsDynamicRegistration() ) {
             m_output.fatal(
@@ -162,13 +162,6 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
                 "Statistics on output %s must be registered on Component creation. exiting...\n",
                 stat->getFullStatName().c_str(), group.output->getStatisticOutputName().c_str(),
                 group.output->getStatisticOutputName().c_str());
-        }
-        else if ( stat->getRegisteredCollectionMode() != StatisticBase::STAT_MODE_DUMP_AT_END ) {
-            m_output.fatal(
-                CALL_INFO, 1,
-                "ERROR: Statistic %s - "
-                "Stats can only be registered dynamically in DUMP_AT_END mode with no periodic clock",
-                stat->getFullStatName().c_str());
         }
     }
 

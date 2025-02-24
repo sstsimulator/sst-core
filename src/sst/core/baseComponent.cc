@@ -81,7 +81,7 @@ BaseComponent::~BaseComponent()
     my_info->component = nullptr;
     if ( my_info->parent_info ) {
         std::map<ComponentId_t, ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
-        size_t                                  deleted         = parent_subcomps.erase(my_info->id);
+        size_t                                  deleted         = parent_subcomps.erase(my_info->id_);
         if ( deleted != 1 ) {
             // Should never happen, but issue warning just in case
             sim_->getSimulationOutput().output(
@@ -722,16 +722,16 @@ Statistics::StatisticBase*
 BaseComponent::createEnabledAllStatistic(
     Params& params, const std::string& name, const std::string& statSubId, StatCreateFunction fxn)
 {
-    auto iter = m_enabledAllStats.find(name);
-    if ( iter != m_enabledAllStats.end() ) {
+    auto iter = m_enabled_all_stats_.find(name);
+    if ( iter != m_enabled_all_stats_.end() ) {
         auto& submap  = iter->second;
         auto  subiter = submap.find(statSubId);
         if ( subiter != submap.end() ) { return subiter->second; }
     }
 
     // a matching statistic was not found
-    auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, true, std::move(fxn));
-    if ( !stat->isNullStatistic() ) { m_enabledAllStats[name][statSubId] = stat; }
+    auto* stat = createStatistic(params, my_info->all_stat_config_->params, name, statSubId, true, std::move(fxn));
+    if ( !stat->isNullStatistic() ) { m_enabled_all_stats_[name][statSubId] = stat; }
     return stat;
 }
 
@@ -746,8 +746,8 @@ BaseComponent::createExplicitlyEnabledStatistic(
             name.c_str());
     }
 
-    auto piter = my_info->statConfigs->find(id);
-    if ( piter == my_info->statConfigs->end() ) {
+    auto piter = my_info->stat_configs_->find(id);
+    if ( piter == my_info->stat_configs_->end() ) {
         out.fatal(
             CALL_INFO, 1, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID", name.c_str());
     }
@@ -934,7 +934,7 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
     ser.mapper().map_hierarchy_start("my_info", my_info_dir);
     ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id), "id");
+    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
     ser.mapper().setNextObjectReadOnly();
     sst_map_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
     sst_map_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");

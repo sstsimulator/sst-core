@@ -192,7 +192,7 @@ ConfigComponent::print(std::ostream& os) const
     for ( auto& pair : enabledStatNames ) {
         os << "    " << pair.first << std::endl;
         os << "      Params:" << std::endl;
-        auto iter = statistics.find(pair.second);
+        auto iter = statistics_.find(pair.second);
         iter->second.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
@@ -213,7 +213,7 @@ ConfigComponent::cloneWithoutLinks(ConfigGraph* new_graph) const
     ret->rank             = rank;
     ret->params           = params;
     ret->statLoadLevel    = statLoadLevel;
-    ret->statistics       = statistics;
+    ret->statistics_      = statistics_;
     ret->enabledStatNames = enabledStatNames;
     ret->enabledAllStats  = enabledAllStats;
     ret->allStatConfig    = allStatConfig;
@@ -345,7 +345,7 @@ ConfigComponent::createStatistic()
     ConfigStatistic* cs     = nullptr;
     if ( parent ) { cs = parent->insertStatistic(stat_id); }
     else {
-        cs = &statistics[stat_id];
+        cs = &statistics_[stat_id];
     }
     cs->id = stat_id;
     return cs;
@@ -394,7 +394,7 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
         }
     }
 
-    ConfigStatistic& cs = statistics[stat_id];
+    ConfigStatistic& cs = statistics_[stat_id];
     cs.id               = stat_id;
     cs.params.insert(params);
     return &cs;
@@ -419,8 +419,8 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         return false;
     }
 
-    auto iter = comp->statistics.find(sid);
-    if ( iter == comp->statistics.end() ) {
+    auto iter = comp->statistics_.find(sid);
+    if ( iter == comp->statistics_.end() ) {
         Output::getDefaultObject().fatal(CALL_INFO, 1, "Cannot reuse a statistic that doesn't exist for the parent");
         return false;
     }
@@ -563,7 +563,7 @@ ConfigComponent::insertStatistic(StatisticId_t sid)
     ConfigComponent* parent = getParent();
     if ( parent ) { return parent->insertStatistic(sid); }
     else {
-        return &statistics[sid];
+        return &statistics_[sid];
     }
 }
 
@@ -586,8 +586,8 @@ ConfigComponent::findStatistic(StatisticId_t sid) const
     auto* parent = getParent();
     if ( parent ) { return parent->findStatistic(sid); }
     else {
-        auto iter = statistics.find(sid);
-        if ( iter == statistics.end() ) { return nullptr; }
+        auto iter = statistics_.find(sid);
+        if ( iter == statistics_.end() ) { return nullptr; }
         else {
             // I hate that I have to do this
             return const_cast<ConfigStatistic*>(&iter->second);
@@ -668,7 +668,7 @@ size_t
 ConfigGraph::getNumComponentsInMPIRank(uint32_t rank)
 {
     size_t count = 0;
-    for ( auto* comp : comps ) {
+    for ( auto* comp : comps_ ) {
         if ( comp->rank.rank == rank ) ++count;
     }
     return count;
@@ -678,7 +678,7 @@ ConfigGraph::getNumComponentsInMPIRank(uint32_t rank)
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
         (*iter)->setRank(rank);
     }
 }
@@ -686,7 +686,7 @@ ConfigGraph::setComponentRanks(RankInfo rank)
 bool
 ConfigGraph::containsComponentInRank(RankInfo rank)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
         if ( (*iter)->rank == rank ) return true;
     }
     return false;
@@ -695,7 +695,7 @@ ConfigGraph::containsComponentInRank(RankInfo rank)
 bool
 ConfigGraph::checkRanks(RankInfo ranks)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
         if ( !(*iter)->rank.isAssigned() || !ranks.inRange((*iter)->rank) ) {
             fprintf(stderr, "Bad rank: %u %u\n", (*iter)->rank.rank, (*iter)->rank.thread);
             return false;
@@ -713,8 +713,8 @@ ConfigGraph::postCreationCleanup()
     }
 
     LinkId_t count = 1;
-    for ( auto& it : link_names ) {
-        ConfigLink* link = links[it.second];
+    for ( auto& it : link_names_ ) {
+        ConfigLink* link = links_[it.second];
         link->order      = count;
         count++;
     }
@@ -742,20 +742,20 @@ ConfigGraph::checkForStructuralErrors()
     // making sure there are components on both sides of the link.
 
     bool found_error = false;
-    for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
+    for ( ConfigLinkMap_t::iterator iter = links_.begin(); iter != links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
         // This one should never happen since the slots are
         // initialized in order, but just in case...
         if ( clink->component[0] == ULONG_MAX ) {
             output.output(
                 "WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
-                clink->name.c_str(), comps[clink->component[1]]->name.c_str());
+                clink->name.c_str(), comps_[clink->component[1]]->name.c_str());
             found_error = true;
         }
         if ( clink->component[1] == ULONG_MAX ) {
             output.output(
                 "WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
-                clink->name.c_str(), comps[clink->component[0]]->name.c_str());
+                clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
             found_error = true;
         }
     }
@@ -764,7 +764,7 @@ ConfigGraph::checkForStructuralErrors()
     // used once
 
     // Loop over all the Components
-    for ( ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         ccomp->checkPorts();
     }
@@ -777,9 +777,9 @@ ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
     checkForValidComponentName(name);
     ComponentId_t cid = nextComponentId++;
-    comps.insert(new ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
+    comps_.insert(new ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
 
-    auto ret = compsByName.insert(std::make_pair(name, cid));
+    auto ret = comps_by_name_.insert(std::make_pair(name, cid));
     // Check to see if the name has already been used
     if ( !ret.second ) {
         output.fatal(CALL_INFO, 1, "ERROR: trying to add Component with name that already exists: %s\n", name.c_str());
@@ -796,25 +796,25 @@ ConfigGraph::addGlobalParam(const std::string& global_set, const std::string& ke
 void
 ConfigGraph::setStatisticOutput(const std::string& name)
 {
-    statOutputs[0].type = name;
+    stat_outputs_[0].type = name;
 }
 
 void
 ConfigGraph::setStatisticOutputParams(const Params& p)
 {
-    statOutputs[0].params = p;
+    stat_outputs_[0].params = p;
 }
 
 void
 ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    statOutputs[0].params.insert(param, value);
+    stat_outputs_[0].params.insert(param, value);
 }
 
 void
 ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 {
-    statLoadLevel = loadLevel;
+    stat_load_level_ = loadLevel;
 }
 
 void
@@ -829,11 +829,11 @@ ConfigGraph::addLink(
     // the link_name to id mapping (the id is links.size()) and add
     // the link to the links data structure.  The insert function
     // returns a reference to the newly inserted link.
-    auto link_name_it = link_names.find(link_name);
+    auto link_name_it = link_names_.find(link_name);
 
-    ConfigLink* link = (link_name_it == link_names.end())
-                           ? links.insert(new ConfigLink(link_names[link_name] = links.size(), link_name))
-                           : links[link_name_it->second];
+    ConfigLink* link = (link_name_it == link_names_.end())
+                           ? links_.insert(new ConfigLink(link_names_[link_name] = links_.size(), link_name))
+                           : links_[link_name_it->second];
 
     // Check to make sure the link has not been referenced too many
     // times.
@@ -866,16 +866,16 @@ void
 ConfigGraph::setLinkNoCut(const std::string& link_name)
 {
     // If link doesn't exist, return
-    if ( link_names.find(link_name) == link_names.end() ) return;
+    if ( link_names_.find(link_name) == link_names_.end() ) return;
 
-    ConfigLink* link = links[link_names[link_name]];
+    ConfigLink* link = links_[link_names_[link_name]];
     link->no_cut     = true;
 }
 
 bool
 ConfigGraph::containsComponent(ComponentId_t id) const
 {
-    return comps.contains(id);
+    return comps_.contains(id);
 }
 
 ConfigComponent*
@@ -888,9 +888,9 @@ const ConfigComponent*
 ConfigGraph::findComponent(ComponentId_t id) const
 {
     /* Check to make sure we're part of the same component */
-    if ( COMPONENT_ID_MASK(id) == id ) { return comps[id]; }
+    if ( COMPONENT_ID_MASK(id) == id ) { return comps_[id]; }
 
-    return comps[COMPONENT_ID_MASK(id)]->findSubComponent(id);
+    return comps_[COMPONENT_ID_MASK(id)]->findSubComponent(id);
 }
 
 ConfigComponent*
@@ -899,12 +899,12 @@ ConfigGraph::findComponentByName(const std::string& name)
     std::string origname(name);
     auto        index    = origname.find(":");
     std::string compname = origname.substr(0, index);
-    auto        itr      = compsByName.find(compname);
+    auto        itr      = comps_by_name_.find(compname);
 
     // Check to see if component was found
-    if ( itr == compsByName.end() ) return nullptr;
+    if ( itr == comps_by_name_.end() ) return nullptr;
 
-    ConfigComponent* cc = comps[itr->second];
+    ConfigComponent* cc = comps_[itr->second];
 
     // If this was just a component name
     if ( index == std::string::npos ) return cc;
@@ -940,20 +940,22 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     // SparseVectorMap is extremely slow at random inserts, so make
     // sure things go in in order into both comps and links, then tie
     // it all together.
-    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
         const ConfigComponent* comp = *it;
 
-        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) { graph->comps.insert(comp->cloneWithoutLinks(graph)); }
+        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) {
+            graph->comps_.insert(comp->cloneWithoutLinks(graph));
+        }
         else {
             // See if the other side of any of component's links is in
             // set, if so, add to graph
             for ( LinkId_t l : comp->allLinks() ) {
-                const ConfigLink* link   = links[l];
+                const ConfigLink* link   = links_[l];
                 ComponentId_t     remote = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
                                                ? link->component[1]
                                                : link->component[0];
-                if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)]->rank.rank) != rank_set.end() ) {
-                    graph->comps.insert(comp->cloneWithoutLinksOrParams(graph));
+                if ( rank_set.find(comps_[COMPONENT_ID_MASK(remote)]->rank.rank) != rank_set.end() ) {
+                    graph->comps_.insert(comp->cloneWithoutLinksOrParams(graph));
                     break;
                 }
             }
@@ -963,7 +965,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     // Look through all the links.  Add any link that has either side
     // hooked to a component in the specified rank set.  Then add link
     // to components (which are already in the graph)
-    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
+    for ( ConfigLinkMap_t::iterator it = links_.begin(); it != links_.end(); ++it ) {
         const ConfigLink* link = *it;
 
         const ConfigComponent* comp0 = findComponent(link->component[0]);
@@ -974,7 +976,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 
         if ( comp0_in_ranks || comp1_in_ranks ) {
             // Clone the link and add to new lin k map
-            graph->links.insert(new ConfigLink(*link)); // Will make a copy into map
+            graph->links_.insert(new ConfigLink(*link)); // Will make a copy into map
 
             graph->findComponent(comp0->id)->links.push_back(link->id);
             graph->findComponent(comp1->id)->links.push_back(link->id);
@@ -982,12 +984,12 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     }
 
     // Copy the statistic configuration to the sub-graph
-    graph->statOutputs = this->statOutputs;
+    graph->stat_outputs_ = this->stat_outputs_;
     /* Only need to copy StatGroups which are referenced in this subgraph */
-    for ( auto& kv : this->statGroups ) {
+    for ( auto& kv : this->stat_groups_ ) {
         for ( auto& id : kv.second.components ) {
             if ( graph->containsComponent(id) ) {
-                graph->statGroups.insert(std::make_pair(kv.first, kv.second));
+                graph->stat_groups_.insert(std::make_pair(kv.first, kv.second));
                 break;
             }
         }
@@ -1000,10 +1002,10 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 ConfigGraph::GraphFilter::GraphFilter(
     ConfigGraph* original_graph, ConfigGraph* new_graph, const std::set<uint32_t>& original_rank_set,
     const std::set<uint32_t>& new_rank_set) :
-    ograph(original_graph),
-    ngraph(new_graph),
-    oset(original_rank_set),
-    nset(new_rank_set)
+    ograph_(original_graph),
+    ngraph_(new_graph),
+    oset_(original_rank_set),
+    nset_(new_rank_set)
 {}
 
 ConfigLink*
@@ -1012,15 +1014,15 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
     // Need to see if the link is connected to components in the
     // old and/or new graph
     int ranks[2];
-    ranks[0] = ograph->findComponent(link->component[0])->rank.rank;
-    ranks[1] = ograph->findComponent(link->component[1])->rank.rank;
+    ranks[0] = ograph_->findComponent(link->component[0])->rank.rank;
+    ranks[1] = ograph_->findComponent(link->component[1])->rank.rank;
 
     // First bit of flag checks to see if either end is in the set
     // that will stay in the original graph
-    uint8_t flag = oset.count(ranks[0]) | oset.count(ranks[1]);
+    uint8_t flag = oset_.count(ranks[0]) | oset_.count(ranks[1]);
 
     // Second bit will check for the set that will be in the new graph
-    flag |= ((nset.count(ranks[0]) | nset.count(ranks[1])) << 1);
+    flag |= ((nset_.count(ranks[0]) | nset_.count(ranks[1])) << 1);
 
     switch ( flag ) {
     case 0:
@@ -1035,12 +1037,12 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
     case 2:
         // Connected in new graph, but not original.  Move to new
         // graph
-        ngraph->links.insert(link);
+        ngraph_->links_.insert(link);
         return nullptr;
     case 3:
         // Connected in both graphs.  Make a copy for the new graph
         ConfigLink* l = new ConfigLink(*link);
-        ngraph->links.insert(l);
+        ngraph_->links_.insert(l);
         return link;
     }
     // Silence warning even though every possible path has a return
@@ -1058,7 +1060,7 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
 
     // First, see if it is actually in one of the sets.  If not, then
     // it is already a ghost component.
-    if ( ((oset.count(comp->rank.rank) + nset.count(comp->rank.rank)) == 0) ) {
+    if ( ((oset_.count(comp->rank.rank) + nset_.count(comp->rank.rank)) == 0) ) {
         // A ghost component could end up being in one or both of the new
         // graphs.  Also, unlike real components, links could end up
         // getting deleted from either version of the ghost cell, so we
@@ -1070,19 +1072,19 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
             // Each link will only be in one of the new graphs since one
             // side already connects to a component out of the bounds of
             // the input graph.
-            if ( ograph->links.contains(id) ) {
+            if ( ograph_->links_.contains(id) ) {
                 // Add back into comp
-                ConfigLink*   link  = ograph->links[id];
+                ConfigLink*   link  = ograph_->links_[id];
                 ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
                                           ? link->component[0]
                                           : link->component[1];
                 comp->findSubComponent(subid)->links.push_back(id);
                 keep_original = true;
             }
-            else if ( ngraph->links.contains(id) ) {
+            else if ( ngraph_->links_.contains(id) ) {
                 // Add to "extra"
-                if ( nullptr == extra ) extra = comp->cloneWithoutLinksOrParams(ngraph);
-                ConfigLink*   link  = ngraph->links[id];
+                if ( nullptr == extra ) extra = comp->cloneWithoutLinksOrParams(ngraph_);
+                ConfigLink*   link  = ngraph_->links_[id];
                 ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
                                           ? link->component[0]
                                           : link->component[1];
@@ -1095,7 +1097,7 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
         }
 
         // If we created a new ghost add it to the ngraph
-        if ( extra ) { ngraph->comps.insert(extra); }
+        if ( extra ) { ngraph_->comps_.insert(extra); }
 
         if ( !keep_original ) {
             // Remove from ograph and delete
@@ -1112,13 +1114,13 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     // in one graph and the other may get a ghost.
     ConfigGraph* other;
 
-    if ( oset.count(comp->rank.rank) ) { other = ngraph; }
+    if ( oset_.count(comp->rank.rank) ) { other = ngraph_; }
     else {
         // Need to move comp to ngraph
-        comp->graph = ngraph;
-        ngraph->comps.insert(comp);
+        comp->graph = ngraph_;
+        ngraph_->comps_.insert(comp);
 
-        other = ograph;
+        other = ograph_;
     }
 
 
@@ -1129,11 +1131,11 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     // parition.  If so, we need a "ghost component".
     for ( LinkId_t id : comp->allLinks() ) {
         // Link will for sure be in real, so only need to check other
-        if ( other->links.contains(id) ) {
+        if ( other->links_.contains(id) ) {
             // Link is in the other partition.  Will need a ghost
             // cell.  Ghost cell will end up in other graph
             if ( nullptr == ghost ) ghost = comp->cloneWithoutLinksOrParams(other);
-            ConfigLink*   link  = other->links[id];
+            ConfigLink*   link  = other->links_[id];
             ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
                                       ? link->component[0]
                                       : link->component[1];
@@ -1142,9 +1144,9 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     }
 
     // Now need to sort out where the ghost cell goes
-    if ( oset.count(comp->rank.rank) ) {
+    if ( oset_.count(comp->rank.rank) ) {
         // Ghost goes in ngraph.  Comp stays in ograph
-        if ( ghost ) { ngraph->comps.insert(ghost); }
+        if ( ghost ) { ngraph_->comps_.insert(ghost); }
         return comp;
     }
     else {
@@ -1160,18 +1162,18 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
 
     // Split up the links
     GraphFilter filter(this, graph, orig_rank_set, new_rank_set);
-    links.filter(filter);
+    links_.filter(filter);
 
     // Split up the components
-    comps.filter(filter);
+    comps_.filter(filter);
 
     // Copy the statistic configuration to the sub-graph
-    graph->statOutputs = this->statOutputs;
+    graph->stat_outputs_ = this->stat_outputs_;
 
     // Need to copy statgroups contained in new graph and remove
     // statgroups that are no longer needed in original graph
     // for ( auto& kv : this->statGroups ) {
-    for ( auto it = this->statGroups.begin(); it != this->statGroups.end(); /* increment in loop body */ ) {
+    for ( auto it = this->stat_groups_.begin(); it != this->stat_groups_.end(); /* increment in loop body */ ) {
         bool copy   = false;
         bool remove = true;
         for ( auto& id : it->second.components ) {
@@ -1192,10 +1194,10 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         }
 
         // See if we need to copy into new graph
-        if ( copy ) { graph->statGroups.insert(std::make_pair(it->first, it->second)); }
+        if ( copy ) { graph->stat_groups_.insert(std::make_pair(it->first, it->second)); }
 
         // See if we need to remove from the original graph.
-        if ( remove ) { it = this->statGroups.erase(it); }
+        if ( remove ) { it = this->stat_groups_.erase(it); }
         else {
             ++it;
         }
@@ -1219,17 +1221,17 @@ ConfigGraph::getPartitionGraph()
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap
-    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
         const ConfigComponent* comp = *it;
 
         pcomps.insert(new PartitionComponent(comp));
     }
 
-    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
+    for ( ConfigLinkMap_t::iterator it = links_.begin(); it != links_.end(); ++it ) {
         const ConfigLink* link = *it;
 
-        const ConfigComponent* comp0 = comps[COMPONENT_ID_MASK(link->component[0])];
-        const ConfigComponent* comp1 = comps[COMPONENT_ID_MASK(link->component[1])];
+        const ConfigComponent* comp0 = comps_[COMPONENT_ID_MASK(link->component[0])];
+        const ConfigComponent* comp1 = comps_[COMPONENT_ID_MASK(link->component[1])];
 
         plinks.insert(PartitionLink(*link));
 
@@ -1250,7 +1252,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     PartitionLinkMap_t&      plinks = graph->getLinkMap();
 
     // Mark all Components as not visited
-    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it )
+    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it )
         (*it)->visited = false;
 
     // SparseVectorMap is slow for random inserts, so make sure we
@@ -1260,7 +1262,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     // Use an ordered set so that when we insert the ids for the group
     // into a SparseVectorMap, we are inserting in order.
     std::set<ComponentId_t> group;
-    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
         auto comp = *it;
         // If this component ended up in a connected group we already
         // looked at, skip it
@@ -1277,7 +1279,7 @@ ConfigGraph::getCollapsedPartitionGraph()
         // Iterate over the group and add the weights and add any
         // links that connect outside the group
         for ( std::set<ComponentId_t>::const_iterator i = group.begin(); i != group.end(); ++i ) {
-            const ConfigComponent* comp = comps[*i];
+            const ConfigComponent* comp = comps_[*i];
             // Compute the new weight
             pcomp->weight += comp->weight;
             // Inserting in order because the iterator is from an
@@ -1287,7 +1289,7 @@ ConfigGraph::getCollapsedPartitionGraph()
             // Walk through all the links and insert the ones that connect
             // outside the group
             for ( LinkId_t id : comp->allLinks() ) {
-                const ConfigLink* link = links[id];
+                const ConfigLink* link = links_[id];
 
                 if ( group.find(COMPONENT_ID_MASK(link->component[0])) == group.end() ||
                      group.find(COMPONENT_ID_MASK(link->component[1])) == group.end() ) {
@@ -1307,7 +1309,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     // to the set by passing the ConfigLink into the constructor.
     // This will insert in order since the iterator is from a
     // SparseVectorMap.
-    for ( ConfigLinkMap_t::iterator i = links.begin(); i != links.end(); ++i ) {
+    for ( ConfigLinkMap_t::iterator i = links_.begin(); i != links_.end(); ++i ) {
         if ( deleted_links.find((*i)->id) == deleted_links.end() ) plinks.insert(*(*i));
     }
 
@@ -1336,7 +1338,7 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
         const PartitionComponent* comp = *it;
 
         for ( ComponentIdMap_t::const_iterator c_iter = comp->group.begin(); c_iter != comp->group.end(); ++c_iter ) {
-            comps[*c_iter]->setRank(comp->rank);
+            comps_[*c_iter]->setRank(comp->rank);
         }
     }
 }
@@ -1348,11 +1350,11 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
     group.insert(COMPONENT_ID_MASK(start));
 
     // First, get the component
-    ConfigComponent* comp = comps[start];
+    ConfigComponent* comp = comps_[start];
     comp->visited         = true;
 
     for ( LinkId_t id : comp->allLinks() ) {
-        ConfigLink* link = links[id];
+        ConfigLink* link = links_[id];
 
         // If this is a no_cut link, need to follow it to next
         // component if next component is not already in group
@@ -1374,7 +1376,7 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
 void
 ConfigGraph::setComponentConfigGraphPointers()
 {
-    for ( auto* x : comps ) {
+    for ( auto* x : comps_ ) {
         x->setConfigGraphPointer(this);
     }
 }

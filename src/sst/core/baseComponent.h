@@ -83,7 +83,7 @@ public:
     const std::string& getType() const { return my_info->getType(); }
 
     /** Returns unique component ID */
-    inline ComponentId_t getId() const { return my_info->id; }
+    inline ComponentId_t getId() const { return my_info->id_; }
 
     /** Returns Component Statistic load level */
     inline uint8_t getStatisticLoadLevel() const { return my_info->statLoadLevel; }
@@ -428,9 +428,9 @@ private:
     Statistics::Statistic<T>*
     registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
-        if ( my_info->enabledStatNames ) {
-            auto iter = my_info->enabledStatNames->find(statName);
-            if ( iter != my_info->enabledStatNames->end() ) {
+        if ( my_info->enabled_stat_names_ ) {
+            auto iter = my_info->enabled_stat_names_->find(statName);
+            if ( iter != my_info->enabled_stat_names_->end() ) {
                 // valid, enabled statistic
                 // During initialization, the component should have assigned a mapping between
                 // the local name and globally unique stat ID
@@ -442,7 +442,7 @@ private:
         // if we got here, this is not a stat we explicitly enabled
         if ( inserting || doesComponentInfoStatisticExist(statName) ) {
             // this is a statistic that I registered
-            if ( my_info->enabledAllStats ) { return createStatistic<T>(params, STATALL_ID, statName, statSubId); }
+            if ( my_info->enabled_all_stats_ ) { return createStatistic<T>(params, STATALL_ID, statName, statSubId); }
             else if ( my_info->parent_info && my_info->canInsertStatistics() ) {
                 // I did not explicitly enable nor enable all
                 // but I can insert statistics into my parent
@@ -582,7 +582,7 @@ protected:
     template <class T, class... ARGS>
     T* loadComponentExtension(ARGS... args)
     {
-        ComponentExtension* ret = new T(my_info->id, args...);
+        ComponentExtension* ret = new T(my_info->id_, args...);
         return static_cast<T*>(ret);
     }
 
@@ -665,7 +665,7 @@ protected:
 
         // Check to see if this can be loaded with new API or if we have to fallback to old
         if ( isSubComponentLoadableUsingAPI<T>(type) ) {
-            auto ret = Factory::getFactory()->CreateWithParams<T>(type, params, sub_info->id, params, args...);
+            auto ret = Factory::getFactory()->CreateWithParams<T>(type, params, sub_info->id_, params, args...);
             return ret;
         }
         return nullptr;
@@ -832,7 +832,7 @@ private:
 
         if ( isSubComponentLoadableUsingAPI<T>(sub_info->type) ) {
             auto ret = Factory::getFactory()->CreateWithParams<T>(
-                sub_info->type, *sub_info->params, sub_info->id, *sub_info->params, args...);
+                sub_info->type, *sub_info->params, sub_info->id_, *sub_info->params, args...);
             return ret;
         }
         return nullptr;
@@ -906,7 +906,7 @@ private:
 
     std::map<StatisticId_t, Statistics::StatisticBase*> m_explicitlyEnabledSharedStats;
     std::map<StatisticId_t, StatNameMap>                m_explicitlyEnabledUniqueStats;
-    StatNameMap                                         m_enabledAllStats;
+    StatNameMap                                         m_enabled_all_stats_;
 
     BaseComponent* getParentComponent()
     {

@@ -71,7 +71,6 @@ public:
         BaseComponent* comp, const std::string& type, const std::string& statName, const std::string& statSubId,
         Params& params)
     {
-
         return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
