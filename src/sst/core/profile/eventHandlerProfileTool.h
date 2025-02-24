@@ -15,6 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/link.h"
+#include "sst/core/profile/profiletool.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/warnmacros.h"

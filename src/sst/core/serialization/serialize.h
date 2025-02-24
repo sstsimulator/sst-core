@@ -29,8 +29,8 @@ namespace Serialization {
 // Workaround for use with static_assert(), since static_assert(false)
 // will always assert, even when in an untaken if constexpr path.
 // This can be used in any serialize_impl class, if needed/
-template <class>
-constexpr bool dependent_false = false;
+template <typename...>
+inline constexpr bool dependent_false = false;
 
 /**
    Base serialize class.
@@ -52,10 +52,9 @@ public:
             // If it falls through to the default, let's check to see if it's
             // a non-polymorphic class and try to call serialize_order
             if constexpr (
-                std::is_class_v<typename std::remove_pointer<T>::type> &&
-                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
+                std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>> ) {
                 if ( ser.mode() == serializer::UNPACK ) {
-                    t = new typename std::remove_pointer<T>::type();
+                    t = new std::remove_pointer_t<T>();
                     ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
                 }
                 t->serialize_order(ser);
@@ -81,10 +80,9 @@ public:
             // If it falls through to the default, let's check to see if it's
             // a non-polymorphic class and try to call serialize_order
             if constexpr (
-                std::is_class_v<typename std::remove_pointer<T>::type> &&
-                !std::is_polymorphic_v<typename std::remove_pointer<T>::type> ) {
+                std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>> ) {
                 if ( ser.mode() == serializer::UNPACK ) {
-                    t = new typename std::remove_pointer<T>::type();
+                    t = new std::remove_pointer_t<T>();
                     ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
                 }
                 if ( ser.mode() == serializer::MAP ) {
@@ -202,7 +200,52 @@ public:
     inline void operator()(T*& t, serializer& ser)
     {
         // We are a pointer, need to see if tracking is turned on
-        if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T*>()(t, ser);
+        if ( !ser.is_pointer_tracking_enabled() ) {
+            // Handle nullptr
+            char null_char = (nullptr == t ? 0 : 1);
+            switch ( ser.mode() ) {
+            case serializer::SIZER:
+                // We will always put in a char to tell whether or not
+                // this is nullptr.
+                ser.size(null_char);
+
+                // If this is a nullptr, then we are done
+                if ( null_char == 0 ) return;
+
+                // Not nullptr, so we need to serialize the object
+                serialize_impl<T*>()(t, ser);
+                break;
+            case serializer::PACK:
+                // We will always put in a char to tell whether or not
+                // this is nullptr.
+                ser.pack(null_char);
+
+                // If this is a nullptr, then we are done
+                if ( null_char == 0 ) return;
+
+                // Not nullptr, so we need to serialize the object
+                serialize_impl<T*>()(t, ser);
+                break;
+            case serializer::UNPACK:
+            {
+                // Get the ptr and check to see if we've already deserialized
+                ser.unpack(null_char);
+
+                // Check to see if this was a nullptr
+                if ( 0 == null_char ) {
+                    t = nullptr;
+                    return;
+                }
+                // Not nullptr, so deserialize
+                serialize_impl<T*>()(t, ser);
+            }
+            case serializer::MAP:
+                // If this version of serialize gets called in mapping
+                // mode, there is nothing to do
+                break;
+            }
+            return;
+        }
 
         uintptr_t ptr = reinterpret_cast<uintptr_t>(t);
         if ( nullptr == t ) ptr = 0;
@@ -282,7 +325,7 @@ public:
  */
 
 template <class T>
-class serialize_impl<T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -326,7 +369,7 @@ class serialize_impl<bool>
    independent copy after deserialization.
  */
 template <class T>
-class serialize_impl<T*, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T*, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -371,7 +414,7 @@ class serialize_impl<std::pair<U, V>>
 //    a serialize_order function
 //  */
 // template <class T>
-// class serialize_impl<T, typename std::enable_if<std::is_class<T>::value && !std::is_polymorphic<T>::value>::type>
+// class serialize_impl<T, std::enable_if_t<std::is_class_v<T> && !std::is_polymorphic_v<T>>>
 // {
 //     template <class A>
 //     friend class serialize;

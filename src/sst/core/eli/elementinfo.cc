@@ -15,7 +15,7 @@
 
 #include "sst/core/eli/elibase.h"
 
-#include <sstream>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -35,16 +35,14 @@ static const std::vector<int> SST_ELI_COMPILED_VERSION = { 0, 9, 0 };
 std::string
 ProvidesDefaultInfo::getELIVersionString() const
 {
-    std::stringstream stream;
-    bool              first = true;
-    for ( int item : SST_ELI_COMPILED_VERSION ) {
-        if ( first )
-            first = false;
-        else
-            stream << ".";
-        stream << item;
+    std::string str;
+    const char* delim = "";
+    for ( auto item : SST_ELI_COMPILED_VERSION ) {
+        str += delim;
+        delim = ".";
+        str += std::to_string(item);
     }
-    return stream.str();
+    return str;
 }
 
 const std::vector<int>&
@@ -135,32 +133,6 @@ ProvidesParams::init()
     for ( auto& item : params_ ) {
         allowedKeys.push_back(item.name);
     }
-}
-
-// ELI combine function for Attributes which don't have a description
-// field
-void
-combineEliInfo(std::vector<ElementInfoAttribute>& base, std::vector<ElementInfoAttribute>& add)
-{
-    std::vector<ElementInfoAttribute> combined;
-    // Add in any item that isn't already defined
-    for ( auto x : add ) {
-        bool add = true;
-        for ( auto y : base ) {
-            if ( !strcmp(x.name, y.name) ) {
-                add = false;
-                break;
-            }
-        }
-        if ( add ) combined.emplace_back(x);
-    }
-
-    // Now add all the locals.  We will skip any one that has nullptr
-    // in the description field
-    for ( auto x : base ) {
-        if ( x.value != nullptr ) { combined.emplace_back(x); }
-    }
-    base.swap(combined);
 }
 
 } // namespace ELI

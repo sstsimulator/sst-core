@@ -35,7 +35,7 @@ namespace Statistics {
 
     @tparam T A template for holding the main data type of this statistic
 */
-template <class T, bool B = std::is_fundamental<T>::value>
+template <class T, bool = std::is_fundamental_v<T>>
 class NullStatisticBase
 {};
 

@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoPorts
 {
     static const std::vector<SST::ElementInfoPort>& get()
@@ -30,8 +30,8 @@ struct InfoPorts
     }
 };
 
-template <class T>
-struct InfoPorts<T, typename MethodDetect<decltype(T::ELI_getPorts())>::type>
+template <typename T>
+struct InfoPorts<T, std::void_t<decltype(T::ELI_getPorts())>>
 {
     static const std::vector<SST::ElementInfoPort>& get() { return T::ELI_getPorts(); }
 };
@@ -77,14 +77,14 @@ private:
 } // namespace SST
 
 // clang-format off
-#define SST_ELI_DOCUMENT_PORTS(...)                                                                                \
-    static const std::vector<SST::ElementInfoPort>& ELI_getPorts()                                                 \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoPort> var    = { __VA_ARGS__ };                                         \
-        auto parent = SST::ELI::InfoPorts<                                                                         \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_PORTS(...)                                                                           \
+    static const std::vector<SST::ElementInfoPort>& ELI_getPorts()                                            \
+    {                                                                                                         \
+        static std::vector<SST::ElementInfoPort> var    = { __VA_ARGS__ };                                    \
+        auto parent = SST::ELI::InfoPorts<                                                                    \
+           std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                                \
+        return var;                                                                                           \
     }
 // clang-format on
 

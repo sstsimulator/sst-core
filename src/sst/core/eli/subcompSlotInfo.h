@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoSubs
 {
     static const std::vector<SST::ElementInfoSubComponentSlot>& get()
@@ -31,7 +31,7 @@ struct InfoSubs
 };
 
 template <class T>
-struct InfoSubs<T, typename MethodDetect<decltype(T::ELI_getSubComponentSlots())>::type>
+struct InfoSubs<T, std::void_t<decltype(T::ELI_getSubComponentSlots())>>
 {
     static const std::vector<SST::ElementInfoSubComponentSlot>& get() { return T::ELI_getSubComponentSlots(); }
 };
@@ -71,14 +71,14 @@ private:
 } // namespace SST
 
 // clang-format off
-#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                                                                   \
-    static const std::vector<SST::ElementInfoSubComponentSlot>& ELI_getSubComponentSlots()                         \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoSubComponentSlot> var = { __VA_ARGS__ };                                \
-        auto parent = SST::ELI::InfoSubs<                                                                          \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                                                               \
+    static const std::vector<SST::ElementInfoSubComponentSlot>& ELI_getSubComponentSlots()                     \
+    {                                                                                                          \
+        static std::vector<SST::ElementInfoSubComponentSlot> var = { __VA_ARGS__ };                            \
+        auto parent = SST::ELI::InfoSubs<                                                                      \
+            std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                                 \
+        return var;                                                                                            \
     }
 // clang-format on
 #define SST_ELI_DELETE_SUBCOMPONENT_SLOT(slot) \

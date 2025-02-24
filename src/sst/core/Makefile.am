@@ -55,6 +55,7 @@ nobase_dist_sst_HEADERS = \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \
+	portModule.h \
 	profile.h \
 	profile/profiletool.h \
 	profile/clockHandlerProfileTool.h \
@@ -203,6 +204,7 @@ sst_core_sources = \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
+	portModule.cc \
 	profile/profiletool.cc \
 	profile/clockHandlerProfileTool.cc \
 	profile/eventHandlerProfileTool.cc \
@@ -329,6 +331,7 @@ include model/Makefile.inc
 include shared/Makefile.inc
 include impl/Makefile.inc
 include sync/Makefile.inc
+include util/Makefile.inc
 include testingframework/Makefile.inc
 include testElements/Makefile.inc
 

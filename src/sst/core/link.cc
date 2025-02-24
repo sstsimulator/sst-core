@@ -78,8 +78,34 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             ser & s->type;
             ser & s->mode;
             ser & s->tag;
-            // Profile tools not yet supported
-            // ser & s->profile_tools;
+            // Need to serialize anything in the AttachPoint. Not all
+            // tool types will be serializable, so will need to check
+            // by using dynamic_cast<serializable*>.  Just create a
+            // new vector with only the serializable elements and
+            // serialize that.  On restart, those will be the only
+            // ones that get attached, unless there is another
+            // specified on the command line.
+
+            // Determine how many serializable tools there are
+            Link::ToolList tools;
+            if ( s->attached_tools ) {
+                for ( auto x : *s->attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeEventAttachPointKey(ser, x.second);
+                }
+            }
             return;
         }
 
@@ -171,6 +197,35 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
 
             ser & s->pair_link->defaultTimeBase;
             ser & s->pair_link->latency;
+
+            // Need to serialize anything in the AttachPoint. Not all
+            // tool types will be serializable, so will need to check
+            // by using dynamic_cast<serializable*>.  Just create a
+            // new vector with only the serializable elements and
+            // serialize that.  On restart, those will be the only
+            // ones that get attached, unless there is another
+            // specified on the command line.
+
+            // // Determine how many serializable tools there are
+            Link::ToolList tools;
+            if ( s->attached_tools ) {
+                for ( auto x : *s->attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeEventAttachPointKey(ser, x.second);
+                }
+            }
         }
         else {
             // Regular link
@@ -225,8 +280,34 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             // s->current_time is automatically set on construction so
             // no need to serialize
 
-            // Profile tools not yet supported
-            // ser & s->profile_tools;
+            // Need to serialize anything in the AttachPoint. Not all
+            // tool types will be serializable, so will need to check
+            // by using dynamic_cast<serializable*>.  Just create a
+            // new vector with only the serializable elements and
+            // serialize that.  On restart, those will be the only
+            // ones that get attached, unless there is another
+            // specified on the command line.
+
+            // Determine how many serializable tools there are
+            Link::ToolList tools;
+            if ( s->attached_tools ) {
+                for ( auto x : *s->attached_tools ) {
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                }
+            }
+            size_t tool_count = tools.size();
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call
+                // serializeEventAttachPointKey() to serialize any
+                // data associated with the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    ser& obj;
+                    x.first->serializeEventAttachPointKey(ser, x.second);
+                }
+            }
         }
         break;
     case serializer::UNPACK:
@@ -267,6 +348,24 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             // ser & s->profile_tools;
 
             s->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
+
+            // Need to restore any Tool in the AttachPoint.
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                s->attached_tools = new Link::ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    Link::AttachPoint*                      ap = dynamic_cast<Link::AttachPoint*>(tool);
+                    ap->serializeEventAttachPointKey(ser, key);
+                    s->attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                s->attached_tools = nullptr;
+            }
         }
         else if ( type == 3 ) {
             // Sync link
@@ -343,6 +442,24 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
 
             ser & pair_link->defaultTimeBase;
             ser & pair_link->latency;
+
+            // Need to restore any Tool in the AttachPoint.
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                s->attached_tools = new Link::ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    Link::AttachPoint*                      ap = dynamic_cast<Link::AttachPoint*>(tool);
+                    ap->serializeEventAttachPointKey(ser, key);
+                    s->attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                s->attached_tools = nullptr;
+            }
         }
         else {
             // Regular link
@@ -422,8 +539,23 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
             ser & s->defaultTimeBase;
             ser & s->latency;
 
-            // Profile tools not yet supported
-            // ser & s->profile_tools;
+            // Need to restore any Tool in the AttachPoint.
+            size_t tool_count;
+            ser&   tool_count;
+            if ( tool_count > 0 ) {
+                s->attached_tools = new Link::ToolList();
+                for ( size_t i = 0; i < tool_count; ++i ) {
+                    SST::Core::Serialization::serializable* tool;
+                    uintptr_t                               key;
+                    ser&                                    tool;
+                    Link::AttachPoint*                      ap = dynamic_cast<Link::AttachPoint*>(tool);
+                    ap->serializeEventAttachPointKey(ser, key);
+                    s->attached_tools->emplace_back(ap, key);
+                }
+            }
+            else {
+                s->attached_tools = nullptr;
+            }
         }
         break;
     case serializer::MAP:
@@ -471,7 +603,7 @@ Link::Link(LinkId_t tag) :
     type(UNINITIALIZED),
     mode(INIT),
     tag(tag),
-    profile_tools(nullptr)
+    attached_tools(nullptr)
 {}
 
 Link::Link() :
@@ -484,7 +616,7 @@ Link::Link() :
     type(UNINITIALIZED),
     mode(INIT),
     tag(-1),
-    profile_tools(nullptr)
+    attached_tools(nullptr)
 {}
 
 Link::~Link()
@@ -498,7 +630,7 @@ Link::~Link()
         if ( SYNC == pair_link->type ) delete pair_link;
     }
 
-    if ( profile_tools ) delete profile_tools;
+    if ( attached_tools ) delete attached_tools;
 }
 
 void
@@ -641,8 +773,8 @@ Link::send_impl(SimTime_t delay, Event* event)
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 
-    if ( profile_tools ) {
-        for ( auto& x : *profile_tools ) {
+    if ( attached_tools ) {
+        for ( auto& x : *attached_tools ) {
             x.first->eventSent(x.second, event);
             // Check to see if the event was deleted.  If so, return.
             if ( nullptr == event ) return;
@@ -789,10 +921,14 @@ Link::createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankI
 void
 Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
 {
-    if ( !profile_tools ) profile_tools = new ToolList();
+    if ( !attached_tools ) attached_tools = new ToolList();
     auto key = tool->registerLinkAttachTool(mdata);
-    profile_tools->push_back(std::make_pair(tool, key));
+    attached_tools->push_back(std::make_pair(tool, key));
 }
 
+void
+Link::AttachPoint::serializeEventAttachPointKey(
+    SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+{}
 
 } // namespace SST

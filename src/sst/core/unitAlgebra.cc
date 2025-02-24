@@ -321,6 +321,8 @@ Units::toString() const
 string
 UnitAlgebra::trim(const std::string& str)
 {
+    if ( !str.size() ) return str;
+
     // Find whitespace in front
     int front_index = 0;
     while ( isspace(str[front_index]) )

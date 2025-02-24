@@ -321,7 +321,7 @@ private:
  * Used for distinguishing fundamental types (collected by value)
  * and composite struct types (collected by reference)
  */
-template <class T, bool F = std::is_fundamental<T>::value>
+template <class T, bool = std::is_fundamental_v<T>>
 struct StatisticCollector
 {};
 

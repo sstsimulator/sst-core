@@ -28,7 +28,7 @@ namespace Shared {
 template <typename T>
 class SharedArray : public SharedObject
 {
-    static_assert(!std::is_pointer<T>::value, "Cannot use a pointer type with SharedArray");
+    static_assert(!std::is_pointer_v<T>, "Cannot use a pointer type with SharedArray");
 
     // Forward declaration.  Defined below
     class Data;

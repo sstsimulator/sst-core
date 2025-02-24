@@ -28,6 +28,7 @@ import unittest
 import threading
 import signal
 import time
+import multiprocessing
 from typing import Optional
 
 import test_engine_globals
@@ -58,11 +59,10 @@ class SSTTestCase(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         # NOTE: __init__ is called at startup for all tests before any
         #       setUpModules(), setUpClass(), setUp() and the like are called.
-        super(SSTTestCase, self).__init__(methodName)
+        super().__init__(methodName)
         self.testname = methodName
-        parent_module_path: str = os.path.dirname(sys.modules[self.__class__.__module__].__file__)  # type: ignore
+        parent_module_path: str = os.path.dirname(sys.modules[self.__class__.__module__].__file__)  # type: ignore [assignment,type-var]
         self._testsuite_dirpath = parent_module_path
-        #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
         self.initializeClass(self.testname)
         self._start_test_time = time.time()
         self._stop_test_time = time.time()
@@ -195,7 +195,7 @@ class SSTTestCase(unittest.TestCase):
         """ Return the directory path of the testsuite that is being run
 
         Returns:
-            (str)The path of the testsite directory
+            (str) The path of the testsite directory
         """
         return self._testsuite_dirpath
 
@@ -235,9 +235,23 @@ class SSTTestCase(unittest.TestCase):
 ### Method to run an SST simulation
 ################################################################################
 
-    def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
-                other_args="", num_ranks=None, num_threads=None, global_args=None,
-                timeout_sec=120, expected_rc=0, check_sdl_file=True, send_signal=signal.NSIG, signal_sec=3):
+    def run_sst(
+        self,
+        sdl_file: str,
+        out_file: str,
+        err_file: Optional[str] = None,
+        set_cwd: Optional[str] = None,
+        mpi_out_files: str = "",
+        other_args: str = "",
+        num_ranks: Optional[int] = None,
+        num_threads: Optional[int] = None,
+        global_args: Optional[str] = None,
+        timeout_sec: int = 120,
+        expected_rc: int = 0,
+        check_sdl_file: bool = True,
+        send_signal: int = signal.NSIG,
+        signal_sec: int = 3
+    ) -> str:
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
             timeouts.  On an error or timeout, a SSTTestCase.assert() will be generated
@@ -288,8 +302,7 @@ class SSTTestCase(unittest.TestCase):
             check_param_type("num_threads", num_threads, int)
         if global_args is not None:
             check_param_type("global_args", global_args, str)
-        if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
-            raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
+        check_param_type("timeout_sec", timeout_sec, int)
         if expected_rc is not None:
             check_param_type("expected_rc", expected_rc, int)
 
@@ -331,8 +344,8 @@ class SSTTestCase(unittest.TestCase):
         numa_param = ""
         if num_ranks > 1:
             # Check to see if mpirun is available
-            rtn = os.system("which mpirun > /dev/null 2>&1")
-            if rtn == 0:
+            rtn_mpirun = os.system("which mpirun > /dev/null 2>&1")
+            if rtn_mpirun == 0:
                 mpi_avail = True
 
             numa_param = "-map-by numa:PE={0}".format(num_threads)
@@ -433,7 +446,7 @@ def tearDownModule() -> None:
 
 ###################
 
-def setUpModuleConcurrent(test):
+def setUpModuleConcurrent(test: SSTTestCase) -> None:
     """ Perform setup functions before the testing Module loads.
 
         This function is called by the Frameworks before tests in any TestCase
@@ -461,7 +474,7 @@ def setUpModuleConcurrent(test):
 
 ###
 
-def tearDownModuleConcurrent(test):
+def tearDownModuleConcurrent(test: SSTTestCase) -> None:
     """ Perform teardown functions immediately after a testing Module finishes.
 
         This function is called by the Frameworks after all tests in all TestCases

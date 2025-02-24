@@ -595,6 +595,12 @@ ConfigComponent::findStatistic(StatisticId_t sid) const
     }
 }
 
+void
+ConfigComponent::addPortModule(const std::string& port, const std::string& type, const Params& params)
+{
+    portModules[port].emplace_back(type, params);
+}
+
 std::vector<LinkId_t>
 ConfigComponent::allLinks() const
 {

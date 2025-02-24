@@ -84,7 +84,7 @@ raw_ptr(TPtr*& ptr)
    fundamental types and enums.
  */
 template <class T, int N>
-class serialize_impl<T[N], typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -101,7 +101,7 @@ class serialize_impl<T[N], typename std::enable_if<std::is_fundamental<T>::value
    non base types.
  */
 template <class T, int N>
-class serialize_impl<T[N], typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -126,8 +126,7 @@ class serialize_impl<T[N], typename std::enable_if<!std::is_fundamental<T>::valu
  */
 template <class T, class IntType>
 class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>,
-    typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -145,8 +144,7 @@ class serialize_impl<
  */
 template <class T, class IntType>
 class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>,
-    typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;

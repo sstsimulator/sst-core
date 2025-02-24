@@ -28,9 +28,9 @@ template <int num, typename InfoType>
 struct SimpleInfoPlaceHolder
 {};
 
-//  Class to check for an ELI_getSimpleInfo Function.  The
-//  MethodDetect way to detect a member function doesn't seem to work
-//  for functions with specific type signatures and we need to
+//  Class to check for an ELI_getSimpleInfo Function. The std::void_t<
+//  decltype()> way to detect a member function's type doesn't seem to
+//  work for functions with specific type signatures and we need to
 //  differentiate between the various versions using the first
 //  parameter to the function (index + type).
 template <class T, int index, class InfoType>
@@ -54,17 +54,21 @@ public:
     static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match));
 };
 
+template <class T, int index, class InfoType>
+inline constexpr bool checkForELI_getSimpleInfoFunction_v =
+    checkForELI_getSimpleInfoFunction<T, index, InfoType>::value;
+
 // Actual functions that use checkForELI_getSimpleInfoFunction class
 // to create functions to get the information from the class
 template <class T, int index, class InfoType>
-typename std::enable_if<checkForELI_getSimpleInfoFunction<T, index, InfoType>::value, const InfoType&>::type
+std::enable_if_t<checkForELI_getSimpleInfoFunction_v<T, index, InfoType>, const InfoType&>
 ELI_templatedGetSimpleInfo()
 {
     return T::ELI_getSimpleInfo(SimpleInfoPlaceHolder<index, InfoType>());
 }
 
 template <class T, int index, class InfoType>
-typename std::enable_if<not checkForELI_getSimpleInfoFunction<T, index, InfoType>::value, const InfoType&>::type
+std::enable_if_t<!checkForELI_getSimpleInfoFunction_v<T, index, InfoType>, const InfoType&>
 ELI_templatedGetSimpleInfo()
 {
     static InfoType var;

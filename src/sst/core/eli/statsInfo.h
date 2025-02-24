@@ -20,7 +20,7 @@
 namespace SST {
 namespace ELI {
 
-template <class T, class Enable = void>
+template <typename, typename = void>
 struct InfoStats
 {
     static const std::vector<SST::ElementInfoStatistic>& get()
@@ -30,8 +30,8 @@ struct InfoStats
     }
 };
 
-template <class T>
-struct InfoStats<T, typename MethodDetect<decltype(T::ELI_getStatistics())>::type>
+template <typename T>
+struct InfoStats<T, std::void_t<decltype(T::ELI_getStatistics())>>
 {
     static const std::vector<SST::ElementInfoStatistic>& get() { return T::ELI_getStatistics(); }
 };
@@ -85,14 +85,14 @@ public:
 } // namespace SST
 
 // clang-format off
-#define SST_ELI_DOCUMENT_STATISTICS(...)                                                                           \
-    static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics()                                       \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoStatistic> var    = { __VA_ARGS__ };                                    \
-        auto parent = SST::ELI::InfoStats<                                                                         \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_STATISTICS(...)                                                                    \
+    static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics()                                \
+    {                                                                                                       \
+        static std::vector<SST::ElementInfoStatistic> var    = { __VA_ARGS__ };                             \
+        auto parent = SST::ELI::InfoStats<                                                                  \
+         std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                              \
+        return var;                                                                                         \
     }
 // clang-format on
 
