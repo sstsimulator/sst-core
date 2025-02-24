@@ -116,8 +116,8 @@ ComponentInfo::ComponentInfo(
     component(nullptr),
     params(&ccomp->params), // Inaccessible after construction
     defaultTimeBase(nullptr),
-    portModules(&ccomp->portModules),  // Inaccessible after construction
-    enabled_all_stats(ccomp->enabledAllStats),
+    portModules(&ccomp->portModules), // Inaccessible after construction
+    enabled_all_stats_(ccomp->enabledAllStats),
     statLoadLevel(ccomp->statLoadLevel),
     coordinates(ccomp->coords),
     subIDIndex(1),
@@ -169,8 +169,6 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     portModules(o.portModules),
     stat_configs_(o.stat_configs_),
     all_stat_config_(o.all_stat_config_),
-    statConfigs(o.statConfigs),
-    allStatConfig(o.allStatConfig),
     statLoadLevel(o.statLoadLevel),
     coordinates(o.coordinates),
     subIDIndex(o.subIDIndex),

@@ -118,10 +118,10 @@ private:
     TimeConverter* defaultTimeBase;
 
     std::map<std::string, std::vector<ConfigPortModule>>* portModules;
-    std::map<StatisticId_t, ConfigStatistic>* stat_configs_;
-    std::map<std::string, StatisticId_t>*     enabled_stat_names_;
-    bool                                      enabled_all_stats_;
-    ConfigStatistic*                          all_stat_config_;
+    std::map<StatisticId_t, ConfigStatistic>*             stat_configs_;
+    std::map<std::string, StatisticId_t>*                 enabled_stat_names_;
+    bool                                                  enabled_all_stats_;
+    ConfigStatistic*                                      all_stat_config_;
 
     uint8_t statLoadLevel;
 
