@@ -16,11 +16,9 @@
 
 #include <algorithm>
 #include <cstring>
-#include <functional>
-#include <list>
+#include <deque>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -124,28 +122,27 @@ combineEliInfo(std::vector<T>& base, const std::vector<T>& add)
 
 struct LibraryLoader
 {
-    virtual void load() = 0;
-    virtual ~LibraryLoader() {}
+    virtual void load()      = 0;
+    virtual ~LibraryLoader() = default;
 };
 
 class LoadedLibraries
 {
 public:
-    using InfoMap    = std::map<std::string, std::list<LibraryLoader*>>;
+    using InfoMap    = std::map<std::string, std::deque<std::shared_ptr<LibraryLoader>>>;
     using LibraryMap = std::map<std::string, InfoMap>;
 
-    static bool isLoaded(const std::string& name);
+    static bool isLoaded(const std::string& name) { return getLoaders().count(name) != 0; }
 
-    /**
-       @return A boolean indicated successfully added
-    */
+    // @return A boolean indicated successfully added
     static bool
     addLoader(const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader);
 
-    static const LibraryMap& getLoaders();
-
-private:
-    static std::unique_ptr<LibraryMap> loaders_;
+    static LibraryMap& getLoaders()
+    {
+        static LibraryMap loaders;
+        return loaders;
+    }
 };
 
 // Template used to get aliases.  Needed because the ELI_getAlias()
