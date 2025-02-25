@@ -230,7 +230,7 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 }
 
 bool
-StatisticOutputJSON::openFile(void)
+StatisticOutputJSON::openFile()
 {
     m_hFile = fopen(m_FilePath.c_str(), "w");
 
@@ -247,7 +247,7 @@ StatisticOutputJSON::openFile(void)
 }
 
 void
-StatisticOutputJSON::closeFile(void)
+StatisticOutputJSON::closeFile()
 {
     fclose(m_hFile);
 }

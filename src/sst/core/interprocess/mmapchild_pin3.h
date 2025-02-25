@@ -92,7 +92,7 @@ public:
     TunnelType* getTunnel() { return tunnel; }
 
     /** Return the name of the mmap'd file */
-    const std::string& getRegionName(void) const { return filename; }
+    const std::string& getRegionName() const { return filename; }
 
 private:
     void*       shmPtr;

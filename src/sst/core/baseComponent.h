@@ -88,7 +88,7 @@ public:
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
      */
-    virtual void emergencyShutdown(void) {}
+    virtual void emergencyShutdown() {}
 
     /** Returns Component/SubComponent Name */
     inline const std::string& getName() const { return my_info->getName(); }

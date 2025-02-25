@@ -104,7 +104,7 @@ public:
     }
 
     /** returns name of the mmap'd region */
-    const std::string& getRegionName(void) const { return filename; }
+    const std::string& getRegionName() const { return filename; }
 
     /** return the created tunnel pointer */
     TunnelType* getTunnel() { return tunnel; }

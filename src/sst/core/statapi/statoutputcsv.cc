@@ -267,7 +267,7 @@ StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, double data)
 }
 
 bool
-StatisticOutputCSV::openFile(void)
+StatisticOutputCSV::openFile()
 {
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
@@ -300,7 +300,7 @@ StatisticOutputCSV::openFile(void)
 }
 
 void
-StatisticOutputCSV::closeFile(void)
+StatisticOutputCSV::closeFile()
 {
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ

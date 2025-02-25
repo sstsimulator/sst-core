@@ -1242,7 +1242,7 @@ public:
      * @return Pointer to a Request response
      *          Upon receipt, the receiver takes responsibility for deleting the event
      */
-    virtual Request* poll(void) = 0;
+    virtual Request* poll() = 0;
 
     /**
      * Get cache/memory line size (in bytes) from the memory system

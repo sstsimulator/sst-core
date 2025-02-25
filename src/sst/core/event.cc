@@ -26,7 +26,7 @@ const SST::Event::id_type SST::Event::NO_ID = std::make_pair(0, -1);
 Event::~Event() {}
 
 void
-Event::execute(void)
+Event::execute()
 {
     (*reinterpret_cast<HandlerBase*>(delivery_info))(this);
 }

@@ -192,7 +192,7 @@ public:
         }
     }
 
-    const std::string& getRegionName(void) const { return filename; }
+    const std::string& getRegionName() const { return filename; }
 
     /** return a pointer to the ShareDataType region */
     ShareDataType* getSharedData() { return sharedData; }

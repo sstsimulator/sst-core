@@ -582,7 +582,7 @@ public:
     NullEvent() : Event() {}
     ~NullEvent() {}
 
-    void execute(void) override
+    void execute() override
     {
         (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
         delete this;

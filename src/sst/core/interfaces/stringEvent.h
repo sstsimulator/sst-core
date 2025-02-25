@@ -34,7 +34,7 @@ public:
     virtual Event* clone() override { return new StringEvent(*this); }
 
     /** Returns the contents of this Event */
-    const std::string& getString(void) { return str; }
+    const std::string& getString() { return str; }
 
 private:
     std::string str;

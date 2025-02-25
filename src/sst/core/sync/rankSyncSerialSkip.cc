@@ -142,7 +142,7 @@ RankSyncSerialSkip::execute(int thread)
 }
 
 void
-RankSyncSerialSkip::exchange(void)
+RankSyncSerialSkip::exchange()
 {
 #ifdef SST_CONFIG_HAVE_MPI
     // Maximum number of outstanding requests is 3 times the number

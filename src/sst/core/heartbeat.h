@@ -49,7 +49,7 @@ private:
     SimulatorHeartbeat(const SimulatorHeartbeat&);
 
     void           operator=(SimulatorHeartbeat const&);
-    void           execute(void) override;
+    void           execute() override;
     int            rank;
     TimeConverter* m_period;
     double         lastTime;
