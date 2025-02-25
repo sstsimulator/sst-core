@@ -18,9 +18,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
 
-
 namespace SST {
-
 
 /************ InteractiveConsole ***********/
 
@@ -118,5 +116,4 @@ InteractiveConsole::getComponentObjectMap()
     return Simulation_impl::getSimulation()->getComponentObjectMap();
 }
 
-
-} /* End namespace SST */
+} // namespace SST

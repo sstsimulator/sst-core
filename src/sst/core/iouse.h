@@ -14,13 +14,11 @@
 
 #include <inttypes.h>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 uint64_t maxInputOperations();
 uint64_t maxOutputOperations();
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_IOUSE_H

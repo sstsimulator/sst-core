@@ -16,8 +16,7 @@
 
 #include <type_traits>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <class Base, class... Args>
 struct Builder
@@ -184,13 +183,11 @@ struct DerivedBuilder : public Builder<Base, Args...>
     Base* create(Args... ctorArgs) override { return Allocator<Base, T>()(std::forward<Args>(ctorArgs)...); }
 };
 
-template <class T, class U>
-struct is_tuple_constructible : public std::false_type
-{};
+template <class, class>
+inline constexpr bool is_tuple_constructible_v = false;
 
 template <class T, class... Args>
-struct is_tuple_constructible<T, std::tuple<Args...>> : public std::is_constructible<T, Args...>
-{};
+inline constexpr bool is_tuple_constructible_v<T, std::tuple<Args...>> = std::is_constructible_v<T, Args...>;
 
 struct BuilderDatabase
 {
@@ -230,7 +227,7 @@ template <class NewCtor, class OldCtor>
 struct ExtendedCtor
 {
     template <class T>
-    using is_constructible = typename NewCtor::template is_constructible<T>;
+    static constexpr bool is_constructible_v = NewCtor::template is_constructible_v<T>;
 
     /**
       The derived Ctor can "block" the more abstract Ctor, meaning an object
@@ -238,14 +235,14 @@ struct ExtendedCtor
       checks if both the derived API and the parent API are still valid
     */
     template <class T>
-    static typename std::enable_if<OldCtor::template is_constructible<T>::value, bool>::type add()
+    static std::enable_if_t<OldCtor::template is_constructible_v<T>, bool> add()
     {
         // if abstract, force an allocation to generate meaningful errors
         return NewCtor::template add<T>() && OldCtor::template add<T>();
     }
 
     template <class T>
-    static typename std::enable_if<!OldCtor::template is_constructible<T>::value, bool>::type add()
+    static std::enable_if_t<!OldCtor::template is_constructible_v<T>, bool> add()
     {
         // if abstract, force an allocation to generate meaningful errors
         return NewCtor::template add<T>();
@@ -262,7 +259,7 @@ template <class Base, class... Args>
 struct SingleCtor
 {
     template <class T>
-    using is_constructible = std::is_constructible<T, Args...>;
+    static constexpr bool is_constructible_v = std::is_constructible_v<T, Args...>;
 
     template <class T>
     static bool add()
@@ -283,15 +280,12 @@ template <class Base, class Ctor, class... Ctors>
 struct CtorList : public CtorList<Base, Ctors...>
 {
     template <class T> // if T is constructible with Ctor arguments
-    using is_constructible = typename std::conditional<
-        is_tuple_constructible<T, Ctor>::value,
-        std::true_type,                                                 // yes, constructible
-        typename CtorList<Base, Ctors...>::template is_constructible<T> // not constructible here but maybe later
-        >::type;
+    static constexpr bool is_constructible_v =
+        is_tuple_constructible_v<T, Ctor>                            // yes, constructible
+        || CtorList<Base, Ctors...>::template is_constructible_v<T>; // not constructible here but maybe later
 
     template <class T, int NumValid = 0, class U = T>
-    static typename std::enable_if<std::is_abstract<U>::value || is_tuple_constructible<U, Ctor>::value, bool>::type
-    add()
+    static std::enable_if_t<std::is_abstract_v<U> || is_tuple_constructible_v<U, Ctor>, bool> add()
     {
         // if abstract, force an allocation to generate meaningful errors
         auto* fact = ElementsBuilder<Base, Ctor>::template makeBuilder<U>();
@@ -300,8 +294,7 @@ struct CtorList : public CtorList<Base, Ctors...>
     }
 
     template <class T, int NumValid = 0, class U = T>
-    static typename std::enable_if<!std::is_abstract<U>::value && !is_tuple_constructible<U, Ctor>::value, bool>::type
-    add()
+    static std::enable_if_t<!std::is_abstract_v<U> && !is_tuple_constructible_v<U, Ctor>, bool> add()
     {
         return CtorList<Base, Ctors...>::template add<T, NumValid>();
     }
@@ -323,8 +316,8 @@ class NoValidConstructorsForDerivedType<0>
 template <class Base>
 struct CtorList<Base, void>
 {
-    template <class T>
-    using is_constructible = std::false_type;
+    template <class>
+    static constexpr bool is_constructible_v = false;
 
     template <class T, int numValidCtors>
     static bool add()
@@ -333,8 +326,7 @@ struct CtorList<Base, void>
     }
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 #define ELI_CTOR(...)      std::tuple<__VA_ARGS__>
 #define ELI_DEFAULT_CTOR() std::tuple<>

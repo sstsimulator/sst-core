@@ -22,8 +22,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 namespace Private {
 Output&
@@ -123,5 +122,4 @@ SharedObjectDataManager::updateState(bool finalize)
     }
 }
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared

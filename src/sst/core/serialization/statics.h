@@ -14,9 +14,7 @@
 
 #include <list>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 class statics
 {
@@ -42,8 +40,6 @@ public:
     if ( x ) delete x;     \
     x = 0
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_STATICS_H

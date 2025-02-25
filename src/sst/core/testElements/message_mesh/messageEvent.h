@@ -14,9 +14,7 @@
 
 #include "sst/core/event.h"
 
-namespace SST {
-namespace CoreTest {
-namespace MessageMesh {
+namespace SST::CoreTest::MessageMesh {
 
 class MessageEvent : public SST::Event
 {
@@ -26,8 +24,6 @@ public:
     ImplementSerializable(SST::CoreTest::MessageMesh::MessageEvent);
 };
 
-} // namespace MessageMesh
-} // namespace CoreTest
-} // namespace SST
+} // namespace SST::CoreTest::MessageMesh
 
 #endif // SST_CORE_CORETEST_MESSAGEMESH_MESSAGEEVENT_H

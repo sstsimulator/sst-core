@@ -1161,12 +1161,8 @@ public:
 template <typename returnT, typename argT, typename classT, typename dataT, auto funcT>
 class SSTHandler2 : public SSTHandlerBase<returnT, argT>
 {
-
-    // This has to be dependent on a template, otherwise it always
-    // assers.  Need to make sure it covers both cases to assert
-    // if this template is expanded.
-    static_assert(std::is_fundamental<dataT>::value, "Mismatched handler templates.");
-    static_assert(!std::is_fundamental<dataT>::value, "Mismatched handler templates.");
+    // This has to be dependent on a template parameter, otherwise it always asserts.
+    static_assert((funcT, false), "Mismatched handler templates.");
 };
 
 

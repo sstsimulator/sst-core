@@ -99,7 +99,7 @@ OneShot::scheduleOneShot()
 }
 
 void
-OneShot::execute(void)
+OneShot::execute()
 {
     // Execute the OneShot when the TimeVortex tells us to go.
     // This will call all registered callbacks.

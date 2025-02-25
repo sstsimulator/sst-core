@@ -17,8 +17,7 @@
 
 #include <cinttypes>
 
-namespace SST {
-namespace CoreTestParamComponent {
+namespace SST::CoreTestParamComponent {
 
 coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params) : Component(id)
 {
@@ -122,5 +121,4 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
 
 coreTestParamComponent::coreTestParamComponent() : Component(-1) {}
 
-} // namespace CoreTestParamComponent
-} // namespace SST
+} // namespace SST::CoreTestParamComponent

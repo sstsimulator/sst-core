@@ -16,11 +16,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/warnmacros.h"
 
-using namespace std;
-
-namespace SST {
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
     SSTPartitioner(),
@@ -45,6 +41,4 @@ SSTRoundRobinPartition::performPartition(PartitionGraph* graph)
     }
 }
 
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Partition

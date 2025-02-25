@@ -365,7 +365,7 @@ SyncManager::exchangeLinkInfo()
 }
 
 void
-SyncManager::execute(void)
+SyncManager::execute()
 {
     SST_SYNC_PROFILE_START
 

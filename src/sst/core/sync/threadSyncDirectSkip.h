@@ -41,7 +41,7 @@ public:
 
     void before() override {}
     void after() override;
-    void execute(void) override;
+    void execute() override;
 
     /** Cause an exchange of Untimed Data to occur */
     void processLinkUntimedData() override {}

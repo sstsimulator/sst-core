@@ -16,9 +16,7 @@
 #include "sst/core/event.h"
 #include "sst/core/params.h"
 
-namespace SST {
-namespace IMPL {
-namespace PortModule {
+namespace SST::IMPL::PortModule {
 
 RandomDrop::RandomDrop(Params& params) : rng_(7, 13)
 {
@@ -104,7 +102,4 @@ RandomDrop::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& print_info_;
 }
 
-
-} // namespace PortModule
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::PortModule

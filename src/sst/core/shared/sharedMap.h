@@ -17,8 +17,7 @@
 
 #include <map>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedMap class.  The class is templated to allow for Map of any
@@ -27,7 +26,7 @@ namespace Shared {
 template <typename keyT, typename valT>
 class SharedMap : public SharedObject
 {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedMap");
+    static_assert(!std::is_pointer_v<valT>, "Cannot use a pointer type as value with SharedMap");
 
     // Forward declaration.  Defined below
     class Data;
@@ -372,7 +371,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDMAP_H

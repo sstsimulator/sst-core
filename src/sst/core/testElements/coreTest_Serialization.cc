@@ -30,9 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace SST {
-namespace CoreTestSerialization {
-
+namespace SST::CoreTestSerialization {
 
 template <typename T>
 struct checkSimpleSerializeDeserialize
@@ -781,6 +779,4 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     }
 }
 
-
-} // namespace CoreTestSerialization
-} // namespace SST
+} // namespace SST::CoreTestSerialization

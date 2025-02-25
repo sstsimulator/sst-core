@@ -21,8 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace SST {
-namespace CoreTestSharedObjectsComponent {
+namespace SST::CoreTestSharedObjectsComponent {
 
 using namespace Shared;
 
@@ -384,5 +383,4 @@ coreTestSharedObjectsComponent::serialize_order(SST::Core::Serialization::serial
     if ( test_set ) SST_SER(set)
 }
 
-} // namespace CoreTestSharedObjectsComponent
-} // namespace SST
+} // namespace SST::CoreTestSharedObjectsComponent

@@ -21,9 +21,7 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
-namespace SST {
-namespace CoreTest {
-namespace MessageMesh {
+namespace SST::CoreTest::MessageMesh {
 
 class PortInterface : public SST::SubComponent
 {
@@ -233,8 +231,6 @@ private:
     SST::RNG::Random*                 rng;
 };
 
-} // namespace MessageMesh
-} // namespace CoreTest
-} // namespace SST
+} // namespace SST::CoreTest::MessageMesh
 
 #endif // SST_CORE_CORETEST_MESSAGEMESH_ENCLOSINGCOMPONENT_H

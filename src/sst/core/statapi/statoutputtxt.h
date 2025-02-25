@@ -19,9 +19,7 @@
 #include <zlib.h>
 #endif
 
-namespace SST {
-namespace Statistics {
-
+namespace SST::Statistics {
 
 class StatisticOutputTextBase : public StatisticFieldsOutput
 {
@@ -272,7 +270,6 @@ private:
     bool getOutputRankDefault() override { return false; }
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTTXT_H

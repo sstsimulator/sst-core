@@ -14,8 +14,7 @@
 
 #include <inttypes.h>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 uint64_t localMemSize();
 uint64_t maxLocalMemSize();
@@ -23,7 +22,6 @@ uint64_t maxGlobalMemSize();
 uint64_t maxLocalPageFaults();
 uint64_t globalPageFaults();
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_MEMUSE_H

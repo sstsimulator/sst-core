@@ -17,8 +17,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 std::map<fieldType_t, StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_      = nullptr;
 fieldType_t                                     StatisticFieldTypeBase::enumCounter_ = 0;
@@ -98,5 +97,4 @@ static StatisticFieldType<uint64_t> uint64_register("uint64_t", "u64");
 static StatisticFieldType<float>    float_register("float", "f32");
 static StatisticFieldType<double>   double_register("double", "f64");
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

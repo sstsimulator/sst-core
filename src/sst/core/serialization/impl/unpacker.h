@@ -19,10 +19,7 @@
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 class ser_unpacker : public ser_buffer_accessor
 {
@@ -44,9 +41,6 @@ public:
     void unpack_string(std::string& str);
 };
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt
 
 #endif // SST_CORE_SERIALIZATION_IMPL_UNPACKER_H

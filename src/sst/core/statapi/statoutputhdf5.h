@@ -23,8 +23,7 @@ REENABLE_WARNING
 #include <map>
 #include <string>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 /**
     \class StatisticOutputHDF5
@@ -251,7 +250,6 @@ private:
     StatisticInfo* getStatisticInfo(StatisticBase* statistic);
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTHDF5_H

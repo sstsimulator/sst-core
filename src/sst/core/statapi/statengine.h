@@ -26,7 +26,7 @@
 
 /* Forward declare for Friendship */
 extern int  main(int argc, char** argv);
-extern void finalize_statEngineConfig(void);
+extern void finalize_statEngineConfig();
 
 namespace SST {
 class BaseComponent;
@@ -100,7 +100,7 @@ public:
 private:
     friend class SST::Simulation_impl;
     friend int ::main(int argc, char** argv);
-    friend void ::finalize_statEngineConfig(void);
+    friend void ::finalize_statEngineConfig();
 
     StatisticProcessingEngine();
     void setup(Simulation_impl* sim, ConfigGraph* graph);

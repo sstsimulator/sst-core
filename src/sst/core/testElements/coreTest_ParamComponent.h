@@ -14,8 +14,7 @@
 
 #include "sst/core/component.h"
 
-namespace SST {
-namespace CoreTestParamComponent {
+namespace SST::CoreTestParamComponent {
 
 class coreTestParamComponent : public SST::Component
 {
@@ -68,7 +67,6 @@ private:
     void operator=(const coreTestParamComponent&);         // do not implement
 };
 
-} // namespace CoreTestParamComponent
-} // namespace SST
+} // namespace SST::CoreTestParamComponent
 
 #endif // SST_CORE_CORETEST_PARAMCOMPONENT_H

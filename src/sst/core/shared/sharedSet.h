@@ -17,8 +17,7 @@
 
 #include <set>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedSet class.  The class is templated to allow for an array
@@ -27,7 +26,7 @@ namespace Shared {
 template <typename valT>
 class SharedSet : public SharedObject
 {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedSet");
+    static_assert(!std::is_pointer_v<valT>, "Cannot use a pointer type as value with SharedSet");
 
     // Forward declaration.  Defined below
     class Data;
@@ -348,7 +347,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDSET_H

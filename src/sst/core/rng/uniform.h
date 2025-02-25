@@ -17,10 +17,7 @@
 #include "mersenne.h"
 #include "rng.h"
 
-using namespace SST::RNG;
-
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class UniformDistribution uniform.h "sst/core/rng/uniform.h"
@@ -54,7 +51,7 @@ public:
             \param probsCount Number of probability bins in the distribution
             \param baseDist The base random number generator to take the distribution from.
     */
-    UniformDistribution(const uint32_t probsCount, SST::RNG::Random* baseDist) :
+    UniformDistribution(const uint32_t probsCount, Random* baseDist) :
         RandomDistribution(),
         deleteDistrib(false),
         probCount(probsCount),
@@ -116,7 +113,7 @@ protected:
     /**
         Sets the base random number generator for the distribution.
     */
-    SST::RNG::Random* baseDistrib;
+    Random* baseDistrib;
 
     /**
         Controls whether the base distribution should be deleted when this class is destructed.
@@ -134,9 +131,8 @@ protected:
     double probPerBin;
 };
 
-using SSTUniformDistribution = SST::RNG::UniformDistribution;
+} // namespace SST::RNG
 
-} // namespace RNG
-} // namespace SST
+using SSTUniformDistribution = SST::RNG::UniformDistribution;
 
 #endif // SST_CORE_RNG_UNIFORM_H

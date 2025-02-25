@@ -18,8 +18,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedArray class.  The class is templated to allow for an array
@@ -28,7 +27,7 @@ namespace Shared {
 template <typename T>
 class SharedArray : public SharedObject
 {
-    static_assert(!std::is_pointer<T>::value, "Cannot use a pointer type with SharedArray");
+    static_assert(!std::is_pointer_v<T>, "Cannot use a pointer type with SharedArray");
 
     // Forward declaration.  Defined below
     class Data;
@@ -808,7 +807,7 @@ private:
         };
     };
 };
-} // namespace Shared
-} // namespace SST
+
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDARRAY_H

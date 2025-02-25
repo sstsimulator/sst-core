@@ -36,8 +36,7 @@
 using namespace SST;
 using json = nlohmann::json;
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class SSTJSONModelDefinition : public SSTModelDescription
 {
@@ -74,7 +73,6 @@ private:
     ComponentId_t findComponentIdByName(const std::string& Name);
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_MODEL_JSON_JSONMODEL_H

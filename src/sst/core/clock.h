@@ -107,7 +107,7 @@ private:
 
     Clock() {}
 
-    void execute(void) override;
+    void execute() override;
 
     Cycle_t            currentCycle;
     TimeConverter*     period;

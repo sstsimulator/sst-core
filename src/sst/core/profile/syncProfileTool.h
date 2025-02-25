@@ -21,9 +21,7 @@
 #include <chrono>
 #include <map>
 
-namespace SST {
-
-namespace Profile {
+namespace SST::Profile {
 
 // Initial version of sync profiling tool.  The API is not yet complete.
 class SyncProfileTool : public ProfileTool
@@ -103,7 +101,6 @@ private:
     typename T::time_point start_time_;
 };
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile
 
 #endif // SST_CORE_PROFILE_SYNCPROFILETOOL_H

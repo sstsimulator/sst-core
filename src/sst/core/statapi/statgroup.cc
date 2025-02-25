@@ -23,8 +23,7 @@
 
 #include <algorithm>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine) :
     isDefault(false),
@@ -96,5 +95,4 @@ StatisticGroup::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& statNames;
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

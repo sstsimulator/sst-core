@@ -35,7 +35,6 @@
 #include <string>
 #include <sys/stat.h>
 
-using namespace std;
 using namespace SST;
 using namespace SST::Core;
 
@@ -154,7 +153,7 @@ main(int argc, char* argv[])
 
     // Run interactive mode
     if ( g_configuration.interactiveEnabled() ) {
-        std::cout << "Curses library not found. Run SST-Info without the -i flag." << endl;
+        std::cout << "Curses library not found. Run SST-Info without the -i flag." << std::endl;
     }
 
     return 0;
@@ -764,6 +763,8 @@ SSTInfoConfig::getUsagePrelude()
 void
 SSTInfoConfig::outputUsage()
 {
+    using std::cout;
+    using std::endl;
     cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
          << " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
@@ -851,6 +852,7 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
 void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
+    using std::endl;
     if ( this->m_libraryFilter ) {
         outputStream << "\n================================================================================\n";
         outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;

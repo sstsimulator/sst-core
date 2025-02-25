@@ -93,7 +93,7 @@ private:
     OneShot() {}
 
     // Called by the Simulation (Activity Queue) when delay time as elapsed
-    void execute(void) override;
+    void execute() override;
 
     // Activates this OneShot object, by inserting into the simulation's
     // timeVortex for future execution.

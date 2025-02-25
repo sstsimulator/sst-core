@@ -16,8 +16,7 @@
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/warnmacros.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 // NOTE: When calling base class members of classes derived from
 //       a templated base class.  The user must use "this->" in
@@ -35,7 +34,7 @@ namespace Statistics {
 
     @tparam T A template for holding the main data type of this statistic
 */
-template <class T, bool B = std::is_fundamental<T>::value>
+template <class T, bool = std::is_fundamental_v<T>>
 struct NullStatisticBase
 {};
 
@@ -160,7 +159,6 @@ struct NullStatistic<void> : public Statistic<void>
     }
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATNULL_H

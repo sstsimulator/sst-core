@@ -28,8 +28,7 @@
 #include <algorithm>
 #include <string>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 std::vector<StatisticOutput*> StatisticProcessingEngine::m_statOutputs;
 
@@ -644,5 +643,4 @@ StatisticProcessingEngine::serialize_order(SST::Core::Serialization::serializer&
                        // they global already?
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

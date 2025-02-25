@@ -16,8 +16,7 @@
 
 #include <stdint.h>
 
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class Random rng.h "sst/core/rng/rng.h"
@@ -64,7 +63,6 @@ public:
     ImplementVirtualSerializable(SST::RNG::Random)
 };
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_RNG_H

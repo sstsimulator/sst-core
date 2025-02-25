@@ -16,8 +16,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class XMLConfigGraphOutput : public ConfigGraphOutput
 {
@@ -30,7 +29,6 @@ protected:
     void generateXML(const std::string& indent, const ConfigLink* link, const ConfigComponentMap_t& compMap) const;
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_XML_CONFIG_OUTPUT_H

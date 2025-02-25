@@ -15,9 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/interactiveConsole.h"
 
-namespace SST {
-namespace IMPL {
-namespace Interactive {
+namespace SST::IMPL::Interactive {
 
 /**
    Self partitioner actually does nothing.  It is simply a pass
@@ -63,8 +61,6 @@ private:
     void dispatch_cmd(std::string cmd);
 };
 
-} // namespace Interactive
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Interactive
 
 #endif

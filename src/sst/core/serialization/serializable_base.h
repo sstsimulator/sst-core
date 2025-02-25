@@ -20,9 +20,7 @@
 #include <typeinfo>
 #include <unordered_map>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 namespace pvt {
 
@@ -273,9 +271,7 @@ const uint32_t serializable_builder_impl<T>::cls_id_ =
 // class trivially_serializable {
 // };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #define SerializableName(obj) #obj
 

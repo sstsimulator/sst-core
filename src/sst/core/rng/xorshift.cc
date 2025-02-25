@@ -26,7 +26,7 @@ using namespace SST::RNG;
     Generate a new random number generator with a random selection for the
     seed.
 */
-XORShiftRNG::XORShiftRNG() : SST::RNG::Random()
+XORShiftRNG::XORShiftRNG() : Random()
 {
     struct timeval now;
     gettimeofday(&now, nullptr);
@@ -40,7 +40,7 @@ XORShiftRNG::XORShiftRNG() : SST::RNG::Random()
 /*
     Seed the Mersenne and then make a group of numbers
 */
-XORShiftRNG::XORShiftRNG(unsigned int startSeed) : SST::RNG::Random()
+XORShiftRNG::XORShiftRNG(unsigned int startSeed) : Random()
 {
 
     assert(startSeed != 0);

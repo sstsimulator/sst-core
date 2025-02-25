@@ -18,9 +18,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 class ObjectMap;
 
@@ -683,8 +681,6 @@ public:
 };
 
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_OBJECTMAP_H

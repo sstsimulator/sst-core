@@ -28,11 +28,11 @@
 #include <utility>
 
 namespace SST {
-
 class Component;
 class Event;
+} // namespace SST
 
-namespace Interfaces {
+namespace SST::Interfaces {
 /**
  * Generic interface to Memory models
  *
@@ -1242,7 +1242,7 @@ public:
      * @return Pointer to a Request response
      *          Upon receipt, the receiver takes responsibility for deleting the event
      */
-    virtual Request* poll(void) = 0;
+    virtual Request* poll() = 0;
 
     /**
      * Get cache/memory line size (in bytes) from the memory system
@@ -1275,7 +1275,6 @@ public:
     virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST::SubComponent::serialize_order(ser); }
 };
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces
 
 #endif // SST_CORE_INTERFACES_STANDARDMEM_H

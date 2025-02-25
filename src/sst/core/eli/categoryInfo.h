@@ -19,8 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 class ProvidesCategory
 {
@@ -61,7 +60,6 @@ private:
 #define SST_ELI_CATEGORY_INFO(cat) \
     static uint32_t ELI_getCategory() { return cat; }
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 #endif

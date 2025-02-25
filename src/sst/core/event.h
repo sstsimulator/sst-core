@@ -159,7 +159,7 @@ private:
 
 
     /** Cause this event to fire */
-    void execute(void) override;
+    void execute() override;
 
     /**
        This sets the information needed to get the event properly
@@ -184,7 +184,7 @@ private:
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
-    inline LinkId_t getTag(void) const { return getOrderTag(); }
+    inline LinkId_t getTag() const { return getOrderTag(); }
 
 
     /** Holds the delivery information.  This is stored as a
