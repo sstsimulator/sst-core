@@ -16,8 +16,7 @@
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
 {
@@ -231,7 +230,7 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 }
 
 bool
-StatisticOutputJSON::openFile(void)
+StatisticOutputJSON::openFile()
 {
     m_hFile = fopen(m_FilePath.c_str(), "w");
 
@@ -248,7 +247,7 @@ StatisticOutputJSON::openFile(void)
 }
 
 void
-StatisticOutputJSON::closeFile(void)
+StatisticOutputJSON::closeFile()
 {
     fclose(m_hFile);
 }
@@ -273,5 +272,4 @@ StatisticOutputJSON::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& m_processedAnyStats;
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

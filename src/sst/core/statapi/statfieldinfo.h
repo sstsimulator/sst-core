@@ -17,8 +17,7 @@
 #include <map>
 #include <string>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 using fieldType_t = uint32_t;
 
@@ -159,7 +158,6 @@ private:
     fieldHandle_t field_handle_;
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATFIELDINFO_H

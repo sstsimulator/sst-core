@@ -18,8 +18,7 @@
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -265,5 +264,4 @@ StatisticFieldsOutput::serialize_order(SST::Core::Serialization::serializer& ser
     StatisticOutput::serialize_order(ser);
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

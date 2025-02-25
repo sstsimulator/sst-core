@@ -22,9 +22,7 @@
 #include <set>
 #include <unordered_set>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <class T, class C>
 class serialize<std::multiset<T, C>>
@@ -136,8 +134,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_MULTISET_H

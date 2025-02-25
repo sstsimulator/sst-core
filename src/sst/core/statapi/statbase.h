@@ -639,17 +639,14 @@ private:
 
 } // namespace Statistics
 
-namespace Stat {
-namespace pvt {
+namespace Stat::pvt {
 
 /** Helper function for re-registering statistics during simulation restart */
 void registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s);
 
-} // namespace pvt
-} // namespace Stat
+} // namespace Stat::pvt
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 template <class T>
 class serialize_impl<Statistics::Statistic<T>*>
@@ -705,9 +702,7 @@ class serialize_impl<Statistics::Statistic<T>*>
     // }
 };
 
-} // namespace Serialization
-} // namespace Core
-
+} // namespace Core::Serialization
 
 } // namespace SST
 

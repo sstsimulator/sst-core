@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct InfoPorts
@@ -73,8 +72,7 @@ private:
     std::vector<ElementInfoPort> ports_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
 #define SST_ELI_DOCUMENT_PORTS(...)                                                                           \

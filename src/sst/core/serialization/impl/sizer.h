@@ -19,10 +19,7 @@
 
 #include "sst/core/warnmacros.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 class ser_sizer
 {
@@ -47,9 +44,6 @@ protected:
     size_t size_;
 };
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SIZER_H

@@ -56,7 +56,7 @@ SimulatorHeartbeat::schedule()
 }
 
 void
-SimulatorHeartbeat::execute(void)
+SimulatorHeartbeat::execute()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
     const double     now = sst_get_cpu_time();

@@ -24,9 +24,7 @@ REENABLE_WARNING
 #include <memory>
 #include <typeinfo>
 
-namespace SST {
-
-namespace Comms {
+namespace SST::Comms {
 
 #ifdef SST_CONFIG_HAVE_MPI
 template <typename dataType>
@@ -148,8 +146,6 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
 
 #endif
 
-} // namespace Comms
-
-} // namespace SST
+} // namespace SST::Comms
 
 #endif // SST_CORE_OBJECTCOMMS_H

@@ -82,7 +82,7 @@ Clock::getNextCycle()
 }
 
 void
-Clock::execute(void)
+Clock::execute()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
 

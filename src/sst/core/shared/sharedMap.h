@@ -17,8 +17,7 @@
 
 #include <map>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedMap class.  The class is templated to allow for Map of any
@@ -372,7 +371,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDMAP_H

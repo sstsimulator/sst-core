@@ -23,10 +23,7 @@
 #include <typeinfo>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 class ser_mapper
 {
@@ -88,9 +85,6 @@ private:
     int indent = 0;
 };
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt
 
 #endif // SST_CORE_SERIALIZATION_IMPL_MAPPER_H

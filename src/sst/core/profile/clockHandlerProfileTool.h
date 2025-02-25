@@ -22,10 +22,7 @@
 #include <chrono>
 #include <map>
 
-namespace SST {
-
-namespace Profile {
-
+namespace SST::Profile {
 
 class ClockHandlerProfileTool : public ProfileTool, public Clock::HandlerBase::AttachPoint
 {
@@ -121,7 +118,6 @@ private:
     std::map<std::string, clock_data_t> times_;
 };
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile
 
 #endif // SST_CORE_PROFILE_CLOCKHANDLERPROFILETOOL_H

@@ -42,7 +42,7 @@ public:
 
     void before() override;
     void after() override;
-    void execute(void) override;
+    void execute() override;
 
     /** Set signals to exchange during sync */
     void setSignals(int end, int usr, int alrm) override;

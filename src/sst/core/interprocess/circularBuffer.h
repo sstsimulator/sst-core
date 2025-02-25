@@ -14,9 +14,7 @@
 
 #include "sstmutex.h"
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 template <typename T>
 class CircularBuffer
@@ -118,8 +116,6 @@ private:
     T        buffer[0];
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_CIRCULARBUFFER_H

@@ -15,8 +15,7 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/rng.h"
 
-namespace SST {
-namespace CoreTestSerialization {
+namespace SST::CoreTestSerialization {
 
 class coreTestSerialization : public SST::Component
 {
@@ -54,7 +53,6 @@ private:
     SST::RNG::Random* rng;
 };
 
-} // namespace CoreTestSerialization
-} // namespace SST
+} // namespace SST::CoreTestSerialization
 
 #endif // SST_CORE_CORETEST_SERIALIZATION_H

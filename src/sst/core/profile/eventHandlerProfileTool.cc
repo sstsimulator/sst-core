@@ -19,9 +19,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Profile {
-
+namespace SST::Profile {
 
 EventHandlerProfileTool::EventHandlerProfileTool(const std::string& name, Params& params) : ProfileTool(name)
 {
@@ -201,6 +199,4 @@ public:
     SST_ELI_EXPORT(EventHandlerProfileToolTimeSteady)
 };
 
-
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile

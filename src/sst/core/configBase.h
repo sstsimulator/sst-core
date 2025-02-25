@@ -38,12 +38,12 @@ struct LongOption
     std::function<int(const char* arg)> callback;
     bool                                header; // if true, desc is actually the header
     std::vector<bool>                   annotations;
-    std::function<std::string(void)>    ext_help;
+    std::function<std::string()>        ext_help;
     mutable bool                        set_cmdline;
 
     LongOption(
         struct option opt, const char* argname, const char* desc, const std::function<int(const char* arg)>& callback,
-        bool header, std::vector<bool> annotations, std::function<std::string(void)> ext_help, bool set_cmdline) :
+        bool header, std::vector<bool> annotations, std::function<std::string()> ext_help, bool set_cmdline) :
         opt(opt),
         argname(argname),
         desc(desc),
@@ -148,7 +148,7 @@ protected:
      */
     void addOption(
         struct option opt, const char* argname, const char* desc, std::function<int(const char* arg)> callback,
-        std::vector<bool> annotations, std::function<std::string(void)> ext_help = std::function<std::string(void)>());
+        std::vector<bool> annotations, std::function<std::string()> ext_help = std::function<std::string()>());
 
     /**
        Adds a heading to the usage output
@@ -222,7 +222,7 @@ private:
     std::function<int(int num, const char* arg)> positional_args;
 
     // Map to hold extended help function calls
-    std::map<std::string, std::function<std::string(void)>> extra_help_map;
+    std::map<std::string, std::function<std::string()>> extra_help_map;
 
     // Annotations
     std::vector<AnnotationInfo> annotations_;

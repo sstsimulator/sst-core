@@ -34,13 +34,9 @@ class ConfigStatistic;
 class Simulation_impl;
 class TimeConverter;
 
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
+} // namespace Core::Serialization::pvt
 
 class ComponentInfo
 {
@@ -52,8 +48,7 @@ public:
     static const uint64_t SHARE_PORTS  = 0x1;
     static const uint64_t SHARE_STATS  = 0x2;
     static const uint64_t INSERT_STATS = 0x4;
-
-    static const uint64_t SHARE_NONE = 0x0;
+    static const uint64_t SHARE_NONE   = 0x0;
 
 private:
     // Mask to make sure users are only setting the flags that are

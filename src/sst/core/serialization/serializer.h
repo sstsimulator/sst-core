@@ -32,9 +32,7 @@
 #include <typeinfo>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 /**
  * This class is basically a wrapper for objects to declare the order in
@@ -169,7 +167,7 @@ public:
         }
     }
 
-    // For void*, we get sizeof(void), which errors.
+    // For void*, we get sizeof(), which errors.
     // Create a wrapper that casts to char* and uses above
     template <typename Int>
     void binary(void*& buffer, Int& size)
@@ -280,8 +278,6 @@ protected:
     uintptr_t                      split_key;
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZER_H

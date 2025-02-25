@@ -18,8 +18,7 @@
 #include "sst/core/rng/distrib.h"
 #include "sst/core/rng/rng.h"
 
-namespace SST {
-namespace CoreTestCheckpoint {
+namespace SST::CoreTestCheckpoint {
 
 // Very simple starting case
 // Expected to have two components in simulation.
@@ -155,7 +154,6 @@ private:
     Statistic<uint32_t>* stat_null;
 };
 
-} // namespace CoreTestCheckpoint
-} // namespace SST
+} // namespace SST::CoreTestCheckpoint
 
 #endif // SST_CORE_CORETEST_CHECKPOINT_H

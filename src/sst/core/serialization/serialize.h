@@ -22,9 +22,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 // Workaround for use with static_assert(), since static_assert(false)
 // will always assert, even when in an untaken if constexpr path.
@@ -459,9 +457,7 @@ sst_map_object(serializer& ser, T& t, const char* name)
 #define SST_SER(obj)        sst_map_object(ser, obj, #obj);
 #define SST_SER_AS_PTR(obj) ser | obj;
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 // These includes have guards to print warnings if they are included
 // independent of this file.  Set the #define that will disable the

@@ -16,8 +16,7 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/marsaglia.h"
 
-namespace SST {
-namespace CoreTestComponent {
+namespace SST::CoreTestComponent {
 
 // These first two classes are just base classes to test ELI
 // inheritance.  The definition of the ELI items are spread through 2
@@ -146,7 +145,6 @@ private:
     SST::Statistics::Statistic<int>* countW;
 };
 
-} // namespace CoreTestComponent
-} // namespace SST
+} // namespace SST::CoreTestComponent
 
 #endif // SST_CORE_CORETEST_COMPONENT_H

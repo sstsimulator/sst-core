@@ -25,8 +25,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-using namespace std;
-
 namespace SST {
 
 //// Helper class for setting options
@@ -1197,7 +1195,7 @@ Config::checkArgsAfterParsing()
 
 
 bool
-Config::setOptionFromModel(const string& entryName, const string& value)
+Config::setOptionFromModel(const std::string& entryName, const std::string& value)
 {
     // Check to make sure option is settable in the SDL file
     if ( getAnnotation(entryName, 'S') ) { return setOptionExternal(entryName, value); }

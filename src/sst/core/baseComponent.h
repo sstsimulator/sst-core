@@ -49,13 +49,9 @@ class TimeConverter;
 class UnitAlgebra;
 
 
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
+}
 
 /**
  * Main component object for the simulation.
@@ -92,7 +88,7 @@ public:
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
      */
-    virtual void emergencyShutdown(void) {}
+    virtual void emergencyShutdown() {}
 
     /** Returns Component/SubComponent Name */
     inline const std::string& getName() const { return my_info->getName(); }
@@ -1116,11 +1112,9 @@ public:
     }
 };
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 namespace pvt {
-
 class SerializeBaseComponentHelper
 {
 public:
@@ -1168,8 +1162,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
     }
 };
 
-} // namespace Serialization
-} // namespace Core
+} // namespace Core::Serialization
 
 } // namespace SST
 

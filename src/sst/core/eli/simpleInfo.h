@@ -14,8 +14,7 @@
 
 #include "sst/core/eli/elibase.h"
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 // ProvidesSimpleInfo is a class to quickly add ELI info to an ELI
 // Base API.  This class should only be used for APIs that aren't
@@ -97,8 +96,7 @@ private:
     InfoType info_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // Macro used by the API to create macros to populate the added ELI
 // info

@@ -19,10 +19,7 @@
 
 #include <cstdlib> // for malloc/free
 
-using namespace SST::RNG;
-
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class DiscreteDistribution discrete.h "sst/core/rng/discrete.h"
@@ -30,7 +27,7 @@ namespace RNG {
     Creates a discrete distribution for use within SST. This distribution is the same across
     platforms and compilers.
 */
-class DiscreteDistribution : public SST::RNG::RandomDistribution
+class DiscreteDistribution : public RandomDistribution
 {
 
 public:
@@ -39,9 +36,7 @@ public:
         \param probs An array of probabilities for each outcome
         \param probsCount The number of discrete outcomes
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount) :
-        SST::RNG::RandomDistribution(),
-        probCount(probsCount)
+    DiscreteDistribution(const double* probs, const uint32_t probsCount) : RandomDistribution(), probCount(probsCount)
     {
 
         probabilities   = (double*)malloc(sizeof(double) * probsCount);
@@ -61,7 +56,7 @@ public:
         \param lambda The lambda of the exponential distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount, SST::RNG::Random* baseDist) :
+    DiscreteDistribution(const double* probs, const uint32_t probsCount, Random* baseDist) :
         RandomDistribution(),
         probCount(probsCount)
     {
@@ -132,13 +127,13 @@ public:
     /**
         Serialization macro
     */
-    ImplementSerializable(SST::RNG::DiscreteDistribution)
+    ImplementSerializable(DiscreteDistribution)
 
 protected:
     /**
         Sets the base random number generator for the distribution.
     */
-    SST::RNG::Random* baseDistrib;
+    Random* baseDistrib;
 
     /**
         Controls whether the base distribution should be deleted when this class is destructed.
@@ -156,9 +151,8 @@ protected:
     uint32_t probCount;
 };
 
-using SSTDiscreteDistribution = SST::RNG::DiscreteDistribution;
+} // namespace SST::RNG
 
-} // namespace RNG
-} // namespace SST
+using SSTDiscreteDistribution = SST::RNG::DiscreteDistribution;
 
 #endif // SST_CORE_RNG_DISCRETE_H

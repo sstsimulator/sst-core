@@ -18,8 +18,7 @@
 
 #include <algorithm>
 
-namespace SST {
-namespace IMPL {
+namespace SST::IMPL {
 
 // We sort backwards so we can work from the bottom of the vector
 // (faster delete)
@@ -202,6 +201,4 @@ public:
     SST_ELI_EXPORT(TimeVortexBinnedMap_ts)
 };
 
-
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL

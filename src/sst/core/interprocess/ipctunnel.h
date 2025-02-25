@@ -24,9 +24,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 extern uint32_t globalIPCTunnelCount;
 /**
@@ -194,7 +192,7 @@ public:
         }
     }
 
-    const std::string& getRegionName(void) const { return filename; }
+    const std::string& getRegionName() const { return filename; }
 
     /** return a pointer to the ShareDataType region */
     ShareDataType* getSharedData() { return sharedData; }
@@ -252,8 +250,6 @@ private:
     std::vector<CircBuff_t*> circBuffs;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_IPCTUNNEL_H

@@ -15,8 +15,7 @@
 #include "sst/core/event.h"
 #include "sst/core/sst_types.h"
 
-namespace SST {
-namespace Interfaces {
+namespace SST::Interfaces {
 
 /**
  * Simple event to pass strings between components
@@ -35,7 +34,7 @@ public:
     virtual Event* clone() override { return new StringEvent(*this); }
 
     /** Returns the contents of this Event */
-    const std::string& getString(void) { return str; }
+    const std::string& getString() { return str; }
 
 private:
     std::string str;
@@ -50,7 +49,6 @@ public:
     ImplementSerializable(SST::Interfaces::StringEvent);
 };
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces
 
 #endif // SST_CORE_INTERFACES_STRINGEVENT_H

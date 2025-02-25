@@ -17,8 +17,7 @@
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/warnmacros.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 // NOTE: When calling base class members in classes derived from
 //       a templated base class.  The user must use "this->" in
@@ -371,7 +370,6 @@ private:
     inline static const std::string stat_type_ = "Histogram";
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATHISTOGRAM_H

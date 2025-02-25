@@ -14,8 +14,7 @@
 
 #include "sst/core/component.h"
 
-namespace SST {
-namespace CoreTestSerialization {
+namespace SST::CoreTestSerialization {
 
 class coreTestOutput : public SST::Component
 {
@@ -52,7 +51,6 @@ public:
 private:
 };
 
-} // namespace CoreTestSerialization
-} // namespace SST
+} // namespace SST::CoreTestSerialization
 
 #endif // SST_CORE_CORETEST_OUTPUT_H

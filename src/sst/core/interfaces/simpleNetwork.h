@@ -25,12 +25,12 @@
 #include <unordered_map>
 
 namespace SST {
-
 class Component;
 class Event;
 class Link;
+} // namespace SST
 
-namespace Interfaces {
+namespace SST::Interfaces {
 
 /**
  * Generic network interface
@@ -236,7 +236,7 @@ public:
     // /**
     //  * Returns a handle to the underlying SST::Link
     //  */
-    // virtual Link* getLink(void) const = 0;
+    // virtual Link* getLink() const = 0;
 
     /**
      * Send a Request to the network.
@@ -320,7 +320,6 @@ public:
     virtual const UnitAlgebra& getLinkBW() const = 0;
 };
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces
 
 #endif // SST_CORE_INTERFACES_SIMPLENETWORK_H

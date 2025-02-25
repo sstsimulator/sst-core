@@ -15,8 +15,7 @@
 
 #include "sst/core/output.h"
 
-namespace SST {
-namespace Partition {
+namespace SST::Partition {
 
 SST_ELI_DEFINE_INFO_EXTERN(SSTPartitioner)
 SST_ELI_DEFINE_CTOR_EXTERN(SSTPartitioner)
@@ -35,5 +34,4 @@ SSTPartitioner::performPartition(ConfigGraph* UNUSED(graph))
     output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support ConfigGraph");
 }
 
-} // namespace Partition
-} // namespace SST
+} // namespace SST::Partition
