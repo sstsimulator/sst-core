@@ -333,13 +333,12 @@ public:
         ser& rank.thread;
         ser& links;
         ser& params;
+        ser& statLoadLevel;
+        ser& portModules;
         ser& enabledStatNames;
         ser& enabledAllStats;
         ser& statistics_;
-        ser& portModules;
-        ser& enabledAllStats;
         ser& allStatConfig;
-        ser& statLoadLevel;
         ser& subComponents;
         ser& coords;
         ser& nextSubID;

@@ -288,6 +288,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name, port_modules);
             // If I got a link from my parent, I need to put it in my
             // link map
+
             if ( nullptr != tmp ) {
                 if ( nullptr == myLinks ) {
                     myLinks           = new LinkMap();
@@ -299,12 +300,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 
                 // Need to see if I got any port_modules, if so, need
                 // to add them to my_info->portModules
-                if ( port_modules.size() > 0 ) {
-                    if ( nullptr == my_info->portModules ) {
-                        my_info->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
-                    }
-                    (*my_info->portModules)[name].swap(port_modules);
-                }
+                if ( port_modules.size() > 0 ) { (*my_info->portModules)[name].swap(port_modules); }
             }
         }
     }
@@ -331,7 +327,9 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         }
 
         // Check for PortModules
-        if ( my_info->portModules != nullptr ) {
+        // portModules pointer may be invalid after wire up
+        // Only SelfLinks can be initialized after wire up and SelfLinks do not support PortModules
+        if ( !sim_->isWireUpFinished() && my_info->portModules != nullptr ) {
             auto it = my_info->portModules->find(name);
             if ( it != my_info->portModules->end() ) {
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
