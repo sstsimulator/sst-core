@@ -16,8 +16,7 @@
 #include "sst/core/clock.h"
 #include "sst/core/output.h"
 
-namespace SST {
-namespace IMPL {
+namespace SST::IMPL {
 
 template <bool TS>
 TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
@@ -180,5 +179,4 @@ public:
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };
 
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL

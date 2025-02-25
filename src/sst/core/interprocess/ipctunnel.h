@@ -24,9 +24,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 extern uint32_t globalIPCTunnelCount;
 /**
@@ -252,8 +250,6 @@ private:
     std::vector<CircBuff_t*> circBuffs;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_IPCTUNNEL_H

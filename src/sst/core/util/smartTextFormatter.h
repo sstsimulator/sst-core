@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace Util {
+namespace SST::Util {
 
 /**
    Class to format text for console output.  It will wrap lines at
@@ -156,7 +155,6 @@ private:
 };
 
 
-} // namespace Util
-} // namespace SST
+} // namespace SST::Util
 
 #endif // SST_CORE_UTIL_SMARTTEXTFORMATTER_H

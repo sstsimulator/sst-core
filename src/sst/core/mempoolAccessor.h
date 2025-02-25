@@ -12,10 +12,7 @@
 #ifndef SST_CORE_MEMPOOL_ACCESSOR_H
 #define SST_CORE_MEMPOOL_ACCESSOR_H
 
-
-namespace SST {
-
-namespace Core {
+namespace SST::Core {
 
 // Class to access stats/data about the mempools.  This is here to
 // limit exposure to the USE_MEMPOOL #define, which will only be in
@@ -51,7 +48,6 @@ public:
     static void printUndeletedMemPoolItems(const std::string& header, Output& out);
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_MEMPOOL_ACCESSOR_H

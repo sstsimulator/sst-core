@@ -15,9 +15,7 @@
 #include <sched.h>
 #include <time.h>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 #define SST_CORE_INTERPROCESS_LOCKED   1
 #define SST_CORE_INTERPROCESS_UNLOCKED 0
@@ -78,8 +76,6 @@ private:
     volatile int lockVal;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_MUTEX_H

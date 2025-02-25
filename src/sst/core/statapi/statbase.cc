@@ -23,10 +23,7 @@
 #include "sst/core/statapi/statoutputtxt.h"
 #include "sst/core/statapi/statuniquecount.h"
 
-namespace SST {
-
-namespace Stat {
-namespace pvt {
+namespace SST::Stat::pvt {
 
 void
 registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s)
@@ -34,11 +31,9 @@ registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s)
     Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine(s);
 }
 
-} // namespace pvt
-} // namespace Stat
+} // namespace SST::Stat::pvt
 
-namespace Statistics {
-
+namespace SST::Statistics {
 
 StatisticBase::StatisticBase(
     BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
@@ -274,5 +269,4 @@ SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t);
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float);
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double);
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

@@ -16,8 +16,7 @@
 #include "sst/core/output.h"
 #include "sst/core/sharedRegion.h"
 
-namespace SST {
-namespace CoreTestLookupTableComponent {
+namespace SST::CoreTestLookupTableComponent {
 
 class coreTestLookupTableComponent : public SST::Component
 {
@@ -66,7 +65,6 @@ private:
     SharedRegion*  sregion;
 };
 
-} // namespace CoreTestLookupTableComponent
-} // namespace SST
+} // namespace SST::CoreTestLookupTableComponent
 
 #endif // SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H

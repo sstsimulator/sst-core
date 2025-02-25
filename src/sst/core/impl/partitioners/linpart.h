@@ -16,11 +16,10 @@
 #include "sst/core/sstpart.h"
 
 namespace SST {
-
 class Output;
+}
 
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 /**
 Performs a linear partition scheme of an SST simulation configuration. In this
@@ -68,8 +67,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
 };
 
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Partition
 
 #endif

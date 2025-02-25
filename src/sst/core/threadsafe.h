@@ -32,9 +32,7 @@
 
 #include <time.h>
 
-namespace SST {
-namespace Core {
-namespace ThreadSafe {
+namespace SST::Core::ThreadSafe {
 
 #if defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 8))
 #define CACHE_ALIGNED(type, name) type name __attribute__((aligned(64)))
@@ -332,8 +330,6 @@ atomic_fetch_min(std::atomic<T>& min_value, T const& new_value) noexcept
     while ( old_value > new_value && !min_value.compare_exchange_weak(old_value, new_value) ) {}
 }
 
-} // namespace ThreadSafe
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::ThreadSafe
 
 #endif // SST_CORE_THREADSAFE_H

@@ -19,9 +19,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Profile {
-
+namespace SST::Profile {
 
 ComponentProfileTool::ComponentProfileTool(const std::string& name, Params& params) : ProfileTool(name)
 {
@@ -174,6 +172,4 @@ public:
     SST_ELI_EXPORT(ComponentCodeSegmentProfileToolTimeSteady)
 };
 
-
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile

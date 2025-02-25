@@ -16,8 +16,7 @@
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
 {
@@ -273,5 +272,4 @@ StatisticOutputJSON::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& m_processedAnyStats;
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

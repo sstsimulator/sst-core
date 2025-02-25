@@ -19,9 +19,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Profile {
-
+namespace SST::Profile {
 
 ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) : ProfileTool(name)
 {
@@ -162,6 +160,4 @@ public:
     SST_ELI_EXPORT(ClockHandlerProfileToolTimeSteady)
 };
 
-
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile

@@ -32,9 +32,7 @@
 #include <typeinfo>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 /**
  * This class is basically a wrapper for objects to declare the order in
@@ -280,8 +278,6 @@ protected:
     uintptr_t                      split_key;
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZER_H

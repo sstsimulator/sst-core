@@ -18,8 +18,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace CoreTestSubComponent {
+namespace SST::CoreTestSubComponent {
 
 /*
 
@@ -337,7 +336,6 @@ public:
     void clock(Cycle_t) override;
 };
 
-} // namespace CoreTestSubComponent
-} // namespace SST
+} // namespace SST::CoreTestSubComponent
 
 #endif // SST_CORE_CORETEST_SUBCOMPONENT_H

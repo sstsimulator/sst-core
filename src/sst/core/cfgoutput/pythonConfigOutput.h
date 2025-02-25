@@ -18,8 +18,7 @@
 
 #include <map>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class PythonConfigGraphOutput : public ConfigGraphOutput
 {
@@ -51,7 +50,6 @@ private:
     std::map<LinkId_t, std::string> linkMap;
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_PYTHON_CONFIG_OUTPUT_H

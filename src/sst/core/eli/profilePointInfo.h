@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct InfoProfilePoints
@@ -67,8 +66,7 @@ private:
     std::vector<ElementInfoProfilePoint> points_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
 #define SST_ELI_DOCUMENT_PROFILE_POINTS(...)                                                                  \

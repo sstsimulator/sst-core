@@ -19,9 +19,7 @@
 
 #include <map>
 
-namespace SST {
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 class SimplePartitioner : public SST::Partition::SSTPartitioner
 {
@@ -59,7 +57,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
 };
 
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Partition
+
 #endif // SST_CORE_IMPL_PARTITONERS_SIMPLERPART_H

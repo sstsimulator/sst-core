@@ -15,10 +15,7 @@
 
 #include <iostream>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 static const long null_ptr_id = -1;
 
@@ -69,7 +66,4 @@ map_serializable(serializable_base*& s, serializer& ser, const char* name)
     }
 }
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt

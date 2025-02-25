@@ -35,8 +35,7 @@ REENABLE_WARNING
 
 using namespace SST;
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription
 {
@@ -175,7 +174,6 @@ PyObject*
 buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children);
 PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict, bool apply_to_children);
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_MODEL_PYTHON_PYMODEL_H

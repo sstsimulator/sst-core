@@ -12,8 +12,7 @@
 #ifndef SST_CORE_CORETEST_COMPONENTEVENT_H
 #define SST_CORE_CORETEST_COMPONENTEVENT_H
 
-namespace SST {
-namespace CoreTestComponent {
+namespace SST::CoreTestComponent {
 
 class coreTestComponentEvent : public SST::Event
 {
@@ -32,7 +31,6 @@ public:
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentEvent);
 };
 
-} // namespace CoreTestComponent
-} // namespace SST
+} // namespace SST::CoreTestComponent
 
 #endif // SST_CORE_CORETEST_COMPONENTEVENT_H

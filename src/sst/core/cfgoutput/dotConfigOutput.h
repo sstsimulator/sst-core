@@ -16,8 +16,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class DotConfigGraphOutput : public ConfigGraphOutput
 {
@@ -33,7 +32,6 @@ protected:
     void generateDot(const ConfigLink* link, const uint32_t dot_verbosity) const;
 };
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_DOT_CONFIG_OUTPUT_H

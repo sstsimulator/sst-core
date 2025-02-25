@@ -17,9 +17,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace CoreTestMemPoolTest {
-
+namespace SST::CoreTestMemPoolTest {
 
 // We'll have 4 different sized events
 
@@ -179,7 +177,6 @@ private:
     Event* createEvent();
 };
 
-} // namespace CoreTestMemPoolTest
-} // namespace SST
+} // namespace SST::CoreTestMemPoolTest
 
 #endif // SST_CORE_CORETEST_COMPONENT_H

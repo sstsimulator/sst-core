@@ -16,9 +16,7 @@
 #include "sst/core/output.h"
 #include "sst/core/serialization/serializable.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 namespace pvt {
 
 void
@@ -99,6 +97,4 @@ serializer::string(std::string& str)
     }
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization

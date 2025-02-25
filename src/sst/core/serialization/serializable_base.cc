@@ -20,9 +20,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 static need_delete_statics<serializable_factory> del_statics;
 serializable_factory::builder_map*               serializable_factory::builders_ = nullptr;
@@ -87,6 +85,4 @@ serializable_factory::get_serializable(uint32_t cls_id)
     return builder->build();
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization

@@ -13,10 +13,8 @@
 
 #include <inttypes.h>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
+
 uint32_t globalIPCTunnelCount = 0;
-}
-} // namespace Core
-} // namespace SST
+
+} // namespace SST::Core::Interprocess

@@ -17,9 +17,7 @@
 #include "sst/core/simulation_impl.h"
 
 namespace SST {
-
-namespace TV {
-namespace pvt {
+namespace TV::pvt {
 
 void
 pack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
@@ -40,8 +38,7 @@ unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
     s->serialize_order(ser);
 }
 
-} // namespace pvt
-} // namespace TV
+} // namespace TV::pvt
 
 TimeVortex::TimeVortex()
 {

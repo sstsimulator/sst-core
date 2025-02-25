@@ -16,9 +16,7 @@
 
 #include "pin.H"
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file
  * This class attaches to an existing tunnel for a child process using PinCRT
@@ -104,8 +102,6 @@ private:
     TunnelType* tunnel;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_TUNNEL_MMAP_CHILD_PIN3_H

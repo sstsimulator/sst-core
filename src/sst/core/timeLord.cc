@@ -182,8 +182,7 @@ TimeConverter::getPeriod() const
     return Simulation_impl::getTimeLord()->getTimeBase() * factor;
 }
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 template <>
 class ObjectMapFundamental<TimeConverter*> : public ObjectMap
@@ -272,7 +271,6 @@ serialize_impl<TimeConverter*>::operator()(
     }
 }
 
-} // namespace Serialization
-} // namespace Core
+} // namespace Core::Serialization
 
 } // namespace SST
