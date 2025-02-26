@@ -22,12 +22,6 @@ DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
 
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
-
 #include "sst/core/activity.h"
 #include "sst/core/checkpointAction.h"
 #include "sst/core/config.h"
@@ -45,6 +39,7 @@ REENABLE_WARNING
 #include "sst/core/rankInfo.h"
 #include "sst/core/realtime.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stringize.h"
 #include "sst/core/threadsafe.h"

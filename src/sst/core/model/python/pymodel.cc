@@ -36,11 +36,7 @@ DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
 
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
+#include "sst/core/sst_mpi.h"
 
 #include <string>
 

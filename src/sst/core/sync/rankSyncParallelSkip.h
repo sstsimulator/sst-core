@@ -12,18 +12,12 @@
 #ifndef SST_CORE_SYNC_RANKSYNCPARALLELSKIP_H
 #define SST_CORE_SYNC_RANKSYNCPARALLELSKIP_H
 
+#include "sst/core/sst_mpi.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/threadsafe.h"
-#include "sst/core/warnmacros.h"
 
 #include <map>
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
 
 namespace SST {
 
