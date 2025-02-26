@@ -300,7 +300,14 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 
                 // Need to see if I got any port_modules, if so, need
                 // to add them to my_info->portModules
-                if ( port_modules.size() > 0 ) { (*my_info->portModules)[name].swap(port_modules); }
+
+                if ( port_modules.size() > 0 ) { 
+                    if ( nullptr == my_info->portModules ) {
+                        // This memory is currently leaked as portModules is otherwise a pointer to ConfigComponent
+                        // ConfigComponent does not exist for anonymous subcomponents
+                        my_info->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
+                    }
+                    (*my_info->portModules)[name].swap(port_modules); }
             }
         }
     }
