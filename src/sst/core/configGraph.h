@@ -138,6 +138,8 @@ public:
 
     ConfigStatistic() : id(stat_null_id) {}
 
+    ConfigStatistic(const ConfigStatistic& o) : id(o.id), params(o.params), shared(o.shared), name(o.name) {}
+
     inline const StatisticId_t& getId() const { return id; }
 
     void addParameter(const std::string& key, const std::string& value, bool overwrite);
@@ -250,12 +252,12 @@ public:
     std::vector<LinkId_t> links;         /*!< List of links connected */
     Params                params;        /*!< Set of Parameters */
     uint8_t               statLoadLevel; /*!< Statistic load level for this component */
-    // std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
 
     std::map<std::string, std::vector<ConfigPortModule>> portModules;
-    std::map<std::string, StatisticId_t>                 enabledStatNames;
-    bool                                                 enabledAllStats;
-    ConfigStatistic                                      allStatConfig;
+    std::map<std::string, StatisticId_t>
+                    enabledStatNames; /*!< Map of explicitly enabled statistic names to unique IDs */
+    bool            enabledAllStats;  /*!< Whether all stats in this (sub)component have been enabled */
+    ConfigStatistic allStatConfig;    /*!< If all stats are enabled, the config information for the stats */
 
     std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
@@ -331,13 +333,12 @@ public:
         ser& rank.thread;
         ser& links;
         ser& params;
+        ser& statLoadLevel;
+        ser& portModules;
         ser& enabledStatNames;
         ser& enabledAllStats;
-        ser& statistics;
-        ser& portModules;
-        ser& enabledAllStats;
+        ser& statistics_;
         ser& allStatConfig;
-        ser& statLoadLevel;
         ser& subComponents;
         ser& coords;
         ser& nextSubID;
@@ -347,7 +348,8 @@ public:
     ImplementSerializable(SST::ConfigComponent)
 
 private:
-    std::map<StatisticId_t, ConfigStatistic> statistics;
+    std::map<StatisticId_t, ConfigStatistic>
+        statistics_; /* Map of explicitly enabled stat IDs to config info for each stat */
 
     ComponentId_t getNextSubComponentID();
 
@@ -417,24 +419,31 @@ public:
     void print(std::ostream& os) const
     {
         os << "Printing graph" << std::endl;
-        for ( ConfigComponentMap_t::const_iterator i = comps.begin(); i != comps.end(); ++i ) {
+        for ( ConfigComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
             (*i)->print(os);
         }
     }
 
     ConfigGraph() : nextComponentId(0)
     {
-        links.clear();
-        comps.clear();
+        links_.clear();
+        comps_.clear();
         // Init the statistic output settings
-        statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
-        statOutputs.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
+        stat_load_level_ = STATISTICSDEFAULTLOADLEVEL;
+        stat_outputs_.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
         // Output is only used for warnings or fatal that should go to stderr
         Output& o = Output::getDefaultObject();
         output.init(o.getPrefix(), o.getVerboseLevel(), o.getVerboseMask(), Output::STDERR);
     }
 
-    size_t getNumComponents() { return comps.data.size(); }
+    ~ConfigGraph()
+    {
+        for ( auto comp : comps_ ) {
+            delete comp;
+        }
+    }
+
+    size_t getNumComponents() { return comps_.data.size(); }
 
     size_t getNumComponentsInMPIRank(uint32_t rank);
 
@@ -464,11 +473,11 @@ public:
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
 
-    std::vector<ConfigStatOutput>& getStatOutputs() { return statOutputs; }
+    std::vector<ConfigStatOutput>& getStatOutputs() { return stat_outputs_; }
 
-    const ConfigStatOutput& getStatOutput(size_t index = 0) const { return statOutputs[index]; }
+    const ConfigStatOutput& getStatOutput(size_t index = 0) const { return stat_outputs_[index]; }
 
-    long getStatLoadLevel() const { return statLoadLevel; }
+    long getStatLoadLevel() const { return stat_load_level_; }
 
     /** Add a Link to a Component on a given Port */
     void addLink(
@@ -486,15 +495,15 @@ public:
 
     // Temporary until we have a better API
     /** Return the map of components */
-    ConfigComponentMap_t& getComponentMap() { return comps; }
+    ConfigComponentMap_t& getComponentMap() { return comps_; }
 
-    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return statGroups; }
+    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return stat_groups_; }
     ConfigStatGroup*                              getStatGroup(const std::string& name)
     {
-        auto found = statGroups.find(name);
-        if ( found == statGroups.end() ) {
+        auto found = stat_groups_.find(name);
+        if ( found == stat_groups_.end() ) {
             bool ok;
-            std::tie(found, ok) = statGroups.emplace(name, name);
+            std::tie(found, ok) = stat_groups_.emplace(name, name);
         }
         return &(found->second);
     }
@@ -508,7 +517,7 @@ public:
     ConfigStatistic* findStatistic(StatisticId_t) const;
 
     /** Return the map of links */
-    ConfigLinkMap_t& getLinkMap() { return links; }
+    ConfigLinkMap_t& getLinkMap() { return links_; }
 
     ConfigGraph* getSubGraph(uint32_t start_rank, uint32_t end_rank);
     ConfigGraph* getSubGraph(const std::set<uint32_t>& rank_set);
@@ -523,11 +532,11 @@ public:
     void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& links;
-        ser& comps;
-        ser& statOutputs;
-        ser& statLoadLevel;
-        ser& statGroups;
+        ser& links_;
+        ser& comps_;
+        ser& stat_outputs_;
+        ser& stat_load_level_;
+        ser& stat_groups_;
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             // Need to reintialize the ConfigGraph ptrs in the
             // ConfigComponents
@@ -543,25 +552,25 @@ private:
 
     ComponentId_t nextComponentId;
 
-    ConfigLinkMap_t                        links;       // SparseVectorMap
-    ConfigComponentMap_t                   comps;       // SparseVectorMap
-    ConfigComponentNameMap_t               compsByName; // std::map
-    std::map<std::string, ConfigStatGroup> statGroups;
+    ConfigLinkMap_t                        links_;         // SparseVectorMap
+    ConfigComponentMap_t                   comps_;         // SparseVectorMap
+    ConfigComponentNameMap_t               comps_by_name_; // std::map
+    std::map<std::string, ConfigStatGroup> stat_groups_;
 
-    std::map<std::string, LinkId_t> link_names;
+    std::map<std::string, LinkId_t> link_names_;
 
-    std::vector<ConfigStatOutput> statOutputs; // [0] is default
-    uint8_t                       statLoadLevel;
+    std::vector<ConfigStatOutput> stat_outputs_; // [0] is default
+    uint8_t                       stat_load_level_;
 
     ImplementSerializable(SST::ConfigGraph)
 
     // Filter class
     class GraphFilter
     {
-        ConfigGraph*              ograph;
-        ConfigGraph*              ngraph;
-        const std::set<uint32_t>& oset;
-        const std::set<uint32_t>& nset;
+        ConfigGraph*              ograph_;
+        ConfigGraph*              ngraph_;
+        const std::set<uint32_t>& oset_;
+        const std::set<uint32_t>& nset_;
 
     public:
         GraphFilter(
@@ -642,25 +651,25 @@ typedef SparseVectorMap<LinkId_t, PartitionLink>            PartitionLinkMap_t;
 class PartitionGraph
 {
 private:
-    PartitionComponentMap_t comps;
-    PartitionLinkMap_t      links;
+    PartitionComponentMap_t comps_;
+    PartitionLinkMap_t      links_;
 
 public:
     /** Print the configuration graph */
     void print(std::ostream& os) const
     {
         os << "Printing graph" << std::endl;
-        for ( PartitionComponentMap_t::const_iterator i = comps.begin(); i != comps.end(); ++i ) {
+        for ( PartitionComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
             (*i)->print(os, this);
         }
     }
 
-    PartitionComponentMap_t& getComponentMap() { return comps; }
-    PartitionLinkMap_t&      getLinkMap() { return links; }
+    PartitionComponentMap_t& getComponentMap() { return comps_; }
+    PartitionLinkMap_t&      getLinkMap() { return links_; }
 
-    const PartitionLink& getLink(LinkId_t id) const { return links[id]; }
+    const PartitionLink& getLink(LinkId_t id) const { return links_[id]; }
 
-    size_t getNumComponents() { return comps.size(); }
+    size_t getNumComponents() { return comps_.size(); }
 };
 
 } // namespace SST

@@ -490,7 +490,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
-    for ( ConfigComponentMap_t::const_iterator iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
+    for ( ConfigComponentMap_t::const_iterator iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
             compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
@@ -500,11 +500,11 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
-    for ( ConfigLinkMap_t::const_iterator iter = graph.links.begin(); iter != graph.links.end(); ++iter ) {
+    for ( ConfigLinkMap_t::const_iterator iter = graph.links_.begin(); iter != graph.links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
-        rank[0] = graph.comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
-        rank[1] = graph.comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
+        rank[0] = graph.comps_[COMPONENT_ID_MASK(clink->component[0])]->rank;
+        rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -636,7 +636,7 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
 
 
     // Now, build all the components
-    for ( auto iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
+    for ( auto iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
 
         if ( ccomp->rank == myRank ) {
@@ -655,7 +655,7 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     } // end for all vertex
     // Done with vertices, delete them;
     /*  TODO:  THREADING:  Clear only once everybody is done.
-    graph.comps.clear();
+    graph.comps_.clear();
     */
     wireUpFinished_ = true;
     // std::cout << "Done with performWireUp" << std::endl;
@@ -1735,7 +1735,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         ser.start_packing(buffer, size);
         ser& compinfo;
 
-        component_blob_offsets_.emplace_back(compinfo->id, offset);
+        component_blob_offsets_.emplace_back(compinfo->id_, offset);
         fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
         fs.write(buffer, size);
         offset += (sizeof(size) + size);

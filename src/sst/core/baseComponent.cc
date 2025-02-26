@@ -82,7 +82,7 @@ BaseComponent::~BaseComponent()
     my_info->component = nullptr;
     if ( my_info->parent_info ) {
         std::map<ComponentId_t, ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
-        size_t                                  deleted         = parent_subcomps.erase(my_info->id);
+        size_t                                  deleted         = parent_subcomps.erase(my_info->id_);
         if ( deleted != 1 ) {
             // Should never happen, but issue warning just in case
             sim_->getSimulationOutput().output(
@@ -288,6 +288,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name, port_modules);
             // If I got a link from my parent, I need to put it in my
             // link map
+
             if ( nullptr != tmp ) {
                 if ( nullptr == myLinks ) {
                     myLinks           = new LinkMap();
@@ -299,8 +300,11 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 
                 // Need to see if I got any port_modules, if so, need
                 // to add them to my_info->portModules
+
                 if ( port_modules.size() > 0 ) {
                     if ( nullptr == my_info->portModules ) {
+                        // This memory is currently leaked as portModules is otherwise a pointer to ConfigComponent
+                        // ConfigComponent does not exist for anonymous subcomponents
                         my_info->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
                     }
                     (*my_info->portModules)[name].swap(port_modules);
@@ -331,7 +335,9 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         }
 
         // Check for PortModules
-        if ( my_info->portModules != nullptr ) {
+        // portModules pointer may be invalid after wire up
+        // Only SelfLinks can be initialized after wire up and SelfLinks do not support PortModules
+        if ( !sim_->isWireUpFinished() && my_info->portModules != nullptr ) {
             auto it = my_info->portModules->find(name);
             if ( it != my_info->portModules->end() ) {
                 EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
@@ -683,13 +689,11 @@ BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statistic
 }
 
 void
-BaseComponent::configureCollectionMode(
-    Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name)
+BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name)
 {
     StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     Output&                   out                = Simulation_impl::getSimulationOutput();
-    std::string               statRateParam      = params.find<std::string>("rate", "0ns");
-    UnitAlgebra               collectionRate(statRateParam);
+    UnitAlgebra               collectionRate     = statistic->getCollectionRate();
 
     // make sure we have a valid collection rate
     // Check that the Collection Rate is a valid unit type that we can use
@@ -766,7 +770,7 @@ BaseComponent::createStatistic(
     cpp_params.insert(python_params);
     std::string type = cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
     auto*       stat = fxn(this, engine, type, name, subId, cpp_params);
-    configureCollectionMode(stat, cpp_params, name);
+    configureCollectionMode(stat, name);
     engine->registerStatisticWithEngine(stat);
     return stat;
 }
@@ -775,16 +779,16 @@ Statistics::StatisticBase*
 BaseComponent::createEnabledAllStatistic(
     Params& params, const std::string& name, const std::string& statSubId, StatCreateFunction fxn)
 {
-    auto iter = m_enabledAllStats.find(name);
-    if ( iter != m_enabledAllStats.end() ) {
+    auto iter = m_enabled_all_stats_.find(name);
+    if ( iter != m_enabled_all_stats_.end() ) {
         auto& submap  = iter->second;
         auto  subiter = submap.find(statSubId);
         if ( subiter != submap.end() ) { return subiter->second; }
     }
 
     // a matching statistic was not found
-    auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, true, std::move(fxn));
-    m_enabledAllStats[name][statSubId] = stat;
+    auto* stat = createStatistic(params, my_info->all_stat_config_->params, name, statSubId, true, std::move(fxn));
+    if ( !stat->isNullStatistic() ) { m_enabled_all_stats_[name][statSubId] = stat; }
     return stat;
 }
 
@@ -799,8 +803,8 @@ BaseComponent::createExplicitlyEnabledStatistic(
             name.c_str());
     }
 
-    auto piter = my_info->statConfigs->find(id);
-    if ( piter == my_info->statConfigs->end() ) {
+    auto piter = my_info->stat_configs_->find(id);
+    if ( piter == my_info->stat_configs_->end() ) {
         out.fatal(
             CALL_INFO, 1, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID", name.c_str());
     }
@@ -985,7 +989,7 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
     ser.mapper().map_hierarchy_start("my_info", my_info_dir);
     ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id), "id");
+    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
     ser.mapper().setNextObjectReadOnly();
     sst_map_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
     sst_map_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");

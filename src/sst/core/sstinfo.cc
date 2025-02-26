@@ -20,6 +20,8 @@
 #include "sst/core/env/envquery.h"
 #include "sst/core/model/element_python.h"
 #include "sst/core/sstpart.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statoutput.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -1059,6 +1061,9 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
     outputHumanReadable<SST::SSTElementPythonModule>(os, enableFullElementOutput);
+    outputHumanReadable<SST::Statistics::StatisticOutput>(os, enableFullElementOutput);
+    // template param is not part of output so only need to include one
+    outputHumanReadable<SST::Statistics::Statistic<uint32_t>>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

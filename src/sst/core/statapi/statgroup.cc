@@ -30,8 +30,7 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
     name(csg.name),
     output(const_cast<StatisticOutput*>(engine->getStatOutputs()[csg.outputID])),
     outputFreq(csg.outputFrequency),
-    outputId(csg.outputID),
-    components(csg.components)
+    outputId(csg.outputID)
 {
 
     if ( !output->acceptsGroups() ) {
@@ -40,9 +39,12 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
             output->getStatisticOutputName().c_str());
     }
 
-    // Need to get the stats that are in this group
-    for ( auto& kv : csg.statMap ) {
-        statNames.push_back(kv.first);
+    // Need to keep track of components & stats associated with this group if not default
+    if ( !isDefault ) {
+        components = csg.components;
+        for ( auto& kv : csg.statMap ) {
+            statNames.push_back(kv.first);
+        }
     }
 }
 
@@ -80,7 +82,9 @@ StatisticGroup::claimsStatistic(const StatisticBase* stat) const
 void
 StatisticGroup::addStatistic(StatisticBase* stat)
 {
-    stats.push_back(stat);
+    if ( !isDefault ) { // Structure unused (search is always true) if default group
+        stats.push_back(stat);
+    }
     stat->setGroup(this);
 }
 

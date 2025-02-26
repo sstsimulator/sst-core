@@ -41,22 +41,21 @@ public:
         "SST::Statistic<T>")
 
     UniqueCountStatistic(
-        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<T>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("UniqueCount");
-    }
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        Statistic<T>(comp, stat_name, stat_sub_id, stat_params)
+    {}
 
     ~UniqueCountStatistic() {};
 
     UniqueCountStatistic() : Statistic<T>() {}
 
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<T>::serialize_order(ser);
-        ser& uniqueSet;
-        // uniqueCountField will be reset by statistics output object
+        ser& unique_set_;
+        // unique_count_field_ will be reset by statistics output object
     }
 
 protected:
@@ -64,24 +63,25 @@ protected:
     Present a new value to the Statistic to be included in the unique set
         @param data New data item to be included in the unique set
     */
-    void addData_impl(T data) override { uniqueSet.insert(data); }
+    void addData_impl(T data) override { unique_set_.insert(data); }
 
 private:
-    void clearStatisticData() override { uniqueSet.clear(); }
+    void clearStatisticData() override { unique_set_.clear(); }
 
-    void registerOutputFields(StatisticFieldsOutput* statOutput) override
+    void registerOutputFields(StatisticFieldsOutput* stat_output) override
     {
-        uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
+        unique_count_field_ = stat_output->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* stat_output, bool UNUSED(end_of_sim_flag)) override
     {
-        statOutput->outputField(uniqueCountField, (uint64_t)uniqueSet.size());
+        stat_output->outputField(unique_count_field_, (uint64_t)unique_set_.size());
     }
 
 private:
-    std::set<T>                    uniqueSet;
-    StatisticOutput::fieldHandle_t uniqueCountField;
+    std::set<T>                     unique_set_;
+    StatisticOutput::fieldHandle_t  unique_count_field_;
+    inline static const std::string stat_type_ = "UniqueCount";
 };
 
 } // namespace Statistics

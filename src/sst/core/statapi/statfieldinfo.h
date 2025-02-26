@@ -35,12 +35,12 @@ public:
 
     virtual ~StatisticFieldTypeBase() {}
 
-    static StatisticFieldTypeBase* getField(fieldType_t fieldType);
+    static StatisticFieldTypeBase* getField(fieldType_t field_type);
 
     // This is not a quick lookup; intended for checkpoint/restart only
-    static fieldType_t getField(const char* fieldShortName);
+    static fieldType_t getField(const char* field_short_name);
 
-    static void checkRegisterConflict(const char* oldName, const char* newName);
+    static void checkRegisterConflict(const char* old_name, const char* new_name);
 
     static fieldType_t allocateFieldEnum();
 
@@ -49,7 +49,7 @@ protected:
 
 private:
     static std::map<fieldType_t, StatisticFieldTypeBase*>* fields_;
-    static fieldType_t                                     enumCounter_;
+    static fieldType_t                                     enum_counter_;
 };
 
 template <class T>
@@ -57,40 +57,40 @@ class StatisticFieldType : public StatisticFieldTypeBase
 {
 public:
     // constructor for initializing data
-    StatisticFieldType(const char* name, const char* shortName)
+    StatisticFieldType(const char* name, const char* short_name)
     {
-        checkRegisterConflict(fieldName_, name);
-        checkRegisterConflict(shortName_, shortName);
-        fieldName_ = name;
-        shortName_ = shortName;
-        if ( fieldEnum_ == 0 ) { fieldEnum_ = allocateFieldEnum(); }
+        checkRegisterConflict(field_name_, name);
+        checkRegisterConflict(short_name_, short_name);
+        field_name_ = name;
+        short_name_ = short_name;
+        if ( field_enum_ == 0 ) { field_enum_ = allocateFieldEnum(); }
 
-        fieldName_ = name;
-        shortName_ = shortName;
-        addField(fieldEnum_, this);
+        field_name_ = name;
+        short_name_ = short_name;
+        addField(field_enum_, this);
     }
 
-    static const char* getFieldName() { return fieldName_; }
+    static const char* getFieldName() { return field_name_; }
 
-    static const char* getShortName() { return shortName_; }
+    static const char* getShortName() { return short_name_; }
 
-    static fieldType_t id() { return fieldEnum_; }
+    static fieldType_t id() { return field_enum_; }
 
     const char* fieldName() const override { return getFieldName(); }
 
     const char* shortName() const override { return getShortName(); }
 
 private:
-    static Statistics::fieldType_t fieldEnum_;
-    static const char*             fieldName_;
-    static const char*             shortName_;
+    static Statistics::fieldType_t field_enum_;
+    static const char*             field_name_;
+    static const char*             short_name_;
 };
 template <class T>
-fieldType_t StatisticFieldType<T>::fieldEnum_ = 0;
+fieldType_t StatisticFieldType<T>::field_enum_ = 0;
 template <class T>
-const char* StatisticFieldType<T>::fieldName_ = nullptr;
+const char* StatisticFieldType<T>::field_name_ = nullptr;
 template <class T>
-const char* StatisticFieldType<T>::shortName_ = nullptr;
+const char* StatisticFieldType<T>::short_name_ = nullptr;
 
 class StatisticFieldInfo
 {
@@ -104,15 +104,15 @@ public:
      * @param fieldName - Name of the Field to be assigned.
      * @param fieldType - Data type of the field.
      */
-    StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType);
+    StatisticFieldInfo(const char* stat_name, const char* field_name, fieldType_t field_type);
 
     // Get Field Data
     /** Return the statistic name related to this field info */
-    inline const std::string& getStatName() const { return m_statName; }
+    inline const std::string& getStatName() const { return stat_name_; }
     /** Return the field name related to this field info */
-    inline const std::string& getFieldName() const { return m_fieldName; }
+    inline const std::string& getFieldName() const { return field_name_; }
     /** Return the field type related to this field info */
-    fieldType_t               getFieldType() const { return m_fieldType; }
+    fieldType_t               getFieldType() const { return field_type_; }
     /** Return the field type related to this field info */
     std::string               getFieldUniqueName() const;
 
@@ -120,17 +120,17 @@ public:
      * @param FieldInfo1 - a FieldInfo to compare against.
      * @return True if the Field Info structures are the same.
      */
-    bool operator==(StatisticFieldInfo& FieldInfo1);
+    bool operator==(StatisticFieldInfo& field_info_1);
 
     /** Set the field handle
      * @param handle - The assigned field handle for this FieldInfo
      */
-    void setFieldHandle(fieldHandle_t handle) { m_fieldHandle = handle; }
+    void setFieldHandle(fieldHandle_t handle) { field_handle_ = handle; }
 
     /** Get the field handle
      * @return The assigned field handle.
      */
-    fieldHandle_t getFieldHandle() { return m_fieldHandle; }
+    fieldHandle_t getFieldHandle() { return field_handle_; }
 
     static const char* getFieldTypeShortName(fieldType_t type)
     {
@@ -152,10 +152,10 @@ protected:
     StatisticFieldInfo() {} // For serialization only
 
 private:
-    std::string   m_statName;
-    std::string   m_fieldName;
-    fieldType_t   m_fieldType;
-    fieldHandle_t m_fieldHandle;
+    std::string   stat_name_;
+    std::string   field_name_;
+    fieldType_t   field_type_;
+    fieldHandle_t field_handle_;
 };
 
 } // namespace SST::Statistics
