@@ -12,8 +12,6 @@
 #ifndef SST_CORE_SST_MPI_H
 #define SST_CORE_SST_MPI_H
 
-#include "sst_config.h"
-
 #include "warnmacros.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
