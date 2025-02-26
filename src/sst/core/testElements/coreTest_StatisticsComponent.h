@@ -39,7 +39,8 @@ public:
         { "seed_z", "The seed to use for the random number generator", "5" },
         { "seed", "The seed to use for the random number generator.", "11" },
         { "rng", "The random number generator to use (Marsaglia or Mersenne), default is Mersenne", "Mersenne"},
-        { "count", "The number of random numbers to generate, default is 1000", "1000" }
+        { "count", "The number of random numbers to generate, default is 1000", "1000" },
+        { "dynamic_reg", "The cycle at which to dynamically register a statistic. 0 indicates none", "0"}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
@@ -47,8 +48,7 @@ public:
         { "stat2_U64", "Test Statistic 2 - Collecting U64 Data", "units", 2},
         { "stat3_I32", "Test Statistic 3 - Collecting I32 Data", "units", 3},
         { "stat4_I64", "Test Statistic 4 - Collecting I64 Data", "units", 4},
-        { "stat5_U32", "Test Statistic 5 - Collecting U32 Data", "units", 5},
-        { "stat6_U64", "Test Statistic 6 - Collecting U64 Data", "units", 6}
+        { "stat5_dyn", "Test Statistic 5 - Statistic registered during run loop", "units", 1}
     )
 
     // Optional since there is nothing to document
@@ -74,6 +74,7 @@ private:
     std::string rng_type;
     int         rng_max_count;
     int         rng_count;
+    int         dynamic_reg;
     Output&     output;
 
     // Statistics
@@ -81,6 +82,7 @@ private:
     Statistic<uint64_t>* stat2_U64;
     Statistic<int32_t>*  stat3_I32;
     Statistic<int64_t>*  stat4_I64;
+    Statistic<int64_t>*  stat5_dyn;
 };
 
 class StatisticsComponentFloat : public SST::Component

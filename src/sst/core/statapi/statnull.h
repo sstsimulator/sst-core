@@ -35,72 +35,78 @@ namespace SST::Statistics {
     @tparam T A template for holding the main data type of this statistic
 */
 template <class T, bool = std::is_fundamental_v<T>>
-struct NullStatisticBase
+class NullStatisticBase
 {};
 
 template <class T>
-struct NullStatisticBase<T, true> : public Statistic<T>
+class NullStatisticBase<T, true> : public Statistic<T>
 {
-
+public:
     NullStatisticBase(
         BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<T>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+        Statistic<T>(comp, statName, statSubId, statParams, true)
+    {}
 
     void addData_impl(T UNUSED(data)) override {}
 
     void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
+private:
+    inline static const std::string stat_type_ = "NULL";
 };
 
 template <class... Args>
-struct NullStatisticBase<std::tuple<Args...>, false> : public Statistic<std::tuple<Args...>>
+class NullStatisticBase<std::tuple<Args...>, false> : public Statistic<std::tuple<Args...>>
 {
-
+public:
     NullStatisticBase(
         BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+        Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams, true)
+    {}
 
     void addData_impl(Args... UNUSED(data)) override {}
 
     void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
+private:
+    inline static const std::string stat_type_ = "NULL";
 };
 
 template <class T>
-struct NullStatisticBase<T, false> : public Statistic<T>
+class NullStatisticBase<T, false> : public Statistic<T>
 {
-
+public:
     NullStatisticBase(
         BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<T>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+        Statistic<T>(comp, statName, statSubId, statParams, true)
+    {}
 
     void addData_impl(T&& UNUSED(data)) override {}
     void addData_impl(const T& UNUSED(data)) override {}
 
-    void addData_impl(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
-    void addData_impl(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
+private:
+    inline static const std::string stat_type_ = "NULL";
 };
 
 template <class T>
-struct NullStatistic : public NullStatisticBase<T>
+class NullStatistic : public NullStatisticBase<T>
 {
-
+public:
     SST_ELI_DECLARE_STATISTIC_TEMPLATE(
       NullStatistic,
       "sst",
       "NullStatistic",
       SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Null object it ignore all collections",
+      "Null object that ignores all collections",
       "SST::Statistic<T>")
 
     NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParam) :
@@ -138,8 +144,9 @@ template <class T>
 bool NullStatistic<T>::loaded_ = true;
 
 template <>
-struct NullStatistic<void> : public Statistic<void>
+class NullStatistic<void> : public Statistic<void>
 {
+public:
     SST_ELI_REGISTER_DERIVED(
     Statistic<void>,
     NullStatistic<void>,
@@ -152,11 +159,15 @@ struct NullStatistic<void> : public Statistic<void>
     SST_ELI_INTERFACE_INFO("Statistic<void>")
 
     NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<void>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+        Statistic<void>(comp, statName, statSubId, statParams, true)
+    {}
+
+    virtual std::string getELIName() const override { return "sst.NullStatistic"; }
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
+
+private:
+    inline static const std::string stat_type_ = "NULL";
 };
 
 } // namespace SST::Statistics

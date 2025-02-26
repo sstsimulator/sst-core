@@ -55,6 +55,9 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
         rng = new MersenneRNG(1447);
     }
 
+    dynamic_reg = params.find<int>("register_dynamic", 0);
+    stat5_dyn   = nullptr;
+
     // tell the simulator not to end without us
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
@@ -114,6 +117,10 @@ StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
     stat2_U64->addData(scaled_U64);
     stat3_I32->addData(scaled_I32);
     stat4_I64->addData(scaled_I64);
+    if ( stat5_dyn ) stat5_dyn->addData(scaled_I64);
+
+    // Check dynamic (during run time) registration
+    if ( rng_count == dynamic_reg ) { stat5_dyn = registerStatistic<int64_t>("stat5_dyn"); }
 
     // return false so we keep going or true to stop
     if ( rng_count >= rng_max_count ) {

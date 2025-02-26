@@ -19,30 +19,30 @@
 
 namespace SST::Statistics {
 
-std::map<fieldType_t, StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_      = nullptr;
-fieldType_t                                     StatisticFieldTypeBase::enumCounter_ = 0;
+std::map<fieldType_t, StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_       = nullptr;
+fieldType_t                                     StatisticFieldTypeBase::enum_counter_ = 0;
 
-StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
+StatisticFieldInfo::StatisticFieldInfo(const char* stat_name, const char* field_name, fieldType_t field_type)
 {
-    m_statName    = statName;
-    m_fieldName   = fieldName;
-    m_fieldType   = fieldType;
-    m_fieldHandle = -1;
+    stat_name_    = stat_name;
+    field_name_   = field_name;
+    field_type_   = field_type;
+    field_handle_ = -1;
 }
 
 bool
-StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1)
+StatisticFieldInfo::operator==(StatisticFieldInfo& field_info_1)
 {
-    return ((getFieldName() == FieldInfo1.getFieldName()) && (getFieldType() == FieldInfo1.getFieldType()));
+    return ((getFieldName() == field_info_1.getFieldName()) && (getFieldType() == field_info_1.getFieldType()));
 }
 
 std::string
 StatisticFieldInfo::getFieldUniqueName() const
 {
-    std::string strRtn;
-    strRtn = getFieldName() + ".";
-    strRtn += std::to_string(getFieldType());
-    return strRtn;
+    std::string str_rtn;
+    str_rtn = getFieldName() + ".";
+    str_rtn += std::to_string(getFieldType());
+    return str_rtn;
 }
 
 StatisticFieldTypeBase*
@@ -56,13 +56,13 @@ StatisticFieldTypeBase::getField(fieldType_t id)
 }
 
 fieldType_t
-StatisticFieldTypeBase::getField(const char* fieldShortName)
+StatisticFieldTypeBase::getField(const char* field_short_name)
 {
     for ( auto iter = fields_->begin(); iter != fields_->end(); iter++ ) {
-        if ( strcmp(iter->second->shortName(), fieldShortName) ) { return iter->first; }
+        if ( strcmp(iter->second->shortName(), field_short_name) ) { return iter->first; }
     }
     Simulation_impl::getSimulationOutput().fatal(
-        CALL_INFO, 1, "Look up field name: %s; No such field found", fieldShortName);
+        CALL_INFO, 1, "Look up field name: %s; No such field found", field_short_name);
     return 0;
 }
 
@@ -74,11 +74,11 @@ StatisticFieldTypeBase::addField(fieldType_t id, StatisticFieldTypeBase* base)
 }
 
 void
-StatisticFieldTypeBase::checkRegisterConflict(const char* oldName, const char* newName)
+StatisticFieldTypeBase::checkRegisterConflict(const char* old_name, const char* new_name)
 {
-    if ( oldName && ::strcmp(oldName, newName) ) {
+    if ( old_name && ::strcmp(old_name, new_name) ) {
         Simulation_impl::getSimulationOutput().fatal(
-            CALL_INFO, 1, "Conflicting names registered for field: %s != %s", oldName, newName);
+            CALL_INFO, 1, "Conflicting names registered for field: %s != %s", old_name, new_name);
     }
 }
 
@@ -86,8 +86,8 @@ fieldType_t
 StatisticFieldTypeBase::allocateFieldEnum()
 {
     // increment first, start counting from zero
-    enumCounter_++;
-    return enumCounter_;
+    enum_counter_++;
+    return enum_counter_;
 }
 
 static StatisticFieldType<int32_t>  int32_register("int32_t", "i32");

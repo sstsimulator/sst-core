@@ -48,6 +48,16 @@ public:
         "Track distribution of statistic across bins",
         "SST::Statistic<T>")
 
+    /*
+    SST_ELI_DOCUMENT_PARAMS(
+        {"minvalue", "The minimum data value to include in the historgram.", "0"},
+        {"binwidth", "The size of each histogram bin.", "5000"},
+        {"numbins",  "The number of histogram bins.", "100"},
+        {"dumpbinsonoutput", "Whether to output the data range of each bin as well as its value.", "true"},
+        {"includeoutofbounds", "Whether to keep track of data that falls below or above the histogram bins in separate
+    out-of-bounds bins.", "true"})
+    */
+
     HistogramStatistic(
         BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
         Statistic<BinDataType>(comp, statName, statSubId, statParams)
@@ -75,14 +85,13 @@ public:
         m_OOBMaxCount      = 0;
         m_itemsBinnedCount = 0;
         this->setCollectionCount(0);
-
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("Histogram");
     }
 
     ~HistogramStatistic() {}
 
     HistogramStatistic() : Statistic<BinDataType>() {} // For serialization ONLY
+
+    virtual const std::string& getStatTypeName() const { return stat_type_; }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -357,6 +366,8 @@ private:
     std::vector<StatisticOutput::fieldHandle_t> m_Fields;
     bool                                        m_dumpBinsOnOutput;
     bool                                        m_includeOutOfBounds;
+
+    inline static const std::string stat_type_ = "Histogram";
 };
 
 } // namespace SST::Statistics

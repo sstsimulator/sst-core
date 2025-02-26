@@ -141,7 +141,8 @@ StatGlobal0.addParams({
       "rng" : "marsaglia",
       "count" : "101",   # Change For number of 1ns clocks
       "seed_w" : "1440",
-      "seed_z" : "1046"
+      "seed_z" : "1046",
+      "register_dynamic" : 20,
 })
 
 StatGlobal1 = sst.Component("StatGlobal1", "coreTestElement.StatisticsComponent.int")
