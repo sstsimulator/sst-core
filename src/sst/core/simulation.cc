@@ -32,6 +32,7 @@
 #include "sst/core/realtime.h"
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/shared/sharedObject.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
 #include "sst/core/stringize.h"
@@ -41,13 +42,6 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/unitAlgebra.h"
-#include "sst/core/warnmacros.h"
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
 
 #include <cinttypes>
 #include <exception>
