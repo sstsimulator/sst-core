@@ -247,7 +247,8 @@ sst_core_sources = \
 	iouse.cc \
 	objectComms.h \
 	objectSerialization.h \
-	simulation_impl.h
+	simulation_impl.h \
+	sst_mpi.h
 
 bin_PROGRAMS = sst sst-info sst-config sst-register
 libexec_PROGRAMS = sstsim.x sstinfo.x
