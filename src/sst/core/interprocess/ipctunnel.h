@@ -39,7 +39,7 @@ template <typename ShareDataType, typename MsgType>
 class IPCTunnel
 {
 
-    typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
+    using CircBuff_t = SST::Core::Interprocess::CircularBuffer<MsgType>;
 
     struct InternalSharedData
     {

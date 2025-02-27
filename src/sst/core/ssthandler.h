@@ -1040,7 +1040,7 @@ template <typename returnT, typename argT, typename classT, typename dataT = voi
 class SSTHandler : public SSTHandlerBase<returnT, argT>
 {
 private:
-    typedef returnT (classT::*PtrMember)(argT, dataT);
+    using PtrMember = returnT (classT::*)(argT, dataT);
     classT*         object;
     const PtrMember member;
     dataT           data;
@@ -1071,7 +1071,7 @@ template <typename returnT, typename argT, typename classT>
 class SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
 {
 private:
-    typedef returnT (classT::*PtrMember)(argT);
+    using PtrMember = returnT (classT::*)(argT);
     const PtrMember member;
     classT*         object;
 
@@ -1096,7 +1096,7 @@ template <typename returnT, typename classT, typename dataT = void>
 class SSTHandlerNoArgs : public SSTHandlerBaseNoArgs<returnT>
 {
 private:
-    typedef returnT (classT::*PtrMember)(dataT);
+    using PtrMember = returnT (classT::*)(dataT);
     classT*         object;
     const PtrMember member;
     dataT           data;
@@ -1127,7 +1127,7 @@ template <typename returnT, typename classT>
 class SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
 {
 private:
-    typedef returnT (classT::*PtrMember)();
+    using PtrMember = returnT (classT::*)();
     const PtrMember member;
     classT*         object;
 

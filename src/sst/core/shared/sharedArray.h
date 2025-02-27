@@ -102,8 +102,8 @@ public:
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
 
-    typedef typename std::vector<T>::const_iterator         const_iterator;
-    typedef typename std::vector<T>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::vector<T>::const_iterator;
+    using const_reverse_iterator = typename std::vector<T>::const_reverse_iterator;
 
     /**
        Get the length of the array.
@@ -495,8 +495,8 @@ public:
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
 
-    typedef typename std::vector<bool>::const_iterator         const_iterator;
-    typedef typename std::vector<bool>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::vector<bool>::const_iterator;
+    using const_reverse_iterator = typename std::vector<bool>::const_reverse_iterator;
 
     /**
        Get the length of the array.

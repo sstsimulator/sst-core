@@ -26,7 +26,7 @@ namespace SST::Core::Serialization {
 template <class T, class S, class C>
 class serialize<std::priority_queue<T, S, C>>
 {
-    typedef std::priority_queue<T, S, C> Pqueue;
+    using Pqueue = std::priority_queue<T, S, C>;
 
 public:
     S& getContainer(std::priority_queue<T, S, C>& q)

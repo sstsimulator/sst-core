@@ -21,7 +21,7 @@ namespace SST::ELI {
 template <class Base, class... Args>
 struct Builder
 {
-    typedef Base* (*createFxn)(Args...);
+    using createFxn = Base* (*)(Args...);
 
     virtual Base* create(Args... ctorArgs) = 0;
 

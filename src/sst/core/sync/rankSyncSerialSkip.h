@@ -71,8 +71,8 @@ private:
         ImplementSerializable(comm_pair)
     };
 
-    typedef std::map<int, comm_pair>         comm_map_t;
-    typedef std::map<std::string, uintptr_t> link_map_t;
+    using comm_map_t = std::map<int, comm_pair>;
+    using link_map_t = std::map<std::string, uintptr_t>;
 
     // TimeConverter* period;
     comm_map_t comm_map;

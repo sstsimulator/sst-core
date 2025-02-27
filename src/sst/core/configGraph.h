@@ -38,8 +38,8 @@ class Config;
 class TimeLord;
 class ConfigGraph;
 
-typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
-typedef std::vector<LinkId_t>          LinkIdMap_t;
+using ComponentIdMap_t = SparseVectorMap<ComponentId_t>;
+using LinkIdMap_t      = std::vector<LinkId_t>;
 
 /** Represents the configuration of a generic Link */
 class ConfigLink : public SST::Core::Serialization::serializable
@@ -213,7 +213,7 @@ public:
     ImplementSerializable(SST::ConfigStatOutput)
 };
 
-typedef SparseVectorMap<LinkId_t, ConfigLink*> ConfigLinkMap_t;
+using ConfigLinkMap_t = SparseVectorMap<LinkId_t, ConfigLink*>;
 
 /**
    Class that represents a PortModule in ConfigGraph
@@ -396,16 +396,16 @@ private:
 };
 
 /** Map names to Links */
-// typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
-// typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
+// using ConfigLinkMap_t = std::map<std::string,ConfigLink>;
+// using ConfigLinkMap_t = SparseVectorMap<std::string,ConfigLink>;
 /** Map IDs to Components */
-typedef SparseVectorMap<ComponentId_t, ConfigComponent*> ConfigComponentMap_t;
+using ConfigComponentMap_t     = SparseVectorMap<ComponentId_t, ConfigComponent*>;
 /** Map names to Components */
-typedef std::map<std::string, ComponentId_t>             ConfigComponentNameMap_t;
+using ConfigComponentNameMap_t = std::map<std::string, ComponentId_t>;
 /** Map names to Parameter Sets: XML only */
-typedef std::map<std::string, Params*>                   ParamsMap_t;
+using ParamsMap_t              = std::map<std::string, Params*>;
 /** Map names to variable values:  XML only */
-typedef std::map<std::string, std::string>               VariableMap_t;
+using VariableMap_t            = std::map<std::string, std::string>;
 
 class PartitionGraph;
 
@@ -645,8 +645,8 @@ public:
     }
 };
 
-typedef SparseVectorMap<ComponentId_t, PartitionComponent*> PartitionComponentMap_t;
-typedef SparseVectorMap<LinkId_t, PartitionLink>            PartitionLinkMap_t;
+using PartitionComponentMap_t = SparseVectorMap<ComponentId_t, PartitionComponent*>;
+using PartitionLinkMap_t      = SparseVectorMap<LinkId_t, PartitionLink>;
 
 class PartitionGraph
 {

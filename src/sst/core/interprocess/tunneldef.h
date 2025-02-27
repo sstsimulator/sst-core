@@ -54,7 +54,7 @@ template <typename ShareDataType, typename MsgType>
 class TunnelDef
 {
 
-    typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
+    using CircBuff_t = SST::Core::Interprocess::CircularBuffer<MsgType>;
 
 public:
     /** Create a new tunnel

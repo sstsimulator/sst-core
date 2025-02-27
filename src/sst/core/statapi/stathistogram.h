@@ -329,10 +329,10 @@ private:
 
 private:
     // Bin Map Definition
-    typedef std::map<BinDataType, CountType> HistoMap_t;
+    using HistoMap_t = std::map<BinDataType, CountType>;
 
     // Iterator over the histogram bins
-    typedef typename HistoMap_t::iterator HistoMapItr_t;
+    using HistoMapItr_t = typename HistoMap_t::iterator;
 
     // The minimum value in the Histogram
     BinDataType m_minValue;

@@ -28,7 +28,7 @@
 
 namespace SST {
 
-typedef decimal_fixedpoint<3, 3> sst_big_num;
+using sst_big_num = decimal_fixedpoint<3, 3>;
 
 /**
  * Helper class internal to UnitAlgebra.
@@ -38,7 +38,7 @@ typedef decimal_fixedpoint<3, 3> sst_big_num;
 class Units
 {
 
-    typedef uint8_t unit_id_t;
+    using unit_id_t = uint8_t;
 
 private:
     friend class UnitAlgebra;

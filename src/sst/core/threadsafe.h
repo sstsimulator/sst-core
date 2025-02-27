@@ -114,7 +114,7 @@ public:
 };
 
 #if 0
-typedef std::mutex Spinlock;
+using Spinlock = std::mutex;
 #else
 class Spinlock
 {

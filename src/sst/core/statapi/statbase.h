@@ -52,7 +52,7 @@ public:
      * STAT_MODE_PERIODIC - generating statistic output on a periodic time basis
      * STAT_MODE_DUMP_AT_END - generating statistic output only at end of simulation
      */
-    typedef enum { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END } StatMode_t;
+    enum StatMode_t { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END };
 
     // Enable/Disable of Statistic
     /** Enable Statistic for collections */
