@@ -131,8 +131,8 @@ public:
 
     /******** End Public API from Simulation ********/
 
-    typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;   /*!< Map of times to clocks */
-    typedef std::map<std::pair<SimTime_t, int>, OneShot*> oneShotMap_t; /*!< Map of times to OneShots */
+    using clockMap_t   = std::map<std::pair<SimTime_t, int>, Clock*>;   /*!< Map of times to clocks */
+    using oneShotMap_t = std::map<std::pair<SimTime_t, int>, OneShot*>; /*!< Map of times to OneShots */
 
     ~Simulation_impl();
 
@@ -403,11 +403,11 @@ public:
     void endSimulation();
     void endSimulation(SimTime_t end);
 
-    typedef enum {
+    enum ShutdownMode_t {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
         SHUTDOWN_SIGNAL,    /* SIGINT or SIGTERM received */
         SHUTDOWN_EMERGENCY, /* emergencyShutdown() called */
-    } ShutdownMode_t;
+    };
 
     friend class SyncManager;
 

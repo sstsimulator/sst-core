@@ -71,7 +71,6 @@ public:
         BaseComponent* comp, const std::string& type, const std::string& statName, const std::string& statSubId,
         Params& params)
     {
-
         return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
@@ -127,20 +126,18 @@ private:
     void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
     void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
 
-    bool           handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
-    bool           handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
-    void           handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
-    void           handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
-    StatisticBase* isStatisticInCompStatMap(
-        const std::string& compName, const ComponentId_t& compId, const std::string& statName,
-        const std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
+    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
+    bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
+    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
+    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
+
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
     void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
-    typedef std::vector<StatisticBase*>           StatArray_t;   /*!< Array of Statistics */
-    typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;     /*!< Map of simtimes to Statistic Arrays */
-    typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t; /*!< Map of ComponentId's to StatInfo Arrays */
+    using StatArray_t   = std::vector<StatisticBase*>;           /*!< Array of Statistics */
+    using StatMap_t     = std::map<SimTime_t, StatArray_t*>;     /*!< Map of simtimes to Statistic Arrays */
+    using CompStatMap_t = std::map<ComponentId_t, StatArray_t*>; /*!< Map of ComponentId's to StatInfo Arrays */
 
     StatArray_t   m_EventStatisticArray;  /*!< Array of Event Based Statistics */
     StatMap_t     m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */

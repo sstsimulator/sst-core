@@ -19,7 +19,7 @@ namespace SST::Core::Serialization {
 class statics
 {
 public:
-    typedef void (*clear_fxn)(void);
+    using clear_fxn = void (*)(void);
 
     static void register_finish(clear_fxn fxn);
 

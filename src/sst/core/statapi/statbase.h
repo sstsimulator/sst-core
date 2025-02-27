@@ -19,6 +19,7 @@
 #include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statfieldinfo.h"
+#include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
 #include <string>
@@ -45,15 +46,20 @@ class StatisticGroup;
 class StatisticBase
 {
 public:
-    /** Statistic collection mode */
-    typedef enum { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END } StatMode_t;
+    /** Statistic collection mode
+     * STAT_MODE_UNDEFINED - unknown mode
+     * STAT_MODE_COUNT - generating statistic output when the statistic has been added to a certain number of times
+     * STAT_MODE_PERIODIC - generating statistic output on a periodic time basis
+     * STAT_MODE_DUMP_AT_END - generating statistic output only at end of simulation
+     */
+    enum StatMode_t { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END };
 
     // Enable/Disable of Statistic
     /** Enable Statistic for collections */
-    void enable() { m_statEnabled = true; }
+    void enable() { info_->stat_enabled_ = true; }
 
     /** Disable Statistic for collections */
-    void disable() { m_statEnabled = false; }
+    void disable() { info_->stat_enabled_ = false; }
 
     // Handling of Collection Counts and Data
     /** Inform the Statistic to clear its data */
@@ -66,16 +72,16 @@ public:
     virtual void incrementCollectionCount(uint64_t increment);
 
     /** Set the current collection count to a defined value */
-    virtual void setCollectionCount(uint64_t newCount);
+    virtual void setCollectionCount(uint64_t new_count);
 
     /** Set the collection count limit to a defined value */
-    virtual void setCollectionCountLimit(uint64_t newLimit);
+    virtual void setCollectionCountLimit(uint64_t new_limit);
 
     // Control Statistic Operation Flags
     /** Set the Reset Count On Output flag.
      *  If Set, the collection count will be reset when statistic is output.
      */
-    void setFlagResetCountOnOutput(bool flag) { m_resetCountOnOutput = flag; }
+    void setFlagResetCountOnOutput(bool flag) { info_->reset_count_on_output_ = flag; }
 
     static const std::vector<ElementInfoParam>& ELI_getParams();
 
@@ -83,81 +89,98 @@ public:
      *  If Set, the data in the statistic will be cleared by calling
      *  clearStatisticData().
      */
-    void setFlagClearDataOnOutput(bool flag) { m_clearDataOnOutput = flag; }
+    void setFlagClearDataOnOutput(bool flag) { info_->clear_data_on_output_ = flag; }
 
     /** Set the Output At End Of Sim flag.
      *  If Set, the statistic will perform an output at the end of simulation.
      */
-    void setFlagOutputAtEndOfSim(bool flag) { m_outputAtEndOfSim = flag; }
+    void setFlagOutputAtEndOfSim(bool flag) { info_->output_at_end_of_sim_ = flag; }
 
     // Get Data & Information on Statistic
     /** Return the Component Name */
     const std::string& getCompName() const;
 
     /** Return the Statistic Name */
-    inline const std::string& getStatName() const { return m_statName; }
+    inline const std::string& getStatName() const { return info_->stat_name_; }
 
     /** Return the Statistic SubId */
-    inline const std::string& getStatSubId() const { return m_statSubId; }
+    inline const std::string& getStatSubId() const { return info_->stat_sub_id_; }
 
-    /** Return the full Statistic name of Component.StatName.SubId */
-    inline const std::string& getFullStatName() const { return m_statFullName; } // Return compName.statName.subId
+    /** Return the full Statistic name of component.stat_name.sub_id */
+    inline const std::string& getFullStatName() const
+    {
+        return info_->stat_full_name_;
+    } // Return comp_name.stat_name.sub_id
+
+    /** Return the ELI type of the statistic
+     *  The ELI registration macro creates this function automatically for child classes.
+     */
+    virtual std::string getELIName() const = 0;
 
     /** Return the Statistic type name */
-    inline const std::string& getStatTypeName() const { return m_statTypeName; }
+    virtual const std::string& getStatTypeName() const { return info_->stat_type_name_; }
 
     /** Return the Statistic data type */
-    inline const StatisticFieldInfo::fieldType_t& getStatDataType() const { return m_statDataType; }
+    inline const StatisticFieldInfo::fieldType_t& getStatDataType() const { return stat_data_type_; }
 
     /** Return the Statistic data type */
     inline const char* getStatDataTypeShortName() const
     {
-        return StatisticFieldInfo::getFieldTypeShortName(m_statDataType);
+        return StatisticFieldInfo::getFieldTypeShortName(stat_data_type_);
     }
 
     /** Return the Statistic data type */
     inline const char* getStatDataTypeFullName() const
     {
-        return StatisticFieldInfo::getFieldTypeFullName(m_statDataType);
+        return StatisticFieldInfo::getFieldTypeFullName(stat_data_type_);
     }
 
     /** Return a pointer to the parent Component */
-    BaseComponent* getComponent() const { return m_component; }
+    BaseComponent* getComponent() const { return component_; }
 
     /** Return the enable status of the Statistic */
-    bool isEnabled() const { return m_statEnabled; }
+    bool isEnabled() const { return info_->stat_enabled_; }
 
     /** Return the enable status of the Statistic's ability to output data */
-    bool isOutputEnabled() const { return m_outputEnabled; }
+    bool isOutputEnabled() const { return info_->output_enabled_; }
+
+    /** Return the rate at which the statistic should be output */
+    UnitAlgebra& getCollectionRate() const { return info_->collection_rate_; }
+
+    /** Return the time at which the statistic should be enabled */
+    UnitAlgebra& getStartAtTime() const { return info_->start_at_time_; }
+
+    /** Return the time at which the statistic should be disabled */
+    UnitAlgebra& getStopAtTime() const { return info_->stop_at_time_; }
 
     /** Return the collection count limit */
-    uint64_t getCollectionCountLimit() const { return m_collectionCountLimit; }
+    uint64_t getCollectionCountLimit() const { return info_->collection_count_limit_; }
 
     /** Return the current collection count */
-    uint64_t getCollectionCount() const { return m_currentCollectionCount; }
+    uint64_t getCollectionCount() const { return info_->current_collection_count_; }
 
     /** Return the ResetCountOnOutput flag value */
-    bool getFlagResetCountOnOutput() const { return m_resetCountOnOutput; }
+    bool getFlagResetCountOnOutput() const { return info_->reset_count_on_output_; }
 
     /** Return the ClearDataOnOutput flag value */
-    bool getFlagClearDataOnOutput() const { return m_clearDataOnOutput; }
+    bool getFlagClearDataOnOutput() const { return info_->clear_data_on_output_; }
 
     /** Return the OutputAtEndOfSim flag value */
-    bool getFlagOutputAtEndOfSim() const { return m_outputAtEndOfSim; }
+    bool getFlagOutputAtEndOfSim() const { return info_->output_at_end_of_sim_; }
 
     /** Return the collection mode that is registered */
-    StatMode_t getRegisteredCollectionMode() const { return m_registeredCollectionMode; }
+    StatMode_t getRegisteredCollectionMode() const { return info_->registered_collection_mode_; }
 
     // Delay Methods (Uses OneShot to disable Statistic or Collection)
     /** Delay the statistic from outputting data for a specified delay time
-     * @param delayTime - Value in UnitAlgebra format for delay (i.e. 10ns).
+     * @param delay_time - Value in UnitAlgebra format for delay (i.e. 10ns).
      */
-    void delayOutput(const char* delayTime);
+    void delayOutput(const char* delay_time);
 
     /** Delay the statistic from collecting data for a specified delay time.
      * @param delayTime - Value in UnitAlgebra format for delay (i.e. 10ns).
      */
-    void delayCollection(const char* delayTime);
+    void delayCollection(const char* delay_time);
 
     // Status of Statistic
     /** Indicate that the Statistic is Ready to be used */
@@ -165,12 +188,6 @@ public:
 
     /** Indicate if the Statistic is a NullStatistic */
     virtual bool isNullStatistic() const { return false; }
-
-    /** Return the Statistic Parameters
-     * NOTE: This must be public so that it is accessible to the serialize_impl
-     * class for statistics.
-     */
-    Params& getParams() { return m_statParams; }
 
     /** Serialization */
     virtual void serialize_order(SST::Core::Serialization::serializer& ser);
@@ -183,48 +200,51 @@ protected:
 
     /** Construct a StatisticBase
      * @param comp - Pointer to the parent constructor.
-     * @param statName - Name of the statistic to be registered.  This name must
+     * @param stat_name - Name of the statistic to be registered.  This name must
      * match the name in the ElementInfoStatistic.
-     * @param statSubId - Additional name of the statistic
-     * @param statParams - The parameters for this statistic
+     * @param stat_sub_id - Additional name of the statistic
+     * @param stat_params - The parameters for this statistic
+     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
     // Constructors:
-    StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams);
+    StatisticBase(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
+        bool null_stat);
 
     // Destructor
     virtual ~StatisticBase() {}
 
 protected:
     /** Set the Statistic Data Type */
-    void setStatisticDataType(const StatisticFieldInfo::fieldType_t dataType) { m_statDataType = dataType; }
+    void setStatisticDataType(const StatisticFieldInfo::fieldType_t data_type) { stat_data_type_ = data_type; }
 
-    /** Set an optional Statistic Type Name */
-    void setStatisticTypeName(const char* typeName) { m_statTypeName = typeName; }
+    /** Set an optional Statistic Type Name (for output) */
+    void setStatisticTypeName(const char* type_name) { info_->stat_type_name_ = type_name; }
 
 private:
     friend class SST::BaseComponent;
 
     /** Set the Registered Collection Mode */
-    void setRegisteredCollectionMode(StatMode_t mode) { m_registeredCollectionMode = mode; }
+    void setRegisteredCollectionMode(StatMode_t mode) { info_->registered_collection_mode_ = mode; }
 
     /** Construct a full name of the statistic */
-    static std::string buildStatisticFullName(const char* compName, const char* statName, const char* statSubId);
+    static std::string buildStatisticFullName(const char* comp_name, const char* stat_name, const char* stat_sub_id);
     static std::string
-    buildStatisticFullName(const std::string& compName, const std::string& statName, const std::string& statSubId);
+    buildStatisticFullName(const std::string& comp_name, const std::string& stat_name, const std::string& stat_sub_id);
 
     // Required Virtual Methods:
     /** Called by the system to tell the Statistic to register its output fields.
      * by calling statOutput->registerField(...)
-     * @param statOutput - Pointer to the statistic output
+     * @param stat_output - Pointer to the statistic output
      */
-    virtual void registerOutputFields(StatisticFieldsOutput* statOutput) = 0;
+    virtual void registerOutputFields(StatisticFieldsOutput* stat_output) = 0;
 
     /** Called by the system to tell the Statistic to send its data to the
      * StatisticOutput to be output.
-     * @param statOutput - Pointer to the statistic output
-     * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     * @param stat_output - Pointer to the statistic output
+     * @param end_of_sim_flag - Indicates that the output is occurring at the end of simulation.
      */
-    virtual void outputStatisticFields(StatisticFieldsOutput* statOutput, bool EndOfSimFlag) = 0;
+    virtual void outputStatisticFields(StatisticFieldsOutput* stat_output, bool end_of_sim_flag) = 0;
 
     /** Indicate if the Statistic Mode is supported.
      * This allows Statistics to support STAT_MODE_COUNT and STAT_MODE_PERIODIC modes.
@@ -234,51 +254,66 @@ private:
     virtual bool isStatModeSupported(StatMode_t UNUSED(mode)) const { return true; } // Default is to accept all modes
 
     /** Verify that the statistic names match */
-    bool operator==(StatisticBase& checkStat);
+    bool operator==(StatisticBase& check_stat);
 
-    // Support Routines
-    void initializeStatName(const char* compName, const char* statName, const char* statSubId);
-    void initializeStatName(const std::string& compName, const std::string& statName, const std::string& statSubId);
-
-    void initializeProperties();
     void checkEventForOutput();
 
     // OneShot Callbacks:
     void delayOutputExpiredHandler();     // Enable Output in handler
     void delayCollectionExpiredHandler(); // Enable Collection in Handler
 
-    const StatisticGroup* getGroup() const { return m_group; }
-    void                  setGroup(const StatisticGroup* group) { m_group = group; }
+    const StatisticGroup* getGroup() const { return info_->group_; }
+    void                  setGroup(const StatisticGroup* group) { info_->group_ = group; }
 
 protected:
     StatisticBase(); // For serialization only
 
 private:
-    BaseComponent*                  m_component;
-    std::string                     m_statName;
-    std::string                     m_statSubId;
-    std::string                     m_statFullName;
-    std::string                     m_statTypeName;
-    Params                          m_statParams;
-    StatMode_t                      m_registeredCollectionMode;
-    uint64_t                        m_currentCollectionCount;
-    uint64_t                        m_outputCollectionCount;
-    uint64_t                        m_collectionCountLimit;
-    StatisticFieldInfo::fieldType_t m_statDataType;
+    /* Class to hold information about a statistic
+     * This limits the size of StatisticBase for NullStatistic
+     */
+    class StatisticInfo
+    {
+    public:
+        StatisticInfo();
 
-    bool m_statEnabled;
-    bool m_outputEnabled;
-    bool m_resetCountOnOutput;
-    bool m_clearDataOnOutput;
-    bool m_outputAtEndOfSim;
+        void serialize_order(SST::Core::Serialization::serializer& ser);
 
-    bool                  m_outputDelayed;
-    bool                  m_collectionDelayed;
-    bool                  m_savedStatEnabled;
-    bool                  m_savedOutputEnabled;
-    const StatisticGroup* m_group;
+        std::string stat_name_;      // Name of stat, matches ELI
+        std::string stat_sub_id_;    // Sub ID for this instance of the stat (default="")
+        std::string stat_type_name_; // DEPRECATED - override 'getStatTypeName()' instead
+
+        std::string stat_full_name_; // Fully-qualified name of the stat
+        bool        stat_enabled_;   // Whether stat is currently collecting data
+        StatMode_t  registered_collection_mode_;
+        uint64_t    current_collection_count_;
+        uint64_t    output_collection_count_;
+        uint64_t    collection_count_limit_;
+
+        const StatisticGroup* group_; // Group that stat belongs to
+
+        SST::UnitAlgebra start_at_time_;
+        SST::UnitAlgebra stop_at_time_;
+        SST::UnitAlgebra collection_rate_;
+
+        bool output_enabled_;
+        bool reset_count_on_output_;
+        bool clear_data_on_output_;
+        bool output_at_end_of_sim_;
+        bool output_delayed_;
+        bool collection_delayed_;
+        bool saved_stat_enabled_;
+        bool saved_output_enabled_;
+    };
+
+    BaseComponent*                  component_;
+    StatisticFieldInfo::fieldType_t stat_data_type_;
+
+    StatisticInfo* info_;
+
+    // Instance of StatisticInfo for null stats
+    static StatisticInfo null_info_;
 };
-
 
 /**
  \class StatisticCollector
@@ -354,6 +389,13 @@ public:
     ELI::ProvidesParams)
     SST_ELI_DECLARE_CTOR(BaseComponent*, const std::string&, const std::string&, SST::Params&)
 
+    SST_ELI_DOCUMENT_PARAMS(
+        {"rate",    "Frequency at which to output statistic. Must include units. 0ns = output at end of simulation only.", "0ns" },
+        {"startat", "Time at which to enable data collection in this statistic. Must include units. 0ns = always enabled.", "0ns"},
+        {"stopat",  "Time at which to disable data collection in this statistic. 0ns = always enabled.", "0ns"},
+        {"resetOnOutput", "Whether to reset the statistic's values after each output.", "False"}
+    )
+
     using Datum = T;
     using StatisticCollector<T>::addData_impl;
     using StatisticCollector<T>::addData_impl_Ntimes;
@@ -396,14 +438,17 @@ protected:
     friend class SST::BaseComponent;
     /** Construct a Statistic
      * @param comp - Pointer to the parent constructor.
-     * @param statName - Name of the statistic to be registered.  This name must
+     * @param stat_name - Name of the statistic to be registered.  This name must
      * match the name in the ElementInfoStatistic.
-     * @param statSubId - Additional name of the statistic
-     * @param statParams - The parameters for this statistic
+     * @param stat_sub_id - Additional name of the statistic
+     * @param stat_params - The parameters for this statistic
+     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
 
-    Statistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        StatisticBase(comp, statName, statSubId, statParams)
+    Statistic(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
+        bool null_stat = false) :
+        StatisticBase(comp, stat_name, stat_sub_id, stat_params, null_stat)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
     }
@@ -428,23 +473,26 @@ public:
     ELI::ProvidesParams)
     SST_ELI_DECLARE_CTOR(BaseComponent*, const std::string&, const std::string&, SST::Params&)
 
-    void registerOutputFields(StatisticFieldsOutput* statOutput) override;
+    void registerOutputFields(StatisticFieldsOutput* stat_output) override;
 
-    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool EndOfSimFlag) override;
+    void outputStatisticFields(StatisticFieldsOutput* stat_output, bool end_of_sim_flag) override;
 
 protected:
     friend class SST::Factory;
     friend class SST::BaseComponent;
     /** Construct a Statistic
      * @param comp - Pointer to the parent constructor.
-     * @param statName - Name of the statistic to be registered.  This name must
+     * @param stat_name - Name of the statistic to be registered.  This name must
      * match the name in the ElementInfoStatistic.
-     * @param statSubId - Additional name of the statistic
-     * @param statParams - The parameters for this statistic
+     * @param stat_sub_id - Additional name of the statistic
+     * @param stat_params - The parameters for this statistic
+     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
 
-    Statistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        StatisticBase(comp, statName, statSubId, statParams)
+    Statistic(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
+        bool null_stat = false) :
+        StatisticBase(comp, stat_name, stat_sub_id, stat_params, null_stat)
     {}
 
     virtual ~Statistic() {}
@@ -486,7 +534,8 @@ private:
 
 #define SST_ELI_DECLARE_STATISTIC_TEMPLATE(cls, lib, name, version, desc, interface) \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)               \
-    SST_ELI_INTERFACE_INFO(interface)
+    SST_ELI_INTERFACE_INFO(interface)                                                \
+    virtual std::string getELIName() const override { return std::string(lib) + "." + name; }
 
 #define SST_ELI_REGISTER_CUSTOM_STATISTIC(cls, lib, name, version, desc)                                     \
     SST_ELI_REGISTER_DERIVED(SST::Statistics::CustomStatistic,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
@@ -612,31 +661,33 @@ class serialize_impl<Statistics::Statistic<T>*>
         case serializer::SIZER:
         case serializer::PACK:
         {
-            Params      params   = s->getParams();
-            std::string stattype = s->getStatTypeName();
-            if ( stattype == "NULL" )
-                stattype = "sst.NullStatistic";
-            else
-                stattype = params.find<std::string>("type", "sst.AccumulatorStatistic");
-            BaseComponent* comp = s->getComponent();
-            ser&           stattype;
+            std::string    stat_eli_type = s->getELIName();
+            std::string    stat_name     = s->getStatName();
+            std::string    stat_id       = s->getStatSubId();
+            BaseComponent* comp          = s->getComponent();
+            ser&           stat_eli_type;
             ser&           comp;
-            ser&           params;
+            ser&           stat_name;
+            ser&           stat_id;
             s->serialize_order(ser);
             break;
         }
         case serializer::UNPACK:
         {
-            Params         params;
-            std::string    stattype;
+            std::string    stat_eli_type;
             BaseComponent* comp;
-            ser&           stattype;
+            std::string    stat_name;
+            std::string    stat_id;
+            ser&           stat_eli_type;
             ser&           comp;
-            ser&           params;
+            ser&           stat_name;
+            ser&           stat_id;
+            Params         params;
+            params.insert("type", stat_eli_type);
             s = Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
-                stattype, params, comp, "", "", params);
+                stat_eli_type, params, comp, stat_name, stat_id, params);
             s->serialize_order(ser);
-            if ( stattype != "sst.NullStatistic" ) { SST::Stat::pvt::registerStatWithEngineOnRestart(s); }
+            if ( stat_eli_type != "sst.NullStatistic" ) { SST::Stat::pvt::registerStatWithEngineOnRestart(s); }
             break;
         }
         case serializer::MAP:

@@ -150,8 +150,8 @@ public:
         }
     }
 
-    typedef typename std::vector<classT>::iterator       iterator;
-    typedef typename std::vector<classT>::const_iterator const_iterator;
+    using iterator       = typename std::vector<classT>::iterator;
+    using const_iterator = typename std::vector<classT>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -407,8 +407,8 @@ public:
         }
     }
 
-    typedef typename std::vector<classT*>::iterator       iterator;
-    typedef typename std::vector<classT*>::const_iterator const_iterator;
+    using iterator       = typename std::vector<classT*>::iterator;
+    using const_iterator = typename std::vector<classT*>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -682,8 +682,8 @@ public:
         }
     }
 
-    typedef typename std::vector<keyT>::iterator       iterator;
-    typedef typename std::vector<keyT>::const_iterator const_iterator;
+    using iterator       = typename std::vector<keyT>::iterator;
+    using const_iterator = typename std::vector<keyT>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must

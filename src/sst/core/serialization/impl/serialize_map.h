@@ -32,12 +32,12 @@ namespace SST::Core::Serialization {
 template <class Key, class Value>
 class serialize_impl<std::map<Key, Value>>
 {
-    typedef std::map<Key, Value> Map;
+    using Map = std::map<Key, Value>;
 
 public:
     void operator()(Map& m, serializer& ser)
     {
-        typedef typename std::map<Key, Value>::iterator iterator;
+        using iterator = typename std::map<Key, Value>::iterator;
         switch ( ser.mode() ) {
 
         case serializer::SIZER:
@@ -91,12 +91,12 @@ public:
 template <class Key, class Value>
 class serialize<std::unordered_map<Key, Value>>
 {
-    typedef std::unordered_map<Key, Value> Map;
+    using Map = std::unordered_map<Key, Value>;
 
 public:
     void operator()(Map& m, serializer& ser)
     {
-        typedef typename std::unordered_map<Key, Value>::iterator iterator;
+        using iterator = typename std::unordered_map<Key, Value>::iterator;
         switch ( ser.mode() ) {
 
         case serializer::SIZER:

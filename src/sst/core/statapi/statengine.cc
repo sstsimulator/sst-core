@@ -108,7 +108,6 @@ bool
 StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() ) return true;
-
     auto* comp = stat->getComponent();
     if ( comp == nullptr ) {
         m_output.verbose(
@@ -121,7 +120,7 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     if ( group.isDefault ) {
         // If the mode is Periodic Based, the add the statistic to the
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
-        UnitAlgebra collectionRate = stat->m_statParams.find<SST::UnitAlgebra>("rate", "0ns");
+        UnitAlgebra collectionRate = stat->getCollectionRate();
         bool        success        = true;
         switch ( stat->getRegisteredCollectionMode() ) {
         case StatisticBase::STAT_MODE_PERIODIC:
@@ -152,6 +151,7 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     }
 
     // Make sure that the wireup has not been completed
+    // If it has, stat output must support dynamic registration
     if ( true == Simulation_impl::getSimulation()->isWireUpFinished() ) {
         if ( !group.output->supportsDynamicRegistration() ) {
             m_output.fatal(
@@ -161,13 +161,6 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
                 "Statistics on output %s must be registered on Component creation. exiting...\n",
                 stat->getFullStatName().c_str(), group.output->getStatisticOutputName().c_str(),
                 group.output->getStatisticOutputName().c_str());
-        }
-        else if ( stat->getRegisteredCollectionMode() != StatisticBase::STAT_MODE_DUMP_AT_END ) {
-            m_output.fatal(
-                CALL_INFO, 1,
-                "ERROR: Statistic %s - "
-                "Stats can only be registered dynamically in DUMP_AT_END mode with no periodic clock",
-                stat->getFullStatName().c_str());
         }
     }
 
@@ -350,34 +343,17 @@ StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count, Stat
     return true;
 }
 
-UnitAlgebra
-StatisticProcessingEngine::getParamTime(StatisticBase* stat, const std::string& pName) const
-{
-    std::string pVal = stat->m_statParams.find<std::string>(pName);
-    if ( pVal.empty() ) { pVal = "0ns"; }
-
-    UnitAlgebra uaVal = UnitAlgebra(pVal);
-
-    if ( !uaVal.hasUnits("s") ) {
-        m_output.fatal(
-            CALL_INFO, 1, "ERROR: Statistic %s - param %s = %s; must be in units of seconds; exiting...\n",
-            stat->getFullStatName().c_str(), pName.c_str(), pVal.c_str());
-    }
-
-    return uaVal;
-}
-
 void
 StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
 {
-    UnitAlgebra      startTime   = getParamTime(stat, "startat");
+    UnitAlgebra      startTime   = stat->getStartAtTime();
     Simulation_impl* sim         = Simulation_impl::getSimulation();
     TimeConverter*   tcStartTime = sim->getTimeLord()->getTimeConverter(startTime);
     SimTime_t        tcFactor    = tcStartTime->getFactor();
     StatArray_t*     statArray;
 
-    // Check to see if the time is zero, if it is we skip this work
-    if ( 0 != startTime.getValue() ) {
+    // Check to see if the time is zero or has already passed, if it is we skip this work
+    if ( (0 != startTime.getValue()) && (tcFactor > sim->getCurrentSimCycle()) ) {
         // See if the map contains an entry for this factor
         if ( m_StartTimeMap.find(tcFactor) == m_StartTimeMap.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
@@ -406,14 +382,14 @@ StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
 void
 StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
 {
-    UnitAlgebra      stopTime   = getParamTime(stat, "stopat");
+    UnitAlgebra      stopTime   = stat->getStopAtTime();
     Simulation_impl* sim        = Simulation_impl::getSimulation();
     TimeConverter*   tcStopTime = sim->getTimeLord()->getTimeConverter(stopTime);
     SimTime_t        tcFactor   = tcStopTime->getFactor();
     StatArray_t*     statArray;
 
-    // Check to see if the time is zero, if it is we skip this work
-    if ( 0 != stopTime.getValue() ) {
+    // Check to see if the time is zero or has already passed, if it is we skip this work
+    if ( (0 != stopTime.getValue()) && (tcFactor > sim->getCurrentSimCycle()) ) {
         // See if the map contains an entry for this factor
         if ( m_StopTimeMap.find(tcFactor) == m_StopTimeMap.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
@@ -580,37 +556,6 @@ StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t timeFact
         // Disable the Statistic
         stat->disable();
     }
-}
-
-StatisticBase*
-StatisticProcessingEngine::isStatisticInCompStatMap(
-    const std::string& compName, const ComponentId_t& compId, const std::string& statName, const std::string& statSubId,
-    StatisticFieldInfo::fieldType_t fieldType)
-{
-    StatArray_t*   statArray;
-    StatisticBase* TestStat;
-
-    // See if the map contains an entry for this Component ID
-    if ( m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
-        // Nope, this component ID has not been registered
-        return nullptr;
-    }
-
-    // The CompStatMap has Component ID registered, get the array associated with it
-    statArray = m_CompStatMap[compId];
-
-    // Look for the Statistic in this array
-    for ( StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++ ) {
-        TestStat = *it_v;
-
-        if ( (TestStat->getCompName() == compName) && (TestStat->getStatName() == statName) &&
-             (TestStat->getStatSubId() == statSubId) && (TestStat->getStatDataType() == fieldType) ) {
-            return TestStat;
-        }
-    }
-
-    // We did not find the stat in this component
-    return nullptr;
 }
 
 void

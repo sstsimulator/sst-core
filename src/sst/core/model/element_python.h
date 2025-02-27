@@ -19,7 +19,7 @@
 
 namespace SST {
 
-typedef void* (*genPythonModuleFunction)(void);
+using genPythonModuleFunction = void* (*)(void);
 
 /** Class to represent the code that needs to be added to create the
  * python module struture for the library.

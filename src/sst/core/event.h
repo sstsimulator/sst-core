@@ -67,9 +67,9 @@ public:
     using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
 
     /** Type definition of unique identifiers */
-    typedef std::pair<uint64_t, int> id_type;
+    using id_type = std::pair<uint64_t, int>;
     /** Constant, default value for id_types */
-    static const id_type             NO_ID;
+    static const id_type NO_ID;
 
     Event() : Activity(), delivery_info(0)
     {

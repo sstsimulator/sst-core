@@ -113,14 +113,14 @@ protected:
     StatisticOutputHDF5(); // For serialization
 
 private:
-    typedef union {
+    union StatData_u {
         int32_t  i32;
         uint32_t u32;
         int64_t  i64;
         uint64_t u64;
         float    f;
         double   d;
-    } StatData_u;
+    };
 
     class DataSet
     {

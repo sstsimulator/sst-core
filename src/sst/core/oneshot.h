@@ -81,13 +81,13 @@ public:
     NotSerializable(SST::OneShot)
 
 private:
-    typedef std::vector<OneShot::HandlerBase*> HandlerList_t;
+    using HandlerList_t = std::vector<OneShot::HandlerBase*>;
 
     // Since this only gets fixed latency events, the times will fire
     // in order of arrival.  No need to use a full map, a double ended
     // queue will work just as well
-    // typedef std::map<SimTime_t, HandlerList_t*> HandlerVectorMap_t;
-    typedef std::deque<std::pair<SimTime_t, HandlerList_t*>> HandlerVectorMap_t;
+    // using HandlerVectorMap_t = std::map<SimTime_t, HandlerList_t*>;
+    using HandlerVectorMap_t = std::deque<std::pair<SimTime_t, HandlerList_t*>>;
 
     // Generic constructor for serialization
     OneShot() {}

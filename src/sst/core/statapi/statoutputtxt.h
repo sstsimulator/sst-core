@@ -29,6 +29,9 @@ public:
      */
     StatisticOutputTextBase(Params& outputParameters);
 
+    /** This output supports adding statistics during runtime if the header is embedded in the output */
+    virtual bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase) protected :
 

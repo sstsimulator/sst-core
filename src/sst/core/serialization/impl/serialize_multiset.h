@@ -27,12 +27,12 @@ namespace SST::Core::Serialization {
 template <class T, class C>
 class serialize<std::multiset<T, C>>
 {
-    typedef std::multiset<T, C> MultiSet;
+    using MultiSet = std::multiset<T, C>;
 
 public:
     void operator()(MultiSet& v, serializer& ser)
     {
-        typedef typename std::multiset<T>::iterator iterator;
+        using iterator = typename std::multiset<T>::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
@@ -82,12 +82,12 @@ public:
 template <class T>
 class serialize<std::unordered_multiset<T>>
 {
-    typedef std::unordered_multiset<T> MultiSet;
+    using MultiSet = std::unordered_multiset<T>;
 
 public:
     void operator()(MultiSet& v, serializer& ser)
     {
-        typedef typename std::unordered_multiset<T>::iterator iterator;
+        using iterator = typename std::unordered_multiset<T>::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {

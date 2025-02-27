@@ -26,12 +26,12 @@ namespace SST::Core::Serialization {
 template <class T>
 class serialize_impl<std::list<T>>
 {
-    typedef std::list<T> List;
+    using List = std::list<T>;
 
 public:
     void operator()(List& v, serializer& ser)
     {
-        typedef typename List::iterator iterator;
+        using iterator = typename List::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {

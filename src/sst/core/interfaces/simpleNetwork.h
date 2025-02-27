@@ -38,10 +38,10 @@ namespace SST::Interfaces {
 class SimpleNetwork : public SubComponent
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork, int)
 
     /** All Addresses can be 64-bit */
-    typedef int64_t nid_t;
+    using nid_t = int64_t;
 #define PRI_NID PRIi64
 
     static const nid_t INIT_BROADCAST_ADDR;
@@ -96,11 +96,11 @@ public:
         /**
          * Trace types
          */
-        typedef enum {
+        enum TraceType {
             NONE,  /*!< No tracing enabled */
             ROUTE, /*!< Trace route information only */
             FULL   /*!< Trace all movements of packets through network */
-        } TraceType;
+        };
 
         /** Constructor */
         Request() :

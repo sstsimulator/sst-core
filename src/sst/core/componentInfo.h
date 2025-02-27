@@ -42,7 +42,7 @@ class ComponentInfo
 {
 
 public:
-    typedef std::vector<ConfigStatistic> statEnableList_t; /*!< List of Enabled Statistics */
+    using statEnableList_t = std::vector<ConfigStatistic>; /*!< List of Enabled Statistics */
 
     // Share Flags for SubComponent loading
     static const uint64_t SHARE_PORTS  = 0x1;
@@ -68,7 +68,7 @@ private:
        sst_types.h) with their Component parent.  However, every
        SubComponent has a unique ID.
     */
-    const ComponentId_t id;
+    const ComponentId_t id_;
 
     ComponentInfo*    parent_info;
     /**
@@ -103,20 +103,20 @@ private:
     /**
        Parameters defined in the python file for the (Sub)Component.
 
-       This field is used for only a short time while loading for
-       SubComponents loaded with loadAnonymousSubComponent().
-       For python defined SubComponents, this field is created during
-       python execution.
+       This field is used for only a short time while loading
+       SubComponents via loadUserSubComponent().
+
+       This pointer is invalid after simulation wire-up.
     */
     Params* params;
 
     TimeConverter* defaultTimeBase;
 
     std::map<std::string, std::vector<ConfigPortModule>>* portModules;
-    std::map<StatisticId_t, ConfigStatistic>*             statConfigs;
-    std::map<std::string, StatisticId_t>*                 enabledStatNames;
-    bool                                                  enabledAllStats;
-    const ConfigStatistic*                                allStatConfig;
+    std::map<StatisticId_t, ConfigStatistic>*             stat_configs_;
+    std::map<std::string, StatisticId_t>*                 enabled_stat_names_;
+    bool                                                  enabled_all_stats_;
+    ConfigStatistic*                                      all_stat_config_;
 
     uint8_t statLoadLevel;
 
@@ -188,11 +188,11 @@ public:
     ComponentInfo(ComponentInfo&& o);
     ~ComponentInfo();
 
-    bool isAnonymous() { return COMPDEFINED_SUBCOMPONENT_ID_MASK(id); }
+    bool isAnonymous() { return COMPDEFINED_SUBCOMPONENT_ID_MASK(id_); }
 
-    bool isUser() { return !COMPDEFINED_SUBCOMPONENT_ID_MASK(id); }
+    bool isUser() { return !COMPDEFINED_SUBCOMPONENT_ID_MASK(id_); }
 
-    inline ComponentId_t getID() const { return id; }
+    inline ComponentId_t getID() const { return id_; }
 
     inline const std::string& getName() const
     {
@@ -256,13 +256,13 @@ public:
         size_t operator()(const ComponentInfo* info) const
         {
             std::hash<ComponentId_t> hash;
-            return hash(info->id);
+            return hash(info->id_);
         }
     };
 
     struct EqualsID
     {
-        bool operator()(const ComponentInfo* lhs, const ComponentInfo* rhs) const { return lhs->id == rhs->id; }
+        bool operator()(const ComponentInfo* lhs, const ComponentInfo* rhs) const { return lhs->id_ == rhs->id_; }
     };
 
     //// Functions used only for testing, they will not create valid
@@ -285,8 +285,8 @@ private:
     std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID> dataByID;
 
 public:
-    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator
-        const_iterator;
+    using const_iterator =
+        std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator;
 
     const_iterator begin() const { return dataByID.begin(); }
 

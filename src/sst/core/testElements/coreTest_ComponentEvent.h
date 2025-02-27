@@ -17,11 +17,10 @@ namespace SST::CoreTestComponent {
 class coreTestComponentEvent : public SST::Event
 {
 public:
-    typedef std::vector<char> dataVec;
+    using dataVec = std::vector<char>;
     coreTestComponentEvent() : SST::Event() {}
     dataVec payload;
 
-public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
