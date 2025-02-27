@@ -138,11 +138,11 @@ public:
 
     ConfigStatistic() : id(stat_null_id) {}
 
-    ConfigStatistic(const ConfigStatistic&)            = default;
-    ConfigStatistic(ConfigStatistic&&)                 = default;
+    ConfigStatistic(const ConfigStatistic&) = default;
+    ConfigStatistic(ConfigStatistic&&)      = default;
     ConfigStatistic& operator=(const ConfigStatistic&) = default;
-    ConfigStatistic& operator=(ConfigStatistic&&)      = default;
-    ~ConfigStatistic() override                        = default;
+    ConfigStatistic& operator=(ConfigStatistic&&) = default;
+    ~ConfigStatistic() override                   = default;
 
     inline const StatisticId_t& getId() const { return id; }
 
