@@ -19,9 +19,7 @@
 
 #include "sst/core/serialization/serializer.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 class ObjectMapString : public ObjectMap
 {
@@ -92,8 +90,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_STRING_H

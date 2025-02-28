@@ -24,9 +24,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 /** Class supports an IPC tunnel between two or more processes, via posix shared memory
  * This class attaches to an existing tunnel for a child process
@@ -95,7 +93,7 @@ public:
     TunnelType* getTunnel() { return tunnel; }
 
     /** return the name of the shared memory region */
-    const std::string& getRegionName(void) const { return filename; }
+    const std::string& getRegionName() const { return filename; }
 
 private:
     void* shmPtr;
@@ -107,8 +105,6 @@ private:
     TunnelType* tunnel;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_TUNNEL_SHM_CHILD_H

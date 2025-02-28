@@ -19,16 +19,11 @@
 // serialize_impl
 #include "sst/core/serialization/serializer_fwd.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <class T, class Enable>
 class serialize_impl;
 
-
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZE_IMPL_FWD_H

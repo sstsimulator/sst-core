@@ -18,8 +18,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedArray class.  The class is templated to allow for an array
@@ -28,7 +27,7 @@ namespace Shared {
 template <typename T>
 class SharedArray : public SharedObject
 {
-    static_assert(!std::is_pointer<T>::value, "Cannot use a pointer type with SharedArray");
+    static_assert(!std::is_pointer_v<T>, "Cannot use a pointer type with SharedArray");
 
     // Forward declaration.  Defined below
     class Data;
@@ -103,8 +102,8 @@ public:
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
 
-    typedef typename std::vector<T>::const_iterator         const_iterator;
-    typedef typename std::vector<T>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::vector<T>::const_iterator;
+    using const_reverse_iterator = typename std::vector<T>::const_reverse_iterator;
 
     /**
        Get the length of the array.
@@ -496,8 +495,8 @@ public:
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
 
-    typedef typename std::vector<bool>::const_iterator         const_iterator;
-    typedef typename std::vector<bool>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::vector<bool>::const_iterator;
+    using const_reverse_iterator = typename std::vector<bool>::const_reverse_iterator;
 
     /**
        Get the length of the array.
@@ -808,7 +807,7 @@ private:
         };
     };
 };
-} // namespace Shared
-} // namespace SST
+
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDARRAY_H

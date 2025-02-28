@@ -67,9 +67,9 @@ public:
     using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
 
     /** Type definition of unique identifiers */
-    typedef std::pair<uint64_t, int> id_type;
+    using id_type = std::pair<uint64_t, int>;
     /** Constant, default value for id_types */
-    static const id_type             NO_ID;
+    static const id_type NO_ID;
 
     Event() : Activity(), delivery_info(0)
     {
@@ -159,7 +159,7 @@ private:
 
 
     /** Cause this event to fire */
-    void execute(void) override;
+    void execute() override;
 
     /**
        This sets the information needed to get the event properly
@@ -184,7 +184,7 @@ private:
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
-    inline LinkId_t getTag(void) const { return getOrderTag(); }
+    inline LinkId_t getTag() const { return getOrderTag(); }
 
 
     /** Holds the delivery information.  This is stored as a

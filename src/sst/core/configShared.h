@@ -141,7 +141,7 @@ public:
     std::string libpath() const { return libpath_; }
     std::string addLibPath() const { return addlibpath_; }
 
-    std::string getLibPath(void) const;
+    std::string getLibPath() const;
 };
 
 } // namespace SST

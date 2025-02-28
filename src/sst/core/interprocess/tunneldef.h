@@ -26,9 +26,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Interprocess {
+namespace SST::Core::Interprocess {
 
 extern uint32_t globalMMAPIPCCount;
 
@@ -56,7 +54,7 @@ template <typename ShareDataType, typename MsgType>
 class TunnelDef
 {
 
-    typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
+    using CircBuff_t = SST::Core::Interprocess::CircularBuffer<MsgType>;
 
 public:
     /** Create a new tunnel
@@ -245,8 +243,6 @@ private:
     std::vector<CircBuff_t*> circBuffs;
 };
 
-} // namespace Interprocess
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Interprocess
 
 #endif // SST_CORE_INTERPROCESS_TUNNEL_DEF_H

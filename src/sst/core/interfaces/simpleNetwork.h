@@ -25,12 +25,12 @@
 #include <unordered_map>
 
 namespace SST {
-
 class Component;
 class Event;
 class Link;
+} // namespace SST
 
-namespace Interfaces {
+namespace SST::Interfaces {
 
 /**
  * Generic network interface
@@ -38,10 +38,10 @@ namespace Interfaces {
 class SimpleNetwork : public SubComponent
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork, int)
 
     /** All Addresses can be 64-bit */
-    typedef int64_t nid_t;
+    using nid_t = int64_t;
 #define PRI_NID PRIi64
 
     static const nid_t INIT_BROADCAST_ADDR;
@@ -96,11 +96,11 @@ public:
         /**
          * Trace types
          */
-        typedef enum {
+        enum TraceType {
             NONE,  /*!< No tracing enabled */
             ROUTE, /*!< Trace route information only */
             FULL   /*!< Trace all movements of packets through network */
-        } TraceType;
+        };
 
         /** Constructor */
         Request() :
@@ -236,7 +236,7 @@ public:
     // /**
     //  * Returns a handle to the underlying SST::Link
     //  */
-    // virtual Link* getLink(void) const = 0;
+    // virtual Link* getLink() const = 0;
 
     /**
      * Send a Request to the network.
@@ -320,7 +320,6 @@ public:
     virtual const UnitAlgebra& getLinkBW() const = 0;
 };
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces
 
 #endif // SST_CORE_INTERFACES_SIMPLENETWORK_H

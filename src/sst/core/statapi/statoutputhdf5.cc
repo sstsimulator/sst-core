@@ -20,8 +20,7 @@
 
 #include <algorithm>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     StatisticFieldsOutput(outputParameters),
@@ -638,6 +637,4 @@ StatisticOutputHDF5::serialize_order(SST::Core::Serialization::serializer& ser)
     }
 }
 
-
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

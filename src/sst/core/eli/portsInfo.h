@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct InfoPorts
@@ -73,18 +72,17 @@ private:
     std::vector<ElementInfoPort> ports_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
-#define SST_ELI_DOCUMENT_PORTS(...)                                                                                \
-    static const std::vector<SST::ElementInfoPort>& ELI_getPorts()                                                 \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoPort> var    = { __VA_ARGS__ };                                         \
-        auto parent = SST::ELI::InfoPorts<                                                                         \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_PORTS(...)                                                                           \
+    static const std::vector<SST::ElementInfoPort>& ELI_getPorts()                                            \
+    {                                                                                                         \
+        static std::vector<SST::ElementInfoPort> var    = { __VA_ARGS__ };                                    \
+        auto parent = SST::ELI::InfoPorts<                                                                    \
+           std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                                \
+        return var;                                                                                           \
     }
 // clang-format on
 

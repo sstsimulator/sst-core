@@ -21,19 +21,17 @@
 
 #include <list>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <class T>
 class serialize_impl<std::list<T>>
 {
-    typedef std::list<T> List;
+    using List = std::list<T>;
 
 public:
     void operator()(List& v, serializer& ser)
     {
-        typedef typename List::iterator iterator;
+        using iterator = typename List::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
@@ -80,8 +78,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_LIST_H

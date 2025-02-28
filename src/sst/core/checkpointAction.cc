@@ -73,7 +73,7 @@ CheckpointAction::~CheckpointAction() {}
 
 // Generate checkpoint on simulation time period
 void
-CheckpointAction::execute(void)
+CheckpointAction::execute()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
     createCheckpoint(sim);

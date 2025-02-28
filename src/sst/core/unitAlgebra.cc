@@ -19,27 +19,26 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
 using namespace SST;
 
 // Helper functions and data structures used only in this file
 static void
-split(const std::string& input, const std::string& delims, vector<string>& tokens)
+split(const std::string& input, const std::string& delims, std::vector<std::string>& tokens)
 {
     if ( input.length() == 0 ) return;
     size_t start = 0;
     size_t stop  = 0;
     ;
-    vector<string> ret;
+    std::vector<std::string> ret;
 
     do {
         stop = input.find_first_of(delims, start);
         tokens.push_back(input.substr(start, stop - start));
         start = stop + 1;
-    } while ( stop != string::npos );
+    } while ( stop != std::string::npos );
 }
 
-static map<string, sst_big_num> si_unit_map = {
+static std::map<std::string, sst_big_num> si_unit_map = {
     { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
     { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") },
     { "u", sst_big_num("1e-6") },  { "m", sst_big_num("1e-3") },
@@ -54,12 +53,12 @@ static map<string, sst_big_num> si_unit_map = {
 
 // Class Units
 
-std::recursive_mutex                  Units::unit_lock;
-map<string, Units::unit_id_t>         Units::valid_base_units;
-map<string, pair<Units, sst_big_num>> Units::valid_compound_units;
-map<Units::unit_id_t, string>         Units::unit_strings;
-Units::unit_id_t                      Units::count;
-bool                                  Units::initialized = Units::initialize();
+std::recursive_mutex                                 Units::unit_lock;
+std::map<std::string, Units::unit_id_t>              Units::valid_base_units;
+std::map<std::string, std::pair<Units, sst_big_num>> Units::valid_compound_units;
+std::map<Units::unit_id_t, std::string>              Units::unit_strings;
+Units::unit_id_t                                     Units::count;
+bool                                                 Units::initialized = Units::initialize();
 
 bool
 Units::initialize()
@@ -88,7 +87,7 @@ Units::reduce()
     sort(numerator.begin(), numerator.end());
     sort(denominator.begin(), denominator.end());
 
-    vector<unit_id_t>::iterator n, d;
+    std::vector<unit_id_t>::iterator n, d;
     n = numerator.begin();
     d = denominator.begin();
 
@@ -146,12 +145,12 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
     }
 
     if ( si_length > 0 ) {
-        string si_unit = units.substr(0, si_length);
+        std::string si_unit = units.substr(0, si_length);
         multiplier *= si_unit_map[si_unit];
     }
 
     // Check to see if the unit is valid and get its ID
-    string type = units.substr(si_length);
+    std::string type = units.substr(si_length);
     if ( valid_base_units.find(type) != valid_base_units.end() ) {
         if ( !invert ) { numerator.push_back(valid_base_units[type]); }
         else {
@@ -160,7 +159,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
     }
     // Check to see if this is a compound unit
     else if ( valid_compound_units.find(type) != valid_compound_units.end() ) {
-        pair<Units, sst_big_num> units = valid_compound_units[type];
+        auto units = valid_compound_units[type];
         if ( !invert ) {
             *this *= units.first;
             multiplier *= units.second;
@@ -204,18 +203,18 @@ Units::registerCompoundUnit(const std::string& u, const std::string& v)
 Units::Units(const std::string& units, sst_big_num& multiplier)
 {
     // Get the numerator and the denominator
-    string s_numerator;
-    string s_denominator;
+    std::string s_numerator;
+    std::string s_denominator;
 
     size_t slash_index = units.find_first_of('/');
 
     s_numerator = units.substr(0, slash_index);
-    if ( slash_index != string::npos ) s_denominator = units.substr(slash_index + 1);
+    if ( slash_index != std::string::npos ) s_denominator = units.substr(slash_index + 1);
 
     // Have numerator and denominator, now split each of those into
     // individual units, which will be separated with '-'
     // cout << "Numerator: " << s_numerator << endl;
-    vector<string> tokens;
+    std::vector<std::string> tokens;
     split(s_numerator, "-", tokens);
 
     // Add all the numerators
@@ -283,7 +282,7 @@ Units::invert()
     return *this;
 }
 
-string
+std::string
 Units::toString() const
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
@@ -318,7 +317,7 @@ Units::toString() const
 
 // UnitAlgebra
 
-string
+std::string
 UnitAlgebra::trim(const std::string& str)
 {
     if ( !str.size() ) return str;
@@ -340,7 +339,7 @@ void
 UnitAlgebra::init(const std::string& val)
 {
     // Trim off all whitespace on front and back
-    const string parse = trim(val);
+    const std::string parse = trim(val);
 
     // Start from the back and find the first digit.  Split the string
     // at that point.
@@ -352,8 +351,8 @@ UnitAlgebra::init(const std::string& val)
         }
     }
 
-    const string number = trim(parse.substr(0, split));
-    string       units  = trim(parse.substr(split));
+    const std::string number = trim(parse.substr(0, split));
+    std::string       units  = trim(parse.substr(split));
 
     sst_big_num multiplier(1);
     unit = Units(units, multiplier);
@@ -361,7 +360,7 @@ UnitAlgebra::init(const std::string& val)
     try {
         value = sst_big_num(number);
     }
-    catch ( runtime_error& e ) {
+    catch ( std::runtime_error& e ) {
         throw InvalidNumberString(number);
     }
 
@@ -374,33 +373,33 @@ UnitAlgebra::UnitAlgebra(const std::string& val)
 }
 
 void
-UnitAlgebra::print(ostream& stream, int32_t precision)
+UnitAlgebra::print(std::ostream& stream, int32_t precision)
 {
-    stream << value.toString(precision) << " " << unit.toString() << endl;
+    stream << value.toString(precision) << " " << unit.toString() << std::endl;
 }
 
 void
 UnitAlgebra::printWithBestSI(std::ostream& stream, int32_t precision)
 {
-    stream << toStringBestSI(precision) << endl;
+    stream << toStringBestSI(precision) << std::endl;
 }
 
-string
+std::string
 UnitAlgebra::toString(int32_t precision) const
 {
-    stringstream s;
+    std::stringstream s;
     s << value.toString(precision) << " " << unit.toString();
     return s.str();
 }
 
-string
+std::string
 UnitAlgebra::toStringBestSI(int32_t precision) const
 {
-    stringstream s;
-    sst_big_num  temp;
-    string       si;
-    bool         found = false;
-    for ( map<string, sst_big_num>::iterator it = si_unit_map.begin(); it != si_unit_map.end(); ++it ) {
+    std::stringstream s;
+    sst_big_num       temp;
+    std::string       si;
+    bool              found = false;
+    for ( auto it = si_unit_map.begin(); it != si_unit_map.end(); ++it ) {
         // Divide by the value, if it's between 1 and 1000, we have
         // the most natural SI unit
         if ( it->first.length() == 2 ) continue; // Don't do power of 2 units

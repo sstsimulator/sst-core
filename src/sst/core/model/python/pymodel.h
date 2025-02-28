@@ -35,8 +35,7 @@ REENABLE_WARNING
 
 using namespace SST;
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription
 {
@@ -77,14 +76,14 @@ protected:
 #endif
 
 public: /* Public, but private.  Called only from Python functions */
-    Config* getConfig(void) const { return config; }
+    Config* getConfig() const { return config; }
 
     bool setConfigEntryFromModel(const std::string& entryName, const std::string& value)
     {
         return setOptionFromModel(entryName, value);
     }
 
-    ConfigGraph* getGraph(void) const { return graph; }
+    ConfigGraph* getGraph() const { return graph; }
 
     Output* getOutput() const { return output; }
 
@@ -110,7 +109,7 @@ public: /* Public, but private.  Called only from Python functions */
     void setLinkNoCut(const char* link_name) const { graph->setLinkNoCut(link_name); }
 
     void  pushNamePrefix(const char* name);
-    void  popNamePrefix(void);
+    void  popNamePrefix();
     char* addNamePrefix(const char* name) const;
 
     void setStatisticOutput(const char* Name) { graph->setStatisticOutput(Name); }
@@ -175,7 +174,6 @@ PyObject*
 buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children);
 PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict, bool apply_to_children);
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core
 
 #endif // SST_CORE_MODEL_PYTHON_PYMODEL_H

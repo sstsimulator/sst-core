@@ -67,8 +67,8 @@ tokenize(std::vector<std::string>& output, const std::string& input, const std::
 
 struct char_delimiter
 {
-    typedef std::string::const_iterator iter;
-    const std::string                   delim;
+    using iter = std::string::const_iterator;
+    const std::string delim;
     char_delimiter(const std::string& delim = " \t\v\f\n\r") : delim(delim) {}
 
     /**
@@ -89,10 +89,8 @@ struct char_delimiter
 
 struct escaped_list_separator
 {
-    typedef std::string::const_iterator iter;
-    std::string                         e;
-    std::string                         q;
-    std::string                         s;
+    using iter = std::string::const_iterator;
+    std::string e, q, s;
 
     escaped_list_separator(
         const std::string& esc = "\\", const std::string& sep = ",", const std::string& quote = "\"") :
@@ -180,12 +178,12 @@ class Tokenizer
         using iterator_category = std::input_iterator_tag;
     };
 
-    typedef token_iter<TokenizerFunc> iter;
+    using iter = token_iter<TokenizerFunc>;
 
 public:
-    typedef iter        iterator;
-    typedef iter        const_iterator;
-    typedef std::string value_type;
+    using iterator       = iter;
+    using const_iterator = iter;
+    using value_type     = std::string;
 
     iter begin() { return iter(f, first, last); }
     iter end() { return iter(f, last, last); }

@@ -15,9 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/sstpart.h"
 
-namespace SST {
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 /**
    Single partitioner is a virtual partitioner used for serial jobs.
@@ -49,8 +47,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
 };
 
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Partition
 
 #endif

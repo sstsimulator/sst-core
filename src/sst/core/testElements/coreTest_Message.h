@@ -12,8 +12,7 @@
 #ifndef SST_CORE_CORETEST_MESSAGE_H
 #define SST_CORE_CORETEST_MESSAGE_H
 
-namespace SST {
-namespace CoreTestMessageGeneratorComponent {
+namespace SST::CoreTestMessageGeneratorComponent {
 
 class coreTestMessage : public SST::Event
 {
@@ -26,7 +25,6 @@ public:
     ImplementSerializable(SST::CoreTestMessageGeneratorComponent::coreTestMessage);
 };
 
-} // namespace CoreTestMessageGeneratorComponent
-} // namespace SST
+} // namespace SST::CoreTestMessageGeneratorComponent
 
 #endif // SST_CORE_CORETEST_MESSAGE_H

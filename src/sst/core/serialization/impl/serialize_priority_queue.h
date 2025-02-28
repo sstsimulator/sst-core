@@ -21,15 +21,12 @@
 
 #include <queue>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-
+namespace SST::Core::Serialization {
 
 template <class T, class S, class C>
 class serialize<std::priority_queue<T, S, C>>
 {
-    typedef std::priority_queue<T, S, C> Pqueue;
+    using Pqueue = std::priority_queue<T, S, C>;
 
 public:
     S& getContainer(std::priority_queue<T, S, C>& q)
@@ -91,8 +88,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_PRIORITY_QUEUE_H

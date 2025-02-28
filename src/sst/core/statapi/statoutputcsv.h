@@ -19,8 +19,7 @@
 #include <zlib.h>
 #endif
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 /**
     \class StatisticOutputCSV
@@ -122,7 +121,6 @@ private:
     bool                     m_useCompression;
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTCSV_H

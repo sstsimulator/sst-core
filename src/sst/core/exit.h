@@ -72,7 +72,7 @@ public:
      * @return End time of the simulation
      */
     SimTime_t computeEndTime();
-    void      execute(void) override;
+    void      execute() override;
     void      check();
 
     /**

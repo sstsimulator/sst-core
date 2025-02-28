@@ -17,13 +17,13 @@
 
 namespace SST {
 
-typedef uint64_t ComponentId_t;
-typedef uint64_t StatisticId_t;
-typedef uint32_t LinkId_t;
-typedef uint64_t HandlerId_t;
-typedef uint64_t Cycle_t;
-typedef uint64_t SimTime_t;
-typedef double   Time_t;
+using ComponentId_t = uint64_t;
+using StatisticId_t = uint64_t;
+using LinkId_t      = uint32_t;
+using HandlerId_t   = uint64_t;
+using Cycle_t       = uint64_t;
+using SimTime_t     = uint64_t;
+using Time_t        = double;
 
 #define PRI_SIMTIME PRIu64
 
@@ -46,10 +46,10 @@ static constexpr StatisticId_t STATALL_ID = std::numeric_limits<StatisticId_t>::
 #define COMPDEFINED_SUBCOMPONENT_ID_CREATE(compId, sCompId) \
     ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId | 0x8000000000000000ULL)
 
-typedef double watts;
-typedef double joules;
-typedef double farads;
-typedef double volts;
+using watts  = double;
+using joules = double;
+using farads = double;
+using volts  = double;
 
 #ifndef LIKELY
 #define LIKELY(x)   __builtin_expect((int)(x), 1)

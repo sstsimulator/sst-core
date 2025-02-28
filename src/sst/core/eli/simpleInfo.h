@@ -14,8 +14,7 @@
 
 #include "sst/core/eli/elibase.h"
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 // ProvidesSimpleInfo is a class to quickly add ELI info to an ELI
 // Base API.  This class should only be used for APIs that aren't
@@ -39,10 +38,10 @@ class checkForELI_getSimpleInfoFunction
     template <typename F, F>
     struct check;
 
-    typedef char Match;
-    typedef long NotMatch;
+    using Match    = char;
+    using NotMatch = long;
 
-    typedef const InfoType& (*functionsig)(SimpleInfoPlaceHolder<index, InfoType>);
+    using functionsig = const InfoType& (*)(SimpleInfoPlaceHolder<index, InfoType>);
 
     template <typename F>
     static Match HasFunction(check<functionsig, &F::ELI_getSimpleInfo>*);
@@ -54,17 +53,21 @@ public:
     static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match));
 };
 
+template <class T, int index, class InfoType>
+inline constexpr bool checkForELI_getSimpleInfoFunction_v =
+    checkForELI_getSimpleInfoFunction<T, index, InfoType>::value;
+
 // Actual functions that use checkForELI_getSimpleInfoFunction class
 // to create functions to get the information from the class
 template <class T, int index, class InfoType>
-typename std::enable_if<checkForELI_getSimpleInfoFunction<T, index, InfoType>::value, const InfoType&>::type
+std::enable_if_t<checkForELI_getSimpleInfoFunction_v<T, index, InfoType>, const InfoType&>
 ELI_templatedGetSimpleInfo()
 {
     return T::ELI_getSimpleInfo(SimpleInfoPlaceHolder<index, InfoType>());
 }
 
 template <class T, int index, class InfoType>
-typename std::enable_if<not checkForELI_getSimpleInfoFunction<T, index, InfoType>::value, const InfoType&>::type
+std::enable_if_t<!checkForELI_getSimpleInfoFunction_v<T, index, InfoType>, const InfoType&>
 ELI_templatedGetSimpleInfo()
 {
     static InfoType var;
@@ -93,8 +96,7 @@ private:
     InfoType info_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // Macro used by the API to create macros to populate the added ELI
 // info

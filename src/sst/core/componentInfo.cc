@@ -21,7 +21,7 @@
 namespace SST {
 
 ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
-    id(id),
+    id_(id),
     parent_info(nullptr),
     name(name),
     type(""),
@@ -30,10 +30,10 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     params(nullptr),
     defaultTimeBase(nullptr),
     portModules(nullptr),
-    statConfigs(nullptr),
-    enabledStatNames(nullptr),
-    enabledAllStats(false),
-    allStatConfig(nullptr),
+    stat_configs_(nullptr),
+    enabled_stat_names_(nullptr),
+    enabled_all_stats_(false),
+    all_stat_config_(nullptr),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(""),
@@ -42,7 +42,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
 {}
 
 ComponentInfo::ComponentInfo() :
-    id(-1),
+    id_(-1),
     parent_info(nullptr),
     name(""),
     type(""),
@@ -51,10 +51,10 @@ ComponentInfo::ComponentInfo() :
     params(nullptr),
     defaultTimeBase(nullptr),
     portModules(nullptr),
-    statConfigs(nullptr),
-    enabledStatNames(nullptr),
-    enabledAllStats(false),
-    allStatConfig(nullptr),
+    stat_configs_(nullptr),
+    enabled_stat_names_(nullptr),
+    enabled_all_stats_(false),
+    all_stat_config_(nullptr),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(""),
@@ -64,7 +64,7 @@ ComponentInfo::ComponentInfo() :
 
 // ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const Params
 // *params, const ComponentInfo *parent) :
-//     id(parent->id),
+//     id_(parent->id),
 //     name(parent->name),
 //     type(type),
 //     link_map(parent->link_map),
@@ -83,7 +83,7 @@ ComponentInfo::ComponentInfo() :
 ComponentInfo::ComponentInfo(
     ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name, int slot_num,
     uint64_t share_flags /*, const Params& params_in*/) :
-    id(id),
+    id_(id),
     parent_info(parent_info),
     name(""),
     type(type),
@@ -92,10 +92,10 @@ ComponentInfo::ComponentInfo(
     params(/*new Params()*/ nullptr),
     defaultTimeBase(nullptr),
     portModules(nullptr),
-    statConfigs(nullptr),
-    enabledStatNames(nullptr),
-    enabledAllStats(false),
-    allStatConfig(nullptr),
+    stat_configs_(nullptr),
+    enabled_stat_names_(nullptr),
+    enabled_all_stats_(false),
+    all_stat_config_(nullptr),
     statLoadLevel(0),
     coordinates(parent_info->coordinates),
     subIDIndex(1),
@@ -108,19 +108,16 @@ ComponentInfo::ComponentInfo(
 
 ComponentInfo::ComponentInfo(
     ConfigComponent* ccomp, const std::string& name, ComponentInfo* parent_info, LinkMap* link_map) :
-    id(ccomp->id),
+    id_(ccomp->id),
     parent_info(parent_info),
     name(name),
     type(ccomp->type),
     link_map(link_map),
     component(nullptr),
-    params(&ccomp->params),
+    params(&ccomp->params), // Inaccessible after construction
     defaultTimeBase(nullptr),
-    portModules(&ccomp->portModules),
-    statConfigs(&ccomp->statistics),
-    enabledStatNames(&ccomp->enabledStatNames),
-    enabledAllStats(ccomp->enabledAllStats),
-    allStatConfig(&ccomp->allStatConfig),
+    portModules(&ccomp->portModules), // Inaccessible after construction
+    enabled_all_stats_(ccomp->enabledAllStats),
     statLoadLevel(ccomp->statLoadLevel),
     coordinates(ccomp->coords),
     subIDIndex(1),
@@ -149,10 +146,18 @@ ComponentInfo::ComponentInfo(
             subComponents.end(), std::piecewise_construct, std::make_tuple(sc->id),
             std::forward_as_tuple(sc, sub_name, this, new LinkMap()));
     }
+
+    // TODO if possible, optimize enableAllStatisticsFor... calls to share rather than
+    // replicate parameters across components
+    all_stat_config_ = nullptr;
+    if ( enabled_all_stats_ ) { all_stat_config_ = new ConfigStatistic(ccomp->allStatConfig); }
+
+    enabled_stat_names_ = new std::map<std::string, StatisticId_t>(ccomp->enabledStatNames);
+    stat_configs_       = new std::map<StatisticId_t, ConfigStatistic>(ccomp->statistics_);
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo&& o) :
-    id(o.id),
+    id_(o.id_),
     parent_info(o.parent_info),
     name(std::move(o.name)),
     type(std::move(o.type)),
@@ -162,8 +167,8 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     params(o.params),
     defaultTimeBase(o.defaultTimeBase),
     portModules(o.portModules),
-    statConfigs(o.statConfigs),
-    allStatConfig(o.allStatConfig),
+    stat_configs_(o.stat_configs_),
+    all_stat_config_(o.all_stat_config_),
     statLoadLevel(o.statLoadLevel),
     coordinates(o.coordinates),
     subIDIndex(o.subIDIndex),
@@ -184,6 +189,9 @@ ComponentInfo::~ComponentInfo()
         component->my_info = nullptr;
         delete component;
     }
+
+    if ( all_stat_config_ ) delete all_stat_config_;
+    delete stat_configs_;
 }
 
 void
@@ -209,7 +217,7 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
 
     // Serialize all my data except the component and link_map
 
-    ser& const_cast<ComponentId_t&>(id);
+    ser& const_cast<ComponentId_t&>(id_);
     ser& parent_info;
     ser& const_cast<std::string&>(name);
     ser& const_cast<std::string&>(type);
@@ -218,14 +226,54 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     // ser& params;
 
     ser& defaultTimeBase;
-    // ser& statConfigs;
-    // ser& allStatConfig;
-    // ser& statLoadLevel;
+
     // ser& coordinates;
     ser& subIDIndex;
     ser& const_cast<std::string&>(slot_name);
     ser& slot_num;
     ser& share_flags;
+
+    // Serialize statistic data structures - only needed for late stat registration
+    // No one else has these pointers so serialize the data structure & reallocate on UNPACK
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        std::map<StatisticId_t, ConfigStatistic> stat_configs;
+        ConfigStatistic                          all_stat_config;
+        std::map<std::string, StatisticId_t>     enabled_stat_names;
+        bool                                     is_null = true;
+
+        ser& is_null;
+        if ( !is_null ) {
+            ser& stat_configs;
+            stat_configs_ = new std::map<StatisticId_t, ConfigStatistic>(stat_configs);
+        }
+
+        ser& is_null;
+        if ( !is_null ) {
+            ser& all_stat_config;
+            all_stat_config_ = new ConfigStatistic(all_stat_config);
+        }
+
+        ser& is_null;
+        if ( !is_null ) {
+            ser& enabled_stat_names;
+            enabled_stat_names_ = new std::map<std::string, StatisticId_t>(enabled_stat_names);
+        }
+    }
+    else {
+        bool is_null = stat_configs_ == nullptr;
+        ser& is_null;
+        if ( !is_null ) ser&(*stat_configs_);
+
+        is_null = all_stat_config_ == nullptr;
+        ser& is_null;
+        if ( !is_null ) ser&(*all_stat_config_);
+
+        is_null = enabled_stat_names_ == nullptr;
+        ser& is_null;
+        if ( !is_null ) ser&(*enabled_stat_names_);
+    }
+
+    ser& statLoadLevel; // Potentially needed for late stat registration
 
     // For SubComponents map, need to serialize map by hand since we
     // we will need to use the track non-pointer as pointer feature in
@@ -305,7 +353,7 @@ ComponentInfo::addAnonymousSubComponent(
     // Get the subIDIndex and increment it for next time
     uint64_t sub_id = real_comp->subIDIndex++;
 
-    ComponentId_t cid = COMPDEFINED_SUBCOMPONENT_ID_CREATE(COMPONENT_ID_MASK(id), sub_id);
+    ComponentId_t cid = COMPDEFINED_SUBCOMPONENT_ID_CREATE(COMPONENT_ID_MASK(id_), sub_id);
 
     subComponents.emplace_hint(
         subComponents.end(), std::piecewise_construct, std::make_tuple(cid),
@@ -344,10 +392,10 @@ ComponentInfo*
 ComponentInfo::findSubComponent(ComponentId_t id)
 {
     /* See if it is us */
-    if ( id == this->id ) return this;
+    if ( id == this->id_ ) return this;
 
     /* Check to make sure we're part of the same component */
-    if ( COMPONENT_ID_MASK(id) != COMPONENT_ID_MASK(this->id) ) return nullptr;
+    if ( COMPONENT_ID_MASK(id) != COMPONENT_ID_MASK(this->id_) ) return nullptr;
 
     for ( auto& s : subComponents ) {
         ComponentInfo* found = s.second.findSubComponent(id);
@@ -382,7 +430,7 @@ ComponentInfo::hasLinks() const
 
 ComponentInfo::ComponentInfo(
     ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter* tv) :
-    id(id),
+    id_(id),
     parent_info(nullptr),
     name(name),
     type(""),
@@ -390,10 +438,10 @@ ComponentInfo::ComponentInfo(
     component(nullptr),
     params(nullptr),
     defaultTimeBase(tv),
-    statConfigs(nullptr),
-    enabledStatNames(nullptr),
-    enabledAllStats(false),
-    allStatConfig(nullptr),
+    stat_configs_(nullptr),
+    enabled_stat_names_(nullptr),
+    enabled_all_stats_(false),
+    all_stat_config_(nullptr),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(slot_name),
@@ -422,9 +470,9 @@ ComponentInfo::test_printComponentInfoHierarchy(int indent)
 {
     for ( int i = 0; i < indent; ++i )
         printf("  ");
-    printf("id = %" PRIu64 ", name = %s, slot_name = %s", id, name.c_str(), slot_name.c_str());
+    printf("id = %" PRIu64 ", name = %s, slot_name = %s", id_, name.c_str(), slot_name.c_str());
     if ( defaultTimeBase != nullptr ) printf(", defaultTimeBase = %" PRI_SIMTIME, defaultTimeBase->getFactor());
-    if ( parent_info != nullptr ) printf(", parent_id = %" PRIu64, parent_info->id);
+    if ( parent_info != nullptr ) printf(", parent_id = %" PRIu64, parent_info->id_);
     printf("\n");
 
     for ( auto& x : subComponents ) {

@@ -18,8 +18,7 @@
 #include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedSet.h"
 
-namespace SST {
-namespace CoreTestSharedObjectsComponent {
+namespace SST::CoreTestSharedObjectsComponent {
 
 // Class so that we can check to see if the equivalence check works
 // for sets
@@ -131,7 +130,6 @@ private:
     Shared::SharedSet<setItem>  set;
 };
 
-} // namespace CoreTestSharedObjectsComponent
-} // namespace SST
+} // namespace SST::CoreTestSharedObjectsComponent
 
 #endif // SST_CORE_CORETEST_SHAREDOBJECT_H

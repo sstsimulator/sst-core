@@ -19,9 +19,7 @@
 #include <zlib.h>
 #endif
 
-namespace SST {
-namespace Statistics {
-
+namespace SST::Statistics {
 
 class StatisticOutputTextBase : public StatisticFieldsOutput
 {
@@ -30,6 +28,9 @@ public:
      * @param outputParameters - Parameters used for this Statistic Output
      */
     StatisticOutputTextBase(Params& outputParameters);
+
+    /** This output supports adding statistics during runtime if the header is embedded in the output */
+    virtual bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase) protected :
@@ -272,7 +273,6 @@ private:
     bool getOutputRankDefault() override { return false; }
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTTXT_H

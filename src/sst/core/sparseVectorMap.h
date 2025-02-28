@@ -150,8 +150,8 @@ public:
         }
     }
 
-    typedef typename std::vector<classT>::iterator       iterator;
-    typedef typename std::vector<classT>::const_iterator const_iterator;
+    using iterator       = typename std::vector<classT>::iterator;
+    using const_iterator = typename std::vector<classT>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -407,8 +407,8 @@ public:
         }
     }
 
-    typedef typename std::vector<classT*>::iterator       iterator;
-    typedef typename std::vector<classT*>::const_iterator const_iterator;
+    using iterator       = typename std::vector<classT*>::iterator;
+    using const_iterator = typename std::vector<classT*>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -682,8 +682,8 @@ public:
         }
     }
 
-    typedef typename std::vector<keyT>::iterator       iterator;
-    typedef typename std::vector<keyT>::const_iterator const_iterator;
+    using iterator       = typename std::vector<keyT>::iterator;
+    using const_iterator = typename std::vector<keyT>::const_iterator;
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -800,9 +800,7 @@ public:
 
 } // namespace SST
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <typename keyT, typename classT>
 class serialize<SST::SparseVectorMap<keyT, classT>>
@@ -810,8 +808,6 @@ class serialize<SST::SparseVectorMap<keyT, classT>>
 public:
     void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser) { ser& v.data; }
 };
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SPARSEVECTORMAP_H

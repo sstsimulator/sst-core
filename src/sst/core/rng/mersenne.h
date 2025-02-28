@@ -22,8 +22,7 @@
 #define MERSENNE_INT32_MAX  2147483647L
 #define MERSENNE_INT64_MAX  9223372036854775807LL
 
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 /**
     \class MersenneRNG mersenne.h "sst/core/rng/mersenne.h"
 
@@ -31,7 +30,7 @@ namespace RNG {
     RNG provides a better "randomness" to the distribution of outputs but is computationally
     more expensive than the Marsaglia RNG.
 */
-class MersenneRNG : public SST::RNG::Random
+class MersenneRNG : public Random
 {
 
 public:
@@ -110,7 +109,6 @@ private:
     int index;
 };
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_MERSENNE_H

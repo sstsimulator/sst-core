@@ -69,7 +69,6 @@ REENABLE_WARNING
 
 using namespace SST::Core;
 using namespace SST::Partition;
-using namespace std;
 using namespace SST;
 
 
@@ -136,7 +135,7 @@ dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo& size)
                 cfg.component_partition_file().c_str());
         }
 
-        ofstream              graph_file(cfg.component_partition_file().c_str());
+        std::ofstream         graph_file(cfg.component_partition_file().c_str());
         ConfigComponentMap_t& component_map = graph->getComponentMap();
 
         for ( uint32_t i = 0; i < size.rank; i++ ) {
@@ -308,7 +307,7 @@ start_graph_creation(
         try {
             model_name = extension_map.at(extension);
         }
-        catch ( exception& e ) {
+        catch ( std::exception& e ) {
             std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
             return -1;
         }
@@ -547,8 +546,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 // If we are a MPI_parallel job, need to makes sure that all used
                 // libraries are loaded on all ranks.
 #ifdef SST_CONFIG_HAVE_MPI
-                set<string> lib_names;
-                set<string> other_lib_names;
+                std::set<std::string> lib_names;
+                std::set<std::string> other_lib_names;
                 Factory::getFactory()->getLoadedLibraryNames(lib_names);
 
                 // Send my lib_names to the next lowest rank

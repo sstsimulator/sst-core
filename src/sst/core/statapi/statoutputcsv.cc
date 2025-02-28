@@ -15,8 +15,7 @@
 
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
 {
@@ -268,7 +267,7 @@ StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, double data)
 }
 
 bool
-StatisticOutputCSV::openFile(void)
+StatisticOutputCSV::openFile()
 {
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
@@ -301,7 +300,7 @@ StatisticOutputCSV::openFile(void)
 }
 
 void
-StatisticOutputCSV::closeFile(void)
+StatisticOutputCSV::closeFile()
 {
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
@@ -370,5 +369,4 @@ StatisticOutputCSV::serialize_order(SST::Core::Serialization::serializer& ser)
     ser& m_useCompression;
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

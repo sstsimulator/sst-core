@@ -15,10 +15,7 @@
 #include "distrib.h"
 #include "math.h"
 
-using namespace SST::RNG;
-
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class ConstantDistribution constant.h "sst/core/rng/constant.h"
@@ -76,9 +73,8 @@ protected:
     double mean;
 };
 
-using SSTConstantDistribution = SST::RNG::ConstantDistribution;
+} // namespace SST::RNG
 
-} // namespace RNG
-} // namespace SST
+using SSTConstantDistribution = SST::RNG::ConstantDistribution;
 
 #endif // SST_CORE_RNG_CONSTANT_H

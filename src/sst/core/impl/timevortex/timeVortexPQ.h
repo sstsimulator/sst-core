@@ -59,7 +59,7 @@ public:
     virtual void fixup_handlers() override;
 
 private:
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>> dataType_t;
+    using dataType_t = std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>>;
 
     template <class T, class S, class C>
     S& getContainer(std::priority_queue<T, S, C>& q)
@@ -79,7 +79,7 @@ private:
     uint64_t max_depth;
 
     // Need current depth to be atomic if we are thread safe
-    typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type current_depth;
+    std::conditional_t<TS, std::atomic<uint64_t>, uint64_t> current_depth;
 
     CACHE_ALIGNED(SST::Core::ThreadSafe::Spinlock, slock);
 };

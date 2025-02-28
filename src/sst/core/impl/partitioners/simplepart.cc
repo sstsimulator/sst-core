@@ -20,11 +20,7 @@
 #include <stdlib.h>
 #include <vector>
 
-using namespace std;
-
-namespace SST {
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
     SSTPartitioner(),
@@ -71,17 +67,14 @@ findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis)
 static SimTime_t
 cost_external_links(
     ComponentId_t* setA, const int lengthA, ComponentId_t* setB, const int lengthB,
-    map<ComponentId_t, map<ComponentId_t, SimTime_t>*>& timeTable)
+    std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*>& timeTable)
 {
 
     SimTime_t cost = 0;
 
     for ( int i = 0; i < lengthA; i++ ) {
-        map<ComponentId_t, SimTime_t>* compMap = timeTable[setA[i]];
-
-        for ( map<ComponentId_t, SimTime_t>::const_iterator compMapItr = compMap->begin(); compMapItr != compMap->end();
-              compMapItr++ ) {
-
+        auto* compMap = timeTable[setA[i]];
+        for ( auto compMapItr = compMap->cbegin(); compMapItr != compMap->cend(); compMapItr++ ) {
             if ( findIndex(setB, lengthB, compMapItr->first) > -1 ) { cost += compMapItr->second; }
         }
     }
@@ -93,7 +86,7 @@ cost_external_links(
 void
 SimplePartitioner::simple_partition_step(
     PartitionComponentMap_t& component_map, ComponentId_t* setA, const int lengthA, int rankA, ComponentId_t* setB,
-    const int lengthB, int rankB, map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable, int step)
+    const int lengthB, int rankB, std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable, int step)
 {
 
     SimTime_t costExt = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
@@ -206,7 +199,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
         int indexB = 0;
         int count  = 0;
 
-        map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable;
+        std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable;
 
         // size_t nComp = component_map.size();
         // for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
@@ -215,8 +208,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
 
             ComponentId_t theComponent = (*compItr)->id;
 
-            map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
-            timeTable[theComponent]                       = compConnectMap;
+            auto compConnectMap = timeTable[theComponent] = new std::map<ComponentId_t, SimTime_t>();
 
             if ( count++ % 2 == 0 ) { setA[indexA++] = theComponent; }
             else {
@@ -232,13 +224,13 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
 
                 // ConfigLink* theLink = (*linkItr);
                 PartitionLink& theLink = linkMap[*linkItr];
-                compConnectMap->insert(pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()));
+                compConnectMap->insert(
+                    std::pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()));
             }
         }
 
         simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, 1);
     }
 }
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+
+} // namespace SST::IMPL::Partition

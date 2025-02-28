@@ -21,10 +21,7 @@
 
 #include <string>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 class ser_packer : public ser_buffer_accessor
 {
@@ -48,9 +45,6 @@ public:
     void pack_string(std::string& str);
 };
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt
 
 #endif // SST_CORE_SERIALIZATION_IMPL_PACKER_H

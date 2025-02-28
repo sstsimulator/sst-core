@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct InfoStats
@@ -81,18 +80,17 @@ public:
     }
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
-#define SST_ELI_DOCUMENT_STATISTICS(...)                                                                           \
-    static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics()                                       \
-    {                                                                                                              \
-        static std::vector<SST::ElementInfoStatistic> var    = { __VA_ARGS__ };                                    \
-        auto parent = SST::ELI::InfoStats<                                                                         \
-            typename std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        SST::ELI::combineEliInfo(var, parent);                                                                     \
-        return var;                                                                                                \
+#define SST_ELI_DOCUMENT_STATISTICS(...)                                                                    \
+    static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics()                                \
+    {                                                                                                       \
+        static std::vector<SST::ElementInfoStatistic> var    = { __VA_ARGS__ };                             \
+        auto parent = SST::ELI::InfoStats<                                                                  \
+         std::conditional_t<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>>::get(); \
+        SST::ELI::combineEliInfo(var, parent);                                                              \
+        return var;                                                                                         \
     }
 // clang-format on
 

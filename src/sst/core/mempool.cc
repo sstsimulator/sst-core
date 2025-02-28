@@ -23,8 +23,7 @@
 #include <sys/time.h>
 #include <vector>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 #ifdef USE_MEMPOOL
 
@@ -506,6 +505,4 @@ MemPoolItem::print(const std::string& header, Output& out) const
     out.output("%s%s\n", header.c_str(), toString().c_str());
 }
 
-
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core

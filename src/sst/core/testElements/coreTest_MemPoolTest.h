@@ -17,9 +17,7 @@
 
 #include <vector>
 
-namespace SST {
-namespace CoreTestMemPoolTest {
-
+namespace SST::CoreTestMemPoolTest {
 
 // We'll have 4 different sized events
 
@@ -162,8 +160,8 @@ public:
     ~MemPoolTestComponent() {}
 
     void eventHandler(Event* ev, int port);
-    void setup(void) override;
-    void finish(void) override;
+    void setup() override;
+    void finish() override;
     void complete(unsigned int phase) override;
 
 private:
@@ -179,7 +177,6 @@ private:
     Event* createEvent();
 };
 
-} // namespace CoreTestMemPoolTest
-} // namespace SST
+} // namespace SST::CoreTestMemPoolTest
 
 #endif // SST_CORE_CORETEST_COMPONENT_H

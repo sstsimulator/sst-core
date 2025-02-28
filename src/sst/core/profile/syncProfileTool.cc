@@ -18,9 +18,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Profile {
-
+namespace SST::Profile {
 
 SyncProfileTool::SyncProfileTool(const std::string& name, Params& UNUSED(params)) : ProfileTool(name) {}
 
@@ -101,6 +99,4 @@ public:
     SST_ELI_EXPORT(SyncProfileToolTimeSteady)
 };
 
-
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile

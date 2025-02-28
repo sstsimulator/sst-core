@@ -19,9 +19,7 @@
 
 #include "sst/core/serialization/serializer.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 namespace pvt {
 
 template <class TPtr, class IntType>
@@ -84,7 +82,7 @@ raw_ptr(TPtr*& ptr)
    fundamental types and enums.
  */
 template <class T, int N>
-class serialize_impl<T[N], typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -101,7 +99,7 @@ class serialize_impl<T[N], typename std::enable_if<std::is_fundamental<T>::value
    non base types.
  */
 template <class T, int N>
-class serialize_impl<T[N], typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -126,8 +124,7 @@ class serialize_impl<T[N], typename std::enable_if<!std::is_fundamental<T>::valu
  */
 template <class T, class IntType>
 class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>,
-    typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -145,8 +142,7 @@ class serialize_impl<
  */
 template <class T, class IntType>
 class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>,
-    typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -225,8 +221,6 @@ operator&(serializer& ser, pvt::raw_ptr_wrapper<TPtr> ptr)
     // serialize<pvt::raw_ptr_wrapper<TPtr>>()(ptr, ser);
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_ARRAY_H

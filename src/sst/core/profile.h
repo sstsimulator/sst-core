@@ -16,9 +16,7 @@
 
 #include <chrono>
 
-namespace SST {
-namespace Core {
-namespace Profile {
+namespace SST::Core::Profile {
 
 #ifdef __SST_ENABLE_PROFILE__
 
@@ -28,7 +26,7 @@ namespace Profile {
 #define CLOCK std::chrono::steady_clock
 #endif
 
-typedef CLOCK::time_point ProfData_t;
+using ProfData_t = CLOCK::time_point;
 
 inline ProfData_t
 now()
@@ -50,7 +48,7 @@ getElapsed(const ProfData_t& since)
 }
 
 #else
-typedef double ProfData_t;
+using ProfData_t = double;
 
 inline ProfData_t
 now()
@@ -72,8 +70,6 @@ getElapsed(const ProfData_t& UNUSED(since))
 
 #endif
 
-} // namespace Profile
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Profile
 
 #endif // SST_CORE_CORE_PROFILE_H

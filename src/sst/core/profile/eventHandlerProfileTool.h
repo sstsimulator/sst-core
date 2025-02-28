@@ -23,10 +23,7 @@
 #include <chrono>
 #include <map>
 
-namespace SST {
-
-namespace Profile {
-
+namespace SST::Profile {
 
 class EventHandlerProfileTool : public ProfileTool, public Event::HandlerBase::AttachPoint, public Link::AttachPoint
 {
@@ -149,7 +146,6 @@ private:
     std::map<std::string, event_data_t> times_;
 };
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile
 
 #endif // SST_CORE_PROFILE_EVENTHANDLERPROFILETOOL_H

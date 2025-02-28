@@ -16,19 +16,18 @@
 #include <string>
 #include <type_traits>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 template <class T>
-typename std::enable_if<std::is_integral<T>::value, T>::type
+std::enable_if_t<std::is_integral_v<T>, T>
 from_string(const std::string& input)
 {
-    if ( std::is_signed<T>::value ) {
-        if ( std::is_same<int, T>::value ) { return std::stoi(input, nullptr, 0); }
-        else if ( std::is_same<long, T>::value ) {
+    if constexpr ( std::is_signed_v<T> ) {
+        if constexpr ( std::is_same_v<int, T> ) { return std::stoi(input, nullptr, 0); }
+        else if constexpr ( std::is_same_v<long, T> ) {
             return std::stol(input, nullptr, 0);
         }
-        else if ( std::is_same<long long, T>::value ) {
+        else if constexpr ( std::is_same_v<long long, T> ) {
             return std::stoll(input, nullptr, 0);
         }
         else { // Smaller than 32-bit
@@ -36,7 +35,7 @@ from_string(const std::string& input)
         }
     }
     else {
-        if ( std::is_same<bool, T>::value ) {
+        if constexpr ( std::is_same_v<bool, T> ) {
             // valid pairs: true/false, t/f, yes/no, y/n, on/off, 1/0
             std::string transform(input);
             for ( auto& c : transform )
@@ -54,10 +53,10 @@ from_string(const std::string& input)
                 throw std::invalid_argument("from_string: no valid conversion");
             }
         }
-        else if ( std::is_same<unsigned long, T>::value ) {
+        else if constexpr ( std::is_same_v<unsigned long, T> ) {
             return std::stoul(input, nullptr, 0);
         }
-        else if ( std::is_same<unsigned long long, T>::value ) {
+        else if constexpr ( std::is_same_v<unsigned long long, T> ) {
             return std::stoull(input, nullptr, 0);
         }
         else { // Smaller than 32-bit
@@ -67,14 +66,14 @@ from_string(const std::string& input)
 }
 
 template <class T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
+std::enable_if_t<std::is_floating_point_v<T>, T>
 from_string(const std::string& input)
 {
-    if ( std::is_same<float, T>::value ) { return stof(input); }
-    else if ( std::is_same<double, T>::value ) {
+    if constexpr ( std::is_same_v<float, T> ) { return stof(input); }
+    else if constexpr ( std::is_same_v<double, T> ) {
         return stod(input);
     }
-    else if ( std::is_same<long double, T>::value ) {
+    else if constexpr ( std::is_same_v<long double, T> ) {
         return stold(input);
     }
     else { // make compiler happy
@@ -83,17 +82,16 @@ from_string(const std::string& input)
 }
 
 template <class T>
-typename std::enable_if<std::is_class<T>::value, T>::type
+std::enable_if_t<std::is_class_v<T>, T>
 from_string(const std::string& input)
 {
     static_assert(
-        std::is_constructible<T, std::string>::value,
+        std::is_constructible_v<T, std::string>,
         "ERROR: from_string can only be used with integral and floating point types and with classes that have a "
         "constructor that takes a single string as input.\n");
     return T(input);
 }
 
-} // end namespace Core
-} // end namespace SST
+} // end namespace SST::Core
 
 #endif // SST_CORE_FROM_STRING_H

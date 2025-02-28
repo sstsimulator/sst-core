@@ -20,6 +20,8 @@
 #include "sst/core/env/envquery.h"
 #include "sst/core/model/element_python.h"
 #include "sst/core/sstpart.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statoutput.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -35,7 +37,6 @@
 #include <string>
 #include <sys/stat.h>
 
-using namespace std;
 using namespace SST;
 using namespace SST::Core;
 
@@ -154,7 +155,7 @@ main(int argc, char* argv[])
 
     // Run interactive mode
     if ( g_configuration.interactiveEnabled() ) {
-        std::cout << "Curses library not found. Run SST-Info without the -i flag." << endl;
+        std::cout << "Curses library not found. Run SST-Info without the -i flag." << std::endl;
     }
 
     return 0;
@@ -764,6 +765,8 @@ SSTInfoConfig::getUsagePrelude()
 void
 SSTInfoConfig::outputUsage()
 {
+    using std::cout;
+    using std::endl;
     cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
          << " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
@@ -851,6 +854,7 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
 void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
+    using std::endl;
     if ( this->m_libraryFilter ) {
         outputStream << "\n================================================================================\n";
         outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;
@@ -1057,6 +1061,9 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
     outputHumanReadable<SST::SSTElementPythonModule>(os, enableFullElementOutput);
+    outputHumanReadable<SST::Statistics::StatisticOutput>(os, enableFullElementOutput);
+    // template param is not part of output so only need to include one
+    outputHumanReadable<SST::Statistics::Statistic<uint32_t>>(os, enableFullElementOutput);
 }
 
 template <class BaseType>

@@ -17,8 +17,7 @@
 
 #include <map>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedMap class.  The class is templated to allow for Map of any
@@ -27,7 +26,7 @@ namespace Shared {
 template <typename keyT, typename valT>
 class SharedMap : public SharedObject
 {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedMap");
+    static_assert(!std::is_pointer_v<valT>, "Cannot use a pointer type as value with SharedMap");
 
     // Forward declaration.  Defined below
     class Data;
@@ -76,8 +75,8 @@ public:
     }
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
-    typedef typename std::map<keyT, valT>::const_iterator         const_iterator;
-    typedef typename std::map<keyT, valT>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::map<keyT, valT>::const_iterator;
+    using const_reverse_iterator = typename std::map<keyT, valT>::const_reverse_iterator;
 
     /**
        Get the size of the map.
@@ -372,7 +371,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDMAP_H

@@ -15,8 +15,7 @@
 #include "sst/core/component.h"
 #include "sst/core/link.h"
 
-namespace SST {
-namespace CoreTestMessageGeneratorComponent {
+namespace SST::CoreTestMessageGeneratorComponent {
 
 class coreTestMessageGeneratorComponent : public SST::Component
 {
@@ -74,7 +73,6 @@ private:
     SST::Link* remote_component;
 };
 
-} // namespace CoreTestMessageGeneratorComponent
-} // namespace SST
+} // namespace SST::CoreTestMessageGeneratorComponent
 
 #endif // SST_CORE_CORETEST_MESSAGEGENERATORCOMPONENT_H

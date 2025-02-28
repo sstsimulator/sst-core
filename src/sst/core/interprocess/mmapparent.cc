@@ -17,5 +17,5 @@
 
 #include "sst/core/interprocess/tunneldef.h"
 
-typedef SST::Core::Interprocess::TunnelDef<int, int> testtunnel;
+using testtunnel = SST::Core::Interprocess::TunnelDef<int, int>;
 template class SST::Core::Interprocess::MMAPParent<testtunnel>;

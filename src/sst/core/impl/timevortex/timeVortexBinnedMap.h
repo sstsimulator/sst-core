@@ -150,13 +150,12 @@ private:
     // for concurrent access.
     TimeUnit* current_time_unit;
 
-    typedef std::map<SimTime_t, TimeUnit*> mapType_t;
+    using mapType_t = std::map<SimTime_t, TimeUnit*>;
 
     // Accessed by multiple threads, must be locked when accessing
-    mapType_t                                                            map;
-    typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type insertOrder;
-
-    typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type current_depth;
+    mapType_t                                               map;
+    std::conditional_t<TS, std::atomic<uint64_t>, uint64_t> insertOrder;
+    std::conditional_t<TS, std::atomic<uint64_t>, uint64_t> current_depth;
 
     // Should only ever be accessed by the "active" thread, or in a
     // mutex.  There are no internal mutexes.
