@@ -19,10 +19,7 @@
 
 #include <sst/core/rng/marsaglia.h>
 
-
-namespace SST {
-namespace IMPL {
-namespace PortModule {
+namespace SST::IMPL::PortModule {
 
 class RandomDrop : public SST::PortModule
 {
@@ -88,8 +85,6 @@ private:
     std::string* print_info_ = nullptr;
 };
 
-} // namespace PortModule
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::PortModule
 
 #endif // SST_CORE_IMPL_PORTMODULE_RANDOMDROP_H

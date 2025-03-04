@@ -12,9 +12,7 @@
 
 #include "sst/core/serialization/statics.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 std::list<statics::clear_fxn>* statics::fxns_ = nullptr;
 
@@ -40,6 +38,4 @@ statics::finish()
     fxns_ = nullptr;
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization

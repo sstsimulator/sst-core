@@ -22,19 +22,17 @@
 #include <set>
 #include <unordered_set>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 template <class T>
 class serialize<std::set<T>>
 {
-    typedef std::set<T> Set;
+    using Set = std::set<T>;
 
 public:
     void operator()(Set& v, serializer& ser)
     {
-        typedef typename std::set<T>::iterator iterator;
+        using iterator = typename Set::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
@@ -84,12 +82,12 @@ public:
 template <class T>
 class serialize<std::unordered_set<T>>
 {
-    typedef std::unordered_set<T> Set;
+    using Set = std::unordered_set<T>;
 
 public:
     void operator()(Set& v, serializer& ser)
     {
-        typedef typename std::unordered_set<T>::iterator iterator;
+        using iterator = typename Set::iterator;
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
@@ -136,8 +134,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_SET_H

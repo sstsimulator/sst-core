@@ -22,10 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-
+namespace SST::Core::Serialization {
 
 /**
    Class used to map std::vectors.
@@ -55,7 +52,7 @@ class serialize_impl<std::vector<T>>
     template <class A>
     friend class serialize;
 
-    typedef std::vector<T> Vector;
+    using Vector = std::vector<T>;
 
     void operator()(Vector& v, serializer& ser)
     {
@@ -110,7 +107,7 @@ class serialize_impl<std::vector<bool>>
     template <class A>
     friend class serialize;
 
-    typedef std::vector<bool> Vector;
+    using Vector = std::vector<bool>;
 
     void operator()(Vector& v, serializer& ser)
     {
@@ -161,9 +158,6 @@ class serialize_impl<std::vector<bool>>
     // ObjectMapVector<bool> that knows how to handle the packing.
 };
 
-
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_VECTOR_H

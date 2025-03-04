@@ -15,8 +15,7 @@
 #include <iostream>
 #include <string>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 class ProvidesInterface
 {
@@ -40,8 +39,7 @@ private:
     std::string iface_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 #define SST_ELI_INTERFACE_INFO(interface) \
     static const std::string ELI_getInterface() { return interface; }

@@ -15,8 +15,7 @@
 
 #include "sst/core/stringize.h"
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) : StatisticFieldsOutput(outputParameters) {}
 
@@ -311,7 +310,7 @@ StatisticOutputTextBase::outputField(fieldHandle_t fieldHandle, double data)
 
 
 bool
-StatisticOutputTextBase::openFile(void)
+StatisticOutputTextBase::openFile()
 {
     if ( !outputsToFile() ) {
         m_hFile = stdout;
@@ -349,7 +348,7 @@ StatisticOutputTextBase::openFile(void)
 }
 
 void
-StatisticOutputTextBase::closeFile(void)
+StatisticOutputTextBase::closeFile()
 {
     if ( !outputsToFile() ) return;
     if ( m_useCompression ) {
@@ -448,5 +447,4 @@ StatisticOutputConsole::serialize_order(SST::Core::Serialization::serializer& se
     StatisticOutputTextBase::serialize_order(ser);
 }
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics

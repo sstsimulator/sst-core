@@ -26,6 +26,7 @@ class StatisticBase;
 class StatisticOutput;
 class StatisticProcessingEngine;
 
+/* A group of statistics that share a statistic output object*/
 class StatisticGroup
 {
 public:

@@ -17,8 +17,7 @@
 
 #include <set>
 
-namespace SST {
-namespace Shared {
+namespace SST::Shared {
 
 /**
    SharedSet class.  The class is templated to allow for an array
@@ -76,8 +75,8 @@ public:
     }
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
-    typedef typename std::set<valT>::const_iterator         const_iterator;
-    typedef typename std::set<valT>::const_reverse_iterator const_reverse_iterator;
+    using const_iterator         = typename std::set<valT>::const_iterator;
+    using const_reverse_iterator = typename std::set<valT>::const_reverse_iterator;
 
     /**
        Get the size of the set.
@@ -348,7 +347,6 @@ private:
     };
 };
 
-} // namespace Shared
-} // namespace SST
+} // namespace SST::Shared
 
 #endif // SST_CORE_SHARED_SHAREDSET_H

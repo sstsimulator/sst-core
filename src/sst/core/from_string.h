@@ -16,8 +16,7 @@
 #include <string>
 #include <type_traits>
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 template <class T>
 std::enable_if_t<std::is_integral_v<T>, T>
@@ -93,7 +92,6 @@ from_string(const std::string& input)
     return T(input);
 }
 
-} // end namespace Core
-} // end namespace SST
+} // end namespace SST::Core
 
 #endif // SST_CORE_FROM_STRING_H

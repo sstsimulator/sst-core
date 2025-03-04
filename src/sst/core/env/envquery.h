@@ -23,9 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace Core {
-namespace Environment {
+namespace SST::Core::Environment {
 
 /**
 Reads the next new-line delimited entry in a file and put
@@ -53,8 +51,6 @@ take precedence over the default configuration locations.
 */
 EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::string>& overridePaths);
 
-} // namespace Environment
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Environment
 
 #endif // SST_CORE_ENV_ENVQUERY_H

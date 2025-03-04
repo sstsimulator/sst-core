@@ -14,8 +14,7 @@
 
 #include "sst/core/event.h"
 
-namespace SST {
-namespace Interfaces {
+namespace SST::Interfaces {
 
 /**  Test Event
  *   Useful for early-testing of components.
@@ -40,7 +39,6 @@ public:
     ImplementSerializable(SST::Interfaces::TestEvent);
 };
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces
 
 #endif // SST_CORE_INTERFACES_TEST_EVENT_H

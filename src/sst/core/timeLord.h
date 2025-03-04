@@ -36,8 +36,8 @@ class UnitAlgebra;
  */
 class TimeLord
 {
-    typedef std::map<SimTime_t, TimeConverter*>   TimeConverterMap_t;
-    typedef std::map<std::string, TimeConverter*> StringToTCMap_t;
+    using TimeConverterMap_t = std::map<SimTime_t, TimeConverter*>;
+    using StringToTCMap_t    = std::map<std::string, TimeConverter*>;
 
 public:
     /**

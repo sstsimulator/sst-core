@@ -15,9 +15,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/sstpart.h"
 
-namespace SST {
-namespace IMPL {
-namespace Partition {
+namespace SST::IMPL::Partition {
 
 /**
    Self partitioner actually does nothing.  It is simply a pass
@@ -50,8 +48,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
 };
 
-} // namespace Partition
-} // namespace IMPL
-} // namespace SST
+} // namespace SST::IMPL::Partition
 
 #endif

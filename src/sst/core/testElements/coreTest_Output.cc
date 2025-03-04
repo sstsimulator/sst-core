@@ -15,9 +15,7 @@
 
 #include "sst/core/testElements/coreTest_Output.h"
 
-namespace SST {
-namespace CoreTestSerialization {
-
+namespace SST::CoreTestSerialization {
 
 void
 testTraceFunction(int level = 0)
@@ -57,6 +55,4 @@ coreTestOutput::coreTestOutput(ComponentId_t id, Params& params) : Component(id)
     if ( test == "TraceFunction" ) { testTraceFunction(); }
 }
 
-
-} // namespace CoreTestSerialization
-} // namespace SST
+} // namespace SST::CoreTestSerialization

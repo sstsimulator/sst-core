@@ -17,10 +17,10 @@
 #include "sst/core/warnmacros.h"
 
 namespace SST {
-
 class Params;
+}
 
-namespace Profile {
+namespace SST::Profile {
 
 /**
    ProfileTool is a class loadable through the factory which allows
@@ -49,8 +49,7 @@ protected:
     const std::string name;
 };
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile
 
 // Register profile tools.  Must register an interface
 // (API) first, then you can register a subcomponent that implements

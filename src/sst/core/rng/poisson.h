@@ -17,10 +17,7 @@
 #include "mersenne.h"
 #include "rng.h"
 
-using namespace SST::RNG;
-
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 
 /**
     \class PoissonDistribution poisson.h "sst/core/rng/poisson.h"
@@ -48,7 +45,7 @@ public:
         \param lambda The lambda of the Poisson distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    PoissonDistribution(const double mn, SST::RNG::Random* baseDist) : RandomDistribution(), lambda(mn)
+    PoissonDistribution(const double mn, Random* baseDist) : RandomDistribution(), lambda(mn)
     {
 
         baseDistrib   = baseDist;
@@ -111,11 +108,11 @@ protected:
     /**
         Sets the lambda of the Poisson distribution.
     */
-    const double      lambda;
+    const double lambda;
     /**
         Sets the base random number generator for the distribution.
     */
-    SST::RNG::Random* baseDistrib;
+    Random*      baseDistrib;
 
     /**
         Controls whether the base distribution should be deleted when this class is destructed.
@@ -123,9 +120,8 @@ protected:
     bool deleteDistrib;
 };
 
-using SSTPoissonDistribution = SST::RNG::PoissonDistribution;
+} // namespace SST::RNG
 
-} // namespace RNG
-} // namespace SST
+using SSTPoissonDistribution = SST::RNG::PoissonDistribution;
 
 #endif // SST_CORE_RNG_POISSON_H

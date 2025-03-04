@@ -18,8 +18,7 @@
 using namespace SST;
 using namespace SST::RNG;
 
-namespace SST {
-namespace CoreTestDistribComponent {
+namespace SST::CoreTestDistribComponent {
 
 class coreTestDistribComponent : public SST::Component
 {
@@ -78,7 +77,6 @@ private:
     std::map<int64_t, uint64_t>* bins;
 };
 
-} // namespace CoreTestDistribComponent
-} // namespace SST
+} // namespace SST::CoreTestDistribComponent
 
 #endif // SST_CORE_CORETEST_DISTRIBCOMPONENT_H

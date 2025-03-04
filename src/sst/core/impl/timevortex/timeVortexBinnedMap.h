@@ -150,7 +150,7 @@ private:
     // for concurrent access.
     TimeUnit* current_time_unit;
 
-    typedef std::map<SimTime_t, TimeUnit*> mapType_t;
+    using mapType_t = std::map<SimTime_t, TimeUnit*>;
 
     // Accessed by multiple threads, must be locked when accessing
     mapType_t                                               map;

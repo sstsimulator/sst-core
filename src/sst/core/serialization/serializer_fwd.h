@@ -12,14 +12,8 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZER_FWD_H
 #define SST_CORE_SERIALIZATION_SERIALIZER_FWD_H
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-
+namespace SST::Core::Serialization {
 class serializer;
-
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZER_FWD_H

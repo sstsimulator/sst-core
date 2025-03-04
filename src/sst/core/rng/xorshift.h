@@ -22,8 +22,7 @@
 #define XORSHIFT_INT32_MAX  2147483647L
 #define XORSHIFT_INT64_MAX  9223372036854775807LL
 
-namespace SST {
-namespace RNG {
+namespace SST::RNG {
 /**
     \class XORShiftRNG xorshift.h "sst/core/rng/xorshift.h"
 
@@ -101,7 +100,6 @@ protected:
     uint32_t w;
 };
 
-} // namespace RNG
-} // namespace SST
+} // namespace SST::RNG
 
 #endif // SST_CORE_RNG_XORSHIFT_H

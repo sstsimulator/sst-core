@@ -15,12 +15,8 @@
 
 #include "sst/core/objectComms.h"
 
-using namespace std;
-
-namespace SST {
-namespace Interfaces {
+namespace SST::Interfaces {
 
 const SimpleNetwork::nid_t SimpleNetwork::INIT_BROADCAST_ADDR = 0xffffffffffffffffl;
 
-} // namespace Interfaces
-} // namespace SST
+} // namespace SST::Interfaces

@@ -17,14 +17,11 @@
 
 #include <atomic>
 
-namespace SST {
-namespace Profile {
+namespace SST::Profile {
 
 SST_ELI_DEFINE_INFO_EXTERN(ProfileTool)
 SST_ELI_DEFINE_CTOR_EXTERN(ProfileTool)
 
-
 ProfileTool::ProfileTool(const std::string& name) : name(name) {}
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile

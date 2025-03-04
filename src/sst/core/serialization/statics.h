@@ -14,14 +14,12 @@
 
 #include <list>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 class statics
 {
 public:
-    typedef void (*clear_fxn)(void);
+    using clear_fxn = void (*)(void);
 
     static void register_finish(clear_fxn fxn);
 
@@ -42,8 +40,6 @@ public:
     if ( x ) delete x;     \
     x = 0
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_STATICS_H

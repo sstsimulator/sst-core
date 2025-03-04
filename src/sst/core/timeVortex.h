@@ -60,14 +60,12 @@ private:
     Simulation_impl* sim_ = nullptr;
 };
 
-namespace TV {
-namespace pvt {
+namespace TV::pvt {
 
 void pack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser);
 void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser);
 
-} // namespace pvt
-} // namespace TV
+} // namespace TV::pvt
 
 template <>
 class SST::Core::Serialization::serialize_impl<TimeVortex*>

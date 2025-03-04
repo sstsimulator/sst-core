@@ -19,12 +19,11 @@
 #include <string>
 #include <vector>
 
-namespace SST {
+namespace SST::ELI {
 
 /**************************************************************************
   BaseElementInfo class functions
 **************************************************************************/
-namespace ELI {
 
 void
 force_instantiate_bool(bool UNUSED(b), const char* UNUSED(name))
@@ -135,5 +134,4 @@ ProvidesParams::init()
     }
 }
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI

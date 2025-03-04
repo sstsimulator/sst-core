@@ -22,8 +22,7 @@
 using namespace SST;
 using namespace SST::RNG;
 
-namespace SST {
-namespace CoreTestModule {
+namespace SST::CoreTestModule {
 
 class CoreTestModuleExample : public SST::Module
 {
@@ -109,7 +108,6 @@ private:
     CoreTestModuleExample* rng_module;
 };
 
-} // namespace CoreTestModule
-} // namespace SST
+} // namespace SST::CoreTestModule
 
 #endif // SST_CORE_CORETEST_MODULE_H

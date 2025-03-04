@@ -19,9 +19,7 @@
 
 #include "sst/core/serialization/serializer.h"
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 namespace pvt {
 
 template <class TPtr, class IntType>
@@ -223,8 +221,6 @@ operator&(serializer& ser, pvt::raw_ptr_wrapper<TPtr> ptr)
     // serialize<pvt::raw_ptr_wrapper<TPtr>>()(ptr, ser);
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_ARRAY_H

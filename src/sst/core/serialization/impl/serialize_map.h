@@ -23,9 +23,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 /**
    Class used to map std::map
@@ -34,12 +32,12 @@ namespace Serialization {
 template <class Key, class Value>
 class serialize_impl<std::map<Key, Value>>
 {
-    typedef std::map<Key, Value> Map;
+    using Map = std::map<Key, Value>;
 
 public:
     void operator()(Map& m, serializer& ser)
     {
-        typedef typename std::map<Key, Value>::iterator iterator;
+        using iterator = typename std::map<Key, Value>::iterator;
         switch ( ser.mode() ) {
 
         case serializer::SIZER:
@@ -93,12 +91,12 @@ public:
 template <class Key, class Value>
 class serialize<std::unordered_map<Key, Value>>
 {
-    typedef std::unordered_map<Key, Value> Map;
+    using Map = std::unordered_map<Key, Value>;
 
 public:
     void operator()(Map& m, serializer& ser)
     {
-        typedef typename std::unordered_map<Key, Value>::iterator iterator;
+        using iterator = typename std::unordered_map<Key, Value>::iterator;
         switch ( ser.mode() ) {
 
         case serializer::SIZER:
@@ -149,8 +147,6 @@ public:
     }
 };
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_MAP_H

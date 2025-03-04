@@ -102,12 +102,12 @@ public:
     std::string toString() const override;
 
 private:
-    /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
-    typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
+    /* using HandlerMap_t = std::list<Clock::HandlerBase*>; */
+    using StaticHandlerMap_t = std::vector<Clock::HandlerBase*>;
 
     Clock() {}
 
-    void execute(void) override;
+    void execute() override;
 
     Cycle_t            currentCycle;
     TimeConverter*     period;

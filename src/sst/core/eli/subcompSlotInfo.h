@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct InfoSubs
@@ -67,8 +66,7 @@ private:
     std::vector<ElementInfoSubComponentSlot> slots_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
 #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                                                               \

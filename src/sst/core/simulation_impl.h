@@ -131,8 +131,8 @@ public:
 
     /******** End Public API from Simulation ********/
 
-    typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;   /*!< Map of times to clocks */
-    typedef std::map<std::pair<SimTime_t, int>, OneShot*> oneShotMap_t; /*!< Map of times to OneShots */
+    using clockMap_t   = std::map<std::pair<SimTime_t, int>, Clock*>;   /*!< Map of times to clocks */
+    using oneShotMap_t = std::map<std::pair<SimTime_t, int>, OneShot*>; /*!< Map of times to OneShots */
 
     ~Simulation_impl();
 
@@ -142,7 +142,7 @@ public:
     static Simulation_impl* getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
 
     /** Return the TimeLord associated with this Simulation */
-    static TimeLord* getTimeLord(void) { return &timeLord; }
+    static TimeLord* getTimeLord() { return &timeLord; }
 
     /** Return the base simulation Output class instance */
     static Output& getSimulationOutput() { return sim_output; }
@@ -237,7 +237,7 @@ public:
     }
 
     /** Returns reference to the Component Info Map */
-    const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
+    const ComponentInfoMap& getComponentInfoMap() { return compInfoMap; }
 
     /** returns the component with the given ID */
     BaseComponent* getComponent(const ComponentId_t& id) const
@@ -323,7 +323,7 @@ public:
     SimTime_t getClockForHandler(Clock::HandlerBase* handler);
 
     /** Return the Statistic Processing Engine associated with this Simulation */
-    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void);
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine();
 
 
     friend class Link;
@@ -400,14 +400,14 @@ public:
 
     /** Normal Shutdown
      */
-    void endSimulation(void);
+    void endSimulation();
     void endSimulation(SimTime_t end);
 
-    typedef enum {
+    enum ShutdownMode_t {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
         SHUTDOWN_SIGNAL,    /* SIGINT or SIGTERM received */
         SHUTDOWN_EMERGENCY, /* emergencyShutdown() called */
-    } ShutdownMode_t;
+    };
 
     friend class SyncManager;
 

@@ -23,8 +23,7 @@ REENABLE_WARNING
 #include <map>
 #include <string>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 /**
     \class StatisticOutputHDF5
@@ -114,14 +113,14 @@ protected:
     StatisticOutputHDF5(); // For serialization
 
 private:
-    typedef union {
+    union StatData_u {
         int32_t  i32;
         uint32_t u32;
         int64_t  i64;
         uint64_t u64;
         float    f;
         double   d;
-    } StatData_u;
+    };
 
     class DataSet
     {
@@ -251,7 +250,6 @@ private:
     StatisticInfo* getStatisticInfo(StatisticBase* statistic);
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATOUTPUTHDF5_H

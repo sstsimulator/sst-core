@@ -136,7 +136,7 @@ public:
 
 
     /** Function which will be called when the time for this Activity comes to pass. */
-    virtual void execute(void) = 0;
+    virtual void execute() = 0;
 
     /** Set the time for which this Activity should be delivered */
     inline void setDeliveryTime(SimTime_t time) { delivery_time = time; }

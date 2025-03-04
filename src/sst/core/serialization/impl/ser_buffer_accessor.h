@@ -22,10 +22,7 @@
 #include <cstring>
 #include <exception>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 // class ser_buffer_overrun : public spkt_error {
 class ser_buffer_overrun : public std::exception
@@ -92,9 +89,6 @@ protected:
     size_t max_size_;
 };
 
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SER_BUFFER_ACCESSOR_H

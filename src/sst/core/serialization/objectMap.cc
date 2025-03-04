@@ -17,9 +17,7 @@
 
 #include <cxxabi.h>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
+namespace SST::Core::Serialization {
 
 // Static variable instantiation
 std::vector<std::pair<std::string, ObjectMap*>> ObjectMap::emptyVars;
@@ -211,6 +209,4 @@ ObjectMap::listRecursive(const std::string& name, int level, int recurse)
     return ret;
 }
 
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization

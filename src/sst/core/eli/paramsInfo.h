@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace SST {
-namespace ELI {
+namespace SST::ELI {
 
 template <typename, typename = void>
 struct GetParams
@@ -77,8 +76,7 @@ private:
     std::vector<ElementInfoParam> params_;
 };
 
-} // namespace ELI
-} // namespace SST
+} // namespace SST::ELI
 
 // clang-format off
 #define SST_ELI_DOCUMENT_PARAMS(...)                                                                           \

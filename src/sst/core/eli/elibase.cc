@@ -13,12 +13,11 @@
 
 #include "sst/core/eli/elibase.h"
 
-namespace SST {
+namespace SST::ELI {
 
 /**************************************************************************
   BaseElementInfo class functions
 **************************************************************************/
-namespace ELI {
 
 bool
 LoadedLibraries::addLoader(
@@ -31,6 +30,3 @@ LoadedLibraries::addLoader(
     library[name].push_back(std::move(shared_loader));
     return true;
 }
-
-} // namespace ELI
-} // namespace SST

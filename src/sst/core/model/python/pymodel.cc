@@ -1017,7 +1017,7 @@ static struct PyModuleDef sstModuleDef
 #endif
 
 static PyObject*
-PyInit_sst(void)
+PyInit_sst()
 {
     // Initialize our types
     PyModel_ComponentType.tp_new    = PyType_GenericNew;
@@ -1347,7 +1347,7 @@ SSTPythonModelDefinition::pushNamePrefix(const char* name)
 }
 
 void
-SSTPythonModelDefinition::popNamePrefix(void)
+SSTPythonModelDefinition::popNamePrefix()
 {
     if ( nameStack.empty() ) return;
     size_t off = nameStack.back();

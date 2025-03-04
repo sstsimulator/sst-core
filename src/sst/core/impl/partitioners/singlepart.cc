@@ -16,8 +16,6 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/warnmacros.h"
 
-using namespace std;
-
 using namespace SST::IMPL::Partition;
 
 SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}

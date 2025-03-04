@@ -21,10 +21,10 @@
 #include <map>
 
 namespace SST {
-
 class BaseComponent;
+}
 
-namespace Profile {
+namespace SST::Profile {
 
 // Base class for profiling tools designed to profile in Components
 // and SubComponents. For these types of profiling tools, you can
@@ -188,7 +188,6 @@ private:
     std::map<std::string, segment_data_t> times_;
 };
 
-} // namespace Profile
-} // namespace SST
+} // namespace SST::Profile
 
 #endif // SST_CORE_PROFILE_COMPONENTPROFILETOOL_H

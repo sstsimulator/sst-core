@@ -14,8 +14,7 @@
 
 #include "sst/core/component.h"
 
-namespace SST {
-namespace CoreTestClockerComponent {
+namespace SST::CoreTestClockerComponent {
 
 class coreTestClockerComponent : public SST::Component
 {
@@ -75,7 +74,6 @@ private:
     int         clock_count;
 };
 
-} // namespace CoreTestClockerComponent
-} // namespace SST
+} // namespace SST::CoreTestClockerComponent
 
 #endif // SST_CORE_CORETEST_CLOCKERCOMPONENT_H
