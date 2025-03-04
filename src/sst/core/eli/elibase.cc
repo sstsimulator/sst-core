@@ -30,3 +30,5 @@ LoadedLibraries::addLoader(
     library[name].push_back(std::move(shared_loader));
     return true;
 }
+
+} // namespace SST::ELI
