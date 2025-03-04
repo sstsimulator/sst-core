@@ -51,7 +51,7 @@ public:
 
     void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
 
-    virtual const std::string& getStatTypeName() const { return stat_type_; }
+    virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
 private:
     inline static const std::string stat_type_ = "NULL";
@@ -70,7 +70,7 @@ public:
 
     void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
 
-    virtual const std::string& getStatTypeName() const { return stat_type_; }
+    virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
 private:
     inline static const std::string stat_type_ = "NULL";
@@ -91,7 +91,7 @@ public:
     void addData_impl_Ntimes(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
     void addData_impl_Ntimes(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
 
-    virtual const std::string& getStatTypeName() const { return stat_type_; }
+    virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
 private:
     inline static const std::string stat_type_ = "NULL";
@@ -164,7 +164,7 @@ public:
 
     virtual std::string getELIName() const override { return "sst.NullStatistic"; }
 
-    virtual const std::string& getStatTypeName() const { return stat_type_; }
+    virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
 private:
     inline static const std::string stat_type_ = "NULL";
