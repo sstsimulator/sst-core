@@ -56,12 +56,12 @@ struct StatPair
 struct StatGroupPair
 {
     std::pair<const std::string, SST::ConfigStatGroup> const& group;
-    SST::ConfigGraph const* graph;
+    SST::ConfigGraph const*                                   graph;
 };
 
 struct StatGroupParamPair
 {
-    const std::string name;
+    const std::string  name;
     const SST::Params& stat;
 };
 
@@ -155,43 +155,39 @@ to_json(json::ordered_json& j, StatGroupParamPair const& pair)
 
     j["name"] = pair.name;
 
-    for ( auto const& param : outParams.getKeys() ){
-      j["params"][param] = outParams.find<std::string>(param);
+    for ( auto const& param : outParams.getKeys() ) {
+        j["params"][param] = outParams.find<std::string>(param);
     }
 }
 
 void
 to_json(json::ordered_json& j, StatGroupPair const& pair)
 {
-    auto const& grp = pair.group.second;
+    auto const& grp   = pair.group.second;
     auto const* graph = pair.graph;
 
     j["name"] = grp.name;
 
-    if ( grp.outputFrequency.getValue() != 0 ) {
-      j["frequency"] = grp.outputFrequency.toStringBestSI();
-    }
+    if ( grp.outputFrequency.getValue() != 0 ) { j["frequency"] = grp.outputFrequency.toStringBestSI(); }
 
     if ( grp.outputID != 0 ) {
-      const SST::ConfigStatOutput& out = graph->getStatOutput(grp.outputID);
-      j["output"]["type"] = out.type;
-      if ( !out.params.empty() ) {
-        const SST::Params& outParams = graph->getStatOutput().params;
-        for( auto const& param : outParams.getKeys() ){
-          j["output"]["params"][param] = outParams.find<std::string>(param);
+        const SST::ConfigStatOutput& out = graph->getStatOutput(grp.outputID);
+        j["output"]["type"]              = out.type;
+        if ( !out.params.empty() ) {
+            const SST::Params& outParams = graph->getStatOutput().params;
+            for ( auto const& param : outParams.getKeys() ) {
+                j["output"]["params"][param] = outParams.find<std::string>(param);
+            }
         }
-      }
     }
 
     for ( auto& i : grp.statMap ) {
-      if ( !i.second.empty() ) {
-        j["statistics"].emplace_back( StatGroupParamPair { i.first, i.second });
-      }
+        if ( !i.second.empty() ) { j["statistics"].emplace_back(StatGroupParamPair { i.first, i.second }); }
     }
 
     for ( SST::ComponentId_t id : grp.components ) {
-      const SST::ConfigComponent* comp       = graph->findComponent(id);
-      j["components"].emplace_back( comp->name );
+        const SST::ConfigComponent* comp = graph->findComponent(id);
+        j["components"].emplace_back(comp->name);
     }
 }
 } // namespace
@@ -231,26 +227,26 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 
     // Global statistics
     if ( 0 != graph->getStatLoadLevel() ) {
-      outputJson["statistics_options"]["statisticLoadLevel"] = (uint64_t)graph->getStatLoadLevel();
+        outputJson["statistics_options"]["statisticLoadLevel"] = (uint64_t)graph->getStatLoadLevel();
     }
 
     if ( !graph->getStatOutput().type.empty() ) {
-      outputJson["statistics_options"]["statisticOutput"]    = graph->getStatOutput().type.c_str();
-      const Params& outParams = graph->getStatOutput().params;
-      if ( !outParams.empty() ) {
-        // generate the parameters
-        for ( auto const& paramsItr : getParamsLocalKeys(outParams) ) {
-          outputJson["statistics_options"]["params"][paramsItr] = outParams.find<std::string>(paramsItr);
+        outputJson["statistics_options"]["statisticOutput"] = graph->getStatOutput().type.c_str();
+        const Params& outParams                             = graph->getStatOutput().params;
+        if ( !outParams.empty() ) {
+            // generate the parameters
+            for ( auto const& paramsItr : getParamsLocalKeys(outParams) ) {
+                outputJson["statistics_options"]["params"][paramsItr] = outParams.find<std::string>(paramsItr);
+            }
         }
-      }
     }
 
     // Generate the stat groups
     if ( !graph->getStatGroups().empty() ) {
-      outputJson["statistics_group"];
-      for ( auto& grp : graph->getStatGroups() ) {
-        outputJson["statistics_group"].emplace_back(StatGroupPair { grp, graph });
-      }
+        outputJson["statistics_group"];
+        for ( auto& grp : graph->getStatGroups() ) {
+            outputJson["statistics_group"].emplace_back(StatGroupPair { grp, graph });
+        }
     }
 
     // no components exist in this rank
