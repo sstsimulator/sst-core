@@ -293,9 +293,8 @@ start_graph_creation(
         }
     }
 
-
     // Create the model generator
-    SSTModelDescription* modelGen = nullptr;
+    std::unique_ptr<SSTModelDescription> modelGen;
 
     force_rank_sequential_start(cfg.rank_seq_startup(), myRank, world_size);
 
@@ -320,8 +319,8 @@ start_graph_creation(
         }
 
         if ( myRank.rank == 0 || cfg.parallel_load() ) {
-            modelGen = factory->Create<SSTModelDescription>(
-                model_name, cfg.configFile(), cfg.verbose(), &cfg, sst_get_cpu_time());
+            modelGen.reset(factory->Create<SSTModelDescription>(
+                model_name, cfg.configFile(), cfg.verbose(), &cfg, sst_get_cpu_time()));
         }
     }
 
@@ -356,12 +355,6 @@ start_graph_creation(
         }
     }
 #endif
-
-    // Delete the model generator
-    if ( modelGen ) {
-        delete modelGen;
-        modelGen = nullptr;
-    }
 
     return start_graph_gen;
 }
