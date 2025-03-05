@@ -59,6 +59,21 @@ ConfigBase::parseBoolean(const std::string& arg, bool& success, const std::strin
 uint32_t
 ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option)
 {
+    // first attempt to parse seconds only. Assume \d+[s] until it's not
+    uint32_t seconds = 0;
+    std::string str = arg;
+    if (!str.empty()) {
+        if (str.back()=='s') str.pop_back();
+        try {
+            size_t pos;
+            seconds = std::stoul(str, &pos, 10);
+            if ( pos == str.size() ) {
+                success=true;
+                return seconds;
+            } 
+        } catch (const std::exception& e) {}
+    }
+
     static const char* templates[] = { "%H:%M:%S", "%M:%S", "%S", "%Hh", "%Mm", "%Ss" };
     const size_t       n_templ     = sizeof(templates) / sizeof(templates[0]);
 #pragma GCC diagnostic push
@@ -66,7 +81,6 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
     struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
 #pragma GCC diagnostic pop
     char*    p;
-    uint32_t seconds;
 
     for ( size_t i = 0; i < n_templ; i++ ) {
         memset(&res, '\0', sizeof(res));
