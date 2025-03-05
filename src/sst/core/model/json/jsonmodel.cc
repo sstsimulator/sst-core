@@ -294,6 +294,130 @@ SSTJSONModelDefinition::discoverGlobalParams(const json& jFile)
     }
 }
 
+void
+SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
+{
+    std::string      Name;
+    std::string      Frequency;
+    std::string      Type;
+    std::string      StatName;
+
+    for ( auto& statArray : jFile["statistics_group"] ) {
+        // -- Name
+        auto x = statArray.find("name");
+        if ( x != statArray.end() ) { Name = x.value(); }
+        else {
+            output->fatal(
+                CALL_INFO, 1, "Error discovering statistics group name from script: %s\n", scriptName.c_str());
+        }
+        auto *csg = graph->getStatGroup(Name);
+        if( csg == nullptr ) {
+          output->fatal(
+            CALL_INFO, 1,
+            "Error creating statistics group from script %s; name=%s\n",
+            scriptName.c_str(), Name.c_str());
+        }
+
+        // -- Frequency
+        auto f = statArray.find("frequency");
+        if ( f != statArray.end() ) { Frequency = f.value(); }
+        else {
+            output->fatal(
+                CALL_INFO, 1, "Error discovering statistics group frequency from script: %s\n", scriptName.c_str());
+        }
+
+        if ( !csg->setFrequency(Frequency) ){
+          output->fatal(
+            CALL_INFO, 1, "Error setting frequency for statistics group: %s\n",
+            Name.c_str() );
+        }
+
+        // -- output
+        if ( statArray.contains("output") ) {
+          auto &statOuts = graph->getStatOutputs();
+          if ( statArray.at( "output" ).contains( "type" ) ) {
+            statArray.at( "output" ).at( "type" ).get_to( Type );
+          }else{
+            output->fatal(
+              CALL_INFO, 1,
+              "Error discovering statistics group output type for group: %s\n",
+              Name.c_str() );
+          }
+
+          statOuts.emplace_back( ConfigStatOutput( Type ) );
+
+          if ( statArray.at("output").contains("params") ){
+            for ( auto& paramArray : statArray.at( "output" ).at( "params" ).items() ){
+              statOuts.back().addParameter( paramArray.key(), paramArray.value() );
+            }
+          }
+        }
+
+        // -- statistics
+        if ( statArray.contains("statistics") ) {
+          // -- stat name
+          if ( statArray.at("statistics").contains("name") ) {
+            auto sn = statArray.at("statistics").find("name");
+            if ( sn != statArray.end() ) { StatName = sn.value(); }
+            else {
+                output->fatal(
+                  CALL_INFO, 1,
+                  "Error discovering statistics group stat name from script: %s\n", scriptName.c_str());
+            }
+          }
+
+          // -- stat params
+          Params StatParams;
+          if ( statArray.at("statistics").contains("params") ){
+              for ( auto& paramArray : statArray.at("statistics").at("params").items() ){
+                StatParams.insert( paramArray.key(), paramArray.value() );
+              }
+          }
+
+          csg->addStatistic( StatName, StatParams );
+        }
+
+        // -- components
+        if ( statArray.contains("components") ) {
+            for ( auto& compArray : statArray["components"].items() ) {
+              csg->addComponent(findComponentIdByName(compArray.value()));
+            }
+        }
+    }
+}
+
+void
+SSTJSONModelDefinition::discoverStatistics(const json& jFile)
+{
+    // discover the global statistics options
+    if ( jFile.contains("statistics_options") ) {
+        for ( auto& option : jFile["statistics_options"] ) {
+            // -- statisticLoadLevel
+            auto ll = option.find("statisticLoadLevel");
+            if( ll != option.end() ) {
+              graph->setStatisticLoadLevel( ll.value() );
+            }
+
+            // -- statisticOutput
+            auto so = option.find("statisticOutput");
+            if( so != option.end() ) {
+              graph->setStatisticOutput( so.value() );
+            }
+
+            // -- params
+            if ( option.contains("params") ){
+              for ( auto& paramArray : option.at("params").items() ){
+                  graph->addStatisticOutputParameter( paramArray.key(), paramArray.value() );
+              }
+            }
+        }
+    }
+    // discover the statistics groups
+    if ( jFile.contains("statistics_group") ) {
+        setStatGroupOptions(jFile);
+    }
+}
+
 ConfigGraph*
 SSTJSONModelDefinition::createConfigGraph()
 {
@@ -322,7 +446,8 @@ SSTJSONModelDefinition::createConfigGraph()
     // discover the links
     discoverLinks(jFile);
 
-    // TODO: discover statistics
+    // discover statistics
+    discoverStatistics(jFile);
 
     return graph;
 }
