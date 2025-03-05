@@ -1191,7 +1191,7 @@ def testing_stat_output_diff(
 
 ### Built in LineFilters for filtering diffs
 class LineFilter:
-    def __init__(self):
+    def __init__(self) -> None:
         self.apply_to_ref_file = True
         self.apply_to_out_file = True
 
@@ -1883,7 +1883,7 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
     try:
         this_tar = tarfile.open(tarfilepath)
         if sys.version_info.minor >= 12:
-            this_tar.extractall(targetdir, filter="data")
+            this_tar.extractall(targetdir, filter="data")  # type: ignore [call-arg]
         else:
             this_tar.extractall(targetdir)
         this_tar.close()
