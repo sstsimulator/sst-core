@@ -804,7 +804,7 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     heartbeat_wall_period_ = 0;
 
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
-    getcwd(wd_buf, PATH_MAX);
+    (void)!getcwd(wd_buf, PATH_MAX);
 
     output_directory_ = "";
     if ( nullptr != wd_buf ) {
