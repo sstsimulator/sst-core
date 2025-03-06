@@ -145,8 +145,8 @@ struct CachedAllocator
     template <class... Args>
     Base* operator()(Args&&... ctorArgs)
     {
-        static T cached(std::forward<Args>(ctorArgs)...);
-        return &cached;
+        static T* cached = new T(std::forward<Args>(ctorArgs)...);
+        return cached;
     }
 };
 
