@@ -230,7 +230,7 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
                 // loop all the elements in the element lib
                 for ( auto& elempair : libpair.second ) {
                     // loop all the loaders in the element
-                    for ( auto* loader : elempair.second ) {
+                    for ( auto& loader : elempair.second ) {
                         loader->load();
                     }
                 }
