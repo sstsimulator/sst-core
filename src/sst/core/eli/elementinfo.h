@@ -71,7 +71,7 @@ public:
     static void add(const std::string& elemlib, const std::string& elem, T* info) { infos()[elemlib][elem] = info; }
 
 private:
-    static auto& infos()
+    static std::map<std::string, std::map<std::string, T*>>& infos()
     {
         static std::map<std::string, std::map<std::string, T*>> infos_;
         return infos_;
@@ -158,7 +158,7 @@ public:
         return count;
     }
 
-    const auto& getMap() const { return infos_; }
+    const std::map<std::string, BaseInfo*>& getMap() const { return infos_; }
 
     void readdInfo(const std::string& name, BaseInfo* info)
     {
