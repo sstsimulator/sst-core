@@ -45,10 +45,10 @@ public:
     ImplementSerializable(SST::SimulatorHeartbeat)
 
 private:
-    SimulatorHeartbeat() {};
-    SimulatorHeartbeat(const SimulatorHeartbeat&);
+    SimulatorHeartbeat()                          = default;
+    SimulatorHeartbeat(const SimulatorHeartbeat&) = delete;
+    SimulatorHeartbeat& operator=(const SimulatorHeartbeat&) = delete;
 
-    void           operator=(SimulatorHeartbeat const&);
     void           execute() override;
     int            rank;
     TimeConverter* m_period;

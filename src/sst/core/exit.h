@@ -98,9 +98,9 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Exit)
 private:
-    Exit() {}                    // for serialization only
-    Exit(const Exit&);           // Don't implement
-    void operator=(Exit const&); // Don't implement
+    Exit()            = default;           // for serialization only
+    Exit(const Exit&) = delete;            // Don't implement
+    Exit& operator=(const Exit&) = delete; // Don't implement
 
     //     bool handler( Event* );
 

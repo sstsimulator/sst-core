@@ -314,9 +314,8 @@ private:
     Factory(const std::string& searchPaths);
     ~Factory();
 
-    Factory();                      // Don't Implement
-    Factory(Factory const&);        // Don't Implement
-    void operator=(Factory const&); // Don't Implement
+    Factory(const Factory&) = delete;            // Don't Implement
+    Factory& operator=(const Factory&) = delete; // Don't Implement
 
     static Factory* instance;
 

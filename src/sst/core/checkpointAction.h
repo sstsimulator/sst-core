@@ -84,10 +84,9 @@ public:
     NotSerializable(SST::CheckpointAction);
 
 private:
-    CheckpointAction() {}
-    CheckpointAction(const CheckpointAction&);
+    CheckpointAction(const CheckpointAction&) = delete;
+    CheckpointAction& operator=(const CheckpointAction&) = delete;
 
-    void operator=(CheckpointAction const&);
     void createCheckpoint(Simulation_impl* sim); // The actual checkpoint operation
 
     RankInfo       rank_;          // RankInfo for this thread/rank
