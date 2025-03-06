@@ -123,8 +123,8 @@ public:
     coreTestComponent(); // for serialization only
 
 private:
-    coreTestComponent(const coreTestComponent&); // do not implement
-    void operator=(const coreTestComponent&);    // do not implement
+    coreTestComponent(const coreTestComponent&) = delete;            // do not implement
+    coreTestComponent& operator=(const coreTestComponent&) = delete; // do not implement
 
     void         handleEvent(SST::Event* ev);
     virtual bool clockTic(SST::Cycle_t);

@@ -92,8 +92,8 @@ private:
     TimeLord() : initialized(false) {}
     ~TimeLord();
 
-    TimeLord(TimeLord const&);       // Don't Implement
-    void operator=(TimeLord const&); // Don't Implement
+    TimeLord(const TimeLord&) = delete;            // Don't Implement
+    TimeLord& operator=(const TimeLord&) = delete; // Don't Implement
 
     bool                 initialized;
     std::recursive_mutex slock;

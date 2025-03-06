@@ -332,10 +332,9 @@ public:
     // To enable main to set up globals
     friend int ::main(int argc, char** argv);
 
-    Simulation_impl() {}
     Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
-    Simulation_impl(Simulation_impl const&); // Don't Implement
-    void operator=(Simulation_impl const&);  // Don't implement
+    Simulation_impl(const Simulation_impl&) = delete;            // Don't Implement
+    Simulation_impl& operator=(const Simulation_impl&) = delete; // Don't implement
 
     /** Get a handle to a TimeConverter
      * @param cycles Frequency which is the base of the TimeConverter

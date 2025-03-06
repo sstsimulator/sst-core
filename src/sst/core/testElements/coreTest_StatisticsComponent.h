@@ -65,8 +65,8 @@ public:
 
 private:
     StatisticsComponentInt();
-    StatisticsComponentInt(const StatisticsComponentInt&); // do not implement
-    void operator=(const StatisticsComponentInt&);         // do not implement
+    StatisticsComponentInt(const StatisticsComponentInt&) = delete;            // do not implement
+    StatisticsComponentInt& operator=(const StatisticsComponentInt&) = delete; // do not implement
 
     virtual bool Clock1Tick(SST::Cycle_t);
 
@@ -126,8 +126,8 @@ public:
 
 private:
     StatisticsComponentFloat();
-    StatisticsComponentFloat(const StatisticsComponentFloat&); // do not implement
-    void operator=(const StatisticsComponentFloat&);           // do not implement
+    StatisticsComponentFloat(const StatisticsComponentFloat&) = delete; // do not implement
+    void operator=(const StatisticsComponentFloat&) = delete;           // do not implement
 
     virtual bool Clock1Tick(SST::Cycle_t);
 
