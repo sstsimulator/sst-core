@@ -71,6 +71,7 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
 {
     std::string      Name;
     std::string      Type;
+    std::string      StatName;
     ConfigComponent* Comp = nullptr;
     int              Slot = 0;
 
@@ -119,6 +120,32 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
             }
         }
 
+        // read the statistics
+        if ( subArray.contains("statistics") ) {
+            for ( auto& stats : compArray.at("statistics") ) {
+                // -- stat name
+                if ( stats.contains("name") ) {
+                    auto sn = stats.find("name");
+                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    else {
+                        output->fatal(
+                            CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
+                            scriptName.c_str());
+                    }
+                }
+
+                // -- stat params
+                Params StatParams;
+                if ( stats.contains("params") ) {
+                    for ( auto& paramArray : stats.at("params").items() ) {
+                        StatParams.insert(paramArray.key(), paramArray.value());
+                    }
+                }
+
+                Comp->enableStatistic(StatName, StatParams);
+            }
+        }
+
         // recursively build up the subcomponents
         if ( subArray.contains("subcomponents") ) {
             auto& subsubArray = subArray["subcomponents"];
@@ -132,6 +159,7 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
 {
     std::string      Name;
     std::string      Type;
+    std::string      StatName;
     ComponentId_t    Id;
     ConfigComponent* Comp   = nullptr;
     uint32_t         rank   = 0;
@@ -182,6 +210,32 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
                 else if ( partArray.key() == "thread" ) {
                     thread = partArray.value();
                 }
+            }
+        }
+
+        // read the statistics
+        if ( compArray.contains("statistics") ) {
+            for ( auto& stats : compArray.at("statistics") ) {
+                // -- stat name
+                if ( stats.contains("name") ) {
+                    auto sn = stats.find("name");
+                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    else {
+                        output->fatal(
+                            CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
+                            scriptName.c_str());
+                    }
+                }
+
+                // -- stat params
+                Params StatParams;
+                if ( stats.contains("params") ) {
+                    for ( auto& paramArray : stats.at("params").items() ) {
+                        StatParams.insert(paramArray.key(), paramArray.value());
+                    }
+                }
+
+                Comp->enableStatistic(StatName, StatParams);
             }
         }
 
@@ -302,14 +356,15 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
     std::string Type;
     std::string StatName;
 
-    for ( auto& statArray : jFile["statistics_group"] ) {
-        // -- Name
+    for ( auto& statArray : jFile.at("statistics_group") ) {
+        // -- name
         auto x = statArray.find("name");
         if ( x != statArray.end() ) { Name = x.value(); }
         else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering statistics group name from script: %s\n", scriptName.c_str());
         }
+
         auto* csg = graph->getStatGroup(Name);
         if ( csg == nullptr ) {
             output->fatal(
@@ -317,14 +372,13 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
                 Name.c_str());
         }
 
-        // -- Frequency
+        // -- frequency
         auto f = statArray.find("frequency");
         if ( f != statArray.end() ) { Frequency = f.value(); }
         else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering statistics group frequency from script: %s\n", scriptName.c_str());
         }
-
         if ( !csg->setFrequency(Frequency) ) {
             output->fatal(CALL_INFO, 1, "Error setting frequency for statistics group: %s\n", Name.c_str());
         }
@@ -339,6 +393,7 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
             }
 
             statOuts.emplace_back(ConfigStatOutput(Type));
+            csg->setOutput( statOuts.size()-1 );
 
             if ( statArray.at("output").contains("params") ) {
                 for ( auto& paramArray : statArray.at("output").at("params").items() ) {
@@ -349,26 +404,37 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
 
         // -- statistics
         if ( statArray.contains("statistics") ) {
-            // -- stat name
-            if ( statArray.at("statistics").contains("name") ) {
-                auto sn = statArray.at("statistics").find("name");
-                if ( sn != statArray.end() ) { StatName = sn.value(); }
-                else {
+            for ( auto& stats : statArray.at("statistics") ) {
+                // -- stat name
+                if ( stats.contains("name") ) {
+                    auto sn = stats.find("name");
+                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    else {
+                        output->fatal(
+                            CALL_INFO, 1, "Error discovering statistics group stat name from script: %s\n",
+                            scriptName.c_str());
+                    }
+                }
+
+                // -- stat params
+                Params StatParams;
+                if ( stats.contains("params") ) {
+                    for ( auto& paramArray : stats.at("params").items() ) {
+                        StatParams.insert(paramArray.key(), paramArray.value());
+                    }
+                }
+
+                csg->addStatistic(StatName, StatParams);
+
+                bool verified;
+                std::string reason;
+                std::tie(verified, reason) = csg->verifyStatsAndComponents(graph);
+                if ( !verified ) {
                     output->fatal(
-                        CALL_INFO, 1, "Error discovering statistics group stat name from script: %s\n",
-                        scriptName.c_str());
+                        CALL_INFO, 1, "Error verifying statistics and components: %s\n",
+                        reason.c_str() );
                 }
             }
-
-            // -- stat params
-            Params StatParams;
-            if ( statArray.at("statistics").contains("params") ) {
-                for ( auto& paramArray : statArray.at("statistics").at("params").items() ) {
-                    StatParams.insert(paramArray.key(), paramArray.value());
-                }
-            }
-
-            csg->addStatistic(StatName, StatParams);
         }
 
         // -- components
@@ -385,20 +451,21 @@ SSTJSONModelDefinition::discoverStatistics(const json& jFile)
 {
     // discover the global statistics options
     if ( jFile.contains("statistics_options") ) {
-        for ( auto& option : jFile["statistics_options"] ) {
-            // -- statisticLoadLevel
-            auto ll = option.find("statisticLoadLevel");
-            if ( ll != option.end() ) { graph->setStatisticLoadLevel(ll.value()); }
+        if( jFile.at("statistics_options").contains("statisticLoadLevel") ) {
+            uint8_t loadLevel;
+            jFile.at("statistics_options").at("statisticLoadLevel").get_to(loadLevel);
+            graph->setStatisticLoadLevel(loadLevel);
+        }
 
-            // -- statisticOutput
-            auto so = option.find("statisticOutput");
-            if ( so != option.end() ) { graph->setStatisticOutput(so.value()); }
+        if( jFile.at("statistics_options").contains("statisticOutput") ) {
+            std::string output;
+            jFile.at("statistics_options").at("statisticOutput").get_to(output);
+            graph->setStatisticOutput(output);
+        }
 
-            // -- params
-            if ( option.contains("params") ) {
-                for ( auto& paramArray : option.at("params").items() ) {
-                    graph->addStatisticOutputParameter(paramArray.key(), paramArray.value());
-                }
+        if( jFile.at("statistics_options").contains("params") ) {
+            for ( auto& paramArray : jFile.at("statistics_options").at("params").items() ) {
+                graph->addStatisticOutputParameter(paramArray.key(), paramArray.value());
             }
         }
     }

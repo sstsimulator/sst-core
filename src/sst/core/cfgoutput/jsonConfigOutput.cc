@@ -56,6 +56,7 @@ struct StatPair
 struct StatGroupPair
 {
     std::pair<const std::string, SST::ConfigStatGroup> const& group;
+    std::vector<std::string>                                  vec;
     SST::ConfigGraph const*                                   graph;
 };
 
@@ -165,6 +166,7 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
 {
     auto const& grp   = pair.group.second;
     auto const* graph = pair.graph;
+    auto vec          = pair.vec;
 
     j["name"] = grp.name;
 
@@ -174,8 +176,8 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
         const SST::ConfigStatOutput& out = graph->getStatOutput(grp.outputID);
         j["output"]["type"]              = out.type;
         if ( !out.params.empty() ) {
-            const SST::Params& outParams = graph->getStatOutput().params;
-            for ( auto const& param : outParams.getKeys() ) {
+            const SST::Params& outParams = out.params;
+            for ( auto const& param : vec ) {
                 j["output"]["params"][param] = outParams.find<std::string>(param);
             }
         }
@@ -245,7 +247,8 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     if ( !graph->getStatGroups().empty() ) {
         outputJson["statistics_group"];
         for ( auto& grp : graph->getStatGroups() ) {
-            outputJson["statistics_group"].emplace_back(StatGroupPair { grp, graph });
+            auto vec = getParamsLocalKeys(graph->getStatOutput(grp.second.outputID).params);
+            outputJson["statistics_group"].emplace_back(StatGroupPair { grp, vec, graph });
         }
     }
 
