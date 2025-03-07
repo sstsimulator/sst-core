@@ -374,13 +374,11 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
 
         // -- frequency
         auto f = statArray.find("frequency");
-        if ( f != statArray.end() ) { Frequency = f.value(); }
-        else {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering statistics group frequency from script: %s\n", scriptName.c_str());
-        }
-        if ( !csg->setFrequency(Frequency) ) {
-            output->fatal(CALL_INFO, 1, "Error setting frequency for statistics group: %s\n", Name.c_str());
+        if ( f != statArray.end() ) {
+            Frequency = f.value();
+            if ( !csg->setFrequency(Frequency) ) {
+                output->fatal(CALL_INFO, 1, "Error setting frequency for statistics group: %s\n", Name.c_str());
+            }
         }
 
         // -- output
