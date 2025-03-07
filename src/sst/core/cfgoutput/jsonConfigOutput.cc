@@ -53,6 +53,19 @@ struct StatPair
     SST::ConfigComponent const*                  comp;
 };
 
+struct StatGroupPair
+{
+    std::pair<const std::string, SST::ConfigStatGroup> const& group;
+    std::vector<std::string>                                  vec;
+    SST::ConfigGraph const*                                   graph;
+};
+
+struct StatGroupParamPair
+{
+    const std::string  name;
+    const SST::Params& stat;
+};
+
 void
 to_json(json::ordered_json& j, StatPair const& sp)
 {
@@ -136,6 +149,49 @@ to_json(json::ordered_json& j, LinkConfPair const& pair)
     j["right"]["latency"]   = link->latency_str[1];
 }
 
+void
+to_json(json::ordered_json& j, StatGroupParamPair const& pair)
+{
+    auto const& outParams = pair.stat;
+
+    j["name"] = pair.name;
+
+    for ( auto const& param : outParams.getKeys() ) {
+        j["params"][param] = outParams.find<std::string>(param);
+    }
+}
+
+void
+to_json(json::ordered_json& j, StatGroupPair const& pair)
+{
+    auto const& grp   = pair.group.second;
+    auto const* graph = pair.graph;
+    auto        vec   = pair.vec;
+
+    j["name"] = grp.name;
+
+    if ( grp.outputFrequency.getValue() != 0 ) { j["frequency"] = grp.outputFrequency.toStringBestSI(); }
+
+    if ( grp.outputID != 0 ) {
+        const SST::ConfigStatOutput& out = graph->getStatOutput(grp.outputID);
+        j["output"]["type"]              = out.type;
+        if ( !out.params.empty() ) {
+            const SST::Params& outParams = out.params;
+            for ( auto const& param : vec ) {
+                j["output"]["params"][param] = outParams.find<std::string>(param);
+            }
+        }
+    }
+
+    for ( auto& i : grp.statMap ) {
+        if ( !i.second.empty() ) { j["statistics"].emplace_back(StatGroupParamPair { i.first, i.second }); }
+    }
+
+    for ( SST::ComponentId_t id : grp.components ) {
+        const SST::ConfigComponent* comp = graph->findComponent(id);
+        j["components"].emplace_back(comp->name);
+    }
+}
 } // namespace
 
 void
@@ -164,11 +220,35 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     outputJson["program_options"]["checkpoint-sim-period"]  = cfg->checkpoint_sim_period();
     outputJson["program_options"]["checkpoint-wall-period"] = std::to_string(cfg->checkpoint_wall_period());
 
-
     // Put in the global param sets
     for ( const auto& set : getGlobalParamSetNames() ) {
         for ( const auto& kvp : getGlobalParamSet(set) ) {
             if ( kvp.first != "<set_name>" ) outputJson["global_params"][set][kvp.first] = kvp.second;
+        }
+    }
+
+    // Global statistics
+    if ( 0 != graph->getStatLoadLevel() ) {
+        outputJson["statistics_options"]["statisticLoadLevel"] = (uint64_t)graph->getStatLoadLevel();
+    }
+
+    if ( !graph->getStatOutput().type.empty() ) {
+        outputJson["statistics_options"]["statisticOutput"] = graph->getStatOutput().type.c_str();
+        const Params& outParams                             = graph->getStatOutput().params;
+        if ( !outParams.empty() ) {
+            // generate the parameters
+            for ( auto const& paramsItr : getParamsLocalKeys(outParams) ) {
+                outputJson["statistics_options"]["params"][paramsItr] = outParams.find<std::string>(paramsItr);
+            }
+        }
+    }
+
+    // Generate the stat groups
+    if ( !graph->getStatGroups().empty() ) {
+        outputJson["statistics_group"];
+        for ( auto& grp : graph->getStatGroups() ) {
+            auto vec = getParamsLocalKeys(graph->getStatOutput(grp.second.outputID).params);
+            outputJson["statistics_group"].emplace_back(StatGroupPair { grp, vec, graph });
         }
     }
 

@@ -212,6 +212,7 @@ public:
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
+      {"msg_count", "Message counter", "count", 1},
     )
 
     SST_ELI_DOCUMENT_PORTS(
@@ -229,6 +230,8 @@ private:
     const std::vector<PortInterface*> ports;
     int                               my_id;
     SST::RNG::Random*                 rng;
+
+    Statistic<uint64_t>* mcnt;
 };
 
 } // namespace SST::CoreTest::MessageMesh
