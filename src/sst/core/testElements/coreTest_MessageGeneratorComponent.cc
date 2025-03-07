@@ -68,7 +68,8 @@ coreTestMessageGeneratorComponent::handleEvent(Event* event)
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestMessageGeneratorComponent::tick(Cycle_t)
+bool
+coreTestMessageGeneratorComponent::tick(Cycle_t)
 {
     coreTestMessage* msg = new coreTestMessage();
     remote_component->send(msg);

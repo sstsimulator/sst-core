@@ -118,7 +118,7 @@ RouteMessage::RouteMessage(
     ports(parent_ports),
     my_id(nid)
 {
-    rng = new SST::RNG::MersenneRNG(my_id + 100);
+    rng  = new SST::RNG::MersenneRNG(my_id + 100);
     mcnt = registerStatistic<uint64_t>("msg_count");
 }
 

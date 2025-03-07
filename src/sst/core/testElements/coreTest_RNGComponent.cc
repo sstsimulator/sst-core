@@ -82,7 +82,8 @@ coreTestRNGComponent::coreTestRNGComponent() : Component(-1)
     // for serialization only
 }
 
-bool coreTestRNGComponent::tick(Cycle_t)
+bool
+coreTestRNGComponent::tick(Cycle_t)
 {
     double   nU  = rng->nextUniform();
     uint32_t U32 = rng->generateNextUInt32();

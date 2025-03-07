@@ -433,7 +433,7 @@ StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
     H5::DataSet*  idSet =
         new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
     H5::DataSet* nameSet   = new H5::DataSet(getFile()->createDataSet(
-        groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
+          groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
     H5::DataSet* coordXSet = new H5::DataSet(
         getFile()->createDataSet(groupName + "/coord_x", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
     H5::DataSet* coordYSet = new H5::DataSet(

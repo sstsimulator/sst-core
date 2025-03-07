@@ -231,7 +231,7 @@ private:
     int                               my_id;
     SST::RNG::Random*                 rng;
 
-    Statistic<uint64_t>               *mcnt;
+    Statistic<uint64_t>* mcnt;
 };
 
 } // namespace SST::CoreTest::MessageMesh

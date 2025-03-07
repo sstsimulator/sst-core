@@ -328,7 +328,8 @@ coreTestSharedObjectsComponent::finish()
     }
 }
 
-bool coreTestSharedObjectsComponent::tick(SST::Cycle_t)
+bool
+coreTestSharedObjectsComponent::tick(SST::Cycle_t)
 {
 
     if ( check ) {

@@ -130,7 +130,8 @@ coreTestModuleLoader::coreTestModuleLoader() : Component()
 { /* For serialization ONLY*/
 }
 
-bool coreTestModuleLoader::tick(SST::Cycle_t)
+bool
+coreTestModuleLoader::tick(SST::Cycle_t)
 {
     uint32_t next = rng_module->getNext();
     rng_count++;

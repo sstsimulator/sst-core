@@ -648,7 +648,7 @@ enableStatisticsForComponentName(PyObject* UNUSED(self), PyObject* args)
         apply_to_children = 0;
         // Try list version
         argOK             = PyArg_ParseTuple(
-            args, "sO!|O!i", &compName, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+                        args, "sO!|O!i", &compName, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK ) Py_INCREF(statList);
     }
 
@@ -765,7 +765,7 @@ enableStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
         apply_to_children = 0;
         // Try list version
         argOK             = PyArg_ParseTuple(
-            args, "sO!|O!i", &compType, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+                        args, "sO!|O!i", &compType, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK ) Py_INCREF(statList);
     }
 

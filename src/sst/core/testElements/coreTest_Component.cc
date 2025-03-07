@@ -99,7 +99,8 @@ coreTestComponent::handleEvent(Event* ev)
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestComponent::clockTic(Cycle_t)
+bool
+coreTestComponent::clockTic(Cycle_t)
 {
     // do work
     // loop becomes:

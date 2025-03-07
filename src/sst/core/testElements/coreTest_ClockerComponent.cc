@@ -57,7 +57,8 @@ coreTestClockerComponent::coreTestClockerComponent() : Component(-1)
     // for serialization only
 }
 
-bool coreTestClockerComponent::tick(Cycle_t)
+bool
+coreTestClockerComponent::tick(Cycle_t)
 {
     clock_count--;
 

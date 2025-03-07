@@ -166,7 +166,7 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
 {
     auto const& grp   = pair.group.second;
     auto const* graph = pair.graph;
-    auto vec          = pair.vec;
+    auto        vec   = pair.vec;
 
     j["name"] = grp.name;
 

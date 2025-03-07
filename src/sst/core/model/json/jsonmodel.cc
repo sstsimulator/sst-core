@@ -393,7 +393,7 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
             }
 
             statOuts.emplace_back(ConfigStatOutput(Type));
-            csg->setOutput( statOuts.size()-1 );
+            csg->setOutput(statOuts.size() - 1);
 
             if ( statArray.at("output").contains("params") ) {
                 for ( auto& paramArray : statArray.at("output").at("params").items() ) {
@@ -426,13 +426,11 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
 
                 csg->addStatistic(StatName, StatParams);
 
-                bool verified;
+                bool        verified;
                 std::string reason;
                 std::tie(verified, reason) = csg->verifyStatsAndComponents(graph);
                 if ( !verified ) {
-                    output->fatal(
-                        CALL_INFO, 1, "Error verifying statistics and components: %s\n",
-                        reason.c_str() );
+                    output->fatal(CALL_INFO, 1, "Error verifying statistics and components: %s\n", reason.c_str());
                 }
             }
         }
@@ -451,19 +449,19 @@ SSTJSONModelDefinition::discoverStatistics(const json& jFile)
 {
     // discover the global statistics options
     if ( jFile.contains("statistics_options") ) {
-        if( jFile.at("statistics_options").contains("statisticLoadLevel") ) {
+        if ( jFile.at("statistics_options").contains("statisticLoadLevel") ) {
             uint8_t loadLevel;
             jFile.at("statistics_options").at("statisticLoadLevel").get_to(loadLevel);
             graph->setStatisticLoadLevel(loadLevel);
         }
 
-        if( jFile.at("statistics_options").contains("statisticOutput") ) {
+        if ( jFile.at("statistics_options").contains("statisticOutput") ) {
             std::string output;
             jFile.at("statistics_options").at("statisticOutput").get_to(output);
             graph->setStatisticOutput(output);
         }
 
-        if( jFile.at("statistics_options").contains("params") ) {
+        if ( jFile.at("statistics_options").contains("params") ) {
             for ( auto& paramArray : jFile.at("statistics_options").at("params").items() ) {
                 graph->addStatisticOutputParameter(paramArray.key(), paramArray.value());
             }
