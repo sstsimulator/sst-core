@@ -13,8 +13,9 @@
 
 import sst
 import argparse
+import sys
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run PortModule test")
     parser.add_argument('--send', action='store_true', help="Install PortModule on send")
     parser.add_argument('--recv', action='store_true', help="Install PortModule on receive")
