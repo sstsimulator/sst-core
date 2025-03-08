@@ -19,24 +19,15 @@
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/realtime.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/sync/threadSyncDirectSkip.h"
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/warnmacros.h"
 
 #include <sys/time.h>
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#define UNUSED_WO_MPI(x) x
-#else
-#define UNUSED_WO_MPI(x) UNUSED(x)
-#endif
 
 namespace SST {
 

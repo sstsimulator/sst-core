@@ -18,7 +18,6 @@
 
 // Core Headers
 #include "sst/core/simulation_impl.h"
-#include "sst/core/warnmacros.h"
 
 // C++ System Headers
 #include <atomic>
@@ -33,11 +32,7 @@
 #include <execinfo.h>
 #endif // HAVE_EXECINFO_H
 
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
+#include "sst/core/sst_mpi.h"
 
 namespace SST {
 

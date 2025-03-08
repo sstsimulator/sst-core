@@ -61,7 +61,7 @@ public:
             size_t size;
             ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
-                T    t;
+                T    t {};
                 ser& t;
                 v.insert(t);
             }
