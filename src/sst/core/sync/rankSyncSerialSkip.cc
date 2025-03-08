@@ -19,18 +19,9 @@
 #include "sst/core/profile.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/warnmacros.h"
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#define UNUSED_WO_MPI(x) x
-#else
-#define UNUSED_WO_MPI(x) UNUSED(x)
-#endif
 
 #if SST_EVENT_PROFILING
 #define SST_EVENT_PROFILE_START auto event_profile_start = std::chrono::high_resolution_clock::now();

@@ -18,21 +18,12 @@
 #include "sst/core/output.h"
 #include "sst/core/realtimeAction.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <unistd.h>
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#define UNUSED_WO_MPI(x) x
-#else
-#define UNUSED_WO_MPI(x) UNUSED(x)
-#endif
-
 
 namespace SST {
 
