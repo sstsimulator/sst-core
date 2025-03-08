@@ -57,9 +57,9 @@ public:
     }
 
 private:
-    coreTestMessageGeneratorComponent();                                         // for serialization only
-    coreTestMessageGeneratorComponent(const coreTestMessageGeneratorComponent&); // do not implement
-    void operator=(const coreTestMessageGeneratorComponent&);                    // do not implement
+    coreTestMessageGeneratorComponent();                                                  // for serialization only
+    coreTestMessageGeneratorComponent(const coreTestMessageGeneratorComponent&) = delete; // do not implement
+    coreTestMessageGeneratorComponent& operator=(const coreTestMessageGeneratorComponent&) = delete; // do not implement
 
     void         handleEvent(SST::Event* ev);
     virtual bool tick(SST::Cycle_t);

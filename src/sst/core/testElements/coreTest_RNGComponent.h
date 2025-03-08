@@ -60,9 +60,9 @@ public:
     void finish() {}
 
 private:
-    coreTestRNGComponent();                            // for serialization only
-    coreTestRNGComponent(const coreTestRNGComponent&); // do not implement
-    void operator=(const coreTestRNGComponent&);       // do not implement
+    coreTestRNGComponent();                                                // for serialization only
+    coreTestRNGComponent(const coreTestRNGComponent&) = delete;            // do not implement
+    coreTestRNGComponent& operator=(const coreTestRNGComponent&) = delete; // do not implement
 
     virtual bool tick(SST::Cycle_t);
 
