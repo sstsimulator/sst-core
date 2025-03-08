@@ -62,9 +62,9 @@ public:
     void finish() {}
 
 private:
-    coreTestParamComponent();                              // for serialization only
-    coreTestParamComponent(const coreTestParamComponent&); // do not implement
-    void operator=(const coreTestParamComponent&);         // do not implement
+    coreTestParamComponent();                                                  // for serialization only
+    coreTestParamComponent(const coreTestParamComponent&) = delete;            // do not implement
+    coreTestParamComponent& operator=(const coreTestParamComponent&) = delete; // do not implement
 };
 
 } // namespace SST::CoreTestParamComponent

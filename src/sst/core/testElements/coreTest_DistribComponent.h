@@ -61,9 +61,9 @@ public:
     void setup() {}
 
 private:
-    coreTestDistribComponent();                                // for serialization only
-    coreTestDistribComponent(const coreTestDistribComponent&); // do not implement
-    void operator=(const coreTestDistribComponent&);           // do not implement
+    coreTestDistribComponent();                                                    // for serialization only
+    coreTestDistribComponent(const coreTestDistribComponent&) = delete;            // do not implement
+    coreTestDistribComponent& operator=(const coreTestDistribComponent&) = delete; // do not implement
 
     virtual bool tick(SST::Cycle_t);
 
