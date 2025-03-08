@@ -6,7 +6,7 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+    rev: "v5.0.0"
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
@@ -32,6 +32,26 @@ repos:
               external/
           )
   - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
-    rev: "v1.7.1.15"
+    rev: "v1.7.7.23"
     hooks:
       - id: actionlint
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.9.4"
+    hooks:
+      - id: ruff
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    # This needs to match the last version that still supports the minimum
+    # required Python version
+    rev: "v1.5.1"
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - blessings
+          - testtools
+          - types-Pygments
+        # Work around config file setting exclusion rules being bypassed when
+        # filenames are explicitly passed on the command line.  See
+        # https://github.com/python/mypy/pull/12373#issuecomment-1071662559
+        # for the idea.
+        args: [.]
+        pass_filenames: false
