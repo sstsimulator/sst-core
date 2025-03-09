@@ -37,17 +37,16 @@ done
 echo "Using clang-format ${CLANG_FORMAT_EXE} with arguments ${CLANG_FORMAT_ARG}."
 
 clang_format_version="$(${CLANG_FORMAT_EXE} --version)"
-currentver="$(${CLANG_FORMAT_EXE} --version | cut -d' ' -f3 | tr -dc '0-9')"
-if [ $currentver -lt 1200 ]; then
+currentver="$( ${CLANG_FORMAT_EXE} --version | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/' | sed 's/\.//g')"
+if [ "${currentver:=0}" -lt 1200 ]; then
   echo "clang-format version is $clang_format_version. We require version 12."
   exit 1
 fi
 
-if [ $currentver -ge 1300 ]; then
+if [ "${currentver:=0}" -ge 1300 ]; then
   echo "clang-format version is $clang_format_version. We require version 12."
   exit 1
 fi
-
 
 # Setup SST-Core Directories to be skipped for clang-format checks
 DIRS_TO_SKIP="-path ./build "
