@@ -42,3 +42,9 @@ libtool
 *.lo
 *.la
 sst_test_outputs/
+build/
+*.so
+.\#*
+\#*\#
+.gdb_history
+.vscode
