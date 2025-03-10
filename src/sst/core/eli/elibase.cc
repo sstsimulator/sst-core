@@ -19,32 +19,16 @@ namespace SST::ELI {
   BaseElementInfo class functions
 **************************************************************************/
 
-std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_ {};
-
 bool
 LoadedLibraries::addLoader(
     const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader)
 {
-    if ( !loaders_ ) { loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap); }
-    (*loaders_)[lib][name].push_back(loader);
-    if ( !alias.empty() ) (*loaders_)[lib][alias].push_back(loader);
+    std::shared_ptr<LibraryLoader> shared_loader(loader);
+
+    auto& library = getLoaders()[lib];
+    if ( !alias.empty() && alias != name ) library[alias].push_back(shared_loader);
+    library[name].push_back(std::move(shared_loader));
     return true;
-}
-
-const LoadedLibraries::LibraryMap&
-LoadedLibraries::getLoaders()
-{
-    if ( !loaders_ ) { loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap); }
-    return *loaders_;
-}
-
-bool
-LoadedLibraries::isLoaded(const std::string& name)
-{
-    if ( loaders_ ) { return loaders_->find(name) != loaders_->end(); }
-    else {
-        return false; // nothing loaded yet
-    }
 }
 
 } // namespace SST::ELI
