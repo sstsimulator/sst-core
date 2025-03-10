@@ -37,14 +37,7 @@ public:
 
     BuilderLibrary(const std::string& name) : name_(name) {}
 
-    BaseBuilder* getBuilder(const std::string& name)
-    {
-        auto iter = factories_.find(name);
-        if ( iter == factories_.end() ) { return nullptr; }
-        else {
-            return iter->second;
-        }
-    }
+    BaseBuilder* getBuilder(const std::string& name) { return factories_[name]; }
 
     const std::map<std::string, BaseBuilder*>& getMap() const { return factories_; }
 
@@ -87,28 +80,15 @@ public:
 
     static Library* getLibrary(const std::string& name)
     {
-        if ( !libraries ) { libraries = new std::map<std::string, Library*>; }
-        auto iter = libraries->find(name);
-        if ( iter == libraries->end() ) {
-            auto* info         = new Library(name);
-            (*libraries)[name] = info;
-            return info;
-        }
-        else {
-            return iter->second;
-        }
+        static Map libraries; // Database
+        auto&      lib = libraries[name];
+        if ( !lib ) lib = new Library(name);
+        return lib;
     }
 
     template <class NewBase>
     using ChangeBase = BuilderLibraryDatabase<NewBase, CtorArgs...>;
-
-private:
-    // Database - needs to be a pointer for static init order
-    static Map* libraries;
 };
-
-template <class Base, class... CtorArgs>
-typename BuilderLibraryDatabase<Base, CtorArgs...>::Map* BuilderLibraryDatabase<Base, CtorArgs...>::libraries = nullptr;
 
 template <class Base, class Builder, class... CtorArgs>
 struct BuilderLoader : public LibraryLoader
@@ -146,11 +126,8 @@ struct InstantiateBuilder
 {
     static bool isLoaded() { return loaded; }
 
-    static const bool loaded;
+    static inline const bool loaded = Base::Ctor::template add<T>();
 };
-
-template <class Base, class T>
-const bool InstantiateBuilder<Base, T>::loaded = Base::Ctor::template add<T>();
 
 template <class Base, class T, class Enable = void>
 struct Allocator
@@ -168,14 +145,10 @@ struct CachedAllocator
     template <class... Args>
     Base* operator()(Args&&... ctorArgs)
     {
-        if ( !cached_ ) { cached_ = new T(std::forward<Args>(ctorArgs)...); }
-        return cached_;
+        static T* cached = new T(std::forward<Args>(ctorArgs)...);
+        return cached;
     }
-
-    static Base* cached_;
 };
-template <class Base, class T>
-Base* CachedAllocator<Base, T>::cached_ = nullptr;
 
 template <class T, class Base, class... Args>
 struct DerivedBuilder : public Builder<Base, Args...>

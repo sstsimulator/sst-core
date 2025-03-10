@@ -59,10 +59,8 @@ class DataBase
 public:
     static T* get(const std::string& elemlib, const std::string& elem)
     {
-        if ( !infos_ ) return nullptr;
-
-        auto libiter = infos_->find(elemlib);
-        if ( libiter != infos_->end() ) {
+        auto libiter = infos().find(elemlib);
+        if ( libiter != infos().end() ) {
             auto& submap   = libiter->second;
             auto  elemiter = submap.find(elem);
             if ( elemiter != submap.end() ) { return elemiter->second; }
@@ -70,21 +68,15 @@ public:
         return nullptr;
     }
 
-    static void add(const std::string& elemlib, const std::string& elem, T* info)
-    {
-        if ( !infos_ ) {
-            infos_ = std::unique_ptr<std::map<std::string, std::map<std::string, T*>>>(
-                new std::map<std::string, std::map<std::string, T*>>);
-        }
-
-        (*infos_)[elemlib][elem] = info;
-    }
+    static void add(const std::string& elemlib, const std::string& elem, T* info) { infos()[elemlib][elem] = info; }
 
 private:
-    static std::unique_ptr<std::map<std::string, std::map<std::string, T*>>> infos_;
+    static std::map<std::string, std::map<std::string, T*>>& infos()
+    {
+        static std::map<std::string, std::map<std::string, T*>> infos_;
+        return infos_;
+    }
 };
-template <class T>
-std::unique_ptr<std::map<std::string, std::map<std::string, T*>>> DataBase<T>::infos_;
 
 template <class Policy, class... Policies>
 class BuilderInfoImpl : public Policy, public BuilderInfoImpl<Policies...>
@@ -208,9 +200,9 @@ public:
 
         std::vector<std::string> ret;
         // First iterate over libraries
-        for ( auto x : (*libraries) ) {
-            for ( auto& y : x.second->getMap() ) {
-                ret.push_back(x.first + "." + y.first);
+        for ( auto& [name, lib] : libraries() ) {
+            for ( auto& [elemlib, info] : lib->getMap() ) {
+                ret.push_back(name + "." + elemlib);
             }
         }
         return ret;
@@ -218,25 +210,19 @@ public:
 
     static Library* getLibrary(const std::string& name)
     {
-        if ( !libraries ) { libraries = new Map; }
-        auto iter = libraries->find(name);
-        if ( iter == libraries->end() ) {
-            auto* info         = new Library(name);
-            (*libraries)[name] = info;
-            return info;
-        }
-        else {
-            return iter->second;
-        }
+        auto& lib = libraries()[name];
+        if ( !lib ) lib = new Library(name);
+        return lib;
     }
 
 private:
-    // Database - needs to be a pointer for static init order
-    static Map* libraries;
+    // Database
+    static Map& libraries()
+    {
+        static Map libs;
+        return libs;
+    }
 };
-
-template <class Base>
-typename InfoLibraryDatabase<Base>::Map* InfoLibraryDatabase<Base>::libraries = nullptr;
 
 template <class Base, class Info>
 struct InfoLoader : public LibraryLoader
