@@ -32,6 +32,7 @@
 #include "sst/core/realtime.h"
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/shared/sharedObject.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stopAction.h"
 #include "sst/core/stringize.h"
@@ -41,13 +42,6 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/unitAlgebra.h"
-#include "sst/core/warnmacros.h"
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
 
 #include <cinttypes>
 #include <exception>
@@ -1605,8 +1599,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
 
-    size_t size, buffer_size;
-    char*  buffer;
+    size_t size;
 
     /* Section 2: Loaded libraries */
     ser.start_sizing();
@@ -1614,15 +1607,14 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     factory->getLoadedLibraryNames(libnames);
     ser& libnames;
 
-    size        = ser.size();
-    buffer_size = size;
-    buffer      = new char[buffer_size];
+    size = ser.size();
+    std::vector<char> buffer(size);
 
-    ser.start_packing(buffer, size);
+    ser.start_packing(&buffer[0], size);
     ser& libnames;
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    fs.write(buffer, size);
+    fs.write(&buffer[0], size);
     offset += (sizeof(size) + size);
 
 
@@ -1664,14 +1656,10 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     ser& timeVortex;
 
     size = ser.size();
-    if ( size > buffer_size ) {
-        delete[] buffer;
-        buffer_size = size;
-        buffer      = new char[buffer_size];
-    }
+    buffer.resize(size);
 
     // Pack buffer
-    ser.start_packing(buffer, size);
+    ser.start_packing(&buffer[0], size);
     ser& num_ranks;
     ser& my_rank;
     ser& currentSimCycle;
@@ -1709,7 +1697,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    fs.write(buffer, size);
+    fs.write(&buffer[0], size);
     offset += (sizeof(size) + size);
 
     size = compInfoMap.size();
@@ -1725,24 +1713,18 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         ComponentInfo* compinfo = *comp;
         ser&           compinfo;
         size = ser.size();
+        buffer.resize(size);
 
-        if ( buffer_size < size ) {
-            delete[] buffer;
-            buffer      = new char[size];
-            buffer_size = size;
-        }
-
-        ser.start_packing(buffer, size);
+        ser.start_packing(&buffer[0], size);
         ser& compinfo;
 
         component_blob_offsets_.emplace_back(compinfo->id_, offset);
         fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-        fs.write(buffer, size);
+        fs.write(&buffer[0], size);
         offset += (sizeof(size) + size);
     }
 
     fs.close();
-    delete[] buffer;
 
     /*
      * Still needs to be added to checkpoint:
@@ -1775,8 +1757,7 @@ Simulation_impl::restart(Config* cfg)
     }
     fs.close();
 
-    size_t                               size, buffer_size;
-    char*                                buffer;
+    size_t                               size;
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
     std::ifstream fs_blob(blob_filename, std::ios::binary);
@@ -1784,10 +1765,9 @@ Simulation_impl::restart(Config* cfg)
     /* Begin deserialization, libraries */
     fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
 
-    buffer_size = size;
-    buffer      = new char[buffer_size];
-    fs_blob.read(buffer, size);
-    ser.start_unpacking(buffer, size);
+    std::vector<char> buffer(size);
+    fs_blob.read(&buffer[0], size);
+    ser.start_unpacking(&buffer[0], size);
 
     std::set<std::string> libnames;
     ser&                  libnames;
@@ -1797,14 +1777,10 @@ Simulation_impl::restart(Config* cfg)
 
     /* Now get the global blob */
     fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
-    if ( size > buffer_size ) {
-        delete[] buffer;
-        buffer_size = size;
-        buffer      = new char[buffer_size];
-    }
-    fs_blob.read(buffer, size);
+    buffer.resize(size);
+    fs_blob.read(&buffer[0], size);
 
-    ser.start_unpacking(buffer, size);
+    ser.start_unpacking(&buffer[0], size);
 
     ser& num_ranks;
     ser& my_rank;
@@ -1866,20 +1842,15 @@ Simulation_impl::restart(Config* cfg)
     // Deserialize component blobs individually
     for ( size_t comp = 0; comp < compCount; comp++ ) {
         fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
-        if ( size > buffer_size ) {
-            delete[] buffer;
-            buffer_size = size;
-            buffer      = new char[buffer_size];
-        }
-        fs_blob.read(buffer, size);
-        ser.start_unpacking(buffer, size);
+        buffer.resize(size);
+        fs_blob.read(&buffer[0], size);
+        ser.start_unpacking(&buffer[0], size);
         ComponentInfo* compInfo = new ComponentInfo();
         ser&           compInfo;
         compInfoMap.insert(compInfo);
     }
 
     fs_blob.close();
-    delete[] buffer;
 
     // If we are a parallel job, need to call
     // finalizeLinkConfigurations() in order to finish setting up all

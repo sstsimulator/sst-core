@@ -123,9 +123,8 @@ protected:
     SST::Core::Serialization::ObjectMap* getComponentObjectMap();
 
 private:
-    InteractiveConsole(const InteractiveConsole&);
-
-    void operator=(InteractiveConsole const&);
+    InteractiveConsole(const InteractiveConsole&) = delete;
+    InteractiveConsole& operator=(const InteractiveConsole&) = delete;
 };
 
 } // namespace SST

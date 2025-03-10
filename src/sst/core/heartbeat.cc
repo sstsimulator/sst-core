@@ -16,15 +16,9 @@
 #include "sst/core/component.h"
 #include "sst/core/mempoolAccessor.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/warnmacros.h"
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
 
 namespace SST {
 

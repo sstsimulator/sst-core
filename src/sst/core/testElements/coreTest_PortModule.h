@@ -148,9 +148,9 @@ private:
 
     PortSubComponent* sub_ = nullptr;
 
-    coreTestPortModuleComponent() {}                                 // for serialization only
-    coreTestPortModuleComponent(const coreTestPortModuleComponent&); // do not implement
-    void operator=(const coreTestPortModuleComponent&);              // do not implement
+    coreTestPortModuleComponent()                                   = default;           // for serialization only
+    coreTestPortModuleComponent(const coreTestPortModuleComponent&) = delete;            // do not implement
+    coreTestPortModuleComponent& operator=(const coreTestPortModuleComponent&) = delete; // do not implement
 
     bool tick(SST::Cycle_t);
     void handleEvent(SST::Event* ev);
