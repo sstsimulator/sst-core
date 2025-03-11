@@ -81,4 +81,4 @@ coreTestLinks::clockTic(Cycle_t cycle)
     return false;
 }
 
-// Element Libarary / Serialization stuff
+// Element Library / Serialization stuff

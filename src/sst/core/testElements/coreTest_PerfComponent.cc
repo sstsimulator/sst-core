@@ -165,4 +165,4 @@ bool coreTestPerfComponent::clockTic(Cycle_t)
     return false;
 }
 
-// Element Libarary / Serialization stuff
+// Element Library / Serialization stuff
