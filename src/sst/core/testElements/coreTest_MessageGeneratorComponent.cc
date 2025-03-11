@@ -87,4 +87,4 @@ bool coreTestMessageGeneratorComponent::tick(Cycle_t)
     }
 }
 
-// Element Libarary / Serialization stuff
+// Element Library / Serialization stuff
