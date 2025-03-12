@@ -26,19 +26,10 @@ Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), p
     setPriority(priority);
 }
 
-Clock::~Clock()
-{
-    // Delete all the handlers
-    for ( StaticHandlerMap_t::iterator it = staticHandlerMap.begin(); it != staticHandlerMap.end(); ++it ) {
-        delete *it;
-    }
-    staticHandlerMap.clear();
-}
-
 bool
 Clock::registerHandler(Clock::HandlerBase* handler)
 {
-    staticHandlerMap.push_back(handler);
+    staticHandlerMap.push_back(std::unique_ptr<Clock::HandlerBase>(handler));
     if ( !scheduled ) { schedule(); }
     return 0;
 }
@@ -46,11 +37,10 @@ Clock::registerHandler(Clock::HandlerBase* handler)
 bool
 Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
 {
-
     StaticHandlerMap_t::iterator iter = staticHandlerMap.begin();
 
     for ( ; iter != staticHandlerMap.end(); iter++ ) {
-        if ( *iter == handler ) {
+        if ( iter->get() == handler ) {
             staticHandlerMap.erase(iter);
             break;
         }
@@ -65,8 +55,8 @@ Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
 bool
 Clock::isHandlerRegistered(Clock::HandlerBase* handler)
 {
-    for ( auto* h : staticHandlerMap ) {
-        if ( h == handler ) return true;
+    for ( auto& h : staticHandlerMap ) {
+        if ( h.get() == handler ) return true;
     }
 
     return false;
@@ -97,11 +87,12 @@ Clock::execute()
 
     StaticHandlerMap_t::iterator sop_iter;
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end(); ) {
-        Clock::HandlerBase* handler = *sop_iter;
+        Clock::HandlerBase* handler = sop_iter->get();
 
-
-        if ( (*handler)(currentCycle) )
+        if ( (*handler)(currentCycle) ) {
+            sop_iter->release(); // do not delete the handler
             sop_iter = staticHandlerMap.erase(sop_iter);
+        }
         else
             ++sop_iter;
 
