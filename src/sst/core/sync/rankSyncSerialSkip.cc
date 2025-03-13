@@ -262,8 +262,11 @@ RankSyncSerialSkip::exchange()
 }
 
 void
-RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
+RankSyncSerialSkip::exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count)
 {
+     UNUSED_WO_MPI(thread);
+     UNUSED_WO_MPI(msg_count);
+
 #ifdef SST_CONFIG_HAVE_MPI
     if ( thread != 0 ) { return; }
     // Maximum number of outstanding requests is 3 times the number of

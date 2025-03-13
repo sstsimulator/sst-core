@@ -14,7 +14,11 @@
 #ifndef SST_CORE_WARNMACROS_H
 #define SST_CORE_WARNMACROS_H
 
+#if SST_NEW_UNUSED
 #define UNUSED(x) ((void)(x))
+#else
+#define UNUSED(x) x
+#endif
 
 #define DIAG_STR(s)              #s
 #define DIAG_JOINSTR(x, y)       DIAG_STR(x##y)

@@ -90,8 +90,11 @@ public:
     }
 
     void execute(int thread) override { UNUSED(thread); }
-    void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override
+    void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override
     {
+        UNUSED_WO_MPI(thread);
+        UNUSED_WO_MPI(msg_count);
+
         // Even though there are no links crossing ranks, we still
         // need to make sure every rank does the same number of init
         // cycles so the shared memory regions initialization works.
@@ -189,8 +192,10 @@ public:
 };
 
 void
-RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
+RankSync::exchangeLinkInfo(uint32_t my_rank)
 {
+    UNUSED_WO_MPI(my_rank);
+
     // Function will not compile if MPI is not configured
 #ifdef SST_CONFIG_HAVE_MPI
     // For now, we will simply have rank 0 exchange with everyone and

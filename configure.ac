@@ -54,9 +54,12 @@ case "$ax_cv_cxx_compiler_vendor" in
 esac
 
 SST_CHECK_PICKY
+SST_CHECK_NEW_UNUSED
 AS_IF([test "x$use_picky" = "xyes"],
-      [WARNFLAGS="-Wall -Wextra -Werror=unused-parameter"],
+      [AS_IF([test "x$new_unused" != "xno"],
+      [WARNFLAGS="-Wall -Wextra -Werror=unused-parameter"], [WARNFLAGS="-Wall -Wextra -Wno-unused-value"])],
       [WARNFLAGS=""])
+
 CFLAGS="$CFLAGS $WARNFLAGS"
 CXXFLAGS="$CXXFLAGS $WARNFLAGS"
 
