@@ -62,8 +62,10 @@ public:
 
 protected:
     template <class T>
-    ProvidesAttributes(T* UNUSED(t)) : attributes_(GetAttributes<T>::get())
-    {}
+    ProvidesAttributes(T* t) : attributes_(GetAttributes<T>::get())
+    {
+        UNUSED(t);
+    }
 
 private:
     std::vector<ElementInfoAttribute> attributes_;

@@ -73,8 +73,9 @@ ct_hash_rec(const char* str)
 // the string
 template <>
 constexpr uint32_t
-ct_hash_rec<size_t(-1)>(const char* UNUSED(str))
+ct_hash_rec<size_t(-1)>(const char* str)
 {
+    UNUSED(str);
     return 0;
 }
 
@@ -161,7 +162,11 @@ public:                                                                         
     {                                                                                                              \
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
     }                                                                                                              \
-    virtual void     serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override { throw_exc(); }  \
+    virtual void serialize_order(SST::Core::Serialization::serializer& sst) override                               \
+    {                                                                                                              \
+        UNUSED(sst);                                                                                               \
+        throw_exc();                                                                                               \
+    }                                                                                                              \
     virtual uint32_t cls_id() const override                                                                       \
     {                                                                                                              \
         throw_exc();                                                                                               \
@@ -177,7 +182,10 @@ public:                                                                         
         throw_exc();                                                                                               \
         return "";                                                                                                 \
     }                                                                                                              \
-    virtual const char* cls_name() const override { return #obj; }
+    virtual const char* cls_name() const override                                                                  \
+    {                                                                                                              \
+        return #obj;                                                                                               \
+    }
 
 //    virtual const char* cls_name() const override { return obj_str; }
 #define ImplementSerializableDefaultConstructor(obj, obj_str)                             \

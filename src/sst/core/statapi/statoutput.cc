@@ -138,43 +138,55 @@ StatisticFieldsOutput::getRegisteredField(fieldHandle_t fieldHandle)
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, double data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support double output", getStatisticOutputName().c_str());
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, float data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support float output", getStatisticOutputName().c_str());
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int32_t output", getStatisticOutputName().c_str());
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint32_t output", getStatisticOutputName().c_str());
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int64_t output", getStatisticOutputName().c_str());
 }
 
 void
-StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
+    UNUSED(fieldHandle);
+    UNUSED(data);
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint64_t output", getStatisticOutputName().c_str());
 }
@@ -190,8 +202,9 @@ StatisticFieldsOutput::output(StatisticBase* statistic, bool endOfSimFlag)
 }
 
 void
-StatisticFieldsOutput::startRegisterGroup(StatisticGroup* UNUSED(group))
+StatisticFieldsOutput::startRegisterGroup(StatisticGroup* group)
 {
+    UNUSED(group);
     // do nothing by default
 }
 

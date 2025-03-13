@@ -88,14 +88,16 @@ EventHandlerProfileToolCount::registerLinkAttachTool(const AttachPointMetaData& 
 }
 
 void
-EventHandlerProfileToolCount::beforeHandler(uintptr_t key, const Event* UNUSED(event))
+EventHandlerProfileToolCount::beforeHandler(uintptr_t key, const Event* event)
 {
+    UNUSED(event);
     reinterpret_cast<event_data_t*>(key)->recv_count++;
 }
 
 void
-EventHandlerProfileToolCount::eventSent(uintptr_t key, Event*& UNUSED(ev))
+EventHandlerProfileToolCount::eventSent(uintptr_t key, Event*& ev)
 {
+    UNUSED(ev);
     reinterpret_cast<event_data_t*>(key)->send_count++;
 }
 

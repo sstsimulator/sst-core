@@ -100,8 +100,9 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
 coreTestCheckpoint::~coreTestCheckpoint() {}
 
 void
-coreTestCheckpoint::init(unsigned UNUSED(phase))
+coreTestCheckpoint::init(unsigned phase)
 {
+    UNUSED(phase);
     output->output("%s, init()\n", getName().c_str());
 }
 
@@ -113,8 +114,9 @@ coreTestCheckpoint::setup()
 }
 
 void
-coreTestCheckpoint::complete(unsigned UNUSED(phase))
+coreTestCheckpoint::complete(unsigned phase)
 {
+    UNUSED(phase);
     output->output("%s, complete()\n", getName().c_str());
 }
 
@@ -184,8 +186,9 @@ coreTestCheckpoint::handleClock(Cycle_t cycle)
 
 // restarts the clock
 void
-coreTestCheckpoint::restartClock(Event* UNUSED(ev))
+coreTestCheckpoint::restartClock(Event* ev)
 {
+    UNUSED(ev);
     // Event passed in is nullptr, no need to do anything with it
     reregisterClock(clock_tc, clock_handler);
 }

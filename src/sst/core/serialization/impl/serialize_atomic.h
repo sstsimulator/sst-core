@@ -58,8 +58,11 @@ public:
         }
     }
 
-    void operator()(Value& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(Value& v, serializer& ser, const char* name)
     {
+        UNUSED(v);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Add support for mapping mode
     }
 };

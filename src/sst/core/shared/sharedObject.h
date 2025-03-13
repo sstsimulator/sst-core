@@ -54,7 +54,7 @@ public:
        @param manager The SharedObjectDataManager for the rank.  This
        is used to get the named shared data.
      */
-    virtual void applyChanges(SharedObjectDataManager* UNUSED(manager)) = 0;
+    virtual void applyChanges(SharedObjectDataManager* manager) = 0;
 
     /**
        Clears the data.  Used after transfering data to other ranks to
@@ -278,7 +278,7 @@ public:
     SharedObject() {}
     virtual ~SharedObject() {}
 
-    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    virtual void serialize_order(SST::Core::Serialization::serializer& ser) override { UNUSED(ser); }
     ImplementSerializable(SST::Shared::SharedObject)
 
 protected:

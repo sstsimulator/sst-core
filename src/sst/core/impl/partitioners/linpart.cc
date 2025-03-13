@@ -19,8 +19,9 @@
 
 using namespace SST::IMPL::Partition;
 
-SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo UNUSED(my_rank), int verbosity)
+SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo my_rank, int verbosity)
 {
+    UNUSED(my_rank);
     rankcount  = mpiranks;
     partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);
 }

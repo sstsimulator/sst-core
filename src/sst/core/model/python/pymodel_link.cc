@@ -35,8 +35,9 @@ extern SST::Core::SSTPythonModelDefinition* gModel;
 extern "C" {
 
 static int
-linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+linkInit(LinkPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     char*       name = nullptr;
     const char* lat  = nullptr;
     PyObject *  lobj = nullptr, *lstr = nullptr;
@@ -124,8 +125,9 @@ linkConnect(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-linkSetNoCut(PyObject* self, PyObject* UNUSED(args))
+linkSetNoCut(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     LinkPy_t* link = (LinkPy_t*)self;
     bool      prev = link->no_cut;
     link->no_cut   = true;

@@ -116,16 +116,19 @@ StatisticBase::getCompName() const
 }
 
 void
-Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag))
+Statistic<void>::outputStatisticFields(StatisticFieldsOutput* stat_output, bool end_of_sim_flag)
 {
+    UNUSED(stat_output);
+    UNUSED(end_of_sim_flag);
     Simulation_impl::getSimulation()->getSimulationOutput().fatal(
         CALL_INFO, 1, "void statistic %s, type %s for component %s does not support outputing fields",
         getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
 }
 
 void
-Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output))
+Statistic<void>::registerOutputFields(StatisticFieldsOutput* stat_output)
 {
+    UNUSED(stat_output);
     Simulation_impl::getSimulation()->getSimulationOutput().fatal(
         CALL_INFO, 1, "void statistic %s, type %s for component %s does not support outputing fields",
         getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());

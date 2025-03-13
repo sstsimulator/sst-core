@@ -84,13 +84,15 @@ EnclosingComponent::handleEvent(SST::Event* ev, int port)
     route->send(mev, port);
 }
 
-PortSlot::PortSlot(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
+PortSlot::PortSlot(ComponentId_t id, Params& params) : PortInterface(id)
 {
+    UNUSED(params);
     port = loadUserSubComponent<PortInterface>("port");
 }
 
-MessagePort::MessagePort(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
+MessagePort::MessagePort(ComponentId_t id, Params& params) : PortInterface(id)
 {
+    UNUSED(params);
     link = configureLink("port", new Event::Handler<MessagePort>(this, &MessagePort::handleEvent));
 }
 
@@ -112,18 +114,19 @@ MessagePort::handleEvent(Event* ev)
 }
 
 
-RouteMessage::RouteMessage(
-    ComponentId_t id, Params& UNUSED(params), const std::vector<PortInterface*>& parent_ports, int nid) :
+RouteMessage::RouteMessage(ComponentId_t id, Params& params, const std::vector<PortInterface*>& parent_ports, int nid) :
     RouteInterface(id),
     ports(parent_ports),
     my_id(nid)
 {
+    UNUSED(params);
     rng = new SST::RNG::MersenneRNG(my_id + 100);
 }
 
 void
-RouteMessage::send(MessageEvent* ev, int UNUSED(incoming_port))
+RouteMessage::send(MessageEvent* ev, int incoming_port)
 {
+    UNUSED(incoming_port);
     // Route to random port
     int nextport = rng->generateNextUInt32() % ports.size();
     ports[nextport]->send(ev);

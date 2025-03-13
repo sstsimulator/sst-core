@@ -32,8 +32,10 @@ public:
 
 protected:
     template <class T>
-    ProvidesInterface(T* UNUSED(t)) : iface_(T::ELI_getInterface())
-    {}
+    ProvidesInterface(T* t) : iface_(T::ELI_getInterface())
+    {
+        UNUSED(t);
+    }
 
 private:
     std::string iface_;

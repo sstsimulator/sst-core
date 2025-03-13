@@ -22,11 +22,14 @@
 
 namespace SST::IMPL::Partition {
 
-SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
+SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int verbosity) :
     SSTPartitioner(),
     world_size(total_ranks),
     total_parts(world_size.rank * world_size.thread)
-{}
+{
+    UNUSED(my_rank);
+    UNUSED(verbosity);
+}
 
 SimplePartitioner::SimplePartitioner() :
     SSTPartitioner(),

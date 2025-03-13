@@ -40,8 +40,9 @@ UninitializedQueue::size()
 }
 
 void
-UninitializedQueue::insert(Activity* UNUSED(activity))
+UninitializedQueue::insert(Activity* activity)
 {
+    UNUSED(activity);
     std::cout << message << std::endl;
     abort();
 }

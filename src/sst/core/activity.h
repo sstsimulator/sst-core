@@ -177,7 +177,11 @@ public:
     }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-    virtual void printTrackingInfo(const std::string& UNUSED(header), Output& UNUSED(out)) const {}
+    virtual void printTrackingInfo(const std::string& header, Output& out) const
+    {
+        UNUSED(header);
+        UNUSED(out);
+    }
 #endif
 
     /** Set a new Queue order */

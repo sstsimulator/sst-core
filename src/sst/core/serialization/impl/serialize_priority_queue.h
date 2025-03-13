@@ -82,8 +82,11 @@ public:
         }
     }
 
-    void operator()(Pqueue& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(Pqueue& v, serializer& ser, const char* name)
     {
+        UNUSED(v);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Add support for mapping mode
     }
 };

@@ -95,8 +95,9 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
 StatisticsComponentInt::StatisticsComponentInt() : Component(-1), output(getSimulationOutput()) {}
 
 bool
-StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
+StatisticsComponentInt::Clock1Tick(Cycle_t CycleNum)
 {
+    UNUSED(CycleNum);
     // NOTE: THIS IS THE 1NS CLOCK
     //    std::cout << "@ " << CycleNum << std::endl;
 
@@ -191,8 +192,9 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
 StatisticsComponentFloat::StatisticsComponentFloat() : Component(-1), output(getSimulationOutput()) {}
 
 bool
-StatisticsComponentFloat::Clock1Tick(Cycle_t UNUSED(CycleNum))
+StatisticsComponentFloat::Clock1Tick(Cycle_t CycleNum)
 {
+    UNUSED(CycleNum);
 
     double value_F32 = rng->nextUniform();
     double value_F64 = rng->nextUniform();

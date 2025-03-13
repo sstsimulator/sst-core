@@ -18,10 +18,13 @@
 
 namespace SST::IMPL::Partition {
 
-SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
+SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank, int verbosity) :
     SSTPartitioner(),
     world_size(world_size)
-{}
+{
+    UNUSED(my_rank);
+    UNUSED(verbosity);
+}
 
 void
 SSTRoundRobinPartition::performPartition(PartitionGraph* graph)

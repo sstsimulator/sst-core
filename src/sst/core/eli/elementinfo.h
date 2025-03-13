@@ -111,14 +111,18 @@ class BuilderInfoImpl<void>
 {
 protected:
     template <class... Args>
-    BuilderInfoImpl(Args&&... UNUSED(args))
-    {}
+    BuilderInfoImpl(Args&&... args)
+    {
+        (UNUSED(args), ...);
+    }
 
     template <class XMLNode>
-    void outputXML(XMLNode* UNUSED(node))
-    {}
+    void outputXML(XMLNode* node)
+    {
+        UNUSED(node);
+    }
 
-    void toString(std::ostream& UNUSED(os)) const {}
+    void toString(std::ostream& os) const { UNUSED(os); }
 };
 
 template <class Base, class T>

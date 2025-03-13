@@ -100,11 +100,11 @@ public:
     /** Used during the init phase.  The method will be called each
      phase of initialization.  Initialization ends when no components
      have sent any data. */
-    virtual void init(unsigned int UNUSED(phase)) {}
+    virtual void init(unsigned int phase) { UNUSED(phase); }
     /** Used during the complete phase after the end of simulation.
      The method will be called each phase of complete. Complete phase
      ends when no components have sent any data. */
-    virtual void complete(unsigned int UNUSED(phase)) {}
+    virtual void complete(unsigned int phase) { UNUSED(phase); }
     /** Called after all components have been constructed and
     initialization has completed, but before simulation time has
     begun. */
@@ -121,7 +121,11 @@ public:
      * print it's current status.  Useful for debugging.
      * @param out The Output class which should be used to print component status.
      */
-    virtual void printStatus(Output& UNUSED(out)) { return; }
+    virtual void printStatus(Output& out)
+    {
+        UNUSED(out);
+        return;
+    }
 
     /** Get the core timebase */
     UnitAlgebra getCoreTimeBase() const;

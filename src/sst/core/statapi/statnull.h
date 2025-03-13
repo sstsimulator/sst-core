@@ -47,9 +47,13 @@ public:
         Statistic<T>(comp, statName, statSubId, statParams, true)
     {}
 
-    void addData_impl(T UNUSED(data)) override {}
+    void addData_impl(T data) override { UNUSED(data); }
 
-    void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t N, T data) override
+    {
+        UNUSED(N);
+        UNUSED(data);
+    }
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
@@ -66,9 +70,13 @@ public:
         Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams, true)
     {}
 
-    void addData_impl(Args... UNUSED(data)) override {}
+    void addData_impl(Args... data) override { (UNUSED(data), ...); }
 
-    void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t N, Args... data) override
+    {
+        UNUSED(N);
+        (UNUSED(data), ...);
+    }
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
@@ -85,11 +93,19 @@ public:
         Statistic<T>(comp, statName, statSubId, statParams, true)
     {}
 
-    void addData_impl(T&& UNUSED(data)) override {}
-    void addData_impl(const T& UNUSED(data)) override {}
+    void addData_impl(T&& data) override { UNUSED(data); }
+    void addData_impl(const T& data) override { UNUSED(data); }
 
-    void addData_impl_Ntimes(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
-    void addData_impl_Ntimes(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t N, T&& data) override
+    {
+        UNUSED(N);
+        UNUSED(data);
+    }
+    void addData_impl_Ntimes(uint64_t N, const T& data) override
+    {
+        UNUSED(N);
+        UNUSED(data);
+    }
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
@@ -120,13 +136,16 @@ public:
         // Do Nothing
     }
 
-    void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
+    void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
+        UNUSED(statOutput);
         // Do Nothing
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool EndOfSimFlag) override
     {
+        UNUSED(statOutput);
+        UNUSED(EndOfSimFlag);
         // Do Nothing
     }
 

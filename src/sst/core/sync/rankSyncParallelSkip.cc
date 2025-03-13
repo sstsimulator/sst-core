@@ -242,8 +242,9 @@ RankSyncParallelSkip::exchange_slave(int thread)
 }
 
 void
-RankSyncParallelSkip::exchange_master(int UNUSED(thread))
+RankSyncParallelSkip::exchange_master(int thread)
 {
+    UNUSED(thread);
 #ifdef SST_CONFIG_HAVE_MPI
 
     // Maximum number of outstanding requests is 3 times the number

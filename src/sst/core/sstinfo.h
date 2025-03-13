@@ -81,63 +81,73 @@ protected:
 private:
     void outputUsage();
 
-    int setPositionalArg(int UNUSED(num), const std::string& arg)
+    int setPositionalArg(int num, const std::string& arg)
     {
+        UNUSED(num);
         addFilter(arg);
         return 0;
     }
 
     // Functions to set options
-    int printHelp(const std::string& UNUSED(arg))
+    int printHelp(const std::string& arg)
     {
+        UNUSED(arg);
         printUsage();
         return 1;
     }
 
-    int outputVersion(const std::string& UNUSED(arg))
+    int outputVersion(const std::string& arg)
     {
+        UNUSED(arg);
         fprintf(stderr, "SST Release Version %s\n", PACKAGE_VERSION);
         return 1;
     }
 
-    int setEnableDebug(const std::string& UNUSED(arg))
+    int setEnableDebug(const std::string& arg)
     {
+        UNUSED(arg);
         m_debugEnabled = true;
         return 0;
     }
 
-    int setNoDisplay(const std::string& UNUSED(arg))
+    int setNoDisplay(const std::string& arg)
     {
+        UNUSED(arg);
         m_optionBits &= ~CFG_OUTPUTHUMAN;
         return 0;
     }
 
-    int setInteractive(const std::string& UNUSED(arg))
+    int setInteractive(const std::string& arg)
     {
+        UNUSED(arg);
         m_interactive = true;
         return 0;
     }
 
-    int setXML(const std::string& UNUSED(arg))
+    int setXML(const std::string& arg)
     {
+        UNUSED(arg);
         m_optionBits |= CFG_OUTPUTXML;
         return 0;
     }
 
-    int setXMLOutput(const std::string& UNUSED(arg))
+    int setXMLOutput(const std::string& arg)
     {
+        UNUSED(arg);
         m_XMLFilePath = arg;
         return 0;
     }
 
-    int setLibs(const std::string& UNUSED(arg))
+    int setLibs(const std::string& arg)
     {
+        UNUSED(arg);
         addFilter(arg);
         return 0;
     }
 
-    int setQuiet(const std::string& UNUSED(arg))
+    int setQuiet(const std::string& arg)
     {
+        UNUSED(arg);
         m_optionBits &= ~CFG_VERBOSE;
         return 0;
     }

@@ -210,8 +210,9 @@ StatisticOutputHDF5::getStatisticInfo(StatisticBase* statistic)
 }
 
 void
-StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase* UNUSED(stat), Cycle_t cycle)
+StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase* stat, Cycle_t cycle)
 {
+    UNUSED(stat);
     for ( StatData_u& i : currentData ) {
         memset(&i, '\0', sizeof(i));
     }
@@ -500,8 +501,9 @@ StatisticOutputHDF5::GroupInfo::startNewGroupEntry(Cycle_t cycle)
 }
 
 void
-StatisticOutputHDF5::GroupInfo::startNewEntry(StatisticBase* stat, Cycle_t UNUSED(cycle))
+StatisticOutputHDF5::GroupInfo::startNewEntry(StatisticBase* stat, Cycle_t cycle)
 {
+    UNUSED(cycle);
     m_currentStat = &(m_statGroups.at(GroupStat::getStatName(stat)));
     size_t compIndex =
         std::distance(m_components.begin(), std::find(m_components.begin(), m_components.end(), stat->getComponent()));
@@ -590,8 +592,9 @@ StatisticOutputHDF5::GroupInfo::GroupStat::startNewGroupEntry()
 }
 
 void
-StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase* UNUSED(stat))
+StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase* stat)
 {
+    UNUSED(stat);
     currentCompOffset = componentIndex * registeredFields.size();
 }
 

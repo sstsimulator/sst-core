@@ -493,8 +493,9 @@ StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /*=fal
 }
 
 bool
-StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleNum), SimTime_t timeFactor)
+StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor)
 {
+    UNUSED(CycleNum);
     StatArray_t*   statArray;
     StatisticBase* stat;
     unsigned int   x;
@@ -514,8 +515,9 @@ StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleN
 }
 
 bool
-StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(CycleNum), StatisticGroup* group)
+StatisticProcessingEngine::handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group)
 {
+    UNUSED(CycleNum);
     performStatisticGroupOutputImpl(*group, false);
     return false;
 }
@@ -559,9 +561,9 @@ StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t timeFact
 }
 
 void
-StatisticProcessingEngine::addStatisticToCompStatMap(
-    StatisticBase* Stat, StatisticFieldInfo::fieldType_t UNUSED(fieldType))
+StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType)
 {
+    UNUSED(fieldType);
     StatArray_t*  statArray;
     ComponentId_t compId = Stat->getComponent()->getId();
 

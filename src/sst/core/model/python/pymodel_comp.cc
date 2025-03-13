@@ -83,8 +83,9 @@ PySubComponent::getSlot()
 }
 
 static int
-compInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+compInit(ComponentPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     char *        name, *type;
     ComponentId_t useID = UNSET_COMPONENT_ID;
     if ( !PyArg_ParseTuple(args, "ss|k", &name, &type, &useID) ) return -1;
@@ -242,8 +243,9 @@ compAddPortModule(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-compGetFullName(PyObject* self, PyObject* UNUSED(args))
+compGetFullName(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     return SST_ConvertToPythonString(getComp(self)->getFullName().c_str());
 }
 
@@ -286,8 +288,9 @@ compCompare(PyObject* obj0, PyObject* obj1)
 #endif
 
 static PyObject*
-compGetType(PyObject* self, PyObject* UNUSED(args))
+compGetType(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     return PyUnicode_FromString(getComp(self)->type.c_str());
 }
 
@@ -646,8 +649,9 @@ REENABLE_WARNING
 #endif
 
 static int
-subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+subCompInit(ComponentPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     ComponentId_t id;
     PyObject*     parent;
     // if ( !PyArg_ParseTuple(args, "Ossii", &parent, &name, &type, &slot, &id) )

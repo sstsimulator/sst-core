@@ -50,8 +50,8 @@ private:
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
-    void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
-    void cmd_ls(std::vector<std::string>& UNUSED(tokens));
+    void cmd_pwd(std::vector<std::string>& tokens);
+    void cmd_ls(std::vector<std::string>& tokens);
     void cmd_cd(std::vector<std::string>& tokens);
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);

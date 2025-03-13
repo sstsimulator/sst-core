@@ -172,8 +172,9 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) : SubCompSend
 }
 
 void
-SubCompReceiver::clock(Cycle_t UNUSED(cyc))
+SubCompReceiver::clock(Cycle_t cyc)
 {
+    UNUSED(cyc);
     /* Do nothing */
 }
 

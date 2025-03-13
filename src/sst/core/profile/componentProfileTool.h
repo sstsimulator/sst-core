@@ -81,8 +81,8 @@ public:
 
     ComponentCodeSegmentProfileTool(const std::string& name, Params& params);
 
-    virtual void codeSegmentStart(uintptr_t UNUSED(key)) {}
-    virtual void codeSegmentEnd(uintptr_t UNUSED(key)) {}
+    virtual void codeSegmentStart(uintptr_t key) { UNUSED(key); }
+    virtual void codeSegmentEnd(uintptr_t key) { UNUSED(key); }
 
     class ProfilePoint
     {
@@ -171,7 +171,11 @@ public:
     uintptr_t registerProfilePoint(
         const std::string& point, ComponentId_t id, const std::string& name, const std::string& type) override;
 
-    void codeSegmentStart(uintptr_t UNUSED(key)) override { start_time_ = T::now(); }
+    void codeSegmentStart(uintptr_t key) override
+    {
+        UNUSED(key);
+        start_time_ = T::now();
+    }
 
     void codeSegmentEnd(uintptr_t key) override
     {

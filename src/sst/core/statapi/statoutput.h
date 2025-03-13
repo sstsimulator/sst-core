@@ -288,7 +288,7 @@ private:
     // Other support functions
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
     fieldHandle_t       generateFieldHandle(StatisticFieldInfo* FieldInfo);
-    virtual void        implRegisteredField(fieldHandle_t UNUSED(fieldHandle)) {}
+    virtual void        implRegisteredField(fieldHandle_t fieldHandle) { UNUSED(fieldHandle); }
 
     FieldInfoArray_t m_outputFieldInfoArray;
     FieldNameMap_t   m_outputFieldNameMap;

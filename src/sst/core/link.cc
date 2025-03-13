@@ -566,8 +566,11 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
 
 void
 SST::Core::Serialization::serialize_impl<Link*>::operator()(
-    Link*& UNUSED(s), SST::Core::Serialization::serializer& UNUSED(ser), const char* UNUSED(name))
+    Link*& s, SST::Core::Serialization::serializer& ser, const char* name)
 {
+    UNUSED(s);
+    UNUSED(ser);
+    UNUSED(name);
     // TODO: Implement Link mapping mode
 }
 
@@ -927,8 +930,10 @@ Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
 }
 
 void
-Link::AttachPoint::serializeEventAttachPointKey(
-    SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-{}
+Link::AttachPoint::serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+{
+    UNUSED(ser);
+    UNUSED(key);
+}
 
 } // namespace SST

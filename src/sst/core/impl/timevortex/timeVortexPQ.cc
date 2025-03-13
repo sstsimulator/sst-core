@@ -19,12 +19,10 @@
 namespace SST::IMPL {
 
 template <bool TS>
-TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
-    TimeVortex(),
-    insertOrder(0),
-    max_depth(0),
-    current_depth(0)
-{}
+TimeVortexPQBase<TS>::TimeVortexPQBase(Params& params) : TimeVortex(), insertOrder(0), max_depth(0), current_depth(0)
+{
+    UNUSED(params);
+}
 
 template <bool TS>
 TimeVortexPQBase<TS>::TimeVortexPQBase() : TimeVortex(), insertOrder(0), max_depth(0), current_depth(0)

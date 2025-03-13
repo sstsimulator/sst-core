@@ -18,7 +18,12 @@
 
 using namespace SST::IMPL::Partition;
 
-SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
+SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks, RankInfo my_rank, int verbosity)
+{
+    UNUSED(total_ranks);
+    UNUSED(my_rank);
+    UNUSED(verbosity);
+}
 
 void
 SSTSinglePartition::performPartition(ConfigGraph* graph)

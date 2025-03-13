@@ -202,14 +202,16 @@ static struct PyModuleDef emptyModDef
 #endif
 
 static PyObject*
-mlExecModule(PyObject* UNUSED(self), PyObject* args)
+mlExecModule(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     return args;
 }
 
 static PyObject*
-mlCreateModule(PyObject* UNUSED(self), PyObject* args)
+mlCreateModule(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     PyObject* spec;
     // The argument is a ModuleSpec, but I don't know how to check for
     // that.  If we can find the right type, this would be similar to:
@@ -250,8 +252,9 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
 /***** Module information *****/
 
 static PyObject*
-findComponentByName(PyObject* UNUSED(self), PyObject* args)
+findComponentByName(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     if ( !PyUnicode_Check(args) ) {
         Py_INCREF(Py_None);
         return Py_None;
@@ -284,8 +287,9 @@ findComponentByName(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setProgramOption(PyObject* UNUSED(self), PyObject* args)
+setProgramOption(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     char *param, *value;
     PyErr_Clear();
     int argOK = PyArg_ParseTuple(args, "ss", &param, &value);
@@ -302,8 +306,9 @@ setProgramOption(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setProgramOptions(PyObject* UNUSED(self), PyObject* args)
+setProgramOptions(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     if ( !PyDict_Check(args) ) { return nullptr; }
     Py_ssize_t pos = 0;
     PyObject * key, *val;
@@ -315,8 +320,10 @@ setProgramOptions(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getProgramOptions(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     // Load parameters already set.
     Config* cfg = gModel->getConfig();
 
@@ -410,8 +417,9 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
 }
 
 static PyObject*
-pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
+pushNamePrefix(PyObject* self, PyObject* arg)
 {
+    UNUSED(self);
     const char* name = nullptr;
     PyErr_Clear();
     name = SST_ConvertToCppString(arg);
@@ -424,22 +432,28 @@ pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
 }
 
 static PyObject*
-popNamePrefix(PyObject* UNUSED(self), PyObject* UNUSED(args))
+popNamePrefix(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     gModel->popNamePrefix();
     return SST_ConvertToPythonLong(0);
 }
 
 static PyObject*
-exitsst(PyObject* UNUSED(self), PyObject* UNUSED(args))
+exitsst(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     exit(-1);
     return nullptr;
 }
 
 static PyObject*
-getSSTMPIWorldSize(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getSSTMPIWorldSize(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     int ranks = 1;
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
@@ -448,8 +462,10 @@ getSSTMPIWorldSize(PyObject* UNUSED(self), PyObject* UNUSED(args))
 }
 
 static PyObject*
-getSSTMyMPIRank(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getSSTMyMPIRank(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     int myrank = 0;
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
@@ -458,15 +474,18 @@ getSSTMyMPIRank(PyObject* UNUSED(self), PyObject* UNUSED(args))
 }
 
 static PyObject*
-getSSTThreadCount(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getSSTThreadCount(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     Config* cfg = gModel->getConfig();
     return SST_ConvertToPythonLong(cfg->num_threads());
 }
 
 static PyObject*
-setSSTThreadCount(PyObject* UNUSED(self), PyObject* args)
+setSSTThreadCount(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     Config* cfg     = gModel->getConfig();
     long    oldNThr = cfg->num_threads();
     long    nThr    = SST_ConvertToCppLong(args);
@@ -475,8 +494,9 @@ setSSTThreadCount(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setStatisticOutput(PyObject* UNUSED(self), PyObject* args)
+setStatisticOutput(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     char*     statOutputName;
     int       argOK           = 0;
     PyObject* outputParamDict = nullptr;
@@ -501,8 +521,9 @@ setStatisticOutput(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setStatisticOutputOption(PyObject* UNUSED(self), PyObject* args)
+setStatisticOutputOption(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     char* param;
     char* value;
     int   argOK = 0;
@@ -519,8 +540,9 @@ setStatisticOutputOption(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setStatisticOutputOptions(PyObject* UNUSED(self), PyObject* args)
+setStatisticOutputOptions(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     PyErr_Clear();
 
     if ( !PyDict_Check(args) ) { return nullptr; }
@@ -533,8 +555,9 @@ setStatisticOutputOptions(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setStatisticLoadLevel(PyObject* UNUSED(self), PyObject* arg)
+setStatisticLoadLevel(PyObject* self, PyObject* arg)
 {
+    UNUSED(self);
     PyErr_Clear();
 
     uint32_t loadLevel = SST_ConvertToCppLong(arg);
@@ -549,8 +572,9 @@ setStatisticLoadLevel(PyObject* UNUSED(self), PyObject* arg)
 }
 
 static PyObject*
-enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyObject* args)
+enableAllStatisticsForAllComponents(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK         = 0;
     PyObject* statParamDict = nullptr;
 
@@ -573,8 +597,9 @@ enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-enableAllStatisticsForComponentName(PyObject* UNUSED(self), PyObject* args)
+enableAllStatisticsForComponentName(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compName          = nullptr;
     PyObject* statParamDict     = nullptr;
@@ -597,8 +622,9 @@ enableAllStatisticsForComponentName(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-enableStatisticForComponentName(PyObject* UNUSED(self), PyObject* args)
+enableStatisticForComponentName(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compName          = nullptr;
     char*     statName          = nullptr;
@@ -622,8 +648,9 @@ enableStatisticForComponentName(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-enableStatisticsForComponentName(PyObject* UNUSED(self), PyObject* args)
+enableStatisticsForComponentName(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compName          = nullptr;
     PyObject* statList          = nullptr;
@@ -677,8 +704,9 @@ enableStatisticForComponentType(
 }
 
 static PyObject*
-enableAllStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
+enableAllStatisticsForComponentType(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compType          = nullptr;
     PyObject* statParamDict     = nullptr;
@@ -714,8 +742,9 @@ enableStatisticForComponentType(
 }
 
 static PyObject*
-enableStatisticForComponentType(PyObject* UNUSED(self), PyObject* args)
+enableStatisticForComponentType(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compType          = nullptr;
     char*     statName          = nullptr;
@@ -739,8 +768,9 @@ enableStatisticForComponentType(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-enableStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
+enableStatisticsForComponentType(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int       argOK             = 0;
     char*     compType          = nullptr;
     PyObject* statList          = nullptr;
@@ -784,8 +814,9 @@ enableStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setStatisticLoadLevelForComponentName(PyObject* UNUSED(self), PyObject* args)
+setStatisticLoadLevelForComponentName(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int   argOK             = 0;
     char* compName          = nullptr;
     int   level             = STATISTICLOADLEVELUNINITIALIZED;
@@ -824,8 +855,9 @@ setStatisticLoadLevelForComponentType(
 }
 
 static PyObject*
-setStatisticLoadLevelForComponentType(PyObject* UNUSED(self), PyObject* args)
+setStatisticLoadLevelForComponentType(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     int   argOK             = 0;
     char* compType          = nullptr;
     int   level             = STATISTICLOADLEVELUNINITIALIZED;
@@ -850,8 +882,9 @@ setStatisticLoadLevelForComponentType(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
+setCallPythonFinalize(PyObject* self, PyObject* arg)
 {
+    UNUSED(self);
     PyErr_Clear();
 
     bool state = SST_ConvertToCppLong(arg);
@@ -874,8 +907,9 @@ setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
 }
 
 static PyObject*
-globalAddParam(PyObject* UNUSED(self), PyObject* args)
+globalAddParam(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     char*     set   = nullptr;
     char*     param = nullptr;
     PyObject* value = nullptr;
@@ -891,8 +925,9 @@ globalAddParam(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-globalAddParams(PyObject* UNUSED(self), PyObject* args)
+globalAddParams(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
     char*     set  = nullptr;
     PyObject* dict = nullptr;
     if ( !PyArg_ParseTuple(args, "sO", &set, &dict) ) return nullptr;
@@ -915,8 +950,10 @@ globalAddParams(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-getElapsedExecutionTime(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getElapsedExecutionTime(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     // Get the elapsed runtime
     UnitAlgebra time     = gModel->getElapsedExecutionTime();
     std::string time_str = time.toString();
@@ -928,8 +965,10 @@ getElapsedExecutionTime(PyObject* UNUSED(self), PyObject* UNUSED(args))
 }
 
 static PyObject*
-getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
+getLocalMemoryUsage(PyObject* self, PyObject* args)
 {
+    UNUSED(self);
+    UNUSED(args);
     // Get the elapsed runtime
     UnitAlgebra memsize     = gModel->getLocalMemoryUsage();
     std::string memsize_str = memsize.toString();

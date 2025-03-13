@@ -37,11 +37,9 @@ TimeVortexBinnedMapBase<TS>::TimeUnit::sort()
 
 
 template <bool TS>
-TimeVortexBinnedMapBase<TS>::TimeVortexBinnedMapBase(Params& UNUSED(params)) :
-    TimeVortex(),
-    insertOrder(0),
-    current_depth(0)
+TimeVortexBinnedMapBase<TS>::TimeVortexBinnedMapBase(Params& params) : TimeVortex(), insertOrder(0), current_depth(0)
 {
+    UNUSED(params);
     max_depth = 0;
 
     // Initialize things with with time = 0 TimeUnit

@@ -22,7 +22,7 @@
 #include <string>
 
 void
-// update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[]), const int UNUSED(argc))
+// update_env_var(const char* name, const int verbose, char* argv[], const int argc)
 
 // This will add the current load path variable to the end of path and
 // set it as the new load path for the actual executable
@@ -59,8 +59,9 @@ boot_sst_configure_env(const std::string& path)
 }
 
 void
-boot_sst_executable(const char* binary, const int verbose, char* argv[], const int UNUSED(argc))
+boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc)
 {
+    UNUSED(argc);
     char* real_binary_path = (char*)malloc(sizeof(char) * PATH_MAX);
 
     if ( strcmp(SST_INSTALL_PREFIX, "NONE") == 0 ) {

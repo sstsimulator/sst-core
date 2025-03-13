@@ -93,15 +93,17 @@ private:
 
     //// Environment Options
 
-    int enablePrintEnv(const std::string& UNUSED(arg))
+    int enablePrintEnv(const std::string& arg)
     {
+        UNUSED(arg);
         printf("enablePrintEnv()\n");
         print_env_ = true;
         return 0;
     }
 
-    int disableEnvConfig(const std::string& UNUSED(arg))
+    int disableEnvConfig(const std::string& arg)
     {
+        UNUSED(arg);
         printf("disableEnvConfig()\n");
         no_env_config_ = true;
         return 0;

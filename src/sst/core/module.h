@@ -31,7 +31,7 @@ public:
     SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
     Module() {}
     virtual ~Module() {}
-    void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { UNUSED(ser); }
     ImplementSerializable(SST::Module)
 };
 

@@ -67,7 +67,7 @@ private:
         uint32_t       local_size;
         uint32_t       remote_size;
 
-        void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+        void serialize_order(SST::Core::Serialization::serializer& ser) override { UNUSED(ser); }
         ImplementSerializable(comm_pair)
     };
 

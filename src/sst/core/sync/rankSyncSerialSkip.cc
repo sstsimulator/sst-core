@@ -63,8 +63,9 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
 
 ActivityQueue*
 RankSyncSerialSkip::registerLink(
-    const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), const std::string& name, Link* link)
+    const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
 {
+    UNUSED(from_rank);
     std::lock_guard<Core::ThreadSafe::Spinlock> slock(lock);
 
     RankSyncQueue* queue;

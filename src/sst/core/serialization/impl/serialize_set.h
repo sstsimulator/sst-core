@@ -73,8 +73,11 @@ public:
         }
     }
 
-    void operator()(Set& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(Set& v, serializer& ser, const char* name)
     {
+        UNUSED(v);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Add support for mapping mode
     }
 };
@@ -128,8 +131,11 @@ public:
         }
     }
 
-    void operator()(Set& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(Set& v, serializer& ser, const char* name)
     {
+        UNUSED(v);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Add support for mapping mode
     }
 };

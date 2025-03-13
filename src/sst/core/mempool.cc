@@ -428,31 +428,39 @@ MemPoolItem::operator delete(void* ptr)
 
 
 void
-MemPoolAccessor::initializeGlobalData(int UNUSED(num_threads), bool UNUSED(cache_align))
-{}
+MemPoolAccessor::initializeGlobalData(int num_threads, bool cache_align)
+{
+    UNUSED(num_threads);
+    UNUSED(cache_align);
+}
 
 void
-MemPoolAccessor::initializeLocalData(int UNUSED(thread))
-{}
+MemPoolAccessor::initializeLocalData(int thread)
+{
+    UNUSED(thread);
+}
 
 
 size_t
-MemPoolAccessor::getArenaSize(size_t UNUSED(size))
+MemPoolAccessor::getArenaSize(size_t size)
 {
+    UNUSED(size);
     return 0;
 }
 
 
 size_t
-MemPoolAccessor::getNumArenas(size_t UNUSED(size))
+MemPoolAccessor::getNumArenas(size_t size)
 {
+    UNUSED(size);
     return 0;
 }
 
 
 uint64_t
-MemPoolAccessor::getBytesMemUsedBy(size_t UNUSED(size))
+MemPoolAccessor::getBytesMemUsedBy(size_t size)
 {
+    UNUSED(size);
     return 0;
 }
 
@@ -465,8 +473,10 @@ MemPoolAccessor::getMemPoolUsage(int64_t& bytes, int64_t& active_entries)
 }
 
 void
-MemPoolAccessor::printUndeletedMemPoolItems(const std::string& UNUSED(header), Output& UNUSED(out))
+MemPoolAccessor::printUndeletedMemPoolItems(const std::string& header, Output& out)
 {
+    UNUSED(header);
+    UNUSED(out);
     return;
 }
 

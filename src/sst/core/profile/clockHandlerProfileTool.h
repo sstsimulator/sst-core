@@ -39,8 +39,16 @@ public:
 
     // Default implementations of attach point functions for profile
     // tools that don't use them
-    void beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle)) override {}
-    void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(remove)) override {}
+    void beforeHandler(uintptr_t key, const Cycle_t& cycle) override
+    {
+        UNUSED(key);
+        UNUSED(cycle);
+    }
+    void afterHandler(uintptr_t key, const bool& remove) override
+    {
+        UNUSED(key);
+        UNUSED(remove);
+    }
 
 protected:
     std::string getKeyForHandler(const AttachPointMetaData& mdata);
@@ -101,10 +109,16 @@ public:
 
     uintptr_t registerHandler(const AttachPointMetaData& mdata) override;
 
-    void beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle)) override { start_time_ = T::now(); }
-
-    void afterHandler(uintptr_t key, const bool& UNUSED(remove)) override
+    void beforeHandler(uintptr_t key, const Cycle_t& cycle) override
     {
+        UNUSED(key);
+        UNUSED(cycle);
+        start_time_ = T::now();
+    }
+
+    void afterHandler(uintptr_t key, const bool& remove) override
+    {
+        UNUSED(remove);
         auto          total_time = T::now() - start_time_;
         clock_data_t* entry      = reinterpret_cast<clock_data_t*>(key);
         entry->time += std::chrono::duration_cast<std::chrono::nanoseconds>(total_time).count();

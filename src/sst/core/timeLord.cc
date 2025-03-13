@@ -164,8 +164,9 @@ TimeLord::~TimeLord()
 }
 
 SimTime_t
-TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
+TimeLord::getSimCycles(const std::string& ts, const std::string& where)
 {
+    UNUSED(where);
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);
     if ( parseCache.find(ts) == parseCache.end() ) {
@@ -204,7 +205,11 @@ public:
         return base.toStringBestSI();
     }
 
-    void set_impl(const std::string& UNUSED(value)) override { return; }
+    void set_impl(const std::string& value) override
+    {
+        UNUSED(value);
+        return;
+    }
 
     // We'll act like we're a fundamental type
     bool isFundamental() override { return true; }

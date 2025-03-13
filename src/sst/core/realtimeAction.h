@@ -38,7 +38,7 @@ public:
     /* Optional function called just before run loop starts. Passes in
      * the next scheduled time of the event or 0 if the event is not
      * scheduled */
-    virtual void begin(time_t UNUSED(scheduled_time)) {}
+    virtual void begin(time_t scheduled_time) { UNUSED(scheduled_time); }
     virtual void execute() = 0;
 
     /* Attribute functions that let the core know when certain actions

@@ -46,7 +46,7 @@ public:
     }
 
     template <class T>
-    ProvidesDefaultInfo(const std::string& lib, const std::string& name, T* UNUSED(t)) :
+    ProvidesDefaultInfo(const std::string& lib, const std::string& name, T* t) :
         lib_(lib),
         name_(name),
         desc_(T::ELI_getDescription()),
@@ -54,7 +54,9 @@ public:
         file_(T::ELI_getCompileFile()),
         date_(T::ELI_getCompileDate()),
         alias_(GetAlias<T>::get())
-    {}
+    {
+        UNUSED(t);
+    }
 
 protected:
     template <class T>
