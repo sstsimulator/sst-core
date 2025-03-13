@@ -118,7 +118,8 @@ RouteMessage::RouteMessage(
     ports(parent_ports),
     my_id(nid)
 {
-    rng = new SST::RNG::MersenneRNG(my_id + 100);
+    rng  = new SST::RNG::MersenneRNG(my_id + 100);
+    mcnt = registerStatistic<uint64_t>("msg_count");
 }
 
 void
@@ -127,4 +128,5 @@ RouteMessage::send(MessageEvent* ev, int UNUSED(incoming_port))
     // Route to random port
     int nextport = rng->generateNextUInt32() % ports.size();
     ports[nextport]->send(ev);
+    mcnt->addData(1);
 }

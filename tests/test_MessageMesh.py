@@ -18,6 +18,9 @@ sst.setProgramOption("stop-at", "10us")
 x_size = int(sys.argv[1])
 y_size = int(sys.argv[2])
 
+sst.setStatisticOutput("sst.statOutputCSV")
+sst.enableAllStatisticsForAllComponents()
+
 # Calculate number of routers and endpoints
 num_routers = x_size * y_size
         
