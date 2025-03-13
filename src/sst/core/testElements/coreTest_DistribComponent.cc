@@ -112,8 +112,9 @@ coreTestDistribComponent::coreTestDistribComponent() : Component(-1)
 }
 
 bool
-coreTestDistribComponent::tick(Cycle_t UNUSED(cyc))
+coreTestDistribComponent::tick(Cycle_t cyc)
 {
+    UNUSED(cyc);
     double  next_result     = comp_distrib->getNextDouble();
     int64_t int_next_result = 0;
 

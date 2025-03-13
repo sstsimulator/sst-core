@@ -42,16 +42,24 @@ public:
         }
     }
 
-    void toString(std::ostream& UNUSED(os)) const { os << "      Category: " << categoryName(cat_) << "\n"; }
+    void toString(std::ostream& os) const
+    {
+        UNUSED(os);
+        os << "      Category: " << categoryName(cat_) << "\n";
+    }
 
     template <class XMLNode>
-    void outputXML(XMLNode* UNUSED(node))
-    {}
+    void outputXML(XMLNode* node)
+    {
+        UNUSED(node);
+    }
 
 protected:
     template <class T>
-    ProvidesCategory(T* UNUSED(t)) : cat_(T::ELI_getCategory())
-    {}
+    ProvidesCategory(T* t) : cat_(T::ELI_getCategory())
+    {
+        UNUSED(t);
+    }
 
 private:
     uint32_t cat_;

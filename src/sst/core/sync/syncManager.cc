@@ -79,16 +79,22 @@ public:
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(
-        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), const std::string& UNUSED(name),
-        Link* UNUSED(link)) override
+    ActivityQueue*
+    registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) override
     {
+        UNUSED(to_rank);
+        UNUSED(from_rank);
+        UNUSED(name);
+        UNUSED(link);
         return nullptr;
     }
 
-    void execute(int UNUSED(thread)) override {}
-    void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override
+    void execute(int thread) override { UNUSED(thread); }
+    void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override
     {
+        UNUSED_WO_MPI(thread);
+        UNUSED_WO_MPI(msg_count);
+
         // Even though there are no links crossing ranks, we still
         // need to make sure every rank does the same number of init
         // cycles so the shared memory regions initialization works.
@@ -108,7 +114,12 @@ public:
 
     void prepareForComplete() override {}
 
-    void setSignals(int UNUSED(end), int UNUSED(usr), int UNUSED(alrm)) override {}
+    void setSignals(int end, int usr, int alrm) override
+    {
+        UNUSED(end);
+        UNUSED(usr);
+        UNUSED(alrm);
+    }
 
     bool getSignals(int& end, int& usr, int& alrm) override
     {
@@ -125,7 +136,7 @@ public:
     uint64_t getDataSize() const override { return 0; }
 
     // Don't want to reset time for Empty Sync
-    void setRestartTime(SimTime_t UNUSED(time)) override {}
+    void setRestartTime(SimTime_t time) override { UNUSED(time); }
 };
 
 class EmptyThreadSync : public ThreadSync
@@ -145,7 +156,12 @@ public:
     void finalizeLinkConfigurations() override {}
     void prepareForComplete() override {}
 
-    void setSignals(int UNUSED(end), int UNUSED(usr), int UNUSED(alrm)) override {}
+    void setSignals(int end, int usr, int alrm) override
+    {
+        UNUSED(end);
+        UNUSED(usr);
+        UNUSED(alrm);
+    }
 
     bool getSignals(int& end, int& usr, int& alrm) override
     {
@@ -156,21 +172,30 @@ public:
     }
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
-    ActivityQueue* registerRemoteLink(int UNUSED(tid), const std::string& UNUSED(name), Link* UNUSED(link)) override
+    void registerLink(const std::string& name, Link* link) override
     {
+        UNUSED(name);
+        UNUSED(link);
+    }
+    ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) override
+    {
+        UNUSED(tid);
+        UNUSED(name);
+        UNUSED(link);
         return nullptr;
     }
 
     // Don't want to reset time for Empty Sync
-    void setRestartTime(SimTime_t UNUSED(time)) override {}
+    void setRestartTime(SimTime_t time) override { UNUSED(time); }
 
     /** Serialization for checkpoint support */
 };
 
 void
-RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
+RankSync::exchangeLinkInfo(uint32_t my_rank)
 {
+    UNUSED_WO_MPI(my_rank);
+
     // Function will not compile if MPI is not configured
 #ifdef SST_CONFIG_HAVE_MPI
     // For now, we will simply have rank 0 exchange with everyone and
@@ -298,7 +323,7 @@ SyncManager::setupSyncObjects()
 
 SyncManager::SyncManager(
     const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
-    const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
+    const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time) :
     Action(),
     rank_(rank),
     num_ranks_(num_ranks),
@@ -306,6 +331,7 @@ SyncManager::SyncManager(
     min_part_(min_part),
     real_time_(real_time)
 {
+    UNUSED(interThreadLatencies);
     sim_ = Simulation_impl::getSimulation();
 
     setupSyncObjects();

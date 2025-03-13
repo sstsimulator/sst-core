@@ -195,8 +195,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
 }
 
 void
-coreTestSharedObjectsComponent::init(unsigned int UNUSED(phase))
+coreTestSharedObjectsComponent::init(unsigned int phase)
 {
+    UNUSED(phase);
     if ( late_initialize ) return;
     // During init, we'll check to see if things are fully published
     if ( test_array ) {
@@ -291,8 +292,10 @@ coreTestSharedObjectsComponent::setup()
 }
 
 void
-coreTestSharedObjectsComponent::complete(unsigned int UNUSED(phase))
-{}
+coreTestSharedObjectsComponent::complete(unsigned int phase)
+{
+    UNUSED(phase);
+}
 
 void
 coreTestSharedObjectsComponent::finish()

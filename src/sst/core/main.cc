@@ -195,8 +195,9 @@ do_statoutput_end_simulation(const RankInfo& myRank)
 
 // Function to initialize the StatEngines in each partition (Simulation_impl object)
 static void
-do_statengine_initialization(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& UNUSED(myRank))
+do_statengine_initialization(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank)
 {
+    UNUSED(myRank);
     sim->initializeStatisticEngine(*graph);
 }
 

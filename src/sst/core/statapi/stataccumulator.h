@@ -176,8 +176,9 @@ public:
         h_max   = statOutput->registerField<NumberBase>("Max");
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool EndOfSimFlag) override
     {
+        UNUSED(EndOfSimFlag);
         statOutput->outputField(h_sum, m_sum);
         statOutput->outputField(h_sumsq, m_sum_sq);
         statOutput->outputField(h_count, getCount());

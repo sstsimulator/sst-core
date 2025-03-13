@@ -41,8 +41,9 @@ ComponentProfileTool::ComponentProfileTool(const std::string& name, Params& para
 
 std::string
 ComponentProfileTool::getKeyForCodeSegment(
-    const std::string& point, ComponentId_t UNUSED(id), const std::string& name, const std::string& type)
+    const std::string& point, ComponentId_t id, const std::string& name, const std::string& type)
 {
+    UNUSED(id);
     std::string key;
     switch ( profile_level_ ) {
     case Profile_Level::Global:

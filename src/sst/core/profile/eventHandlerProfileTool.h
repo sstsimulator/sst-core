@@ -47,9 +47,17 @@ public:
 
     // Default implementations of attach point functions for profile
     // tools that don't use them
-    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(event)) override {}
-    void afterHandler(uintptr_t UNUSED(key)) override {}
-    void eventSent(uintptr_t UNUSED(key), Event*& UNUSED(ev)) override {}
+    void beforeHandler(uintptr_t key, const Event* event) override
+    {
+        UNUSED(key);
+        UNUSED(event);
+    }
+    void afterHandler(uintptr_t key) override { UNUSED(key); }
+    void eventSent(uintptr_t key, Event*& ev) override
+    {
+        UNUSED(key);
+        UNUSED(ev);
+    }
 
 
 protected:
@@ -95,7 +103,7 @@ public:
     uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
     void beforeHandler(uintptr_t key, const SST::Event* event) override;
-    void eventSent(uintptr_t UNUSED(key), Event*& UNUSED(ev)) override;
+    void eventSent(uintptr_t key, Event*& ev) override;
 
     void outputData(FILE* fp) override;
 
@@ -127,7 +135,12 @@ public:
     uintptr_t registerHandler(const AttachPointMetaData& mdata) override;
     uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
-    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(event)) override { start_time_ = T::now(); }
+    void beforeHandler(uintptr_t key, const Event* event) override
+    {
+        UNUSED(key);
+        UNUSED(event);
+        start_time_ = T::now();
+    }
 
     void afterHandler(uintptr_t key) override
     {
@@ -137,7 +150,11 @@ public:
         entry->recv_count++;
     }
 
-    void eventSent(uintptr_t key, Event*& UNUSED(ev)) override { reinterpret_cast<event_data_t*>(key)->send_count++; }
+    void eventSent(uintptr_t key, Event*& ev) override
+    {
+        UNUSED(ev);
+        reinterpret_cast<event_data_t*>(key)->send_count++;
+    }
 
     void outputData(FILE* fp) override;
 

@@ -256,8 +256,8 @@ public:
     virtual Request* recv(int vn) = 0;
 
     virtual void setup() override {}
-    virtual void init(unsigned int UNUSED(phase)) override {}
-    virtual void complete(unsigned int UNUSED(phase)) override {}
+    virtual void init(unsigned int phase) override { UNUSED(phase); }
+    virtual void complete(unsigned int phase) override { UNUSED(phase); }
     virtual void finish() override {}
 
     /**

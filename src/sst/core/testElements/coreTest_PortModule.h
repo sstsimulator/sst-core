@@ -182,7 +182,7 @@ private:
     Link* left_;
     Link* right_;
 
-    void dummy_handler(SST::Event* UNUSED(ev)) {}
+    void dummy_handler(SST::Event* ev) { UNUSED(ev); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {

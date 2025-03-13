@@ -130,14 +130,14 @@ private:
         H5::H5File*  getFile() { return file; }
         virtual bool isGroup() const = 0;
 
-        virtual void setCurrentStatistic(StatisticBase* UNUSED(stat)) {}
+        virtual void setCurrentStatistic(StatisticBase* stat) { UNUSED(stat); }
         virtual void registerField(StatisticFieldInfo* fi) = 0;
         virtual void finalizeCurrentStatistic()            = 0;
 
-        virtual void beginGroupRegistration(StatisticGroup* UNUSED(group)) {}
+        virtual void beginGroupRegistration(StatisticGroup* group) { UNUSED(group); }
         virtual void finalizeGroupRegistration() {}
 
-        virtual void startNewGroupEntry(Cycle_t UNUSED(cycle)) {}
+        virtual void startNewGroupEntry(Cycle_t cycle) { UNUSED(cycle); }
         virtual void finishGroupEntry() {}
 
         virtual void        startNewEntry(StatisticBase* stat, Cycle_t cycle) = 0;
@@ -223,7 +223,7 @@ private:
 
     public:
         GroupInfo(StatisticGroup* group, H5::H5File* file);
-        void beginGroupRegistration(StatisticGroup* UNUSED(group)) override {}
+        void beginGroupRegistration(StatisticGroup* group) override { UNUSED(group); }
         void setCurrentStatistic(StatisticBase* stat) override;
         void registerField(StatisticFieldInfo* fi) override;
         void finalizeCurrentStatistic() override;

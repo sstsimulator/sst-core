@@ -73,8 +73,9 @@ private:
         unique_count_field_ = stat_output->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* stat_output, bool UNUSED(end_of_sim_flag)) override
+    void outputStatisticFields(StatisticFieldsOutput* stat_output, bool end_of_sim_flag) override
     {
+        UNUSED(end_of_sim_flag);
         stat_output->outputField(unique_count_field_, (uint64_t)unique_set_.size());
     }
 

@@ -243,9 +243,10 @@ void
 #ifdef USE_PARAM_WARNINGS
 Params::verifyKey(const key_type& k) const
 #else
-Params::verifyKey(const key_type& UNUSED(k)) const
+Params::verifyKey(const key_type& k) const
 #endif
 {
+    UNUSED(k);
 #ifdef USE_PARAM_WARNINGS
     if ( !g_verify_enabled || !verify_enabled ) return;
 

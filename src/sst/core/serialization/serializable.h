@@ -126,8 +126,11 @@ class serialize_impl<T, std::enable_if_t<std::is_base_of_v<SST::Core::Serializat
         t.serialize_order(ser);
     }
 
-    inline void operator()(T& UNUSED(t), serializer& UNUSED(ser), const char* UNUSED(name))
+    inline void operator()(T& t, serializer& ser, const char* name)
     {
+        UNUSED(t);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Need to figure out how to handle mapping mode for
         // classes inheriting from serializable that are not pointers.
         // For the core, this really only applies to SharedObjects,

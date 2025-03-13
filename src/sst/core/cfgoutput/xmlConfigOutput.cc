@@ -22,8 +22,9 @@ using namespace SST::Core;
 XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
 
 void
-XMLConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
+XMLConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
+    UNUSED(cfg);
 
     if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
 
@@ -48,8 +49,9 @@ XMLConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
 
 void
 XMLConfigGraphOutput::generateXML(
-    const std::string& indent, const ConfigComponent* comp, const ConfigLinkMap_t& UNUSED(linkMap)) const
+    const std::string& indent, const ConfigComponent* comp, const ConfigLinkMap_t& linkMap) const
 {
+    UNUSED(linkMap);
 
     fprintf(
         outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n", indent.c_str(), comp->name.c_str(),

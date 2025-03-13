@@ -285,8 +285,9 @@ private:
         }
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool EndOfSimFlag) override
     {
+        UNUSED(EndOfSimFlag);
         StatisticOutput::fieldHandle_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());
         statOutput->outputField(m_Fields[x++], getBinsMaxValue());

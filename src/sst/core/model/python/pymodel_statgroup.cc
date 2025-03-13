@@ -49,8 +49,9 @@ convertToParams(PyObject* dict)
 }
 
 static int
-sgInit(StatGroupPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+sgInit(StatGroupPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     char* name = nullptr;
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
@@ -223,8 +224,9 @@ REENABLE_WARNING
 #endif
 
 static int
-soInit(StatOutputPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+soInit(StatOutputPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     char*     type   = nullptr;
     PyObject* params = nullptr;
     if ( !PyArg_ParseTuple(args, "s|O!", &type, &PyDict_Type, &params) ) return -1;

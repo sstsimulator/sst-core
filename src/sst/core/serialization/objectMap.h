@@ -98,7 +98,7 @@ protected:
 
        @param value Value to set the object to expressed as a string
     */
-    virtual void set_impl(const std::string& UNUSED(value)) {}
+    virtual void set_impl(const std::string& value) { UNUSED(value); }
 
     /**
        Function that will get called when this object is selected
@@ -253,7 +253,11 @@ public:
        @param obj ObjectMap to add as a variable
 
      */
-    virtual void addVariable(const std::string& UNUSED(name), ObjectMap* UNUSED(obj)) {}
+    virtual void addVariable(const std::string& name, ObjectMap* obj)
+    {
+        UNUSED(name);
+        UNUSED(obj);
+    }
 
 
     /************ Functions for getting/setting Object's Value *************/

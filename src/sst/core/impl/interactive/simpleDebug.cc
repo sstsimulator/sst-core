@@ -18,7 +18,10 @@
 
 namespace SST::IMPL::Interactive {
 
-SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) : InteractiveConsole() {}
+SimpleDebugger::SimpleDebugger(Params& params) : InteractiveConsole()
+{
+    UNUSED(params);
+}
 
 void
 SimpleDebugger::execute(const std::string& msg)
@@ -53,8 +56,9 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
 }
 
 void
-SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
+SimpleDebugger::cmd_pwd(std::vector<std::string>& tokens)
 {
+    UNUSED(tokens);
     // std::string path = obj_->getName();
     // std::string slash("/");
     // // path = slash + path;
@@ -68,8 +72,9 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 }
 
 void
-SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
+SimpleDebugger::cmd_ls(std::vector<std::string>& tokens)
 {
+    UNUSED(tokens);
     std::vector<std::pair<std::string, SST::Core::Serialization::ObjectMap*>> vars = obj_->getVariables();
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
@@ -225,8 +230,9 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
 }
 
 void
-SimpleDebugger::cmd_time(std::vector<std::string>& UNUSED(tokens))
+SimpleDebugger::cmd_time(std::vector<std::string>& tokens)
 {
+    UNUSED(tokens);
     printf("current time = %" PRI_SIMTIME "\n", getCurrentSimCycle());
 }
 

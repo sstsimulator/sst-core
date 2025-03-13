@@ -392,8 +392,9 @@ Simulation_impl::getLocalMinimumNextActivityTime()
 }
 
 void
-Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part)
+Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part)
 {
+    UNUSED(myRank);
     // Set minPartTC (only thread 0 will do this)
     Simulation_impl::minPart = min_part;
     if ( my_rank.thread == 0 ) { minPartTC = minPartToTC(min_part); }
@@ -479,8 +480,9 @@ Simulation_impl::initializeStatisticEngine(ConfigGraph& graph)
 
 
 int
-Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
+Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part)
 {
+    UNUSED(min_part);
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
@@ -623,8 +625,9 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
 
 int
-Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
+Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part)
 {
+    UNUSED(min_part);
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
@@ -1267,8 +1270,9 @@ Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
 // Function to allow for easy serialization of threads while debugging
 // code
 void
-wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int UNUSED(total_threads))
+wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads)
 {
+    UNUSED(total_threads);
     // Everyone barriers
     barrier.wait();
     // Now barrier until it's my turn

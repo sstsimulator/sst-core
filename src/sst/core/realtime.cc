@@ -374,8 +374,9 @@ HeartbeatRealTimeAction::execute()
 }
 
 void
-HeartbeatRealTimeAction::begin(time_t UNUSED(scheduled_time))
+HeartbeatRealTimeAction::begin(time_t scheduled_time)
 {
+    UNUSED(scheduled_time);
     last_time_ = sst_get_cpu_time();
 }
 
@@ -436,8 +437,9 @@ AlrmSignalAction::addIntervalAction(uint32_t interval, RealTimeAction* action)
 }
 
 void
-AlrmSignalAction::begin(time_t UNUSED(scheduled_time))
+AlrmSignalAction::begin(time_t scheduled_time)
 {
+    UNUSED(scheduled_time);
     RankInfo num_ranks = getNumRanks();
 
     /* Rank 0/thread 0 manages the alarm */

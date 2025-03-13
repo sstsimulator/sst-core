@@ -170,8 +170,9 @@ StatisticOutputJSON::implStopOutputEntries()
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%" PRId32, data);
@@ -180,8 +181,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%" PRIu32, data);
@@ -190,8 +192,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t dat
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%" PRId64, data);
@@ -200,8 +203,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%" PRIu64, data);
@@ -210,8 +214,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t dat
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, float data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%f ", data);
@@ -220,8 +225,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
 }
 
 void
-StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
+StatisticOutputJSON::outputField(fieldHandle_t fieldHandle, double data)
 {
+    UNUSED(fieldHandle);
     if ( !m_firstField ) { fprintf(m_hFile, ", "); }
 
     fprintf(m_hFile, "%f ", data);

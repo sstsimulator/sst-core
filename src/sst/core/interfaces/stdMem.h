@@ -931,7 +931,7 @@ public:
         virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
-        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override = 0;
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override = 0;
         // ImplementSerializable(SST::Interfaces::StandardMem::CustomData);
         ImplementVirtualSerializable(CustomData);
     };
@@ -1106,8 +1106,9 @@ public:
         /* convert(FlushCache) temporarily has a default implementation for backward compatibility
          * It will transition to pure virtual in SST 16
          */
-        virtual SST::Event* convert(FlushCache* UNUSED(request))
+        virtual SST::Event* convert(FlushCache* request)
         {
+            UNUSED(request);
             Output out("", 0, 0, Output::STDERR);
             out.fatal(CALL_INFO, -1, "Error: Event converter for FlushCache requests is not implemented.\n");
         }
@@ -1130,64 +1131,79 @@ public:
         virtual ~RequestHandler() {}
 
         /* Built in command handlers */
-        virtual void handle(Read* UNUSED(request))
+        virtual void handle(Read* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for Read requests is not implemented\n");
         }
-        virtual void handle(ReadResp* UNUSED(request))
+        virtual void handle(ReadResp* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for ReadResp requests is not implemented\n");
         }
-        virtual void handle(Write* UNUSED(request))
+        virtual void handle(Write* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for Write requests is not implemented\n");
         }
-        virtual void handle(WriteResp* UNUSED(request))
+        virtual void handle(WriteResp* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for WriteResp requests is not implemented\n");
         }
-        virtual void handle(FlushAddr* UNUSED(request))
+        virtual void handle(FlushAddr* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for FlushAddr requests is not implemented\n");
         }
-        virtual void handle(FlushCache* UNUSED(request))
+        virtual void handle(FlushCache* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for FlushCache requests is not implemented\n");
         }
-        virtual void handle(FlushResp* UNUSED(request))
+        virtual void handle(FlushResp* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for FlushResp requests is not implemented\n");
         }
-        virtual void handle(ReadLock* UNUSED(request))
+        virtual void handle(ReadLock* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for ReadLock requests is not implemented\n");
         }
-        virtual void handle(WriteUnlock* UNUSED(request))
+        virtual void handle(WriteUnlock* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for WriteUnlock requests is not implemented\n");
         }
-        virtual void handle(LoadLink* UNUSED(request))
+        virtual void handle(LoadLink* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for LoadLink requests is not implemented\n");
         }
-        virtual void handle(StoreConditional* UNUSED(request))
+        virtual void handle(StoreConditional* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for StoreConditional requests is not implemented\n");
         }
-        virtual void handle(MoveData* UNUSED(request))
+        virtual void handle(MoveData* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for MoveData requests is not implemented\n");
         }
-        virtual void handle(CustomReq* UNUSED(request))
+        virtual void handle(CustomReq* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for CustomReq requests is not implemented\n");
         }
-        virtual void handle(CustomResp* UNUSED(request))
+        virtual void handle(CustomResp* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for CustomResp requests is not implemented\n");
         }
-        virtual void handle(InvNotify* UNUSED(request))
+        virtual void handle(InvNotify* request)
         {
+            UNUSED(request);
             out->fatal(CALL_INFO, -1, "Error: RequestHandler for InvNotify requests is not implemented\n");
         }
 
@@ -1201,10 +1217,12 @@ public:
      * @param time TimeConverter indicating the time base (e.g., clock period) associated with this endpoint
      * @param handler Callback function to use for event receives
      */
-    StandardMem(
-        SST::ComponentId_t id, Params& UNUSED(params), TimeConverter*& UNUSED(time), HandlerBase*& UNUSED(handler)) :
-        SubComponent(id)
-    {}
+    StandardMem(SST::ComponentId_t id, Params& params, TimeConverter*& time, HandlerBase*& handler) : SubComponent(id)
+    {
+        UNUSED(params);
+        UNUSED(time);
+        UNUSED(handler);
+    }
 
     /** Default constructor, used for serialization ONLY */
     StandardMem() : SubComponent() {}

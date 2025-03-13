@@ -59,8 +59,10 @@ public:
 
 protected:
     template <class T>
-    ProvidesSubComponentSlots(T* UNUSED(t)) : slots_(InfoSubs<T>::get())
-    {}
+    ProvidesSubComponentSlots(T* t) : slots_(InfoSubs<T>::get())
+    {
+        UNUSED(t);
+    }
 
 private:
     std::vector<ElementInfoSubComponentSlot> slots_;

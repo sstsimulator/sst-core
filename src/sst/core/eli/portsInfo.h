@@ -60,8 +60,9 @@ public:
 
 protected:
     template <class T>
-    ProvidesPorts(T* UNUSED(t)) : ports_(InfoPorts<T>::get())
+    ProvidesPorts(T* t) : ports_(InfoPorts<T>::get())
     {
+        UNUSED(t);
         init();
     }
 

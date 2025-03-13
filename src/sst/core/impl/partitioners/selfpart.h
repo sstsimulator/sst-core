@@ -36,13 +36,22 @@ public:
     /**
        Creates a new self partition scheme.
     */
-    SSTSelfPartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
+    SSTSelfPartition(RankInfo total_ranks, RankInfo my_rank, int verbosity)
+    {
+        UNUSED(total_ranks);
+        UNUSED(my_rank);
+        UNUSED(verbosity);
+    }
 
     /**
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
     */
-    void performPartition(ConfigGraph* UNUSED(graph)) override { return; }
+    void performPartition(ConfigGraph* graph) override
+    {
+        UNUSED(graph);
+        return;
+    }
 
     bool requiresConfigGraph() override { return true; }
     bool spawnOnAllRanks() override { return false; }

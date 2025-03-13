@@ -58,8 +58,9 @@ PyStatistic::compare(PyStatistic* other)
 }
 
 static int
-statInit(StatisticPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+statInit(StatisticPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     StatisticId_t id = 0;
     if ( !PyArg_ParseTuple(args, "k", &id) ) return -1;
 

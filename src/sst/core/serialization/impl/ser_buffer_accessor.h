@@ -28,10 +28,12 @@ namespace SST::Core::Serialization::pvt {
 class ser_buffer_overrun : public std::exception
 {
 public:
-    ser_buffer_overrun(int UNUSED(maxsize))
+    ser_buffer_overrun(int maxsize)
     // ser_buffer_overrun(int maxsize) :
     // spkt_error(sprockit::printf("serialization overrun buffer of size %d", maxsize))
-    {}
+    {
+        UNUSED(maxsize);
+    }
 };
 
 class ser_buffer_accessor

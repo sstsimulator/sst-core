@@ -67,8 +67,10 @@ coreTestLookupTableComponent::~coreTestLookupTableComponent()
 }
 
 void
-coreTestLookupTableComponent::init(unsigned int UNUSED(phase))
-{}
+coreTestLookupTableComponent::init(unsigned int phase)
+{
+    UNUSED(phase);
+}
 
 void
 coreTestLookupTableComponent::setup()

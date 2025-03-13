@@ -187,9 +187,11 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-        {}
+        virtual void serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+        {
+            UNUSED(ser);
+            UNUSED(key);
+        }
     };
 
 private:
@@ -383,9 +385,11 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-        {}
+        virtual void serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+        {
+            UNUSED(ser);
+            UNUSED(key);
+        }
     };
 
 
@@ -449,9 +453,11 @@ public:
 
            @param key Key that would be passed into the interceptHandler() function.
          */
-        virtual void
-        serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-        {}
+        virtual void serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+        {
+            UNUSED(ser);
+            UNUSED(key);
+        }
     };
 
 private:
@@ -717,9 +723,11 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-        {}
+        virtual void serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+        {
+            UNUSED(ser);
+            UNUSED(key);
+        }
     };
 
 private:
@@ -909,9 +917,11 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
-        {}
+        virtual void serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
+        {
+            UNUSED(ser);
+            UNUSED(key);
+        }
     };
 
 private:

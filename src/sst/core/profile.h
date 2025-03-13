@@ -57,14 +57,17 @@ now()
 }
 
 inline double
-getElapsed(const ProfData_t& UNUSED(begin), const ProfData_t& UNUSED(end))
+getElapsed(const ProfData_t& begin, const ProfData_t& end)
 {
+    UNUSED(begin);
+    UNUSED(end);
     return 0.0;
 }
 
 inline double
-getElapsed(const ProfData_t& UNUSED(since))
+getElapsed(const ProfData_t& since)
 {
+    UNUSED(since);
     return 0.0;
 }
 

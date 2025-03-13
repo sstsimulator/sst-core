@@ -20,7 +20,10 @@
 
 namespace SST::Profile {
 
-SyncProfileTool::SyncProfileTool(const std::string& name, Params& UNUSED(params)) : ProfileTool(name) {}
+SyncProfileTool::SyncProfileTool(const std::string& name, Params& params) : ProfileTool(name)
+{
+    UNUSED(params);
+}
 
 SyncProfileToolCount::SyncProfileToolCount(const std::string& name, Params& params) : SyncProfileTool(name, params) {}
 

@@ -33,8 +33,9 @@ extern SST::Core::SSTPythonModelDefinition* gModel;
 extern "C" {
 
 static int
-unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
+unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* kwds)
 {
+    UNUSED(kwds);
     UnitAlgebraPy_t* new_obj;
     PyObject*        str_obj;
 
@@ -371,20 +372,23 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
 // Other methods
 
 static PyObject*
-unitAlgebraGetRoundedValue(PyObject* self, PyObject* UNUSED(args))
+unitAlgebraGetRoundedValue(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     return unitAlgebraToLong(self);
 }
 
 static PyObject*
-unitAlgebraGetFloatValue(PyObject* self, PyObject* UNUSED(args))
+unitAlgebraGetFloatValue(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     return unitAlgebraToFloat(self);
 }
 
 static PyObject*
-unitAlgebraIsValueZero(PyObject* self, PyObject* UNUSED(args))
+unitAlgebraIsValueZero(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     bool val = !unitAlgebraToBool(self);
     return PyBool_FromLong(val);
 }
@@ -408,8 +412,9 @@ unitAlgebraHasUnits(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-unitAlgebraInvert(PyObject* self, PyObject* UNUSED(args))
+unitAlgebraInvert(PyObject* self, PyObject* args)
 {
+    UNUSED(args);
     PyObject*        ret    = createUnitAlgebra(self);
     UnitAlgebraPy_t* ret_ua = (UnitAlgebraPy_t*)ret;
     ret_ua->obj.invert();

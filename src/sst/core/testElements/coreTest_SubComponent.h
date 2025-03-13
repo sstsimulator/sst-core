@@ -39,7 +39,7 @@ public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestSubComponent::SubCompInterface)
 
     SubCompInterface(ComponentId_t id) : SubComponent(id) {}
-    SubCompInterface(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
+    SubCompInterface(ComponentId_t id, Params& params) : SubComponent(id) { UNUSED(params); }
     SubCompInterface() : SubComponent() {}
     virtual ~SubCompInterface() {}
     virtual void clock(SST::Cycle_t) {}
@@ -69,7 +69,7 @@ public:
     )
 
     SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
-    SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
+    SubCompSlotInterface(ComponentId_t id, Params& params) : SubCompInterface(id) { UNUSED(params); }
     virtual ~SubCompSlotInterface() {}
 
     SubCompSlotInterface() {}
@@ -215,7 +215,7 @@ public:
 
 
     SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
-    SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
+    SubCompSendRecvInterface(ComponentId_t id, Params& params) : SubCompInterface(id) { UNUSED(params); }
     virtual ~SubCompSendRecvInterface() {}
 
     SubCompSendRecvInterface() {}

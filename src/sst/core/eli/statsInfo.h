@@ -50,8 +50,9 @@ private:
 
 protected:
     template <class T>
-    ProvidesStats(T* UNUSED(t)) : stats_(InfoStats<T>::get())
+    ProvidesStats(T* t) : stats_(InfoStats<T>::get())
     {
+        UNUSED(t);
         init();
     }
 

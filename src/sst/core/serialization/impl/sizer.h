@@ -27,8 +27,9 @@ public:
     ser_sizer() : size_(0) {}
 
     template <class T>
-    void size(T& UNUSED(t))
+    void size(T& t)
     {
+        UNUSED(t);
         size_ += sizeof(T);
     }
 

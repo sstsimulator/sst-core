@@ -40,7 +40,7 @@ public:
     */
     RandomDistribution() {}
 
-    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    virtual void serialize_order(SST::Core::Serialization::serializer& ser) override { UNUSED(ser); }
 
     ImplementVirtualSerializable(SST::RNG::RandomDistribution)
 };

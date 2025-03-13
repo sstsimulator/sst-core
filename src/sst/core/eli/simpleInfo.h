@@ -89,8 +89,10 @@ public:
 
 protected:
     template <class T>
-    ProvidesSimpleInfo(T* UNUSED(t)) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
-    {}
+    ProvidesSimpleInfo(T* t) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
+    {
+        UNUSED(t);
+    }
 
 private:
     InfoType info_;
@@ -100,11 +102,12 @@ private:
 
 // Macro used by the API to create macros to populate the added ELI
 // info
-#define SST_ELI_DOCUMENT_SIMPLE_INFO(type, index, ...)                                           \
-    static const type& ELI_getSimpleInfo(SST::ELI::SimpleInfoPlaceHolder<index, type> UNUSED(a)) \
-    {                                                                                            \
-        static type my_info = { __VA_ARGS__ };                                                   \
-        return my_info;                                                                          \
+#define SST_ELI_DOCUMENT_SIMPLE_INFO(type, index, ...)                                   \
+    static const type& ELI_getSimpleInfo(SST::ELI::SimpleInfoPlaceHolder<index, type> a) \
+    {                                                                                    \
+        UNUSED(a);                                                                       \
+        static type my_info = { __VA_ARGS__ };                                           \
+        return my_info;                                                                  \
     }
 
 #endif // SST_CORE_ELI_SIMPLE_INFO_H

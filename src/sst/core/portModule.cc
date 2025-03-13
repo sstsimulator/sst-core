@@ -24,8 +24,9 @@ SST_ELI_DEFINE_CTOR_EXTERN(PortModule)
 PortModule::PortModule() {}
 
 uintptr_t
-PortModule::registerLinkAttachTool(const AttachPointMetaData& UNUSED(mdata))
+PortModule::registerLinkAttachTool(const AttachPointMetaData& mdata)
 {
+    UNUSED(mdata);
     return 0;
 }
 
@@ -36,14 +37,16 @@ PortModule::serializeEventAttachPointKey(SST::Core::Serialization::serializer& s
 }
 
 uintptr_t
-PortModule::registerHandlerIntercept(const AttachPointMetaData& UNUSED(mdata))
+PortModule::registerHandlerIntercept(const AttachPointMetaData& mdata)
 {
+    UNUSED(mdata);
     return 0;
 }
 
 void
-PortModule::serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& key)
+PortModule::serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
 {
+    UNUSED(ser);
     if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { key = 0; }
 }
 

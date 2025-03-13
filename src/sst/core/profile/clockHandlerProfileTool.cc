@@ -75,8 +75,9 @@ ClockHandlerProfileToolCount::registerHandler(const AttachPointMetaData& mdata)
 }
 
 void
-ClockHandlerProfileToolCount::beforeHandler(uintptr_t key, const Cycle_t& UNUSED(cycle))
+ClockHandlerProfileToolCount::beforeHandler(uintptr_t key, const Cycle_t& cycle)
 {
+    UNUSED(cycle);
     (*reinterpret_cast<uint64_t*>(key))++;
 }
 

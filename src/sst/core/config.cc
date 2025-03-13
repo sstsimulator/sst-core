@@ -33,7 +33,11 @@ class ConfigHelper
 {
 public:
     // Print usage
-    static int printUsage(Config* cfg, const std::string& UNUSED(arg)) { return cfg->printUsage(); }
+    static int printUsage(Config* cfg, const std::string& arg)
+    {
+        UNUSED(arg);
+        return cfg->printUsage();
+    }
 
     // Print usage
     static int printHelp(Config* cfg, const std::string& arg)
@@ -43,8 +47,10 @@ public:
     }
 
     // Prints the SST version
-    static int printVersion(Config* UNUSED(cfg), const std::string& UNUSED(arg))
+    static int printVersion(Config* cfg, const std::string& arg)
     {
+        UNUSED(cfg);
+        UNUSED(arg);
         printf("SST-Core Version (" PACKAGE_VERSION);
         if ( strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION) ) {
             printf(", git branch : " SSTCORE_GIT_BRANCH);
@@ -373,8 +379,9 @@ public:
 
 #if PY_MINOR_VERSION >= 9
     // enable Python coverage
-    static int enablePythonCoverage(Config* cfg, const std::string& UNUSED(arg))
+    static int enablePythonCoverage(Config* cfg, const std::string& arg)
     {
+        UNUSED(arg);
         cfg->enable_python_coverage_ = true;
         return 0;
     }
@@ -521,8 +528,9 @@ public:
 #endif
 
     // rank sequentional startup
-    static int forceRankSeqStartup(Config* cfg, const std::string& UNUSED(arg))
+    static int forceRankSeqStartup(Config* cfg, const std::string& arg)
     {
+        UNUSED(arg);
         cfg->rank_seq_startup_ = true;
         return 0;
     }
@@ -578,8 +586,9 @@ public:
     }
 
     // Set whether to load from checkpoint
-    static int setLoadFromCheckpoint(Config* cfg, const std::string& UNUSED(arg))
+    static int setLoadFromCheckpoint(Config* cfg, const std::string& arg)
     {
+        UNUSED(arg);
         cfg->load_from_checkpoint_ = true;
         return 0;
     }
@@ -652,8 +661,9 @@ public:
     // Advanced options - environment
 
     // Disable signal handlers
-    static int disableSigHandlers(Config* cfg, const std::string& UNUSED(arg))
+    static int disableSigHandlers(Config* cfg, const std::string& arg)
     {
+        UNUSED(arg);
         cfg->enable_sig_handling_ = false;
         return 0;
     }

@@ -27,13 +27,13 @@
 
 namespace SST {
 
-CheckpointAction::CheckpointAction(
-    Config* UNUSED(cfg), RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
+CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
     Action(),
     rank_(this_rank),
     period_(period),
     generate_(false)
 {
+    UNUSED(cfg);
     next_sim_time_ = 0;
     last_cpu_time_ = 0;
 
@@ -290,8 +290,9 @@ createUniqueDirectory(const std::string basename)
 }
 
 void
-removeDirectory(const std::string UNUSED(name))
+removeDirectory(const std::string name)
 {
+    UNUSED(name);
     // Implement when adding logic to keep only N checkpoints
 }
 

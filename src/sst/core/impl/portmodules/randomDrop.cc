@@ -47,8 +47,9 @@ RandomDrop::registerLinkAttachTool(const AttachPointMetaData& mdata)
 }
 
 void
-RandomDrop::eventSent(uintptr_t UNUSED(key), Event*& ev)
+RandomDrop::eventSent(uintptr_t key, Event*& ev)
 {
+    UNUSED(key);
     double pull = rng_.nextUniform();
 
     if ( pull < drop_prob_ ) {
@@ -73,8 +74,9 @@ RandomDrop::registerHandlerIntercept(const AttachPointMetaData& mdata)
 }
 
 void
-RandomDrop::interceptHandler(uintptr_t UNUSED(key), Event*& data, bool& cancel)
+RandomDrop::interceptHandler(uintptr_t key, Event*& data, bool& cancel)
 {
+    UNUSED(key);
     double pull = rng_.nextUniform();
 
     if ( pull < drop_prob_ ) {

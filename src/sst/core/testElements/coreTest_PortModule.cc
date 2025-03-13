@@ -39,8 +39,9 @@ TestPortModule::TestPortModule(Params& params) : PortModule()
 }
 
 void
-TestPortModule::eventSent(uintptr_t UNUSED(key), Event*& ev)
+TestPortModule::eventSent(uintptr_t key, Event*& ev)
 {
+    UNUSED(key);
     // This only gets PortModuleEvents
     PortModuleEvent* event = static_cast<PortModuleEvent*>(ev);
 
@@ -71,8 +72,9 @@ TestPortModule::eventSent(uintptr_t UNUSED(key), Event*& ev)
 
 
 void
-TestPortModule::interceptHandler(uintptr_t UNUSED(key), Event*& data, bool& cancel)
+TestPortModule::interceptHandler(uintptr_t key, Event*& data, bool& cancel)
 {
+    UNUSED(key);
     // This only gets PortModuleEvents
     PortModuleEvent* event = static_cast<PortModuleEvent*>(data);
 
@@ -167,8 +169,9 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
 }
 
 bool
-coreTestPortModuleComponent::tick(Cycle_t UNUSED(cycle))
+coreTestPortModuleComponent::tick(Cycle_t cycle)
 {
+    UNUSED(cycle);
     if ( sendcount_ > 0 ) { right_->send(new PortModuleEvent()); }
     else {
         PortModuleEvent* ev = new PortModuleEvent();
@@ -226,8 +229,9 @@ coreTestPortModuleComponent::handleEventLast(Event* ev)
 
 /********* PortSubComponent **********/
 
-PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id)
+PortSubComponent::PortSubComponent(ComponentId_t id, Params& params) : SubComponent(id)
 {
+    UNUSED(params);
     // Need to connect to the right and left ports
     left_  = configureLink("left", new Event::Handler2<PortSubComponent, &PortSubComponent::dummy_handler>(this));
     right_ = configureLink("right", "1ns");

@@ -22,12 +22,12 @@
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat(
-    Config* UNUSED(cfg), int this_rank, Simulation_impl* sim, TimeConverter* period) :
+SimulatorHeartbeat::SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter* period) :
     Action(),
     rank(this_rank),
     m_period(period)
 {
+    UNUSED(cfg);
     SimTime_t next =
         (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
 

@@ -251,7 +251,11 @@ private:
      * by default, both modes are supported.
      * @param mode - Mode to test
      */
-    virtual bool isStatModeSupported(StatMode_t UNUSED(mode)) const { return true; } // Default is to accept all modes
+    virtual bool isStatModeSupported(StatMode_t mode) const
+    {
+        UNUSED(mode);
+        return true;
+    } // Default is to accept all modes
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& check_stat);
@@ -519,11 +523,13 @@ public:
 
 protected:
     template <class T>
-    ImplementsStatFields(T* UNUSED(t)) :
+    ImplementsStatFields(T* t) :
         field_name_(T::ELI_fieldName()),
         short_name_(T::ELI_fieldShortName()),
         field_(T::ELI_registerField(T::ELI_fieldName(), T::ELI_fieldShortName()))
-    {}
+    {
+        UNUSED(t);
+    }
 
 private:
     const char*             field_name_;
@@ -653,8 +659,9 @@ class serialize_impl<Statistics::Statistic<T>*>
 {
     template <class A>
     friend class serialize;
-    void operator()(Statistics::Statistic<T>*& s, serializer& ser, const char* UNUSED(name) = nullptr)
+    void operator()(Statistics::Statistic<T>*& s, serializer& ser, const char* name = nullptr)
     {
+        UNUSED(name);
         // For sizer and pack, need to get the information needed
         // to create a new statistic of the correct type on unpack.
         switch ( ser.mode() ) {
@@ -696,8 +703,8 @@ class serialize_impl<Statistics::Statistic<T>*>
         }
     }
 
-    // void operator()(Statistics::Statistic<T>*& UNUSED(s), serializer& UNUSED(ser), const char* UNUSED(name))
-    // {
+    // void operator()(Statistics::Statistic<T>*& s, serializer& ser, const char* name)
+    // {UNUSED(s);UNUSED(ser);UNUSED(name);
     //     // Mapping mode not supported for stats
     // }
 };

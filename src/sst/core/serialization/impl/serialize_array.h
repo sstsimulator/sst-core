@@ -88,8 +88,11 @@ class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_
     friend class serialize;
     void operator()(T arr[N], serializer& ser) { ser.array<T, N>(arr); }
 
-    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(T arr[N], serializer& ser, const char* name)
     {
+        UNUSED(arr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };
@@ -110,8 +113,11 @@ class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::i
         }
     }
 
-    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(T arr[N], serializer& ser, const char* name)
     {
+        UNUSED(arr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };
@@ -130,8 +136,11 @@ class serialize_impl<
     friend class serialize;
     void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
 
-    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser, const char* name)
     {
+        UNUSED(arr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };
@@ -154,8 +163,11 @@ class serialize_impl<
         }
     }
 
-    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser, const char* name)
     {
+        UNUSED(arr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };
@@ -171,9 +183,11 @@ class serialize_impl<pvt::ser_array_wrapper<void, IntType>>
     friend class serialize;
     void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
 
-    void
-    operator()(pvt::ser_array_wrapper<void, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser, const char* name)
     {
+        UNUSED(arr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };
@@ -193,8 +207,11 @@ class serialize_impl<pvt::raw_ptr_wrapper<TPtr>>
     friend class serialize;
     void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser) { ser.primitive(ptr.bufptr); }
 
-    void operator()(pvt::raw_ptr_wrapper<TPtr> UNUSED(ptr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser, const char* name)
     {
+        UNUSED(ptr);
+        UNUSED(ser);
+        UNUSED(name);
         // TODO: Implement mapping mode
     }
 };

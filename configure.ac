@@ -18,7 +18,7 @@ AC_CONFIG_HEADERS([src/sst/core/sst_config.h])
 # Lets check for the standard compilers and basic options
 AC_PROG_CC
 AM_PROG_CC_C_O
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71,, m4_defn([AC_AUTOCONF_VERSION]), 2.70,, [AC_PROG_CC_C99]) 
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71,, m4_defn([AC_AUTOCONF_VERSION]), 2.70,, [AC_PROG_CC_C99])
 AC_C_INLINE
 AC_PROG_MAKE_SET
 
@@ -54,9 +54,12 @@ case "$ax_cv_cxx_compiler_vendor" in
 esac
 
 SST_CHECK_PICKY
+SST_CHECK_NEW_UNUSED
 AS_IF([test "x$use_picky" = "xyes"],
-      [WARNFLAGS="-Wall -Wextra"],
+      [AS_IF([test "x$new_unused" != "xno"],
+      [WARNFLAGS="-Wall -Wextra -Werror=unused-parameter"], [WARNFLAGS="-Wall -Wextra -Wno-unused-value"])],
       [WARNFLAGS=""])
+
 CFLAGS="$CFLAGS $WARNFLAGS"
 CXXFLAGS="$CXXFLAGS $WARNFLAGS"
 

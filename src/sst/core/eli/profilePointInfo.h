@@ -59,8 +59,10 @@ public:
 
 protected:
     template <class T>
-    ProvidesProfilePoints(T* UNUSED(t)) : points_(InfoProfilePoints<T>::get())
-    {}
+    ProvidesProfilePoints(T* t) : points_(InfoProfilePoints<T>::get())
+    {
+        UNUSED(t);
+    }
 
 private:
     std::vector<ElementInfoProfilePoint> points_;
