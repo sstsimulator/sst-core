@@ -182,10 +182,7 @@ public:                                                                         
         throw_exc();                                                                                               \
         return "";                                                                                                 \
     }                                                                                                              \
-    virtual const char* cls_name() const override                                                                  \
-    {                                                                                                              \
-        return #obj;                                                                                               \
-    }
+    virtual const char* cls_name() const override { return #obj; }
 
 //    virtual const char* cls_name() const override { return obj_str; }
 #define ImplementSerializableDefaultConstructor(obj, obj_str)                             \
