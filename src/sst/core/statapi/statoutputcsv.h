@@ -93,7 +93,7 @@ protected:
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
     /** True if this StatOutput can handle StatisticGroups */
-    virtual bool acceptsGroups() const override { return true; }
+    bool acceptsGroups() const override { return true; }
 
 protected:
     StatisticOutputCSV() { ; } // For serialization
@@ -101,7 +101,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    int  print(const char* fmt, ...);
+    int  print(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 private:
 #ifdef HAVE_LIBZ

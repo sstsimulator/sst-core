@@ -23,7 +23,7 @@ class JSONConfigGraphOutput : public ConfigGraphOutput
 
 public:
     JSONConfigGraphOutput(const char* path);
-    virtual void generate(const Config* cfg, ConfigGraph* graph) override;
+    void generate(const Config* cfg, ConfigGraph* graph) override;
 };
 
 } // namespace SST::Core

@@ -278,7 +278,7 @@ public:
     SharedObject() {}
     virtual ~SharedObject() {}
 
-    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+    void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
     ImplementSerializable(SST::Shared::SharedObject)
 
 protected:

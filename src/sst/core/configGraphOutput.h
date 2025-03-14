@@ -39,7 +39,7 @@ public:
     /**
      * @return Exception Message
      */
-    virtual const char* what() const noexcept override { return exMsg; }
+    const char* what() const noexcept override { return exMsg; }
 
     /**
      * Exception message generated on call.

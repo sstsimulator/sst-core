@@ -30,7 +30,7 @@ public:
     StatisticOutputTextBase(Params& outputParameters);
 
     /** This output supports adding statistics during runtime if the header is embedded in the output */
-    virtual bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
+    bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase) protected :
@@ -93,7 +93,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    int  print(const char* fmt, ...);
+    int  print(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 private:
 #ifdef HAVE_LIBZ
@@ -137,7 +137,7 @@ private:
     virtual std::string getDefaultFileName() { return ""; }
 
     /** True if this StatOutput can handle StatisticGroups */
-    virtual bool acceptsGroups() const override { return true; }
+    bool acceptsGroups() const override { return true; }
 };
 
 

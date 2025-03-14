@@ -153,7 +153,10 @@ public:
     TimeVortexPQ() : TimeVortexPQBase<false>() {} // For serialization only
     ~TimeVortexPQ() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<false>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<false>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ)
 };
@@ -162,19 +165,20 @@ class TimeVortexPQ_ts : public TimeVortexPQBase<true>
 {
 public:
     SST_ELI_REGISTER_DERIVED(
-        TimeVortex,
-        TimeVortexPQ_ts,
-        "sst",
-        "timevortex.priority_queue.ts",
-        SST_ELI_ELEMENT_VERSION(1,0,0),
-        "Thread safe verion of TimeVortex based on std::priority_queue.  Do not reference this element directly, just specify sst.timevortex.priority_queue and this version will be selected when it is needed based on other parameters.")
+        TimeVortex, TimeVortexPQ_ts, "sst", "timevortex.priority_queue.ts", SST_ELI_ELEMENT_VERSION(1, 0, 0),
+        "Thread safe verion of TimeVortex based on std::priority_queue.  Do not reference this element directly, just "
+        "specify sst.timevortex.priority_queue and this version will be selected when it is needed based on other "
+        "parameters.")
 
 
     TimeVortexPQ_ts(Params& params) : TimeVortexPQBase<true>(params) {}
     TimeVortexPQ_ts() : TimeVortexPQBase<true>() {} // For serialization only
     ~TimeVortexPQ_ts() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<true>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<true>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };

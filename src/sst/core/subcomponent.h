@@ -49,13 +49,13 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int UNUSED(phase)) override {}
+    void init(unsigned int UNUSED(phase)) override {}
     /** Called after all components have been constructed and initialization has
     completed, but before simulation time has begun. */
-    virtual void setup() override {}
+    void setup() override {}
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */
-    virtual void finish() override {}
+    void finish() override {}
 
 protected:
     // For serialization only

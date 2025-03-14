@@ -35,11 +35,11 @@ public:
     ~TimeVortex() {}
 
     // Inherited from ActivityQueue
-    virtual bool      empty() override                    = 0;
-    virtual int       size() override                     = 0;
-    virtual void      insert(Activity* activity) override = 0;
-    virtual Activity* pop() override                      = 0;
-    virtual Activity* front() override                    = 0;
+    bool      empty() override                    = 0;
+    int       size() override                     = 0;
+    void      insert(Activity* activity) override = 0;
+    Activity* pop() override                      = 0;
+    Activity* front() override                    = 0;
 
     /** Print the state of the TimeVortex */
     virtual void     print(Output& out) const = 0;

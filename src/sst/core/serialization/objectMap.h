@@ -625,7 +625,7 @@ public:
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return std::to_string(*addr_); }
+    std::string get() override { return std::to_string(*addr_); }
 
     /**
        Set the value of the object represented as a string
@@ -633,7 +633,7 @@ public:
        @param value Value to set the underlying object to, represented
        as a string
      */
-    virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
+    void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
 
     /**

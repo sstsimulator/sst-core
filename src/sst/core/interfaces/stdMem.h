@@ -100,7 +100,7 @@ public:
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type
 
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::StandardMem,TimeConverter*,HandlerBase*)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::StandardMem, TimeConverter*, HandlerBase*)
 
     /** All Addresses can be 64-bit */
     using Addr = uint64_t;
@@ -374,9 +374,9 @@ public:
         /* Destructor */
         virtual ~Write() {}
 
-        virtual Request* makeResponse() override { return new WriteResp(this); }
+        Request* makeResponse() override { return new WriteResp(this); }
 
-        virtual bool needsResponse() override { return !posted; }
+        bool needsResponse() override { return !posted; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -434,9 +434,9 @@ public:
         /** Destructor */
         virtual ~WriteResp() {}
 
-        virtual Request* makeResponse() override { return nullptr; }
+        Request* makeResponse() override { return nullptr; }
 
-        virtual bool needsResponse() override { return false; }
+        bool needsResponse() override { return false; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -482,9 +482,9 @@ public:
         {}
         virtual ~FlushAddr() {}
 
-        virtual Request* makeResponse() override { return new FlushResp(this); }
+        Request* makeResponse() override { return new FlushResp(this); }
 
-        virtual bool needsResponse() override { return true; }
+        bool needsResponse() override { return true; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -527,9 +527,9 @@ public:
         {}
         virtual ~FlushCache() {}
 
-        virtual Request* makeResponse() override { return new FlushResp(this); }
+        Request* makeResponse() override { return new FlushResp(this); }
 
-        virtual bool needsResponse() override { return true; }
+        bool needsResponse() override { return true; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -584,9 +584,9 @@ public:
         {}
         virtual ~FlushResp() {}
 
-        virtual Request* makeResponse() override { return nullptr; }
+        Request* makeResponse() override { return nullptr; }
 
-        virtual bool needsResponse() override { return false; }
+        bool needsResponse() override { return false; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -684,9 +684,9 @@ public:
 
         virtual ~WriteUnlock() {}
 
-        virtual Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr = 0, iPtr, tid); }
+        Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr = 0, iPtr, tid); }
 
-        virtual bool needsResponse() override { return !posted; }
+        bool needsResponse() override { return !posted; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -792,9 +792,9 @@ public:
         virtual ~StoreConditional() {}
 
         /* Model must also call setFail() on response if LLSC failed */
-        virtual Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
+        Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
 
-        virtual bool needsResponse() override { return true; }
+        bool needsResponse() override { return true; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -846,9 +846,9 @@ public:
         {}
         virtual ~MoveData() {}
 
-        virtual Request* makeResponse() override { return new WriteResp(id, pDst, size, flags, vDst, iPtr, tid); }
+        Request* makeResponse() override { return new WriteResp(id, pDst, size, flags, vDst, iPtr, tid); }
 
-        virtual bool needsResponse() override { return !posted; }
+        bool needsResponse() override { return !posted; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -891,9 +891,9 @@ public:
         {}
         virtual ~InvNotify() {}
 
-        virtual Request* makeResponse() override { return nullptr; }
+        Request* makeResponse() override { return nullptr; }
 
-        virtual bool needsResponse() override { return false; }
+        bool needsResponse() override { return false; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -931,7 +931,7 @@ public:
         virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
-        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override = 0;
+        void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override = 0;
         // ImplementSerializable(SST::Interfaces::StandardMem::CustomData);
         ImplementVirtualSerializable(CustomData);
     };
@@ -947,9 +947,9 @@ public:
         {}
         virtual ~CustomReq() {}
 
-        virtual Request* makeResponse() override { return new CustomResp(this); }
+        Request* makeResponse() override { return new CustomResp(this); }
 
-        virtual bool needsResponse() override { return data->needsResponse(); }
+        bool needsResponse() override { return data->needsResponse(); }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -1027,9 +1027,9 @@ public:
         {}
         virtual ~CustomResp() {}
 
-        virtual Request* makeResponse() override { return nullptr; }
+        Request* makeResponse() override { return nullptr; }
 
-        virtual bool needsResponse() override { return false; }
+        bool needsResponse() override { return false; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -1272,7 +1272,10 @@ public:
     /**
      * Serialization function
      */
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST::SubComponent::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::SubComponent::serialize_order(ser);
+    }
 };
 
 } // namespace SST::Interfaces

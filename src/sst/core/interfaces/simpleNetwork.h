@@ -174,7 +174,7 @@ public:
     {
 
     public:
-        SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
+        SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector, std::string)
 
         NetworkInspector(ComponentId_t id) : SubComponent(id) {}
 
@@ -255,10 +255,10 @@ public:
      */
     virtual Request* recv(int vn) = 0;
 
-    virtual void setup() override {}
-    virtual void init(unsigned int UNUSED(phase)) override {}
-    virtual void complete(unsigned int UNUSED(phase)) override {}
-    virtual void finish() override {}
+    void setup() override {}
+    void init(unsigned int UNUSED(phase)) override {}
+    void complete(unsigned int UNUSED(phase)) override {}
+    void finish() override {}
 
     /**
      * Checks if there is sufficient space to send on the specified

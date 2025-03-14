@@ -211,7 +211,7 @@ private:
 
    @return formatted string, potentially truncated at length max_length - 1
  */
-std::string vformat_string(size_t max_length, const char* format, va_list args);
+std::string vformat_string(size_t max_length, const char* format, va_list args) __attribute__((format(printf, 2, 0)));
 
 /**
    Creates a string using a printf like function call.  This function
@@ -227,7 +227,7 @@ std::string vformat_string(size_t max_length, const char* format, va_list args);
 
    @return formatted string
  */
-std::string vformat_string(const char* format, va_list args);
+std::string vformat_string(const char* format, va_list args) __attribute__((format(printf, 1, 0)));
 
 /**
    Creates a string using a printf like function call.  This function
