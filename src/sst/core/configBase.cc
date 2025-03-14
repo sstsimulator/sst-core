@@ -60,19 +60,18 @@ uint32_t
 ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option)
 {
     // first attempt to parse seconds only. Assume \d+[s] until it's not
-    uint32_t    seconds = 0;
-    std::string str     = arg;
-    if ( !str.empty() ) {
-        if ( str.back() == 's' ) str.pop_back();
-        try {
-            size_t pos;
-            seconds = std::stoul(str, &pos, 10);
-            if ( pos == str.size() ) {
+    char* pos;
+    auto  seconds = strtoul(arg.c_str(), &pos, 10);
+    while ( isspace(*pos) )
+        ++pos;
+    if ( *pos == 's' || *pos == 'S' ) {
+        while ( isspace(*++pos) )
+            ;
+        if ( !*pos ) {
+            if ( seconds <= UINT32_MAX ) {
                 success = true;
                 return seconds;
             }
-        }
-        catch ( const std::exception& e ) {
         }
     }
 
