@@ -56,7 +56,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
-    virtual void fixup_handlers() override;
+    void fixup_handlers() override;
 
 private:
     using dataType_t = std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>>;

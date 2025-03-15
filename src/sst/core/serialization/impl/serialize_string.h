@@ -38,7 +38,7 @@ public:
 
     void set_impl(const std::string& value) override { *addr_ = value; }
 
-    virtual bool isFundamental() override { return true; }
+    bool isFundamental() override { return true; }
 
     /**
        Get the list of child variables contained in this ObjectMap,

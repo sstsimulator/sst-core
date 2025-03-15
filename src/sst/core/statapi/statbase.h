@@ -428,10 +428,7 @@ public:
 
     static fieldType_t fieldId() { return StatisticFieldType<T>::id(); }
 
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        StatisticBase::serialize_order(ser);
-    }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { StatisticBase::serialize_order(ser); }
 
 protected:
     friend class SST::Factory;
@@ -535,7 +532,7 @@ private:
 #define SST_ELI_DECLARE_STATISTIC_TEMPLATE(cls, lib, name, version, desc, interface) \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)               \
     SST_ELI_INTERFACE_INFO(interface)                                                \
-    virtual std::string getELIName() const override { return std::string(lib) + "." + name; }
+    std::string getELIName() const override { return std::string(lib) + "." + name; }
 
 #define SST_ELI_REGISTER_CUSTOM_STATISTIC(cls, lib, name, version, desc)                                     \
     SST_ELI_REGISTER_DERIVED(SST::Statistics::CustomStatistic,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \

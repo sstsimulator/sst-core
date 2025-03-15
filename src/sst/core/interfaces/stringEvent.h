@@ -31,7 +31,7 @@ public:
     StringEvent(const std::string& str) : SST::Event(), str(str) {}
 
     /** Clone a StringEvent */
-    virtual Event* clone() override { return new StringEvent(*this); }
+    Event* clone() override { return new StringEvent(*this); }
 
     /** Returns the contents of this Event */
     const std::string& getString() { return str; }

@@ -56,8 +56,8 @@ public:
 
     coreTestRNGComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestRNGComponent();
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     coreTestRNGComponent();                                                // for serialization only

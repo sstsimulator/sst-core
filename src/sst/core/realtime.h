@@ -40,8 +40,8 @@ public:
         "'--exit-after' option.")
 
     ExitCleanRealTimeAction();
-    virtual void execute() override;
-    virtual void begin(time_t scheduled_time) override;
+    void execute() override;
+    void begin(time_t scheduled_time) override;
 };
 
 /* Action to immediately exit simulation */
@@ -53,7 +53,7 @@ public:
         "Signal handler that causes an emergency shutdown. This is the default action for SIGTERM and SIGINT.")
 
     ExitEmergencyRealTimeAction();
-    virtual void execute() override;
+    void execute() override;
 };
 
 /* Action to output core status */
@@ -91,8 +91,8 @@ public:
         "'--checkpoint-wall-period' option.")
 
     CheckpointRealTimeAction();
-    virtual void execute() override;
-    virtual void begin(time_t scheduled_time) override;
+    void execute() override;
+    void begin(time_t scheduled_time) override;
 
     bool canInitiateCheckpoint() override { return true; }
 };
@@ -107,8 +107,8 @@ public:
         "This is the default action for the '--heartbeat-wall-period' option.")
 
     HeartbeatRealTimeAction();
-    virtual void execute() override;
-    virtual void begin(time_t scheduled_time) override;
+    void execute() override;
+    void begin(time_t scheduled_time) override;
 
 private:
     double                           last_time_;
@@ -142,7 +142,7 @@ public:
     AlrmSignalAction();
     void         execute() override;
     void         addIntervalAction(uint32_t interval, RealTimeAction* action);
-    virtual void begin(time_t scheduled_time) override; // Start alarms
+    void begin(time_t scheduled_time) override; // Start alarms
 private:
     std::vector<RealTimeIntervalAction> interval_actions_;
     bool                                alarm_manager_; /* The instance on thread 0/rank 0 is the manager */

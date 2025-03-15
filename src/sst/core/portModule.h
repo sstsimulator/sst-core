@@ -78,7 +78,7 @@ public:
        @return Opaque key that will be passed back into eventSent() to
        identify the source of the call
     */
-    virtual uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
+    uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
     /**
        Function that will be called when an event is sent on a
@@ -95,7 +95,7 @@ public:
 
        @param ev Event to intercept
     */
-    virtual void eventSent(uintptr_t key, Event*& ev) override = 0;
+    void eventSent(uintptr_t key, Event*& ev) override = 0;
 
 
     /**
@@ -118,7 +118,7 @@ public:
 
        @param key Key that would be passed into the eventSent() function.
     */
-    virtual void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key) override;
+    void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key) override;
 
 
     /******* Functions inherited from Event::HandlerBase::InterceptPoint *******/
@@ -139,7 +139,7 @@ public:
        @return Opaque key that will be passed back into the
        interceptHandler() calls
     */
-    virtual uintptr_t registerHandlerIntercept(const AttachPointMetaData& mdata) override;
+    uintptr_t registerHandlerIntercept(const AttachPointMetaData& mdata) override;
 
 
     /**
@@ -163,7 +163,7 @@ public:
        be cancelled. If set to true, function must also delete the
        event
     */
-    virtual void interceptHandler(uintptr_t key, Event*& data, bool& cancel) override = 0;
+    void interceptHandler(uintptr_t key, Event*& data, bool& cancel) override = 0;
 
     /**
        Function that will be called to handle the key returned from
@@ -185,7 +185,7 @@ public:
 
        @param key Key that would be passed into the interceptHandler() function.
     */
-    virtual void serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key) override;
+    void serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key) override;
 
     /*** Functions that control whether module is install on send and/or receive ***/
     /**

@@ -25,7 +25,7 @@ class PythonConfigGraphOutput : public ConfigGraphOutput
 public:
     PythonConfigGraphOutput(const char* path);
 
-    virtual void generate(const Config* cfg, ConfigGraph* graph) override;
+    void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:
     ConfigGraph* getGraph() { return graph; }

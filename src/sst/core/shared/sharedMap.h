@@ -321,8 +321,8 @@ private:
         }
 
         // Functions inherited from SharedObjectData
-        virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
-        virtual void                   resetChangeSet() override { change_set->clear(); }
+        SharedObjectChangeSet* getChangeSet() override { return change_set; }
+        void                   resetChangeSet() override { change_set->clear(); }
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
