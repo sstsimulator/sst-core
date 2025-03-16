@@ -48,8 +48,8 @@ struct ObjectMapMetaData
      */
     ObjectMapMetaData(ObjectMap* parent, const std::string& name) : parent(parent), name(name) {}
 
-    ObjectMapMetaData( const ObjectMapMetaData& ) = delete;
-    ObjectMapMetaData& operator=( const ObjectMapMetaData& ) = delete;
+    ObjectMapMetaData(const ObjectMapMetaData&) = delete;
+    ObjectMapMetaData& operator=(const ObjectMapMetaData&) = delete;
 };
 
 /**
@@ -353,7 +353,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMap(const ObjectMap&)            = delete;
+    ObjectMap(const ObjectMap&) = delete;
     ObjectMap& operator=(const ObjectMap&) = delete;
 
     /**
@@ -489,7 +489,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapWithChildren(const ObjectMapWithChildren&)            = delete;
+    ObjectMapWithChildren(const ObjectMapWithChildren&) = delete;
     ObjectMapWithChildren& operator=(const ObjectMapWithChildren&) = delete;
 
     /**
@@ -586,7 +586,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapClass(const ObjectMapClass&)            = delete;
+    ObjectMapClass(const ObjectMapClass&) = delete;
     ObjectMapClass& operator=(const ObjectMapClass&) = delete;
 
     /**
@@ -699,7 +699,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapFundamental(const ObjectMapFundamental&)            = delete;
+    ObjectMapFundamental(const ObjectMapFundamental&) = delete;
     ObjectMapFundamental& operator=(const ObjectMapFundamental&) = delete;
 
     /**

@@ -45,7 +45,7 @@ struct ComponentHolder
     SST::ComponentId_t            getID();
     SST::ConfigComponent*         getSubComp(const std::string& name, int slot_num);
 
-    ComponentHolder(const ComponentHolder&)            = delete;
+    ComponentHolder(const ComponentHolder&) = delete;
     ComponentHolder& operator=(const ComponentHolder&) = delete;
 };
 

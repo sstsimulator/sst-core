@@ -105,7 +105,7 @@ public:
         Parent::toString(os);
     }
 
-    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
+    BuilderInfoImpl(const BuilderInfoImpl&) = delete;
     BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
@@ -123,7 +123,7 @@ protected:
 
     void toString(std::ostream& UNUSED(os)) const {}
 
-    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
+    BuilderInfoImpl(const BuilderInfoImpl&) = delete;
     BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
@@ -250,7 +250,7 @@ private:
     std::string elem_;
     Info*       info_;
 
-    InfoLoader(const InfoLoader&)            = delete;
+    InfoLoader(const InfoLoader&) = delete;
     InfoLoader& operator=(const InfoLoader&) = delete;
 };
 

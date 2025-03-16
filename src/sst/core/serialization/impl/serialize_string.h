@@ -63,7 +63,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapString(const ObjectMapString&)            = delete;
+    ObjectMapString(const ObjectMapString&) = delete;
     ObjectMapString& operator=(const ObjectMapString&) = delete;
 };
 
