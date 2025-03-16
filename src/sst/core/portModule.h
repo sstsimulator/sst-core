@@ -56,8 +56,7 @@ public:
         // ELI::ProvidesStats, // Will add stats in the future
         ELI::ProvidesAttributes)
 
-
-    PortModule();
+    PortModule() = default;
     virtual ~PortModule() {};
 
     /******* Functions inherited from Link::AttachPoint *******/

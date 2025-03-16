@@ -27,7 +27,7 @@ public:
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTextBase(Params& outputParameters);
+    explicit StatisticOutputTextBase(Params& outputParameters);
 
     /** This output supports adding statistics during runtime if the header is embedded in the output */
     virtual bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
@@ -93,7 +93,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    int  print(const char* fmt, ...);
+    int  print(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 private:
 #ifdef HAVE_LIBZ
@@ -161,7 +161,7 @@ public:
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTxt(Params& outputParameters);
+    explicit StatisticOutputTxt(Params& outputParameters);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputTxt)
@@ -232,7 +232,7 @@ public:
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputConsole(Params& outputParameters);
+    explicit StatisticOutputConsole(Params& outputParameters);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputConsole)

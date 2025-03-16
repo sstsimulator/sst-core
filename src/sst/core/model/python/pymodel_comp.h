@@ -44,6 +44,9 @@ struct ComponentHolder
     virtual std::string           getName();
     SST::ComponentId_t            getID();
     SST::ConfigComponent*         getSubComp(const std::string& name, int slot_num);
+
+    ComponentHolder(const ComponentHolder&)            = delete;
+    ComponentHolder& operator=(const ComponentHolder&) = delete;
 };
 
 struct PyComponent : ComponentHolder
@@ -51,13 +54,13 @@ struct PyComponent : ComponentHolder
     uint16_t subCompId;
 
     PyComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id), subCompId(0) {}
-    ~PyComponent() {}
+    ~PyComponent() override = default;
 };
 
 struct PySubComponent : ComponentHolder
 {
     PySubComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id) {}
-    ~PySubComponent() {}
+    ~PySubComponent() override = default;
     int getSlot();
 };
 

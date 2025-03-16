@@ -41,8 +41,8 @@ class SSTInfoConfig : public ConfigShared
 public:
     using FilterMap_t = std::multimap<std::string, std::string>;
     /** Create a new SSTInfo configuration and parse the Command Line. */
-    SSTInfoConfig(bool suppress_print);
-    ~SSTInfoConfig();
+    explicit SSTInfoConfig(bool suppress_print);
+    ~SSTInfoConfig() = default;
 
     /** Return the list of elements to be processed. */
     std::set<std::string> getElementsToProcessArray()
@@ -165,7 +165,7 @@ public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    SSTLibraryInfo(const std::string& name) : m_name(name) {}
+    explicit SSTLibraryInfo(const std::string& name) : m_name(name) {}
 
     /** Return the Name of the Library. */
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }

@@ -15,7 +15,6 @@
 
 namespace SST {
 
-InitQueue::InitQueue() : ActivityQueue() {}
 InitQueue::~InitQueue()
 {
     // Need to delete any events left in the queue

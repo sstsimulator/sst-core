@@ -104,6 +104,9 @@ public:
         Policy::toString(os);
         Parent::toString(os);
     }
+
+    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
+    BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
 template <>
@@ -119,6 +122,9 @@ protected:
     {}
 
     void toString(std::ostream& UNUSED(os)) const {}
+
+    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
+    BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
 template <class Base, class T>
@@ -135,7 +141,7 @@ class InfoLibrary
 public:
     using BaseInfo = typename Base::BuilderInfo;
 
-    InfoLibrary(const std::string& name) : name_(name) {}
+    explicit InfoLibrary(const std::string& name) : name_(name) {}
 
     BaseInfo* getInfo(const std::string& name)
     {
@@ -243,6 +249,9 @@ private:
     std::string elemlib_;
     std::string elem_;
     Info*       info_;
+
+    InfoLoader(const InfoLoader&)            = delete;
+    InfoLoader& operator=(const InfoLoader&) = delete;
 };
 
 template <class Base>

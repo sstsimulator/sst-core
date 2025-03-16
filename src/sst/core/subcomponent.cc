@@ -28,7 +28,4 @@ SubComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     BaseComponent::serialize_order(ser);
 }
 
-// For serialization only
-SubComponent::SubComponent() : BaseComponent() {}
-
 } // namespace SST

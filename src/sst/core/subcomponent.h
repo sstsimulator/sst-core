@@ -43,7 +43,7 @@ public:
         ELI::ProvidesProfilePoints,
         ELI::ProvidesAttributes)
 
-    SubComponent(ComponentId_t id);
+    explicit SubComponent(ComponentId_t id);
 
     virtual ~SubComponent() {};
 
@@ -58,8 +58,7 @@ public:
     virtual void finish() override {}
 
 protected:
-    // For serialization only
-    SubComponent();
+    SubComponent() = default; // For serialization only
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
     friend class Component;

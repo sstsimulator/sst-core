@@ -41,7 +41,7 @@ public:
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputCSV(Params& outputParameters);
+    explicit StatisticOutputCSV(Params& outputParameters);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputCSV)
@@ -101,7 +101,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    int  print(const char* fmt, ...);
+    int  print(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 private:
 #ifdef HAVE_LIBZ

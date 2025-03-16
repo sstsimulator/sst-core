@@ -117,6 +117,8 @@ public:
      *  \return full name of module as a string
      */
     std::string getFullModuleName();
+
+    virtual ~SSTElementPythonModuleCode() = default;
 };
 
 /**
@@ -154,7 +156,7 @@ public:
      * of.  Primary module name will be sst.library and submodules
      * under this can also be created.
      */
-    SSTElementPythonModule(const std::string& library);
+    explicit SSTElementPythonModule(const std::string& library);
 
     virtual void* load();
 

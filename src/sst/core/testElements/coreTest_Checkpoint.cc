@@ -97,8 +97,6 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     stat_null       = registerStatistic<uint32_t>("nullstat");
 }
 
-coreTestCheckpoint::~coreTestCheckpoint() {}
-
 void
 coreTestCheckpoint::init(unsigned UNUSED(phase))
 {

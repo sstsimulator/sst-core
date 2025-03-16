@@ -29,13 +29,12 @@ class ComponentExtension : public BaseComponent
 {
 
 public:
-    ComponentExtension(ComponentId_t id);
+    explicit ComponentExtension(ComponentId_t id);
 
-    virtual ~ComponentExtension() {};
+    ~ComponentExtension() override = default;
 
 private:
-    // For serialization only
-    ComponentExtension();
+    ComponentExtension() = default; // For serialization only
 
     ImplementSerializable(SST::ComponentExtension)
     void serialize_order(SST::Core::Serialization::serializer& ser) override;

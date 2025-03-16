@@ -131,7 +131,7 @@ public:
      @endcode
      */
     UnitAlgebra(const std::string& val);
-    virtual ~UnitAlgebra();
+    virtual ~UnitAlgebra() = default;
 
     /** Copy constructor */
     UnitAlgebra(const UnitAlgebra&) = default;

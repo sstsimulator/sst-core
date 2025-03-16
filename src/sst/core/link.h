@@ -112,6 +112,8 @@ public:
            @param key Key that would be passed into the eventSent() function.
          */
         virtual void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key);
+
+        virtual ~AttachPoint() = default;
     };
 
     friend class LinkPair;
@@ -322,7 +324,7 @@ private:
         value used for enforce_link_order (if that feature is
         enabled).
      */
-    Link(LinkId_t tag);
+    explicit Link(LinkId_t tag);
 
     Link(const Link& l);
 

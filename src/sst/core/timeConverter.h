@@ -59,7 +59,7 @@ private:
     */
     SimTime_t factor;
 
-    TimeConverter(SimTime_t fact) { factor = fact; }
+    explicit TimeConverter(SimTime_t fact) { factor = fact; }
 
     ~TimeConverter() {}
 

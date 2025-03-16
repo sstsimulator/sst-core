@@ -129,7 +129,7 @@ private:
 
 
 public:
-    TimeVortexBinnedMapBase(Params& params);
+    explicit TimeVortexBinnedMapBase(Params& params);
     ~TimeVortexBinnedMapBase();
 
     bool      empty() override;

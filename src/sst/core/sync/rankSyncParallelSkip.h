@@ -28,7 +28,7 @@ class RankSyncParallelSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncParallelSkip(RankInfo num_ranks);
+    explicit RankSyncParallelSkip(RankInfo num_ranks);
     RankSyncParallelSkip() {} // For serialization
     virtual ~RankSyncParallelSkip();
 

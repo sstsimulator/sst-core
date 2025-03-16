@@ -452,6 +452,8 @@ public:
         virtual void
         serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
+
+        virtual ~InterceptPoint() = default;
     };
 
 private:
@@ -1058,6 +1060,9 @@ public:
         data(data)
     {}
 
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
+
     returnT operator_impl(argT arg) override { return (object->*member)(arg, data); }
 
     NotSerializable(SSTHandler)
@@ -1082,6 +1087,9 @@ public:
      */
     SSTHandler(classT* const object, PtrMember member) : SSTHandlerBase<returnT, argT>(), member(member), object(object)
     {}
+
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*member)(arg); }
 
@@ -1114,6 +1122,9 @@ public:
         data(data)
     {}
 
+    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
+    SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
+
     void operator_impl() override { return (object->*member)(data); }
 
     NotSerializable(SSTHandlerNoArgs)
@@ -1141,6 +1152,9 @@ public:
         member(member),
         object(object)
     {}
+
+    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
+    SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
 
     void operator_impl() override { return (object->*member)(); }
 
@@ -1185,6 +1199,9 @@ public:
 
     SSTHandler2() {}
 
+    SSTHandler2(const SSTHandler2&)            = delete;
+    SSTHandler2& operator=(const SSTHandler2&) = delete;
+
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg, data); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -1212,8 +1229,11 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
     SSTHandler2() {}
+
+    SSTHandler2(const SSTHandler2&)            = delete;
+    SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg); }
 
@@ -1245,6 +1265,9 @@ public:
     SSTHandler2(classT* const object, dataT data) : SSTHandlerBase<returnT, void>(), object(object), data(data) {}
     SSTHandler2() {}
 
+    SSTHandler2(const SSTHandler2&)            = delete;
+    SSTHandler2& operator=(const SSTHandler2&) = delete;
+
     returnT operator_impl() override { return (object->*funcT)(data); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -1272,8 +1295,11 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
     SSTHandler2() {}
+
+    SSTHandler2(const SSTHandler2&)            = delete;
+    SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl() override { return (object->*funcT)(); }
 

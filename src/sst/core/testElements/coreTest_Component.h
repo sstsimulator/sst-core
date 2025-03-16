@@ -69,7 +69,7 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
+    explicit coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
     ~coreTestComponentBase2() {}
 
     coreTestComponentBase2() : coreTestComponentBase() {}
@@ -120,7 +120,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTestComponent::coreTestComponent)
-    coreTestComponent(); // for serialization only
+    coreTestComponent() = default; // for serialization only
 
 private:
     coreTestComponent(const coreTestComponent&) = delete;            // do not implement

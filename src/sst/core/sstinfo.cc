@@ -58,8 +58,9 @@ static unsigned int             g_textPos;
 #endif
 
 
+void sst_dprintf(FILE* fp, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 void
-dprintf(FILE* fp, const char* fmt, ...)
+sst_dprintf(FILE* fp, const char* fmt, ...)
 {
     if ( g_configuration.doVerbose() ) {
         va_list args;
@@ -69,6 +70,7 @@ dprintf(FILE* fp, const char* fmt, ...)
     }
 }
 
+static void xmlComment(TiXmlNode* owner, const char* fmt...) __attribute__((format(printf, 2, 3)));
 static void
 xmlComment(TiXmlNode* owner, const char* fmt...)
 {
@@ -664,12 +666,12 @@ OverallOutputter::outputXML()
     // Create a Timestamp Format: 2015.02.15_20:20:00
     std::strftime(TimeStamp, 32, "%Y.%m.%d_%H:%M:%S", ptm);
 
-    dprintf(stdout, "\n");
-    dprintf(stdout, "================================================================================\n");
-    dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
-    dprintf(stdout, "================================================================================\n");
-    dprintf(stdout, "\n");
-    dprintf(stdout, "\n");
+    sst_dprintf(stdout, "\n");
+    sst_dprintf(stdout, "================================================================================\n");
+    sst_dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
+    sst_dprintf(stdout, "================================================================================\n");
+    sst_dprintf(stdout, "\n");
+    sst_dprintf(stdout, "\n");
 
     // Create the XML Document
     TiXmlDocument XMLDocument;
@@ -750,8 +752,6 @@ SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print,
 
     addPositionalCallback(std::bind(&SSTInfoConfig::setPositionalArg, this, _1, _2));
 }
-
-SSTInfoConfig::~SSTInfoConfig() {}
 
 std::string
 SSTInfoConfig::getUsagePrelude()

@@ -54,7 +54,7 @@ protected:
 class ConfigGraphOutput
 {
 public:
-    ConfigGraphOutput(const char* path) { outputFile = fopen(path, "wt"); }
+    explicit ConfigGraphOutput(const char* path) { outputFile = fopen(path, "wt"); }
 
     virtual ~ConfigGraphOutput() { fclose(outputFile); }
 

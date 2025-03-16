@@ -17,6 +17,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <map>
+#include <memory>
 #include <stdlib.h>
 #include <vector>
 
@@ -192,8 +193,8 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
             graph->getNumComponents() % 2 == 1 ? (graph->getNumComponents() / 2) + 1 : (graph->getNumComponents() / 2);
         const int B_size = graph->getNumComponents() / 2;
 
-        ComponentId_t setA[A_size];
-        ComponentId_t setB[B_size];
+        auto setA = std::make_unique<ComponentId_t[]>(A_size);
+        auto setB = std::make_unique<ComponentId_t[]>(B_size);
 
         int indexA = 0;
         int indexB = 0;
@@ -229,7 +230,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
             }
         }
 
-        simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, 1);
+        simple_partition_step(component_map, setA.get(), A_size, 0, setB.get(), B_size, 1, timeTable, 1);
     }
 }
 

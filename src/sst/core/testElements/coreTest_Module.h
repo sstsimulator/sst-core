@@ -41,7 +41,7 @@ public:
         { "seed",    "The seed to use for the random number generator.", "11" },
     )
 
-    CoreTestModuleExample(SST::Params& params);
+    explicit CoreTestModuleExample(SST::Params& params);
     ~CoreTestModuleExample();
     std::string getRNGType() const;
     uint32_t    getNext();
@@ -98,7 +98,7 @@ public:
     ImplementSerializable(SST::CoreTestModule::coreTestModuleLoader)
 
 private:
-    coreTestModuleLoader(); // for serialization only
+    coreTestModuleLoader() = default; // for serialization only
 
     virtual bool tick(SST::Cycle_t);
 

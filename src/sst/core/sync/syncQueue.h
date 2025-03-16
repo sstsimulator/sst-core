@@ -57,8 +57,8 @@ public:
         uint32_t buffer_size;
     };
 
-    RankSyncQueue(RankInfo to_rank);
-    ~RankSyncQueue();
+    explicit RankSyncQueue(RankInfo to_rank);
+    ~RankSyncQueue() = default;
 
     bool      empty() override;
     int       size() override;
