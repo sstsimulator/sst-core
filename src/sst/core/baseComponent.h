@@ -858,8 +858,9 @@ private:
     }
 
     // Utility function used by fatal and sst_assert
-    void
-    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const;
+    [[noreturn]] void
+    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
+        __attribute__((format(printf, 6, 0)));
 
     // Get the statengine from Simulation_impl
     StatisticProcessingEngine* getStatEngine();

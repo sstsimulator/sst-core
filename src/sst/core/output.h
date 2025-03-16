@@ -492,13 +492,16 @@ private:
     uint32_t    getNumThreads() const;
     uint32_t    getThreadRank() const;
     std::string buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const;
-    void        outputprintf(
-               uint32_t line, const std::string& file, const std::string& func, const char* format, va_list arg) const;
-    void outputprintf(const char* format, va_list arg) const;
+
+    void
+    outputprintf(uint32_t line, const std::string& file, const std::string& func, const char* format, va_list arg) const
+        __attribute__((format(printf, 5, 0)));
+
+    void outputprintf(const char* format, va_list arg) const __attribute__((format(printf, 2, 0)));
 
     // Versions of outputprintf that takes variable arguments instead of va_list
-    inline void
-    outputprintf(uint32_t line, const std::string& file, const std::string& func, const char* format, ...) const
+    void outputprintf(uint32_t line, const std::string& file, const std::string& func, const char* format, ...) const
+        __attribute__((format(printf, 5, 6)))
     {
         va_list args;
         va_start(args, format);
@@ -506,7 +509,7 @@ private:
         va_end(args);
     }
 
-    inline void outputprintf(const char* format, ...) const
+    void outputprintf(const char* format, ...) const __attribute__((format(printf, 2, 3)))
     {
         va_list args;
         va_start(args, format);
