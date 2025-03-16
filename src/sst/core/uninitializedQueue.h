@@ -27,7 +27,7 @@ public:
      * @param message - Message to print when something attempts to use this Queue
      */
     UninitializedQueue(const std::string& message);
-    UninitializedQueue() = default; // Only used for serialization
+    UninitializedQueue()           = default; // Only used for serialization
     ~UninitializedQueue() override = default;
 
     bool      empty() override;
