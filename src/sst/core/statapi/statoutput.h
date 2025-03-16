@@ -146,7 +146,7 @@ protected:
     /** Construct a base StatisticOutput
      * @param outputParameters - The parameters for the statistic Output.
      */
-    StatisticOutput(Params& outputParameters);
+    explicit StatisticOutput(Params& outputParameters);
     StatisticOutput() { ; } // For serialization only
     void setStatisticOutputName(const std::string& name) { m_statOutputName = name; }
 
@@ -279,7 +279,7 @@ public:
         /** Construct a base StatisticOutput
          * @param outputParameters - The parameters for the statistic Output.
          */
-        StatisticFieldsOutput(Params& outputParameters);
+        explicit StatisticFieldsOutput(Params& outputParameters);
 
     // For Serialization
     StatisticFieldsOutput() : m_highestFieldHandle(0), m_currentFieldStatName("") {}

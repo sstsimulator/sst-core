@@ -47,7 +47,7 @@ public:
     /** Constructor. Generally only called by the factory class.
         @param id Unique component ID
     */
-    Component(ComponentId_t id);
+    explicit Component(ComponentId_t id);
     virtual ~Component();
 
     /** Register as a primary component, which allows the component to

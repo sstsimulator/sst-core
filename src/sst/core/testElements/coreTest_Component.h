@@ -69,7 +69,7 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
+    explicit coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
     ~coreTestComponentBase2() {}
 
     coreTestComponentBase2() : coreTestComponentBase() {}

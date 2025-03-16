@@ -39,7 +39,7 @@ public:
         { "verbose", "Debugging output", "false"}
     )
 
-    RandomDrop(Params& params);
+    explicit RandomDrop(Params& params);
 
     // For serialization only
     RandomDrop() = default;

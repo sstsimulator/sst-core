@@ -33,7 +33,7 @@ public:
     /**
        Creates a new self partition scheme.
     */
-    SimpleDebugger(Params& params);
+    explicit SimpleDebugger(Params& params);
 
     void execute(const std::string& msg) override;
 
