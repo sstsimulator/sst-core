@@ -77,6 +77,9 @@ public:
     BaseComponent(ComponentId_t id);
     virtual ~BaseComponent();
 
+    BaseComponent(const BaseComponent&) = delete;
+    BaseComponent& operator=(const BaseComponent&) = delete;
+
     const std::string& getType() const { return my_info->getType(); }
 
     /** Returns unique component ID */
