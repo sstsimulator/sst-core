@@ -107,8 +107,8 @@ struct BuilderLoader : public LibraryLoader
         BuilderLibraryDatabase<Base, CtorArgs...>::getLibrary(elemlib_)->readdBuilder(elem_, alias_, builder_);
     }
 
-  BuilderLoader(const BuilderLoader&) = delete;
-  BuilderLoader& operator=(const BuilderLoader&) = delete;
+    BuilderLoader(const BuilderLoader&) = delete;
+    BuilderLoader& operator=(const BuilderLoader&) = delete;
 
 private:
     std::string elemlib_;
