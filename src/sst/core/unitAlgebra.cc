@@ -515,8 +515,6 @@ UnitAlgebra::hasUnits(const std::string& u) const
     return unit == check_units;
 }
 
-UnitAlgebra::~UnitAlgebra() {}
-
 int64_t
 UnitAlgebra::getRoundedValue() const
 {

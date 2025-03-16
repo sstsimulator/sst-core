@@ -62,8 +62,6 @@ CheckpointAction::CheckpointAction(
     setPriority(SYNCPRIORITY);
 }
 
-CheckpointAction::~CheckpointAction() {}
-
 // Generate checkpoint on simulation time period
 void
 CheckpointAction::execute()

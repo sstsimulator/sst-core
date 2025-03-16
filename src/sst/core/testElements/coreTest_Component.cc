@@ -73,11 +73,6 @@ coreTestComponent::~coreTestComponent()
     delete rng;
 }
 
-coreTestComponent::coreTestComponent() : coreTestComponentBase2()
-{
-    // for serialization only
-}
-
 // incoming events are scanned and deleted
 void
 coreTestComponent::handleEvent(Event* ev)

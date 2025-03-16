@@ -21,8 +21,6 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(PortModule)
 SST_ELI_DEFINE_CTOR_EXTERN(PortModule)
 
-PortModule::PortModule() {}
-
 uintptr_t
 PortModule::registerLinkAttachTool(const AttachPointMetaData& UNUSED(mdata))
 {

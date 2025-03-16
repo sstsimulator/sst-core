@@ -31,8 +31,6 @@ StatisticOutput::StatisticOutput(Params& outputParameters)
 SST_ELI_DEFINE_CTOR_EXTERN(StatisticOutput)
 SST_ELI_DEFINE_INFO_EXTERN(StatisticOutput)
 
-StatisticOutput::~StatisticOutput() {}
-
 void
 StatisticOutput::serialize_order(SST::Core::Serialization::serializer& ser)
 {

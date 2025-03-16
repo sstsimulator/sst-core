@@ -15,7 +15,6 @@
 
 namespace SST {
 
-PollingLinkQueue::PollingLinkQueue() : ActivityQueue() {}
 PollingLinkQueue::~PollingLinkQueue()
 {
     // Need to delete any events left in the queue

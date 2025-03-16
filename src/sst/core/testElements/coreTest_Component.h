@@ -120,7 +120,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTestComponent::coreTestComponent)
-    coreTestComponent(); // for serialization only
+    coreTestComponent() = default; // for serialization only
 
 private:
     coreTestComponent(const coreTestComponent&) = delete;            // do not implement
