@@ -47,8 +47,8 @@ public:
     )
 
     coreTestClockerComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     coreTestClockerComponent();                                                    // for serialization only
