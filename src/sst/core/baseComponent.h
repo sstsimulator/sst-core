@@ -758,7 +758,8 @@ protected:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+    [[noreturn]] void
+    fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
     /** Convenience function for testing for and reporting fatal
@@ -858,8 +859,9 @@ private:
     }
 
     // Utility function used by fatal and sst_assert
-    void
-    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const;
+    [[noreturn]] void
+    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
+        __attribute__((format(printf, 6, 0)));
 
     // Get the statengine from Simulation_impl
     StatisticProcessingEngine* getStatEngine();
