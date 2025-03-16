@@ -24,33 +24,35 @@
 void
 print_usage(FILE* output)
 {
-    fprintf(output, "sst-config\n");
-    fprintf(output, "sst-config --<KEY>\n");
-    fprintf(output, "sst-config <GROUP> <KEY>\n");
-    fprintf(output, "\n");
-    fprintf(output, "<GROUP>    Name of group to which the key belongs\n");
-    fprintf(output, "           (e.g. DRAMSim group contains all DRAMSim\n");
-    fprintf(output, "           KEY=VALUE settings).\n");
-    fprintf(output, "<KEY>      Name of the setting key to find.\n");
-    fprintf(output, "           If <GROUP> not specified this is found in\n");
-    fprintf(output, "           the \'SSTCore\' default group.\n");
-    fprintf(output, "\n");
-    fprintf(output, "Example 1:\n");
-    fprintf(output, "  sst-config --CXX\n");
-    fprintf(output, "           Finds the CXX compiler specified by the core\n");
-    fprintf(output, "Example 2:\n");
-    fprintf(output, "  sst-config DRAMSim CPPFLAGS\n");
-    fprintf(output, "           Finds CPPFLAGS associated with DRAMSim\n");
-    fprintf(output, "Example 3:\n");
-    fprintf(output, "  sst-config\n");
-    fprintf(output, "           Dumps entire configuration found.\n");
-    fprintf(output, "\n");
-    fprintf(output, "The use of -- for the single <KEY> (Example 1) is\n");
-    fprintf(output, "intentional to closely replicate behaviour of the\n");
-    fprintf(output, "pkg-config tool used in Linux environments. This\n");
-    fprintf(output, "should not be specified when using <GROUP> as well.\n");
-    fprintf(output, "\n");
-    fprintf(output, "Return: 0 is key found, 1 key/group not found\n");
+    fputs(
+        "sst-config\n"
+        "sst-config --<KEY>\n"
+        "sst-config <GROUP> <KEY>\n"
+        "\n"
+        "<GROUP>    Name of group to which the key belongs\n"
+        "           (e.g. DRAMSim group contains all DRAMSim\n"
+        "           KEY=VALUE settings).\n"
+        "<KEY>      Name of the setting key to find.\n"
+        "           If <GROUP> not specified this is found in\n"
+        "           the \'SSTCore\' default group.\n"
+        "\n"
+        "Example 1:\n"
+        "  sst-config --CXX\n"
+        "           Finds the CXX compiler specified by the core\n"
+        "Example 2:\n"
+        "  sst-config DRAMSim CPPFLAGS\n"
+        "           Finds CPPFLAGS associated with DRAMSim\n"
+        "Example 3:\n"
+        "  sst-config\n"
+        "           Dumps entire configuration found.\n"
+        "\n"
+        "The use of -- for the single <KEY> (Example 1) is\n"
+        "intentional to closely replicate behaviour of the\n"
+        "pkg-config tool used in Linux environments. This\n"
+        "should not be specified when using <GROUP> as well.\n"
+        "\n"
+        "Return: 0 is key found, 1 key/group not found\n",
+        output);
     exit(1);
 }
 
