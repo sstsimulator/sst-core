@@ -50,8 +50,8 @@ public:
     )
 
     coreTestMessageGeneratorComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup() {}
-    void finish()
+    void setup() override {}
+    void finish() override
     {
         fprintf(stdout, "Component completed at: %" PRIu64 " milliseconds\n", (uint64_t)getCurrentSimTimeMilli());
     }

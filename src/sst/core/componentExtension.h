@@ -31,7 +31,7 @@ class ComponentExtension : public BaseComponent
 public:
     ComponentExtension(ComponentId_t id);
 
-    virtual ~ComponentExtension() {};
+    virtual ~ComponentExtension() override = default;
 
 private:
     // For serialization only
