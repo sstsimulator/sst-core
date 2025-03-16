@@ -36,7 +36,7 @@ public:
     /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputJSON(Params& outputParameters);
+    explicit StatisticOutputJSON(Params& outputParameters);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputJSON)

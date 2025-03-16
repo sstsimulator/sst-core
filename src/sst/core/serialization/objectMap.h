@@ -661,7 +661,7 @@ public:
      */
     const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
 
-    ObjectMapFundamental(T* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(T* addr) : ObjectMap(), addr_(addr) {}
 
     /**
        Destructor.  Should not be called directly (i.e. do not call

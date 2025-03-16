@@ -43,7 +43,7 @@ public:
         ELI::ProvidesProfilePoints,
         ELI::ProvidesAttributes)
 
-    SubComponent(ComponentId_t id);
+    explicit SubComponent(ComponentId_t id);
 
     virtual ~SubComponent() {};
 

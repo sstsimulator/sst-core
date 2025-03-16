@@ -57,7 +57,7 @@ public:
         return "std::string";
     }
 
-    ObjectMapString(std::string* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapString(std::string* addr) : ObjectMap(), addr_(addr) {}
 };
 
 template <>

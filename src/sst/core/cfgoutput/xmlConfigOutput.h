@@ -21,7 +21,7 @@ namespace SST::Core {
 class XMLConfigGraphOutput : public ConfigGraphOutput
 {
 public:
-    XMLConfigGraphOutput(const char* path);
+    explicit XMLConfigGraphOutput(const char* path);
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:

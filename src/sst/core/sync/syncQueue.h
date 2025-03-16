@@ -57,7 +57,7 @@ public:
         uint32_t buffer_size;
     };
 
-    RankSyncQueue(RankInfo to_rank);
+    explicit RankSyncQueue(RankInfo to_rank);
     ~RankSyncQueue();
 
     bool      empty() override;

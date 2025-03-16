@@ -74,7 +74,7 @@ protected:
     BaseComponent();
 
 public:
-    BaseComponent(ComponentId_t id);
+    explicit BaseComponent(ComponentId_t id);
     virtual ~BaseComponent();
 
     const std::string& getType() const { return my_info->getType(); }

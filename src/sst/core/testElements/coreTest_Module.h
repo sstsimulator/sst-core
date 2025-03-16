@@ -41,7 +41,7 @@ public:
         { "seed",    "The seed to use for the random number generator.", "11" },
     )
 
-    CoreTestModuleExample(SST::Params& params);
+    explicit CoreTestModuleExample(SST::Params& params);
     ~CoreTestModuleExample();
     std::string getRNGType() const;
     uint32_t    getNext();

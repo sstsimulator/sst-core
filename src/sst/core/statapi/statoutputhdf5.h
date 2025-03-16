@@ -44,7 +44,7 @@ public:
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputHDF5(Params& outputParameters);
+    explicit StatisticOutputHDF5(Params& outputParameters);
 
     bool acceptsGroups() const override { return true; }
 

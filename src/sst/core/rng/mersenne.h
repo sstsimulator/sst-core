@@ -38,7 +38,7 @@ public:
        Create a new Mersenne RNG with a specified seed
        @param[in] seed The seed for this RNG
     */
-    MersenneRNG(unsigned int seed);
+    explicit MersenneRNG(unsigned int seed);
 
     /**
        Creates a new Mersenne using a random seed which is obtained from the system
