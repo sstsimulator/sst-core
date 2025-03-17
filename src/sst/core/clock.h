@@ -104,8 +104,8 @@ public:
 private:
     using StaticHandlerMap_t = std::vector<std::unique_ptr<Clock::HandlerBase>>;
 
-    Clock()                        = default; // For serialization only
-    Clock(const Clock&)            = delete;
+    Clock()             = default; // For serialization only
+    Clock(const Clock&) = delete;
     Clock& operator=(const Clock&) = delete;
 
     void execute() override;
