@@ -33,8 +33,8 @@ class Clock : public Action
 {
 public:
     /** Create a new clock with a specified period */
-    Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
-    ~Clock();
+    explicit Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
+    ~Clock() = default;
 
     /**
        Base handler for clock functions.
@@ -102,10 +102,11 @@ public:
     std::string toString() const override;
 
 private:
-    /* using HandlerMap_t = std::list<Clock::HandlerBase*>; */
-    using StaticHandlerMap_t = std::vector<Clock::HandlerBase*>;
+    using StaticHandlerMap_t = std::vector<std::unique_ptr<Clock::HandlerBase>>;
 
-    Clock() {}
+    Clock()                        = default; // For serialization only
+    Clock(const Clock&)            = delete;
+    Clock& operator=(const Clock&) = delete;
 
     void execute() override;
 
