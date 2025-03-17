@@ -595,6 +595,62 @@ public:
         return 0;
     }
 
+    // Set the prefix for checkpoint files
+    static int setCheckpointNameFormat(Config* cfg, const std::string& arg)
+    {
+        if ( arg == "" ) {
+            fprintf(stderr, "Error, checkpoint-name-format must not be an empty string\n");
+            return -1;
+        }
+        cfg->checkpoint_name_format_ = arg;
+
+        // Check the format string to make sure there are no more than
+        // 1 slash (/) and that it only uses valid % formats
+        size_t count = 0;
+        size_t index = arg.find('/');
+        while ( index != arg.npos ) {
+            count++;
+            index = arg.find('/', index + 1);
+        }
+
+        if ( count > 1 ) {
+            fprintf(
+                stderr,
+                "Error parsing option: Argument passed to --checkpoint-name-format cannot "
+                "have more than one directory separator (/). Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
+
+        bool valid_format  = true;
+        bool percent_found = false;
+        for ( auto& x : arg ) {
+            if ( percent_found ) {
+                if ( x != 'p' && x != 'n' && x != 't' ) {
+                    // Bad format type
+                    valid_format = false;
+                    break;
+                }
+                percent_found = false;
+            }
+            else if ( x == '%' ) {
+                percent_found = true;
+            }
+        }
+        // If percent_found is still true, then we ended with %, which
+        // is also an error
+        if ( !valid_format || percent_found ) {
+            fprintf(
+                stderr,
+                "Error parsing option: Argument passed to --checkpoint-name-format uses "
+                "invalid control sequence. Argument = [%s]\n",
+                arg.c_str());
+            return -1;
+        }
+
+        return 0;
+    }
+
     static std::string getCheckpointPrefixExtHelp()
     {
         std::string msg = "Checkpointing:\n\n";
@@ -607,17 +663,18 @@ public:
                    "directory name that doesn't already exist is reached (i.e. <prefix>_1, <prefix>_2, etc.).\n");
 
         msg.append("\nWithin the checkpoint directory, each checkpoint will create its own subdirectory with "
-                   "the form <prefix>_<checkpoint_id>_<simulated_time>, where checkpoint_id starts at 0 and "
-                   "increments by one for each checkpoint.  Within this directory, there are three types of "
-                   "files:\n\n");
+                   "user sepcified name format (see extended help for --checkpoint-name-format). By default, "
+                   "this is of the form <prefix>_<checkpoint_id>_<simulated_time>, where checkpoint_id starts "
+                   "at 0 and increments by one for each checkpoint.  Within this directory, there are three "
+                   "types of files:\n\n");
 
         msg.append("Registry file: The file containes a list of some "
                    "of the global parameters from the sst run, followed by a list of all other files that "
                    "are a part of the checkpoint. The two files, described below, are the globals file and "
                    "the serialized data from each of the threads in the simulation.  After each of the serialized "
                    "data files, each Component that was in that partition is listed, along with its offset to the "
-                   "location in the file for the Components serialized data. this file is named the same as the "
-                   "directory with a .sstcpt extension:\n"
+                   "location in the file for the Components serialized data. this file is named using a user "
+                   "specified name format (this defaults to be the same as the directory) with a .sstcpt extension:\n"
                    "    <prefix>_<checkpoint_id>_<simulated_time>.sstcpt.\n\n");
 
         msg.append("Globals file: This contains the serialized binary data needed at sst startup time that is "
@@ -628,9 +685,9 @@ public:
                    "execution in the original run.  The files are named by rank:\n"
                    "    <prefix>_<checkpoint_id>_<simulated_time>_<rank>_<thread>.bin\n\n");
 
-        msg.append("A sample directory structure using a checkpoint prefix of \"checkpoint\" using two ranks "
-                   "with one thread each would look something like:\n\n"
-                   "current working directory\n"
+        msg.append("A sample directory structure using the default name format and a checkpoint prefix of "
+                   "\"checkpoint\" using two ranks with one thread each would look something like:\n\n"
+                   "output directory\n"
                    "|--checkpoint\n"
                    "   |--checkpoint_0_1000\n"
                    "      |--checkpoint_0_1000.sstcpt\n"
@@ -645,6 +702,37 @@ public:
 
         msg.append("When restarting from a checkpoint, the registry file (*.sstcpt) should be specified as the "
                    "input file.\n");
+
+        return msg;
+    }
+
+    static std::string getCheckpointNameFormatExtHelp()
+    {
+        std::string msg = "Checkpointing Filename Formats:\n\n";
+        msg.append("It is possible to set the format for the directories and filenames used for writing out "
+                   "checkpoints.  The format is specied as <directory name format>/<file name format>, or you "
+                   "can leave the / out and specify the same format for both directory and filenames.\n");
+        msg.append("\nThe format string can contain literal text, as well as the following special control "
+                   "sequences:\n\n");
+
+        msg.append("\t%p - \vwill be repalced with the prefix specified by --checkpoint-prefix\n "
+                   "\t%n - \vwill be replaced by the checkpoint index. The checkpoint index starts at 0 and "
+                   "is incremented for each checkpoint that occurs.\n"
+                   "\t%t - \vwill be replaced with the current simulated time at the point of the checkpoint, "
+                   "expressed in sim cycles (number of core timebase units that have elapsed\n");
+
+        msg.append("\nThe default name format is %p_%n_%t/%p_%n_%t, or equivalently %p_%n_%t since the directory "
+                   "and filename formats are the same.\n");
+
+        msg.append("\nNOTE: The directory format should include %n and/or %t as part of the format to ensure "
+                   "unique directory names for each checkpoint.  If these are not used, the same directory and "
+                   "files will be used for each checkpoint and prior checkpoints will get overwritten.\n");
+
+        msg.append("Example where prefix = \"checkpoint\", checkpoint index = 1 and time = 1000:\n\n");
+
+        msg.append("\t%p_%n_%p   - checkpoint_1_1000\n");
+        msg.append("\t%p_%n      - checkpoint_1\n");
+        msg.append("\tfile_%n_%p - file_1_1000\n");
 
         return msg;
     }
@@ -740,6 +828,7 @@ Config::print()
     std::cout << "checkpoint_wall_period = " << checkpoint_wall_period_ << std::endl;
     std::cout << "checkpoint_sim_period = " << checkpoint_sim_period_ << std::endl;
     std::cout << "checkpoint_prefix = " << checkpoint_prefix_ << std::endl;
+    std::cout << "checkpoint_name_format = " << checkpoint_name_format_ << std::endl;
     std::cout << "timeVortex = " << timeVortex_ << std::endl;
     std::cout << "interthread_links = " << interthread_links_ << std::endl;
 #ifdef USE_MEMPOOL
@@ -859,6 +948,7 @@ Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, 
     checkpoint_sim_period_  = "";
     load_from_checkpoint_   = false;
     checkpoint_prefix_      = "checkpoint";
+    checkpoint_name_format_ = "%p_%n_%t/%p_%n_%t";
 
     // Advanced Options - environment
     enable_sig_handling_ = true;
@@ -1128,6 +1218,12 @@ Config::insertOptions()
         "and checkpointing is enabled.",
         std::bind(&ConfigHelper::setCheckpointPrefix, this, _1), std::bind(&ConfigHelper::getCheckpointPrefixExtHelp),
         true);
+    DEF_ARG_EH(
+        "checkpoint-name-format", 0, "FORMAT",
+        "Set the format for checkpoint filenames. See extended help for format options.  Default is "
+        "\"%p_%n_%t/%p_%n_%t\"",
+        std::bind(&ConfigHelper::setCheckpointNameFormat, this, _1),
+        std::bind(&ConfigHelper::getCheckpointNameFormatExtHelp), true);
 
     enableDashDashSupport(std::bind(&ConfigHelper::setModelOptions, this, _1));
     addPositionalCallback(std::bind(&Config::positionalCallback, this, _1, _2));
@@ -1173,23 +1269,6 @@ Config::checkArgsAfterParsing()
         return -1;
     }
 
-    /* Sanity check, and other duties */
-
-    // Ensure output directory ends with a directory separator
-    if ( output_directory_.size() > 0 ) {
-        if ( '/' != output_directory_[output_directory_.size() - 1] ) { output_directory_.append("/"); }
-    }
-
-    // Now make sure all the files we are generating go into a directory
-    if ( output_config_graph_.size() > 0 && isFileNameOnly(output_config_graph_) ) {
-        output_config_graph_.insert(0, output_directory_);
-    }
-
-    if ( output_dot_.size() > 0 && isFileNameOnly(output_dot_) ) { output_dot_.insert(0, output_directory_); }
-
-    if ( output_json_.size() > 0 && isFileNameOnly(output_json_) ) { output_json_.insert(0, output_directory_); }
-
-    if ( debugFile_.size() > 0 && isFileNameOnly(debugFile_) ) { debugFile_.insert(0, output_directory_); }
     return 0;
 }
 
