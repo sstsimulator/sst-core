@@ -237,7 +237,7 @@ public:
     }
 
     /** Returns reference to the Component Info Map */
-    const ComponentInfoMap& getComponentInfoMap() { return compInfoMap; }
+    const ComponentInfoMap& getComponentInfoMap() const { return compInfoMap; }
 
     /** returns the component with the given ID */
     BaseComponent* getComponent(const ComponentId_t& id) const
