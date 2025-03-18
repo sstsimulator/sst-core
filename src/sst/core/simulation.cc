@@ -284,6 +284,13 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
             std::string action;
             bool        found;
             parseSignalString(alarmstr, action, params);
+            // SKK
+            if ( action == "sst.rt.interactive" ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1,
+                    "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
+                    action.c_str());
+            }
             std::string interval = params.find<std::string>("interval", "", found);
             if ( !found ) {
                 sim_output.fatal(

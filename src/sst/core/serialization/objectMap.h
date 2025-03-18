@@ -648,7 +648,7 @@ public:
 
        @return Address of variable
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() override { return (void*) addr_; }
 
 
     /**

@@ -383,6 +383,18 @@ std::atomic<uint64_t>     HeartbeatRealTimeAction::thr_max_tv_depth_(0);
 Core::ThreadSafe::Barrier HeartbeatRealTimeAction::exchange_barrier_;
 
 
+/************ InteractiveRealTimeAction ***********/
+InteractiveRealTimeAction::InteractiveRealTimeAction() : RealTimeAction() {}
+
+void
+InteractiveRealTimeAction::execute()
+{
+  std::string message = "\tInteractive Console real time action at time ";
+  message.append(getElapsedSimTime().toStringBestSI().c_str());
+  initiateInteractive(message);
+}
+
+
 /************ RealTimeIntervalAction ***********/
 
 RealTimeIntervalAction::RealTimeIntervalAction(uint32_t interval, RealTimeAction* action)
