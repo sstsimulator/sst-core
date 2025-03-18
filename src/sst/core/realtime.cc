@@ -389,9 +389,9 @@ InteractiveRealTimeAction::InteractiveRealTimeAction() : RealTimeAction() {}
 void
 InteractiveRealTimeAction::execute()
 {
-  std::string message = "\tInteractive Console real time action at time ";
-  message.append(getElapsedSimTime().toStringBestSI().c_str());
-  initiateInteractive(message);
+    std::string message = "\tInteractive Console real time action at time ";
+    message.append(getElapsedSimTime().toStringBestSI().c_str());
+    initiateInteractive(message);
 }
 
 
