@@ -283,7 +283,7 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
             Params      params;
             std::string action;
             bool        found;
-            parseSignalString(alarmstr, action, params); 
+            parseSignalString(alarmstr, action, params);
             if ( action == "sst.rt.interactive" ) {
                 sim_output.fatal(
                     CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
