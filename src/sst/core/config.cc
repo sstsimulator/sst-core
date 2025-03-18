@@ -695,9 +695,10 @@ public:
                    "   - sst.rt.heartbeat: Reports state of SST core and some profiling state (e.g., memory usage).\n"
                    "   - sst.rt.interactive: Breaks into interactive console to explore simulation state.\n"
                    "     Ignored if --interactive-console not set. (Valid for SIGUSR1/2 only, invalid for SIGALRM)\n");
-        msg.append(
-            "  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using '--sigusr2=<handler>'\n"
-            "  If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and --sigusr2=sst.rt.status.all.\n");
+        msg.append("  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using "
+                   "'--sigusr2=<handler>'\n"
+                   "  If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and "
+                   "--sigusr2=sst.rt.status.all.\n");
         msg.append("  Actions can be bound to SIGALRM by specifying '--sigalrm=ACTION(interval=TIME)' where ACTION is "
                    "the action and TIME is a wall-clock time in the format HH:MM:SS, MM:SS, SS, Hh, Mm, or Ss. Capital "
                    "letters represent numerics and lower case are units and required for those formats. Multiple "
