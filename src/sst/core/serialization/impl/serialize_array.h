@@ -81,7 +81,7 @@ raw_ptr(TPtr*& ptr)
    Version of serialize that works for statically allocated arrays of
    fundamental types and enums.
  */
-template <class T, int N>
+template <class T, size_t N>
 class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
@@ -98,7 +98,7 @@ class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_
    Version of serialize that works for statically allocated arrays of
    non base types.
  */
-template <class T, int N>
+template <class T, size_t N>
 class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>

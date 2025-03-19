@@ -208,32 +208,30 @@ void
 coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     SST::Component::serialize_order(ser);
-    SST_SER(link_left)
-    SST_SER(link_right)
-    SST_SER(self_link)
-    SST_SER(clock_handler)
-    SST_SER(clock_tc)
-    SST_SER(duty_cycle)
-    SST_SER(duty_cycle_count)
-    SST_SER(counter)
-    SST_SER(test_string); // Make sure semicolon is a no-op
+    SST_SER(link_left);
+    SST_SER(link_right);
+    SST_SER(self_link);
+    SST_SER(clock_handler);
+    SST_SER(clock_tc);
+    SST_SER(duty_cycle);
+    SST_SER(duty_cycle_count);
     SST_SER(counter);
     SST_SER(test_string);
     SST_SER(output);
     SST_SER(output_frequency);
-    SST_SER(mersenne)
-    SST_SER(marsaglia)
-    SST_SER(xorshift)
-    SST_SER(dist_const)
-    SST_SER(dist_discrete)
-    SST_SER(dist_expon)
-    SST_SER(dist_gauss)
-    SST_SER(dist_poisson)
-    SST_SER(dist_uniform)
-    SST_SER(stat_eventcount)
-    SST_SER(stat_rng)
-    SST_SER(stat_dist)
-    SST_SER(stat_null)
+    SST_SER(mersenne);
+    SST_SER(marsaglia);
+    SST_SER(xorshift);
+    SST_SER(dist_const);
+    SST_SER(dist_discrete);
+    SST_SER(dist_expon);
+    SST_SER(dist_gauss);
+    SST_SER(dist_poisson);
+    SST_SER(dist_uniform);
+    SST_SER(stat_eventcount);
+    SST_SER(stat_rng);
+    SST_SER(stat_dist);
+    SST_SER(stat_null);
 }
 
 

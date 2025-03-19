@@ -90,7 +90,8 @@ class serialize_impl<std::vector<T>>
 
     void operator()(Vector& v, serializer& ser, const char* name)
     {
-        if ( ser.mode() != serializer::MAP ) return operator()(v, ser);
+        // If it's not mapping mode, fall back on non-mapping mode.
+        if ( ser.mode() != serializer::MAP ) return (*this)(v, ser);
 
         ObjectMapVector<T>* obj_map = new ObjectMapVector<T>(&v);
         ser.mapper().map_hierarchy_start(name, obj_map);

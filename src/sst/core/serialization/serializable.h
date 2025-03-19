@@ -73,6 +73,9 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::Core::Serializa
 
     void operator()(T*& s, serializer& ser, const char* name)
     {
+        // If it's not mapping mode, fall back on non-mapping mode.
+        if ( ser.mode() != serializer::MAP ) return (*this)(s, ser);
+
         serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
         case serializer::SIZER:

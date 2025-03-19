@@ -73,7 +73,7 @@ class SST::Core::Serialization::serialize_impl<TimeVortex*>
 
     template <class A>
     friend class serialize;
-    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
+    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, const char *UNUSED(name) = nullptr)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:

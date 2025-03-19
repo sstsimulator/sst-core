@@ -468,6 +468,9 @@ class serialize_impl<UnitAlgebra>
 
     void operator()(UnitAlgebra& ua, serializer& ser, const char* name)
     {
+        // If it's not mapping mode, fall back on non-mapping mode.
+        if ( ser.mode() != serializer::MAP ) return (*this)(ua, ser);
+
         ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
         ser.mapper().map_primitive(name, obj_map);
     }

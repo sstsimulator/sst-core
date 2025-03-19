@@ -67,6 +67,9 @@ public:
     void operator()(std::string& str, serializer& ser) { ser.string(str); }
     void operator()(std::string& str, serializer& ser, const char* name)
     {
+        // If it's not mapping mode, fall back on non-mapping mode.
+        if ( ser.mode() != serializer::MAP ) return (*this)(str, ser);
+
         ObjectMapString* obj_map = new ObjectMapString(&str);
         ser.mapper().map_primitive(name, obj_map);
     }
@@ -85,6 +88,9 @@ public:
     }
     void operator()(std::string*& str, serializer& ser, const char* name)
     {
+        // If it's not mapping mode, fall back on non-mapping mode.
+        if ( ser.mode() != serializer::MAP ) return (*this)(str, ser);
+
         ObjectMapString* obj_map = new ObjectMapString(str);
         ser.mapper().map_primitive(name, obj_map);
     }
