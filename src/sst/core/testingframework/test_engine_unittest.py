@@ -595,7 +595,7 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
             # Ignore make_tests and wrap_results
             # continue using old super invocation to prevent
             # sstsimulator/sst-core#1262
-            super(unittest.TestSuite, self).__init__(suite)
+            super(unittest.TestSuite, self).__init__(suite) # type: ignore[name-defined]
         else:
             super().__init__(suite, make_tests, wrap_result)
 
