@@ -124,7 +124,7 @@ public:
         }
         case serializer::MAP:
         {
-        // TODO: Add support for mapping mode
+            // TODO: Add support for mapping mode
             break;
         }
         }
