@@ -391,7 +391,7 @@ sst_map_object(serializer& ser, T& t, const char* name)
     // temporarily set the map name and run the serializer
     ser.setMapName(name);
     serialize<T>()(t, ser);
-    ser.setMapName(nullptr);
+    ser.setMapName("");
 }
 
 // Serialization macros for checkpoint/debug serialization

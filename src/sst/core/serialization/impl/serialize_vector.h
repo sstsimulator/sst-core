@@ -78,8 +78,8 @@ class serialize_impl<std::vector<T>>
         }
         case serializer::MAP:
         {
-            const char* name = ser.getMapName();
-            if ( name ) {
+            const std::string& name = ser.getMapName();
+            if ( !name.empty() ) {
                 ObjectMapVector<T>* obj_map = new ObjectMapVector<T>(&v);
                 ser.mapper().map_hierarchy_start(ser.getMapName(), obj_map);
                 for ( size_t i = 0; i < v.size(); ++i ) {

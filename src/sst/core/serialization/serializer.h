@@ -262,10 +262,10 @@ public:
         ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
     }
 
-    void        setMapName(const char* name) { map_name = name; }
-    const char* getMapName() const
+    void               setMapName(std::string name) { map_name = std::move(name); }
+    const std::string& getMapName() const
     {
-        if ( !map_name ) throw std::invalid_argument("NULL map name when map serialization requires it");
+        if ( map_name.empty() ) throw std::invalid_argument("Empty map name when map serialization requires it");
         return map_name;
     }
 
@@ -283,8 +283,7 @@ protected:
     // Used for unpacking and mapping
     std::map<uintptr_t, uintptr_t> ser_pointer_map;
     uintptr_t                      split_key;
-
-    const char* map_name = nullptr;
+    std::string                    map_name;
 };
 
 } // namespace SST::Core::Serialization

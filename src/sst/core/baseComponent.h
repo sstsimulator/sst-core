@@ -1124,7 +1124,7 @@ public:
 
     static void unpack_basecomponent(serializable_base*& s, serializer& ser);
 
-    static void map_basecomponent(serializable_base*& s, serializer& ser, const char* name);
+    static void map_basecomponent(serializable_base*& s, serializer& ser, const std::string& name);
 };
 
 } // namespace pvt
