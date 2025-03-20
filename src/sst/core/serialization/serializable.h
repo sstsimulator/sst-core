@@ -40,13 +40,13 @@ void pack_serializable(serializable_base* s, serializer& ser);
 
 void unpack_serializable(serializable_base*& s, serializer& ser);
 
-void map_serializable(serializable_base*& s, serializer& ser, const char* name);
+void map_serializable(serializable_base*& s, serializer& ser);
 
 } // namespace pvt
 
 
 template <class T>
-class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::Core::Serialization::serializable, T>>>
+class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 {
 
     template <class A>
@@ -65,30 +65,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::Core::Serializa
             pvt::unpack_serializable(sp, ser);
             break;
         case serializer::MAP:
-            // No mapping without a name
-            break;
-        }
-        s = static_cast<T*>(sp);
-    }
-
-    void operator()(T*& s, serializer& ser, const char* name)
-    {
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(s, ser);
-
-        serializable_base* sp = static_cast<serializable_base*>(s);
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-            pvt::size_serializable(sp, ser);
-            break;
-        case serializer::PACK:
-            pvt::pack_serializable(sp, ser);
-            break;
-        case serializer::UNPACK:
-            pvt::unpack_serializable(sp, ser);
-            break;
-        case serializer::MAP:
-            pvt::map_serializable(sp, ser, name);
+            pvt::map_serializable(sp, ser);
             break;
         }
         s = static_cast<T*>(sp);
@@ -118,7 +95,7 @@ serialize_intrusive_ptr(T*& t, serializer& ser)
 }
 
 template <class T>
-class serialize_impl<T, std::enable_if_t<std::is_base_of_v<SST::Core::Serialization::serializable, T>>>
+class serialize_impl<T, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 {
     template <class A>
     friend class serialize;
@@ -127,10 +104,7 @@ class serialize_impl<T, std::enable_if_t<std::is_base_of_v<SST::Core::Serializat
         // T* tmp = &t;
         // serialize_intrusive_ptr(tmp, ser);
         t.serialize_order(ser);
-    }
 
-    inline void operator()(T& UNUSED(t), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
         // TODO: Need to figure out how to handle mapping mode for
         // classes inheriting from serializable that are not pointers.
         // For the core, this really only applies to SharedObjects,

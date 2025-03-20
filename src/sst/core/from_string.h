@@ -92,6 +92,27 @@ from_string(const std::string& input)
     return T(input);
 }
 
+template <class T>
+std::enable_if_t<std::is_enum_v<T>, T>
+from_string(const std::string& input)
+{
+    return static_cast<T>(from_string<std::underlying_type_t<T>>(input));
+}
+
+template <class T>
+std::enable_if_t<!std::is_enum_v<T>, std::string>
+to_string(const T& input)
+{
+    return std::to_string(input);
+}
+
+template <class T>
+std::enable_if_t<std::is_enum_v<T>, std::string>
+to_string(const T& input)
+{
+    return std::to_string(static_cast<std::underlying_type_t<T>>(input));
+}
+
 } // end namespace SST::Core
 
 #endif // SST_CORE_FROM_STRING_H

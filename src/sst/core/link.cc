@@ -33,7 +33,7 @@
 namespace SST {
 
 void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core::Serialization::serializer& ser)
+SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser)
 {
     // Need to treat Links and SelfLinks differently
     bool    self_link;
@@ -559,16 +559,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
         }
         break;
     case serializer::MAP:
-        // This version of the function is not called in mapping mode.
+        // TODO: Implement Link mapping mode
         break;
     }
-}
-
-void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(
-    Link*& UNUSED(s), SST::Core::Serialization::serializer& UNUSED(ser), const char* UNUSED(name))
-{
-    // TODO: Implement Link mapping mode
 }
 
 /**

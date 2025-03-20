@@ -37,7 +37,7 @@ template <class T, class Enable = void>
 class serialize_impl
 {
 public:
-    void operator()(T& t, serializer& ser, const char* name = nullptr)
+    void operator()(T& t, serializer& ser)
     {
         static_assert(
             std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>>,
@@ -50,11 +50,12 @@ public:
             else
                 return &t;
         }();
+
         if ( ser.mode() == serializer::MAP ) {
             if ( !tPtr ) return; // No need to map a nullptr
             auto* map = new ObjectMapClass(tPtr, typeid(T).name());
             ser.report_object_map(map);
-            ser.mapper().map_hierarchy_start(name, map);
+            ser.mapper().map_hierarchy_start(ser.getMapName(), map);
         }
         else if constexpr ( std::is_pointer_v<T> ) {
             if ( ser.mode() == serializer::UNPACK ) {
@@ -78,8 +79,7 @@ template <class T>
 class serialize
 {
 public:
-    inline void operator()(T& t, serializer& ser) { return serialize_impl<T>()(t, ser); }
-    inline void operator()(T& t, serializer& ser, const char* name) { return serialize_impl<T>()(t, ser, name); }
+    void operator()(T& t, serializer& ser) { return serialize_impl<T>()(t, ser); }
 
     /**
        This will track the pointer to the object if pointer tracking
@@ -239,29 +239,22 @@ public:
                 serialize_impl<T*>()(t, ser);
                 ser.report_real_pointer(ptr_stored, reinterpret_cast<uintptr_t>(t));
             }
-        }
-        case serializer::MAP:
-            // Add your code here
             break;
         }
-    }
-
-    inline void operator()(T*& t, serializer& ser, const char* name)
-    {
-        // We are a pointer, need to see if tracking is turned on
-        // if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T*>()(t, ser);
-
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(t, ser);
-
-        ObjectMap* map = ser.check_pointer_map(reinterpret_cast<uintptr_t>(t));
-        if ( map != nullptr ) {
-            // If we've already seen this object, just add the
-            // existing ObjectMap to the parent.
-            ser.mapper().map_existing_object(name, map);
-            return;
+        case serializer::MAP:
+        {
+            ObjectMap* map = ser.check_pointer_map(reinterpret_cast<uintptr_t>(t));
+            if ( map != nullptr ) {
+                // If we've already seen this object, just add the
+                // existing ObjectMap to the parent.
+                ser.mapper().map_existing_object(ser.getMapName(), map);
+            }
+            else {
+                serialize_impl<T*>()(t, ser);
+            }
+            break;
         }
-        serialize_impl<T*>()(t, ser, name);
+        }
     }
 };
 
@@ -275,15 +268,16 @@ class serialize_impl<T, std::enable_if_t<std::is_fundamental_v<T> || std::is_enu
 {
     template <class A>
     friend class serialize;
-    inline void operator()(T& t, serializer& ser) { ser.primitive(t); }
 
-    inline void operator()(T& t, serializer& ser, const char* name)
+    void operator()(T& t, serializer& ser)
     {
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(t, ser);
-
-        ObjectMapFundamental<T>* obj_map = new ObjectMapFundamental<T>(&t);
-        ser.mapper().map_primitive(name, obj_map);
+        if ( ser.mode() == serializer::MAP ) {
+            auto* obj_map = new ObjectMapFundamental<T>(&t);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
+        }
+        else {
+            ser.primitive(t);
+        }
     }
 };
 
@@ -297,18 +291,15 @@ class serialize_impl<bool>
     friend class serialize;
     void operator()(bool& t, serializer& ser)
     {
-        int bval = t;
-        ser.primitive(bval);
-        t = bool(bval);
-    }
-
-    inline void operator()(bool& t, serializer& ser, const char* name)
-    {
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(t, ser);
-
-        ObjectMapFundamental<bool>* obj_map = new ObjectMapFundamental<bool>(&t);
-        ser.mapper().map_primitive(name, obj_map);
+        if ( ser.mode() != serializer::MAP ) {
+            int bval = t;
+            ser.primitive(bval);
+            t = bool(bval);
+        }
+        else {
+            ObjectMapFundamental<bool>* obj_map = new ObjectMapFundamental<bool>(&t);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
+        }
     }
 };
 
@@ -397,7 +388,10 @@ template <class T>
 inline void
 sst_map_object(serializer& ser, T& t, const char* name)
 {
-    serialize<T>()(t, ser, name);
+    // temporarily set the map name and run the serializer
+    ser.setMapName(name);
+    serialize<T>()(t, ser);
+    ser.setMapName(nullptr);
 }
 
 // Serialization macros for checkpoint/debug serialization

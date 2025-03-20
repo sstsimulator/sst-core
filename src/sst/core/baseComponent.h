@@ -1149,19 +1149,10 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
             pvt::SerializeBaseComponentHelper::unpack_basecomponent(sp, ser);
             break;
         case serializer::MAP:
-            // Add your code here
+            pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, ser.getMapName());
             break;
         }
         s = static_cast<T*>(sp);
-    }
-
-    void operator()(T*& s, serializer& ser, const char* name)
-    {
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(s, ser);
-
-        serializable_base* sp = static_cast<serializable_base*>(s);
-        pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, name);
     }
 };
 

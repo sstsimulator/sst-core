@@ -404,8 +404,7 @@ operator<<(std::ostream& os, const Units& r)
 }
 
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 template <>
 class ObjectMapFundamental<UnitAlgebra> : public ObjectMap
@@ -461,25 +460,17 @@ class serialize_impl<UnitAlgebra>
             ua.serialize_order(ser);
             break;
         case serializer::MAP:
-            // Add your code here
+        {
+            ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
-    }
-
-    void operator()(UnitAlgebra& ua, serializer& ser, const char* name)
-    {
-        // If it's not mapping mode, fall back on non-mapping mode.
-        if ( ser.mode() != serializer::MAP ) return (*this)(ua, ser);
-
-        ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
-        ser.mapper().map_primitive(name, obj_map);
+        }
     }
 };
 
 
-} // namespace Serialization
-} // namespace Core
-
+} // namespace Core::Serialization
 
 } // namespace SST
 
