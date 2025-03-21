@@ -93,7 +93,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    int  print(const char* fmt, ...);
+    int  print(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 
 private:
 #ifdef HAVE_LIBZ
