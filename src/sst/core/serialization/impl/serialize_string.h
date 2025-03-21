@@ -64,11 +64,14 @@ template <>
 class serialize_impl<std::string>
 {
 public:
-    void operator()(std::string& str, serializer& ser) { ser.string(str); }
-    void operator()(std::string& str, serializer& ser, const char* name)
+    void operator()(std::string& str, serializer& ser)
     {
-        ObjectMapString* obj_map = new ObjectMapString(&str);
-        ser.mapper().map_primitive(name, obj_map);
+        if ( ser.mode() == serializer::MAP ) {
+            ObjectMapString* obj_map = new ObjectMapString(&str);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
+            return;
+        }
+        ser.string(str);
     }
 };
 
@@ -78,15 +81,16 @@ class serialize_impl<std::string*>
 public:
     void operator()(std::string*& str, serializer& ser)
     {
+        if ( ser.mode() == serializer::MAP ) {
+            ObjectMapString* obj_map = new ObjectMapString(str);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
+            return;
+        }
+
         // Nullptr is checked for in serialize<T>(), so just serialize
         // as if it was non-pointer
         if ( ser.mode() == serializer::UNPACK ) { str = new std::string(); }
         ser.string(*str);
-    }
-    void operator()(std::string*& str, serializer& ser, const char* name)
-    {
-        ObjectMapString* obj_map = new ObjectMapString(str);
-        ser.mapper().map_primitive(name, obj_map);
     }
 };
 

@@ -77,27 +77,29 @@ class serialize_impl<std::vector<T>>
             break;
         }
         case serializer::MAP:
-            // If this version of operator() is called during mapping
-            // mode, then the variable being mapped did not provide a
-            // name, which means no ObjectMap will be created.
+        {
+            const std::string& name = ser.getMapName();
+            if ( !name.empty() ) {
+                ObjectMapVector<T>* obj_map = new ObjectMapVector<T>(&v);
+                ser.mapper().map_hierarchy_start(ser.getMapName(), obj_map);
+                for ( size_t i = 0; i < v.size(); ++i ) {
+                    sst_map_object(ser, v[i], std::to_string(i).c_str());
+                }
+                ser.mapper().map_hierarchy_end();
+                return;
+            }
+            else {
+                // If this version of operator() is called during mapping
+                // mode and the variable being mapped did not provide a
+                // name, no ObjectMap will be created.
+            }
             break;
+        }
         }
 
         for ( size_t i = 0; i < v.size(); ++i ) {
             ser& v[i];
         }
-    }
-
-    void operator()(Vector& v, serializer& ser, const char* name)
-    {
-        if ( ser.mode() != serializer::MAP ) return operator()(v, ser);
-
-        ObjectMapVector<T>* obj_map = new ObjectMapVector<T>(&v);
-        ser.mapper().map_hierarchy_start(name, obj_map);
-        for ( size_t i = 0; i < v.size(); ++i ) {
-            sst_map_object(ser, v[i], std::to_string(i).c_str());
-        }
-        ser.mapper().map_hierarchy_end();
     }
 };
 
@@ -146,16 +148,14 @@ class serialize_impl<std::vector<bool>>
             break;
         }
         case serializer::MAP:
-            // If this version of operator() is called during mapping
-            // mode, then the variable being mapped did not provide a
-            // name, which means no ObjectMap will be created.
+        {
+            // TODO: Add support for mapping vector<bool>.  The weird way they
+            // pack the bits means we'll likely need to have a special case of
+            // ObjectMapVector<bool> that knows how to handle the packing.
             break;
         }
+        }
     }
-
-    // TODO: Add support for mapping vector<bool>.  The weird way they
-    // pack the bits means we'll likely need to have a special case of
-    // ObjectMapVector<bool> that knows how to handle the packing.
 };
 
 } // namespace SST::Core::Serialization

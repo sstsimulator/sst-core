@@ -152,8 +152,8 @@ void
 coreTestModuleLoader::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     Component::serialize_order(ser);
-    SST_SER(output)
-    SST_SER(rng_max_count)
-    SST_SER(rng_count)
-    SST_SER(rng_module)
+    SST_SER(output);
+    SST_SER(rng_max_count);
+    SST_SER(rng_count);
+    SST_SER(rng_module);
 }

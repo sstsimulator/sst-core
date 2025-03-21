@@ -77,14 +77,11 @@ public:
             break;
         }
         case serializer::MAP:
-            // The version of function not called in mapping mode
+        {
+            // TODO: Add support for mapping mode
             break;
         }
-    }
-
-    void operator()(Map& UNUSED(m), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
-        // TODO: Add support for mapping mode
+        }
     }
 };
 
@@ -136,14 +133,11 @@ public:
             break;
         }
         case serializer::MAP:
-            // The version of function not called in mapping mode
+        {
+            // TODO: Add support for mapping mode
             break;
         }
-    }
-
-    void operator()(Map& UNUSED(m), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
-        // TODO: Add support for mapping mode
+        }
     }
 };
 

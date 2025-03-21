@@ -234,8 +234,7 @@ public:
 
 
 void
-serialize_impl<TimeConverter*>::operator()(
-    TimeConverter*& s, SST::Core::Serialization::serializer& ser, const char* name)
+serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
 {
     SimTime_t factor = 0;
 
@@ -265,9 +264,11 @@ serialize_impl<TimeConverter*>::operator()(
         break;
     }
     case serializer::MAP:
+    {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
-        ser.mapper().map_primitive(name, obj_map);
+        ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
+    }
     }
 }
 

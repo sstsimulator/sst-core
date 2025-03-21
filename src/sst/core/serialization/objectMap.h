@@ -605,7 +605,7 @@ public:
 /**
    ObjectMap representing fundamental types, and classes treated as
    fundamental types.  In order for an object to be treated as a
-   fundamental, it must be printable using std::to_string() and
+   fundamental, it must be printable using SST::Core::to_string() and
    assignable using SST::Core::from_string(). If this is not true, it
    is possible to create a template specialization for the type
    desired to be treated as a fundamental.  The specialization will
@@ -625,7 +625,7 @@ public:
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return std::to_string(*addr_); }
+    virtual std::string get() override { return SST::Core::to_string(*addr_); }
 
     /**
        Set the value of the object represented as a string

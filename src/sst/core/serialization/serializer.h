@@ -105,7 +105,7 @@ public:
         }
     }
 
-    template <class T, int N>
+    template <class T, size_t N>
     void array(T arr[N])
     {
         switch ( mode_ ) {
@@ -262,6 +262,13 @@ public:
         ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
     }
 
+    void               setMapName(std::string name) { map_name = std::move(name); }
+    const std::string& getMapName() const
+    {
+        if ( map_name.empty() ) throw std::invalid_argument("Empty map name when map serialization requires it");
+        return map_name;
+    }
+
 protected:
     // only one of these is going to be valid for this serializer
     // not very good class design, but a little more convenient
@@ -276,6 +283,7 @@ protected:
     // Used for unpacking and mapping
     std::map<uintptr_t, uintptr_t> ser_pointer_map;
     uintptr_t                      split_key;
+    std::string                    map_name;
 };
 
 } // namespace SST::Core::Serialization
