@@ -42,7 +42,7 @@ public:
     using FilterMap_t = std::multimap<std::string, std::string>;
     /** Create a new SSTInfo configuration and parse the Command Line. */
     SSTInfoConfig(bool suppress_print);
-    ~SSTInfoConfig();
+    ~SSTInfoConfig() override = default;
 
     /** Return the list of elements to be processed. */
     std::set<std::string> getElementsToProcessArray()

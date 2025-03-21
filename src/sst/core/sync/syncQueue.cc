@@ -34,8 +34,6 @@ using namespace Core::Serialization;
 
 RankSyncQueue::RankSyncQueue(RankInfo to_rank) : SyncQueue(to_rank), buffer(nullptr), buf_size(0) {}
 
-RankSyncQueue::~RankSyncQueue() {}
-
 bool
 RankSyncQueue::empty()
 {

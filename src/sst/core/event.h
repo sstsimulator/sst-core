@@ -79,7 +79,7 @@ public:
         last_comp  = "";
 #endif
     }
-    virtual ~Event();
+    ~Event() override = default;
 
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();

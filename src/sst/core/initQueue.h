@@ -24,7 +24,7 @@ namespace SST {
 class InitQueue : public ActivityQueue
 {
 public:
-    InitQueue();
+    InitQueue() = default;
     ~InitQueue();
 
     bool      empty() override;

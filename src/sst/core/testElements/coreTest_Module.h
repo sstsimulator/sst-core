@@ -98,7 +98,7 @@ public:
     ImplementSerializable(SST::CoreTestModule::coreTestModuleLoader)
 
 private:
-    coreTestModuleLoader(); // for serialization only
+    coreTestModuleLoader() = default; // for serialization only
 
     virtual bool tick(SST::Cycle_t);
 

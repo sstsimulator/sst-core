@@ -58,8 +58,7 @@ public:
     virtual void finish() override {}
 
 protected:
-    // For serialization only
-    SubComponent();
+    SubComponent() = default; // For serialization only
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
     friend class Component;
