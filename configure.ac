@@ -13,6 +13,13 @@ AM_INIT_AUTOMAKE([1.9.6 foreign dist-bzip2 subdir-objects no-define tar-pax])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 m4_pattern_allow([LT_LIBEXT])
 
+AH_TOP([
+#ifndef _SST_CONFIG_H_
+#define _SST_CONFIG_H_
+])
+AH_BOTTOM([
+#endif /* _SST_CONFIG_H_ */
+])
 AC_CONFIG_HEADERS([src/sst/core/sst_config.h])
 
 # Lets check for the standard compilers and basic options
