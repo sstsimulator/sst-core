@@ -34,6 +34,7 @@ public:
 
 
     RealTimeAction();
+    virtual ~RealTimeAction() = default;
 
     /* Optional function called just before run loop starts. Passes in
      * the next scheduled time of the event or 0 if the event is not

@@ -452,6 +452,8 @@ public:
         virtual void
         serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
+
+        virtual ~InterceptPoint() = default;
     };
 
 private:
