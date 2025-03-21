@@ -129,7 +129,7 @@ public:
 
 protected:
     enum cxn_flag_t { ConstructorFlag };
-    static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
+    [[noreturn]] static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
 };
 
 
