@@ -194,8 +194,9 @@ public:
         "sst",
         "timevortex.map.binned.ts",
         SST_ELI_ELEMENT_VERSION(1,0,0),
-        "[EXPERIMENTAL] Thread safe verion of TimeVortex based on std::map with events binned into time buckets.  Do not reference this element directly, just specify sst.timevortex.map.binned and this version will be selected when it is needed based on other parameters.")
-
+        "[EXPERIMENTAL] Thread-safe verion of TimeVortex based on std::map with events binned into time buckets."
+        "  Do not reference this element directly; just specify sst.timevortex.map.binned and this version will"
+        " be selected when it is needed based on other parameters.")
 
     TimeVortexBinnedMap_ts(Params& params) : TimeVortexBinnedMapBase<true>(params) {}
     SST_ELI_EXPORT(TimeVortexBinnedMap_ts)
