@@ -54,7 +54,7 @@ public:
        @param manager The SharedObjectDataManager for the rank.  This
        is used to get the named shared data.
      */
-    virtual void applyChanges(SharedObjectDataManager* UNUSED(manager)) = 0;
+    virtual void applyChanges(SharedObjectDataManager* manager) = 0;
 
     /**
        Clears the data.  Used after transfering data to other ranks to

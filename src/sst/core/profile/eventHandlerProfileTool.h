@@ -95,7 +95,7 @@ public:
     uintptr_t registerLinkAttachTool(const AttachPointMetaData& mdata) override;
 
     void beforeHandler(uintptr_t key, const SST::Event* event) override;
-    void eventSent(uintptr_t UNUSED(key), Event*& UNUSED(ev)) override;
+    void eventSent(uintptr_t key, Event*& ev) override;
 
     void outputData(FILE* fp) override;
 
