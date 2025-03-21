@@ -1234,6 +1234,11 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     // Init the model
     initModel(script_file, verbosity, configObj, argc, argv);
 
+    // Free the arguments
+    for ( int i = 0; i < argc; ++i ) {
+        free(argv[i]);
+    }
+
     // Free the vector
     free(argv);
 }

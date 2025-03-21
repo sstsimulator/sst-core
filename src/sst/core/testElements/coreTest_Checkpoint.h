@@ -27,22 +27,16 @@ namespace SST::CoreTestCheckpoint {
 class coreTestCheckpointEvent : public SST::Event
 {
 public:
-    coreTestCheckpointEvent() : SST::Event(), counter(1000) {}
+    explicit coreTestCheckpointEvent(uint32_t c) : counter(c) {}
+    coreTestCheckpointEvent()  = default;
+    ~coreTestCheckpointEvent() = default;
 
-    coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
+    bool decCount() { return counter == 0 || --counter == 0; }
 
-    ~coreTestCheckpointEvent() {}
-
-    bool decCount()
-    {
-        if ( counter != 0 ) counter--;
-        return counter == 0;
-    }
-
-    uint32_t getCount() { return counter; }
+    uint32_t getCount() const { return counter; }
 
 private:
-    uint32_t counter;
+    uint32_t counter = 1000;
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -102,7 +96,9 @@ public:
     )
 
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
-    virtual ~coreTestCheckpoint();
+    coreTestCheckpoint(const coreTestCheckpoint&)            = delete;
+    coreTestCheckpoint& operator=(const coreTestCheckpoint&) = delete;
+    ~coreTestCheckpoint() override;
 
     void init(unsigned phase) override;
 
@@ -138,20 +134,19 @@ private:
     Output*             output;
     int                 output_frequency;
 
-    RNG::Random*             mersenne;
-    RNG::Random*             marsaglia;
-    RNG::Random*             xorshift;
-    RNG::RandomDistribution* dist_const;
-    RNG::RandomDistribution* dist_discrete;
-    RNG::RandomDistribution* dist_expon;
-    RNG::RandomDistribution* dist_gauss;
-    RNG::RandomDistribution* dist_poisson;
-    RNG::RandomDistribution* dist_uniform;
-
-    Statistic<uint32_t>* stat_eventcount;
-    Statistic<uint32_t>* stat_rng;
-    Statistic<double>*   stat_dist;
-    Statistic<uint32_t>* stat_null;
+    RNG::Random*             mersenne        = nullptr;
+    RNG::Random*             marsaglia       = nullptr;
+    RNG::Random*             xorshift        = nullptr;
+    RNG::RandomDistribution* dist_const      = nullptr;
+    RNG::RandomDistribution* dist_discrete   = nullptr;
+    RNG::RandomDistribution* dist_expon      = nullptr;
+    RNG::RandomDistribution* dist_gauss      = nullptr;
+    RNG::RandomDistribution* dist_poisson    = nullptr;
+    RNG::RandomDistribution* dist_uniform    = nullptr;
+    Statistic<uint32_t>*     stat_eventcount = nullptr;
+    Statistic<uint32_t>*     stat_rng        = nullptr;
+    Statistic<double>*       stat_dist       = nullptr;
+    Statistic<uint32_t>*     stat_null       = nullptr;
 };
 
 } // namespace SST::CoreTestCheckpoint
