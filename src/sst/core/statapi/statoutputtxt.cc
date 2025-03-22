@@ -80,23 +80,6 @@ StatisticOutputTextBase::startOfSimulation()
     StatisticFieldInfo*        statField;
     FieldInfoArray_t::iterator it_v;
 
-    // Set Filename with Rank if Num Ranks > 1
-    if ( 1 < getNumRanks().rank ) {
-        int         rank    = getRank().rank;
-        std::string rankstr = "_" + std::to_string(rank);
-
-        // Search for any extension
-        size_t index = m_FilePath.find_last_of(".");
-        if ( std::string::npos != index ) {
-            // We found a . at the end of the file, insert the rank string
-            m_FilePath.insert(index, rankstr);
-        }
-        else {
-            // No . found, append the rank string
-            m_FilePath += rankstr;
-        }
-    }
-
     // Open the finalized filename
     if ( !openFile() ) return;
 
@@ -317,9 +300,33 @@ StatisticOutputTextBase::openFile()
         return true;
     }
 
+    // Need to complete the filename.  For multirank jobs, add _RANK
+    // to name.  Also need to get the absolute path include the set
+    // output_directory
+    std::string filename = m_FilePath;
+
+    // First check for appending rank
+    if ( 1 < getNumRanks().rank ) {
+        int         rank    = getRank().rank;
+        std::string rankstr = "_" + std::to_string(rank);
+
+        // Search for any extension
+        size_t index = filename.find_last_of(".");
+        if ( std::string::npos != index ) {
+            // We found a . at the end of the file, insert the rank string
+            filename.insert(index, rankstr);
+        }
+        else {
+            // No . found, append the rank string
+            filename += rankstr;
+        }
+    }
+
+    filename = getAbsolutePathForOutputFile(filename);
+
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
-        m_gzFile = gzopen(m_FilePath.c_str(), "w");
+        m_gzFile = gzopen(filename.c_str(), "w");
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();
@@ -333,7 +340,7 @@ StatisticOutputTextBase::openFile()
 #endif
     }
     else {
-        m_hFile = fopen(m_FilePath.c_str(), "w");
+        m_hFile = fopen(filename.c_str(), "w");
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();

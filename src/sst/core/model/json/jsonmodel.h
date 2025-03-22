@@ -65,11 +65,13 @@ protected:
     double        start_time;
 
 private:
+    void          setStatGroupOptions(const json& jFile);
     void          recursiveSubcomponent(ConfigComponent* Parent, const nlohmann::basic_json<>& compArray);
     void          discoverProgramOptions(const json& jFile);
     void          discoverComponents(const json& jFile);
     void          discoverLinks(const json& jFile);
     void          discoverGlobalParams(const json& jFile);
+    void          discoverStatistics(const json& jFile);
     ComponentId_t findComponentIdByName(const std::string& Name);
 };
 

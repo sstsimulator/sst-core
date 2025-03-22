@@ -237,4 +237,4 @@ coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
 }
 
 
-// Element Libarary / Serialization stuff
+// Element Library / Serialization stuff

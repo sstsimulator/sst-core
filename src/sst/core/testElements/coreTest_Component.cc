@@ -179,4 +179,4 @@ coreTestComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(countW)
 }
 
-// Element Libarary / Serialization stuff
+// Element Library / Serialization stuff
