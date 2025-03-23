@@ -24,6 +24,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/util/filesystem.h"
 
 #include <atomic>
 #include <cstdio>
@@ -366,6 +367,12 @@ public:
 
     /** Factory used to generate the simulation components */
     static Factory* factory;
+
+    /**
+       Filesystem object that will be used to ensure all core-created
+       files end up in the directory specified by --output-directory.
+     */
+    static SST::Util::Filesystem filesystem;
 
     static void                      resizeBarriers(uint32_t nthr);
     static Core::ThreadSafe::Barrier initBarrier;
