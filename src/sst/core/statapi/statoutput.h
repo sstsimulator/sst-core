@@ -127,6 +127,12 @@ protected:
     /** Gets the current simulstion cycle */
     SimTime_t getCurrentSimCycle();
 
+    /**
+       Get the absolute path for the specified file taking into
+       account the specified output directory
+     */
+    std::string getAbsolutePathForOutputFile(const std::string& filename);
+
 private:
     // Start / Stop of register Fields
     virtual void registerStatistic(StatisticBase* stat) = 0;
