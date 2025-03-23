@@ -593,7 +593,9 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
         # concurrently.
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             # Ignore make_tests and wrap_results
-            super().__init__(suite)
+            # continue using old super invocation to prevent
+            # sstsimulator/sst-core#1262
+            super(unittest.TestSuite, self).__init__(suite) # type: ignore[name-defined]
         else:
             super().__init__(suite, make_tests, wrap_result)
 
