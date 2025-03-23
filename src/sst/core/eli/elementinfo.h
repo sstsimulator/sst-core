@@ -111,7 +111,7 @@ class BuilderInfoImpl<void>
 {
 protected:
     template <class... Args>
-    BuilderInfoImpl(Args&&... UNUSED(args))
+    explicit BuilderInfoImpl(Args&&... UNUSED(args))
     {}
 
     template <class XMLNode>

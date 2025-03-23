@@ -181,7 +181,7 @@ public:
         "[EXPERIMENTAL] TimeVortex based on std::map with events binned in time buckets.")
 
 
-    TimeVortexBinnedMap(Params& params) : TimeVortexBinnedMapBase<false>(params) {}
+    explicit TimeVortexBinnedMap(Params& params) : TimeVortexBinnedMapBase<false>(params) {}
     SST_ELI_EXPORT(TimeVortexBinnedMap)
 };
 
@@ -197,7 +197,7 @@ public:
         "[EXPERIMENTAL] Thread safe verion of TimeVortex based on std::map with events binned into time buckets.  Do not reference this element directly, just specify sst.timevortex.map.binned and this version will be selected when it is needed based on other parameters.")
 
 
-    TimeVortexBinnedMap_ts(Params& params) : TimeVortexBinnedMapBase<true>(params) {}
+    explicit TimeVortexBinnedMap_ts(Params& params) : TimeVortexBinnedMapBase<true>(params) {}
     SST_ELI_EXPORT(TimeVortexBinnedMap_ts)
 };
 

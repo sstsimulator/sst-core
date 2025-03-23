@@ -36,7 +36,7 @@ public:
     /**
        Creates a new self partition scheme.
     */
-    SSTSelfPartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
+    explicit SSTSelfPartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
 
     /**
        Performs a partition of an SST simulation configuration

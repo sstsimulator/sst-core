@@ -227,7 +227,7 @@ public:
      */
     const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
 
-    ObjectMapFundamental(TimeConverter** addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(TimeConverter** addr) : ObjectMap(), addr_(addr) {}
 
     std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
 };

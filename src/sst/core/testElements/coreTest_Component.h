@@ -44,7 +44,7 @@ public:
         { "test_element", "true" }
     )
 
-    coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
+    explicit coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
     ~coreTestComponentBase() {}
     coreTestComponentBase() : SST::Component() {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override { SST::Component::serialize_order(ser); }

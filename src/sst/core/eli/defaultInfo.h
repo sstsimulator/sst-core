@@ -58,7 +58,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesDefaultInfo(T* t) : ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
+    explicit ProvidesDefaultInfo(T* t) : ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
     {}
 
 private:

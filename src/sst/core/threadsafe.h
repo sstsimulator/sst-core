@@ -164,7 +164,7 @@ class BoundedQueue
 
 public:
     // BoundedQueue(size_t maxSize) : dsize(maxSize)
-    BoundedQueue(size_t maxSize) : initialized(false) { initialize(maxSize); }
+    explicit BoundedQueue(size_t maxSize) : initialized(false) { initialize(maxSize); }
 
     BoundedQueue() : initialized(false) {}
 

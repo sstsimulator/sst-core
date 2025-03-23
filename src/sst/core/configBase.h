@@ -112,7 +112,7 @@ protected:
        ConfigBase constructor.  Meant to only be created by main
        function
      */
-    ConfigBase(bool suppress_print) : suppress_print_(suppress_print) {}
+    explicit ConfigBase(bool suppress_print) : suppress_print_(suppress_print) {}
 
     /**
        Default constructor used for serialization.  After

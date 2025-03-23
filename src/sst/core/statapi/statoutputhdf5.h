@@ -125,7 +125,7 @@ private:
     class DataSet
     {
     public:
-        DataSet(H5::H5File* file) : file(file) {}
+        explicit DataSet(H5::H5File* file) : file(file) {}
         virtual ~DataSet() {}
         H5::H5File*  getFile() { return file; }
         virtual bool isGroup() const = 0;
