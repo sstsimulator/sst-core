@@ -209,7 +209,7 @@ private:
     bool getOutputSimTimeDefault() override { return true; }
     bool getOutputRankDefault() override { return true; }
 
-    std::string getDefaultFileName() override { return "./StatisticOutput.txt"; }
+    std::string getDefaultFileName() override { return "StatisticOutput.txt"; }
 };
 
 /**

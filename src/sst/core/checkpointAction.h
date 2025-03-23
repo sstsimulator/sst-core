@@ -94,6 +94,8 @@ private:
     double         last_cpu_time_; // Last time a checkpoint was triggered
     bool           generate_;      // Whether a checkpoint should be done next time check() is called
     SimTime_t      next_sim_time_; // Next simulationt ime a checkpoint should trigger at or 0 if not applicable
+    std::string    dir_format_;    // Format string for checkpoint directory names
+    std::string    file_format_;   // Format string for checkpoint file names
 };
 
 } // namespace SST

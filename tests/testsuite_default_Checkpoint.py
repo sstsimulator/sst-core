@@ -111,12 +111,13 @@ class testcase_Checkpoint(SSTTestCase):
             sdlfile_generate = "{0}/subcomponent_tests/test_{1}.py".format(testsuitedir, testtype)
         else:
             sdlfile_generate = "{0}/test_{1}.py".format(testsuitedir,testtype)
-        outfile_generate = "{0}/test_Checkpoint_{1}_generate.out".format(outdir,teststr)
-        options_checkpoint="--checkpoint-sim-period={0} --checkpoint-prefix={1} --model-options='{2}'".format(cptfreq,teststr,modelparams)
-        self.run_sst(sdlfile_generate, outfile_generate, other_args=options_checkpoint)
 
+        outfile_generate = "{0}/test_Checkpoint_{1}_generate.out".format(outdir,teststr)
+        options_checkpoint="--checkpoint-sim-period={0} --checkpoint-prefix={1} --output-directory=testsuite_checkpoint --model-options='{2}'".format(cptfreq,teststr,modelparams)
+        self.run_sst(sdlfile_generate, outfile_generate, other_args=options_checkpoint)
+        
         # Run from restart
-        sdlfile_restart = "{0}/{1}/{1}_{2}/{1}_{2}.sstcpt".format(outdir,teststr,cptrestart)
+        sdlfile_restart = "{0}/testsuite_checkpoint/{1}/{1}_{2}/{1}_{2}.sstcpt".format(outdir,teststr,cptrestart)
         outfile_restart = "{0}/test_Checkpoint_{1}_restart.out".format(outdir, teststr)
         options_restart = "--load-checkpoint"
         self.run_sst(sdlfile_restart, outfile_restart, other_args=options_restart)

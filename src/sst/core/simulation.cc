@@ -1485,7 +1485,7 @@ void
 Simulation_impl::checkpoint_write_globals(
     int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename)
 {
-    std::ofstream fs(globals_filename, std::ios::out | std::ios::binary);
+    std::ofstream fs = filesystem.ofstream(globals_filename, std::ios::out | std::ios::binary);
 
     // TODO: Add error checking for file open
 
@@ -1535,7 +1535,7 @@ Simulation_impl::checkpoint_write_globals(
     fs.write(buffer, size);
     fs.close();
 
-    std::ofstream fs_reg(registry_filename, std::ios::out);
+    std::ofstream fs_reg = filesystem.ofstream(registry_filename, std::ios::out);
 
     /* Section 1: Checkpoint info */
     fs_reg << "## Checkpoint #" << checkpoint_id << " at time " << currentSimCycle << " ("
@@ -1578,7 +1578,7 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
     // the binary checkpoint files are written, each rank/thread will
     // take turns writing their registry data to the file.
 
-    std::ofstream fs(registry_name, std::ios::out | std::ios::app);
+    std::ofstream fs = filesystem.ofstream(registry_name, std::ios::out | std::ios::app);
 
     // Write out the component offsets
     fs << "\n** (" << my_rank.rank << ":" << my_rank.thread << "): " << blob_name << std::endl;
@@ -1592,7 +1592,7 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
 void
 Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 {
-    std::ofstream fs(checkpoint_filename, std::ios::out | std::ios::binary);
+    std::ofstream fs     = filesystem.ofstream(checkpoint_filename, std::ios::out | std::ios::binary);
     // TODO: Add error checking for file open
     uint64_t      offset = 0;
 
@@ -2067,6 +2067,7 @@ SST_Exit(int exit_code)
 
 /* Define statics */
 Factory*                   Simulation_impl::factory;
+Util::Filesystem           Simulation_impl::filesystem;
 TimeLord                   Simulation_impl::timeLord;
 std::map<LinkId_t, Link*>  Simulation_impl::cross_thread_links;
 Output                     Simulation_impl::sim_output;

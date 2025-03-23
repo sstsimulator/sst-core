@@ -14,6 +14,7 @@
 
 #include "sst/core/configGraph.h"
 #include "sst/core/params.h"
+#include "sst/core/util/filesystem.h"
 
 #include <cstdio>
 #include <exception>
@@ -54,7 +55,7 @@ protected:
 class ConfigGraphOutput
 {
 public:
-    explicit ConfigGraphOutput(const char* path) { outputFile = fopen(path, "wt"); }
+    explicit ConfigGraphOutput(const char* path);
 
     virtual ~ConfigGraphOutput() { fclose(outputFile); }
 

@@ -47,7 +47,7 @@ StatisticOutputJSON::checkOutputParameters()
     if ( true == foundKey ) { return false; }
 
     // Get the parameters
-    m_FilePath      = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.json");
+    m_FilePath      = getOutputParameters().find<std::string>("filepath", "StatisticOutput.json");
     m_outputSimTime = getOutputParameters().find<bool>("outputsimtime", true);
     m_outputRank    = getOutputParameters().find<bool>("outputrank", true);
 
@@ -232,7 +232,28 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 bool
 StatisticOutputJSON::openFile()
 {
-    m_hFile = fopen(m_FilePath.c_str(), "w");
+    std::string filename = m_FilePath;
+    // Set Filename with Rank if Num Ranks > 1
+    if ( 1 < getNumRanks().rank ) {
+        int         rank    = getRank().rank;
+        std::string rankstr = "_" + std::to_string(rank);
+
+        // Search for any extension
+        size_t index = m_FilePath.find_last_of(".");
+        if ( std::string::npos != index ) {
+            // We found a . at the end of the file, insert the rank string
+            filename.insert(index, rankstr);
+        }
+        else {
+            // No . found, append the rank string
+            filename += rankstr;
+        }
+    }
+
+    // Get the absolute path for output file
+    filename = getAbsolutePathForOutputFile(filename);
+
+    m_hFile = fopen(filename.c_str(), "w");
 
     if ( nullptr == m_hFile ) {
         // We got an error of some sort
