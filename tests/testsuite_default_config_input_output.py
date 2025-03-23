@@ -65,17 +65,21 @@ class testcase_Config_input_output(SSTTestCase):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        output_config = "{0}/test_configio_{1}.{2}".format(outdir,testtype,output_type)
+        output_config = "{0}/testsuite_configio/test_configio_{1}.{2}".format(outdir,testtype,output_type)
+        output_config_option = "test_configio_{0}.{1}".format(testtype,output_type)
         if ( output_type == "py" ): out_flag = "--output-config"
         elif ( output_type == "json"): out_flag = "--output-json"
         else:
             print("Unknown output type: {0}".format(output_type))
             sys.exit(1)
 
+        # This will be relative to outdir because that is set as the working directory
+        output_dir_option = "--output-directory=testsuite_configio"
+
         if parallel_io:
-            options_ref = "{0}={1} --parallel-output --model-options=\"{2}\"".format(out_flag,output_config,model_options);
+            options_ref = "{0}={1} --parallel-output --model-options=\"{2}\" {3}".format(out_flag,output_config_option,model_options,output_dir_option);
         else:
-            options_ref = "{0}={1} --output-partition --model-options=\"{2}\"".format(out_flag,output_config,model_options);
+            options_ref = "{0}={1} --output-partition --model-options=\"{2}\" {3}".format(out_flag,output_config_option,model_options,output_dir_option);
         
         if have_mpi:
             options_check = "--parallel-load={0}".format(load_mode)
