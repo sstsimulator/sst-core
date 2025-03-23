@@ -1,22 +1,3 @@
-15 received 39587 messages
-14 received 39778 messages
-13 received 40293 messages
-12 received 40349 messages
-11 received 39780 messages
-10 received 40013 messages
-9 received 40303 messages
-8 received 40432 messages
-7 received 39715 messages
-6 received 39834 messages
-5 received 40182 messages
-4 received 40600 messages
-3 received 39372 messages
-2 received 39561 messages
-1 received 39952 messages
-0 received 40185 messages
-
-------------------------------------------------------------
-Profiling Output:
 
 -----------------------------
 Rank = 0, thread = 0:
@@ -24,6 +5,3 @@ Rank = 0, thread = 0:
 events
 Name, recv count
 coreTestElement.message_mesh.message_port, 639936
-
-------------------------------------------------------------
-Simulation is complete, simulated time: 10 us
