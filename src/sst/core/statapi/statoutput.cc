@@ -17,6 +17,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"
+#include "sst/core/util/filesystem.h"
+
 
 namespace SST::Statistics {
 
@@ -84,6 +86,12 @@ SimTime_t
 StatisticOutput::getCurrentSimCycle()
 {
     return Simulation_impl::getSimulation()->getCurrentSimCycle();
+}
+
+std::string
+StatisticOutput::getAbsolutePathForOutputFile(const std::string& filename)
+{
+    return Simulation_impl::filesystem.getAbsolutePath(filename);
 }
 
 StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) : StatisticOutput(outputParameters)
