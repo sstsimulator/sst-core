@@ -774,6 +774,46 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         passed = (atom.load() == result.load()) ? true : false;
         if ( !passed ) out.output("ERROR: std::atomic<int32_t> did not serialize/deserialize properly\n");
     }
+    else if ( test == "complexcontainer" ) {
+        // Need to test more complex combinations of containers
+
+        // std::map<unsigned,std::pair<unsigned,std::vector<unsigned>>>
+        std::map<unsigned, std::pair<unsigned, std::vector<unsigned>>> map;
+        // Put in a few entries
+
+        SST::Core::Serialization::serializer ser;
+        ser.enable_pointer_tracking();
+
+        map[0].first = 10;
+        map[0].second.push_back(37);
+
+        map[15].first = 103;
+        map[15].second.push_back(35);
+
+        // // Get the size
+        ser.start_sizing();
+        SST_SER(map);
+
+        size_t size   = ser.size();
+        char*  buffer = new char[size + 10];
+
+        // Serialize
+        ser.start_packing(buffer, size);
+        SST_SER(map);
+
+        std::map<unsigned, std::pair<unsigned, std::vector<unsigned>>> map_out;
+        ser.start_unpacking(buffer, size);
+        SST_SER(map_out);
+
+        if ( map[0].first != 10 && map[0].second[0] != 37 ) {
+            out.output("ERROR: std::map<unsigned,std::pair<unsigned,std::vector<unsigned>>> dir not "
+                       "serialize/deserialize properly\n");
+        }
+        if ( map[15].first != 103 && map[15].second[0] != 35 ) {
+            out.output("ERROR: std::map<unsigned,std::pair<unsigned,std::vector<unsigned>>> dir not "
+                       "serialize/deserialize properly\n");
+        }
+    }
     else {
         out.fatal(CALL_INFO_LONG, 1, "ERROR: Unknown serialization test specified: %s\n", test.c_str());
     }
