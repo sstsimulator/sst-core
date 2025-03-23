@@ -447,9 +447,9 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
             info.config, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
 
-        if ( sim->checkpoint_directory_ != "" ) {
-            // Write out any data structures needed for all checkpoints
-        }
+        // if ( sim->checkpoint_directory_ != "" ) {
+        //     // Write out any data structures needed for all checkpoints
+        // }
     }
     // Wait for all checkpointing files to be initialzed
     barrier.wait();
@@ -656,7 +656,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
             if ( i == info.myRank.thread ) {
-                fp = fopen(file.c_str(), mode.c_str());
+                fp = Simulation_impl::filesystem.fopen(file, mode.c_str());
                 sim->printProfilingInfo(fp);
                 fclose(fp);
             }
@@ -669,7 +669,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     delete sim;
 }
-
 
 int
 main(int argc, char* argv[])
@@ -701,6 +700,18 @@ main(int argc, char* argv[])
     else if ( ret_value == 1 ) {
         // Just asked for info, clean exit
         return 0;
+    }
+
+    // Set up the Filesystem object with the output directory
+    bool out_dir_okay = Simulation_impl::filesystem.setBasePath(cfg.output_directory());
+    if ( !out_dir_okay ) {
+        fprintf(
+            stderr,
+            "ERROR: Directory specified with --output-directory (%s) is not valid.  Most likely causes are that the "
+            "user "
+            "does not have permissions to write to this path, or a file of the same name exists.\n",
+            cfg.output_directory().c_str());
+        return -1;
     }
 
     // Check to see if we are doing a restart from a checkpoint

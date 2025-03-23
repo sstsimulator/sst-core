@@ -57,6 +57,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_atomic(self):
         self.serialization_test_template("atomic")
 
+    def test_Serialization_complexcontainer(self):
+        self.serialization_test_template("complexcontainer")
+
 #####
     def serialization_test_template(self, testtype, default_reffile = True):
 

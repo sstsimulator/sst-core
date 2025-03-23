@@ -21,14 +21,52 @@
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
-// #include <filesystem>
+#include <filesystem>
 #include <sys/stat.h>
 #include <unistd.h>
 
 namespace SST {
 
-CheckpointAction::CheckpointAction(
-    Config* UNUSED(cfg), RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
+namespace pvt {
+
+std::string
+createNameFromFormat(const std::string& format, const std::string& prefix, uint64_t checkpoint_id, SimTime_t time)
+{
+    std::string ret;
+    bool        found_percent = false;
+    for ( const auto& x : format ) {
+        if ( found_percent ) {
+            switch ( x ) {
+            case 'p':
+                ret += prefix;
+                break;
+            case 'n':
+                ret += std::to_string(checkpoint_id);
+                break;
+            case 't':
+                ret += std::to_string(time);
+                break;
+            default:
+                // Should not happen since format string was already
+                // checked, but if it does, just delete whole %
+                // sequence (i.e. do nothing)
+                break;
+            }
+            found_percent = false;
+        }
+        else if ( x == '%' ) {
+            found_percent = true;
+        }
+        else {
+            ret += x;
+        }
+    }
+    return ret;
+}
+
+} // namespace pvt
+
+CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
     Action(),
     rank_(this_rank),
     period_(period),
@@ -53,7 +91,37 @@ CheckpointAction::CheckpointAction(
         next_sim_time_ = MAX_SIMTIME_T;
     }
 
-    if ( (0 == this_rank.rank) ) { last_cpu_time_ = sst_get_cpu_time(); }
+    // Parse the format string.  It was checked by the Config object
+    // to make sure there was no more than one directory separator (/)
+    // and that no invalid % sequences were used.
+    std::string format = cfg->checkpoint_name_format();
+    size_t      split  = format.find("/");
+    if ( split == format.npos ) {
+        dir_format_  = format;
+        file_format_ = format;
+    }
+    else {
+        dir_format_  = format.substr(0, split);
+        file_format_ = format.substr(split + 1);
+    }
+
+    if ( (0 == this_rank.rank) ) {
+        // Check to make sure that there is at least one of %n or %t to
+        // make checkpoint filenames unique.
+        bool unique = false;
+        if ( format.find("%n") != format.npos ) unique = true;
+        if ( format.find("%t") != format.npos ) unique = true;
+
+        if ( !unique ) {
+            sim->getSimulationOutput().output(
+                "WARNING: checkpoint-name-format does not include one of %%n or %%t, which means that all checkpoints "
+                "will use the same filename and previous files will be overwritten [%s].\n",
+                format.c_str());
+        }
+
+        last_cpu_time_ = sst_get_cpu_time();
+    }
+
     // Set the priority to be the same as the SyncManager so that
     // checkpointing happens in the same place for both serial and
     // parallel runs.  We will never have both a SyncManager and a
@@ -78,7 +146,7 @@ CheckpointAction::execute()
 void
 CheckpointAction::createCheckpoint(Simulation_impl* sim)
 {
-    if ( 0 == rank_.rank ) {
+    if ( 0 == rank_.rank && 0 == rank_.thread ) {
         const double now = sst_get_cpu_time();
         sim->getSimulationOutput().output(
             "# Simulation Checkpoint: Simulated Time %s (Real CPU time since last checkpoint %.5f seconds)\n",
@@ -89,35 +157,30 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 
     // Need to create a directory for this checkpoint
     std::string prefix   = sim->checkpoint_prefix_;
-    std::string basename = prefix + "_" + std::to_string(checkpoint_id) + "_" + std::to_string(sim->currentSimCycle);
+    std::string basename = pvt::createNameFromFormat(dir_format_, prefix, checkpoint_id, sim->currentSimCycle);
 
     // Directory is shared across threads.  Make it a static and make
     // sure we barrier in the right places
-    static std::string directory;
+    std::string directory = sim->checkpoint_directory_ + "/" + basename;
 
     // Only thread 0 will participate in setup
     if ( rank_.thread == 0 ) {
         // Rank 0 will create the directory for this checkpoint
         if ( rank_.rank == 0 ) {
-            directory = Checkpointing::createUniqueDirectory(sim->checkpoint_directory_ + "/" + basename);
-#ifdef SST_CONFIG_HAVE_MPI
-            Comms::broadcast(directory, 0);
-#endif
+            directory = sim->checkpoint_directory_ + "/" + basename;
+            std::filesystem::create_directory(directory);
         }
-        else {
-            // Get directory name (really just a barrier since each
-            // rank already knows the name and it shouldn't have to
-            // create a unique one)
 #ifdef SST_CONFIG_HAVE_MPI
-            Comms::broadcast(directory, 0);
+        Comms::broadcast(directory, 0);
 #endif
-        }
     }
-    barrier.wait();
-    if ( rank_.thread == 0 ) checkpoint_id++;
-
+    basename = pvt::createNameFromFormat(file_format_, prefix, checkpoint_id, sim->currentSimCycle);
     std::string filename =
         directory + "/" + basename + "_" + std::to_string(rank_.rank) + "_" + std::to_string(rank_.thread) + ".bin";
+
+    barrier.wait();
+
+    if ( rank_.thread == 0 ) checkpoint_id++;
 
     // Write out the checkpoints for the partitions
     sim->checkpoint(filename);
@@ -245,55 +308,6 @@ doesDirectoryExist(const std::string& dirName, bool include_files)
     }
 }
 
-/**
-   Function to create a directory. We need this bacause
-   std::filesystem isn't fully supported until GCC9
-*/
-bool
-createDirectory(const std::string& dirName)
-{
-    if ( mkdir(dirName.c_str(), 0755) == 0 ) {
-        return true; // Directory created successfully
-    }
-    else {
-        return false; // Failed to create directory
-    }
-}
-
-std::string
-createUniqueDirectory(const std::string basename)
-{
-    std::string dirName = basename;
-
-    // Check if the directory exists
-    // if ( std::filesystem::exists(dirName) ) {
-    if ( doesDirectoryExist(dirName, true) ) {
-        // Append a unique random set of characters to the directory name
-        std::string newDirName;
-        int         num = 0;
-        do {
-            ++num;
-            newDirName = dirName + "_" + std::to_string(num);
-            // } while ( std::filesystem::exists(newDirName) ); // Ensure the new directory name is unique
-        } while ( doesDirectoryExist(newDirName, true) ); // Ensure the new directory name is unique
-
-        dirName = newDirName;
-    }
-
-    // Create the directory
-    // if ( !std::filesystem::create_directory(dirName) ) {
-    if ( !createDirectory(dirName) ) {
-        Simulation_impl::getSimulationOutput().fatal(
-            CALL_INFO_LONG, 1, "Failed to create directory: %s\n", dirName.c_str());
-    }
-    return dirName;
-}
-
-void
-removeDirectory(const std::string UNUSED(name))
-{
-    // Implement when adding logic to keep only N checkpoints
-}
 
 std::string
 initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank)
@@ -303,7 +317,11 @@ initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank)
 
     std::string checkpoint_dir_name = "";
 
-    if ( myRank == 0 ) { checkpoint_dir_name = createUniqueDirectory(cfg->checkpoint_prefix()); }
+    if ( myRank == 0 ) {
+        SST::Util::Filesystem& fs = Simulation_impl::getSimulation()->filesystem;
+        checkpoint_dir_name       = fs.createUniqueDirectory(cfg->checkpoint_prefix());
+    }
+
 #ifdef SST_CONFIG_HAVE_MPI
     // Broadcast the directory name
     Comms::broadcast(checkpoint_dir_name, 0);
