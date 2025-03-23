@@ -55,9 +55,12 @@ StatisticOutputHDF5::checkOutputParameters()
         return false;
     }
 
+    // Get the absolute path for output file
+    std::string filename = getAbsolutePathForOutputFile(m_FilePath);
+
     H5::Exception::dontPrint();
 
-    m_hFile = new H5::H5File(m_filePath, H5F_ACC_TRUNC);
+    m_hFile = new H5::H5File(filename, H5F_ACC_TRUNC);
 
     return true;
 }
