@@ -56,7 +56,7 @@ StatisticOutputHDF5::checkOutputParameters()
     }
 
     // Get the absolute path for output file
-    std::string filename = getAbsolutePathForOutputFile(m_FilePath);
+    std::string filename = getAbsolutePathForOutputFile(m_filePath);
 
     H5::Exception::dontPrint();
 
