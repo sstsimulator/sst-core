@@ -230,7 +230,10 @@ private:
         verify_type verify;
 
         Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
-        explicit Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
+        explicit Data(const std::string& name) :
+            SharedObjectData(name),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
