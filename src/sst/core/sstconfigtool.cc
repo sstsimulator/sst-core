@@ -21,7 +21,7 @@
 #include <map>
 #include <string>
 
-void
+[[noreturn]] void
 print_usage(FILE* output)
 {
     fprintf(output, "sst-config\n");
