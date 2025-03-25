@@ -295,7 +295,6 @@ public:
         SST::CoreTestSubComponent::SubCompSendRecvInterface
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PARAMS(
         SST_ELI_DELETE_PARAM("sendCount")
     )
@@ -316,9 +315,10 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SubCompSendRecvInterface::serialize_order(ser);
-        SST_SER(link)
-        SST_SER(nMsgReceived)
+        SST_SER(link);
+        SST_SER(nMsgReceived);
         SST_SER(out);
+        SST_SER(numRecv);
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubCompReceiver)
 
@@ -326,6 +326,7 @@ private:
     Statistic<uint32_t>* nMsgReceived;
     SST::Link*           link;
     SST::Output*         out;
+    uint32_t             numRecv = 0;
 
     void handleEvent(SST::Event* ev);
 

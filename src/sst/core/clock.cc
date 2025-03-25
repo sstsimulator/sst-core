@@ -28,11 +28,7 @@ Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), p
 
 Clock::~Clock()
 {
-    // Delete all the handlers
-    for ( StaticHandlerMap_t::iterator it = staticHandlerMap.begin(); it != staticHandlerMap.end(); ++it ) {
-        delete *it;
-    }
-    staticHandlerMap.clear();
+    // Handlers are owned by BaseComponent and are deleted there
 }
 
 bool

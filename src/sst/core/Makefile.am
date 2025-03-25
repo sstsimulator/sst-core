@@ -226,6 +226,7 @@ sst_core_sources = \
 	serialization/serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \
+	serialization/impl/mapper.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/stdMem.cc \
@@ -249,6 +250,8 @@ sst_core_sources = \
 	objectComms.h \
 	objectSerialization.h \
 	simulation_impl.h \
+	watchPoint.h \
+	watchPoint.cc \
 	sst_mpi.h
 
 bin_PROGRAMS = sst sst-info sst-config sst-register

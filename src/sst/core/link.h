@@ -160,6 +160,11 @@ public:
      */
     void replaceFunctor(Event::HandlerBase* functor);
 
+    /** Get the callback function to be called when a message is
+     * delivered. Polling links will return nullptr.
+     */
+    Event::HandlerBase* getFunctor();
+
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
      * TimeConverter. I.e. the total delay is the link's delay + the
@@ -344,6 +349,7 @@ private:
 
 
     void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata);
+    void removeAttachedTool(AttachPoint* tool);
 
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;

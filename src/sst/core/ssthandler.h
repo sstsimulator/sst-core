@@ -287,6 +287,24 @@ public:
     }
 
     /**
+       Remove an attached tool
+
+       @param tool Tool to remove.  If tool doesn't exist, then no
+       action is taken
+     */
+    void removeAttachedTool(AttachPoint* tool)
+    {
+        if ( !attached_tools ) return;
+
+        for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+            if ( x->first == tool ) {
+                attached_tools->erase(x);
+                break;
+            }
+        }
+    }
+
+    /**
        Transfers attached tools from existing handler
      */
     void transferAttachedToolInfo(SSTHandlerBase* handler)
@@ -604,6 +622,24 @@ public:
     }
 
     /**
+       Remove an attached tool
+
+       @param tool Tool to remove.  If tool doesn't exist, then no
+       action is taken
+     */
+    void removeAttachedTool(AttachPoint* tool)
+    {
+        if ( !attached_tools ) return;
+
+        for ( auto x = attached_tools->attach_tools.begin(); x != attached_tools->attach_tools.end(); ++x ) {
+            if ( x->first == tool ) {
+                attached_tools->attach_tools.erase(x);
+                break;
+            }
+        }
+    }
+
+    /**
        Attaches a tool to the AttachPoint
 
        @param tool Tool to attach
@@ -616,6 +652,24 @@ public:
 
         auto key = tool->registerHandlerIntercept(mdata);
         attached_tools->intercept_tools.push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Remove an attached tool
+
+       @param tool Tool to remove.  If tool doesn't exist, then no
+       action is taken
+     */
+    void removeAttachedInterceptTool(InterceptPoint* tool)
+    {
+        if ( !attached_tools ) return;
+
+        for ( auto x = attached_tools->intercept_tools.begin(); x != attached_tools->intercept_tools.end(); ++x ) {
+            if ( x->first == tool ) {
+                attached_tools->intercept_tools.erase(x);
+                break;
+            }
+        }
     }
 
     /**
@@ -818,6 +872,24 @@ public:
     }
 
     /**
+       Remove an attached tool
+
+       @param tool Tool to remove.  If tool doesn't exist, then no
+       action is taken
+     */
+    void removeAttachedTool(AttachPoint* tool)
+    {
+        if ( !attached_tools ) return;
+
+        for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+            if ( x->first == tool ) {
+                attached_tools->erase(x);
+                break;
+            }
+        }
+    }
+
+    /**
        Transfers attached tools from existing handler
      */
     void transferAttachedToolInfo(SSTHandlerBase* handler)
@@ -1006,6 +1078,24 @@ public:
 
         auto key = tool->registerHandler(mdata);
         attached_tools->push_back(std::make_pair(tool, key));
+    }
+
+    /**
+       Remove an attached tool
+
+       @param tool Tool to remove.  If tool doesn't exist, then no
+       action is taken
+     */
+    void removeAttachedTool(AttachPoint* tool)
+    {
+        if ( !attached_tools ) return;
+
+        for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+            if ( x->first == tool ) {
+                attached_tools->erase(x);
+                break;
+            }
+        }
     }
 
     /**

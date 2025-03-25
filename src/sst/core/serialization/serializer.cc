@@ -97,4 +97,10 @@ serializer::string(std::string& str)
     }
 }
 
+void
+serializer::report_object_map(ObjectMap* ptr)
+{
+    ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
+}
+
 } // namespace SST::Core::Serialization

@@ -65,7 +65,7 @@ public:
         // function.
         if ( name == "!proxy!" ) { obj_ = obj; }
         else {
-            printf("WARNING:: ObjectMapDeferred no built properly.  No mapping will be available\n");
+            printf("WARNING:: ObjectMapDeferred not built properly.  No mapping will be available\n");
         }
     }
 
