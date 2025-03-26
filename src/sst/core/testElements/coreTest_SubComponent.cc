@@ -181,6 +181,7 @@ void
 SubCompReceiver::handleEvent(Event* ev)
 {
     out->verbose(CALL_INFO, 1, 0, "Got an event\n");
+    numRecv++;
     if ( nMsgReceived ) nMsgReceived->addData(1);
     delete ev;
 }

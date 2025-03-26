@@ -14,8 +14,11 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/interactiveConsole.h"
+#include "sst/core/serialization/objectMapDeferred.h"
+#include "sst/core/watchPoint.h"
 
 namespace SST::IMPL::Interactive {
+
 
 /**
    Self partitioner actually does nothing.  It is simply a pass
@@ -27,8 +30,12 @@ class SimpleDebugger : public SST::InteractiveConsole
 
 public:
     SST_ELI_REGISTER_INTERACTIVE_CONSOLE(
-        SimpleDebugger, "sst", "interactive.simpledebug", SST_ELI_ELEMENT_VERSION(1, 0, 0),
-        "{EXPERIMENTAL} Basic interactive debugging console for interactive mode.")
+        SimpleDebugger,
+        "sst",
+        "interactive.simpledebug",
+        SST_ELI_ELEMENT_VERSION(1, 0, 0),
+        "{EXPERIMENTAL} Basic interactive debugging console for interactive mode."
+    )
 
     /**
        Creates a new self partition scheme.
@@ -48,6 +55,12 @@ private:
     SST::Core::Serialization::ObjectMap* obj_ = nullptr;
     bool                                 done = false;
 
+    // Keep a pointer to the ObjectMap for the top level Component
+    SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
+
+    // Keep track of all the WatchPoints
+    std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
+
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
     void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
@@ -57,6 +70,8 @@ private:
     void cmd_set(std::vector<std::string>& tokens);
     void cmd_time(std::vector<std::string>& tokens);
     void cmd_run(std::vector<std::string>& tokens);
+    void cmd_watch(std::vector<std::string>& tokens);
+    void cmd_unwatch(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
 };

@@ -47,7 +47,7 @@ class SubComponent;
 class SubComponentSlotInfo;
 class TimeConverter;
 class UnitAlgebra;
-
+class WatchPoint;
 
 namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
@@ -192,6 +192,25 @@ public:
      */
     double getCompletePhaseElapsedRealTime() const;
 
+
+    /** Add a watch point to all handlers in the Component Tree
+     */
+    void addWatchPoint(WatchPoint* pt);
+
+    /** Remove a watch point from all handlers in the Component Tree
+     */
+    void removeWatchPoint(WatchPoint* pt);
+
+
+private:
+    /** Recursively add Watch point to myself and all my children
+     */
+    void addWatchPointRecursive(WatchPoint* pt);
+
+    /** Recursively removes a Watch point from myself and all my
+     * children
+     */
+    void removeWatchPointRecursive(WatchPoint* pt);
 
 protected:
     /** Check to see if the run mode was set to INIT

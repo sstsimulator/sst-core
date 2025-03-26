@@ -34,6 +34,8 @@
 
 namespace SST::Core::Serialization {
 
+class ObjectMap;
+
 /**
  * This class is basically a wrapper for objects to declare the order in
  * which their members should be ser/des
@@ -257,10 +259,7 @@ public:
 
     inline bool is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
 
-    inline void report_object_map(ObjectMap* ptr)
-    {
-        ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
-    }
+    void report_object_map(ObjectMap* ptr);
 
 protected:
     // only one of these is going to be valid for this serializer

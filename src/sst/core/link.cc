@@ -747,6 +747,13 @@ Link::replaceFunctor(Event::HandlerBase* functor)
     pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
 }
 
+Event::HandlerBase*
+Link::getFunctor()
+{
+    if ( UNLIKELY(type == POLL) ) { return nullptr; }
+    return reinterpret_cast<Event::HandlerBase*>(pair_link->delivery_info);
+}
+
 void
 Link::send_impl(SimTime_t delay, Event* event)
 {
@@ -924,6 +931,19 @@ Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
     if ( !attached_tools ) attached_tools = new ToolList();
     auto key = tool->registerLinkAttachTool(mdata);
     attached_tools->push_back(std::make_pair(tool, key));
+}
+
+void
+Link::detachTool(AttachPoint* tool)
+{
+    if ( !attached_tools ) return;
+
+    for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+        if ( x->first == tool ) {
+            attached_tools->erase(x);
+            break;
+        }
+    }
 }
 
 void

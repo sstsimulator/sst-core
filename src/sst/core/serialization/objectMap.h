@@ -49,6 +49,46 @@ struct ObjectMapMetaData
     ObjectMapMetaData(ObjectMap* parent, const std::string& name) : parent(parent), name(name) {}
 };
 
+
+/**
+   Base class for interacting with data from ObjectMap. This includes
+   the ability to keep a history of values and compare the value
+   against specified criteria (i.e., value >= 15, value == 6,
+   etc). Because this class is type agnostic, interactions will be
+   through strings, just as with the ObjectMapClass.
+
+   The implementations of the virtual functions needs to be done in
+   templated child clases so that the type of the data is known.
+ */
+class ObjectMapComparison
+{
+public:
+    enum class Op : std::uint8_t { LT, LTE, GT, GTE, EQ, NEQ, CHANGED, INVALID };
+
+    static Op getOperationFromString(const std::string& op)
+    {
+        if ( op == "<" ) return Op::LT;
+        if ( op == "<=" ) return Op::LTE;
+        if ( op == ">" ) return Op::GT;
+        if ( op == ">=" ) return Op::GTE;
+        if ( op == "==" ) return Op::EQ;
+        if ( op == "!=" ) return Op::NEQ;
+        return Op::INVALID;
+    }
+
+    ObjectMapComparison() = default;
+
+    ObjectMapComparison(const std::string& name) : name_(name) {}
+    virtual ~ObjectMapComparison() = default;
+
+    virtual bool        compare()         = 0;
+    virtual std::string getCurrentValue() = 0;
+    std::string         getName() { return name_; }
+
+protected:
+    std::string name_ = "";
+};
+
 /**
    Base class for objects created by the serializer mapping mode used
    to map the variables for objects.  This allows access to read and
@@ -221,6 +261,16 @@ public:
      */
     int32_t getRefCount() { return refCount_; }
 
+
+    /**
+       Get a watch point for this object.  If it is not a valid object
+       for a watch point, nullptr will be returned.
+    */
+    virtual ObjectMapComparison*
+    getComparison(const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value))
+    {
+        return nullptr;
+    }
 
     /************ Functions for walking the Object Hierarchy ************/
 
@@ -603,6 +653,73 @@ public:
 
 
 /**
+   Templated implementation of ObjectMapComparison
+ */
+template <typename T>
+class ObjectMapComparison_impl : public ObjectMapComparison
+{
+public:
+    ObjectMapComparison_impl(const std::string& name, T* var, Op op, const std::string& value) :
+        ObjectMapComparison(name),
+        var_(var),
+        op_(op)
+    {
+        // If we are looking for changes, get the current value as the
+        // comp_value_
+        if ( op_ == Op::CHANGED ) { comp_value_ = *var_; }
+        // Otherwise, we have to have a valid value.  If the value is
+        // not valid, it will throw an exception.
+        else {
+            comp_value_ = SST::Core::from_string<T>(value);
+        }
+    }
+
+
+    bool compare() override
+    {
+        switch ( op_ ) {
+        case Op::LT:
+            return *var_ < comp_value_;
+            break;
+        case Op::LTE:
+            return *var_ <= comp_value_;
+            break;
+        case Op::GT:
+            return *var_ > comp_value_;
+            break;
+        case Op::GTE:
+            return *var_ >= comp_value_;
+            break;
+        case Op::EQ:
+            return *var_ == comp_value_;
+            break;
+        case Op::NEQ:
+            return *var_ != comp_value_;
+            break;
+        case Op::CHANGED:
+        {
+            // See if we've changed
+            bool ret    = *var_ != comp_value_;
+            // Store the current value for the next test
+            comp_value_ = *var_;
+            return ret;
+        } break;
+        default:
+            return false;
+            break;
+        }
+    }
+
+    std::string getCurrentValue() override { return std::to_string(*var_); }
+
+
+private:
+    T* var_        = nullptr;
+    T  comp_value_ = T();
+    Op op_         = Op::INVALID;
+};
+
+/**
    ObjectMap representing fundamental types, and classes treated as
    fundamental types.  In order for an object to be treated as a
    fundamental, it must be printable using std::to_string() and
@@ -621,12 +738,6 @@ protected:
      */
     T* addr_ = nullptr;
 
-public:
-    /**
-       Get the value of the object as a string
-     */
-    virtual std::string get() override { return std::to_string(*addr_); }
-
     /**
        Set the value of the object represented as a string
 
@@ -635,6 +746,11 @@ public:
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
+public:
+    /**
+       Get the value of the object as a string
+     */
+    virtual std::string get() override { return std::to_string(*addr_); }
 
     /**
        Returns true as object is a fundamental
@@ -678,6 +794,12 @@ public:
        @return type of underlying object
      */
     std::string getType() override { return demangle_name(typeid(T).name()); }
+
+    ObjectMapComparison*
+    getComparison(const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
+    {
+        return new ObjectMapComparison_impl<T>(name, addr_, op, value);
+    }
 };
 
 
