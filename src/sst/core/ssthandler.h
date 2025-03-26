@@ -292,7 +292,7 @@ public:
        @param tool Tool to remove.  If tool doesn't exist, then no
        action is taken
      */
-    void removeAttachedTool(AttachPoint* tool)
+    void detachTool(AttachPoint* tool)
     {
         if ( !attached_tools ) return;
 
@@ -627,7 +627,7 @@ public:
        @param tool Tool to remove.  If tool doesn't exist, then no
        action is taken
      */
-    void removeAttachedTool(AttachPoint* tool)
+    void detachTool(AttachPoint* tool)
     {
         if ( !attached_tools ) return;
 
@@ -660,7 +660,7 @@ public:
        @param tool Tool to remove.  If tool doesn't exist, then no
        action is taken
      */
-    void removeAttachedInterceptTool(InterceptPoint* tool)
+    void detachInterceptTool(InterceptPoint* tool)
     {
         if ( !attached_tools ) return;
 
@@ -877,7 +877,7 @@ public:
        @param tool Tool to remove.  If tool doesn't exist, then no
        action is taken
      */
-    void removeAttachedTool(AttachPoint* tool)
+    void detachTool(AttachPoint* tool)
     {
         if ( !attached_tools ) return;
 
@@ -1086,7 +1086,7 @@ public:
        @param tool Tool to remove.  If tool doesn't exist, then no
        action is taken
      */
-    void removeAttachedTool(AttachPoint* tool)
+    void detachTool(AttachPoint* tool)
     {
         if ( !attached_tools ) return;
 

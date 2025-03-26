@@ -997,7 +997,7 @@ BaseComponent::removeWatchPointRecursive(WatchPoint* pt)
 
     // Clock handlers
     for ( Clock::HandlerBase* x : clock_handlers ) {
-        x->removeAttachedTool(pt);
+        x->detachTool(pt);
     }
 
     // Event Handlers
@@ -1010,7 +1010,7 @@ BaseComponent::removeWatchPointRecursive(WatchPoint* pt)
                 Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(x.second->pair_link->delivery_info);
                 // Check to make sure there is a handler. Links
                 // configured as polling links will not have a handler
-                if ( handler ) handler->removeAttachedTool(pt);
+                if ( handler ) handler->detachTool(pt);
             }
         }
     }

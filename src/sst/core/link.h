@@ -349,7 +349,7 @@ private:
 
 
     void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata);
-    void removeAttachedTool(AttachPoint* tool);
+    void detachTool(AttachPoint* tool);
 
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;

@@ -934,7 +934,7 @@ Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
 }
 
 void
-Link::removeAttachedTool(AttachPoint* tool)
+Link::detachTool(AttachPoint* tool)
 {
     if ( !attached_tools ) return;
 
