@@ -321,8 +321,6 @@ SyncManager::SyncManager()
     sim_ = Simulation_impl::getSimulation();
 }
 
-SyncManager::~SyncManager() {}
-
 /** Register a Link which this Sync Object is responsible for */
 ActivityQueue*
 SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)

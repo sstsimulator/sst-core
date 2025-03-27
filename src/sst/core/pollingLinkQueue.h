@@ -24,7 +24,7 @@ namespace SST {
 class PollingLinkQueue : public ActivityQueue
 {
 public:
-    PollingLinkQueue();
+    PollingLinkQueue() = default;
     ~PollingLinkQueue();
 
     bool      empty() override;
