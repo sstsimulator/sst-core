@@ -36,8 +36,6 @@ SimulatorHeartbeat::SimulatorHeartbeat(
     if ( (0 == this_rank) ) { lastTime = sst_get_cpu_time(); }
 }
 
-SimulatorHeartbeat::~SimulatorHeartbeat() {}
-
 void
 SimulatorHeartbeat::schedule()
 {

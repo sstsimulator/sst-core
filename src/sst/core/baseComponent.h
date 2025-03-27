@@ -70,8 +70,7 @@ protected:
         BaseComponent*, Statistics::StatisticProcessingEngine*, const std::string& /*type*/,
         const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
 
-    // For serialization only
-    BaseComponent();
+    BaseComponent() = default; // For serialization only
 
 public:
     BaseComponent(ComponentId_t id);

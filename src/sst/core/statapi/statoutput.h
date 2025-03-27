@@ -60,7 +60,7 @@ public:
     using FieldNameMap_t   = std::unordered_map<std::string, fieldHandle_t>;
 
 public:
-    ~StatisticOutput();
+    ~StatisticOutput() = default;
 
     /** Return the Statistic Output name */
     std::string& getStatisticOutputName() { return m_statOutputName; }
