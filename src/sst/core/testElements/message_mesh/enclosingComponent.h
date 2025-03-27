@@ -69,7 +69,9 @@ protected:
 class RouteInterface : public SST::SubComponent
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::RouteInterface, const std::vector<PortInterface*>&, int)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::RouteInterface,
+                                      const std::vector<PortInterface*>&,
+                                      int)
 
     RouteInterface(ComponentId_t id) : SubComponent(id) {}
     virtual ~RouteInterface() {}
