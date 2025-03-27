@@ -216,26 +216,14 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-
-    /**
-       Get the list of child variables contained in this ObjectMap,
-       which in this case will be empty.
-
-       @return Refernce to vector containing ObjectMaps for this
-       ObjectMap's child variables. This vector will be empty because
-       fundamentals have no children
-     */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
-
-    ObjectMapFundamental(TimeConverter** addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(TimeConverter** addr) : ObjectMap(), addr_(addr) {}
 
     std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
 };
 
 
 void
-serialize_impl<TimeConverter*>::operator()(
-    TimeConverter*& s, SST::Core::Serialization::serializer& ser, const char* name)
+serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
 {
     SimTime_t factor = 0;
 
@@ -265,9 +253,11 @@ serialize_impl<TimeConverter*>::operator()(
         break;
     }
     case serializer::MAP:
+    {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
-        ser.mapper().map_primitive(name, obj_map);
+        ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
+    }
     }
 }
 

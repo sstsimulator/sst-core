@@ -70,9 +70,9 @@ void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser
 template <>
 class SST::Core::Serialization::serialize_impl<TimeVortex*>
 {
-
     template <class A>
     friend class serialize;
+
     void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
     {
         switch ( ser.mode() ) {

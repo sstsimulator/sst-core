@@ -18,16 +18,13 @@ set(SSTSerializationImplHeaders
     mapper.h
     packer.h
     ser_buffer_accessor.h
+    serialize_adapter.h
     serialize_array.h
     serialize_atomic.h
-    serialize_deque.h
-    serialize_list.h
-    serialize_map.h
-    serialize_multiset.h
-    serialize_priority_queue.h
-    serialize_set.h
+    serialize_insertable.h
     serialize_string.h
-    serialize_vector.h
+    serialize_tuple.h
+    serialize_utility.h
     sizer.h
     unpacker.h)
 

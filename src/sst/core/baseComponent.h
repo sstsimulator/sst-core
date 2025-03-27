@@ -1145,7 +1145,7 @@ public:
 
     static void unpack_basecomponent(serializable_base*& s, serializer& ser);
 
-    static void map_basecomponent(serializable_base*& s, serializer& ser, const char* name);
+    static void map_basecomponent(serializable_base*& s, serializer& ser, const std::string& name);
 };
 
 } // namespace pvt
@@ -1170,16 +1170,10 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
             pvt::SerializeBaseComponentHelper::unpack_basecomponent(sp, ser);
             break;
         case serializer::MAP:
-            // Add your code here
+            pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, ser.getMapName());
             break;
         }
         s = static_cast<T*>(sp);
-    }
-
-    void operator()(T*& s, serializer& ser, const char* name)
-    {
-        serializable_base* sp = static_cast<serializable_base*>(s);
-        pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, name);
     }
 };
 
