@@ -122,6 +122,9 @@ public:
 
     ~Output();
 
+    Output(const Output&) = default;
+    Output& operator=(const Output&) = default;
+
     /** Initialize the object after construction
         @param prefix Prefix to be prepended to all strings emitted by calls to
                debug(), verbose(), fatal() and possibly output().

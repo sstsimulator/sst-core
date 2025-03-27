@@ -58,6 +58,13 @@ public:
     }
 
     ObjectMapString(std::string* addr) : ObjectMap(), addr_(addr) {}
+
+    /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapString(const ObjectMapString&) = delete;
+    ObjectMapString& operator=(const ObjectMapString&) = delete;
 };
 
 template <>
