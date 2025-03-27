@@ -14,7 +14,7 @@
 #ifndef SST_CORE_WARNMACROS_H
 #define SST_CORE_WARNMACROS_H
 
-#define UNUSED(x) x __attribute__((unused))
+#define UNUSED(x) x [[maybe_unused]]
 
 #define DIAG_STR(s)              #s
 #define DIAG_JOINSTR(x, y)       DIAG_STR(x##y)

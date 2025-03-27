@@ -88,7 +88,7 @@ class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_
     friend class serialize;
     void operator()(T arr[N], serializer& ser) { ser.array<T, N>(arr); }
 
-    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(T UNUSED(arr)[N], serializer& UNUSED(ser), const char* UNUSED(name))
     {
         // TODO: Implement mapping mode
     }
