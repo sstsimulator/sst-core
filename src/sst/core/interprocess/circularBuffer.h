@@ -21,7 +21,7 @@ class CircularBuffer
 {
 
 public:
-    CircularBuffer(size_t mSize = 0)
+    explicit CircularBuffer(size_t mSize = 0)
     {
         buffSize   = mSize;
         readIndex  = 0;

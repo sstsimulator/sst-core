@@ -44,7 +44,7 @@ public:
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputHDF5(Params& outputParameters);
+    explicit StatisticOutputHDF5(Params& outputParameters);
 
     bool acceptsGroups() const override { return true; }
 
@@ -125,7 +125,7 @@ private:
     class DataSet
     {
     public:
-        DataSet(H5::H5File* file) : file(file) {}
+        explicit DataSet(H5::H5File* file) : file(file) {}
         virtual ~DataSet() {}
         H5::H5File*  getFile() { return file; }
         virtual bool isGroup() const = 0;

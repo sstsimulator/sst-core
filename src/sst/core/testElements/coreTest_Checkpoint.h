@@ -29,7 +29,7 @@ class coreTestCheckpointEvent : public SST::Event
 public:
     coreTestCheckpointEvent() : SST::Event(), counter(1000) {}
 
-    coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
+    explicit coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
 
     ~coreTestCheckpointEvent() {}
 

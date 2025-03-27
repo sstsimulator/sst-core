@@ -209,7 +209,7 @@ public:
        the c++ double precision strings.  For example 1.234, -1.234,
        0.234, 1.234e14, 1.234e14, etc.
      */
-    decimal_fixedpoint(const std::string& init) { from_string(init); }
+    explicit decimal_fixedpoint(const std::string& init) { from_string(init); }
 
     /**
        Build a decimal_fixedpoint using a 64-bit unsigned number.

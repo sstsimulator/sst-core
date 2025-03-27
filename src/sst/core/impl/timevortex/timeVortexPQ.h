@@ -36,7 +36,7 @@ class TimeVortexPQBase : public TimeVortex
 
 public:
     // TimeVortexPQ();
-    TimeVortexPQBase(Params& params);
+    explicit TimeVortexPQBase(Params& params);
     TimeVortexPQBase(); // For serialization only
     ~TimeVortexPQBase();
 

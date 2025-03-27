@@ -31,7 +31,7 @@ namespace Core {
 class ConfigGraphOutputException : public std::exception
 {
 public:
-    ConfigGraphOutputException(const char* msg)
+    explicit ConfigGraphOutputException(const char* msg)
     {
         exMsg = (char*)malloc(sizeof(char) * (strlen(msg) + 1));
         std::strcpy(exMsg, msg);
@@ -55,7 +55,7 @@ protected:
 class ConfigGraphOutput
 {
 public:
-    ConfigGraphOutput(const char* path);
+    explicit ConfigGraphOutput(const char* path);
 
     virtual ~ConfigGraphOutput() { fclose(outputFile); }
 

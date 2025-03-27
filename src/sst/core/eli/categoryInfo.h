@@ -50,7 +50,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesCategory(T* UNUSED(t)) : cat_(T::ELI_getCategory())
+    explicit ProvidesCategory(T* UNUSED(t)) : cat_(T::ELI_getCategory())
     {}
 
 private:

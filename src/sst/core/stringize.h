@@ -69,7 +69,7 @@ struct char_delimiter
 {
     using iter = std::string::const_iterator;
     const std::string delim;
-    char_delimiter(const std::string& delim = " \t\v\f\n\r") : delim(delim) {}
+    explicit char_delimiter(const std::string& delim = " \t\v\f\n\r") : delim(delim) {}
 
     /**
      * @return pair<iter, iter> = <tok_end, next_tok>

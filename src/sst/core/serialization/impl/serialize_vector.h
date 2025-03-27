@@ -40,7 +40,7 @@ public:
 
     void* getAddr() override { return addr_; }
 
-    ObjectMapVector(std::vector<T>* addr) : ObjectMapWithChildren(), addr_(addr) {}
+    explicit ObjectMapVector(std::vector<T>* addr) : ObjectMapWithChildren(), addr_(addr) {}
 
     ~ObjectMapVector() {}
 };

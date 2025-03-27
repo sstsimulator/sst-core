@@ -1302,7 +1302,7 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
     SSTHandler2() {}
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg); }
@@ -1362,7 +1362,7 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
     SSTHandler2() {}
 
     returnT operator_impl() override { return (object->*funcT)(); }

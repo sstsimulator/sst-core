@@ -46,7 +46,7 @@ class raw_ptr_wrapper
 {
 public:
     TPtr*& bufptr;
-    raw_ptr_wrapper(TPtr*& ptr) : bufptr(ptr) {}
+    explicit raw_ptr_wrapper(TPtr*& ptr) : bufptr(ptr) {}
 };
 
 } // namespace pvt

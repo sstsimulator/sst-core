@@ -59,7 +59,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesSubComponentSlots(T* UNUSED(t)) : slots_(InfoSubs<T>::get())
+    explicit ProvidesSubComponentSlots(T* UNUSED(t)) : slots_(InfoSubs<T>::get())
     {}
 
 private:

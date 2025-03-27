@@ -76,7 +76,7 @@ public:
      * Child creates the TunnelDef, reads the shmSize, and then resizes its map accordingly
      * @param sPtr Location of shared memory region
      */
-    TunnelDef(void* sPtr) : master(false), shmPtr(sPtr)
+    explicit TunnelDef(void* sPtr) : master(false), shmPtr(sPtr)
     {
         isd     = (InternalSharedData*)shmPtr;
         shmSize = isd->shmSegSize;

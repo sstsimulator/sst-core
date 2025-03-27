@@ -127,7 +127,7 @@ public:
             F_RESERVED = 1 << 16, /* Flags <= F_RESERVED are reserved for future expansion */
         };
 
-        Request(flags_t fl = 0)
+        explicit Request(flags_t fl = 0)
         {
             id    = main_id++;
             flags = fl;
@@ -423,7 +423,7 @@ public:
             tid(tid)
         {}
         /** Automatically construct a write response from a Write */
-        WriteResp(Write* wr) :
+        explicit WriteResp(Write* wr) :
             Request(wr->getID(), wr->getAllFlags()),
             pAddr(wr->pAddr),
             vAddr(wr->vAddr),
@@ -517,7 +517,7 @@ public:
     class FlushCache : public Request
     {
     public:
-        FlushCache(
+        explicit FlushCache(
             uint32_t depth = std::numeric_limits<uint32_t>::max(), flags_t flags = 0, Addr instPtr = 0,
             uint32_t tid = 0) :
             Request(flags),
@@ -566,7 +566,7 @@ public:
             iPtr(instPtr),
             tid(tid)
         {}
-        FlushResp(FlushAddr* fl, flags_t newFlags = 0) :
+        explicit FlushResp(FlushAddr* fl, flags_t newFlags = 0) :
             Request(fl->getID(), fl->getAllFlags() | newFlags),
             pAddr(fl->pAddr),
             vAddr(fl->vAddr),
@@ -574,7 +574,7 @@ public:
             iPtr(fl->iPtr),
             tid(fl->tid)
         {}
-        FlushResp(FlushCache* fc, flags_t newFlags = 0) :
+        explicit FlushResp(FlushCache* fc, flags_t newFlags = 0) :
             Request(fc->getID(), fc->getAllFlags() | newFlags),
             pAddr(0),
             vAddr(0),
@@ -939,7 +939,7 @@ public:
     class CustomReq : public Request
     {
     public:
-        CustomReq(CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
+        explicit CustomReq(CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
             Request(flags),
             data(data),
             iPtr(iPtr),
@@ -1019,7 +1019,7 @@ public:
             iPtr(iPtr),
             tid(tid)
         {}
-        CustomResp(CustomReq* req) :
+        explicit CustomResp(CustomReq* req) :
             Request(req->getID(), req->getAllFlags()),
             data(req->getData().makeResponse()),
             iPtr(req->iPtr),
@@ -1126,7 +1126,7 @@ public:
     class RequestHandler
     {
     public:
-        RequestHandler(SST::Output* o) : out(o) {}
+        explicit RequestHandler(SST::Output* o) : out(o) {}
         virtual ~RequestHandler() {}
 
         /* Built in command handlers */
