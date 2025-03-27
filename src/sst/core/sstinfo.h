@@ -124,13 +124,13 @@ private:
         return 0;
     }
 
-    int setXMLOutput(const std::string& UNUSED(arg))
+    int setXMLOutput(const std::string& arg)
     {
         m_XMLFilePath = arg;
         return 0;
     }
 
-    int setLibs(const std::string& UNUSED(arg))
+    int setLibs(const std::string& arg)
     {
         addFilter(arg);
         return 0;
