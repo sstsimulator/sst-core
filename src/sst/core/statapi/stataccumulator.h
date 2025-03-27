@@ -69,7 +69,6 @@ public:
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 
-
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<NumberBase>::serialize_order(ser);

@@ -153,7 +153,10 @@ public:
     TimeVortexPQ() : TimeVortexPQBase<false>() {} // For serialization only
     ~TimeVortexPQ() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<false>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<false>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ)
 };
@@ -175,7 +178,10 @@ public:
     TimeVortexPQ_ts() : TimeVortexPQBase<true>() {} // For serialization only
     ~TimeVortexPQ_ts() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<true>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<true>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };
