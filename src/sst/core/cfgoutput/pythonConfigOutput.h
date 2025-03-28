@@ -28,7 +28,7 @@ public:
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:
-    ConfigGraph* getGraph() { return graph; }
+    ConfigGraph* getGraph() { return graph_; }
     void         generateParams(const Params& params);
     void         generateCommonComponent(const char* objName, const ConfigComponent* comp);
     void         generateSubComponent(const char* owner, const ConfigComponent* comp);
@@ -45,9 +45,10 @@ protected:
     bool  isMultiLine(const std::string& check) const;
 
 private:
-    ConfigGraph*                    graph;
-    RankInfo                        myRank;
-    std::map<LinkId_t, std::string> linkMap;
+    ConfigGraph*                         graph_;
+    std::map<LinkId_t, std::string>      link_map_;
+    std::string                          py_parent_name_;
+    std::map<StatisticId_t, std::string> shared_stat_map_;
 };
 
 } // namespace SST::Core

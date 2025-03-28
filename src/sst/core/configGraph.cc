@@ -116,7 +116,7 @@ bool
 ConfigStatGroup::addStatistic(const std::string& name, Params& p)
 {
     statMap[name] = p;
-    if ( outputFrequency.getRoundedValue() == 0 ) {
+    if ( outputFrequency.getValue() == 0 ) {
         /* aka, not yet really set to anything other than 0 */
         setFrequency(p.find<std::string>("rate", "0ns"));
     }
@@ -407,8 +407,10 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         return false;
     }
 
-    auto* comp = getParent();
-    if ( comp == nullptr ) { comp = this; }
+    auto* comp = this;
+    while ( comp->getParent() != nullptr ) {
+        comp = comp->getParent();
+    }
 
     if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName) ) {
         Output::getDefaultObject().fatal(

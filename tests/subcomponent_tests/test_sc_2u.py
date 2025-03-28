@@ -11,6 +11,14 @@
 import sst
 import sys
 
+########################################################
+# Test Cases
+########################################################
+# Loading user-subcomponents into components
+# Implicitly shared statistics between subcomponents
+# Explicitly shared statistics between subcomponents 
+########################################################
+
 # Define SST core options
 sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner", "self")
@@ -47,6 +55,11 @@ sub1_0.enableAllStatistics()
 sub1_1 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompReceiver",1)
 sub1_1.addParam("verbose", verbose)
 sub1_1.enableAllStatistics()
+
+stat_recv = loader1.createStatistic("totalRecv", {})
+sub1_0.setStatistic("numRecv", stat_recv)
+sub1_1.setStatistic("numRecv", stat_recv)
+
 
 
 # Set up links
