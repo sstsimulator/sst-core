@@ -50,7 +50,7 @@ public:
     ~coreTestSerialization() {}
 
 private:
-    SST::RNG::Random* rng;
+    std::unique_ptr<SST::RNG::Random> rng;
 };
 
 } // namespace SST::CoreTestSerialization

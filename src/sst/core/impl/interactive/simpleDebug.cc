@@ -71,7 +71,7 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 void
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
 {
-    std::vector<std::pair<std::string, SST::Core::Serialization::ObjectMap*>> vars = obj_->getVariables();
+    auto& vars = obj_->getVariables();
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
             printf("%s = %s (%s)\n", x.first.c_str(), x.second->get().c_str(), x.second->getType().c_str());
@@ -293,16 +293,8 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         return;
     }
 
-    Core::Serialization::ObjectMap* map = nullptr;
-
     // Look for variable
-    std::vector<std::pair<std::string, SST::Core::Serialization::ObjectMap*>> vars = obj_->getVariables();
-    for ( auto& x : vars ) {
-        if ( x.first == var ) {
-            // Found the variable
-            map = x.second;
-        }
-    }
+    Core::Serialization::ObjectMap* map = obj_->findVariable(var);
 
     // Check for errors
 

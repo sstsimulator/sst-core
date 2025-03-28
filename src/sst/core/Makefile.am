@@ -98,21 +98,18 @@ nobase_dist_sst_HEADERS = \
 	serialization/serialize_impl_fwd.h \
 	serialization/objectMap.h \
 	serialization/objectMapDeferred.h \
+	serialization/impl/serialize_adapter.h \
 	serialization/impl/serialize_array.h \
 	serialization/impl/serialize_atomic.h \
 	serialization/impl/ser_buffer_accessor.h \
-	serialization/impl/serialize_deque.h \
-	serialization/impl/serialize_list.h \
-	serialization/impl/serialize_map.h \
-	serialization/impl/serialize_multiset.h \
+	serialization/impl/serialize_insertable.h \
+	serialization/impl/serialize_tuple.h \
+	serialization/impl/serialize_utility.h \
 	serialization/impl/mapper.h \
 	serialization/impl/packer.h \
-	serialization/impl/serialize_priority_queue.h \
-	serialization/impl/serialize_set.h \
 	serialization/impl/sizer.h \
 	serialization/impl/serialize_string.h \
 	serialization/impl/unpacker.h \
-	serialization/impl/serialize_vector.h \
 	serialization/serializer.h \
 	serialization/serializer_fwd.h \
 	serialization/statics.h \

@@ -20,7 +20,7 @@ namespace SST::Core::Serialization {
 namespace pvt {
 
 void
-ser_unpacker::unpack_buffer(void* buf, int size)
+ser_unpacker::unpack_buffer(void* buf, size_t size)
 {
     if ( size == 0 ) {
         Output& output = Output::getDefaultObject();
@@ -34,7 +34,7 @@ ser_unpacker::unpack_buffer(void* buf, int size)
 }
 
 void
-ser_packer::pack_buffer(void* buf, int size)
+ser_packer::pack_buffer(void* buf, size_t size)
 {
     if ( buf == nullptr ) {
         Output& output = Output::getDefaultObject();

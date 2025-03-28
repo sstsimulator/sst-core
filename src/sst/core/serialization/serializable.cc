@@ -48,19 +48,19 @@ unpack_serializable(serializable_base*& s, serializer& ser)
     ser.unpack(cls_id);
     if ( cls_id == null_ptr_id ) { s = nullptr; }
     else {
-        s = SST::Core::Serialization::serializable_factory::get_serializable(cls_id);
+        s = serializable_factory::get_serializable(cls_id);
         ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
         s->serialize_order(ser);
     }
 }
 
 void
-map_serializable(serializable_base*& s, serializer& ser, const char* name)
+map_serializable(serializable_base*& s, serializer& ser)
 {
     if ( s ) {
-        SST::Core::Serialization::ObjectMap* obj_map = new SST::Core::Serialization::ObjectMapClass(s, s->cls_name());
+        ObjectMap* obj_map = new ObjectMapClass(s, s->cls_name());
         ser.report_object_map(obj_map);
-        ser.mapper().map_hierarchy_start(name, obj_map);
+        ser.mapper().map_hierarchy_start(ser.getMapName(), obj_map);
         s->serialize_order(ser);
         ser.mapper().map_hierarchy_end();
     }

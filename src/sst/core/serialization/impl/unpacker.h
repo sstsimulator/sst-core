@@ -19,6 +19,9 @@
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
+#include <cstddef>
+#include <string>
+
 namespace SST::Core::Serialization::pvt {
 
 class ser_unpacker : public ser_buffer_accessor
@@ -36,7 +39,7 @@ public:
      * @param buf   Must unpack to non-null buffer
      * @param size  Must be non-zero
      */
-    void unpack_buffer(void* buf, int size);
+    void unpack_buffer(void* buf, size_t size);
 
     void unpack_string(std::string& str);
 };

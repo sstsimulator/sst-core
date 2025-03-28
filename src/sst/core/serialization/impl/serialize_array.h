@@ -19,6 +19,9 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <array>
+#include <type_traits>
+
 namespace SST::Core::Serialization {
 namespace pvt {
 
@@ -81,15 +84,15 @@ raw_ptr(TPtr*& ptr)
    Version of serialize that works for statically allocated arrays of
    fundamental types and enums.
  */
-template <class T, int N>
+template <class T, size_t N>
 class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
-    void operator()(T arr[N], serializer& ser) { ser.array<T, N>(arr); }
-
-    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(T arr[N], serializer& ser)
     {
+        ser.array<T, N>(arr);
+
         // TODO: Implement mapping mode
     }
 };
@@ -98,7 +101,7 @@ class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_
    Version of serialize that works for statically allocated arrays of
    non base types.
  */
-template <class T, int N>
+template <class T, size_t N>
 class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
@@ -108,10 +111,7 @@ class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::i
         for ( int i = 0; i < N; i++ ) {
             ser& arr[i];
         }
-    }
 
-    void operator()(T UNUSED(arr[N]), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
         // TODO: Implement mapping mode
     }
 };
@@ -128,10 +128,10 @@ class serialize_impl<
 {
     template <class A>
     friend class serialize;
-    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
-
-    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser)
     {
+        ser.binary(arr.bufptr, arr.sizeptr);
+
         // TODO: Implement mapping mode
     }
 };
@@ -152,10 +152,7 @@ class serialize_impl<
         for ( int i = 0; i < arr.sizeptr; i++ ) {
             ser& arr[i];
         }
-    }
 
-    void operator()(pvt::ser_array_wrapper<T, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
         // TODO: Implement mapping mode
     }
 };
@@ -169,11 +166,10 @@ class serialize_impl<pvt::ser_array_wrapper<void, IntType>>
 {
     template <class A>
     friend class serialize;
-    void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
-
-    void
-    operator()(pvt::ser_array_wrapper<void, IntType> UNUSED(arr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser)
     {
+        ser.binary(arr.bufptr, arr.sizeptr);
+
         // TODO: Implement mapping mode
     }
 };
@@ -191,10 +187,10 @@ class serialize_impl<pvt::raw_ptr_wrapper<TPtr>>
 {
     template <class A>
     friend class serialize;
-    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser) { ser.primitive(ptr.bufptr); }
-
-    void operator()(pvt::raw_ptr_wrapper<TPtr> UNUSED(ptr), serializer& UNUSED(ser), const char* UNUSED(name))
+    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser)
     {
+        ser.primitive(ptr.bufptr);
+
         // TODO: Implement mapping mode
     }
 };
