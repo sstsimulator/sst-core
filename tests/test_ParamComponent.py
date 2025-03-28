@@ -10,6 +10,13 @@
 # distribution.
 import sst
 
+########################################################
+# Test Cases
+########################################################
+# Global parameter sets
+# Parameter parsing for bool from yes/no & true/false
+########################################################
+
 # Define SST core options
 sst.setProgramOption("stop-at", "25us")
 
