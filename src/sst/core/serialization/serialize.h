@@ -24,6 +24,17 @@
 
 namespace SST::Core::Serialization {
 
+// get_ptr() returns reference to argument if it's a pointer, else address of argument
+template <typename T>
+decltype(auto)
+get_ptr(T& t)
+{
+    if constexpr ( std::is_pointer_v<T> )
+        return t;
+    else
+        return &t;
+}
+
 /**
    Base serialize class.
 
@@ -56,15 +67,8 @@ class serialize_impl
 public:
     void operator()(T& t, serializer& ser)
     {
-        // tPtr is a reference to either t if it's a pointer, or to &t if it's not
-        const auto& tPtr = [&]() -> decltype(auto) {
-            if constexpr ( std::is_pointer_v<T> )
-                return t;
-            else
-                return &t;
-        }();
-
-        const auto mode = ser.mode();
+        const auto& tPtr = get_ptr(t);
+        const auto  mode = ser.mode();
         if ( mode == serializer::MAP ) {
             if ( !tPtr ) return; // No need to map a nullptr
             auto* map = new ObjectMapClass(tPtr, typeid(T).name());

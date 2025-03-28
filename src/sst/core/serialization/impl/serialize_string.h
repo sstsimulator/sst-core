@@ -61,15 +61,11 @@ public:
     void operator()(T& str, serializer& ser)
     {
         // sPtr is a reference to either str if it's a pointer, or to &str if it's not
-        const auto& sPtr = [&]() -> decltype(auto) {
-            if constexpr ( std::is_pointer_v<T> )
-                return str;
-            else
-                return &str;
-        }();
-
-        const auto mode = ser.mode();
-        if ( mode == serializer::MAP ) { ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr)); }
+        const auto& sPtr = get_ptr(str);
+        const auto  mode = ser.mode();
+        if ( mode == serializer::MAP ) {
+            ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr));
+        }
         else {
             if constexpr ( std::is_pointer_v<T> ) {
                 if ( mode == serializer::UNPACK ) str = new std::string();
