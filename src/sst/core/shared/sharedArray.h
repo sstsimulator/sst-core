@@ -16,6 +16,9 @@
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/sst_types.h"
 
+#include <cstddef>
+#include <mutex>
+#include <string>
 #include <vector>
 
 namespace SST::Shared {

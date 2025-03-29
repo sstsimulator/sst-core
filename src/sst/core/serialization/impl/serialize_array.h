@@ -19,6 +19,8 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <type_traits>
+
 namespace SST::Core::Serialization {
 namespace pvt {
 

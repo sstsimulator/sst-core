@@ -15,6 +15,9 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statoutput.h"
 
+#include <cstdio>
+#include <string>
+
 namespace SST::Statistics {
 
 /**

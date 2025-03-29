@@ -19,7 +19,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 [[noreturn]] void
 print_usage(FILE* output)

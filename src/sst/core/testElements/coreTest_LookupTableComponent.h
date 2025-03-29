@@ -16,6 +16,9 @@
 #include "sst/core/output.h"
 #include "sst/core/sharedRegion.h"
 
+#include <cstddef>
+#include <cstdint>
+
 namespace SST::CoreTestLookupTableComponent {
 
 class coreTestLookupTableComponent : public SST::Component

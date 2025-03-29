@@ -18,6 +18,9 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
+#include <string>
+
 namespace SST {
 
 class Output;

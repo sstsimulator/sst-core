@@ -14,6 +14,8 @@
 
 #include "sst/core/activityQueue.h"
 
+#include <string>
+
 namespace SST {
 
 /** Always uninitialized queue

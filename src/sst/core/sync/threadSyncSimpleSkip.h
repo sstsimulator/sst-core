@@ -18,7 +18,10 @@
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstdint>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace SST {
 

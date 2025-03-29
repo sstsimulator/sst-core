@@ -16,6 +16,8 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace SST {

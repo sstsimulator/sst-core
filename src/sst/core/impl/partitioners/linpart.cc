@@ -17,6 +17,8 @@
 #include "sst/core/output.h"
 #include "sst/core/warnmacros.h"
 
+#include <cassert>
+
 using namespace SST::IMPL::Partition;
 
 SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo UNUSED(my_rank), int verbosity)

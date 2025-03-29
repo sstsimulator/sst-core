@@ -17,6 +17,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/stringize.h"
 
+#include <cstring>
+
 namespace SST::Statistics {
 
 std::map<fieldType_t, StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_       = nullptr;

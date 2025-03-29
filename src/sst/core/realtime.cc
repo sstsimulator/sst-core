@@ -23,6 +23,7 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
 
+#include <cinttypes>
 #include <unistd.h>
 
 namespace SST {

@@ -16,6 +16,7 @@
 // Can include this because this header is not installed
 #include "sst/core/simulation_impl.h"
 
+#include <string>
 
 namespace SST {
 

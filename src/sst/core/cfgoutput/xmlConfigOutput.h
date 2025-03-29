@@ -16,6 +16,8 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <string>
+
 namespace SST::Core {
 
 class XMLConfigGraphOutput : public ConfigGraphOutput

@@ -12,6 +12,10 @@
 #ifndef SST_CORE_MEMPOOL_ACCESSOR_H
 #define SST_CORE_MEMPOOL_ACCESSOR_H
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 namespace SST::Core {
 
 // Class to access stats/data about the mempools.  This is here to

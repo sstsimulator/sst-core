@@ -15,6 +15,9 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/distrib.h"
 
+#include <map>
+#include <string>
+
 using namespace SST;
 using namespace SST::RNG;
 

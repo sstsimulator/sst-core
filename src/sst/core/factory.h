@@ -18,8 +18,11 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <iostream>
 #include <mutex>
+#include <set>
 #include <stdio.h>
+#include <vector>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);

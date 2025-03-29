@@ -16,6 +16,8 @@
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/warnmacros.h"
 
+#include <tuple>
+
 namespace SST::Statistics {
 
 // NOTE: When calling base class members of classes derived from
