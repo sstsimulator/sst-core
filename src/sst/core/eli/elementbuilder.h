@@ -14,7 +14,11 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <map>
+#include <string>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 namespace SST::ELI {
 

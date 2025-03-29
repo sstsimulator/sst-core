@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <map>
+#include <string>
 
 namespace SST::Profile {
 

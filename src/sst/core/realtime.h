@@ -18,6 +18,8 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/warnmacros.h"
 
+#include <atomic>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <signal.h>

@@ -14,6 +14,8 @@
 
 #include "sst/core/serialization/serializable.h"
 
+#include <string>
+
 namespace SST {
 class Output;
 

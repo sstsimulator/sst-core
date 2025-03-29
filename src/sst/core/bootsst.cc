@@ -14,6 +14,7 @@
 #include "sst/core/bootshared.h"
 #include "sst/core/configShared.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <string.h>
 #include <unistd.h> // for opterr

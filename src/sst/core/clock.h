@@ -16,6 +16,7 @@
 #include "sst/core/ssthandler.h"
 
 #include <cinttypes>
+#include <string>
 #include <vector>
 
 #define _CLE_DBG(fmt, args...) __DBG(DBG_CLOCK, Clock, fmt, ##args)

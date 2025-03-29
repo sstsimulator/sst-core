@@ -19,6 +19,8 @@
 
 #include "sst/core/warnmacros.h"
 
+#include <cstddef>
+
 namespace SST::Core::Serialization::pvt {
 
 class ser_sizer

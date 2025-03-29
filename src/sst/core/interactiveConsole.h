@@ -22,7 +22,9 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/unitAlgebra.h"
 
+#include <cstdint>
 #include <set>
+#include <string>
 
 namespace SST {
 

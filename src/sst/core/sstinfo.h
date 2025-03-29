@@ -15,8 +15,10 @@
 #include "sst/core/configShared.h"
 #include "sst/core/eli/elementinfo.h"
 
+#include <cstdio>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "tinyxml/tinyxml.h"

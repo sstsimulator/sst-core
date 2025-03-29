@@ -15,7 +15,10 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <string>
+#include <typeinfo>
+#include <utility>
 #include <vector>
 
 namespace SST::Core::Serialization {

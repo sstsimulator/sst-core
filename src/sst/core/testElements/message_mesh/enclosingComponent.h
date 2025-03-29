@@ -21,6 +21,8 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
+#include <vector>
+
 namespace SST::CoreTest::MessageMesh {
 
 class PortInterface : public SST::SubComponent

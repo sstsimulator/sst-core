@@ -20,7 +20,9 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstdint>
 #include <set>
+#include <string>
 
 namespace SST {
 

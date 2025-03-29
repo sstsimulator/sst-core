@@ -15,6 +15,8 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/rng.h"
 
+#include <string>
+
 using namespace SST;
 using namespace SST::RNG;
 using namespace SST::Statistics;

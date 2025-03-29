@@ -17,6 +17,7 @@
 #include "sst/core/threadsafe.h"
 
 #include <cinttypes>
+#include <string>
 #include <unordered_set>
 
 namespace SST {

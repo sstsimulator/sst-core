@@ -16,6 +16,8 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <cstdint>
+
 namespace SST::Core {
 
 class DotConfigGraphOutput : public ConfigGraphOutput

@@ -24,8 +24,12 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <map>
+#include <ostream>
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace SST::Statistics;

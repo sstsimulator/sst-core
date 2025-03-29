@@ -12,6 +12,8 @@
 #ifndef SST_CORE_MATH_SQRT_H
 #define SST_CORE_MATH_SQRT_H
 
+#include <cstdint>
+
 namespace SST::Math {
 
 // Implements uint32_t square root based on algorithm from:

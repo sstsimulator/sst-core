@@ -16,6 +16,10 @@
 
 #include "pin.H"
 
+#include <cstddef>
+#include <cstdio>
+#include <string>
+
 namespace SST::Core::Interprocess {
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file
