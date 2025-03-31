@@ -953,7 +953,7 @@ static PyMethodDef sstModuleMethods[] = {
       "Gets the number of MPI ranks currently being used to run SST" },
     { "getMyMPIRank", getSSTMyMPIRank, METH_NOARGS, "Gets the SST MPI rank the script is running on" },
     { "getThreadCount", getSSTThreadCount, METH_NOARGS,
-      "Gets the number of MPI ranks currently being used to run SST" },
+      "Gets the number of threads on each rank currently being used to run SST" },
     { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },
     { "setStatisticOutput", setStatisticOutput, METH_VARARGS,
       "Sets the Statistic Output - default is console output." },
@@ -987,7 +987,7 @@ static PyMethodDef sstModuleMethods[] = {
     { "addGlobalParam", globalAddParam, METH_VARARGS, "Add a parameter to the specified global set." },
     { "addGlobalParams", globalAddParams, METH_VARARGS, "Add parameters in dictionary to the specified global set." },
     { "getElapsedExecutionTime", getElapsedExecutionTime, METH_NOARGS,
-      "Gets the real elapsed time since simluation start, returned as a UnitAlgebra.  Not precise enough for "
+      "Gets the real elapsed time since simulation start, returned as a UnitAlgebra.  Not precise enough for "
       "getting fine timings.  For that, use the built-in time module." },
     { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
       "Gets the current memory use, returned as a UnitAlgebra" },
@@ -1450,7 +1450,7 @@ SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObj
     // Generate the Statistic Parameters
     auto       params         = pythonToCppParams(paramDict);
     PyObject*  statObjectList = PyList_New(numStats);
-    // For each stat, enable on compoennt
+    // For each stat, enable on component
     for ( uint32_t x = 0; x < numStats; x++ ) {
         PyObject*        pylistitem = PyList_GetItem(statList, x);
         PyObject*        pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);

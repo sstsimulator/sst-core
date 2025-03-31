@@ -655,25 +655,25 @@ public:
     {
         std::string msg = "Checkpointing:\n\n";
         msg.append("The checkpoint prefix is used in the naming of the directories and files created by the "
-                   "checkpoint engine.  If no checkpoint prefix is set, sst will simply use \"checkpoint\"."
+                   "checkpoint engine.  If no checkpoint prefix is set, sst will simply use \"checkpoint\". "
                    "In the following explanation, <prefix> will be used to represent the "
                    "prefix set with the --checkpoint-prefix option.  On sst start, the checkpoint engine will "
                    "create a directory with the name <prefix> to hold all the checkpoint files.  If <prefix> "
-                   "already exists, the it will append _N, where N starts at 1 and increases by one until a "
+                   "already exists, then it will append _N, where N starts at 1 and increases by one until a "
                    "directory name that doesn't already exist is reached (i.e. <prefix>_1, <prefix>_2, etc.).\n");
 
         msg.append("\nWithin the checkpoint directory, each checkpoint will create its own subdirectory with "
-                   "user sepcified name format (see extended help for --checkpoint-name-format). By default, "
+                   "a user specified name format (see extended help for --checkpoint-name-format). By default, "
                    "this is of the form <prefix>_<checkpoint_id>_<simulated_time>, where checkpoint_id starts "
                    "at 0 and increments by one for each checkpoint.  Within this directory, there are three "
                    "types of files:\n\n");
 
-        msg.append("Registry file: The file containes a list of some "
+        msg.append("Registry file: The file contains a list of some "
                    "of the global parameters from the sst run, followed by a list of all other files that "
                    "are a part of the checkpoint. The two files, described below, are the globals file and "
                    "the serialized data from each of the threads in the simulation.  After each of the serialized "
                    "data files, each Component that was in that partition is listed, along with its offset to the "
-                   "location in the file for the Components serialized data. this file is named using a user "
+                   "location in the file for the Components serialized data. This file is named using a user "
                    "specified name format (this defaults to be the same as the directory) with a .sstcpt extension:\n"
                    "    <prefix>_<checkpoint_id>_<simulated_time>.sstcpt.\n\n");
 
@@ -710,16 +710,16 @@ public:
     {
         std::string msg = "Checkpointing Filename Formats:\n\n";
         msg.append("It is possible to set the format for the directories and filenames used for writing out "
-                   "checkpoints.  The format is specied as <directory name format>/<file name format>, or you "
+                   "checkpoints.  The format is specified as <directory name format>/<file name format>, or you "
                    "can leave the / out and specify the same format for both directory and filenames.\n");
         msg.append("\nThe format string can contain literal text, as well as the following special control "
                    "sequences:\n\n");
 
-        msg.append("\t%p - \vwill be repalced with the prefix specified by --checkpoint-prefix\n "
+        msg.append("\t%p - \vwill be replaced with the prefix specified by --checkpoint-prefix\n "
                    "\t%n - \vwill be replaced by the checkpoint index. The checkpoint index starts at 0 and "
                    "is incremented for each checkpoint that occurs.\n"
                    "\t%t - \vwill be replaced with the current simulated time at the point of the checkpoint, "
-                   "expressed in sim cycles (number of core timebase units that have elapsed\n");
+                   "expressed in sim cycles (number of core timebase units that have elapsed)\n");
 
         msg.append("\nThe default name format is %p_%n_%t/%p_%n_%t, or equivalently %p_%n_%t since the directory "
                    "and filename formats are the same.\n");
