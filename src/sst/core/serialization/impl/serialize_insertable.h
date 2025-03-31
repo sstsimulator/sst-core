@@ -45,13 +45,13 @@ namespace SST::Core::Serialization {
 // std::unordered_set
 // std::vector, including std::vector<bool>
 //
-// and any user-defined or future STL classes which have begin(), end() methods, value_type
-// element type, a method to get_size(), and insert_element() which inserts value_type exists
+// and any user-defined or future STL classes which have begin() and end() methods, a
+// value_type element type, and an insert_element() overload which can append value_type
 
 template <class T>
 class serialize_impl<
     T, std::void_t<
-           // exclude std::string and std::string* to prevent ambiguity
+           // exclude std::string and std::string* to prevent specialization ambiguity
            std::enable_if_t<!std::is_same_v<std::remove_pointer_t<T>, std::string>>,
 
            // whether begin() method exists
@@ -82,6 +82,9 @@ class serialize_impl<
     // Value type of element, with const removed from first of pair if it exists
     using value_type = typename remove_const_key<typename T::value_type>::type;
 
+    // Note: the following use struct templates because of a GCC bug which does
+    // not allow static constexpr variable templates defined inside of a class.
+
     // Whether it is a std::vector<bool>
     template <typename>
     struct is_vector_bool : std::false_type
@@ -100,6 +103,7 @@ class serialize_impl<
     struct is_forward_list<std::forward_list<Ts...>> : std::true_type
     {};
 
+    // Whether it is a "map" (i.e. has [key, value] elements)
     template <typename, typename = void>
     struct is_map : std::false_type
     {};
@@ -192,7 +196,8 @@ public:
                     sst_map_object(ser, e, to_string(i++));
             }
             ser.mapper().map_hierarchy_end();
-        } break;
+            break;
+        }
         }
     }
 };
