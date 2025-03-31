@@ -48,7 +48,10 @@ class testcase_Module(SSTTestCase):
         # Perform the test
         self.run_sst(sdlfile, outfile)
 
-        filter1 = StartsWithFilter("WARNING: No components are") # Appears in multi-thread/rank runs since we just have one component, filter it out
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1])
+        filters = [
+            CheckpointInfoFilter(),
+            # Appears in multi-thread/rank runs since we just have one component, filter it out
+            StartsWithFilter("WARNING: No components are") ]
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 

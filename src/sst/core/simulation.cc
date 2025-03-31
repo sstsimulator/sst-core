@@ -228,9 +228,11 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
                 cfg->checkpoint_sim_period().c_str());
             checkpoint_action_ =
                 new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
+            checkpoint_action_->insertIntoTimeVortex(this);
         }
         else {
             checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
+            checkpoint_action_->insertIntoTimeVortex(this);
         }
     }
     else {
@@ -1834,6 +1836,7 @@ Simulation_impl::restart(Config* cfg)
     // Last, get the timevortex
     ser& timeVortex;
 
+    checkpoint_action_->insertIntoTimeVortex(this);
 
     /* Extract components */
     size_t compCount;

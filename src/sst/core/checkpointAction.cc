@@ -72,6 +72,13 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
     period_(period),
     generate_(false)
 {
+    // Set the priority to be the same as the SyncManager so that
+    // checkpointing happens in the same place for both serial and
+    // parallel runs.  We will never have both a SyncManager and a
+    // CheckpointAction in the TimeVortex at the same time since the
+    // SyncManager manages the CheckpointAction on parallel runs.
+    setPriority(SYNCPRIORITY);
+
     next_sim_time_ = 0;
     last_cpu_time_ = 0;
 
@@ -80,12 +87,6 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
         // Compute the first checkpoint time
         next_sim_time_ =
             (period_->getFactor() * (sim->getCurrentSimCycle() / period_->getFactor())) + period_->getFactor();
-
-        // If this is a serial job, we also need to insert this into
-        // the time TimeVortex.  If it is parallel, then the
-        // CheckpointAction is managed by the SyncManager.
-        RankInfo num_ranks = sim->getNumRanks();
-        if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) { sim->insertActivity(next_sim_time_, this); }
     }
     else {
         next_sim_time_ = MAX_SIMTIME_T;
@@ -121,16 +122,23 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
 
         last_cpu_time_ = sst_get_cpu_time();
     }
-
-    // Set the priority to be the same as the SyncManager so that
-    // checkpointing happens in the same place for both serial and
-    // parallel runs.  We will never have both a SyncManager and a
-    // CheckpointAction in the TimeVortex at the same time since the
-    // SyncManager manages the CheckpointAction on parallel runs.
-    setPriority(SYNCPRIORITY);
 }
 
 CheckpointAction::~CheckpointAction() {}
+
+void
+CheckpointAction::insertIntoTimeVortex(Simulation_impl* sim)
+{
+    // Only need to insert if a period was set
+    if ( MAX_SIMTIME_T == next_sim_time_ ) return;
+
+    // If this is a serial job, insert this into
+    // the time TimeVortex.  If it is parallel, then the
+    // CheckpointAction is managed by the SyncManager.
+    RankInfo num_ranks = sim->getNumRanks();
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) { sim->insertActivity(next_sim_time_, this); }
+}
+
 
 // Generate checkpoint on simulation time period
 void
@@ -271,7 +279,7 @@ CheckpointAction::getNextCheckpointSimTime()
 }
 
 Core::ThreadSafe::Barrier CheckpointAction::barrier;
-uint32_t                  CheckpointAction::checkpoint_id = 0;
+uint32_t                  CheckpointAction::checkpoint_id = 1;
 
 namespace Checkpointing {
 

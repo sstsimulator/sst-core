@@ -212,7 +212,7 @@ class testcase_PortModule(SSTTestCase):
         else:
             # Need to rerun from the checkpoint, then compare this output against the reffile
             options = "--load-checkpoint"
-            sdlfile = "{0}/ckpt_PortModule_{1}/ckpt_PortModule_{1}_0_1200000/ckpt_PortModule_{1}_0_1200000.sstcpt".format(outdir,suffix)
+            sdlfile = "{0}/ckpt_PortModule_{1}/ckpt_PortModule_{1}_1_1200000/ckpt_PortModule_{1}_1_1200000.sstcpt".format(outdir,suffix)
             outfile = "{0}/test_PortModule_{1}_restart.out".format(outdir,suffix)
 
             self.run_sst(sdlfile, outfile, other_args=options)

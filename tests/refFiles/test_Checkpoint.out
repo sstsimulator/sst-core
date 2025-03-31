@@ -1,1004 +1,1826 @@
-c1, bounce 999, t=1000000
-c0, bounce 998, t=2000000
-c1, bounce 997, t=3000000
-c0, bounce 996, t=4000000
-c1, bounce 995, t=5000000
-c0, bounce 994, t=6000000
-c1, bounce 993, t=7000000
-c0, bounce 992, t=8000000
-c1, bounce 991, t=9000000
-c0, bounce 990, t=10000000
-c1, bounce 989, t=11000000
-c0, bounce 988, t=12000000
-c1, bounce 987, t=13000000
-c0, bounce 986, t=14000000
-c1, bounce 985, t=15000000
-c0, bounce 984, t=16000000
-c1, bounce 983, t=17000000
-c0, bounce 982, t=18000000
-c1, bounce 981, t=19000000
-c0, bounce 980, t=20000000
-c1, bounce 979, t=21000000
-c0, bounce 978, t=22000000
-c1, bounce 977, t=23000000
-c0, bounce 976, t=24000000
-c1, bounce 975, t=25000000
-c0, bounce 974, t=26000000
-c1, bounce 973, t=27000000
-c0, bounce 972, t=28000000
-c1, bounce 971, t=29000000
-c0, bounce 970, t=30000000
-c1, bounce 969, t=31000000
-c0, bounce 968, t=32000000
-c1, bounce 967, t=33000000
-c0, bounce 966, t=34000000
-c1, bounce 965, t=35000000
-c0, bounce 964, t=36000000
-c1, bounce 963, t=37000000
-c0, bounce 962, t=38000000
-c1, bounce 961, t=39000000
-c0, bounce 960, t=40000000
-c1, bounce 959, t=41000000
-c0, bounce 958, t=42000000
-c1, bounce 957, t=43000000
-c0, bounce 956, t=44000000
-c1, bounce 955, t=45000000
-c0, bounce 954, t=46000000
-c1, bounce 953, t=47000000
-c0, bounce 952, t=48000000
-c1, bounce 951, t=49000000
-c0, bounce 950, t=50000000
-c1, bounce 949, t=51000000
-c0, bounce 948, t=52000000
-c1, bounce 947, t=53000000
-c0, bounce 946, t=54000000
-c1, bounce 945, t=55000000
-c0, bounce 944, t=56000000
-c1, bounce 943, t=57000000
-c0, bounce 942, t=58000000
-c1, bounce 941, t=59000000
-c0, bounce 940, t=60000000
-c1, bounce 939, t=61000000
-c0, bounce 938, t=62000000
-c1, bounce 937, t=63000000
-c0, bounce 936, t=64000000
-c1, bounce 935, t=65000000
-c0, bounce 934, t=66000000
-c1, bounce 933, t=67000000
-c0, bounce 932, t=68000000
-c1, bounce 931, t=69000000
-c0, bounce 930, t=70000000
-c1, bounce 929, t=71000000
-c0, bounce 928, t=72000000
-c1, bounce 927, t=73000000
-c0, bounce 926, t=74000000
-c1, bounce 925, t=75000000
-c0, bounce 924, t=76000000
-c1, bounce 923, t=77000000
-c0, bounce 922, t=78000000
-c1, bounce 921, t=79000000
-c0, bounce 920, t=80000000
-c1, bounce 919, t=81000000
-c0, bounce 918, t=82000000
-c1, bounce 917, t=83000000
-c0, bounce 916, t=84000000
-c1, bounce 915, t=85000000
-c0, bounce 914, t=86000000
-c1, bounce 913, t=87000000
-c0, bounce 912, t=88000000
-c1, bounce 911, t=89000000
-c0, bounce 910, t=90000000
-c1, bounce 909, t=91000000
-c0, bounce 908, t=92000000
-c1, bounce 907, t=93000000
-c0, bounce 906, t=94000000
-c1, bounce 905, t=95000000
-c0, bounce 904, t=96000000
-c1, bounce 903, t=97000000
-c0, bounce 902, t=98000000
-c1, bounce 901, t=99000000
-c0, bounce 900, t=100000000
-c1, bounce 899, t=101000000
-c0, bounce 898, t=102000000
-c1, bounce 897, t=103000000
-c0, bounce 896, t=104000000
-c1, bounce 895, t=105000000
-c0, bounce 894, t=106000000
-c1, bounce 893, t=107000000
-c0, bounce 892, t=108000000
-c1, bounce 891, t=109000000
-c0, bounce 890, t=110000000
-c1, bounce 889, t=111000000
-c0, bounce 888, t=112000000
-c1, bounce 887, t=113000000
-c0, bounce 886, t=114000000
-c1, bounce 885, t=115000000
-c0, bounce 884, t=116000000
-c1, bounce 883, t=117000000
-c0, bounce 882, t=118000000
-c1, bounce 881, t=119000000
-c0, bounce 880, t=120000000
-c1, bounce 879, t=121000000
-c0, bounce 878, t=122000000
-c1, bounce 877, t=123000000
-c0, bounce 876, t=124000000
-c1, bounce 875, t=125000000
-c0, bounce 874, t=126000000
-c1, bounce 873, t=127000000
-c0, bounce 872, t=128000000
-c1, bounce 871, t=129000000
-c0, bounce 870, t=130000000
-c1, bounce 869, t=131000000
-c0, bounce 868, t=132000000
-c1, bounce 867, t=133000000
-c0, bounce 866, t=134000000
-c1, bounce 865, t=135000000
-c0, bounce 864, t=136000000
-c1, bounce 863, t=137000000
-c0, bounce 862, t=138000000
-c1, bounce 861, t=139000000
-c0, bounce 860, t=140000000
-c1, bounce 859, t=141000000
-c0, bounce 858, t=142000000
-c1, bounce 857, t=143000000
-c0, bounce 856, t=144000000
-c1, bounce 855, t=145000000
-c0, bounce 854, t=146000000
-c1, bounce 853, t=147000000
-c0, bounce 852, t=148000000
-c1, bounce 851, t=149000000
-c0, bounce 850, t=150000000
-c1, bounce 849, t=151000000
-c0, bounce 848, t=152000000
-c1, bounce 847, t=153000000
-c0, bounce 846, t=154000000
-c1, bounce 845, t=155000000
-c0, bounce 844, t=156000000
-c1, bounce 843, t=157000000
-c0, bounce 842, t=158000000
-c1, bounce 841, t=159000000
-c0, bounce 840, t=160000000
-c1, bounce 839, t=161000000
-c0, bounce 838, t=162000000
-c1, bounce 837, t=163000000
-c0, bounce 836, t=164000000
-c1, bounce 835, t=165000000
-c0, bounce 834, t=166000000
-c1, bounce 833, t=167000000
-c0, bounce 832, t=168000000
-c1, bounce 831, t=169000000
-c0, bounce 830, t=170000000
-c1, bounce 829, t=171000000
-c0, bounce 828, t=172000000
-c1, bounce 827, t=173000000
-c0, bounce 826, t=174000000
-c1, bounce 825, t=175000000
-c0, bounce 824, t=176000000
-c1, bounce 823, t=177000000
-c0, bounce 822, t=178000000
-c1, bounce 821, t=179000000
-c0, bounce 820, t=180000000
-c1, bounce 819, t=181000000
-c0, bounce 818, t=182000000
-c1, bounce 817, t=183000000
-c0, bounce 816, t=184000000
-c1, bounce 815, t=185000000
-c0, bounce 814, t=186000000
-c1, bounce 813, t=187000000
-c0, bounce 812, t=188000000
-c1, bounce 811, t=189000000
-c0, bounce 810, t=190000000
-c1, bounce 809, t=191000000
-c0, bounce 808, t=192000000
-c1, bounce 807, t=193000000
-c0, bounce 806, t=194000000
-c1, bounce 805, t=195000000
-c0, bounce 804, t=196000000
-c1, bounce 803, t=197000000
-c0, bounce 802, t=198000000
-c1, bounce 801, t=199000000
-c0, bounce 800, t=200000000
-c1, bounce 799, t=201000000
-c0, bounce 798, t=202000000
-c1, bounce 797, t=203000000
-c0, bounce 796, t=204000000
-c1, bounce 795, t=205000000
-c0, bounce 794, t=206000000
-c1, bounce 793, t=207000000
-c0, bounce 792, t=208000000
-c1, bounce 791, t=209000000
-c0, bounce 790, t=210000000
-c1, bounce 789, t=211000000
-c0, bounce 788, t=212000000
-c1, bounce 787, t=213000000
-c0, bounce 786, t=214000000
-c1, bounce 785, t=215000000
-c0, bounce 784, t=216000000
-c1, bounce 783, t=217000000
-c0, bounce 782, t=218000000
-c1, bounce 781, t=219000000
-c0, bounce 780, t=220000000
-c1, bounce 779, t=221000000
-c0, bounce 778, t=222000000
-c1, bounce 777, t=223000000
-c0, bounce 776, t=224000000
-c1, bounce 775, t=225000000
-c0, bounce 774, t=226000000
-c1, bounce 773, t=227000000
-c0, bounce 772, t=228000000
-c1, bounce 771, t=229000000
-c0, bounce 770, t=230000000
-c1, bounce 769, t=231000000
-c0, bounce 768, t=232000000
-c1, bounce 767, t=233000000
-c0, bounce 766, t=234000000
-c1, bounce 765, t=235000000
-c0, bounce 764, t=236000000
-c1, bounce 763, t=237000000
-c0, bounce 762, t=238000000
-c1, bounce 761, t=239000000
-c0, bounce 760, t=240000000
-c1, bounce 759, t=241000000
-c0, bounce 758, t=242000000
-c1, bounce 757, t=243000000
-c0, bounce 756, t=244000000
-c1, bounce 755, t=245000000
-c0, bounce 754, t=246000000
-c1, bounce 753, t=247000000
-c0, bounce 752, t=248000000
-c1, bounce 751, t=249000000
-c0, bounce 750, t=250000000
-c1, bounce 749, t=251000000
-c0, bounce 748, t=252000000
-c1, bounce 747, t=253000000
-c0, bounce 746, t=254000000
-c1, bounce 745, t=255000000
-c0, bounce 744, t=256000000
-c1, bounce 743, t=257000000
-c0, bounce 742, t=258000000
-c1, bounce 741, t=259000000
-c0, bounce 740, t=260000000
-c1, bounce 739, t=261000000
-c0, bounce 738, t=262000000
-c1, bounce 737, t=263000000
-c0, bounce 736, t=264000000
-c1, bounce 735, t=265000000
-c0, bounce 734, t=266000000
-c1, bounce 733, t=267000000
-c0, bounce 732, t=268000000
-c1, bounce 731, t=269000000
-c0, bounce 730, t=270000000
-c1, bounce 729, t=271000000
-c0, bounce 728, t=272000000
-c1, bounce 727, t=273000000
-c0, bounce 726, t=274000000
-c1, bounce 725, t=275000000
-c0, bounce 724, t=276000000
-c1, bounce 723, t=277000000
-c0, bounce 722, t=278000000
-c1, bounce 721, t=279000000
-c0, bounce 720, t=280000000
-c1, bounce 719, t=281000000
-c0, bounce 718, t=282000000
-c1, bounce 717, t=283000000
-c0, bounce 716, t=284000000
-c1, bounce 715, t=285000000
-c0, bounce 714, t=286000000
-c1, bounce 713, t=287000000
-c0, bounce 712, t=288000000
-c1, bounce 711, t=289000000
-c0, bounce 710, t=290000000
-c1, bounce 709, t=291000000
-c0, bounce 708, t=292000000
-c1, bounce 707, t=293000000
-c0, bounce 706, t=294000000
-c1, bounce 705, t=295000000
-c0, bounce 704, t=296000000
-c1, bounce 703, t=297000000
-c0, bounce 702, t=298000000
-c1, bounce 701, t=299000000
-c0, bounce 700, t=300000000
-c1, bounce 699, t=301000000
-c0, bounce 698, t=302000000
-c1, bounce 697, t=303000000
-c0, bounce 696, t=304000000
-c1, bounce 695, t=305000000
-c0, bounce 694, t=306000000
-c1, bounce 693, t=307000000
-c0, bounce 692, t=308000000
-c1, bounce 691, t=309000000
-c0, bounce 690, t=310000000
-c1, bounce 689, t=311000000
-c0, bounce 688, t=312000000
-c1, bounce 687, t=313000000
-c0, bounce 686, t=314000000
-c1, bounce 685, t=315000000
-c0, bounce 684, t=316000000
-c1, bounce 683, t=317000000
-c0, bounce 682, t=318000000
-c1, bounce 681, t=319000000
-c0, bounce 680, t=320000000
-c1, bounce 679, t=321000000
-c0, bounce 678, t=322000000
-c1, bounce 677, t=323000000
-c0, bounce 676, t=324000000
-c1, bounce 675, t=325000000
-c0, bounce 674, t=326000000
-c1, bounce 673, t=327000000
-c0, bounce 672, t=328000000
-c1, bounce 671, t=329000000
-c0, bounce 670, t=330000000
-c1, bounce 669, t=331000000
-c0, bounce 668, t=332000000
-c1, bounce 667, t=333000000
-c0, bounce 666, t=334000000
-c1, bounce 665, t=335000000
-c0, bounce 664, t=336000000
-c1, bounce 663, t=337000000
-c0, bounce 662, t=338000000
-c1, bounce 661, t=339000000
-c0, bounce 660, t=340000000
-c1, bounce 659, t=341000000
-c0, bounce 658, t=342000000
-c1, bounce 657, t=343000000
-c0, bounce 656, t=344000000
-c1, bounce 655, t=345000000
-c0, bounce 654, t=346000000
-c1, bounce 653, t=347000000
-c0, bounce 652, t=348000000
-c1, bounce 651, t=349000000
-c0, bounce 650, t=350000000
-c1, bounce 649, t=351000000
-c0, bounce 648, t=352000000
-c1, bounce 647, t=353000000
-c0, bounce 646, t=354000000
-c1, bounce 645, t=355000000
-c0, bounce 644, t=356000000
-c1, bounce 643, t=357000000
-c0, bounce 642, t=358000000
-c1, bounce 641, t=359000000
-c0, bounce 640, t=360000000
-c1, bounce 639, t=361000000
-c0, bounce 638, t=362000000
-c1, bounce 637, t=363000000
-c0, bounce 636, t=364000000
-c1, bounce 635, t=365000000
-c0, bounce 634, t=366000000
-c1, bounce 633, t=367000000
-c0, bounce 632, t=368000000
-c1, bounce 631, t=369000000
-c0, bounce 630, t=370000000
-c1, bounce 629, t=371000000
-c0, bounce 628, t=372000000
-c1, bounce 627, t=373000000
-c0, bounce 626, t=374000000
-c1, bounce 625, t=375000000
-c0, bounce 624, t=376000000
-c1, bounce 623, t=377000000
-c0, bounce 622, t=378000000
-c1, bounce 621, t=379000000
-c0, bounce 620, t=380000000
-c1, bounce 619, t=381000000
-c0, bounce 618, t=382000000
-c1, bounce 617, t=383000000
-c0, bounce 616, t=384000000
-c1, bounce 615, t=385000000
-c0, bounce 614, t=386000000
-c1, bounce 613, t=387000000
-c0, bounce 612, t=388000000
-c1, bounce 611, t=389000000
-c0, bounce 610, t=390000000
-c1, bounce 609, t=391000000
-c0, bounce 608, t=392000000
-c1, bounce 607, t=393000000
-c0, bounce 606, t=394000000
-c1, bounce 605, t=395000000
-c0, bounce 604, t=396000000
-c1, bounce 603, t=397000000
-c0, bounce 602, t=398000000
-c1, bounce 601, t=399000000
-c0, bounce 600, t=400000000
-c1, bounce 599, t=401000000
-c0, bounce 598, t=402000000
-c1, bounce 597, t=403000000
-c0, bounce 596, t=404000000
-c1, bounce 595, t=405000000
-c0, bounce 594, t=406000000
-c1, bounce 593, t=407000000
-c0, bounce 592, t=408000000
-c1, bounce 591, t=409000000
-c0, bounce 590, t=410000000
-c1, bounce 589, t=411000000
-c0, bounce 588, t=412000000
-c1, bounce 587, t=413000000
-c0, bounce 586, t=414000000
-c1, bounce 585, t=415000000
-c0, bounce 584, t=416000000
-c1, bounce 583, t=417000000
-c0, bounce 582, t=418000000
-c1, bounce 581, t=419000000
-c0, bounce 580, t=420000000
-c1, bounce 579, t=421000000
-c0, bounce 578, t=422000000
-c1, bounce 577, t=423000000
-c0, bounce 576, t=424000000
-c1, bounce 575, t=425000000
-c0, bounce 574, t=426000000
-c1, bounce 573, t=427000000
-c0, bounce 572, t=428000000
-c1, bounce 571, t=429000000
-c0, bounce 570, t=430000000
-c1, bounce 569, t=431000000
-c0, bounce 568, t=432000000
-c1, bounce 567, t=433000000
-c0, bounce 566, t=434000000
-c1, bounce 565, t=435000000
-c0, bounce 564, t=436000000
-c1, bounce 563, t=437000000
-c0, bounce 562, t=438000000
-c1, bounce 561, t=439000000
-c0, bounce 560, t=440000000
-c1, bounce 559, t=441000000
-c0, bounce 558, t=442000000
-c1, bounce 557, t=443000000
-c0, bounce 556, t=444000000
-c1, bounce 555, t=445000000
-c0, bounce 554, t=446000000
-c1, bounce 553, t=447000000
-c0, bounce 552, t=448000000
-c1, bounce 551, t=449000000
-c0, bounce 550, t=450000000
-c1, bounce 549, t=451000000
-c0, bounce 548, t=452000000
-c1, bounce 547, t=453000000
-c0, bounce 546, t=454000000
-c1, bounce 545, t=455000000
-c0, bounce 544, t=456000000
-c1, bounce 543, t=457000000
-c0, bounce 542, t=458000000
-c1, bounce 541, t=459000000
-c0, bounce 540, t=460000000
-c1, bounce 539, t=461000000
-c0, bounce 538, t=462000000
-c1, bounce 537, t=463000000
-c0, bounce 536, t=464000000
-c1, bounce 535, t=465000000
-c0, bounce 534, t=466000000
-c1, bounce 533, t=467000000
-c0, bounce 532, t=468000000
-c1, bounce 531, t=469000000
-c0, bounce 530, t=470000000
-c1, bounce 529, t=471000000
-c0, bounce 528, t=472000000
-c1, bounce 527, t=473000000
-c0, bounce 526, t=474000000
-c1, bounce 525, t=475000000
-c0, bounce 524, t=476000000
-c1, bounce 523, t=477000000
-c0, bounce 522, t=478000000
-c1, bounce 521, t=479000000
-c0, bounce 520, t=480000000
-c1, bounce 519, t=481000000
-c0, bounce 518, t=482000000
-c1, bounce 517, t=483000000
-c0, bounce 516, t=484000000
-c1, bounce 515, t=485000000
-c0, bounce 514, t=486000000
-c1, bounce 513, t=487000000
-c0, bounce 512, t=488000000
-c1, bounce 511, t=489000000
-c0, bounce 510, t=490000000
-c1, bounce 509, t=491000000
-c0, bounce 508, t=492000000
-c1, bounce 507, t=493000000
-c0, bounce 506, t=494000000
-c1, bounce 505, t=495000000
-c0, bounce 504, t=496000000
-c1, bounce 503, t=497000000
-c0, bounce 502, t=498000000
-c1, bounce 501, t=499000000
-c0, bounce 500, t=500000000
-c1, bounce 499, t=501000000
-c0, bounce 498, t=502000000
-c1, bounce 497, t=503000000
-c0, bounce 496, t=504000000
-c1, bounce 495, t=505000000
-c0, bounce 494, t=506000000
-c1, bounce 493, t=507000000
-c0, bounce 492, t=508000000
-c1, bounce 491, t=509000000
-c0, bounce 490, t=510000000
-c1, bounce 489, t=511000000
-c0, bounce 488, t=512000000
-c1, bounce 487, t=513000000
-c0, bounce 486, t=514000000
-c1, bounce 485, t=515000000
-c0, bounce 484, t=516000000
-c1, bounce 483, t=517000000
-c0, bounce 482, t=518000000
-c1, bounce 481, t=519000000
-c0, bounce 480, t=520000000
-c1, bounce 479, t=521000000
-c0, bounce 478, t=522000000
-c1, bounce 477, t=523000000
-c0, bounce 476, t=524000000
-c1, bounce 475, t=525000000
-c0, bounce 474, t=526000000
-c1, bounce 473, t=527000000
-c0, bounce 472, t=528000000
-c1, bounce 471, t=529000000
-c0, bounce 470, t=530000000
-c1, bounce 469, t=531000000
-c0, bounce 468, t=532000000
-c1, bounce 467, t=533000000
-c0, bounce 466, t=534000000
-c1, bounce 465, t=535000000
-c0, bounce 464, t=536000000
-c1, bounce 463, t=537000000
-c0, bounce 462, t=538000000
-c1, bounce 461, t=539000000
-c0, bounce 460, t=540000000
-c1, bounce 459, t=541000000
-c0, bounce 458, t=542000000
-c1, bounce 457, t=543000000
-c0, bounce 456, t=544000000
-c1, bounce 455, t=545000000
-c0, bounce 454, t=546000000
-c1, bounce 453, t=547000000
-c0, bounce 452, t=548000000
-c1, bounce 451, t=549000000
-c0, bounce 450, t=550000000
-c1, bounce 449, t=551000000
-c0, bounce 448, t=552000000
-c1, bounce 447, t=553000000
-c0, bounce 446, t=554000000
-c1, bounce 445, t=555000000
-c0, bounce 444, t=556000000
-c1, bounce 443, t=557000000
-c0, bounce 442, t=558000000
-c1, bounce 441, t=559000000
-c0, bounce 440, t=560000000
-c1, bounce 439, t=561000000
-c0, bounce 438, t=562000000
-c1, bounce 437, t=563000000
-c0, bounce 436, t=564000000
-c1, bounce 435, t=565000000
-c0, bounce 434, t=566000000
-c1, bounce 433, t=567000000
-c0, bounce 432, t=568000000
-c1, bounce 431, t=569000000
-c0, bounce 430, t=570000000
-c1, bounce 429, t=571000000
-c0, bounce 428, t=572000000
-c1, bounce 427, t=573000000
-c0, bounce 426, t=574000000
-c1, bounce 425, t=575000000
-c0, bounce 424, t=576000000
-c1, bounce 423, t=577000000
-c0, bounce 422, t=578000000
-c1, bounce 421, t=579000000
-c0, bounce 420, t=580000000
-c1, bounce 419, t=581000000
-c0, bounce 418, t=582000000
-c1, bounce 417, t=583000000
-c0, bounce 416, t=584000000
-c1, bounce 415, t=585000000
-c0, bounce 414, t=586000000
-c1, bounce 413, t=587000000
-c0, bounce 412, t=588000000
-c1, bounce 411, t=589000000
-c0, bounce 410, t=590000000
-c1, bounce 409, t=591000000
-c0, bounce 408, t=592000000
-c1, bounce 407, t=593000000
-c0, bounce 406, t=594000000
-c1, bounce 405, t=595000000
-c0, bounce 404, t=596000000
-c1, bounce 403, t=597000000
-c0, bounce 402, t=598000000
-c1, bounce 401, t=599000000
-c0, bounce 400, t=600000000
-c1, bounce 399, t=601000000
-c0, bounce 398, t=602000000
-c1, bounce 397, t=603000000
-c0, bounce 396, t=604000000
-c1, bounce 395, t=605000000
-c0, bounce 394, t=606000000
-c1, bounce 393, t=607000000
-c0, bounce 392, t=608000000
-c1, bounce 391, t=609000000
-c0, bounce 390, t=610000000
-c1, bounce 389, t=611000000
-c0, bounce 388, t=612000000
-c1, bounce 387, t=613000000
-c0, bounce 386, t=614000000
-c1, bounce 385, t=615000000
-c0, bounce 384, t=616000000
-c1, bounce 383, t=617000000
-c0, bounce 382, t=618000000
-c1, bounce 381, t=619000000
-c0, bounce 380, t=620000000
-c1, bounce 379, t=621000000
-c0, bounce 378, t=622000000
-c1, bounce 377, t=623000000
-c0, bounce 376, t=624000000
-c1, bounce 375, t=625000000
-c0, bounce 374, t=626000000
-c1, bounce 373, t=627000000
-c0, bounce 372, t=628000000
-c1, bounce 371, t=629000000
-c0, bounce 370, t=630000000
-c1, bounce 369, t=631000000
-c0, bounce 368, t=632000000
-c1, bounce 367, t=633000000
-c0, bounce 366, t=634000000
-c1, bounce 365, t=635000000
-c0, bounce 364, t=636000000
-c1, bounce 363, t=637000000
-c0, bounce 362, t=638000000
-c1, bounce 361, t=639000000
-c0, bounce 360, t=640000000
-c1, bounce 359, t=641000000
-c0, bounce 358, t=642000000
-c1, bounce 357, t=643000000
-c0, bounce 356, t=644000000
-c1, bounce 355, t=645000000
-c0, bounce 354, t=646000000
-c1, bounce 353, t=647000000
-c0, bounce 352, t=648000000
-c1, bounce 351, t=649000000
-c0, bounce 350, t=650000000
-c1, bounce 349, t=651000000
-c0, bounce 348, t=652000000
-c1, bounce 347, t=653000000
-c0, bounce 346, t=654000000
-c1, bounce 345, t=655000000
-c0, bounce 344, t=656000000
-c1, bounce 343, t=657000000
-c0, bounce 342, t=658000000
-c1, bounce 341, t=659000000
-c0, bounce 340, t=660000000
-c1, bounce 339, t=661000000
-c0, bounce 338, t=662000000
-c1, bounce 337, t=663000000
-c0, bounce 336, t=664000000
-c1, bounce 335, t=665000000
-c0, bounce 334, t=666000000
-c1, bounce 333, t=667000000
-c0, bounce 332, t=668000000
-c1, bounce 331, t=669000000
-c0, bounce 330, t=670000000
-c1, bounce 329, t=671000000
-c0, bounce 328, t=672000000
-c1, bounce 327, t=673000000
-c0, bounce 326, t=674000000
-c1, bounce 325, t=675000000
-c0, bounce 324, t=676000000
-c1, bounce 323, t=677000000
-c0, bounce 322, t=678000000
-c1, bounce 321, t=679000000
-c0, bounce 320, t=680000000
-c1, bounce 319, t=681000000
-c0, bounce 318, t=682000000
-c1, bounce 317, t=683000000
-c0, bounce 316, t=684000000
-c1, bounce 315, t=685000000
-c0, bounce 314, t=686000000
-c1, bounce 313, t=687000000
-c0, bounce 312, t=688000000
-c1, bounce 311, t=689000000
-c0, bounce 310, t=690000000
-c1, bounce 309, t=691000000
-c0, bounce 308, t=692000000
-c1, bounce 307, t=693000000
-c0, bounce 306, t=694000000
-c1, bounce 305, t=695000000
-c0, bounce 304, t=696000000
-c1, bounce 303, t=697000000
-c0, bounce 302, t=698000000
-c1, bounce 301, t=699000000
-c0, bounce 300, t=700000000
-c1, bounce 299, t=701000000
-c0, bounce 298, t=702000000
-c1, bounce 297, t=703000000
-c0, bounce 296, t=704000000
-c1, bounce 295, t=705000000
-c0, bounce 294, t=706000000
-c1, bounce 293, t=707000000
-c0, bounce 292, t=708000000
-c1, bounce 291, t=709000000
-c0, bounce 290, t=710000000
-c1, bounce 289, t=711000000
-c0, bounce 288, t=712000000
-c1, bounce 287, t=713000000
-c0, bounce 286, t=714000000
-c1, bounce 285, t=715000000
-c0, bounce 284, t=716000000
-c1, bounce 283, t=717000000
-c0, bounce 282, t=718000000
-c1, bounce 281, t=719000000
-c0, bounce 280, t=720000000
-c1, bounce 279, t=721000000
-c0, bounce 278, t=722000000
-c1, bounce 277, t=723000000
-c0, bounce 276, t=724000000
-c1, bounce 275, t=725000000
-c0, bounce 274, t=726000000
-c1, bounce 273, t=727000000
-c0, bounce 272, t=728000000
-c1, bounce 271, t=729000000
-c0, bounce 270, t=730000000
-c1, bounce 269, t=731000000
-c0, bounce 268, t=732000000
-c1, bounce 267, t=733000000
-c0, bounce 266, t=734000000
-c1, bounce 265, t=735000000
-c0, bounce 264, t=736000000
-c1, bounce 263, t=737000000
-c0, bounce 262, t=738000000
-c1, bounce 261, t=739000000
-c0, bounce 260, t=740000000
-c1, bounce 259, t=741000000
-c0, bounce 258, t=742000000
-c1, bounce 257, t=743000000
-c0, bounce 256, t=744000000
-c1, bounce 255, t=745000000
-c0, bounce 254, t=746000000
-c1, bounce 253, t=747000000
-c0, bounce 252, t=748000000
-c1, bounce 251, t=749000000
-c0, bounce 250, t=750000000
-c1, bounce 249, t=751000000
-c0, bounce 248, t=752000000
-c1, bounce 247, t=753000000
-c0, bounce 246, t=754000000
-c1, bounce 245, t=755000000
-c0, bounce 244, t=756000000
-c1, bounce 243, t=757000000
-c0, bounce 242, t=758000000
-c1, bounce 241, t=759000000
-c0, bounce 240, t=760000000
-c1, bounce 239, t=761000000
-c0, bounce 238, t=762000000
-c1, bounce 237, t=763000000
-c0, bounce 236, t=764000000
-c1, bounce 235, t=765000000
-c0, bounce 234, t=766000000
-c1, bounce 233, t=767000000
-c0, bounce 232, t=768000000
-c1, bounce 231, t=769000000
-c0, bounce 230, t=770000000
-c1, bounce 229, t=771000000
-c0, bounce 228, t=772000000
-c1, bounce 227, t=773000000
-c0, bounce 226, t=774000000
-c1, bounce 225, t=775000000
-c0, bounce 224, t=776000000
-c1, bounce 223, t=777000000
-c0, bounce 222, t=778000000
-c1, bounce 221, t=779000000
-c0, bounce 220, t=780000000
-c1, bounce 219, t=781000000
-c0, bounce 218, t=782000000
-c1, bounce 217, t=783000000
-c0, bounce 216, t=784000000
-c1, bounce 215, t=785000000
-c0, bounce 214, t=786000000
-c1, bounce 213, t=787000000
-c0, bounce 212, t=788000000
-c1, bounce 211, t=789000000
-c0, bounce 210, t=790000000
-c1, bounce 209, t=791000000
-c0, bounce 208, t=792000000
-c1, bounce 207, t=793000000
-c0, bounce 206, t=794000000
-c1, bounce 205, t=795000000
-c0, bounce 204, t=796000000
-c1, bounce 203, t=797000000
-c0, bounce 202, t=798000000
-c1, bounce 201, t=799000000
-c0, bounce 200, t=800000000
-c1, bounce 199, t=801000000
-c0, bounce 198, t=802000000
-c1, bounce 197, t=803000000
-c0, bounce 196, t=804000000
-c1, bounce 195, t=805000000
-c0, bounce 194, t=806000000
-c1, bounce 193, t=807000000
-c0, bounce 192, t=808000000
-c1, bounce 191, t=809000000
-c0, bounce 190, t=810000000
-c1, bounce 189, t=811000000
-c0, bounce 188, t=812000000
-c1, bounce 187, t=813000000
-c0, bounce 186, t=814000000
-c1, bounce 185, t=815000000
-c0, bounce 184, t=816000000
-c1, bounce 183, t=817000000
-c0, bounce 182, t=818000000
-c1, bounce 181, t=819000000
-c0, bounce 180, t=820000000
-c1, bounce 179, t=821000000
-c0, bounce 178, t=822000000
-c1, bounce 177, t=823000000
-c0, bounce 176, t=824000000
-c1, bounce 175, t=825000000
-c0, bounce 174, t=826000000
-c1, bounce 173, t=827000000
-c0, bounce 172, t=828000000
-c1, bounce 171, t=829000000
-c0, bounce 170, t=830000000
-c1, bounce 169, t=831000000
-c0, bounce 168, t=832000000
-c1, bounce 167, t=833000000
-c0, bounce 166, t=834000000
-c1, bounce 165, t=835000000
-c0, bounce 164, t=836000000
-c1, bounce 163, t=837000000
-c0, bounce 162, t=838000000
-c1, bounce 161, t=839000000
-c0, bounce 160, t=840000000
-c1, bounce 159, t=841000000
-c0, bounce 158, t=842000000
-c1, bounce 157, t=843000000
-c0, bounce 156, t=844000000
-c1, bounce 155, t=845000000
-c0, bounce 154, t=846000000
-c1, bounce 153, t=847000000
-c0, bounce 152, t=848000000
-c1, bounce 151, t=849000000
-c0, bounce 150, t=850000000
-c1, bounce 149, t=851000000
-c0, bounce 148, t=852000000
-c1, bounce 147, t=853000000
-c0, bounce 146, t=854000000
-c1, bounce 145, t=855000000
-c0, bounce 144, t=856000000
-c1, bounce 143, t=857000000
-c0, bounce 142, t=858000000
-c1, bounce 141, t=859000000
-c0, bounce 140, t=860000000
-c1, bounce 139, t=861000000
-c0, bounce 138, t=862000000
-c1, bounce 137, t=863000000
-c0, bounce 136, t=864000000
-c1, bounce 135, t=865000000
-c0, bounce 134, t=866000000
-c1, bounce 133, t=867000000
-c0, bounce 132, t=868000000
-c1, bounce 131, t=869000000
-c0, bounce 130, t=870000000
-c1, bounce 129, t=871000000
-c0, bounce 128, t=872000000
-c1, bounce 127, t=873000000
-c0, bounce 126, t=874000000
-c1, bounce 125, t=875000000
-c0, bounce 124, t=876000000
-c1, bounce 123, t=877000000
-c0, bounce 122, t=878000000
-c1, bounce 121, t=879000000
-c0, bounce 120, t=880000000
-c1, bounce 119, t=881000000
-c0, bounce 118, t=882000000
-c1, bounce 117, t=883000000
-c0, bounce 116, t=884000000
-c1, bounce 115, t=885000000
-c0, bounce 114, t=886000000
-c1, bounce 113, t=887000000
-c0, bounce 112, t=888000000
-c1, bounce 111, t=889000000
-c0, bounce 110, t=890000000
-c1, bounce 109, t=891000000
-c0, bounce 108, t=892000000
-c1, bounce 107, t=893000000
-c0, bounce 106, t=894000000
-c1, bounce 105, t=895000000
-c0, bounce 104, t=896000000
-c1, bounce 103, t=897000000
-c0, bounce 102, t=898000000
-c1, bounce 101, t=899000000
-c0, bounce 100, t=900000000
-c1, bounce 99, t=901000000
-c0, bounce 98, t=902000000
-c1, bounce 97, t=903000000
-c0, bounce 96, t=904000000
-c1, bounce 95, t=905000000
-c0, bounce 94, t=906000000
-c1, bounce 93, t=907000000
-c0, bounce 92, t=908000000
-c1, bounce 91, t=909000000
-c0, bounce 90, t=910000000
-c1, bounce 89, t=911000000
-c0, bounce 88, t=912000000
-c1, bounce 87, t=913000000
-c0, bounce 86, t=914000000
-c1, bounce 85, t=915000000
-c0, bounce 84, t=916000000
-c1, bounce 83, t=917000000
-c0, bounce 82, t=918000000
-c1, bounce 81, t=919000000
-c0, bounce 80, t=920000000
-c1, bounce 79, t=921000000
-c0, bounce 78, t=922000000
-c1, bounce 77, t=923000000
-c0, bounce 76, t=924000000
-c1, bounce 75, t=925000000
-c0, bounce 74, t=926000000
-c1, bounce 73, t=927000000
-c0, bounce 72, t=928000000
-c1, bounce 71, t=929000000
-c0, bounce 70, t=930000000
-c1, bounce 69, t=931000000
-c0, bounce 68, t=932000000
-c1, bounce 67, t=933000000
-c0, bounce 66, t=934000000
-c1, bounce 65, t=935000000
-c0, bounce 64, t=936000000
-c1, bounce 63, t=937000000
-c0, bounce 62, t=938000000
-c1, bounce 61, t=939000000
-c0, bounce 60, t=940000000
-c1, bounce 59, t=941000000
-c0, bounce 58, t=942000000
-c1, bounce 57, t=943000000
-c0, bounce 56, t=944000000
-c1, bounce 55, t=945000000
-c0, bounce 54, t=946000000
-c1, bounce 53, t=947000000
-c0, bounce 52, t=948000000
-c1, bounce 51, t=949000000
-c0, bounce 50, t=950000000
-c1, bounce 49, t=951000000
-c0, bounce 48, t=952000000
-c1, bounce 47, t=953000000
-c0, bounce 46, t=954000000
-c1, bounce 45, t=955000000
-c0, bounce 44, t=956000000
-c1, bounce 43, t=957000000
-c0, bounce 42, t=958000000
-c1, bounce 41, t=959000000
-c0, bounce 40, t=960000000
-c1, bounce 39, t=961000000
-c0, bounce 38, t=962000000
-c1, bounce 37, t=963000000
-c0, bounce 36, t=964000000
-c1, bounce 35, t=965000000
-c0, bounce 34, t=966000000
-c1, bounce 33, t=967000000
-c0, bounce 32, t=968000000
-c1, bounce 31, t=969000000
-c0, bounce 30, t=970000000
-c1, bounce 29, t=971000000
-c0, bounce 28, t=972000000
-c1, bounce 27, t=973000000
-c0, bounce 26, t=974000000
-c1, bounce 25, t=975000000
-c0, bounce 24, t=976000000
-c1, bounce 23, t=977000000
-c0, bounce 22, t=978000000
-c1, bounce 21, t=979000000
-c0, bounce 20, t=980000000
-c1, bounce 19, t=981000000
-c0, bounce 18, t=982000000
-c1, bounce 17, t=983000000
-c0, bounce 16, t=984000000
-c1, bounce 15, t=985000000
-c0, bounce 14, t=986000000
-c1, bounce 13, t=987000000
-c0, bounce 12, t=988000000
-c1, bounce 11, t=989000000
-c0, bounce 10, t=990000000
-c1, bounce 9, t=991000000
-c0, bounce 8, t=992000000
-c1, bounce 7, t=993000000
-c0, bounce 6, t=994000000
-c1, bounce 5, t=995000000
-c0, bounce 4, t=996000000
-c1, bounce 3, t=997000000
-c0, bounce 2, t=998000000
-c1, bounce 1, t=999000000
+# Creating simulation checkpoint at simulated time period of 250us.
+c3, init()
+c2, init()
+c1, init()
+c0, init()
+c3, setup()
+c2, setup()
+c1, setup()
+c0, setup()
+c1 talkingc1, bounce 999, t=1000000
+c2 talkingc2, bounce 998, t=2000000
+c3 talkingc3, bounce 997, t=3000000
+c0 talkingc0, bounce 996, t=4000000
+c1 talkingc1, bounce 995, t=5000000
+c2 talkingc2, bounce 994, t=6000000
+c3 talkingc3, bounce 993, t=7000000
+c0 talkingc0, bounce 992, t=8000000
+c1 talkingc1, bounce 991, t=9000000
+c0 talkingClock cycle count = 1
+c0 talkingRNG: 4074790800, 774252441, 24684
+c0 talkingDistributions: 1.500000, 5.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c1 talkingClock cycle count = 1
+c1 talkingRNG: 4074790800, 774252441, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c2 talkingClock cycle count = 1
+c2 talkingRNG: 4074790800, 774252441, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c3 talkingClock cycle count = 1
+c3 talkingRNG: 4074790800, 774252441, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c2 talkingc2, bounce 990, t=10000000
+c3 talkingc3, bounce 989, t=11000000
+c0 talkingc0, bounce 988, t=12000000
+c1 talkingc1, bounce 987, t=13000000
+c2 talkingc2, bounce 986, t=14000000
+c3 talkingc3, bounce 985, t=15000000
+c0 talkingc0, bounce 984, t=16000000
+c1 talkingc1, bounce 983, t=17000000
+c2 talkingc2, bounce 982, t=18000000
+c3 talkingc3, bounce 981, t=19000000
+c0 talkingClock cycle count = 2
+c0 talkingRNG: 666451201, 293375679, 24684
+c0 talkingDistributions: 1.500000, 4.000000, 2.549681, 0.734315, 0.000000, 0.000000
+c1 talkingClock cycle count = 2
+c1 talkingRNG: 666451201, 293375679, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 2.549681, 0.734315, 0.000000, 0.000000
+c2 talkingClock cycle count = 2
+c2 talkingRNG: 666451201, 293375679, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 2.549681, 0.734315, 0.000000, 0.000000
+c3 talkingClock cycle count = 2
+c3 talkingRNG: 666451201, 293375679, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 2.549681, 0.734315, 0.000000, 0.000000
+c0 talkingc0, bounce 980, t=20000000
+c1 talkingc1, bounce 979, t=21000000
+c2 talkingc2, bounce 978, t=22000000
+c3 talkingc3, bounce 977, t=23000000
+c0 talkingc0, bounce 976, t=24000000
+c1 talkingc1, bounce 975, t=25000000
+c2 talkingc2, bounce 974, t=26000000
+c3 talkingc3, bounce 973, t=27000000
+c0 talkingc0, bounce 972, t=28000000
+c1 talkingc1, bounce 971, t=29000000
+c0 talkingClock cycle count = 3
+c0 talkingRNG: 3234623631, 83645520, 24684
+c0 talkingDistributions: 1.500000, 2.000000, 1.483533, 0.946148, 1.000000, 2.000000
+c1 talkingClock cycle count = 3
+c1 talkingRNG: 3234623631, 83645520, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 1.483533, 0.946148, 1.000000, 2.000000
+c2 talkingClock cycle count = 3
+c2 talkingRNG: 3234623631, 83645520, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 1.483533, 0.946148, 1.000000, 2.000000
+c3 talkingClock cycle count = 3
+c3 talkingRNG: 3234623631, 83645520, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 1.483533, 0.946148, 1.000000, 2.000000
+c2 talkingc2, bounce 970, t=30000000
+c3 talkingc3, bounce 969, t=31000000
+c0 talkingc0, bounce 968, t=32000000
+c1 talkingc1, bounce 967, t=33000000
+c2 talkingc2, bounce 966, t=34000000
+c3 talkingc3, bounce 965, t=35000000
+c0 talkingc0, bounce 964, t=36000000
+c1 talkingc1, bounce 963, t=37000000
+c2 talkingc2, bounce 962, t=38000000
+c3 talkingc3, bounce 961, t=39000000
+c0 talkingClock cycle count = 4
+c0 talkingRNG: 2332514161, 2854952027, 24684
+c0 talkingDistributions: 1.500000, 5.000000, 1.076122, 1.121934, 1.000000, 3.000000
+c1 talkingClock cycle count = 4
+c1 talkingRNG: 2332514161, 2854952027, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 1.076122, 1.121934, 1.000000, 3.000000
+c2 talkingClock cycle count = 4
+c2 talkingRNG: 2332514161, 2854952027, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 1.076122, 1.121934, 1.000000, 3.000000
+c3 talkingClock cycle count = 4
+c3 talkingRNG: 2332514161, 2854952027, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 1.076122, 1.121934, 1.000000, 3.000000
+c0 talkingc0, bounce 960, t=40000000
+c1 talkingc1, bounce 959, t=41000000
+c2 talkingc2, bounce 958, t=42000000
+c3 talkingc3, bounce 957, t=43000000
+c0 talkingc0, bounce 956, t=44000000
+c1 talkingc1, bounce 955, t=45000000
+c2 talkingc2, bounce 954, t=46000000
+c3 talkingc3, bounce 953, t=47000000
+c0 talkingc0, bounce 952, t=48000000
+c1 talkingc1, bounce 951, t=49000000
+c0 talkingClock cycle count = 5
+c0 talkingRNG: 590829626, 1989508433, 50356992
+c0 talkingDistributions: 1.500000, 5.000000, 2.043516, 0.681913, 0.000000, 0.000000
+c1 talkingClock cycle count = 5
+c1 talkingRNG: 590829626, 1989508433, 50356992
+c1 talkingDistributions: 1.500000, 1.000000, 2.043516, 0.681913, 0.000000, 0.000000
+c2 talkingClock cycle count = 5
+c2 talkingRNG: 590829626, 1989508433, 50356992
+c2 talkingDistributions: 1.500000, 1.000000, 2.043516, 0.681913, 0.000000, 0.000000
+c3 talkingClock cycle count = 5
+c3 talkingRNG: 590829626, 1989508433, 50356992
+c3 talkingDistributions: 1.500000, 1.000000, 2.043516, 0.681913, 0.000000, 0.000000
+c2 talkingc2, bounce 950, t=50000000
+c3 talkingc3, bounce 949, t=51000000
+c0 talkingc0, bounce 948, t=52000000
+c1 talkingc1, bounce 947, t=53000000
+c2 talkingc2, bounce 946, t=54000000
+c3 talkingc3, bounce 945, t=55000000
+c0 talkingc0, bounce 944, t=56000000
+c1 talkingc1, bounce 943, t=57000000
+c2 talkingc2, bounce 942, t=58000000
+c3 talkingc3, bounce 941, t=59000000
+c0 talkingClock cycle count = 6
+c0 talkingRNG: 2636351012, 833720247, 24588
+c0 talkingDistributions: 1.500000, 5.000000, 0.456152, 1.014976, 0.000000, 3.000000
+c1 talkingClock cycle count = 6
+c1 talkingRNG: 2636351012, 833720247, 24588
+c1 talkingDistributions: 1.500000, 1.000000, 0.456152, 1.014976, 0.000000, 3.000000
+c2 talkingClock cycle count = 6
+c2 talkingRNG: 2636351012, 833720247, 24588
+c2 talkingDistributions: 1.500000, 1.000000, 0.456152, 1.014976, 0.000000, 3.000000
+c3 talkingClock cycle count = 6
+c3 talkingRNG: 2636351012, 833720247, 24588
+c3 talkingDistributions: 1.500000, 1.000000, 0.456152, 1.014976, 0.000000, 3.000000
+c0 talkingc0, bounce 940, t=60000000
+c1 talkingc1, bounce 939, t=61000000
+c2 talkingc2, bounce 938, t=62000000
+c3 talkingc3, bounce 937, t=63000000
+c0 talkingc0, bounce 936, t=64000000
+c1 talkingc1, bounce 935, t=65000000
+c2 talkingc2, bounce 934, t=66000000
+c3 talkingc3, bounce 933, t=67000000
+c0 talkingc0, bounce 932, t=68000000
+c1 talkingc1, bounce 931, t=69000000
+c0 talkingClock cycle count = 7
+c0 talkingRNG: 777051003, 3113567501, 50357088
+c0 talkingDistributions: 1.500000, 5.000000, 0.008080, 0.922669, 0.000000, 0.000000
+c1 talkingClock cycle count = 7
+c1 talkingRNG: 777051003, 3113567501, 50357088
+c1 talkingDistributions: 1.500000, 1.000000, 0.008080, 0.922669, 0.000000, 0.000000
+c2 talkingClock cycle count = 7
+c2 talkingRNG: 777051003, 3113567501, 50357088
+c2 talkingDistributions: 1.500000, 1.000000, 0.008080, 0.922669, 0.000000, 0.000000
+c3 talkingClock cycle count = 7
+c3 talkingRNG: 777051003, 3113567501, 50357088
+c3 talkingDistributions: 1.500000, 1.000000, 0.008080, 0.922669, 0.000000, 0.000000
+c2 talkingc2, bounce 930, t=70000000
+c3 talkingc3, bounce 929, t=71000000
+c0 talkingc0, bounce 928, t=72000000
+c1 talkingc1, bounce 927, t=73000000
+c2 talkingc2, bounce 926, t=74000000
+c3 talkingc3, bounce 925, t=75000000
+c0 talkingc0, bounce 924, t=76000000
+c1 talkingc1, bounce 923, t=77000000
+c2 talkingc2, bounce 922, t=78000000
+c3 talkingc3, bounce 921, t=79000000
+c0 talkingClock cycle count = 8
+c0 talkingRNG: 2044878151, 3978355020, 24684
+c0 talkingDistributions: 1.500000, 2.000000, 0.161349, 0.817153, 1.000000, 3.000000
+c1 talkingClock cycle count = 8
+c1 talkingRNG: 2044878151, 3978355020, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 0.161349, 0.817153, 1.000000, 3.000000
+c2 talkingClock cycle count = 8
+c2 talkingRNG: 2044878151, 3978355020, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 0.161349, 0.817153, 1.000000, 3.000000
+c3 talkingClock cycle count = 8
+c3 talkingRNG: 2044878151, 3978355020, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 0.161349, 0.817153, 1.000000, 3.000000
+c0 talkingc0, bounce 920, t=80000000
+c1 talkingc1, bounce 919, t=81000000
+c2 talkingc2, bounce 918, t=82000000
+c3 talkingc3, bounce 917, t=83000000
+c0 talkingc0, bounce 916, t=84000000
+c1 talkingc1, bounce 915, t=85000000
+c2 talkingc2, bounce 914, t=86000000
+c3 talkingc3, bounce 913, t=87000000
+c0 talkingc0, bounce 912, t=88000000
+c1 talkingc1, bounce 911, t=89000000
+c0 talkingClock cycle count = 9
+c0 talkingRNG: 52481144, 1804760737, 1579791
+c0 talkingDistributions: 1.500000, 5.000000, 0.370681, 1.034313, 0.000000, 3.000000
+c1 talkingClock cycle count = 9
+c1 talkingRNG: 52481144, 1804760737, 1579791
+c1 talkingDistributions: 1.500000, 1.000000, 0.370681, 1.034313, 0.000000, 3.000000
+c2 talkingClock cycle count = 9
+c2 talkingRNG: 52481144, 1804760737, 1579791
+c2 talkingDistributions: 1.500000, 1.000000, 0.370681, 1.034313, 0.000000, 3.000000
+c3 talkingClock cycle count = 9
+c3 talkingRNG: 52481144, 1804760737, 1579791
+c3 talkingDistributions: 1.500000, 1.000000, 0.370681, 1.034313, 0.000000, 3.000000
+c2 talkingc2, bounce 910, t=90000000
+c3 talkingc3, bounce 909, t=91000000
+c0 talkingc0, bounce 908, t=92000000
+c1 talkingc1, bounce 907, t=93000000
+c2 talkingc2, bounce 906, t=94000000
+c3 talkingc3, bounce 905, t=95000000
+c0 talkingc0, bounce 904, t=96000000
+c1 talkingc1, bounce 903, t=97000000
+c2 talkingc2, bounce 902, t=98000000
+c3 talkingc3, bounce 901, t=99000000
+c0 talkingClock cycle count = 10
+c0 talkingRNG: 1094307614, 451723847, 52108032
+c0 talkingDistributions: 1.500000, 5.000000, 0.224752, 0.880209, 2.000000, 1.000000
+c1 talkingClock cycle count = 10
+c1 talkingRNG: 1094307614, 451723847, 52108032
+c1 talkingDistributions: 1.500000, 1.000000, 0.224752, 0.880209, 2.000000, 1.000000
+c2 talkingClock cycle count = 10
+c2 talkingRNG: 1094307614, 451723847, 52108032
+c2 talkingDistributions: 1.500000, 1.000000, 0.224752, 0.880209, 2.000000, 1.000000
+c3 talkingClock cycle count = 10
+c3 talkingRNG: 1094307614, 451723847, 52108032
+c3 talkingDistributions: 1.500000, 1.000000, 0.224752, 0.880209, 2.000000, 1.000000
+c0 talkingc0, bounce 900, t=100000000
+ c0.eventcount : Accumulator : Sum.u32 = 25; SumSQ.u32 = 25; Count.u64 = 25; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 9.073256; SumSQ.f64 = 8.397672; Count.u64 = 10; Min.f64 = 0.681913; Max.f64 = 1.121934; 
+ c1.eventcount : Accumulator : Sum.u32 = 25; SumSQ.u32 = 25; Count.u64 = 25; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 3292959564; SumSQ.u32 = 4202850280; Count.u64 = 10; Min.u32 = 83645520; Max.u32 = 3978355020; 
+ c1.distvals : Accumulator : Sum.f64 = 9.073256; SumSQ.f64 = 8.397672; Count.u64 = 10; Min.f64 = 0.681913; Max.f64 = 1.121934; 
+ c2.eventcount : Accumulator : Sum.u32 = 25; SumSQ.u32 = 25; Count.u64 = 25; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 3292959564; SumSQ.u32 = 4202850280; Count.u64 = 10; Min.u32 = 83645520; Max.u32 = 3978355020; 
+ c2.distvals : Accumulator : Sum.f64 = 9.073256; SumSQ.f64 = 8.397672; Count.u64 = 10; Min.f64 = 0.681913; Max.f64 = 1.121934; 
+ c3.eventcount : Accumulator : Sum.u32 = 25; SumSQ.u32 = 25; Count.u64 = 25; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 3292959564; SumSQ.u32 = 4202850280; Count.u64 = 10; Min.u32 = 83645520; Max.u32 = 3978355020; 
+ c3.distvals : Accumulator : Sum.f64 = 9.073256; SumSQ.f64 = 8.397672; Count.u64 = 10; Min.f64 = 0.681913; Max.f64 = 1.121934; 
+c1 talkingc1, bounce 899, t=101000000
+c2 talkingc2, bounce 898, t=102000000
+c3 talkingc3, bounce 897, t=103000000
+c0 talkingc0, bounce 896, t=104000000
+c1 talkingc1, bounce 895, t=105000000
+c2 talkingc2, bounce 894, t=106000000
+c3 talkingc3, bounce 893, t=107000000
+c0 talkingc0, bounce 892, t=108000000
+c1 talkingc1, bounce 891, t=109000000
+c0 talkingClock cycle count = 11
+c0 talkingRNG: 76883336, 2084893522, 50357088
+c0 talkingDistributions: 1.500000, 3.000000, 3.160695, 1.140242, 1.000000, 2.000000
+c1 talkingClock cycle count = 11
+c1 talkingRNG: 76883336, 2084893522, 50357088
+c1 talkingDistributions: 1.500000, 1.000000, 3.160695, 1.140242, 1.000000, 2.000000
+c2 talkingClock cycle count = 11
+c2 talkingRNG: 76883336, 2084893522, 50357088
+c2 talkingDistributions: 1.500000, 1.000000, 3.160695, 1.140242, 1.000000, 2.000000
+c3 talkingClock cycle count = 11
+c3 talkingRNG: 76883336, 2084893522, 50357088
+c3 talkingDistributions: 1.500000, 1.000000, 3.160695, 1.140242, 1.000000, 2.000000
+c2 talkingc2, bounce 890, t=110000000
+c3 talkingc3, bounce 889, t=111000000
+c0 talkingc0, bounce 888, t=112000000
+c1 talkingc1, bounce 887, t=113000000
+c2 talkingc2, bounce 886, t=114000000
+c3 talkingc3, bounce 885, t=115000000
+c0 talkingc0, bounce 884, t=116000000
+c1 talkingc1, bounce 883, t=117000000
+c2 talkingc2, bounce 882, t=118000000
+c3 talkingc3, bounce 881, t=119000000
+c0 talkingClock cycle count = 12
+c0 talkingRNG: 3144557411, 969428760, 24684
+c0 talkingDistributions: 1.500000, 5.000000, 0.251021, 1.266532, 3.000000, 0.000000
+c1 talkingClock cycle count = 12
+c1 talkingRNG: 3144557411, 969428760, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 0.251021, 1.266532, 3.000000, 0.000000
+c2 talkingClock cycle count = 12
+c2 talkingRNG: 3144557411, 969428760, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 0.251021, 1.266532, 3.000000, 0.000000
+c3 talkingClock cycle count = 12
+c3 talkingRNG: 3144557411, 969428760, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 0.251021, 1.266532, 3.000000, 0.000000
+c0 talkingc0, bounce 880, t=120000000
+c1 talkingc1, bounce 879, t=121000000
+c2 talkingc2, bounce 878, t=122000000
+c3 talkingc3, bounce 877, t=123000000
+c0 talkingc0, bounce 876, t=124000000
+c1 talkingc1, bounce 875, t=125000000
+c2 talkingc2, bounce 874, t=126000000
+c3 talkingc3, bounce 873, t=127000000
+c0 talkingc0, bounce 872, t=128000000
+c1 talkingc1, bounce 871, t=129000000
+c0 talkingClock cycle count = 13
+c0 talkingRNG: 2455120703, 54893165, 3221275392
+c0 talkingDistributions: 1.500000, 4.000000, 0.719731, 0.891754, 0.000000, 2.000000
+c1 talkingClock cycle count = 13
+c1 talkingRNG: 2455120703, 54893165, 3221275392
+c1 talkingDistributions: 1.500000, 1.000000, 0.719731, 0.891754, 0.000000, 2.000000
+c2 talkingClock cycle count = 13
+c2 talkingRNG: 2455120703, 54893165, 3221275392
+c2 talkingDistributions: 1.500000, 1.000000, 0.719731, 0.891754, 0.000000, 2.000000
+c3 talkingClock cycle count = 13
+c3 talkingRNG: 2455120703, 54893165, 3221275392
+c3 talkingDistributions: 1.500000, 1.000000, 0.719731, 0.891754, 0.000000, 2.000000
+c2 talkingc2, bounce 870, t=130000000
+c3 talkingc3, bounce 869, t=131000000
+c0 talkingc0, bounce 868, t=132000000
+c1 talkingc1, bounce 867, t=133000000
+c2 talkingc2, bounce 866, t=134000000
+c3 talkingc3, bounce 865, t=135000000
+c0 talkingc0, bounce 864, t=136000000
+c1 talkingc1, bounce 863, t=137000000
+c2 talkingc2, bounce 862, t=138000000
+c3 talkingc3, bounce 861, t=139000000
+c0 talkingClock cycle count = 14
+c0 talkingRNG: 1486407528, 3849754204, 454558491
+c0 talkingDistributions: 1.500000, 4.000000, 0.384818, 1.056651, 0.000000, 0.000000
+c1 talkingClock cycle count = 14
+c1 talkingRNG: 1486407528, 3849754204, 454558491
+c1 talkingDistributions: 1.500000, 1.000000, 0.384818, 1.056651, 0.000000, 0.000000
+c2 talkingClock cycle count = 14
+c2 talkingRNG: 1486407528, 3849754204, 454558491
+c2 talkingDistributions: 1.500000, 1.000000, 0.384818, 1.056651, 0.000000, 0.000000
+c3 talkingClock cycle count = 14
+c3 talkingRNG: 1486407528, 3849754204, 454558491
+c3 talkingDistributions: 1.500000, 1.000000, 0.384818, 1.056651, 0.000000, 0.000000
+c0 talkingc0, bounce 860, t=140000000
+c1 talkingc1, bounce 859, t=141000000
+c2 talkingc2, bounce 858, t=142000000
+c3 talkingc3, bounce 857, t=143000000
+c0 talkingc0, bounce 856, t=144000000
+c1 talkingc1, bounce 855, t=145000000
+c2 talkingc2, bounce 854, t=146000000
+c3 talkingc3, bounce 853, t=147000000
+c0 talkingc0, bounce 852, t=148000000
+c1 talkingc1, bounce 851, t=149000000
+c0 talkingClock cycle count = 15
+c0 talkingRNG: 2068696160, 2093245104, 453212283
+c0 talkingDistributions: 1.500000, 5.000000, 0.383143, 0.947758, 2.000000, 2.000000
+c1 talkingClock cycle count = 15
+c1 talkingRNG: 2068696160, 2093245104, 453212283
+c1 talkingDistributions: 1.500000, 1.000000, 0.383143, 0.947758, 2.000000, 2.000000
+c2 talkingClock cycle count = 15
+c2 talkingRNG: 2068696160, 2093245104, 453212283
+c2 talkingDistributions: 1.500000, 1.000000, 0.383143, 0.947758, 2.000000, 2.000000
+c3 talkingClock cycle count = 15
+c3 talkingRNG: 2068696160, 2093245104, 453212283
+c3 talkingDistributions: 1.500000, 1.000000, 0.383143, 0.947758, 2.000000, 2.000000
+c2 talkingc2, bounce 850, t=150000000
+c3 talkingc3, bounce 849, t=151000000
+c0 talkingc0, bounce 848, t=152000000
+c1 talkingc1, bounce 847, t=153000000
+c2 talkingc2, bounce 846, t=154000000
+c3 talkingc3, bounce 845, t=155000000
+c0 talkingc0, bounce 844, t=156000000
+c1 talkingc1, bounce 843, t=157000000
+c2 talkingc2, bounce 842, t=158000000
+c3 talkingc3, bounce 841, t=159000000
+c0 talkingClock cycle count = 16
+c0 talkingRNG: 2409256132, 3548421885, 402880631
+c0 talkingDistributions: 1.500000, 5.000000, 0.452745, 1.220507, 0.000000, 2.000000
+c0 talkingc0, bounce 840, t=160000000
+c1 talkingc1, bounce 839, t=161000000
+c2 talkingc2, bounce 838, t=162000000
+c3 talkingc3, bounce 837, t=163000000
+c0 talkingc0, bounce 836, t=164000000
+c1 talkingc1, bounce 835, t=165000000
+c2 talkingc2, bounce 834, t=166000000
+c3 talkingc3, bounce 833, t=167000000
+c0 talkingc0, bounce 832, t=168000000
+c1 talkingc1, bounce 831, t=169000000
+c0 talkingClock cycle count = 17
+c0 talkingRNG: 2653506914, 4045028768, 3739066548
+c0 talkingDistributions: 1.500000, 4.000000, 0.774791, 0.814568, 1.000000, 0.000000
+c2 talkingc2, bounce 830, t=170000000
+c3 talkingc3, bounce 829, t=171000000
+c0 talkingc0, bounce 828, t=172000000
+c1 talkingc1, bounce 827, t=173000000
+c2 talkingc2, bounce 826, t=174000000
+c3 talkingc3, bounce 825, t=175000000
+c0 talkingc0, bounce 824, t=176000000
+c1 talkingc1, bounce 823, t=177000000
+c2 talkingc2, bounce 822, t=178000000
+c3 talkingc3, bounce 821, t=179000000
+c0 talkingClock cycle count = 18
+c0 talkingRNG: 685838824, 398626605, 84304047
+c0 talkingDistributions: 1.500000, 2.000000, 0.774385, 0.451549, 0.000000, 3.000000
+c0 talkingc0, bounce 820, t=180000000
+c1 talkingc1, bounce 819, t=181000000
+c2 talkingc2, bounce 818, t=182000000
+c3 talkingc3, bounce 817, t=183000000
+c0 talkingc0, bounce 816, t=184000000
+c1 talkingc1, bounce 815, t=185000000
+c2 talkingc2, bounce 814, t=186000000
+c3 talkingc3, bounce 813, t=187000000
+c0 talkingc0, bounce 812, t=188000000
+c1 talkingc1, bounce 811, t=189000000
+c0 talkingClock cycle count = 19
+c0 talkingRNG: 1570840001, 3654137068, 96862420
+c0 talkingDistributions: 1.500000, 5.000000, 0.250072, 1.291849, 0.000000, 1.000000
+c2 talkingc2, bounce 810, t=190000000
+c3 talkingc3, bounce 809, t=191000000
+c0 talkingc0, bounce 808, t=192000000
+c1 talkingc1, bounce 807, t=193000000
+c2 talkingc2, bounce 806, t=194000000
+c3 talkingc3, bounce 805, t=195000000
+c0 talkingc0, bounce 804, t=196000000
+c1 talkingc1, bounce 803, t=197000000
+c2 talkingc2, bounce 802, t=198000000
+c3 talkingc3, bounce 801, t=199000000
+c0 talkingClock cycle count = 20
+c0 talkingRNG: 3588495163, 3821267581, 100991195
+c0 talkingDistributions: 1.500000, 2.000000, 1.143897, 0.797112, 2.000000, 0.000000
+c0 talkingc0, bounce 800, t=200000000
+ c0.eventcount : Accumulator : Sum.u32 = 50; SumSQ.u32 = 50; Count.u64 = 50; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 18.951779; SumSQ.f64 = 18.773227; Count.u64 = 20; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+ c1.eventcount : Accumulator : Sum.u32 = 50; SumSQ.u32 = 50; Count.u64 = 50; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c1.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+ c2.eventcount : Accumulator : Sum.u32 = 50; SumSQ.u32 = 50; Count.u64 = 50; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c2.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+ c3.eventcount : Accumulator : Sum.u32 = 50; SumSQ.u32 = 50; Count.u64 = 50; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c3.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+c1 talkingc1, bounce 799, t=201000000
+c2 talkingc2, bounce 798, t=202000000
+c3 talkingc3, bounce 797, t=203000000
+c0 talkingc0, bounce 796, t=204000000
+c1 talkingc1, bounce 795, t=205000000
+c2 talkingc2, bounce 794, t=206000000
+c3 talkingc3, bounce 793, t=207000000
+c0 talkingc0, bounce 792, t=208000000
+c1 talkingc1, bounce 791, t=209000000
+c2 talkingc2, bounce 790, t=210000000
+c3 talkingc3, bounce 789, t=211000000
+c0 talkingc0, bounce 788, t=212000000
+c1 talkingc1, bounce 787, t=213000000
+c2 talkingc2, bounce 786, t=214000000
+c3 talkingc3, bounce 785, t=215000000
+c0 talkingc0, bounce 784, t=216000000
+c1 talkingc1, bounce 783, t=217000000
+c2 talkingc2, bounce 782, t=218000000
+c3 talkingc3, bounce 781, t=219000000
+c0 talkingc0, bounce 780, t=220000000
+c1 talkingc1, bounce 779, t=221000000
+c2 talkingc2, bounce 778, t=222000000
+c3 talkingc3, bounce 777, t=223000000
+c0 talkingc0, bounce 776, t=224000000
+c1 talkingc1, bounce 775, t=225000000
+c2 talkingc2, bounce 774, t=226000000
+c3 talkingc3, bounce 773, t=227000000
+c0 talkingc0, bounce 772, t=228000000
+c1 talkingc1, bounce 771, t=229000000
+c2 talkingc2, bounce 770, t=230000000
+c3 talkingc3, bounce 769, t=231000000
+c0 talkingc0, bounce 768, t=232000000
+c1 talkingc1, bounce 767, t=233000000
+c2 talkingc2, bounce 766, t=234000000
+c3 talkingc3, bounce 765, t=235000000
+c0 talkingc0, bounce 764, t=236000000
+c1 talkingc1, bounce 763, t=237000000
+c2 talkingc2, bounce 762, t=238000000
+c3 talkingc3, bounce 761, t=239000000
+c0 talkingc0, bounce 760, t=240000000
+c1 talkingc1, bounce 759, t=241000000
+c2 talkingc2, bounce 758, t=242000000
+c3 talkingc3, bounce 757, t=243000000
+c0 talkingc0, bounce 756, t=244000000
+c1 talkingc1, bounce 755, t=245000000
+c2 talkingc2, bounce 754, t=246000000
+c3 talkingc3, bounce 753, t=247000000
+c0 talkingc0, bounce 752, t=248000000
+c1 talkingc1, bounce 751, t=249000000
+# Simulation Checkpoint: Simulated Time 250 us (Real CPU time since last checkpoint 0.00237 seconds)
+c2 talkingc2, bounce 750, t=250000000
+c3 talkingc3, bounce 749, t=251000000
+c0 talkingc0, bounce 748, t=252000000
+c1 talkingc1, bounce 747, t=253000000
+c2 talkingc2, bounce 746, t=254000000
+c3 talkingc3, bounce 745, t=255000000
+c0 talkingc0, bounce 744, t=256000000
+c1 talkingc1, bounce 743, t=257000000
+c2 talkingc2, bounce 742, t=258000000
+c3 talkingc3, bounce 741, t=259000000
+c0 talkingc0, bounce 740, t=260000000
+c1 talkingc1, bounce 739, t=261000000
+c2 talkingc2, bounce 738, t=262000000
+c3 talkingc3, bounce 737, t=263000000
+c0 talkingc0, bounce 736, t=264000000
+c1 talkingc1, bounce 735, t=265000000
+c2 talkingc2, bounce 734, t=266000000
+c3 talkingc3, bounce 733, t=267000000
+c0 talkingc0, bounce 732, t=268000000
+c1 talkingc1, bounce 731, t=269000000
+c2 talkingc2, bounce 730, t=270000000
+c3 talkingc3, bounce 729, t=271000000
+c0 talkingc0, bounce 728, t=272000000
+c1 talkingc1, bounce 727, t=273000000
+c2 talkingc2, bounce 726, t=274000000
+c3 talkingc3, bounce 725, t=275000000
+c0 talkingc0, bounce 724, t=276000000
+c1 talkingc1, bounce 723, t=277000000
+c2 talkingc2, bounce 722, t=278000000
+c3 talkingc3, bounce 721, t=279000000
+c0 talkingc0, bounce 720, t=280000000
+c1 talkingc1, bounce 719, t=281000000
+c2 talkingc2, bounce 718, t=282000000
+c3 talkingc3, bounce 717, t=283000000
+c0 talkingc0, bounce 716, t=284000000
+c1 talkingc1, bounce 715, t=285000000
+c2 talkingc2, bounce 714, t=286000000
+c3 talkingc3, bounce 713, t=287000000
+c0 talkingc0, bounce 712, t=288000000
+c1 talkingc1, bounce 711, t=289000000
+c2 talkingc2, bounce 710, t=290000000
+c3 talkingc3, bounce 709, t=291000000
+c0 talkingc0, bounce 708, t=292000000
+c1 talkingc1, bounce 707, t=293000000
+c2 talkingc2, bounce 706, t=294000000
+c3 talkingc3, bounce 705, t=295000000
+c0 talkingc0, bounce 704, t=296000000
+c1 talkingc1, bounce 703, t=297000000
+c2 talkingc2, bounce 702, t=298000000
+c3 talkingc3, bounce 701, t=299000000
+c0 talkingc0, bounce 700, t=300000000
+ c0.eventcount : Accumulator : Sum.u32 = 75; SumSQ.u32 = 75; Count.u64 = 75; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 18.951779; SumSQ.f64 = 18.773227; Count.u64 = 20; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+ c1.eventcount : Accumulator : Sum.u32 = 75; SumSQ.u32 = 75; Count.u64 = 75; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c1.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+ c2.eventcount : Accumulator : Sum.u32 = 75; SumSQ.u32 = 75; Count.u64 = 75; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c2.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+ c3.eventcount : Accumulator : Sum.u32 = 75; SumSQ.u32 = 75; Count.u64 = 75; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 3755239727; SumSQ.u32 = 1843100901; Count.u64 = 15; Min.u32 = 54893165; Max.u32 = 3978355020; 
+ c3.distvals : Accumulator : Sum.f64 = 14.376194; SumSQ.f64 = 14.111911; Count.u64 = 15; Min.f64 = 0.681913; Max.f64 = 1.266532; 
+c1 talkingc1, bounce 699, t=301000000
+c2 talkingc2, bounce 698, t=302000000
+c3 talkingc3, bounce 697, t=303000000
+c0 talkingc0, bounce 696, t=304000000
+c1 talkingc1, bounce 695, t=305000000
+c2 talkingc2, bounce 694, t=306000000
+c3 talkingc3, bounce 693, t=307000000
+c0 talkingc0, bounce 692, t=308000000
+c1 talkingc1, bounce 691, t=309000000
+c1 talkingClock cycle count = 31
+c1 talkingRNG: 2409256132, 3548421885, 402880631
+c1 talkingDistributions: 1.500000, 1.000000, 0.452745, 1.220507, 0.000000, 2.000000
+c2 talkingClock cycle count = 31
+c2 talkingRNG: 2409256132, 3548421885, 402880631
+c2 talkingDistributions: 1.500000, 1.000000, 0.452745, 1.220507, 0.000000, 2.000000
+c3 talkingClock cycle count = 31
+c3 talkingRNG: 2409256132, 3548421885, 402880631
+c3 talkingDistributions: 1.500000, 1.000000, 0.452745, 1.220507, 0.000000, 2.000000
+c2 talkingc2, bounce 690, t=310000000
+c3 talkingc3, bounce 689, t=311000000
+c0 talkingc0, bounce 688, t=312000000
+c1 talkingc1, bounce 687, t=313000000
+c2 talkingc2, bounce 686, t=314000000
+c3 talkingc3, bounce 685, t=315000000
+c0 talkingc0, bounce 684, t=316000000
+c1 talkingc1, bounce 683, t=317000000
+c2 talkingc2, bounce 682, t=318000000
+c3 talkingc3, bounce 681, t=319000000
+c1 talkingClock cycle count = 32
+c1 talkingRNG: 2653506914, 4045028768, 3739066548
+c1 talkingDistributions: 1.500000, 1.000000, 0.774791, 0.814568, 1.000000, 0.000000
+c2 talkingClock cycle count = 32
+c2 talkingRNG: 2653506914, 4045028768, 3739066548
+c2 talkingDistributions: 1.500000, 1.000000, 0.774791, 0.814568, 1.000000, 0.000000
+c3 talkingClock cycle count = 32
+c3 talkingRNG: 2653506914, 4045028768, 3739066548
+c3 talkingDistributions: 1.500000, 1.000000, 0.774791, 0.814568, 1.000000, 0.000000
+c0 talkingc0, bounce 680, t=320000000
+c1 talkingc1, bounce 679, t=321000000
+c2 talkingc2, bounce 678, t=322000000
+c3 talkingc3, bounce 677, t=323000000
+c0 talkingc0, bounce 676, t=324000000
+c1 talkingc1, bounce 675, t=325000000
+c2 talkingc2, bounce 674, t=326000000
+c3 talkingc3, bounce 673, t=327000000
+c0 talkingc0, bounce 672, t=328000000
+c1 talkingc1, bounce 671, t=329000000
+c1 talkingClock cycle count = 33
+c1 talkingRNG: 685838824, 398626605, 84304047
+c1 talkingDistributions: 1.500000, 1.000000, 0.774385, 0.451549, 0.000000, 3.000000
+c2 talkingClock cycle count = 33
+c2 talkingRNG: 685838824, 398626605, 84304047
+c2 talkingDistributions: 1.500000, 1.000000, 0.774385, 0.451549, 0.000000, 3.000000
+c3 talkingClock cycle count = 33
+c3 talkingRNG: 685838824, 398626605, 84304047
+c3 talkingDistributions: 1.500000, 1.000000, 0.774385, 0.451549, 0.000000, 3.000000
+c2 talkingc2, bounce 670, t=330000000
+c3 talkingc3, bounce 669, t=331000000
+c0 talkingc0, bounce 668, t=332000000
+c1 talkingc1, bounce 667, t=333000000
+c2 talkingc2, bounce 666, t=334000000
+c3 talkingc3, bounce 665, t=335000000
+c0 talkingc0, bounce 664, t=336000000
+c1 talkingc1, bounce 663, t=337000000
+c2 talkingc2, bounce 662, t=338000000
+c3 talkingc3, bounce 661, t=339000000
+c1 talkingClock cycle count = 34
+c1 talkingRNG: 1570840001, 3654137068, 96862420
+c1 talkingDistributions: 1.500000, 1.000000, 0.250072, 1.291849, 0.000000, 1.000000
+c2 talkingClock cycle count = 34
+c2 talkingRNG: 1570840001, 3654137068, 96862420
+c2 talkingDistributions: 1.500000, 1.000000, 0.250072, 1.291849, 0.000000, 1.000000
+c3 talkingClock cycle count = 34
+c3 talkingRNG: 1570840001, 3654137068, 96862420
+c3 talkingDistributions: 1.500000, 1.000000, 0.250072, 1.291849, 0.000000, 1.000000
+c0 talkingc0, bounce 660, t=340000000
+c1 talkingc1, bounce 659, t=341000000
+c2 talkingc2, bounce 658, t=342000000
+c3 talkingc3, bounce 657, t=343000000
+c0 talkingc0, bounce 656, t=344000000
+c1 talkingc1, bounce 655, t=345000000
+c2 talkingc2, bounce 654, t=346000000
+c3 talkingc3, bounce 653, t=347000000
+c0 talkingc0, bounce 652, t=348000000
+c1 talkingc1, bounce 651, t=349000000
+c1 talkingClock cycle count = 35
+c1 talkingRNG: 3588495163, 3821267581, 100991195
+c1 talkingDistributions: 1.500000, 1.000000, 1.143897, 0.797112, 2.000000, 0.000000
+c2 talkingClock cycle count = 35
+c2 talkingRNG: 3588495163, 3821267581, 100991195
+c2 talkingDistributions: 1.500000, 1.000000, 1.143897, 0.797112, 2.000000, 0.000000
+c3 talkingClock cycle count = 35
+c3 talkingRNG: 3588495163, 3821267581, 100991195
+c3 talkingDistributions: 1.500000, 1.000000, 1.143897, 0.797112, 2.000000, 0.000000
+c2 talkingc2, bounce 650, t=350000000
+c3 talkingc3, bounce 649, t=351000000
+c0 talkingc0, bounce 648, t=352000000
+c1 talkingc1, bounce 647, t=353000000
+c2 talkingc2, bounce 646, t=354000000
+c3 talkingc3, bounce 645, t=355000000
+c0 talkingc0, bounce 644, t=356000000
+c1 talkingc1, bounce 643, t=357000000
+c2 talkingc2, bounce 642, t=358000000
+c3 talkingc3, bounce 641, t=359000000
+c1 talkingClock cycle count = 36
+c1 talkingRNG: 417557660, 3135173508, 904845487
+c1 talkingDistributions: 1.500000, 1.000000, 1.642381, 1.260705, 1.000000, 3.000000
+c2 talkingClock cycle count = 36
+c2 talkingRNG: 417557660, 3135173508, 904845487
+c2 talkingDistributions: 1.500000, 1.000000, 1.642381, 1.260705, 1.000000, 3.000000
+c3 talkingClock cycle count = 36
+c3 talkingRNG: 417557660, 3135173508, 904845487
+c3 talkingDistributions: 1.500000, 1.000000, 1.642381, 1.260705, 1.000000, 3.000000
+c0 talkingc0, bounce 640, t=360000000
+c1 talkingc1, bounce 639, t=361000000
+c2 talkingc2, bounce 638, t=362000000
+c3 talkingc3, bounce 637, t=363000000
+c0 talkingc0, bounce 636, t=364000000
+c1 talkingc1, bounce 635, t=365000000
+c2 talkingc2, bounce 634, t=366000000
+c3 talkingc3, bounce 633, t=367000000
+c0 talkingc0, bounce 632, t=368000000
+c1 talkingc1, bounce 631, t=369000000
+c1 talkingClock cycle count = 37
+c1 talkingRNG: 1228054305, 3065584162, 64734629
+c1 talkingDistributions: 1.500000, 1.000000, 0.765611, 0.860025, 0.000000, 2.000000
+c2 talkingClock cycle count = 37
+c2 talkingRNG: 1228054305, 3065584162, 64734629
+c2 talkingDistributions: 1.500000, 1.000000, 0.765611, 0.860025, 0.000000, 2.000000
+c3 talkingClock cycle count = 37
+c3 talkingRNG: 1228054305, 3065584162, 64734629
+c3 talkingDistributions: 1.500000, 1.000000, 0.765611, 0.860025, 0.000000, 2.000000
+c2 talkingc2, bounce 630, t=370000000
+c3 talkingc3, bounce 629, t=371000000
+c0 talkingc0, bounce 628, t=372000000
+c1 talkingc1, bounce 627, t=373000000
+c2 talkingc2, bounce 626, t=374000000
+c3 talkingc3, bounce 625, t=375000000
+c0 talkingc0, bounce 624, t=376000000
+c1 talkingc1, bounce 623, t=377000000
+c2 talkingc2, bounce 622, t=378000000
+c3 talkingc3, bounce 621, t=379000000
+c1 talkingClock cycle count = 38
+c1 talkingRNG: 3753106980, 467017868, 909026730
+c1 talkingDistributions: 1.500000, 1.000000, 0.418937, 0.924549, 0.000000, 0.000000
+c2 talkingClock cycle count = 38
+c2 talkingRNG: 3753106980, 467017868, 909026730
+c2 talkingDistributions: 1.500000, 1.000000, 0.418937, 0.924549, 0.000000, 0.000000
+c3 talkingClock cycle count = 38
+c3 talkingRNG: 3753106980, 467017868, 909026730
+c3 talkingDistributions: 1.500000, 1.000000, 0.418937, 0.924549, 0.000000, 0.000000
+c0 talkingc0, bounce 620, t=380000000
+c1 talkingc1, bounce 619, t=381000000
+c2 talkingc2, bounce 618, t=382000000
+c3 talkingc3, bounce 617, t=383000000
+c0 talkingc0, bounce 616, t=384000000
+c1 talkingc1, bounce 615, t=385000000
+c2 talkingc2, bounce 614, t=386000000
+c3 talkingc3, bounce 613, t=387000000
+c0 talkingc0, bounce 612, t=388000000
+c1 talkingc1, bounce 611, t=389000000
+c1 talkingClock cycle count = 39
+c1 talkingRNG: 2567991028, 2224357249, 402880620
+c1 talkingDistributions: 1.500000, 1.000000, 0.284346, 0.670710, 1.000000, 2.000000
+c2 talkingClock cycle count = 39
+c2 talkingRNG: 2567991028, 2224357249, 402880620
+c2 talkingDistributions: 1.500000, 1.000000, 0.284346, 0.670710, 1.000000, 2.000000
+c3 talkingClock cycle count = 39
+c3 talkingRNG: 2567991028, 2224357249, 402880620
+c3 talkingDistributions: 1.500000, 1.000000, 0.284346, 0.670710, 1.000000, 2.000000
+c2 talkingc2, bounce 610, t=390000000
+c3 talkingc3, bounce 609, t=391000000
+c0 talkingc0, bounce 608, t=392000000
+c1 talkingc1, bounce 607, t=393000000
+c2 talkingc2, bounce 606, t=394000000
+c3 talkingc3, bounce 605, t=395000000
+c0 talkingc0, bounce 604, t=396000000
+c1 talkingc1, bounce 603, t=397000000
+c2 talkingc2, bounce 602, t=398000000
+c3 talkingc3, bounce 601, t=399000000
+c1 talkingClock cycle count = 40
+c1 talkingRNG: 2505548099, 3839289162, 1533800547
+c1 talkingDistributions: 1.500000, 1.000000, 0.774116, 1.137369, 0.000000, 3.000000
+c2 talkingClock cycle count = 40
+c2 talkingRNG: 2505548099, 3839289162, 1533800547
+c2 talkingDistributions: 1.500000, 1.000000, 0.774116, 1.137369, 0.000000, 3.000000
+c3 talkingClock cycle count = 40
+c3 talkingRNG: 2505548099, 3839289162, 1533800547
+c3 talkingDistributions: 1.500000, 1.000000, 0.774116, 1.137369, 0.000000, 3.000000
+c0 talkingc0, bounce 600, t=400000000
+ c0.eventcount : Accumulator : Sum.u32 = 100; SumSQ.u32 = 100; Count.u64 = 100; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 18.951779; SumSQ.f64 = 18.773227; Count.u64 = 20; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+ c1.eventcount : Accumulator : Sum.u32 = 100; SumSQ.u32 = 100; Count.u64 = 100; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 1889372511; SumSQ.u32 = 430974201; Count.u64 = 25; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c1.distvals : Accumulator : Sum.f64 = 23.805137; SumSQ.f64 = 23.700498; Count.u64 = 25; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+ c2.eventcount : Accumulator : Sum.u32 = 100; SumSQ.u32 = 100; Count.u64 = 100; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 1889372511; SumSQ.u32 = 430974201; Count.u64 = 25; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c2.distvals : Accumulator : Sum.f64 = 23.805137; SumSQ.f64 = 23.700498; Count.u64 = 25; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+ c3.eventcount : Accumulator : Sum.u32 = 100; SumSQ.u32 = 100; Count.u64 = 100; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 1889372511; SumSQ.u32 = 430974201; Count.u64 = 25; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c3.distvals : Accumulator : Sum.f64 = 23.805137; SumSQ.f64 = 23.700498; Count.u64 = 25; Min.f64 = 0.451549; Max.f64 = 1.291849; 
+c1 talkingc1, bounce 599, t=401000000
+c2 talkingc2, bounce 598, t=402000000
+c3 talkingc3, bounce 597, t=403000000
+c0 talkingc0, bounce 596, t=404000000
+c1 talkingc1, bounce 595, t=405000000
+c2 talkingc2, bounce 594, t=406000000
+c3 talkingc3, bounce 593, t=407000000
+c0 talkingc0, bounce 592, t=408000000
+c1 talkingc1, bounce 591, t=409000000
+c1 talkingClock cycle count = 41
+c1 talkingRNG: 21353833, 3373218853, 2252398662
+c1 talkingDistributions: 1.500000, 1.000000, 3.391061, 1.359383, 1.000000, 0.000000
+c2 talkingClock cycle count = 41
+c2 talkingRNG: 21353833, 3373218853, 2252398662
+c2 talkingDistributions: 1.500000, 1.000000, 3.391061, 1.359383, 1.000000, 0.000000
+c3 talkingClock cycle count = 41
+c3 talkingRNG: 21353833, 3373218853, 2252398662
+c3 talkingDistributions: 1.500000, 1.000000, 3.391061, 1.359383, 1.000000, 0.000000
+c0 talkingClock cycle count = 41
+c0 talkingRNG: 417557660, 3135173508, 904845487
+c0 talkingDistributions: 1.500000, 1.000000, 1.642381, 1.260705, 1.000000, 3.000000
+c2 talkingc2, bounce 590, t=410000000
+c3 talkingc3, bounce 589, t=411000000
+c0 talkingc0, bounce 588, t=412000000
+c1 talkingc1, bounce 587, t=413000000
+c2 talkingc2, bounce 586, t=414000000
+c3 talkingc3, bounce 585, t=415000000
+c0 talkingc0, bounce 584, t=416000000
+c1 talkingc1, bounce 583, t=417000000
+c2 talkingc2, bounce 582, t=418000000
+c3 talkingc3, bounce 581, t=419000000
+c1 talkingClock cycle count = 42
+c1 talkingRNG: 144544538, 3681449461, 3305113297
+c1 talkingDistributions: 1.500000, 1.000000, 0.005891, 1.228526, 0.000000, 3.000000
+c2 talkingClock cycle count = 42
+c2 talkingRNG: 144544538, 3681449461, 3305113297
+c2 talkingDistributions: 1.500000, 1.000000, 0.005891, 1.228526, 0.000000, 3.000000
+c3 talkingClock cycle count = 42
+c3 talkingRNG: 144544538, 3681449461, 3305113297
+c3 talkingDistributions: 1.500000, 1.000000, 0.005891, 1.228526, 0.000000, 3.000000
+c0 talkingClock cycle count = 42
+c0 talkingRNG: 1228054305, 3065584162, 64734629
+c0 talkingDistributions: 1.500000, 4.000000, 0.765611, 0.860025, 0.000000, 2.000000
+c0 talkingc0, bounce 580, t=420000000
+c1 talkingc1, bounce 579, t=421000000
+c2 talkingc2, bounce 578, t=422000000
+c3 talkingc3, bounce 577, t=423000000
+c0 talkingc0, bounce 576, t=424000000
+c1 talkingc1, bounce 575, t=425000000
+c2 talkingc2, bounce 574, t=426000000
+c3 talkingc3, bounce 573, t=427000000
+c0 talkingc0, bounce 572, t=428000000
+c1 talkingc1, bounce 571, t=429000000
+c1 talkingClock cycle count = 43
+c1 talkingRNG: 512446141, 2524005607, 3334718981
+c1 talkingDistributions: 1.500000, 1.000000, 0.164194, 1.267901, 1.000000, 0.000000
+c2 talkingClock cycle count = 43
+c2 talkingRNG: 512446141, 2524005607, 3334718981
+c2 talkingDistributions: 1.500000, 1.000000, 0.164194, 1.267901, 1.000000, 0.000000
+c3 talkingClock cycle count = 43
+c3 talkingRNG: 512446141, 2524005607, 3334718981
+c3 talkingDistributions: 1.500000, 1.000000, 0.164194, 1.267901, 1.000000, 0.000000
+c0 talkingClock cycle count = 43
+c0 talkingRNG: 3753106980, 467017868, 909026730
+c0 talkingDistributions: 1.500000, 2.000000, 0.418937, 0.924549, 0.000000, 0.000000
+c2 talkingc2, bounce 570, t=430000000
+c3 talkingc3, bounce 569, t=431000000
+c0 talkingc0, bounce 568, t=432000000
+c1 talkingc1, bounce 567, t=433000000
+c2 talkingc2, bounce 566, t=434000000
+c3 talkingc3, bounce 565, t=435000000
+c0 talkingc0, bounce 564, t=436000000
+c1 talkingc1, bounce 563, t=437000000
+c2 talkingc2, bounce 562, t=438000000
+c3 talkingc3, bounce 561, t=439000000
+c1 talkingClock cycle count = 44
+c1 talkingRNG: 3197661559, 709041620, 3257917014
+c1 talkingDistributions: 1.500000, 1.000000, 1.118262, 1.041700, 1.000000, 0.000000
+c2 talkingClock cycle count = 44
+c2 talkingRNG: 3197661559, 709041620, 3257917014
+c2 talkingDistributions: 1.500000, 1.000000, 1.118262, 1.041700, 1.000000, 0.000000
+c3 talkingClock cycle count = 44
+c3 talkingRNG: 3197661559, 709041620, 3257917014
+c3 talkingDistributions: 1.500000, 1.000000, 1.118262, 1.041700, 1.000000, 0.000000
+c0 talkingClock cycle count = 44
+c0 talkingRNG: 2567991028, 2224357249, 402880620
+c0 talkingDistributions: 1.500000, 5.000000, 0.284346, 0.670710, 1.000000, 2.000000
+c0 talkingc0, bounce 560, t=440000000
+c1 talkingc1, bounce 559, t=441000000
+c2 talkingc2, bounce 558, t=442000000
+c3 talkingc3, bounce 557, t=443000000
+c0 talkingc0, bounce 556, t=444000000
+c1 talkingc1, bounce 555, t=445000000
+c2 talkingc2, bounce 554, t=446000000
+c3 talkingc3, bounce 553, t=447000000
+c0 talkingc0, bounce 552, t=448000000
+c1 talkingc1, bounce 551, t=449000000
+c1 talkingClock cycle count = 45
+c1 talkingRNG: 2008749264, 3164687441, 1139561605
+c1 talkingDistributions: 1.500000, 1.000000, 0.247129, 1.098114, 0.000000, 1.000000
+c2 talkingClock cycle count = 45
+c2 talkingRNG: 2008749264, 3164687441, 1139561605
+c2 talkingDistributions: 1.500000, 1.000000, 0.247129, 1.098114, 0.000000, 1.000000
+c3 talkingClock cycle count = 45
+c3 talkingRNG: 2008749264, 3164687441, 1139561605
+c3 talkingDistributions: 1.500000, 1.000000, 0.247129, 1.098114, 0.000000, 1.000000
+c0 talkingClock cycle count = 45
+c0 talkingRNG: 2505548099, 3839289162, 1533800547
+c0 talkingDistributions: 1.500000, 1.000000, 0.774116, 1.137369, 0.000000, 3.000000
+c2 talkingc2, bounce 550, t=450000000
+c3 talkingc3, bounce 549, t=451000000
+c0 talkingc0, bounce 548, t=452000000
+c1 talkingc1, bounce 547, t=453000000
+c2 talkingc2, bounce 546, t=454000000
+c3 talkingc3, bounce 545, t=455000000
+c0 talkingc0, bounce 544, t=456000000
+c1 talkingc1, bounce 543, t=457000000
+c2 talkingc2, bounce 542, t=458000000
+c3 talkingc3, bounce 541, t=459000000
+c0 talkingClock cycle count = 46
+c0 talkingRNG: 21353833, 3373218853, 2252398662
+c0 talkingDistributions: 1.500000, 5.000000, 3.391061, 1.359383, 1.000000, 0.000000
+c0 talkingc0, bounce 540, t=460000000
+c1 talkingc1, bounce 539, t=461000000
+c2 talkingc2, bounce 538, t=462000000
+c3 talkingc3, bounce 537, t=463000000
+c0 talkingc0, bounce 536, t=464000000
+c1 talkingc1, bounce 535, t=465000000
+c2 talkingc2, bounce 534, t=466000000
+c3 talkingc3, bounce 533, t=467000000
+c0 talkingc0, bounce 532, t=468000000
+c1 talkingc1, bounce 531, t=469000000
+c0 talkingClock cycle count = 47
+c0 talkingRNG: 144544538, 3681449461, 3305113297
+c0 talkingDistributions: 1.500000, 5.000000, 0.005891, 1.228526, 0.000000, 3.000000
+c2 talkingc2, bounce 530, t=470000000
+c3 talkingc3, bounce 529, t=471000000
+c0 talkingc0, bounce 528, t=472000000
+c1 talkingc1, bounce 527, t=473000000
+c2 talkingc2, bounce 526, t=474000000
+c3 talkingc3, bounce 525, t=475000000
+c0 talkingc0, bounce 524, t=476000000
+c1 talkingc1, bounce 523, t=477000000
+c2 talkingc2, bounce 522, t=478000000
+c3 talkingc3, bounce 521, t=479000000
+c0 talkingClock cycle count = 48
+c0 talkingRNG: 512446141, 2524005607, 3334718981
+c0 talkingDistributions: 1.500000, 3.000000, 0.164194, 1.267901, 1.000000, 0.000000
+c0 talkingc0, bounce 520, t=480000000
+c1 talkingc1, bounce 519, t=481000000
+c2 talkingc2, bounce 518, t=482000000
+c3 talkingc3, bounce 517, t=483000000
+c0 talkingc0, bounce 516, t=484000000
+c1 talkingc1, bounce 515, t=485000000
+c2 talkingc2, bounce 514, t=486000000
+c3 talkingc3, bounce 513, t=487000000
+c0 talkingc0, bounce 512, t=488000000
+c1 talkingc1, bounce 511, t=489000000
+c0 talkingClock cycle count = 49
+c0 talkingRNG: 3197661559, 709041620, 3257917014
+c0 talkingDistributions: 1.500000, 2.000000, 1.118262, 1.041700, 1.000000, 0.000000
+c2 talkingc2, bounce 510, t=490000000
+c3 talkingc3, bounce 509, t=491000000
+c0 talkingc0, bounce 508, t=492000000
+c1 talkingc1, bounce 507, t=493000000
+c2 talkingc2, bounce 506, t=494000000
+c3 talkingc3, bounce 505, t=495000000
+c0 talkingc0, bounce 504, t=496000000
+c1 talkingc1, bounce 503, t=497000000
+c2 talkingc2, bounce 502, t=498000000
+c3 talkingc3, bounce 501, t=499000000
+# Simulation Checkpoint: Simulated Time 500 us (Real CPU time since last checkpoint 0.00611 seconds)
+c0 talkingClock cycle count = 50
+c0 talkingRNG: 2008749264, 3164687441, 1139561605
+c0 talkingDistributions: 1.500000, 3.000000, 0.247129, 1.098114, 0.000000, 1.000000
+c0 talkingc0, bounce 500, t=500000000
+ c0.eventcount : Accumulator : Sum.u32 = 125; SumSQ.u32 = 125; Count.u64 = 125; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 125; SumSQ.u32 = 125; Count.u64 = 125; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c1.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 125; SumSQ.u32 = 125; Count.u64 = 125; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c2.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 125; SumSQ.u32 = 125; Count.u64 = 125; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c3.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+c1 talkingc1, bounce 499, t=501000000
+c2 talkingc2, bounce 498, t=502000000
+c3 talkingc3, bounce 497, t=503000000
+c0 talkingc0, bounce 496, t=504000000
+c1 talkingc1, bounce 495, t=505000000
+c2 talkingc2, bounce 494, t=506000000
+c3 talkingc3, bounce 493, t=507000000
+c0 talkingc0, bounce 492, t=508000000
+c1 talkingc1, bounce 491, t=509000000
+c0 talkingClock cycle count = 51
+c0 talkingRNG: 1216446506, 2715853915, 2250237095
+c0 talkingDistributions: 1.500000, 4.000000, 0.235753, 0.905527, 1.000000, 2.000000
+c2 talkingc2, bounce 490, t=510000000
+c3 talkingc3, bounce 489, t=511000000
+c0 talkingc0, bounce 488, t=512000000
+c1 talkingc1, bounce 487, t=513000000
+c2 talkingc2, bounce 486, t=514000000
+c3 talkingc3, bounce 485, t=515000000
+c0 talkingc0, bounce 484, t=516000000
+c1 talkingc1, bounce 483, t=517000000
+c2 talkingc2, bounce 482, t=518000000
+c3 talkingc3, bounce 481, t=519000000
+c0 talkingClock cycle count = 52
+c0 talkingRNG: 1510182615, 2888409496, 1580525967
+c0 talkingDistributions: 1.500000, 3.000000, 0.348858, 0.843713, 0.000000, 1.000000
+c0 talkingc0, bounce 480, t=520000000
+c1 talkingc1, bounce 479, t=521000000
+c2 talkingc2, bounce 478, t=522000000
+c3 talkingc3, bounce 477, t=523000000
+c0 talkingc0, bounce 476, t=524000000
+c1 talkingc1, bounce 475, t=525000000
+c2 talkingc2, bounce 474, t=526000000
+c3 talkingc3, bounce 473, t=527000000
+c0 talkingc0, bounce 472, t=528000000
+c1 talkingc1, bounce 471, t=529000000
+c0 talkingClock cycle count = 53
+c0 talkingRNG: 3359150179, 87976440, 3797242225
+c0 talkingDistributions: 1.500000, 2.000000, 2.696481, 0.643980, 1.000000, 2.000000
+c2 talkingc2, bounce 470, t=530000000
+c3 talkingc3, bounce 469, t=531000000
+c0 talkingc0, bounce 468, t=532000000
+c1 talkingc1, bounce 467, t=533000000
+c2 talkingc2, bounce 466, t=534000000
+c3 talkingc3, bounce 465, t=535000000
+c0 talkingc0, bounce 464, t=536000000
+c1 talkingc1, bounce 463, t=537000000
+c2 talkingc2, bounce 462, t=538000000
+c3 talkingc3, bounce 461, t=539000000
+c0 talkingClock cycle count = 54
+c0 talkingRNG: 2656589867, 4166423185, 3275520450
+c0 talkingDistributions: 1.500000, 4.000000, 0.423624, 1.121917, 2.000000, 0.000000
+c0 talkingc0, bounce 460, t=540000000
+c1 talkingc1, bounce 459, t=541000000
+c2 talkingc2, bounce 458, t=542000000
+c3 talkingc3, bounce 457, t=543000000
+c0 talkingc0, bounce 456, t=544000000
+c1 talkingc1, bounce 455, t=545000000
+c2 talkingc2, bounce 454, t=546000000
+c3 talkingc3, bounce 453, t=547000000
+c0 talkingc0, bounce 452, t=548000000
+c1 talkingc1, bounce 451, t=549000000
+c0 talkingClock cycle count = 55
+c0 talkingRNG: 557283096, 501382723, 3128920030
+c0 talkingDistributions: 1.500000, 2.000000, 0.468796, 0.969780, 2.000000, 2.000000
+c2 talkingc2, bounce 450, t=550000000
+c3 talkingc3, bounce 449, t=551000000
+c0 talkingc0, bounce 448, t=552000000
+c1 talkingc1, bounce 447, t=553000000
+c2 talkingc2, bounce 446, t=554000000
+c3 talkingc3, bounce 445, t=555000000
+c0 talkingc0, bounce 444, t=556000000
+c1 talkingc1, bounce 443, t=557000000
+c2 talkingc2, bounce 442, t=558000000
+c3 talkingc3, bounce 441, t=559000000
+c0 talkingClock cycle count = 56
+c0 talkingRNG: 346677175, 4245914950, 1140750735
+c0 talkingDistributions: 1.500000, 5.000000, 4.748469, 1.251892, 0.000000, 1.000000
+c0 talkingc0, bounce 440, t=560000000
+c1 talkingc1, bounce 439, t=561000000
+c2 talkingc2, bounce 438, t=562000000
+c3 talkingc3, bounce 437, t=563000000
+c0 talkingc0, bounce 436, t=564000000
+c1 talkingc1, bounce 435, t=565000000
+c2 talkingc2, bounce 434, t=566000000
+c3 talkingc3, bounce 433, t=567000000
+c0 talkingc0, bounce 432, t=568000000
+c1 talkingc1, bounce 431, t=569000000
+c0 talkingClock cycle count = 57
+c0 talkingRNG: 2442728421, 1358787243, 191395416
+c0 talkingDistributions: 1.500000, 1.000000, 1.396017, 1.038057, 1.000000, 1.000000
+c2 talkingc2, bounce 430, t=570000000
+c3 talkingc3, bounce 429, t=571000000
+c0 talkingc0, bounce 428, t=572000000
+c1 talkingc1, bounce 427, t=573000000
+c2 talkingc2, bounce 426, t=574000000
+c3 talkingc3, bounce 425, t=575000000
+c0 talkingc0, bounce 424, t=576000000
+c1 talkingc1, bounce 423, t=577000000
+c2 talkingc2, bounce 422, t=578000000
+c3 talkingc3, bounce 421, t=579000000
+c0 talkingClock cycle count = 58
+c0 talkingRNG: 51581698, 3341927794, 733670558
+c0 talkingDistributions: 1.500000, 4.000000, 0.256939, 0.713877, 1.000000, 1.000000
+c0 talkingc0, bounce 420, t=580000000
+c1 talkingc1, bounce 419, t=581000000
+c2 talkingc2, bounce 418, t=582000000
+c3 talkingc3, bounce 417, t=583000000
+c0 talkingc0, bounce 416, t=584000000
+c1 talkingc1, bounce 415, t=585000000
+c2 talkingc2, bounce 414, t=586000000
+c3 talkingc3, bounce 413, t=587000000
+c0 talkingc0, bounce 412, t=588000000
+c1 talkingc1, bounce 411, t=589000000
+c0 talkingClock cycle count = 59
+c0 talkingRNG: 4188832279, 678228210, 1841160000
+c0 talkingDistributions: 1.500000, 2.000000, 1.440282, 0.979501, 0.000000, 1.000000
+c2 talkingc2, bounce 410, t=590000000
+c3 talkingc3, bounce 409, t=591000000
+c0 talkingc0, bounce 408, t=592000000
+c1 talkingc1, bounce 407, t=593000000
+c2 talkingc2, bounce 406, t=594000000
+c3 talkingc3, bounce 405, t=595000000
+c0 talkingc0, bounce 404, t=596000000
+c1 talkingc1, bounce 403, t=597000000
+c2 talkingc2, bounce 402, t=598000000
+c3 talkingc3, bounce 401, t=599000000
+c0 talkingClock cycle count = 60
+c0 talkingRNG: 912127592, 108015296, 3711951225
+c0 talkingDistributions: 1.500000, 2.000000, 3.725285, 1.339930, 2.000000, 0.000000
+c0 talkingc0, bounce 400, t=600000000
+ c0.eventcount : Accumulator : Sum.u32 = 150; SumSQ.u32 = 150; Count.u64 = 150; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 150; SumSQ.u32 = 150; Count.u64 = 150; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c1.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 150; SumSQ.u32 = 150; Count.u64 = 150; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c2.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 150; SumSQ.u32 = 150; Count.u64 = 150; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2456873605; SumSQ.u32 = 3902460013; Count.u64 = 30; Min.u32 = 54893165; Max.u32 = 4045028768; 
+ c3.distvals : Accumulator : Sum.f64 = 29.800760; SumSQ.f64 = 30.956261; Count.u64 = 30; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+c1 talkingc1, bounce 399, t=601000000
+c2 talkingc2, bounce 398, t=602000000
+c3 talkingc3, bounce 397, t=603000000
+c0 talkingc0, bounce 396, t=604000000
+c1 talkingc1, bounce 395, t=605000000
+c2 talkingc2, bounce 394, t=606000000
+c3 talkingc3, bounce 393, t=607000000
+c0 talkingc0, bounce 392, t=608000000
+c1 talkingc1, bounce 391, t=609000000
+c1 talkingClock cycle count = 61
+c1 talkingRNG: 1216446506, 2715853915, 2250237095
+c1 talkingDistributions: 1.500000, 1.000000, 0.235753, 0.905527, 1.000000, 2.000000
+c2 talkingClock cycle count = 61
+c2 talkingRNG: 1216446506, 2715853915, 2250237095
+c2 talkingDistributions: 1.500000, 1.000000, 0.235753, 0.905527, 1.000000, 2.000000
+c3 talkingClock cycle count = 61
+c3 talkingRNG: 1216446506, 2715853915, 2250237095
+c3 talkingDistributions: 1.500000, 1.000000, 0.235753, 0.905527, 1.000000, 2.000000
+c2 talkingc2, bounce 390, t=610000000
+c3 talkingc3, bounce 389, t=611000000
+c0 talkingc0, bounce 388, t=612000000
+c1 talkingc1, bounce 387, t=613000000
+c2 talkingc2, bounce 386, t=614000000
+c3 talkingc3, bounce 385, t=615000000
+c0 talkingc0, bounce 384, t=616000000
+c1 talkingc1, bounce 383, t=617000000
+c2 talkingc2, bounce 382, t=618000000
+c3 talkingc3, bounce 381, t=619000000
+c1 talkingClock cycle count = 62
+c1 talkingRNG: 1510182615, 2888409496, 1580525967
+c1 talkingDistributions: 1.500000, 1.000000, 0.348858, 0.843713, 0.000000, 1.000000
+c2 talkingClock cycle count = 62
+c2 talkingRNG: 1510182615, 2888409496, 1580525967
+c2 talkingDistributions: 1.500000, 1.000000, 0.348858, 0.843713, 0.000000, 1.000000
+c3 talkingClock cycle count = 62
+c3 talkingRNG: 1510182615, 2888409496, 1580525967
+c3 talkingDistributions: 1.500000, 1.000000, 0.348858, 0.843713, 0.000000, 1.000000
+c0 talkingc0, bounce 380, t=620000000
+c1 talkingc1, bounce 379, t=621000000
+c2 talkingc2, bounce 378, t=622000000
+c3 talkingc3, bounce 377, t=623000000
+c0 talkingc0, bounce 376, t=624000000
+c1 talkingc1, bounce 375, t=625000000
+c2 talkingc2, bounce 374, t=626000000
+c3 talkingc3, bounce 373, t=627000000
+c0 talkingc0, bounce 372, t=628000000
+c1 talkingc1, bounce 371, t=629000000
+c1 talkingClock cycle count = 63
+c1 talkingRNG: 3359150179, 87976440, 3797242225
+c1 talkingDistributions: 1.500000, 1.000000, 2.696481, 0.643980, 1.000000, 2.000000
+c2 talkingClock cycle count = 63
+c2 talkingRNG: 3359150179, 87976440, 3797242225
+c2 talkingDistributions: 1.500000, 1.000000, 2.696481, 0.643980, 1.000000, 2.000000
+c3 talkingClock cycle count = 63
+c3 talkingRNG: 3359150179, 87976440, 3797242225
+c3 talkingDistributions: 1.500000, 1.000000, 2.696481, 0.643980, 1.000000, 2.000000
+c2 talkingc2, bounce 370, t=630000000
+c3 talkingc3, bounce 369, t=631000000
+c0 talkingc0, bounce 368, t=632000000
+c1 talkingc1, bounce 367, t=633000000
+c2 talkingc2, bounce 366, t=634000000
+c3 talkingc3, bounce 365, t=635000000
+c0 talkingc0, bounce 364, t=636000000
+c1 talkingc1, bounce 363, t=637000000
+c2 talkingc2, bounce 362, t=638000000
+c3 talkingc3, bounce 361, t=639000000
+c1 talkingClock cycle count = 64
+c1 talkingRNG: 2656589867, 4166423185, 3275520450
+c1 talkingDistributions: 1.500000, 1.000000, 0.423624, 1.121917, 2.000000, 0.000000
+c2 talkingClock cycle count = 64
+c2 talkingRNG: 2656589867, 4166423185, 3275520450
+c2 talkingDistributions: 1.500000, 1.000000, 0.423624, 1.121917, 2.000000, 0.000000
+c3 talkingClock cycle count = 64
+c3 talkingRNG: 2656589867, 4166423185, 3275520450
+c3 talkingDistributions: 1.500000, 1.000000, 0.423624, 1.121917, 2.000000, 0.000000
+c0 talkingc0, bounce 360, t=640000000
+c1 talkingc1, bounce 359, t=641000000
+c2 talkingc2, bounce 358, t=642000000
+c3 talkingc3, bounce 357, t=643000000
+c0 talkingc0, bounce 356, t=644000000
+c1 talkingc1, bounce 355, t=645000000
+c2 talkingc2, bounce 354, t=646000000
+c3 talkingc3, bounce 353, t=647000000
+c0 talkingc0, bounce 352, t=648000000
+c1 talkingc1, bounce 351, t=649000000
+c1 talkingClock cycle count = 65
+c1 talkingRNG: 557283096, 501382723, 3128920030
+c1 talkingDistributions: 1.500000, 1.000000, 0.468796, 0.969780, 2.000000, 2.000000
+c2 talkingClock cycle count = 65
+c2 talkingRNG: 557283096, 501382723, 3128920030
+c2 talkingDistributions: 1.500000, 1.000000, 0.468796, 0.969780, 2.000000, 2.000000
+c3 talkingClock cycle count = 65
+c3 talkingRNG: 557283096, 501382723, 3128920030
+c3 talkingDistributions: 1.500000, 1.000000, 0.468796, 0.969780, 2.000000, 2.000000
+c2 talkingc2, bounce 350, t=650000000
+c3 talkingc3, bounce 349, t=651000000
+c0 talkingc0, bounce 348, t=652000000
+c1 talkingc1, bounce 347, t=653000000
+c2 talkingc2, bounce 346, t=654000000
+c3 talkingc3, bounce 345, t=655000000
+c0 talkingc0, bounce 344, t=656000000
+c1 talkingc1, bounce 343, t=657000000
+c2 talkingc2, bounce 342, t=658000000
+c3 talkingc3, bounce 341, t=659000000
+c1 talkingClock cycle count = 66
+c1 talkingRNG: 346677175, 4245914950, 1140750735
+c1 talkingDistributions: 1.500000, 1.000000, 4.748469, 1.251892, 0.000000, 1.000000
+c2 talkingClock cycle count = 66
+c2 talkingRNG: 346677175, 4245914950, 1140750735
+c2 talkingDistributions: 1.500000, 1.000000, 4.748469, 1.251892, 0.000000, 1.000000
+c3 talkingClock cycle count = 66
+c3 talkingRNG: 346677175, 4245914950, 1140750735
+c3 talkingDistributions: 1.500000, 1.000000, 4.748469, 1.251892, 0.000000, 1.000000
+c0 talkingc0, bounce 340, t=660000000
+c1 talkingc1, bounce 339, t=661000000
+c2 talkingc2, bounce 338, t=662000000
+c3 talkingc3, bounce 337, t=663000000
+c0 talkingc0, bounce 336, t=664000000
+c1 talkingc1, bounce 335, t=665000000
+c2 talkingc2, bounce 334, t=666000000
+c3 talkingc3, bounce 333, t=667000000
+c0 talkingc0, bounce 332, t=668000000
+c1 talkingc1, bounce 331, t=669000000
+c1 talkingClock cycle count = 67
+c1 talkingRNG: 2442728421, 1358787243, 191395416
+c1 talkingDistributions: 1.500000, 1.000000, 1.396017, 1.038057, 1.000000, 1.000000
+c2 talkingClock cycle count = 67
+c2 talkingRNG: 2442728421, 1358787243, 191395416
+c2 talkingDistributions: 1.500000, 1.000000, 1.396017, 1.038057, 1.000000, 1.000000
+c3 talkingClock cycle count = 67
+c3 talkingRNG: 2442728421, 1358787243, 191395416
+c3 talkingDistributions: 1.500000, 1.000000, 1.396017, 1.038057, 1.000000, 1.000000
+c2 talkingc2, bounce 330, t=670000000
+c3 talkingc3, bounce 329, t=671000000
+c0 talkingc0, bounce 328, t=672000000
+c1 talkingc1, bounce 327, t=673000000
+c2 talkingc2, bounce 326, t=674000000
+c3 talkingc3, bounce 325, t=675000000
+c0 talkingc0, bounce 324, t=676000000
+c1 talkingc1, bounce 323, t=677000000
+c2 talkingc2, bounce 322, t=678000000
+c3 talkingc3, bounce 321, t=679000000
+c1 talkingClock cycle count = 68
+c1 talkingRNG: 51581698, 3341927794, 733670558
+c1 talkingDistributions: 1.500000, 1.000000, 0.256939, 0.713877, 1.000000, 1.000000
+c2 talkingClock cycle count = 68
+c2 talkingRNG: 51581698, 3341927794, 733670558
+c2 talkingDistributions: 1.500000, 1.000000, 0.256939, 0.713877, 1.000000, 1.000000
+c3 talkingClock cycle count = 68
+c3 talkingRNG: 51581698, 3341927794, 733670558
+c3 talkingDistributions: 1.500000, 1.000000, 0.256939, 0.713877, 1.000000, 1.000000
+c0 talkingc0, bounce 320, t=680000000
+c1 talkingc1, bounce 319, t=681000000
+c2 talkingc2, bounce 318, t=682000000
+c3 talkingc3, bounce 317, t=683000000
+c0 talkingc0, bounce 316, t=684000000
+c1 talkingc1, bounce 315, t=685000000
+c2 talkingc2, bounce 314, t=686000000
+c3 talkingc3, bounce 313, t=687000000
+c0 talkingc0, bounce 312, t=688000000
+c1 talkingc1, bounce 311, t=689000000
+c1 talkingClock cycle count = 69
+c1 talkingRNG: 4188832279, 678228210, 1841160000
+c1 talkingDistributions: 1.500000, 1.000000, 1.440282, 0.979501, 0.000000, 1.000000
+c2 talkingClock cycle count = 69
+c2 talkingRNG: 4188832279, 678228210, 1841160000
+c2 talkingDistributions: 1.500000, 1.000000, 1.440282, 0.979501, 0.000000, 1.000000
+c3 talkingClock cycle count = 69
+c3 talkingRNG: 4188832279, 678228210, 1841160000
+c3 talkingDistributions: 1.500000, 1.000000, 1.440282, 0.979501, 0.000000, 1.000000
+c2 talkingc2, bounce 310, t=690000000
+c3 talkingc3, bounce 309, t=691000000
+c0 talkingc0, bounce 308, t=692000000
+c1 talkingc1, bounce 307, t=693000000
+c2 talkingc2, bounce 306, t=694000000
+c3 talkingc3, bounce 305, t=695000000
+c0 talkingc0, bounce 304, t=696000000
+c1 talkingc1, bounce 303, t=697000000
+c2 talkingc2, bounce 302, t=698000000
+c3 talkingc3, bounce 301, t=699000000
+c1 talkingClock cycle count = 70
+c1 talkingRNG: 912127592, 108015296, 3711951225
+c1 talkingDistributions: 1.500000, 1.000000, 3.725285, 1.339930, 2.000000, 0.000000
+c2 talkingClock cycle count = 70
+c2 talkingRNG: 912127592, 108015296, 3711951225
+c2 talkingDistributions: 1.500000, 1.000000, 3.725285, 1.339930, 2.000000, 0.000000
+c3 talkingClock cycle count = 70
+c3 talkingRNG: 912127592, 108015296, 3711951225
+c3 talkingDistributions: 1.500000, 1.000000, 3.725285, 1.339930, 2.000000, 0.000000
+c0 talkingc0, bounce 300, t=700000000
+ c0.eventcount : Accumulator : Sum.u32 = 175; SumSQ.u32 = 175; Count.u64 = 175; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 175; SumSQ.u32 = 175; Count.u64 = 175; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 1074956377; SumSQ.u32 = 1686280149; Count.u64 = 40; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c1.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 175; SumSQ.u32 = 175; Count.u64 = 175; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 1074956377; SumSQ.u32 = 1686280149; Count.u64 = 40; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c2.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 175; SumSQ.u32 = 175; Count.u64 = 175; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 1074956377; SumSQ.u32 = 1686280149; Count.u64 = 40; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c3.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+c1 talkingc1, bounce 299, t=701000000
+c2 talkingc2, bounce 298, t=702000000
+c3 talkingc3, bounce 297, t=703000000
+c0 talkingc0, bounce 296, t=704000000
+c1 talkingc1, bounce 295, t=705000000
+c2 talkingc2, bounce 294, t=706000000
+c3 talkingc3, bounce 293, t=707000000
+c0 talkingc0, bounce 292, t=708000000
+c1 talkingc1, bounce 291, t=709000000
+c1 talkingClock cycle count = 71
+c1 talkingRNG: 577672250, 3259792509, 2511181360
+c1 talkingDistributions: 1.500000, 1.000000, 2.044070, 0.967864, 2.000000, 1.000000
+c2 talkingClock cycle count = 71
+c2 talkingRNG: 577672250, 3259792509, 2511181360
+c2 talkingDistributions: 1.500000, 1.000000, 2.044070, 0.967864, 2.000000, 1.000000
+c3 talkingClock cycle count = 71
+c3 talkingRNG: 577672250, 3259792509, 2511181360
+c3 talkingDistributions: 1.500000, 1.000000, 2.044070, 0.967864, 2.000000, 1.000000
+c2 talkingc2, bounce 290, t=710000000
+c3 talkingc3, bounce 289, t=711000000
+c0 talkingc0, bounce 288, t=712000000
+c1 talkingc1, bounce 287, t=713000000
+c2 talkingc2, bounce 286, t=714000000
+c3 talkingc3, bounce 285, t=715000000
+c0 talkingc0, bounce 284, t=716000000
+c1 talkingc1, bounce 283, t=717000000
+c2 talkingc2, bounce 282, t=718000000
+c3 talkingc3, bounce 281, t=719000000
+c1 talkingClock cycle count = 72
+c1 talkingRNG: 543322573, 3956862031, 1770997255
+c1 talkingDistributions: 1.500000, 1.000000, 0.118572, 0.810409, 3.000000, 1.000000
+c2 talkingClock cycle count = 72
+c2 talkingRNG: 543322573, 3956862031, 1770997255
+c2 talkingDistributions: 1.500000, 1.000000, 0.118572, 0.810409, 3.000000, 1.000000
+c3 talkingClock cycle count = 72
+c3 talkingRNG: 543322573, 3956862031, 1770997255
+c3 talkingDistributions: 1.500000, 1.000000, 0.118572, 0.810409, 3.000000, 1.000000
+c0 talkingc0, bounce 280, t=720000000
+c1 talkingc1, bounce 279, t=721000000
+c2 talkingc2, bounce 278, t=722000000
+c3 talkingc3, bounce 277, t=723000000
+c0 talkingc0, bounce 276, t=724000000
+c1 talkingc1, bounce 275, t=725000000
+c2 talkingc2, bounce 274, t=726000000
+c3 talkingc3, bounce 273, t=727000000
+c0 talkingc0, bounce 272, t=728000000
+c1 talkingc1, bounce 271, t=729000000
+c1 talkingClock cycle count = 73
+c1 talkingRNG: 4067739334, 3514465888, 3930837929
+c1 talkingDistributions: 1.500000, 1.000000, 0.116659, 0.747205, 0.000000, 2.000000
+c2 talkingClock cycle count = 73
+c2 talkingRNG: 4067739334, 3514465888, 3930837929
+c2 talkingDistributions: 1.500000, 1.000000, 0.116659, 0.747205, 0.000000, 2.000000
+c3 talkingClock cycle count = 73
+c3 talkingRNG: 4067739334, 3514465888, 3930837929
+c3 talkingDistributions: 1.500000, 1.000000, 0.116659, 0.747205, 0.000000, 2.000000
+c2 talkingc2, bounce 270, t=730000000
+c3 talkingc3, bounce 269, t=731000000
+c0 talkingc0, bounce 268, t=732000000
+c1 talkingc1, bounce 267, t=733000000
+c2 talkingc2, bounce 266, t=734000000
+c3 talkingc3, bounce 265, t=735000000
+c0 talkingc0, bounce 264, t=736000000
+c1 talkingc1, bounce 263, t=737000000
+c2 talkingc2, bounce 262, t=738000000
+c3 talkingc3, bounce 261, t=739000000
+c1 talkingClock cycle count = 74
+c1 talkingRNG: 305750305, 1764854807, 3361592240
+c1 talkingDistributions: 1.500000, 1.000000, 0.189956, 0.941373, 0.000000, 2.000000
+c2 talkingClock cycle count = 74
+c2 talkingRNG: 305750305, 1764854807, 3361592240
+c2 talkingDistributions: 1.500000, 1.000000, 0.189956, 0.941373, 0.000000, 2.000000
+c3 talkingClock cycle count = 74
+c3 talkingRNG: 305750305, 1764854807, 3361592240
+c3 talkingDistributions: 1.500000, 1.000000, 0.189956, 0.941373, 0.000000, 2.000000
+c0 talkingc0, bounce 260, t=740000000
+c1 talkingc1, bounce 259, t=741000000
+c2 talkingc2, bounce 258, t=742000000
+c3 talkingc3, bounce 257, t=743000000
+c0 talkingc0, bounce 256, t=744000000
+c1 talkingc1, bounce 255, t=745000000
+c2 talkingc2, bounce 254, t=746000000
+c3 talkingc3, bounce 253, t=747000000
+c0 talkingc0, bounce 252, t=748000000
+c1 talkingc1, bounce 251, t=749000000
+# Simulation Checkpoint: Simulated Time 750 us (Real CPU time since last checkpoint 0.00646 seconds)
+c1 talkingClock cycle count = 75
+c1 talkingRNG: 920229608, 1480150939, 834191517
+c1 talkingDistributions: 1.500000, 1.000000, 0.356806, 0.676278, 0.000000, 1.000000
+c2 talkingClock cycle count = 75
+c2 talkingRNG: 920229608, 1480150939, 834191517
+c2 talkingDistributions: 1.500000, 1.000000, 0.356806, 0.676278, 0.000000, 1.000000
+c3 talkingClock cycle count = 75
+c3 talkingRNG: 920229608, 1480150939, 834191517
+c3 talkingDistributions: 1.500000, 1.000000, 0.356806, 0.676278, 0.000000, 1.000000
+c2 talkingc2, bounce 250, t=750000000
+c3 talkingc3, bounce 249, t=751000000
+c0 talkingc0, bounce 248, t=752000000
+c1 talkingc1, bounce 247, t=753000000
+c2 talkingc2, bounce 246, t=754000000
+c3 talkingc3, bounce 245, t=755000000
+c0 talkingc0, bounce 244, t=756000000
+c1 talkingc1, bounce 243, t=757000000
+c2 talkingc2, bounce 242, t=758000000
+c3 talkingc3, bounce 241, t=759000000
+c0 talkingc0, bounce 240, t=760000000
+c1 talkingc1, bounce 239, t=761000000
+c2 talkingc2, bounce 238, t=762000000
+c3 talkingc3, bounce 237, t=763000000
+c0 talkingc0, bounce 236, t=764000000
+c1 talkingc1, bounce 235, t=765000000
+c2 talkingc2, bounce 234, t=766000000
+c3 talkingc3, bounce 233, t=767000000
+c0 talkingc0, bounce 232, t=768000000
+c1 talkingc1, bounce 231, t=769000000
+c2 talkingc2, bounce 230, t=770000000
+c3 talkingc3, bounce 229, t=771000000
+c0 talkingc0, bounce 228, t=772000000
+c1 talkingc1, bounce 227, t=773000000
+c2 talkingc2, bounce 226, t=774000000
+c3 talkingc3, bounce 225, t=775000000
+c0 talkingc0, bounce 224, t=776000000
+c1 talkingc1, bounce 223, t=777000000
+c2 talkingc2, bounce 222, t=778000000
+c3 talkingc3, bounce 221, t=779000000
+c0 talkingc0, bounce 220, t=780000000
+c1 talkingc1, bounce 219, t=781000000
+c2 talkingc2, bounce 218, t=782000000
+c3 talkingc3, bounce 217, t=783000000
+c0 talkingc0, bounce 216, t=784000000
+c1 talkingc1, bounce 215, t=785000000
+c2 talkingc2, bounce 214, t=786000000
+c3 talkingc3, bounce 213, t=787000000
+c0 talkingc0, bounce 212, t=788000000
+c1 talkingc1, bounce 211, t=789000000
+c2 talkingc2, bounce 210, t=790000000
+c3 talkingc3, bounce 209, t=791000000
+c0 talkingc0, bounce 208, t=792000000
+c1 talkingc1, bounce 207, t=793000000
+c2 talkingc2, bounce 206, t=794000000
+c3 talkingc3, bounce 205, t=795000000
+c0 talkingc0, bounce 204, t=796000000
+c1 talkingc1, bounce 203, t=797000000
+c2 talkingc2, bounce 202, t=798000000
+c3 talkingc3, bounce 201, t=799000000
+c0 talkingc0, bounce 200, t=800000000
+ c0.eventcount : Accumulator : Sum.u32 = 200; SumSQ.u32 = 200; Count.u64 = 200; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 39.608933; SumSQ.f64 = 41.011222; Count.u64 = 40; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 200; SumSQ.u32 = 200; Count.u64 = 200; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c1.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 200; SumSQ.u32 = 200; Count.u64 = 200; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c2.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 200; SumSQ.u32 = 200; Count.u64 = 200; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c3.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+c1 talkingc1, bounce 199, t=801000000
+c2 talkingc2, bounce 198, t=802000000
+c3 talkingc3, bounce 197, t=803000000
+c0 talkingc0, bounce 196, t=804000000
+c1 talkingc1, bounce 195, t=805000000
+c2 talkingc2, bounce 194, t=806000000
+c3 talkingc3, bounce 193, t=807000000
+c0 talkingc0, bounce 192, t=808000000
+c1 talkingc1, bounce 191, t=809000000
+c0 talkingClock cycle count = 81
+c0 talkingRNG: 577672250, 3259792509, 2511181360
+c0 talkingDistributions: 1.500000, 5.000000, 2.044070, 0.967864, 2.000000, 1.000000
+c2 talkingc2, bounce 190, t=810000000
+c3 talkingc3, bounce 189, t=811000000
+c0 talkingc0, bounce 188, t=812000000
+c1 talkingc1, bounce 187, t=813000000
+c2 talkingc2, bounce 186, t=814000000
+c3 talkingc3, bounce 185, t=815000000
+c0 talkingc0, bounce 184, t=816000000
+c1 talkingc1, bounce 183, t=817000000
+c2 talkingc2, bounce 182, t=818000000
+c3 talkingc3, bounce 181, t=819000000
+c0 talkingClock cycle count = 82
+c0 talkingRNG: 543322573, 3956862031, 1770997255
+c0 talkingDistributions: 1.500000, 5.000000, 0.118572, 0.810409, 3.000000, 1.000000
+c0 talkingc0, bounce 180, t=820000000
+c1 talkingc1, bounce 179, t=821000000
+c2 talkingc2, bounce 178, t=822000000
+c3 talkingc3, bounce 177, t=823000000
+c0 talkingc0, bounce 176, t=824000000
+c1 talkingc1, bounce 175, t=825000000
+c2 talkingc2, bounce 174, t=826000000
+c3 talkingc3, bounce 173, t=827000000
+c0 talkingc0, bounce 172, t=828000000
+c1 talkingc1, bounce 171, t=829000000
+c0 talkingClock cycle count = 83
+c0 talkingRNG: 4067739334, 3514465888, 3930837929
+c0 talkingDistributions: 1.500000, 2.000000, 0.116659, 0.747205, 0.000000, 2.000000
+c2 talkingc2, bounce 170, t=830000000
+c3 talkingc3, bounce 169, t=831000000
+c0 talkingc0, bounce 168, t=832000000
+c1 talkingc1, bounce 167, t=833000000
+c2 talkingc2, bounce 166, t=834000000
+c3 talkingc3, bounce 165, t=835000000
+c0 talkingc0, bounce 164, t=836000000
+c1 talkingc1, bounce 163, t=837000000
+c2 talkingc2, bounce 162, t=838000000
+c3 talkingc3, bounce 161, t=839000000
+c0 talkingClock cycle count = 84
+c0 talkingRNG: 305750305, 1764854807, 3361592240
+c0 talkingDistributions: 1.500000, 5.000000, 0.189956, 0.941373, 0.000000, 2.000000
+c0 talkingc0, bounce 160, t=840000000
+c1 talkingc1, bounce 159, t=841000000
+c2 talkingc2, bounce 158, t=842000000
+c3 talkingc3, bounce 157, t=843000000
+c0 talkingc0, bounce 156, t=844000000
+c1 talkingc1, bounce 155, t=845000000
+c2 talkingc2, bounce 154, t=846000000
+c3 talkingc3, bounce 153, t=847000000
+c0 talkingc0, bounce 152, t=848000000
+c1 talkingc1, bounce 151, t=849000000
+c0 talkingClock cycle count = 85
+c0 talkingRNG: 920229608, 1480150939, 834191517
+c0 talkingDistributions: 1.500000, 2.000000, 0.356806, 0.676278, 0.000000, 1.000000
+c2 talkingc2, bounce 150, t=850000000
+c3 talkingc3, bounce 149, t=851000000
+c0 talkingc0, bounce 148, t=852000000
+c1 talkingc1, bounce 147, t=853000000
+c2 talkingc2, bounce 146, t=854000000
+c3 talkingc3, bounce 145, t=855000000
+c0 talkingc0, bounce 144, t=856000000
+c1 talkingc1, bounce 143, t=857000000
+c2 talkingc2, bounce 142, t=858000000
+c3 talkingc3, bounce 141, t=859000000
+c0 talkingClock cycle count = 86
+c0 talkingRNG: 4083397421, 814766918, 571738067
+c0 talkingDistributions: 1.500000, 4.000000, 1.606812, 1.210781, 1.000000, 0.000000
+c0 talkingc0, bounce 140, t=860000000
+c1 talkingc1, bounce 139, t=861000000
+c2 talkingc2, bounce 138, t=862000000
+c3 talkingc3, bounce 137, t=863000000
+c0 talkingc0, bounce 136, t=864000000
+c1 talkingc1, bounce 135, t=865000000
+c2 talkingc2, bounce 134, t=866000000
+c3 talkingc3, bounce 133, t=867000000
+c0 talkingc0, bounce 132, t=868000000
+c1 talkingc1, bounce 131, t=869000000
+c0 talkingClock cycle count = 87
+c0 talkingRNG: 2767418754, 1369230425, 2524335779
+c0 talkingDistributions: 1.500000, 5.000000, 0.644178, 0.855426, 0.000000, 3.000000
+c2 talkingc2, bounce 130, t=870000000
+c3 talkingc3, bounce 129, t=871000000
+c0 talkingc0, bounce 128, t=872000000
+c1 talkingc1, bounce 127, t=873000000
+c2 talkingc2, bounce 126, t=874000000
+c3 talkingc3, bounce 125, t=875000000
+c0 talkingc0, bounce 124, t=876000000
+c1 talkingc1, bounce 123, t=877000000
+c2 talkingc2, bounce 122, t=878000000
+c3 talkingc3, bounce 121, t=879000000
+c0 talkingClock cycle count = 88
+c0 talkingRNG: 1521841622, 876213611, 2962280334
+c0 talkingDistributions: 1.500000, 3.000000, 2.525374, 1.098006, 2.000000, 1.000000
+c0 talkingc0, bounce 120, t=880000000
+c1 talkingc1, bounce 119, t=881000000
+c2 talkingc2, bounce 118, t=882000000
+c3 talkingc3, bounce 117, t=883000000
+c0 talkingc0, bounce 116, t=884000000
+c1 talkingc1, bounce 115, t=885000000
+c2 talkingc2, bounce 114, t=886000000
+c3 talkingc3, bounce 113, t=887000000
+c0 talkingc0, bounce 112, t=888000000
+c1 talkingc1, bounce 111, t=889000000
+c0 talkingClock cycle count = 89
+c0 talkingRNG: 3375265574, 479581322, 1205554473
+c0 talkingDistributions: 1.500000, 1.000000, 1.117602, 1.151894, 2.000000, 1.000000
+c2 talkingc2, bounce 110, t=890000000
+c3 talkingc3, bounce 109, t=891000000
+c0 talkingc0, bounce 108, t=892000000
+c1 talkingc1, bounce 107, t=893000000
+c2 talkingc2, bounce 106, t=894000000
+c3 talkingc3, bounce 105, t=895000000
+c0 talkingc0, bounce 104, t=896000000
+c1 talkingc1, bounce 103, t=897000000
+c2 talkingc2, bounce 102, t=898000000
+c3 talkingc3, bounce 101, t=899000000
+c0 talkingClock cycle count = 90
+c0 talkingRNG: 258523197, 3710869945, 3312709790
+c0 talkingDistributions: 1.500000, 4.000000, 0.764242, 0.933345, 0.000000, 1.000000
+c0 talkingc0, bounce 100, t=900000000
+ c0.eventcount : Accumulator : Sum.u32 = 225; SumSQ.u32 = 225; Count.u64 = 225; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 49.001515; SumSQ.f64 = 50.107951; Count.u64 = 50; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 225; SumSQ.u32 = 225; Count.u64 = 225; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c1.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 225; SumSQ.u32 = 225; Count.u64 = 225; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c2.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 225; SumSQ.u32 = 225; Count.u64 = 225; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2166180663; SumSQ.u32 = 30835497; Count.u64 = 45; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c3.distvals : Accumulator : Sum.f64 = 43.752062; SumSQ.f64 = 44.506595; Count.u64 = 45; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+c1 talkingc1, bounce 99, t=901000000
+c2 talkingc2, bounce 98, t=902000000
+c3 talkingc3, bounce 97, t=903000000
+c0 talkingc0, bounce 96, t=904000000
+c1 talkingc1, bounce 95, t=905000000
+c2 talkingc2, bounce 94, t=906000000
+c3 talkingc3, bounce 93, t=907000000
+c0 talkingc0, bounce 92, t=908000000
+c1 talkingc1, bounce 91, t=909000000
+c0 talkingClock cycle count = 91
+c0 talkingRNG: 3922584009, 360576027, 3780427205
+c0 talkingDistributions: 1.500000, 1.000000, 0.297857, 0.971716, 1.000000, 0.000000
+c1 talkingClock cycle count = 91
+c1 talkingRNG: 4083397421, 814766918, 571738067
+c1 talkingDistributions: 1.500000, 1.000000, 1.606812, 1.210781, 1.000000, 0.000000
+c2 talkingClock cycle count = 91
+c2 talkingRNG: 4083397421, 814766918, 571738067
+c2 talkingDistributions: 1.500000, 1.000000, 1.606812, 1.210781, 1.000000, 0.000000
+c3 talkingClock cycle count = 91
+c3 talkingRNG: 4083397421, 814766918, 571738067
+c3 talkingDistributions: 1.500000, 1.000000, 1.606812, 1.210781, 1.000000, 0.000000
+c2 talkingc2, bounce 90, t=910000000
+c3 talkingc3, bounce 89, t=911000000
+c0 talkingc0, bounce 88, t=912000000
+c1 talkingc1, bounce 87, t=913000000
+c2 talkingc2, bounce 86, t=914000000
+c3 talkingc3, bounce 85, t=915000000
+c0 talkingc0, bounce 84, t=916000000
+c1 talkingc1, bounce 83, t=917000000
+c2 talkingc2, bounce 82, t=918000000
+c3 talkingc3, bounce 81, t=919000000
+c0 talkingClock cycle count = 92
+c0 talkingRNG: 2450569628, 666342188, 3616469726
+c0 talkingDistributions: 1.500000, 4.000000, 0.101587, 1.055396, 0.000000, 1.000000
+c1 talkingClock cycle count = 92
+c1 talkingRNG: 2767418754, 1369230425, 2524335779
+c1 talkingDistributions: 1.500000, 1.000000, 0.644178, 0.855426, 0.000000, 3.000000
+c2 talkingClock cycle count = 92
+c2 talkingRNG: 2767418754, 1369230425, 2524335779
+c2 talkingDistributions: 1.500000, 1.000000, 0.644178, 0.855426, 0.000000, 3.000000
+c3 talkingClock cycle count = 92
+c3 talkingRNG: 2767418754, 1369230425, 2524335779
+c3 talkingDistributions: 1.500000, 1.000000, 0.644178, 0.855426, 0.000000, 3.000000
+c0 talkingc0, bounce 80, t=920000000
+c1 talkingc1, bounce 79, t=921000000
+c2 talkingc2, bounce 78, t=922000000
+c3 talkingc3, bounce 77, t=923000000
+c0 talkingc0, bounce 76, t=924000000
+c1 talkingc1, bounce 75, t=925000000
+c2 talkingc2, bounce 74, t=926000000
+c3 talkingc3, bounce 73, t=927000000
+c0 talkingc0, bounce 72, t=928000000
+c1 talkingc1, bounce 71, t=929000000
+c0 talkingClock cycle count = 93
+c0 talkingRNG: 1651173059, 3061134581, 1252089603
+c0 talkingDistributions: 1.500000, 4.000000, 1.207818, 0.946070, 0.000000, 0.000000
+c1 talkingClock cycle count = 93
+c1 talkingRNG: 1521841622, 876213611, 2962280334
+c1 talkingDistributions: 1.500000, 1.000000, 2.525374, 1.098006, 2.000000, 1.000000
+c2 talkingClock cycle count = 93
+c2 talkingRNG: 1521841622, 876213611, 2962280334
+c2 talkingDistributions: 1.500000, 1.000000, 2.525374, 1.098006, 2.000000, 1.000000
+c3 talkingClock cycle count = 93
+c3 talkingRNG: 1521841622, 876213611, 2962280334
+c3 talkingDistributions: 1.500000, 1.000000, 2.525374, 1.098006, 2.000000, 1.000000
+c2 talkingc2, bounce 70, t=930000000
+c3 talkingc3, bounce 69, t=931000000
+c0 talkingc0, bounce 68, t=932000000
+c1 talkingc1, bounce 67, t=933000000
+c2 talkingc2, bounce 66, t=934000000
+c3 talkingc3, bounce 65, t=935000000
+c0 talkingc0, bounce 64, t=936000000
+c1 talkingc1, bounce 63, t=937000000
+c2 talkingc2, bounce 62, t=938000000
+c3 talkingc3, bounce 61, t=939000000
+c0 talkingClock cycle count = 94
+c0 talkingRNG: 3820724714, 3327872142, 269263305
+c0 talkingDistributions: 1.500000, 2.000000, 0.125135, 0.509737, 0.000000, 2.000000
+c1 talkingClock cycle count = 94
+c1 talkingRNG: 3375265574, 479581322, 1205554473
+c1 talkingDistributions: 1.500000, 1.000000, 1.117602, 1.151894, 2.000000, 1.000000
+c2 talkingClock cycle count = 94
+c2 talkingRNG: 3375265574, 479581322, 1205554473
+c2 talkingDistributions: 1.500000, 1.000000, 1.117602, 1.151894, 2.000000, 1.000000
+c3 talkingClock cycle count = 94
+c3 talkingRNG: 3375265574, 479581322, 1205554473
+c3 talkingDistributions: 1.500000, 1.000000, 1.117602, 1.151894, 2.000000, 1.000000
+c0 talkingc0, bounce 60, t=940000000
+c1 talkingc1, bounce 59, t=941000000
+c2 talkingc2, bounce 58, t=942000000
+c3 talkingc3, bounce 57, t=943000000
+c0 talkingc0, bounce 56, t=944000000
+c1 talkingc1, bounce 55, t=945000000
+c2 talkingc2, bounce 54, t=946000000
+c3 talkingc3, bounce 53, t=947000000
+c0 talkingc0, bounce 52, t=948000000
+c1 talkingc1, bounce 51, t=949000000
+c0 talkingClock cycle count = 95
+c0 talkingRNG: 1344590977, 2575019271, 1425181848
+c0 talkingDistributions: 1.500000, 5.000000, 1.070025, 1.042113, 0.000000, 0.000000
+c1 talkingClock cycle count = 95
+c1 talkingRNG: 258523197, 3710869945, 3312709790
+c1 talkingDistributions: 1.500000, 1.000000, 0.764242, 0.933345, 0.000000, 1.000000
+c2 talkingClock cycle count = 95
+c2 talkingRNG: 258523197, 3710869945, 3312709790
+c2 talkingDistributions: 1.500000, 1.000000, 0.764242, 0.933345, 0.000000, 1.000000
+c3 talkingClock cycle count = 95
+c3 talkingRNG: 258523197, 3710869945, 3312709790
+c3 talkingDistributions: 1.500000, 1.000000, 0.764242, 0.933345, 0.000000, 1.000000
+c2 talkingc2, bounce 50, t=950000000
+c3 talkingc3, bounce 49, t=951000000
+c0 talkingc0, bounce 48, t=952000000
+c1 talkingc1, bounce 47, t=953000000
+c2 talkingc2, bounce 46, t=954000000
+c3 talkingc3, bounce 45, t=955000000
+c0 talkingc0, bounce 44, t=956000000
+c1 talkingc1, bounce 43, t=957000000
+c2 talkingc2, bounce 42, t=958000000
+c3 talkingc3, bounce 41, t=959000000
+c0 talkingClock cycle count = 96
+c0 talkingRNG: 4171225800, 2074925495, 4098530522
+c0 talkingDistributions: 1.500000, 1.000000, 0.307992, 1.268388, 3.000000, 2.000000
+c1 talkingClock cycle count = 96
+c1 talkingRNG: 3922584009, 360576027, 3780427205
+c1 talkingDistributions: 1.500000, 1.000000, 0.297857, 0.971716, 1.000000, 0.000000
+c2 talkingClock cycle count = 96
+c2 talkingRNG: 3922584009, 360576027, 3780427205
+c2 talkingDistributions: 1.500000, 1.000000, 0.297857, 0.971716, 1.000000, 0.000000
+c3 talkingClock cycle count = 96
+c3 talkingRNG: 3922584009, 360576027, 3780427205
+c3 talkingDistributions: 1.500000, 1.000000, 0.297857, 0.971716, 1.000000, 0.000000
+c0 talkingc0, bounce 40, t=960000000
+c1 talkingc1, bounce 39, t=961000000
+c2 talkingc2, bounce 38, t=962000000
+c3 talkingc3, bounce 37, t=963000000
+c0 talkingc0, bounce 36, t=964000000
+c1 talkingc1, bounce 35, t=965000000
+c2 talkingc2, bounce 34, t=966000000
+c3 talkingc3, bounce 33, t=967000000
+c0 talkingc0, bounce 32, t=968000000
+c1 talkingc1, bounce 31, t=969000000
+c0 talkingClock cycle count = 97
+c0 talkingRNG: 2034780381, 239116623, 3025378327
+c0 talkingDistributions: 1.500000, 1.000000, 0.200902, 1.255067, 0.000000, 2.000000
+c1 talkingClock cycle count = 97
+c1 talkingRNG: 2450569628, 666342188, 3616469726
+c1 talkingDistributions: 1.500000, 1.000000, 0.101587, 1.055396, 0.000000, 1.000000
+c2 talkingClock cycle count = 97
+c2 talkingRNG: 2450569628, 666342188, 3616469726
+c2 talkingDistributions: 1.500000, 1.000000, 0.101587, 1.055396, 0.000000, 1.000000
+c3 talkingClock cycle count = 97
+c3 talkingRNG: 2450569628, 666342188, 3616469726
+c3 talkingDistributions: 1.500000, 1.000000, 0.101587, 1.055396, 0.000000, 1.000000
+c2 talkingc2, bounce 30, t=970000000
+c3 talkingc3, bounce 29, t=971000000
+c0 talkingc0, bounce 28, t=972000000
+c1 talkingc1, bounce 27, t=973000000
+c2 talkingc2, bounce 26, t=974000000
+c3 talkingc3, bounce 25, t=975000000
+c0 talkingc0, bounce 24, t=976000000
+c1 talkingc1, bounce 23, t=977000000
+c2 talkingc2, bounce 22, t=978000000
+c3 talkingc3, bounce 21, t=979000000
+c0 talkingClock cycle count = 98
+c0 talkingRNG: 678391591, 3364287424, 3240387005
+c0 talkingDistributions: 1.500000, 5.000000, 1.267498, 1.137689, 0.000000, 3.000000
+c1 talkingClock cycle count = 98
+c1 talkingRNG: 1651173059, 3061134581, 1252089603
+c1 talkingDistributions: 1.500000, 1.000000, 1.207818, 0.946070, 0.000000, 0.000000
+c2 talkingClock cycle count = 98
+c2 talkingRNG: 1651173059, 3061134581, 1252089603
+c2 talkingDistributions: 1.500000, 1.000000, 1.207818, 0.946070, 0.000000, 0.000000
+c3 talkingClock cycle count = 98
+c3 talkingRNG: 1651173059, 3061134581, 1252089603
+c3 talkingDistributions: 1.500000, 1.000000, 1.207818, 0.946070, 0.000000, 0.000000
+c0 talkingc0, bounce 20, t=980000000
+c1 talkingc1, bounce 19, t=981000000
+c2 talkingc2, bounce 18, t=982000000
+c3 talkingc3, bounce 17, t=983000000
+c0 talkingc0, bounce 16, t=984000000
+c1 talkingc1, bounce 15, t=985000000
+c2 talkingc2, bounce 14, t=986000000
+c3 talkingc3, bounce 13, t=987000000
+c0 talkingc0, bounce 12, t=988000000
+c1 talkingc1, bounce 11, t=989000000
+c0 talkingClock cycle count = 99
+c0 talkingRNG: 1633188403, 2060713640, 24290125
+c0 talkingDistributions: 1.500000, 5.000000, 0.388701, 1.326200, 1.000000, 1.000000
+c1 talkingClock cycle count = 99
+c1 talkingRNG: 3820724714, 3327872142, 269263305
+c1 talkingDistributions: 1.500000, 1.000000, 0.125135, 0.509737, 0.000000, 2.000000
+c2 talkingClock cycle count = 99
+c2 talkingRNG: 3820724714, 3327872142, 269263305
+c2 talkingDistributions: 1.500000, 1.000000, 0.125135, 0.509737, 0.000000, 2.000000
+c3 talkingClock cycle count = 99
+c3 talkingRNG: 3820724714, 3327872142, 269263305
+c3 talkingDistributions: 1.500000, 1.000000, 0.125135, 0.509737, 0.000000, 2.000000
+c2 talkingc2, bounce 10, t=990000000
+c3 talkingc3, bounce 9, t=991000000
+c0 talkingc0, bounce 8, t=992000000
+c1 talkingc1, bounce 7, t=993000000
+c2 talkingc2, bounce 6, t=994000000
+c3 talkingc3, bounce 5, t=995000000
+c0 talkingc0, bounce 4, t=996000000
+c1 talkingc1, bounce 3, t=997000000
+c2 talkingc2, bounce 2, t=998000000
+c3 talkingc3, bounce 1, t=999000000
+# Simulation Checkpoint: Simulated Time 1 ms (Real CPU time since last checkpoint 0.01039 seconds)
+c0 talkingClock cycle count = 100
+c0 talkingRNG: 617496695, 192864752, 2709406709
+c0 talkingDistributions: 1.500000, 4.000000, 0.186814, 1.133910, 0.000000, 0.000000
+c1 talkingClock cycle count = 100
+c1 talkingRNG: 1344590977, 2575019271, 1425181848
+c1 talkingDistributions: 1.500000, 1.000000, 1.070025, 1.042113, 0.000000, 0.000000
+c2 talkingClock cycle count = 100
+c2 talkingRNG: 1344590977, 2575019271, 1425181848
+c2 talkingDistributions: 1.500000, 1.000000, 1.070025, 1.042113, 0.000000, 0.000000
+c3 talkingClock cycle count = 100
+c3 talkingRNG: 1344590977, 2575019271, 1425181848
+c3 talkingDistributions: 1.500000, 1.000000, 1.070025, 1.042113, 0.000000, 0.000000
 c0, OK to end simulation
-c0, bounce 0, t=1000000000
+c0 talkingc0, bounce 0, t=1000000000
+ c0.eventcount : Accumulator : Sum.u32 = 250; SumSQ.u32 = 250; Count.u64 = 250; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 59.647800; SumSQ.f64 = 61.929818; Count.u64 = 60; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 250; SumSQ.u32 = 250; Count.u64 = 250; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c1.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 250; SumSQ.u32 = 250; Count.u64 = 250; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c2.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 250; SumSQ.u32 = 250; Count.u64 = 250; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c3.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
 c1, OK to end simulation
-c1, bounce 0, t=1001000000
-Simulation is complete, simulated time: 1.001 ms
+c1 talkingc1, bounce 0, t=1001000000
+c2, OK to end simulation
+c2 talkingc2, bounce 0, t=1002000000
+c3, OK to end simulation
+c3 talkingc3, bounce 0, t=1003000000
+c3, complete()
+c2, complete()
+c1, complete()
+c0, complete()
+c3 finished. teststring=hello, output=('c3 talking',2)
+c2 finished. teststring=hello, output=('c2 talking',2)
+c1 finished. teststring=hello, output=('c1 talking',2)
+c0 finished. teststring=hello, output=('c0 talking',2)
+ c0.rngvals : Histogram : BinsMinValue.u32 = 0; BinsMaxValue.u32 = 3999999999; BinWidth.u32 = 400000000; TotalNumBins.u32 = 10; Sum.u32 = 1997426236; SumSQ.u32 = 231415056; NumActiveBins.u32 = 10; NumItemsCollected.u64 = 60; NumItemsBinned.u64 = 57; NumOutOfBounds-MinValue.u64 = 0; NumOutOfBounds-MaxValue.u64 = 3; Bin0:0-399999999.u64 = 9; Bin1:400000000-799999999.u64 = 8; Bin2:800000000-1199999999.u64 = 4; Bin3:1200000000-1599999999.u64 = 3; Bin4:1600000000-1999999999.u64 = 3; Bin5:2000000000-2399999999.u64 = 5; Bin6:2400000000-2799999999.u64 = 3; Bin7:2800000000-3199999999.u64 = 7; Bin8:3200000000-3599999999.u64 = 7; Bin9:3600000000-3999999999.u64 = 8; 
+ c0.eventcount : Accumulator : Sum.u32 = 250; SumSQ.u32 = 250; Count.u64 = 250; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 59.647800; SumSQ.f64 = 61.929818; Count.u64 = 60; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c1.eventcount : Accumulator : Sum.u32 = 251; SumSQ.u32 = 251; Count.u64 = 251; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c1.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c2.eventcount : Accumulator : Sum.u32 = 251; SumSQ.u32 = 251; Count.u64 = 251; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c2.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+ c3.eventcount : Accumulator : Sum.u32 = 251; SumSQ.u32 = 251; Count.u64 = 251; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 2227917909; SumSQ.u32 = 1795715043; Count.u64 = 55; Min.u32 = 54893165; Max.u32 = 4245914950; 
+ c3.distvals : Accumulator : Sum.f64 = 53.526546; SumSQ.f64 = 54.406923; Count.u64 = 55; Min.f64 = 0.451549; Max.f64 = 1.359383; 
+Simulation is complete, simulated time: 1.003 ms
