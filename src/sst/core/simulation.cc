@@ -284,11 +284,6 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
             std::string action;
             bool        found;
             parseSignalString(alarmstr, action, params);
-            if ( action == "sst.rt.interactive" ) {
-                sim_output.fatal(
-                    CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
-                    action.c_str());
-            }
             std::string interval = params.find<std::string>("interval", "", found);
             if ( !found ) {
                 sim_output.fatal(
@@ -306,7 +301,14 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
                     "ERROR: --sigalrm option invalid. Interval parameter for '%s' could not be parsed. Argument = [%s]",
                     action.c_str(), interval.c_str());
             }
-            real_time_->registerInterval(interval_sec, factory->Create<RealTimeAction>(action));
+
+            RealTimeAction* rtaction = factory->Create<RealTimeAction>(action);
+            if ( !rtaction->validSigalrmAction() ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
+                    action.c_str());
+            }
+            real_time_->registerInterval(interval_sec, rtaction);
         }
     }
 }
