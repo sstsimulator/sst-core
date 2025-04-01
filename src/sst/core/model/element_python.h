@@ -117,6 +117,8 @@ public:
      *  \return full name of module as a string
      */
     std::string getFullModuleName();
+
+    virtual ~SSTElementPythonModuleCode() = default;
 };
 
 /**
