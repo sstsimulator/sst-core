@@ -97,6 +97,10 @@ EXTRA_DIST += \
     tests/refFiles/test_SubComponent.out \
     tests/refFiles/test_UnitAlgebra.out \
     tests/refFiles/test_PythonUnitAlgebra.out \
+    tests/refFiles/test_SharedObject_array.out	\
+    tests/refFiles/test_SharedObject_map.out \
+    tests/refFiles/test_SharedObject_bool_array.out \
+    tests/refFiles/test_SharedObject_set.out \
     tests/subcomponent_tests/test_sc_2a.py \
     tests/subcomponent_tests/test_sc_2u2u.py \
     tests/subcomponent_tests/test_sc_2u.py \
