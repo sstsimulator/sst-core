@@ -36,8 +36,6 @@
 
 namespace SST {
 
-BaseComponent::BaseComponent() : SST::Core::Serialization::serializable_base() {}
-
 BaseComponent::BaseComponent(ComponentId_t id) :
     SST::Core::Serialization::serializable_base(),
     my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),

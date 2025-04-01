@@ -53,8 +53,8 @@ public:
     /**
     Create a new checkpoint object for the simulation core to initiate checkpoints
     */
-    InteractiveConsole();
-    virtual ~InteractiveConsole();
+    InteractiveConsole()          = default;
+    virtual ~InteractiveConsole() = default;
 
     /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
     virtual void execute(const std::string& msg) = 0;

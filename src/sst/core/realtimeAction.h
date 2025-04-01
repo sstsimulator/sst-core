@@ -32,8 +32,8 @@ public:
     SST_ELI_DECLARE_DEFAULT_INFO_EXTERN()
     SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN()
 
-
-    RealTimeAction();
+    RealTimeAction()          = default;
+    virtual ~RealTimeAction() = default;
 
     /* Optional function called just before run loop starts. Passes in
      * the next scheduled time of the event or 0 if the event is not

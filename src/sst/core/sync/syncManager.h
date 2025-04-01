@@ -134,7 +134,7 @@ public:
         const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
         const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time);
     SyncManager(); // For serialization only
-    virtual ~SyncManager();
+    virtual ~SyncManager() = default;
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue*

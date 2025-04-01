@@ -130,8 +130,6 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
     setPriority(SYNCPRIORITY);
 }
 
-CheckpointAction::~CheckpointAction() {}
-
 // Generate checkpoint on simulation time period
 void
 CheckpointAction::execute()
