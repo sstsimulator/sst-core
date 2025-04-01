@@ -13,15 +13,13 @@
 #define SST_CORE_SERIALIZATION_SERIALIZER_H
 
 // These includes have guards to print warnings if they are included
-// independent of this file.  Set the #define that will disable the
-// warnings.
+// independent of this file.  Set the #define that will disable the warnings.
 #define SST_INCLUDING_SERIALIZER_H
 #include "sst/core/serialization/impl/mapper.h"
 #include "sst/core/serialization/impl/packer.h"
 #include "sst/core/serialization/impl/sizer.h"
 #include "sst/core/serialization/impl/unpacker.h"
-// Reenble warnings for including the above file independent of this
-// file.
+// Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZER_H
 
 #include <cstdint>
@@ -29,8 +27,10 @@
 #include <list>
 #include <map>
 #include <set>
-#include <typeinfo>
-#include <vector>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace SST::Core::Serialization {
 
@@ -107,7 +107,7 @@ public:
         }
     }
 
-    template <class T, int N>
+    template <class T, size_t N>
     void array(T arr[N])
     {
         switch ( mode_ ) {
@@ -261,6 +261,21 @@ public:
 
     void report_object_map(ObjectMap* ptr);
 
+    void pushMapName(std::string name) { map_name.push(std::move(name)); }
+
+    const std::string& getMapName() const
+    {
+        if ( map_name.empty() || map_name.top().empty() )
+            throw std::invalid_argument("Internal error: Empty map name when map serialization requires it");
+        return map_name.top();
+    }
+
+    void popMapName()
+    {
+        getMapName(); // make sure name exists
+        map_name.pop();
+    }
+
 protected:
     // only one of these is going to be valid for this serializer
     // not very good class design, but a little more convenient
@@ -275,6 +290,7 @@ protected:
     // Used for unpacking and mapping
     std::map<uintptr_t, uintptr_t> ser_pointer_map;
     uintptr_t                      split_key;
+    std::stack<std::string>        map_name;
 };
 
 } // namespace SST::Core::Serialization

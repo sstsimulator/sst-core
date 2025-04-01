@@ -1062,7 +1062,7 @@ SerializeBaseComponentHelper::unpack_basecomponent(serializable_base*& s, serial
 }
 
 void
-SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serializer& ser, const char* name)
+SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serializer& ser, const std::string& name)
 {
     if ( nullptr == s ) return;
 

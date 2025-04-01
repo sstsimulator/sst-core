@@ -15,8 +15,10 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
+#include <map>
 #include <string>
-#include <vector>
+#include <utility>
 
 namespace SST::Core::Serialization {
 
@@ -100,12 +102,12 @@ class ObjectMap
 {
 protected:
     /**
-       Static empty variable vector for use by versions that don't
-       have variables (i.e. are fundamentals or classes treated as
+       Static empty variable map for use by versions that don't have
+       variables (i.e. are fundamentals or classes treated as
        fundamentals.  This is needed because getVariables() returns a
-       reference to the vector.
+       reference to the map.
     */
-    static std::vector<std::pair<std::string, ObjectMap*>> emptyVars;
+    static const std::multimap<std::string, ObjectMap*> emptyVars;
 
     /**
        Metadata object for walking the object hierarchy.  When this
@@ -165,7 +167,7 @@ public:
     /**
        Default constructor primarily used for the "top" object in the hierarchy
      */
-    ObjectMap() {}
+    ObjectMap() = default;
 
 
     /**
@@ -173,7 +175,7 @@ public:
 
        @return true if ObjectMap is read-only, false otherwise
      */
-    inline bool isReadOnly() { return read_only_; }
+    bool isReadOnly() { return read_only_; }
 
     /**
        Set the read-only state of the object.  NOTE: If the ObjectMap
@@ -183,7 +185,7 @@ public:
 
        @param state Read-only state to set this ObjectMap to.  Defaults to true.
      */
-    inline void setReadOnly(bool state = true) { read_only_ = state; }
+    void setReadOnly(bool state = true) { read_only_ = state; }
 
 
     /**
@@ -227,12 +229,11 @@ public:
     /**
        Get the list of child variables contained in this ObjectMap
 
-       @return Reference to vector containing ObjectMaps for this
+       @return Reference to map containing ObjectMaps for this
        ObjectMap's child variables. Fundamental types will return the
-       same empty vector.
+       same empty map.
      */
-    virtual const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() { return emptyVars; }
-
+    virtual const std::multimap<std::string, ObjectMap*>& getVariables() { return emptyVars; }
 
     /**
        Increment the reference counter for this ObjectMap. When
@@ -240,7 +241,7 @@ public:
        called to indicate usage.  When done, call decRefCount() to
        indicate it is no longer needed.
      */
-    void incRefCount() { refCount_++; }
+    void incRefCount() { ++refCount_; }
 
     /**
        Decrement the reference counter for this ObjectMap.  If this
@@ -250,8 +251,7 @@ public:
      */
     void decRefCount()
     {
-        refCount_--;
-        if ( refCount_ == 0 ) { delete this; }
+        if ( !--refCount_ ) delete this;
     }
 
     /**
@@ -332,10 +332,7 @@ public:
     */
     void set(const std::string& value)
     {
-        if ( read_only_ )
-            return;
-        else
-            set_impl(value);
+        if ( !read_only_ ) set_impl(value);
     }
 
     /**
@@ -388,13 +385,12 @@ public:
      */
     virtual bool isContainer() { return false; }
 
-
     /**
        Destructor.  NOTE: delete should not be called directly on
        ObjectMaps, rather decRefCount() should be called when the
        object is no longer needed.
      */
-    virtual ~ObjectMap() {}
+    virtual ~ObjectMap() = default;
 
     /**
        Static function to demangle type names returned from typeid(T).name()
@@ -435,6 +431,21 @@ public:
      */
     virtual std::string list(int recurse = 0);
 
+    /**
+       Find a variable in this object map
+
+       @param name Name of variable to find
+
+       @return ObjectMap representing the requested variable if it is
+       found, nullptr otherwise
+     */
+    virtual ObjectMap* findVariable(const std::string& name)
+    {
+        auto& variables = getVariables();
+        for ( auto [it, end] = variables.equal_range(name); it != end; ++it )
+            return it->second; // For now, we return only the first match if multiple matches
+        return nullptr;
+    }
 
 private:
     /**
@@ -445,7 +456,7 @@ private:
 
        @param name Name of this ObjectMap in the context of the parent
      */
-    inline void activate(ObjectMap* parent, const std::string& name)
+    void activate(ObjectMap* parent, const std::string& name)
     {
         mdata_ = new ObjectMapMetaData(parent, name);
         activate_callback();
@@ -455,29 +466,11 @@ private:
        Deactivate this object.  This will remove and delete the
        metadata and call deactivate_callback().
      */
-    inline void deactivate()
+    void deactivate()
     {
         delete mdata_;
         mdata_ = nullptr;
         deactivate_callback();
-    }
-
-
-    /**
-       Find a variable in this object map
-
-       @param name Name of variable to find
-
-       @return ObjectMap representing the requested variable if it is
-       found, nullptr otherwise
-     */
-    inline ObjectMap* findVariable(const std::string& name)
-    {
-        const std::vector<std::pair<std::string, ObjectMap*>>& variables = getVariables();
-        for ( auto& x : variables ) {
-            if ( x.first == name ) { return x.second; }
-        }
-        return nullptr;
     }
 
     /**
@@ -492,7 +485,6 @@ private:
     std::string listRecursive(const std::string& name, int level, int recurse);
 };
 
-
 /**
    ObjectMap object for non-fundamental, non-container types.  This
    class allows for child variables.
@@ -501,14 +493,14 @@ class ObjectMapWithChildren : public ObjectMap
 {
 protected:
     /**
-       Vector that child ObjectMaps are stored in
+       Map that child ObjectMaps are stored in
      */
-    std::vector<std::pair<std::string, ObjectMap*>> variables_;
+    std::multimap<std::string, ObjectMap*> variables_;
 
     /**
        Default constructor
      */
-    ObjectMapWithChildren() : ObjectMap() {}
+    ObjectMapWithChildren() = default;
 
 public:
     /**
@@ -517,12 +509,11 @@ public:
        longer needed.  This will also call decRefCount() on all its
        children.
      */
-    ~ObjectMapWithChildren()
+    ~ObjectMapWithChildren() override
     {
-        for ( auto obj : variables_ ) {
+        for ( auto& obj : variables_ ) {
             if ( obj.second != nullptr ) obj.second->decRefCount();
         }
-        variables_.clear();
     }
 
     /**
@@ -532,21 +523,16 @@ public:
 
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) override
-    {
-        variables_.push_back(std::make_pair(name, obj));
-    }
-
+    void addVariable(const std::string& name, ObjectMap* obj) override { variables_.emplace(name, obj); }
 
     /**
        Get the list of child variables contained in this ObjectMap
 
-       @return Reference to vector containing ObjectMaps for this
-       ObjectMap's child variables. pair.first is the name of the
-       variable in the context of this object. pair.second is a
-       pointer to the ObjectMap.
+       @return Reference to map containing ObjectMaps for this ObjectMap's
+       child variables. pair.first is the name of the variable in the
+       context of this object. pair.second is a pointer to the ObjectMap.
      */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return variables_; }
+    const std::multimap<std::string, ObjectMap*>& getVariables() override { return variables_; }
 };
 
 
@@ -562,7 +548,7 @@ public:
     /**
        Default constructor
      */
-    ObjectMapHierarchyOnly() : ObjectMapWithChildren() {}
+    ObjectMapHierarchyOnly() = default;
 
 
     /**
@@ -571,7 +557,7 @@ public:
        longer needed.  This will also call decRefCount() on all its
        children.
      */
-    ~ObjectMapHierarchyOnly() {}
+    ~ObjectMapHierarchyOnly() override = default;
 
     /**
        Returns empty string since there is no underlying object being
@@ -613,7 +599,7 @@ public:
     /**
        Default constructor
      */
-    ObjectMapClass() : ObjectMapWithChildren() {}
+    ObjectMapClass() = default;
 
     /**
        Constructor
@@ -634,7 +620,7 @@ public:
        longer needed.  This will also call decRefCount() on all its
        children.
      */
-    ~ObjectMapClass() {}
+    ~ObjectMapClass() override = default;
 
     /**
        Get the type of the represented object
@@ -710,7 +696,7 @@ public:
         }
     }
 
-    std::string getCurrentValue() override { return std::to_string(*var_); }
+    std::string getCurrentValue() override { return SST::Core::to_string(*var_); }
 
 
 private:
@@ -722,7 +708,7 @@ private:
 /**
    ObjectMap representing fundamental types, and classes treated as
    fundamental types.  In order for an object to be treated as a
-   fundamental, it must be printable using std::to_string() and
+   fundamental, it must be printable using SST::Core::to_string() and
    assignable using SST::Core::from_string(). If this is not true, it
    is possible to create a template specialization for the type
    desired to be treated as a fundamental.  The specialization will
@@ -738,6 +724,7 @@ protected:
      */
     T* addr_ = nullptr;
 
+public:
     /**
        Set the value of the object represented as a string
 
@@ -746,11 +733,10 @@ protected:
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
-public:
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return std::to_string(*addr_); }
+    virtual std::string get() override { return SST::Core::to_string(*addr_); }
 
     /**
        Returns true as object is a fundamental
@@ -766,18 +752,7 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-
-    /**
-       Get the list of child variables contained in this ObjectMap,
-       which in this case will be empty.
-
-       @return Refernce to vector containing ObjectMaps for this
-       ObjectMap's child variables. This vector will be empty because
-       fundamentals have no children
-     */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
-
-    ObjectMapFundamental(T* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(T* addr) : addr_(addr) {}
 
     /**
        Destructor.  Should not be called directly (i.e. do not call
@@ -785,7 +760,7 @@ public:
        longer needed.  This will also call decRefCount() on all its
        children.
      */
-    ~ObjectMapFundamental() {}
+    ~ObjectMapFundamental() override = default;
 
     /**
        Return the type represented by this ObjectMap as given by the
@@ -802,6 +777,26 @@ public:
     }
 };
 
+/**
+   Class used to map containers
+ */
+template <class T>
+class ObjectMapContainer : public ObjectMapWithChildren
+{
+protected:
+    T* addr_;
+
+public:
+    bool isContainer() override { return true; }
+
+    std::string getType() override { return demangle_name(typeid(T).name()); }
+
+    void* getAddr() override { return addr_; }
+
+    explicit ObjectMapContainer(T* addr) : addr_(addr) {}
+
+    ~ObjectMapContainer() override = default;
+};
 
 } // namespace SST::Core::Serialization
 

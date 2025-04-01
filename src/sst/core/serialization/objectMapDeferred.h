@@ -44,11 +44,11 @@ public:
     /**
        Get the list of child variables contained in this ObjectMap
 
-       @return Refernce to vector containing ObjectMaps for this
+       @return Reference to map containing ObjectMaps for this
        ObjectMap's child variables. pair.first is the name of the
        variable in the context of this object.
      */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return obj_->getVariables(); }
+    const std::multimap<std::string, ObjectMap*>& getVariables() override { return obj_->getVariables(); }
 
     /**
        For the Deferred Build, the only variable that gets added will
@@ -72,10 +72,7 @@ public:
     ObjectMapDeferred(T* addr, const std::string& type) : ObjectMap(), addr_(addr), type_(demangle_name(type.c_str()))
     {}
 
-    ~ObjectMapDeferred()
-    {
-        if ( obj_ != nullptr ) delete obj_;
-    }
+    ~ObjectMapDeferred() override { delete obj_; }
 
 protected:
     void activate_callback() override
