@@ -90,10 +90,12 @@ class testcase_SubComponent(SSTTestCase):
         reffile = "{0}/subcomponent_tests/refFiles/test_{1}.out".format(testsuitedir, testtype)
         outfile = "{0}/test_SubComponent_{1}.out".format(outdir, testtype)
 
-        self.run_sst(sdlfile, outfile)
+        self.run_sst(sdlfile, outfile, other_args="--model-options=1")
 
         # Perform the test
-        filter1 = StartsWithFilter("WARNING: No components are")
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, sort=True, filters=[filter1])
+        filters = [
+            StartsWithFilter("WARNING: No components are"),
+            CheckpointInfoFilter() ]
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, sort=True, filters=filters)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 

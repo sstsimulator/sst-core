@@ -1,0 +1,32 @@
+['--param=object_type:set', '--param=num_entities:12', '--param=full_initialization:true', '--param=checkpoint:true']
+{'object_type': 'set', 'num_entities': '12', 'full_initialization': 'true', 'checkpoint': 'true'}
+# Creating simulation checkpoint at simulated time period of 2.5ns.
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Setup, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+# Simulation Checkpoint: Simulated Time 2.5 ns (Real CPU time since last checkpoint 0.00224 seconds)
+# Simulation Checkpoint: Simulated Time 5 ns (Real CPU time since last checkpoint 0.01292 seconds)
+# Simulation Checkpoint: Simulated Time 7.5 ns (Real CPU time since last checkpoint 0.01380 seconds)
+# Simulation Checkpoint: Simulated Time 10 ns (Real CPU time since last checkpoint 0.01561 seconds)
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+@ Finish, Set = 0 1 2 3 4 5 6 7 8 9 10 11 
+Simulation is complete, simulated time: 12 ns

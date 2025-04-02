@@ -66,6 +66,14 @@ public:
     CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period);
     ~CheckpointAction();
 
+    /**
+       Indicates CheckpointAction should be inserted into the
+       TimeVortex. The insertion will only happen for serial runs, as
+       CheckpointAction is managed by the SyncManager in parallel
+       runs.
+     */
+    void insertIntoTimeVortex(Simulation_impl* sim);
+
     /** Generate a checkpoint next time check() is called */
     void setCheckpoint();
 
