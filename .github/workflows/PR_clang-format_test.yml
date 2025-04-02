@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-24.04]
         python-version: [3.8]
     name: Test:${{ matrix.os }}/PY-${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
