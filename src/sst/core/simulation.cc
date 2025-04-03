@@ -303,7 +303,7 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
             }
 
             RealTimeAction* rtaction = factory->Create<RealTimeAction>(action);
-            if ( !rtaction->validSigalrmAction() ) {
+            if ( !rtaction->isValidSigalrmAction() ) {
                 sim_output.fatal(
                     CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
                     action.c_str());

@@ -154,7 +154,7 @@ public:
 
     InteractiveRealTimeAction();
     void execute() override;
-    bool validSigalrmAction() override { return false; }
+    bool isValidSigalrmAction() override { return false; }
 };
 
 /* Wrapper for RealTimeActions that occur on a time interval */
