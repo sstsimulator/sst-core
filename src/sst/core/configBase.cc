@@ -60,8 +60,8 @@ uint32_t
 ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option)
 {
     // first attempt to parse seconds only. Assume \d+[s] until it's not
-    char* pos;
-    unsigned long  seconds = strtoul(arg.c_str(), &pos, 10);
+    char*         pos;
+    unsigned long seconds = strtoul(arg.c_str(), &pos, 10);
     while ( isspace(*pos) )
         ++pos;
     if ( *pos == 's' || *pos == 'S' ) {
