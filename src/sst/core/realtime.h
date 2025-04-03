@@ -35,13 +35,9 @@ class ExitCleanRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ExitCleanRealTimeAction, 
-        "sst", 
-        "rt.exit.clean", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        ExitCleanRealTimeAction, "sst", "rt.exit.clean", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes an immediate, but non-emergency shutdown. This is the default action for the "
-        "'--exit-after' option."
-    )
+        "'--exit-after' option.")
 
     ExitCleanRealTimeAction();
     virtual void execute() override;
@@ -53,12 +49,8 @@ class ExitEmergencyRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ExitEmergencyRealTimeAction, 
-        "sst", 
-        "rt.exit.emergency", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
-        "Signal handler that causes an emergency shutdown. This is the default action for SIGTERM and SIGINT."
-    )
+        ExitEmergencyRealTimeAction, "sst", "rt.exit.emergency", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        "Signal handler that causes an emergency shutdown. This is the default action for SIGTERM and SIGINT.")
 
     ExitEmergencyRealTimeAction();
     virtual void execute() override;
@@ -69,11 +61,8 @@ class CoreStatusRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        CoreStatusRealTimeAction, 
-        "sst", "rt.status.core", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
-        "Signal handler that causes SST-Core to print its status. This is the default action for SIGUSR1."
-    )
+        CoreStatusRealTimeAction, "sst", "rt.status.core", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        "Signal handler that causes SST-Core to print its status. This is the default action for SIGUSR1.")
 
     CoreStatusRealTimeAction();
     void execute() override;
@@ -84,13 +73,9 @@ class ComponentStatusRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        ComponentStatusRealTimeAction, 
-        "sst", 
-        "rt.status.all", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        ComponentStatusRealTimeAction, "sst", "rt.status.all", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST-Core to print its status along with component status. This is the default "
-        "action for SIGUSR2."
-    )
+        "action for SIGUSR2.")
 
     ComponentStatusRealTimeAction();
     void execute() override;
@@ -101,13 +86,9 @@ class CheckpointRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        CheckpointRealTimeAction, 
-        "sst", 
-        "rt.checkpoint", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        CheckpointRealTimeAction, "sst", "rt.checkpoint", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a checkpoint. This is the default action for the "
-        "'--checkpoint-wall-period' option."
-    )
+        "'--checkpoint-wall-period' option.")
 
     CheckpointRealTimeAction();
     virtual void execute() override;
@@ -121,13 +102,9 @@ class HeartbeatRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        HeartbeatRealTimeAction, 
-        "sst", 
-        "rt.heartbeat", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        HeartbeatRealTimeAction, "sst", "rt.heartbeat", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a heartbeat message (status and some resource usage information). "
-        "This is the default action for the '--heartbeat-wall-period' option."
-    )
+        "This is the default action for the '--heartbeat-wall-period' option.")
 
     HeartbeatRealTimeAction();
     virtual void execute() override;
@@ -145,12 +122,8 @@ class InteractiveRealTimeAction : public RealTimeAction
 {
 public:
     SST_ELI_REGISTER_REALTIMEACTION(
-        InteractiveRealTimeAction, 
-        "sst", 
-        "rt.interactive", 
-        SST_ELI_ELEMENT_VERSION(0, 1, 0),
-        "Signal handler that causes SST to break into an interactive console based on the --interactive-console flag."
-    )
+        InteractiveRealTimeAction, "sst", "rt.interactive", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        "Signal handler that causes SST to break into an interactive console based on the --interactive-console flag.")
 
     InteractiveRealTimeAction();
     void execute() override;
