@@ -342,6 +342,8 @@ struct StatisticCollector<T, true>
             addData_impl(data);
         }
     }
+
+    virtual ~StatisticCollector() = default;
 };
 
 template <class... Args>
@@ -367,6 +369,8 @@ struct StatisticCollector<std::tuple<Args...>, false>
     {
         addData_impl(std::make_tuple(std::forward<InArgs>(args)...));
     }
+
+    virtual ~StatisticCollector() = default;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

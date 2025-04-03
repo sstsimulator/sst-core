@@ -27,6 +27,8 @@ struct Builder
 
     template <class NewBase>
     using ChangeBase = Builder<NewBase, Args...>;
+
+    virtual ~Builder() = default;
 };
 
 template <class Base, class... CtorArgs>
