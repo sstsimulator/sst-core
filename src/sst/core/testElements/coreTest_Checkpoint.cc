@@ -71,8 +71,10 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     // RNG & Distributions
     marsaglia =
         new RNG::MarsagliaRNG(params.find<unsigned int>("rng_seed_w", 7), params.find<unsigned int>("rng_seed_z", 5));
-    mersenne = new RNG::MersenneRNG(params.find<unsigned int>("rng_seed", 11));
-    xorshift = new RNG::XORShiftRNG(params.find<unsigned int>("rng_seed", 11));
+
+    unsigned int rng_seed = params.find<unsigned int>("rng_seed", 11);
+    mersenne              = new RNG::MersenneRNG(rng_seed);
+    xorshift              = new RNG::XORShiftRNG(rng_seed + 1);
 
     dist_const = new RNG::ConstantDistribution(params.find<double>("dist_const", 1.5));
 
@@ -80,21 +82,39 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     params.find_array<double>("dist_discrete_probs", discrete_probs);
     if ( discrete_probs.empty() ) discrete_probs.push_back(1.0);
 
-    dist_discrete = new RNG::DiscreteDistribution(discrete_probs.data(), discrete_probs.size());
+    dist_discrete =
+        new RNG::DiscreteDistribution(discrete_probs.data(), discrete_probs.size(), new RNG::MersenneRNG(rng_seed + 2));
 
-    dist_expon = new RNG::ExponentialDistribution(params.find<double>("dist_exp_lambda", 1.0));
+    dist_expon = new RNG::ExponentialDistribution(
+        params.find<double>("dist_exp_lambda", 1.0), new RNG::MersenneRNG(rng_seed + 3));
 
     dist_gauss = new RNG::GaussianDistribution(
-        params.find<double>("dist_gauss_mean", 1.0), params.find<double>("dist_gauss_stddev", 0.2));
+        params.find<double>("dist_gauss_mean", 1.0), params.find<double>("dist_gauss_stddev", 0.2),
+        new RNG::MersenneRNG(rng_seed + 4));
 
-    dist_poisson = new RNG::PoissonDistribution(params.find<double>("dist_poisson_lambda", 1.0));
+    dist_poisson = new RNG::PoissonDistribution(
+        params.find<double>("dist_poisson_lambda", 1.0), new RNG::MersenneRNG(rng_seed + 5));
 
-    dist_uniform = new RNG::UniformDistribution(params.find<uint32_t>("dist_uni_bins", 4));
+    dist_uniform =
+        new RNG::UniformDistribution(params.find<uint32_t>("dist_uni_bins", 4), new RNG::MersenneRNG(rng_seed + 6));
 
     stat_eventcount = registerStatistic<uint32_t>("eventcount");
     stat_rng        = registerStatistic<uint32_t>("rngvals");
     stat_dist       = registerStatistic<double>("distvals");
     stat_null       = registerStatistic<uint32_t>("nullstat");
+}
+
+coreTestCheckpoint::~coreTestCheckpoint()
+{
+    delete mersenne;
+    delete marsaglia;
+    delete xorshift;
+    delete dist_const;
+    delete dist_discrete;
+    delete dist_expon;
+    delete dist_gauss;
+    delete dist_poisson;
+    delete dist_uniform;
 }
 
 void

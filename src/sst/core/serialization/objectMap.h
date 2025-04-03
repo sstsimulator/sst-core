@@ -49,6 +49,9 @@ struct ObjectMapMetaData
        Constructor for intializing data memebers
      */
     ObjectMapMetaData(ObjectMap* parent, const std::string& name) : parent(parent), name(name) {}
+
+    ObjectMapMetaData(const ObjectMapMetaData&) = delete;
+    ObjectMapMetaData& operator=(const ObjectMapMetaData&) = delete;
 };
 
 
@@ -393,6 +396,13 @@ public:
     virtual ~ObjectMap() = default;
 
     /**
+       Disallow copying and assignment
+     */
+
+    ObjectMap(const ObjectMap&) = delete;
+    ObjectMap& operator=(const ObjectMap&) = delete;
+
+    /**
        Static function to demangle type names returned from typeid(T).name()
 
        @param name typename returned from typeid(T).name()
@@ -517,6 +527,13 @@ public:
     }
 
     /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapWithChildren(const ObjectMapWithChildren&) = delete;
+    ObjectMapWithChildren& operator=(const ObjectMapWithChildren&) = delete;
+
+    /**
        Adds a variable to this ObjectMap
 
        @param name Name of the object in the context of this ObjectMap
@@ -600,6 +617,13 @@ public:
        Default constructor
      */
     ObjectMapClass() = default;
+
+    /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapClass(const ObjectMapClass&) = delete;
+    ObjectMapClass& operator=(const ObjectMapClass&) = delete;
 
     /**
        Constructor
@@ -761,6 +785,13 @@ public:
        children.
      */
     ~ObjectMapFundamental() override = default;
+
+    /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapFundamental(const ObjectMapFundamental&) = delete;
+    ObjectMapFundamental& operator=(const ObjectMapFundamental&) = delete;
 
     /**
        Return the type represented by this ObjectMap as given by the

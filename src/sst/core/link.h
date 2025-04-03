@@ -111,6 +111,8 @@ public:
            @param key Key that would be passed into the eventSent() function.
          */
         virtual void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key);
+
+        virtual ~AttachPoint() = default;
     };
 
     friend class LinkPair;

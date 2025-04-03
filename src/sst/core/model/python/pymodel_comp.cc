@@ -94,6 +94,7 @@ compInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
         char*         prefixed_name = gModel->addNamePrefix(name);
         ComponentId_t id            = gModel->addComponent(prefixed_name, type);
         obj                         = new PyComponent(self, id);
+        free(prefixed_name);
         gModel->getOutput()->verbose(
             CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     }

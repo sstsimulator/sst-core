@@ -51,6 +51,13 @@ public:
 
     explicit ObjectMapString(std::string* addr) : addr_(addr) {}
 
+    /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapString(const ObjectMapString&) = delete;
+    ObjectMapString& operator=(const ObjectMapString&) = delete;
+
     ~ObjectMapString() override = default;
 };
 
