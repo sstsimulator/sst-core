@@ -369,6 +369,7 @@ private:
         id(id),
         graph(graph),
         name(name),
+        slot_num(0),
         type(type),
         weight(weight),
         rank(rank),

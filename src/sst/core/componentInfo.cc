@@ -34,6 +34,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     enabled_stat_names_(nullptr),
     enabled_all_stats_(false),
     all_stat_config_(nullptr),
+    statLoadLevel(0),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(""),
@@ -55,6 +56,7 @@ ComponentInfo::ComponentInfo() :
     enabled_stat_names_(nullptr),
     enabled_all_stats_(false),
     all_stat_config_(nullptr),
+    statLoadLevel(0),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(""),
@@ -170,9 +172,9 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     stat_configs_(o.stat_configs_),
     all_stat_config_(o.all_stat_config_),
     statLoadLevel(o.statLoadLevel),
-    coordinates(o.coordinates),
+    coordinates(std::move(o.coordinates)),
     subIDIndex(o.subIDIndex),
-    slot_name(o.slot_name),
+    slot_name(std::move(o.slot_name)),
     slot_num(o.slot_num),
     share_flags(o.share_flags)
 {

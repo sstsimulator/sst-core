@@ -104,7 +104,18 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     stat_null       = registerStatistic<uint32_t>("nullstat");
 }
 
-coreTestCheckpoint::~coreTestCheckpoint() {}
+coreTestCheckpoint::~coreTestCheckpoint()
+{
+    delete mersenne;
+    delete marsaglia;
+    delete xorshift;
+    delete dist_const;
+    delete dist_discrete;
+    delete dist_expon;
+    delete dist_gauss;
+    delete dist_poisson;
+    delete dist_uniform;
+}
 
 void
 coreTestCheckpoint::init(unsigned UNUSED(phase))
