@@ -55,8 +55,6 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) : Component(id), 
     registerClock("100 MHz", new Clock::Handler<coreTestLinks>(this, &coreTestLinks::clockTic));
 }
 
-coreTestLinks::~coreTestLinks() {}
-
 // incoming events are scanned and deleted
 void
 coreTestLinks::handleEvent(Event* ev, std::string from)

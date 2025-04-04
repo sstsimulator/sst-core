@@ -48,7 +48,7 @@ public:
         @param id Unique component ID
     */
     Component(ComponentId_t id);
-    virtual ~Component();
+    virtual ~Component() override = default;
 
     /** Register as a primary component, which allows the component to
         specify when it is and is not OK to end simulation.  The
@@ -97,9 +97,7 @@ public:
 
 protected:
     friend class SubComponent;
-
-    // For Serialization only
-    Component();
+    Component() = default; // For Serialization only
 };
 
 } // namespace SST

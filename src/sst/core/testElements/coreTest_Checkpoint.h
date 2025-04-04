@@ -102,7 +102,7 @@ public:
     )
 
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
-    virtual ~coreTestCheckpoint();
+    ~coreTestCheckpoint();
 
     void init(unsigned phase) override;
 

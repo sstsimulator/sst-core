@@ -54,13 +54,13 @@ struct PyComponent : ComponentHolder
     uint16_t subCompId;
 
     PyComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id), subCompId(0) {}
-    ~PyComponent() {}
+    ~PyComponent() override = default;
 };
 
 struct PySubComponent : ComponentHolder
 {
     PySubComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id) {}
-    ~PySubComponent() {}
+    ~PySubComponent() override = default;
     int getSlot();
 };
 

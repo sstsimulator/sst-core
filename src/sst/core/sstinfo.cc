@@ -753,8 +753,6 @@ SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print,
     addPositionalCallback(std::bind(&SSTInfoConfig::setPositionalArg, this, _1, _2));
 }
 
-SSTInfoConfig::~SSTInfoConfig() {}
-
 std::string
 SSTInfoConfig::getUsagePrelude()
 {

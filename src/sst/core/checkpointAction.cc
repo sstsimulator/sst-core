@@ -124,8 +124,6 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
     }
 }
 
-CheckpointAction::~CheckpointAction() {}
-
 void
 CheckpointAction::insertIntoTimeVortex(Simulation_impl* sim)
 {

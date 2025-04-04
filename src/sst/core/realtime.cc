@@ -82,8 +82,6 @@ SST_ELI_DEFINE_INFO_EXTERN(RealTimeAction)
 SST_ELI_DEFINE_CTOR_EXTERN(RealTimeAction)
 
 
-RealTimeAction::RealTimeAction() {}
-
 UnitAlgebra
 RealTimeAction::getCoreTimeBase() const
 {

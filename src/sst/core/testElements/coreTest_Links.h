@@ -51,7 +51,7 @@ public:
     )
 
     coreTestLinks(SST::ComponentId_t id, SST::Params& params);
-    ~coreTestLinks();
+    ~coreTestLinks() = default;
 
     void setup() {}
     void finish() {}

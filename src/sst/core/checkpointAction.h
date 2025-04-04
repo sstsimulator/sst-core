@@ -64,7 +64,7 @@ public:
     Create a new checkpoint object for the simulation core to initiate checkpoints
     */
     CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period);
-    ~CheckpointAction();
+    ~CheckpointAction() = default;
 
     /**
        Indicates CheckpointAction should be inserted into the

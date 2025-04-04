@@ -30,8 +30,6 @@ Component::Component(ComponentId_t id) : BaseComponent(id)
     // currentlyLoadingSubComponent = my_info;
 }
 
-Component::~Component() {}
-
 void
 Component::registerAsPrimaryComponent()
 {
@@ -58,8 +56,5 @@ Component::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     BaseComponent::serialize_order(ser);
 }
-
-// For serialization only
-Component::Component() : BaseComponent() {}
 
 } // namespace SST
