@@ -303,7 +303,14 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
                     "ERROR: --sigalrm option invalid. Interval parameter for '%s' could not be parsed. Argument = [%s]",
                     action.c_str(), interval.c_str());
             }
-            real_time_->registerInterval(interval_sec, factory->Create<RealTimeAction>(action));
+
+            RealTimeAction* rtaction = factory->Create<RealTimeAction>(action);
+            if ( !rtaction->isValidSigalrmAction() ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
+                    action.c_str());
+            }
+            real_time_->registerInterval(interval_sec, rtaction);
         }
     }
 }

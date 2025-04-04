@@ -51,6 +51,9 @@ public:
      */
     virtual bool canInitiateCheckpoint() { return false; }
 
+    /* Reports whether the action is valid for use with sigalrm */
+    virtual bool isValidSigalrmAction() { return true; }
+
     /* Accessors for core state that signal handlers may need
      * These accessors return per-thread information unless noted in a comment
      */

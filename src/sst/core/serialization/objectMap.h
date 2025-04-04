@@ -774,7 +774,7 @@ public:
 
        @return Address of variable
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() override { return (void*)addr_; }
 
     explicit ObjectMapFundamental(T* addr) : addr_(addr) {}
 

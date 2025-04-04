@@ -776,14 +776,17 @@ public:
                    "SIGALRM. "
                    "The following actions are available from SST core or custom actions may also be defined.\n"
                    "   - sst.rt.exit.clean: Exits SST normally.\n"
-                   "   - sst.rt.exit.emergency: Exists SST in an emergency state. Triggered on SIGINT and SIGTERM.\n"
+                   "   - sst.rt.exit.emergency: Exits SST in an emergency state. Triggered on SIGINT and SIGTERM.\n"
                    "   - sst.rt.status.core: Reports brief state of SST core.\n"
                    "   - sst.rt.status.all: Reports state of SST core and every simulated component.\n"
                    "   - sst.rt.checkpoint: Creates a checkpoint.\n"
-                   "   - sst.rt.heartbeat: Reports state of SST core and some profiling state (e.g., memory usage).\n");
-        msg.append(
-            "  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using '--sigusr2=<handler>'"
-            " If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and --sigusr2=sst.rt.status.all.\n");
+                   "   - sst.rt.heartbeat: Reports state of SST core and some profiling state (e.g., memory usage).\n"
+                   "   - sst.rt.interactive: Breaks into interactive console to explore simulation state.\n"
+                   "     Ignored if --interactive-console not set. (Valid for SIGUSR1/2 only, invalid for SIGALRM)\n");
+        msg.append("  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using "
+                   "'--sigusr2=<handler>'\n"
+                   "  If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and "
+                   "--sigusr2=sst.rt.status.all.\n");
         msg.append("  Actions can be bound to SIGALRM by specifying '--sigalrm=ACTION(interval=TIME)' where ACTION is "
                    "the action and TIME is a wall-clock time in the format HH:MM:SS, MM:SS, SS, Hh, Mm, or Ss. Capital "
                    "letters represent numerics and lower case are units and required for those formats. Multiple "
