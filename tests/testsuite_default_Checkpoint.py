@@ -39,10 +39,10 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint(self) -> None:
         self.checkpoint_test_template("Checkpoint", 1, 1)
 
-    def test_Checkpoint_SubComponent_sc_2a(self) -> None:
+    def test_Checkpoint_sc_2a(self) -> None:
         self.checkpoint_test_template("sc_2a", 2, 1, subcomp=True, modelparams="1")
 
-    def test_Checkpoint_SubComponent_sc_2u2u(self) -> None:
+    def test_Checkpoint_sc_2u2u(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1")
 
     def test_Checkpoint_sc_2u(self) -> None:
@@ -162,7 +162,9 @@ class testcase_Checkpoint(SSTTestCase):
         self.run_sst(sdlfile_cpt, outfile_cpt, other_args=options_checkpoint_cpt)
 
         # Check that original run got the right results
-        filters_cpt = [ CheckpointInfoFilter() ]
+        filters_cpt = [
+            CheckpointInfoFilter(),
+            StartsWithFilter("WARNING: No components are assigned") ]
 
         cmp_result = testing_compare_filtered_diff("NeedSomethingHere", outfile_cpt, reffile, True, filters_cpt)
         self.assertTrue(cmp_result, "Output from original checkpoint run {0} did not match reference file {1}".format(outfile_cpt, reffile))
@@ -189,7 +191,8 @@ class testcase_Checkpoint(SSTTestCase):
         # Check that restart output is a subset of checkpoint output
         filters_rst = [
             CheckpointRefFileFilter(rst_index),
-            CheckpointInfoFilter() ]
+            CheckpointInfoFilter(),
+            StartsWithFilter("WARNING: No components are assigned") ]
 
         cmp_result = testing_compare_filtered_diff("PortModule", outfile_rst, reffile, True, filters_rst)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile_rst, reffile))
