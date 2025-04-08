@@ -280,11 +280,11 @@ public:
 
 
 /**
-   Version of serialize that works for fundamental types and enums.
+   Version of serialize that works for arithmetic and enum types.
  */
 
 template <class T>
-class serialize_impl<T, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
 public:
     void operator()(T& t, serializer& ser)
@@ -300,15 +300,14 @@ public:
 };
 
 /**
-   Version of serialize that works for pointers to fundamental types
-   and enums. Note that the pointer tracking happens at a higher
-   level, and only if it is turned on.  If it is not turned on, then
-   this only copies the value pointed to into the buffer.  If multiple
-   objects point to the same location, they will each have an
-   independent copy after deserialization.
+   Version of serialize that works for pointers to arithmetic and enum types.
+   Note that the pointer tracking happens at a higher level, and only if it is
+   turned on. If it is not turned on, then this only copies the value pointed
+   to into the buffer. If multiple objects point to the same location, they
+   will each have an independent copy after deserialization.
  */
 template <class T>
-class serialize_impl<T*, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
     template <typename>
     friend class serialize;

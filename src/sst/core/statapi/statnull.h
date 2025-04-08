@@ -34,9 +34,8 @@ namespace SST::Statistics {
 
     @tparam T A template for holding the main data type of this statistic
 */
-template <class T, bool = std::is_fundamental_v<T>>
-class NullStatisticBase
-{};
+template <class T, bool = std::is_arithmetic_v<T>>
+class NullStatisticBase;
 
 template <class T>
 class NullStatisticBase<T, true> : public Statistic<T>
@@ -137,11 +136,8 @@ public:
     static bool isLoaded() { return loaded_; }
 
 private:
-    static bool loaded_;
+    inline static bool loaded_ = true;
 };
-
-template <class T>
-bool NullStatistic<T>::loaded_ = true;
 
 template <>
 class NullStatistic<void> : public Statistic<void>

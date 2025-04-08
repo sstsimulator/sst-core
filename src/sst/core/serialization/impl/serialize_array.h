@@ -82,10 +82,10 @@ raw_ptr(TPtr*& ptr)
 
 /**
    Version of serialize that works for statically allocated arrays of
-   fundamental types and enums.
+   arithmetic types and enums.
  */
 template <class T, size_t N>
-class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<T[N], std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -102,7 +102,7 @@ class serialize_impl<T[N], std::enable_if_t<std::is_fundamental_v<T> || std::is_
    non base types.
  */
 template <class T, size_t N>
-class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
+class serialize_impl<T[N], std::enable_if_t<!std::is_arithmetic_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -120,11 +120,10 @@ class serialize_impl<T[N], std::enable_if_t<!std::is_fundamental_v<T> && !std::i
 
 /**
    Version of serialize that works for dynamically allocated arrays of
-   fundamental types and enums.
+   arithmetic types and enums.
  */
 template <class T, class IntType>
-class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
@@ -142,7 +141,7 @@ class serialize_impl<
  */
 template <class T, class IntType>
 class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<!std::is_fundamental_v<T> && !std::is_enum_v<T>>>
+    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<!std::is_arithmetic_v<T> && !std::is_enum_v<T>>>
 {
     template <class A>
     friend class serialize;
