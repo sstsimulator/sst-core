@@ -32,15 +32,15 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) : ConfigGraphOutp
 namespace {
 struct CompWrapper
 {
-    SST::ConfigComponent const* comp;
-    std::map<SST::StatisticId_t, std::string> &sharedStatMap;
-    bool                        output_parition_info;
+    SST::ConfigComponent const*                comp;
+    std::map<SST::StatisticId_t, std::string>& sharedStatMap;
+    bool                                       output_parition_info;
 };
 
 struct SubCompWrapper
 {
-    SST::ConfigComponent const* comp;
-    std::map<SST::StatisticId_t, std::string> &sharedStatMap;
+    SST::ConfigComponent const*                comp;
+    std::map<SST::StatisticId_t, std::string>& sharedStatMap;
 };
 
 struct LinkConfPair
@@ -52,7 +52,7 @@ struct LinkConfPair
 struct StatPair
 {
     std::pair<std::string, unsigned long> const& statkey;
-    std::map<SST::StatisticId_t, std::string> &sharedStatMap;
+    std::map<SST::StatisticId_t, std::string>&   sharedStatMap;
     SST::ConfigComponent const*                  comp;
 };
 
@@ -73,21 +73,23 @@ void
 to_json(json::ordered_json& j, StatPair const& sp)
 {
     auto* si = sp.comp->findStatistic(sp.statkey.second);
-    if( si->shared ){
-      if( sp.sharedStatMap.find(si->id) == sp.sharedStatMap.end() ) {
-        std::string name = "statObj" + std::to_string(sp.sharedStatMap.size()) + "_" + si->name;
-        sp.sharedStatMap[si->id].assign(name);
+    if ( si->shared ) {
+        if ( sp.sharedStatMap.find(si->id) == sp.sharedStatMap.end() ) {
+            std::string name = "statObj" + std::to_string(sp.sharedStatMap.size()) + "_" + si->name;
+            sp.sharedStatMap[si->id].assign(name);
+            j = json::ordered_json { { "name", name } };
+        }
+        else {
+            std::string name = sp.sharedStatMap.find(si->id)->second;
+            j                = json::ordered_json { { "name", name } };
+        }
+    }
+    else {
+        auto const& name = sp.statkey.first;
         j                = json::ordered_json { { "name", name } };
-      }else{
-        std::string name = sp.sharedStatMap.find(si->id)->second;
-        j                = json::ordered_json { { "name", name } };
-      }
-    }else{
-      auto const& name = sp.statkey.first;
-      j                = json::ordered_json { { "name", name } };
     }
     for ( auto const& parmItr : si->params.getKeys() ) {
-      j["params"][parmItr] = si->params.find<std::string>(parmItr);
+        j["params"][parmItr] = si->params.find<std::string>(parmItr);
     }
 }
 
