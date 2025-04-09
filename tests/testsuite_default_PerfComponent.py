@@ -42,7 +42,7 @@ class testcase_PerfComponent(SSTTestCase):
         outfile = "{0}/test_PerfComponent.out".format(outdir)
 
         self.run_sst(sdlfile, outfile)
-        
+
         # Perform the test of the standard simulation output
         cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
@@ -57,7 +57,7 @@ class testcase_PerfComponent(SSTTestCase):
                 os.system("mv {0} {1}".format(perfdata_out, perfdata_sav))
             else:
                 self.assertTrue(False, "Output file {0} does not exist".format(perfdata_out))
-            
+
             targetComponentFound = False
             foundClockHandler = False
             foundClockRuntime = False
@@ -75,11 +75,11 @@ class testcase_PerfComponent(SSTTestCase):
                     foundClockHandler = True
                 if "Component c0_0" in line:
                     targetComponentFound = True
-              
+
             success = targetComponentFound and foundClockRuntime
             self.assertTrue(success, "Performance output file {0} does not contain expected value".format(perfdata_sav))
 
-            
+
 
 
 

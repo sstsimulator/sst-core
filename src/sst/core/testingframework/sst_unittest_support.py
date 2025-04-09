@@ -1625,7 +1625,7 @@ def testing_merge_mpi_files(
             mpirankoutdir = "{0}/{1}".format(mpipath, rankdir)
             mpioutfile = "{0}/{1}".format(mpirankoutdir, "stdout")
             mpierrfile = "{0}/{1}".format(mpirankoutdir, "stderr")
-            
+
             if os.path.isdir(mpirankoutdir) and os.path.isfile(mpioutfile):
                 cmd = "cat {0} >> {1}".format(mpioutfile, outputfilepath)
                 os.system(cmd)

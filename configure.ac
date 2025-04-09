@@ -25,7 +25,7 @@ AC_CONFIG_HEADERS([src/sst/core/sst_config.h])
 # Lets check for the standard compilers and basic options
 AC_PROG_CC
 AM_PROG_CC_C_O
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71,, m4_defn([AC_AUTOCONF_VERSION]), 2.70,, [AC_PROG_CC_C99]) 
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71,, m4_defn([AC_AUTOCONF_VERSION]), 2.70,, [AC_PROG_CC_C99])
 AC_C_INLINE
 AC_PROG_MAKE_SET
 

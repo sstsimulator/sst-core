@@ -98,7 +98,7 @@ class OSCommand:
         self._timeout_sec = timeout_sec
         self._signal = send_signal
         self._signal_sec = signal_sec
-        
+
         # Build the thread that will monitor the subprocess with a timeout
         thread = threading.Thread(target=self._run_cmd_in_subprocess, kwargs=kwargs)
         thread.start()
@@ -149,13 +149,13 @@ class OSCommand:
                                              shell=self._use_shell,
                                              cwd = subprocess_path,
                                              **kwargs)
-            
+
             if self._signal is not signal.NSIG:
                 try:
                     self._run_output, self._run_error = self._process.communicate(timeout=self._signal_sec)
                 except TimeoutExpired:
                     self._process.send_signal(self._signal)
-           
+
             self._run_output, self._run_error = self._process.communicate()
             self._run_status = self._process.returncode
 

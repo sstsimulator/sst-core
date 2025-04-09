@@ -18,7 +18,7 @@ AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline #All
 AllowShortLambdasOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: WithoutElse  
+AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLoopsOnASingleLine: false
 #AlwaysBreakAfterDefinitionReturnType: None #depricated
 AlwaysBreakAfterReturnType: TopLevelDefinitions
@@ -73,12 +73,12 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-#updated to force the re-sort as specified below in IncludeCategories 
+#updated to force the re-sort as specified below in IncludeCategories
 IncludeBlocks: Regroup
 #sst_config.h always first, so set to negative priority to be above 'main' include (priority 0)
 #main header included after - main include assumed to have no suffix
 #prioritize all headers in "sst/core" next
-#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name 
+#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name
 #finally include all system headers - characterized as headers wrapped with '< >'
 IncludeCategories:
   - Regex:           '(<.*>)'
@@ -145,7 +145,7 @@ SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles:  false
-SpacesInConditionalStatement: true 
+SpacesInConditionalStatement: true
 SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
