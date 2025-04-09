@@ -1693,7 +1693,7 @@ class os_command:
         """
             Args:
                 cmd_str (str): The command to be executed
-                output_file_path (str): The file path to send the std outpput from the cmd
+                output_file_path (str): The file path to send the std output from the cmd
                                         if None send to stdout.
                 error_file_path (str): The file path to send the std error from the cmd
                                         if None send to stderr
@@ -1909,6 +1909,9 @@ class OSCommandResult:
         return self._run_timeout
 
 # elements needs this while we're making this change
+warn("OSCommand() is deprecated and will be removed in future versions of SST.\n" +
+    "Use os_command() instead.",
+    DeprecationWarning, stacklevel=2)
 OSCommand = os_command
 
 ################################################################################
@@ -1930,7 +1933,8 @@ def os_simple_command(
         Returns:
             (tuple) Returns a tuple of the (rtncode, rtnoutput) of types (int, str)
     """
-    warn("os_simple_command() is deprecated and will be removed in future versions of SST.",
+    warn("os_simple_command() is deprecated and will be removed in future versions of SST.\n" +
+         "Use os_command() instead.",
          DeprecationWarning, stacklevel=2)
     check_param_type("os_cmd", os_cmd, str)
     if run_dir is not None:
