@@ -10,6 +10,14 @@ repos:
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
+      - id: trailing-whitespace
+        # allow it in external dependencies and test references
+        exclude: |
+          (?x)(
+              src/sst/core/libltdl/|
+              external/|
+              tests/refFiles/
+          )
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: "v0.6.13"
     hooks:
