@@ -58,7 +58,7 @@ public:
     };
 
     RankSyncQueue(RankInfo to_rank);
-    ~RankSyncQueue();
+    ~RankSyncQueue() = default;
 
     bool      empty() override;
     int       size() override;

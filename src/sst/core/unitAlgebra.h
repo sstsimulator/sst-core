@@ -131,7 +131,7 @@ public:
      @endcode
      */
     UnitAlgebra(const std::string& val);
-    virtual ~UnitAlgebra();
+    virtual ~UnitAlgebra() = default;
 
     /** Copy constructor */
     UnitAlgebra(const UnitAlgebra&) = default;
@@ -404,8 +404,7 @@ operator<<(std::ostream& os, const Units& r)
 }
 
 
-namespace Core {
-namespace Serialization {
+namespace Core::Serialization {
 
 template <>
 class ObjectMapFundamental<UnitAlgebra> : public ObjectMap
@@ -430,18 +429,7 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-
-    /**
-       Get the list of child variables contained in this ObjectMap,
-       which in this case will be empty.
-
-       @return Refernce to vector containing ObjectMaps for this
-       ObjectMap's child variables. This vector will be empty because
-       fundamentals have no children
-     */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
-
-    ObjectMapFundamental(UnitAlgebra* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(UnitAlgebra* addr) : ObjectMap(), addr_(addr) {}
 
     std::string getType() override { return demangle_name(typeid(UnitAlgebra).name()); }
 };
@@ -461,22 +449,17 @@ class serialize_impl<UnitAlgebra>
             ua.serialize_order(ser);
             break;
         case serializer::MAP:
-            // Add your code here
+        {
+            ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
-    }
-
-    void operator()(UnitAlgebra& ua, serializer& ser, const char* name)
-    {
-        ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
-        ser.mapper().map_primitive(name, obj_map);
+        }
     }
 };
 
 
-} // namespace Serialization
-} // namespace Core
-
+} // namespace Core::Serialization
 
 } // namespace SST
 

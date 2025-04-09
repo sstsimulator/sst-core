@@ -25,11 +25,6 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SST::InteractiveConsole)
 SST_ELI_DEFINE_CTOR_EXTERN(SST::InteractiveConsole)
 
-
-InteractiveConsole::InteractiveConsole() {}
-
-InteractiveConsole::~InteractiveConsole() {}
-
 UnitAlgebra
 InteractiveConsole::getCoreTimeBase() const
 {

@@ -309,7 +309,7 @@ public:
 private:
     friend int ::main(int argc, char** argv);
 
-    void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
+    [[noreturn]] void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
 
     Factory(const std::string& searchPaths);
     ~Factory();

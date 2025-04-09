@@ -21,7 +21,7 @@ if len(sys.argv) > 1:
 
 # Set up senders using slots and anonymous subcomponent
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
-loader0.addParam("clock", "1.5GHz")
+loader0.addParam("clock", "0.1GHz")
 loader0.addParam("verbose", verbose)
 
 sub0_0 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)
@@ -39,7 +39,6 @@ sub0_1.enableAllStatistics()
 
 # Set up receivers using slots and anonymous subcomponent
 loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoader")
-loader1.addParam("clock", "1.0GHz")
 loader1.addParam("verbose", verbose)
 
 sub1_0 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)

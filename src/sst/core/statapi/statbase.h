@@ -342,6 +342,8 @@ struct StatisticCollector<T, true>
             addData_impl(data);
         }
     }
+
+    virtual ~StatisticCollector() = default;
 };
 
 template <class... Args>
@@ -367,6 +369,8 @@ struct StatisticCollector<std::tuple<Args...>, false>
     {
         addData_impl(std::make_tuple(std::forward<InArgs>(args)...));
     }
+
+    virtual ~StatisticCollector() = default;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -653,7 +657,7 @@ class serialize_impl<Statistics::Statistic<T>*>
 {
     template <class A>
     friend class serialize;
-    void operator()(Statistics::Statistic<T>*& s, serializer& ser, const char* UNUSED(name) = nullptr)
+    void operator()(Statistics::Statistic<T>*& s, serializer& ser)
     {
         // For sizer and pack, need to get the information needed
         // to create a new statistic of the correct type on unpack.
@@ -691,15 +695,12 @@ class serialize_impl<Statistics::Statistic<T>*>
             break;
         }
         case serializer::MAP:
+        {
             // Mapping mode not supported for stats
             break;
         }
+        }
     }
-
-    // void operator()(Statistics::Statistic<T>*& UNUSED(s), serializer& UNUSED(ser), const char* UNUSED(name))
-    // {
-    //     // Mapping mode not supported for stats
-    // }
 };
 
 } // namespace Core::Serialization

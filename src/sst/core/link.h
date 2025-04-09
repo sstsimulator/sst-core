@@ -43,7 +43,6 @@ class SST::Core::Serialization::serialize_impl<Link*>
     friend class serialize;
     // Function implemented in link.cc
     void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
-    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, const char* name);
 };
 
 
@@ -112,6 +111,8 @@ public:
            @param key Key that would be passed into the eventSent() function.
          */
         virtual void serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key);
+
+        virtual ~AttachPoint() = default;
     };
 
     friend class LinkPair;
@@ -159,6 +160,11 @@ public:
      * @param functor Functor to call when message is delivered
      */
     void replaceFunctor(Event::HandlerBase* functor);
+
+    /** Get the callback function to be called when a message is
+     * delivered. Polling links will return nullptr.
+     */
+    Event::HandlerBase* getFunctor();
 
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
@@ -344,6 +350,7 @@ private:
 
 
     void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata);
+    void detachTool(AttachPoint* tool);
 
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;

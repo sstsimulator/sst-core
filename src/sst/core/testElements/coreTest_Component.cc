@@ -73,11 +73,6 @@ coreTestComponent::~coreTestComponent()
     delete rng;
 }
 
-coreTestComponent::coreTestComponent() : coreTestComponentBase2()
-{
-    // for serialization only
-}
-
 // incoming events are scanned and deleted
 void
 coreTestComponent::handleEvent(Event* ev)
@@ -162,21 +157,21 @@ void
 coreTestComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     SST::CoreTestComponent::coreTestComponentBase2::serialize_order(ser);
-    SST_SER(workPerCycle)
-    SST_SER(commFreq)
-    SST_SER(commSize)
-    SST_SER(neighbor)
+    SST_SER(workPerCycle);
+    SST_SER(commFreq);
+    SST_SER(commSize);
+    SST_SER(neighbor);
 
-    SST_SER(rng)
-    SST_SER(N)
-    SST_SER(S)
-    SST_SER(E)
-    SST_SER(W)
+    SST_SER(rng);
+    SST_SER(N);
+    SST_SER(S);
+    SST_SER(E);
+    SST_SER(W);
 
-    SST_SER(countN)
-    SST_SER(countS)
-    SST_SER(countE)
-    SST_SER(countW)
+    SST_SER(countN);
+    SST_SER(countS);
+    SST_SER(countE);
+    SST_SER(countW);
 }
 
 // Element Library / Serialization stuff

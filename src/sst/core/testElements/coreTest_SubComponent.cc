@@ -30,9 +30,10 @@ using namespace SST::CoreTestSubComponent;
 
 SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) : Component(id)
 {
-    std::string freq = params.find<std::string>("clock", "1GHz");
+    bool        found = false;
+    std::string freq  = params.find<std::string>("clock", "1GHz", found);
 
-    registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this));
+    if ( found ) { registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this)); }
 
     std::string unnamed_sub  = params.find<std::string>("unnamed_subcomponent", "");
     int         num_subcomps = params.find<int>("num_subcomps", 1);
@@ -181,6 +182,7 @@ void
 SubCompReceiver::handleEvent(Event* ev)
 {
     out->verbose(CALL_INFO, 1, 0, "Got an event\n");
+    numRecv++;
     if ( nMsgReceived ) nMsgReceived->addData(1);
     delete ev;
 }

@@ -117,8 +117,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Component::serialize_order(ser);
-        SST_SER(count)
-        SST_SER(subComps)
+        SST_SER(count);
+        SST_SER(subComps);
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubComponentLoader)
 
@@ -159,7 +159,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SubCompSlotInterface::serialize_order(ser);
-        SST_SER(subComps)
+        SST_SER(subComps);
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubCompSlot)
 
@@ -258,11 +258,11 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SubCompSendRecvInterface::serialize_order(ser);
-        SST_SER(link)
-        SST_SER(nToSend)
-        SST_SER(nMsgSent)
-        SST_SER(totalMsgSent)
-        SST_SER(out)
+        SST_SER(link);
+        SST_SER(nToSend);
+        SST_SER(nMsgSent);
+        SST_SER(totalMsgSent);
+        SST_SER(out);
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubCompSender)
 
@@ -295,7 +295,6 @@ public:
         SST::CoreTestSubComponent::SubCompSendRecvInterface
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PARAMS(
         SST_ELI_DELETE_PARAM("sendCount")
     )
@@ -316,9 +315,10 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SubCompSendRecvInterface::serialize_order(ser);
-        SST_SER(link)
-        SST_SER(nMsgReceived)
+        SST_SER(link);
+        SST_SER(nMsgReceived);
         SST_SER(out);
+        SST_SER(numRecv);
     }
     ImplementSerializable(SST::CoreTestSubComponent::SubCompReceiver)
 
@@ -326,6 +326,7 @@ private:
     Statistic<uint32_t>* nMsgReceived;
     SST::Link*           link;
     SST::Output*         out;
+    uint32_t             numRecv = 0;
 
     void handleEvent(SST::Event* ev);
 

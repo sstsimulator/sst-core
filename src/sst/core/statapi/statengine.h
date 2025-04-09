@@ -132,7 +132,8 @@ private:
     void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
 
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
-    void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
+
+    [[noreturn]] void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
     using StatArray_t   = std::vector<StatisticBase*>;           /*!< Array of Statistics */

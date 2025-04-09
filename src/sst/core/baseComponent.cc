@@ -30,12 +30,11 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
+#include "sst/core/watchPoint.h"
 
 #include <string>
 
 namespace SST {
-
-BaseComponent::BaseComponent() : SST::Core::Serialization::serializable_base() {}
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     SST::Core::Serialization::serializable_base(),
@@ -88,6 +87,12 @@ BaseComponent::~BaseComponent()
             sim_->getSimulationOutput().output(
                 "Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
         }
+    }
+
+    // Delete all clock handlers.  We need to delete here because
+    // handlers are not always registered with the clock object.
+    for ( auto* handler : clock_handlers ) {
+        delete handler;
     }
 
     // Delete any portModules
@@ -923,6 +928,98 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     }
 }
 
+// Add a watch point to all handlers in the Component Tree
+void
+BaseComponent::addWatchPoint(WatchPoint* pt)
+{
+    // Find parent component
+
+    ComponentInfo* curr = my_info;
+    while ( curr->parent_info != nullptr ) {
+        curr = curr->parent_info;
+    }
+    curr->component->addWatchPointRecursive(pt);
+}
+
+void
+BaseComponent::addWatchPointRecursive(WatchPoint* pt)
+{
+    // Find all my handlers, then call all my children
+
+    // Clock handlers
+    ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
+    for ( Clock::HandlerBase* x : clock_handlers ) {
+        // Add the receive profiler to the handler
+        x->attachTool(pt, mdata);
+    }
+
+    // Event Handlers
+    LinkMap* myLinks = my_info->getLinkMap();
+    if ( myLinks != nullptr ) {
+        std::map<std::string, Link*>& linkmap = myLinks->getLinkMap();
+        for ( auto& x : linkmap ) {
+            if ( x.second != nullptr ) {
+                // Need to get the handler info from my pair link
+                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), x.first);
+                Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(x.second->pair_link->delivery_info);
+                // Check to make sure there is a handler. Links
+                // configured as polling links will not have a handler
+                if ( handler ) handler->attachTool(pt, mdata);
+            }
+        }
+    }
+
+
+    // Call for my subcomponents
+    for ( auto it = my_info->subComponents.begin(); it != my_info->subComponents.end(); ++it ) {
+        it->second.component->addWatchPointRecursive(pt);
+    }
+}
+
+// Remove a watch point from all handlers in the Component Tree
+void
+BaseComponent::removeWatchPoint(WatchPoint* pt)
+{
+    // Find parent component
+    ComponentInfo* curr = my_info;
+    while ( curr->parent_info != nullptr ) {
+        curr = curr->parent_info;
+    }
+    curr->component->removeWatchPointRecursive(pt);
+}
+
+void
+BaseComponent::removeWatchPointRecursive(WatchPoint* pt)
+{
+    // Find all my handlers, then call all my children
+
+    // Clock handlers
+    for ( Clock::HandlerBase* x : clock_handlers ) {
+        x->detachTool(pt);
+    }
+
+    // Event Handlers
+    LinkMap* myLinks = my_info->getLinkMap();
+    if ( myLinks != nullptr ) {
+        std::map<std::string, Link*>& linkmap = myLinks->getLinkMap();
+        for ( auto& x : linkmap ) {
+            if ( x.second != nullptr ) {
+                // Need to get the handler info from my pair link
+                Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(x.second->pair_link->delivery_info);
+                // Check to make sure there is a handler. Links
+                // configured as polling links will not have a handler
+                if ( handler ) handler->detachTool(pt);
+            }
+        }
+    }
+
+    // Call for my subcomponents
+    for ( auto it = my_info->subComponents.begin(); it != my_info->subComponents.end(); ++it ) {
+        it->second.component->removeWatchPointRecursive(pt);
+    }
+}
+
+
 namespace Core::Serialization::pvt {
 
 static const long null_ptr_id = -1;
@@ -963,7 +1060,7 @@ SerializeBaseComponentHelper::unpack_basecomponent(serializable_base*& s, serial
 }
 
 void
-SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serializer& ser, const char* name)
+SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serializer& ser, const std::string& name)
 {
     if ( nullptr == s ) return;
 
@@ -1000,5 +1097,4 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
 }
 
 } // namespace Core::Serialization::pvt
-
 } // namespace SST

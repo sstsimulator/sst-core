@@ -94,6 +94,7 @@ compInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
         char*         prefixed_name = gModel->addNamePrefix(name);
         ComponentId_t id            = gModel->addComponent(prefixed_name, type);
         obj                         = new PyComponent(self, id);
+        free(prefixed_name);
         gModel->getOutput()->verbose(
             CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     }
@@ -231,9 +232,10 @@ compAddPortModule(PyObject* self, PyObject* args)
     // mandatory type
     // optional parameters
 
-    char*     port = nullptr;
-    char*     type = nullptr;
-    PyObject* py_params;
+    char*     port      = nullptr;
+    char*     type      = nullptr;
+    PyObject* py_params = nullptr;
+
     if ( !PyArg_ParseTuple(args, "ss|O", &port, &type, &py_params) ) return nullptr;
     auto params = pythonToCppParams(py_params);
     c->addPortModule(port, type, params);
@@ -516,8 +518,8 @@ compCreateStatistic(PyObject* self, PyObject* args)
     // we can have 1 or 2 arguments
     // mandatory name
     // optional parameters
-    char*     name = nullptr;
-    PyObject* py_params;
+    char*     name      = nullptr;
+    PyObject* py_params = nullptr;
 
     if ( !PyArg_ParseTuple(args, "s|O", &name, &py_params) ) return nullptr;
 
@@ -566,14 +568,14 @@ static PyMethodDef componentMethods[] = {
     { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,
       "Sets the statistics load level for this component" },
     { "createStatistic", compCreateStatistic, METH_VARARGS,
-      "Create a Statistics in the component with optional parameters" },
+      "Create a Statistic Object in the component with optional parameters" },
     { "enableAllStatistics", compEnableAllStatistics, METH_VARARGS,
       "Enable all Statistics in the component with optional parameters" },
     { "enableStatistic", compEnableStatistic, METH_VARARGS,
       "Enable a statistic with a name and return a handle to it" },
     { "enableStatistics", compEnableStatistics, METH_VARARGS,
       "Enables Multiple Statistics in the component with optional parameters" },
-    { "setStatistic", compSetStatistic, METH_VARARGS, "Bind a statistic with name <name>" },
+    { "setStatistic", compSetStatistic, METH_VARARGS, "Bind a statistic with name <name> to a statistic object" },
     { "setSubComponent", compSetSubComponent, METH_VARARGS, "Bind a subcomponent to slot <name>, with type <type>" },
     { "setCoordinates", compSetCoords, METH_VARARGS,
       "Set (X,Y,Z) coordinates of this component, for use with visualization" },

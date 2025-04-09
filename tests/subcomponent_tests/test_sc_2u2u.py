@@ -11,6 +11,15 @@
 import sst
 import sys
 
+########################################################
+# Test Cases
+########################################################
+# Loading a user subcomponent into a user subcomponent
+# Implicit shared stats across nested user subcomponents
+# Explicit shared stats across nested user subcomponents
+########################################################
+
+
 # Define SST core options
 sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner", "self")
@@ -21,7 +30,7 @@ if len(sys.argv) > 1:
     
 # Set up senders using slots and user subcomponents
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
-loader0.addParam("clock", "0.15GHz")
+loader0.addParam("clock", "0.1GHz")
 loader0.addParam("verbose", verbose)
 loader0.enableAllStatistics()
 
@@ -52,7 +61,6 @@ sub0_1_1.enableAllStatistics()
 
 # Set up receivers using slots and user subcomponents
 loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoader")
-loader1.addParam("clock", "1.0GHz")
 loader1.addParam("verbose", verbose)
 
 sub1_0 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)
@@ -75,6 +83,11 @@ sub1_1_1 = sub1_1.setSubComponent("mySubCompSlot", "coreTestElement.SubCompRecei
 sub1_1_1.addParam("verbose", verbose)
 sub1_1_1.enableAllStatistics()
 
+stat_recv = loader1.createStatistic("totalRecv")
+sub1_0_0.setStatistic("numRecv", stat_recv)
+sub1_0_1.setStatistic("numRecv", stat_recv)
+sub1_1_1.setStatistic("numRecv", stat_recv)
+sub1_1_1.setStatistic("numRecv", stat_recv)
 
 # Set up links
 link0_0 = sst.Link("myLink0_0")

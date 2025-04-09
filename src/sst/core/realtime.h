@@ -116,6 +116,20 @@ private:
     static Core::ThreadSafe::Barrier exchange_barrier_;
 };
 
+
+/* Action to trigger an interactive console */
+class InteractiveRealTimeAction : public RealTimeAction
+{
+public:
+    SST_ELI_REGISTER_REALTIMEACTION(
+        InteractiveRealTimeAction, "sst", "rt.interactive", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+        "Signal handler that causes SST to break into an interactive console based on the --interactive-console flag.")
+
+    InteractiveRealTimeAction();
+    void execute() override;
+    bool isValidSigalrmAction() override { return false; }
+};
+
 /* Wrapper for RealTimeActions that occur on a time interval */
 class RealTimeIntervalAction
 {

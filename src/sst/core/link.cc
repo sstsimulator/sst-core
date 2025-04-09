@@ -33,7 +33,7 @@
 namespace SST {
 
 void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core::Serialization::serializer& ser)
+SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser)
 {
     // Need to treat Links and SelfLinks differently
     bool    self_link;
@@ -559,16 +559,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, SST::Core:
         }
         break;
     case serializer::MAP:
-        // This version of the function is not called in mapping mode.
+        // TODO: Implement Link mapping mode
         break;
     }
-}
-
-void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(
-    Link*& UNUSED(s), SST::Core::Serialization::serializer& UNUSED(ser), const char* UNUSED(name))
-{
-    // TODO: Implement Link mapping mode
 }
 
 /**
@@ -745,6 +738,13 @@ Link::replaceFunctor(Event::HandlerBase* functor)
         delete handler;
     }
     pair_link->delivery_info = reinterpret_cast<uintptr_t>(functor);
+}
+
+Event::HandlerBase*
+Link::getFunctor()
+{
+    if ( UNLIKELY(type == POLL) ) { return nullptr; }
+    return reinterpret_cast<Event::HandlerBase*>(pair_link->delivery_info);
 }
 
 void
@@ -924,6 +924,19 @@ Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
     if ( !attached_tools ) attached_tools = new ToolList();
     auto key = tool->registerLinkAttachTool(mdata);
     attached_tools->push_back(std::make_pair(tool, key));
+}
+
+void
+Link::detachTool(AttachPoint* tool)
+{
+    if ( !attached_tools ) return;
+
+    for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+        if ( x->first == tool ) {
+            attached_tools->erase(x);
+            break;
+        }
+    }
 }
 
 void

@@ -24,12 +24,9 @@
 namespace SST::Core::Serialization {
 
 template <class T>
-class serialize_impl<std::atomic<T>>
+struct serialize_impl<std::atomic<T>>
 {
-    using Value = std::atomic<T>;
-
-public:
-    void operator()(Value& v, serializer& ser)
+    void operator()(std::atomic<T>& v, serializer& ser)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -47,20 +44,17 @@ public:
         }
         case serializer::UNPACK:
         {
-            T    val;
+            T    val {};
             ser& val;
             v.store(val);
             break;
         }
         case serializer::MAP:
-            // The version of function not called in mapping mode
+        {
+            // TODO: Add support for mapping mode
             break;
         }
-    }
-
-    void operator()(Value& UNUSED(v), serializer& UNUSED(ser), const char* UNUSED(name))
-    {
-        // TODO: Add support for mapping mode
+        }
     }
 };
 

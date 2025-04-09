@@ -27,6 +27,8 @@ struct Builder
 
     template <class NewBase>
     using ChangeBase = Builder<NewBase, Args...>;
+
+    virtual ~Builder() = default;
 };
 
 template <class Base, class... CtorArgs>
@@ -104,6 +106,9 @@ struct BuilderLoader : public LibraryLoader
     {
         BuilderLibraryDatabase<Base, CtorArgs...>::getLibrary(elemlib_)->readdBuilder(elem_, alias_, builder_);
     }
+
+    BuilderLoader(const BuilderLoader&) = delete;
+    BuilderLoader& operator=(const BuilderLoader&) = delete;
 
 private:
     std::string elemlib_;

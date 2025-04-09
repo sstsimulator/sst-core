@@ -20,17 +20,24 @@
 #include "sst/core/objectSerialization.h"
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/rng.h"
+#include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/warnmacros.h"
 
 #include <deque>
+#include <forward_list>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 namespace SST::CoreTestSerialization {
+
+using SST::Core::Serialization::get_size;
 
 template <typename T>
 struct checkSimpleSerializeDeserialize
@@ -84,7 +91,7 @@ checkContainerSerializeDeserialize(T& data)
     T    result;
     SST::Comms::deserialize(buffer, result);
 
-    if ( data.size() != result.size() ) return false;
+    if ( get_size(data) != get_size(result) ) return false;
 
     auto data_it   = data.begin();
     auto result_it = result.begin();
@@ -108,11 +115,32 @@ checkNonIterableContainerSerializeDeserialize(T& data)
     T    result;
     SST::Comms::deserialize(buffer, result);
 
-    if ( data.size() != result.size() ) return false;
+    if ( get_size(data) != get_size(result) ) return false;
 
     while ( !data.empty() ) {
         auto data_val   = data.top();
         auto result_val = result.top();
+        if ( data_val != result_val ) return false;
+        data.pop();
+        result.pop();
+    }
+    return true;
+};
+
+// For std::queue
+template <typename T>
+bool
+checkNonIterableContainerSerializeDeserialize(std::queue<T>& data)
+{
+    auto          buffer = SST::Comms::serialize(data);
+    std::queue<T> result;
+    SST::Comms::deserialize(buffer, result);
+
+    if ( get_size(data) != get_size(result) ) return false;
+
+    while ( !data.empty() ) {
+        auto data_val   = data.front();
+        auto result_val = result.front();
         if ( data_val != result_val ) return false;
         data.pop();
         result.pop();
@@ -129,7 +157,7 @@ checkUContainerSerializeDeserialize(T& data)
     T    result;
     SST::Comms::deserialize(buffer, result);
 
-    if ( data.size() != result.size() ) return false;
+    if ( get_size(data) != get_size(result) ) return false;
 
 
     // Only need to check one iterator since we already checked to
@@ -287,10 +315,17 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
 
 coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) : Component(id)
 {
+    // Test serialization for various data types
+
     Output& out = getSimulationOutput();
 
-    rng = new SST::RNG::MersenneRNG();
-    // Test serialization for various data types
+    rng = std::make_unique<SST::RNG::MersenneRNG>();
+
+    auto shuffle = [&](auto& v) {
+        using std::swap;
+        for ( size_t i = 1; i < v.size(); ++i )
+            swap(v[rng->generateNextUInt32() % (i + 1)], v[i]);
+    };
 
     std::string test = params.find<std::string>("test");
     if ( test == "" ) out.fatal(CALL_INFO_LONG, 1, "ERROR: Must specify test type\n");
@@ -338,8 +373,13 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         if ( !passed ) out.output("ERROR: string did not serialize/deserialize properly\n");
 
         passed = checkSimpleSerializeDeserialize<std::pair<int32_t, int32_t>>::check(
-            std::make_pair<int32_t, int32_t>(rng->generateNextInt32(), rng->generateNextInt32()));
+            std::pair<int32_t, int32_t>(rng->generateNextInt32(), rng->generateNextInt32()));
         if ( !passed ) out.output("ERROR: pair<int32_t,int32_t> did not serialize/deserialize properly\n");
+
+        passed = checkSimpleSerializeDeserialize<std::tuple<int32_t, int32_t, int32_t>>::check(
+            std::tuple<int32_t, int32_t, int32_t>(
+                rng->generateNextInt32(), rng->generateNextInt32(), rng->generateNextInt32()));
+        if ( !passed ) out.output("ERROR: tuple<int32_t,int32_t,int32_t> did not serialize/deserialize properly\n");
     }
     else if ( test == "pod_ptr" ) {
         // Test pointers to POD (plain old data) types
@@ -421,11 +461,39 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         passed = checkContainerSerializeDeserialize(map_in);
         if ( !passed ) out.output("ERROR: map<int32_t,int32_t> did not serialize/deserialize properly\n");
 
+        std::multimap<int32_t, int32_t>          multimap_in;
+        std::vector<std::pair<int32_t, int32_t>> multimap_in_v;
+        for ( int i = 0; i < 10; ++i ) {
+            int32_t key   = rng->generateNextInt32();
+            int     count = rng->generateNextInt32() % 3 + 1;
+            for ( int j = 0; j < count; ++j )
+                multimap_in_v.emplace_back(key, rng->generateNextInt32());
+        }
+        shuffle(multimap_in_v);
+        for ( auto& e : multimap_in_v )
+            multimap_in.emplace(e);
+        passed = checkContainerSerializeDeserialize(multimap_in);
+        if ( !passed ) out.output("ERROR: multimap<int32_t,int32_t> did not serialize/deserialize properly\n");
+
         std::set<int32_t> set_in;
         for ( int i = 0; i < 10; ++i )
             set_in.insert(rng->generateNextInt32());
         passed = checkContainerSerializeDeserialize(set_in);
         if ( !passed ) out.output("ERROR: set<int32_t> did not serialize/deserialize properly\n");
+
+        std::multiset<int32_t> multiset_in;
+        std::vector<int32_t>   multiset_in_v;
+        for ( int i = 0; i < 10; ++i ) {
+            int32_t key   = rng->generateNextInt32();
+            int     count = rng->generateNextInt32() % 3 + 1;
+            for ( int j = 0; j < count; ++j )
+                multiset_in_v.emplace_back(key);
+        }
+        shuffle(multiset_in_v);
+        for ( auto& e : multiset_in_v )
+            multiset_in.emplace(e);
+        passed = checkContainerSerializeDeserialize(multiset_in);
+        if ( !passed ) out.output("ERROR: multiset<int32_t> did not serialize/deserialize properly\n");
 
         std::vector<int32_t> vector_in;
         for ( int i = 0; i < 10; ++i )
@@ -445,6 +513,13 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         passed = checkContainerSerializeDeserialize(list_in);
         if ( !passed ) out.output("ERROR: list<int32_t> did not serialize/deserialize properly\n");
 
+        std::forward_list<int32_t> forward_list_in;
+        auto                       after = forward_list_in.before_begin();
+        for ( int i = 0; i < 10; ++i )
+            after = forward_list_in.insert_after(after, rng->generateNextInt32());
+        passed = checkContainerSerializeDeserialize(forward_list_in);
+        if ( !passed ) out.output("ERROR: forward_list<int32_t> did not serialize/deserialize properly\n");
+
         std::deque<int32_t> deque_in;
         for ( int i = 0; i < 10; ++i )
             deque_in.push_back(rng->generateNextInt32());
@@ -456,21 +531,61 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             priority_queue_in.push(rng->generateNextInt32());
         passed = checkNonIterableContainerSerializeDeserialize(priority_queue_in);
         if ( !passed ) out.output("ERROR: priority_queue<int32_t> did not serialize/deserialize properly\n");
+
+        std::queue<int32_t> queue_in;
+        for ( int i = 0; i < 10; ++i )
+            queue_in.push(rng->generateNextInt32());
+        passed = checkNonIterableContainerSerializeDeserialize(queue_in);
+        if ( !passed ) out.output("ERROR: queue<int32_t> did not serialize/deserialize properly\n");
+
+        std::stack<int32_t> stack_in;
+        for ( int i = 0; i < 10; ++i )
+            stack_in.push(rng->generateNextInt32());
+        passed = checkNonIterableContainerSerializeDeserialize(stack_in);
+        if ( !passed ) out.output("ERROR: stack<int32_t> did not serialize/deserialize properly\n");
     }
     else if ( test == "unordered_containers" ) {
         // Unordered Containers
-        // unordered_map, unordered_set
         std::unordered_map<int32_t, int32_t> umap_in;
         for ( int i = 0; i < 10; ++i )
-            umap_in[rng->generateNextInt32()] = rng->generateNextInt32();
+            umap_in.emplace(rng->generateNextInt32(), rng->generateNextInt32());
         passed = checkUContainerSerializeDeserialize(umap_in);
         if ( !passed ) out.output("ERROR: unordered_map<int32_t,int32_t> did not serialize/deserialize properly\n");
 
+        std::unordered_multimap<int32_t, int32_t> umultimap_in;
+        std::vector<std::pair<int32_t, int32_t>>  umultimap_in_v;
+        for ( int i = 0; i < 10; ++i ) {
+            int32_t key   = rng->generateNextInt32();
+            int     count = rng->generateNextInt32() % 3 + 1;
+            for ( int j = 0; j < count; ++j )
+                umultimap_in_v.emplace_back(key, rng->generateNextInt32());
+        }
+        shuffle(umultimap_in_v);
+        for ( auto& e : umultimap_in_v )
+            umultimap_in.emplace(e);
+        passed = checkUContainerSerializeDeserialize(umultimap_in);
+        if ( !passed )
+            out.output("ERROR: unordered_multimap<int32_t,int32_t> did not serialize/deserialize properly\n");
+
         std::unordered_set<int32_t> uset_in;
         for ( int i = 0; i < 10; ++i )
-            uset_in.insert(rng->generateNextInt32());
+            uset_in.emplace(rng->generateNextInt32());
         passed = checkUContainerSerializeDeserialize(uset_in);
         if ( !passed ) out.output("ERROR: unordered_set<int32_t,int32_t> did not serialize/deserialize properly\n");
+
+        std::unordered_multiset<int32_t> umultiset_in;
+        std::vector<int32_t>             umultiset_in_v;
+        for ( int i = 0; i < 10; ++i ) {
+            int32_t key   = rng->generateNextInt32();
+            int     count = rng->generateNextInt32() % 3 + 1;
+            for ( int j = 0; j < count; ++j )
+                umultiset_in_v.emplace_back(key);
+        }
+        shuffle(umultiset_in_v);
+        for ( auto& e : umultiset_in_v )
+            umultiset_in.emplace(e);
+        passed = checkUContainerSerializeDeserialize(umultiset_in);
+        if ( !passed ) out.output("ERROR: unordered_multiset<int32_t> did not serialize/deserialize properly\n");
     }
     else if ( test == "map_to_vector" ) {
 

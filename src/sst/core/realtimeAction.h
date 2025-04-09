@@ -32,8 +32,9 @@ public:
     SST_ELI_DECLARE_DEFAULT_INFO_EXTERN()
     SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN()
 
+    RealTimeAction() = default;
 
-    RealTimeAction();
+    virtual ~RealTimeAction() = default;
 
     /* Optional function called just before run loop starts. Passes in
      * the next scheduled time of the event or 0 if the event is not
@@ -49,6 +50,9 @@ public:
        that all the checkpoint infrastructure can be initialized.
      */
     virtual bool canInitiateCheckpoint() { return false; }
+
+    /* Reports whether the action is valid for use with sigalrm */
+    virtual bool isValidSigalrmAction() { return true; }
 
     /* Accessors for core state that signal handlers may need
      * These accessors return per-thread information unless noted in a comment

@@ -47,7 +47,7 @@ class SubComponent;
 class SubComponentSlotInfo;
 class TimeConverter;
 class UnitAlgebra;
-
+class WatchPoint;
 
 namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
@@ -70,12 +70,14 @@ protected:
         BaseComponent*, Statistics::StatisticProcessingEngine*, const std::string& /*type*/,
         const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
 
-    // For serialization only
-    BaseComponent();
+    BaseComponent() = default; // For serialization only
 
 public:
     BaseComponent(ComponentId_t id);
     virtual ~BaseComponent();
+
+    BaseComponent(const BaseComponent&) = delete;
+    BaseComponent& operator=(const BaseComponent&) = delete;
 
     const std::string& getType() const { return my_info->getType(); }
 
@@ -192,6 +194,25 @@ public:
      */
     double getCompletePhaseElapsedRealTime() const;
 
+
+    /** Add a watch point to all handlers in the Component Tree
+     */
+    void addWatchPoint(WatchPoint* pt);
+
+    /** Remove a watch point from all handlers in the Component Tree
+     */
+    void removeWatchPoint(WatchPoint* pt);
+
+
+private:
+    /** Recursively add Watch point to myself and all my children
+     */
+    void addWatchPointRecursive(WatchPoint* pt);
+
+    /** Recursively removes a Watch point from myself and all my
+     * children
+     */
+    void removeWatchPointRecursive(WatchPoint* pt);
 
 protected:
     /** Check to see if the run mode was set to INIT
@@ -758,7 +779,8 @@ protected:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+    [[noreturn]] void
+    fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
     /** Convenience function for testing for and reporting fatal
@@ -858,8 +880,9 @@ private:
     }
 
     // Utility function used by fatal and sst_assert
-    void
-    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const;
+    [[noreturn]] void
+    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
+        __attribute__((format(printf, 6, 0)));
 
     // Get the statengine from Simulation_impl
     StatisticProcessingEngine* getStatEngine();
@@ -1124,7 +1147,7 @@ public:
 
     static void unpack_basecomponent(serializable_base*& s, serializer& ser);
 
-    static void map_basecomponent(serializable_base*& s, serializer& ser, const char* name);
+    static void map_basecomponent(serializable_base*& s, serializer& ser, const std::string& name);
 };
 
 } // namespace pvt
@@ -1149,16 +1172,10 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
             pvt::SerializeBaseComponentHelper::unpack_basecomponent(sp, ser);
             break;
         case serializer::MAP:
-            // Add your code here
+            pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, ser.getMapName());
             break;
         }
         s = static_cast<T*>(sp);
-    }
-
-    void operator()(T*& s, serializer& ser, const char* name)
-    {
-        serializable_base* sp = static_cast<serializable_base*>(s);
-        pvt::SerializeBaseComponentHelper::map_basecomponent(sp, ser, name);
     }
 };
 

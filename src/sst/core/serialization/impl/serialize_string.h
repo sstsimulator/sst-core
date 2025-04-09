@@ -19,6 +19,8 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <string>
+
 namespace SST::Core::Serialization {
 
 class ObjectMapString : public ObjectMap
@@ -40,16 +42,6 @@ public:
 
     virtual bool isFundamental() override { return true; }
 
-    /**
-       Get the list of child variables contained in this ObjectMap,
-       which in this case will be empty.
-
-       @return Refernce to vector containing ObjectMaps for this
-       ObjectMap's child variables. This vector will be empty because
-       strings have no children
-     */
-    const std::vector<std::pair<std::string, ObjectMap*>>& getVariables() override { return emptyVars; }
-
     std::string getType() override
     {
         // The demangled name for std::string is ridiculously long, so
@@ -57,36 +49,34 @@ public:
         return "std::string";
     }
 
-    ObjectMapString(std::string* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapString(std::string* addr) : addr_(addr) {}
+
+    /**
+       Disallow copying and assignment
+     */
+
+    ObjectMapString(const ObjectMapString&) = delete;
+    ObjectMapString& operator=(const ObjectMapString&) = delete;
+
+    ~ObjectMapString() override = default;
 };
 
-template <>
-class serialize_impl<std::string>
+template <typename T>
+class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>, std::string>>>
 {
 public:
-    void operator()(std::string& str, serializer& ser) { ser.string(str); }
-    void operator()(std::string& str, serializer& ser, const char* name)
+    void operator()(T& str, serializer& ser)
     {
-        ObjectMapString* obj_map = new ObjectMapString(&str);
-        ser.mapper().map_primitive(name, obj_map);
-    }
-};
-
-template <>
-class serialize_impl<std::string*>
-{
-public:
-    void operator()(std::string*& str, serializer& ser)
-    {
-        // Nullptr is checked for in serialize<T>(), so just serialize
-        // as if it was non-pointer
-        if ( ser.mode() == serializer::UNPACK ) { str = new std::string(); }
-        ser.string(*str);
-    }
-    void operator()(std::string*& str, serializer& ser, const char* name)
-    {
-        ObjectMapString* obj_map = new ObjectMapString(str);
-        ser.mapper().map_primitive(name, obj_map);
+        // sPtr is a reference to either str if it's a pointer, or to &str if it's not
+        const auto& sPtr = get_ptr(str);
+        const auto  mode = ser.mode();
+        if ( mode == serializer::MAP ) { ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr)); }
+        else {
+            if constexpr ( std::is_pointer_v<T> ) {
+                if ( mode == serializer::UNPACK ) str = new std::string();
+            }
+            ser.string(*sPtr);
+        }
     }
 };
 

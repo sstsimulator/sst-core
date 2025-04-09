@@ -82,8 +82,6 @@ SST_ELI_DEFINE_INFO_EXTERN(RealTimeAction)
 SST_ELI_DEFINE_CTOR_EXTERN(RealTimeAction)
 
 
-RealTimeAction::RealTimeAction() {}
-
 UnitAlgebra
 RealTimeAction::getCoreTimeBase() const
 {
@@ -381,6 +379,18 @@ HeartbeatRealTimeAction::begin(time_t UNUSED(scheduled_time))
 
 std::atomic<uint64_t>     HeartbeatRealTimeAction::thr_max_tv_depth_(0);
 Core::ThreadSafe::Barrier HeartbeatRealTimeAction::exchange_barrier_;
+
+
+/************ InteractiveRealTimeAction ***********/
+InteractiveRealTimeAction::InteractiveRealTimeAction() : RealTimeAction() {}
+
+void
+InteractiveRealTimeAction::execute()
+{
+    std::string message = "\tInteractive Console real time action at time ";
+    message.append(getElapsedSimTime().toStringBestSI().c_str());
+    initiateInteractive(message);
+}
 
 
 /************ RealTimeIntervalAction ***********/

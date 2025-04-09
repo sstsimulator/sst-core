@@ -47,7 +47,7 @@ private:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        SST_SER(counter)
+        SST_SER(counter);
     }
 
     ImplementSerializable(SST::CoreTestCheckpoint::coreTestCheckpointEvent);
@@ -102,7 +102,7 @@ public:
     )
 
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
-    virtual ~coreTestCheckpoint();
+    ~coreTestCheckpoint();
 
     void init(unsigned phase) override;
 
@@ -138,20 +138,19 @@ private:
     Output*             output;
     int                 output_frequency;
 
-    RNG::Random*             mersenne;
-    RNG::Random*             marsaglia;
-    RNG::Random*             xorshift;
-    RNG::RandomDistribution* dist_const;
-    RNG::RandomDistribution* dist_discrete;
-    RNG::RandomDistribution* dist_expon;
-    RNG::RandomDistribution* dist_gauss;
-    RNG::RandomDistribution* dist_poisson;
-    RNG::RandomDistribution* dist_uniform;
-
-    Statistic<uint32_t>* stat_eventcount;
-    Statistic<uint32_t>* stat_rng;
-    Statistic<double>*   stat_dist;
-    Statistic<uint32_t>* stat_null;
+    RNG::Random*             mersenne        = nullptr;
+    RNG::Random*             marsaglia       = nullptr;
+    RNG::Random*             xorshift        = nullptr;
+    RNG::RandomDistribution* dist_const      = nullptr;
+    RNG::RandomDistribution* dist_discrete   = nullptr;
+    RNG::RandomDistribution* dist_expon      = nullptr;
+    RNG::RandomDistribution* dist_gauss      = nullptr;
+    RNG::RandomDistribution* dist_poisson    = nullptr;
+    RNG::RandomDistribution* dist_uniform    = nullptr;
+    Statistic<uint32_t>*     stat_eventcount = nullptr;
+    Statistic<uint32_t>*     stat_rng        = nullptr;
+    Statistic<double>*       stat_dist       = nullptr;
+    Statistic<uint32_t>*     stat_null       = nullptr;
 };
 
 } // namespace SST::CoreTestCheckpoint

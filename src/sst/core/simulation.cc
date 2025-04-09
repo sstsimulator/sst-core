@@ -228,9 +228,11 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
                 cfg->checkpoint_sim_period().c_str());
             checkpoint_action_ =
                 new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
+            checkpoint_action_->insertIntoTimeVortex(this);
         }
         else {
             checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
+            checkpoint_action_->insertIntoTimeVortex(this);
         }
     }
     else {
@@ -301,7 +303,14 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
                     "ERROR: --sigalrm option invalid. Interval parameter for '%s' could not be parsed. Argument = [%s]",
                     action.c_str(), interval.c_str());
             }
-            real_time_->registerInterval(interval_sec, factory->Create<RealTimeAction>(action));
+
+            RealTimeAction* rtaction = factory->Create<RealTimeAction>(action);
+            if ( !rtaction->isValidSigalrmAction() ) {
+                sim_output.fatal(
+                    CALL_INFO_LONG, 1, "ERROR: Action '%s' is not a valid option for use with '--sigalrm'.",
+                    action.c_str());
+            }
+            real_time_->registerInterval(interval_sec, rtaction);
         }
     }
 }
@@ -1834,6 +1843,7 @@ Simulation_impl::restart(Config* cfg)
     // Last, get the timevortex
     ser& timeVortex;
 
+    checkpoint_action_->insertIntoTimeVortex(this);
 
     /* Extract components */
     size_t compCount;
