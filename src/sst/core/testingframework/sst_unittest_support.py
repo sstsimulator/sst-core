@@ -75,6 +75,15 @@ class SSTTestCaseException(Exception):
 # Commandline Information Functions
 ################################################################################
 
+def testing_check_is_nightly() -> bool:
+    """If Nightly is in the BUILD_TAG it's very likely a Nightly build."""
+    build_tag = os.getenv("BUILD_TAG")
+    if build_tag and "Nightly" in build_tag:
+        return True
+    return False
+
+###
+
 def testing_check_is_in_debug_mode() -> bool:
     """ Identify if test frameworks is in debug mode
 
