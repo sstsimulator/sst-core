@@ -14,6 +14,9 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <string>
+#include <vector>
+
 namespace SST::Core::Serialization {
 
 /**

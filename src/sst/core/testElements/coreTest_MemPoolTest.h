@@ -15,6 +15,8 @@
 #include "sst/core/component.h"
 #include "sst/core/link.h"
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
 namespace SST::CoreTestMemPoolTest {

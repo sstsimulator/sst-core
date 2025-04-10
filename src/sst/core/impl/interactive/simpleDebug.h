@@ -17,6 +17,9 @@
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/watchPoint.h"
 
+#include <string>
+#include <vector>
+
 namespace SST::IMPL::Interactive {
 
 

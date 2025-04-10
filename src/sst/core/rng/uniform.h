@@ -17,6 +17,8 @@
 #include "mersenne.h"
 #include "rng.h"
 
+#include <cstdint>
+
 namespace SST::RNG {
 
 /**

@@ -16,6 +16,8 @@
 
 #include "sst/core/serialization/serializable.h"
 
+#include <cstdint>
+
 namespace SST {
 
 class RankInfo : public SST::Core::Serialization::serializable

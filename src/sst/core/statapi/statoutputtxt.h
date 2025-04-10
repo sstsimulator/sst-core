@@ -19,6 +19,9 @@
 #include <zlib.h>
 #endif
 
+#include <cstdio>
+#include <string>
+
 namespace SST::Statistics {
 
 class StatisticOutputTextBase : public StatisticFieldsOutput

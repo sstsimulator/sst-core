@@ -12,6 +12,8 @@
 #ifndef SST_CORE_CORETEST_COMPONENTEVENT_H
 #define SST_CORE_CORETEST_COMPONENTEVENT_H
 
+#include <vector>
+
 namespace SST::CoreTestComponent {
 
 class coreTestComponentEvent : public SST::Event

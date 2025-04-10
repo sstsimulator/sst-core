@@ -14,6 +14,8 @@
 
 #include "sst/core/component.h"
 
+#include <string>
+
 namespace SST::CoreTestClockerComponent {
 
 class coreTestClockerComponent : public SST::Component

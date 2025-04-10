@@ -18,7 +18,9 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <typeinfo>
 #include <utility>
+#include <vector>
 
 namespace SST::Core::Serialization {
 

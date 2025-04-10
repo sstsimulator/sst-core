@@ -17,7 +17,12 @@
 #include "sst/core/util/filesystem.h"
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace SST {
 class ConfigGraph;

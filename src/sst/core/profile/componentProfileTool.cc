@@ -18,6 +18,7 @@
 #include "sst/core/sst_types.h"
 
 #include <chrono>
+#include <cinttypes>
 
 namespace SST::Profile {
 

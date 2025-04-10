@@ -23,6 +23,8 @@
 #include "sst/core/warnmacros.h"
 
 #include <string>
+#include <tuple>
+#include <vector>
 
 namespace SST {
 class BaseComponent;

@@ -24,6 +24,11 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/unitAlgebra.h"
 
+#include <cstdint>
+#include <map>
+#include <string>
+#include <vector>
+
 /* Forward declare for Friendship */
 extern int  main(int argc, char** argv);
 extern void finalize_statEngineConfig();

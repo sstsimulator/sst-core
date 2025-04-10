@@ -19,6 +19,7 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <map>
+#include <mutex>
 #include <string>
 
 extern int main(int argc, char** argv);
