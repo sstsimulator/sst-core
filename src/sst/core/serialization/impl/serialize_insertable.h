@@ -60,6 +60,9 @@ class serialize_impl<
            // whether end() method exists
            decltype(std::declval<T>().end()),
 
+           // whether a clear() method exists
+           decltype(std::declval<T>().clear()),
+
            // whether get_size() can determine size because it has a matching overload
            decltype(get_size(std::declval<T>())),
 
@@ -85,13 +88,22 @@ class serialize_impl<
     // Note: the following use struct templates because of a GCC bug which does
     // not allow static constexpr variable templates defined inside of a class.
 
+    // Whether it is a std::vector
+    template <typename>
+    struct is_vector : std::false_type
+    {};
+
+    template <typename... Ts>
+    struct is_vector<std::vector<Ts...>> : std::true_type
+    {};
+
     // Whether it is a std::vector<bool>
     template <typename>
     struct is_vector_bool : std::false_type
     {};
 
-    template <typename U>
-    struct is_vector_bool<std::vector<bool, U>> : std::true_type
+    template <typename... Ts>
+    struct is_vector_bool<std::vector<bool, Ts...>> : std::true_type
     {};
 
     // Whether it is a std::forward_list
@@ -103,16 +115,29 @@ class serialize_impl<
     struct is_forward_list<std::forward_list<Ts...>> : std::true_type
     {};
 
-    // Whether it is a "map" (i.e. has [key, value] elements)
+    // Whether it is a simple map (not a multimap and has integral, floating-point, enum, or convertible to string keys)
     template <typename, typename = void>
-    struct is_map : std::false_type
+    struct is_simple_map : std::false_type
     {};
 
-    template <template <typename...> class U, typename... Us>
-    struct is_map<
-        U<Us...>, std::enable_if_t<
-                      is_same_template_v<U, std::map> || is_same_template_v<U, std::multimap> ||
-                      is_same_template_v<U, std::unordered_map> || is_same_template_v<U, std::unordered_multimap>>> :
+    template <template <typename...> class MAP, typename KEY, typename... REST>
+    struct is_simple_map<
+        MAP<KEY, REST...>,
+        std::enable_if_t<(is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>)&&(
+            std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> :
+        std::true_type
+    {};
+
+    // Whether it is a simple set (not a multiset and has integral, floating-point, enum, or convertible to string keys)
+    template <typename, typename = void>
+    struct is_simple_set : std::false_type
+    {};
+
+    template <template <typename...> class SET, typename KEY, typename... REST>
+    struct is_simple_set<
+        SET<KEY, REST...>,
+        std::enable_if_t<(is_same_template_v<SET, std::set> || is_same_template_v<SET, std::unordered_set>)&&(
+            std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> :
         std::true_type
     {};
 
@@ -145,15 +170,16 @@ public:
 
         case serializer::UNPACK:
         {
-            t.~T();        // Destroy the old container
-            new (&t) T {}; // Create an empty new container
+            size_t size;
+            ser.unpack(size);
+
+            t.clear();                                            // Clear the container
+            if constexpr ( is_vector<T>::value ) t.reserve(size); // Reserve size of vector
 
             // For std::forward_list, last is iterator of last element inserted
             decltype(t.begin()) last [[maybe_unused]];
             if constexpr ( is_forward_list<T>::value ) last = t.before_begin();
 
-            size_t size;
-            ser.unpack(size);
             for ( size_t i = 0; i < size; ++i ) {
                 value_type e {}; // For now, elements have to be default-initializable
                 ser&       e;    // Unpack the element
@@ -175,25 +201,25 @@ public:
             auto*              obj_map = new ObjectMapContainer<T>(&t);
             ser.mapper().map_hierarchy_start(name, obj_map);
 
-            if constexpr ( is_map<T>::value ) {
-                // (key, value) mappings
-                // TODO: how to handle std::multimap and std::unordered_multimap with equal keys
-                // auto [ begin, end ] = equal_range(key) returns range of elements equal to key
-                for ( auto& [key, value] : t )
-                    sst_map_object(ser, value, to_string(key));
-            }
-            else if constexpr ( !is_vector_bool<T>::value ) {
-                // std::vector, std::deque, std::list, std::forward_list, std::set, std::multiset
-                // std::unordered_set, std::unordered_multiset
-                size_t i = 0;
-                for ( auto& e : t )
-                    sst_map_object(ser, (value_type&)e, to_string(i++));
-            }
-            else {
+            if constexpr ( is_vector_bool<T>::value ) {
                 // std::vector<bool>
                 size_t i = 0;
                 for ( bool e : t )
                     sst_map_object(ser, e, to_string(i++));
+            }
+            else if constexpr ( is_simple_map<T>::value ) {
+                // non-multi maps with a simple key
+                for ( auto& [key, value] : t )
+                    sst_map_object(ser, value, to_string(key));
+            }
+            // TODO: handle is_simple_set
+            else {
+                // std::vector, std::deque, std::list, std::forward_list, std::multimap,
+                // std::unordered_multimap, std::multiset, std::unordered_multiset, and
+                // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
+                size_t i = 0;
+                for ( auto& e : t )
+                    sst_map_object(ser, (value_type&)e, to_string(i++));
             }
             ser.mapper().map_hierarchy_end();
             break;
