@@ -24,6 +24,9 @@ class JSONConfigGraphOutput : public ConfigGraphOutput
 public:
     JSONConfigGraphOutput(const char* path);
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
+
+private:
+    std::map<SST::StatisticId_t, std::string> sharedStatMap;
 };
 
 } // namespace SST::Core
