@@ -78,7 +78,7 @@ class SSTTestCaseException(Exception):
 def testing_check_is_nightly() -> bool:
     """If Nightly is in the BUILD_TAG it's very likely a Nightly build."""
     build_tag = os.getenv("BUILD_TAG")
-    if build_tag and "Nightly" in build_tag:
+    if build_tag is not None and "Nightly" in build_tag:
         return True
     return False
 
