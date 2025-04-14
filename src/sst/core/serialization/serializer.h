@@ -273,17 +273,15 @@ class ObjectMapContext
 {
     serializer&                   ser;
     const ObjectMapContext* const prevContext;
-    std::string                   name;
+    std::string const             name;
 
 public:
     ObjectMapContext(serializer& ser, std::string name) : ser(ser), prevContext(ser.mapContext), name(std::move(name))
     {
-        DIAG_DISABLE(dangling-pointer) // GCC 13 bug causes spurious warning
-        ser.mapContext = this;           // change the serializer's context to this new one
-        REENABLE_WARNING
+        DIAG_DISABLE(dangling-pointer); // GCC 13 bug causes spurious warning
+        ser.mapContext = this;          // change the serializer's context to this new one
+        REENABLE_WARNING;
     }
-    ObjectMapContext(serializer& ser, std::string_view name) : ObjectMapContext(ser, std::string(name)) {}
-    ObjectMapContext(serializer& ser, const char* name) : ObjectMapContext(ser, std::string(name)) {}
     ~ObjectMapContext() { ser.mapContext = prevContext; } // restore the serializer's old context
     const std::string& getName() const { return name; }
 }; // class ObjectMapContext

@@ -336,21 +336,26 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
 // pointer tracking can be done.
 template <class T>
 void
-sst_map_object(serializer& ser, T& t, std::string_view name = "")
+sst_map_object(serializer& ser, T&& obj)
+{
+    if ( ser.mode() != serializer::MAP ) serialize<std::remove_reference_t<T>>()(obj, ser);
+}
+
+template <class T, class STR>
+std::enable_if_t<std::is_convertible_v<STR, std::string>>
+sst_map_object(serializer& ser, T&& obj, STR&& name)
 {
     if ( ser.mode() == serializer::MAP ) {
-        if ( !name.empty() ) { // Do nothing if name is empty
-            ObjectMapContext c(ser, name);
-            serialize<T>()(t, ser);
-        }
+        ObjectMapContext context(ser, std::forward<STR>(name));
+        serialize<std::remove_reference_t<T>>()(obj, ser);
     }
     else {
-        serialize<T>()(t, ser);
+        serialize<std::remove_reference_t<T>>()(obj, ser);
     }
 }
 
 // A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
-// SST::Core::Serialization::array(ary, size) but is then it used as an lvalue so that it
+// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
 // matches serialization functions which only take lvalue references.
 template <class T>
 void
