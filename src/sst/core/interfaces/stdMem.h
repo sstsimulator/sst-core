@@ -223,7 +223,7 @@ public:
 
         // Serialization
         ImplementVirtualSerializable(SST::Interfaces::StandardMem::Request);
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             SST_SER(id);
             SST_SER(flags);
@@ -309,7 +309,7 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -383,7 +383,7 @@ public:
         /* Serialization */
         ReadResp() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -454,7 +454,7 @@ public:
         /* Serialization */
         Write() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -524,7 +524,7 @@ public:
         /* Serialization */
         WriteResp() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -589,7 +589,7 @@ public:
         /* Serialization */
         FlushAddr() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -644,7 +644,7 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(depth);
@@ -716,7 +716,7 @@ public:
         /* Serialization */
         FlushResp() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -784,7 +784,7 @@ public:
         /* Serialization */
         ReadLock() : Request(0, 0) {}
 
-        void serialize_order(SST::Core::Serialization::serializer& ser)
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -854,7 +854,7 @@ public:
         /* Serialization */
         WriteUnlock() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -924,7 +924,7 @@ public:
         /* Serialization */
         LoadLink() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -993,7 +993,7 @@ public:
         /* Serialization */
         StoreConditional() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -1061,7 +1061,7 @@ public:
         /* Serialization */
         MoveData() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pSrc);
@@ -1119,7 +1119,7 @@ public:
         /* Serialization */
         InvNotify() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(pAddr);
@@ -1228,7 +1228,7 @@ public:
         /* Serialization */
         CustomReq() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(data);
@@ -1321,7 +1321,7 @@ public:
         /* Serialization */
         CustomResp() : Request(0, 0) {}
 
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser)
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             StandardMem::Request::serialize_order(ser);
             SST_SER(data);
@@ -1364,7 +1364,7 @@ public:
         virtual SST::Event* convert(InvNotify* request)        = 0;
 
         /* Serialization */
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser);
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override;
         ImplementVirtualSerializable(RequestConverter);
     };
 
@@ -1373,6 +1373,7 @@ public:
     {
     public:
         RequestHandler(SST::Output* o) : out(o) {}
+        RequestHandler() {}
         virtual ~RequestHandler() {}
 
         /* Built in command handlers */
@@ -1440,8 +1441,8 @@ public:
         SST::Output* out;
 
         /* Serialization */
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(out); }
-        ImplementVirtualSerializable(RequestHandler);
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(out); }
+        ImplementSerializable(RequestHandler);
     };
 
     /** Constructor, designed to be used via 'loadUserSubComponent' and 'loadAnonymousSubComponent'.
