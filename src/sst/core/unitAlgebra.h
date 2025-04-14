@@ -228,8 +228,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) /* override */
     {
         // Do the unit
-        ser& unit.numerator;
-        ser& unit.denominator;
+        SST_SER(unit.numerator);
+        SST_SER(unit.denominator);
 
         // For value, need to convert cpp_dec_float to string and
         // reinit from string
@@ -239,13 +239,13 @@ public:
         {
             // std::string s = value.str(40, std::ios_base::fixed);
             std::string s = value.toString(0);
-            ser&        s;
+            SST_SER(s);
             break;
         }
         case SST::Core::Serialization::serializer::UNPACK:
         {
             std::string s;
-            ser&        s;
+            SST_SER(s);
             value = sst_big_num(s);
             break;
         }

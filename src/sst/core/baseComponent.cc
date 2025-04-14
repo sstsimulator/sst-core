@@ -887,8 +887,8 @@ BaseComponent::initiateInteractive(const std::string& msg)
 void
 BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& my_info;
-    ser& isExtension;
+    SST_SER(my_info);
+    SST_SER(isExtension);
 
     switch ( ser.mode() ) {
     case SST::Core::Serialization::serializer::SIZER:
@@ -897,12 +897,12 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
         // Need to serialize each handler
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers = clock_handlers.size();
-        ser&                                      num_handlers;
+        SST_SER(num_handlers);
         for ( auto* handler : clock_handlers ) {
             p.first  = handler;
             // See if it's currently registered with a clock
             p.second = sim_->getClockForHandler(handler);
-            ser& p;
+            SST_SER(p);
         }
         break;
     }
@@ -911,9 +911,9 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
         sim_ = Simulation_impl::getSimulation();
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers;
-        ser&                                      num_handlers;
+        SST_SER(num_handlers);
         for ( size_t i = 0; i < num_handlers; ++i ) {
-            ser& p;
+            SST_SER(p);
             // Add handler to clock_handlers list
             clock_handlers.push_back(p.first);
             // If it was previously registered, register it now
@@ -1077,8 +1077,8 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
             // on slotname and slotnum
             name_str += it->second.getSlotName() + "[" + std::to_string(it->second.getSlotNum()) + "]";
         }
-        // sst_map_object(ser, it->second.component, it->second.getShortName().c_str());
-        sst_map_object(ser, it->second.component, name_str.c_str());
+        // sst_ser_object(ser, it->second.component, it->second.getShortName().c_str());
+        sst_ser_object(ser, it->second.component, name_str.c_str());
         it->second.serialize_comp(ser);
     }
 
@@ -1086,10 +1086,10 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
     ser.mapper().map_hierarchy_start("my_info", my_info_dir);
     ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
+    sst_ser_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
     ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
-    sst_map_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");
+    sst_ser_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
+    sst_ser_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");
     ser.mapper().map_hierarchy_end(); // for my_info_dir
 
     s->serialize_order(ser);

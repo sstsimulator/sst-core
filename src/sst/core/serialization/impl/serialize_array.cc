@@ -26,11 +26,11 @@ serialize_array(
 void
 serialize_array_map(
     serializer& ser, void* data, size_t size, ObjectMap* map,
-    void serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name))
+    void serialize_array_map_element(serializer& ser, void* data, size_t index, const char* name))
 {
     ser.mapper().map_hierarchy_start(ser.getMapName(), map);
     for ( size_t index = 0; index < size; ++index )
-        serialize_array_map_element(ser, data, index, std::to_string(index));
+        serialize_array_map_element(ser, data, index, std::to_string(index).c_str());
     ser.mapper().map_hierarchy_end();
 }
 

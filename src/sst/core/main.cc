@@ -792,18 +792,18 @@ main(int argc, char* argv[])
         uint32_t                        cpt_params_next_key_id;
 
         ser.start_unpacking(buffer, size);
-        ser& cpt_num_ranks;
-        ser& cpt_num_threads;
-        ser& cpt_lib_path;
-        ser& cpt_timebase;
-        ser& cpt_output_directory;
-        ser& cpt_output_core_prefix;
-        ser& cpt_output_verbose;
-        ser& cpt_debug_file;
-        ser& cpt_prefix;
-        ser& cpt_params_key_map;
-        ser& cpt_params_key_map_reverse;
-        ser& cpt_params_next_key_id;
+        SST_SER(cpt_num_ranks);
+        SST_SER(cpt_num_threads);
+        SST_SER(cpt_lib_path);
+        SST_SER(cpt_timebase);
+        SST_SER(cpt_output_directory);
+        SST_SER(cpt_output_core_prefix);
+        SST_SER(cpt_output_verbose);
+        SST_SER(cpt_debug_file);
+        SST_SER(cpt_prefix);
+        SST_SER(cpt_params_key_map);
+        SST_SER(cpt_params_key_map_reverse);
+        SST_SER(cpt_params_next_key_id);
 
         fs_globals.close();
         delete[] buffer;

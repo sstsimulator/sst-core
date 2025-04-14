@@ -232,11 +232,11 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
     case serializer::PACK:
         // If s is nullptr, just put in a 0, otherwise get the factor
         if ( nullptr != s ) factor = s->getFactor();
-        ser& factor;
+        SST_SER(factor);
         break;
     case serializer::UNPACK:
     {
-        ser& factor;
+        SST_SER(factor);
 
         // If we put in a nullptr, return a nullptr
         if ( factor == 0 ) {

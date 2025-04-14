@@ -40,7 +40,7 @@ class serialize_impl<
 public:
     void operator()(T<Ts...>& v, serializer& ser)
     {
-        ser& static_cast<S&>(v).c; // serialize the underlying container
+        SST_SER(static_cast<S&>(v).c); // serialize the underlying container
     }
 };
 

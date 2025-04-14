@@ -88,9 +88,9 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& lambda;
-        ser& baseDistrib;
-        ser& deleteDistrib;
+        SST_SER(lambda);
+        SST_SER(baseDistrib);
+        SST_SER(deleteDistrib);
     }
 
     /**

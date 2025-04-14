@@ -31,21 +31,21 @@ struct serialize_impl<std::atomic<T>>
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
-            T    t = v.load();
-            ser& t;
+            T t = v.load();
+            SST_SER(t);
             // ser.size(t);
             break;
         }
         case serializer::PACK:
         {
-            T    t = v.load();
-            ser& t;
+            T t = v.load();
+            SST_SER(t);
             break;
         }
         case serializer::UNPACK:
         {
-            T    val {};
-            ser& val;
+            T val {};
+            SST_SER(val);
             v.store(val);
             break;
         }

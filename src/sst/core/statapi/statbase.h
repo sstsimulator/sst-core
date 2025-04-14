@@ -668,10 +668,10 @@ class serialize_impl<Statistics::Statistic<T>*>
             std::string    stat_name     = s->getStatName();
             std::string    stat_id       = s->getStatSubId();
             BaseComponent* comp          = s->getComponent();
-            ser&           stat_eli_type;
-            ser&           comp;
-            ser&           stat_name;
-            ser&           stat_id;
+            SST_SER(stat_eli_type);
+            SST_SER(comp);
+            SST_SER(stat_name);
+            SST_SER(stat_id);
             s->serialize_order(ser);
             break;
         }
@@ -681,11 +681,11 @@ class serialize_impl<Statistics::Statistic<T>*>
             BaseComponent* comp;
             std::string    stat_name;
             std::string    stat_id;
-            ser&           stat_eli_type;
-            ser&           comp;
-            ser&           stat_name;
-            ser&           stat_id;
-            Params         params;
+            SST_SER(stat_eli_type);
+            SST_SER(comp);
+            SST_SER(stat_name);
+            SST_SER(stat_id);
+            Params params;
             params.insert("type", stat_eli_type);
             s = Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
                 stat_eli_type, params, comp, stat_name, stat_id, params);

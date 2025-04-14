@@ -48,7 +48,7 @@ public:
     virtual void     dbg_print(Output& out) { print(out); }
 
     // Functions for checkpointing
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { ser& max_depth; }
+    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(max_depth); }
     virtual void fixup_handlers() {}
 
 protected:

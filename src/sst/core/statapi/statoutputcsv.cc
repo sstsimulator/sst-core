@@ -366,12 +366,12 @@ void
 StatisticOutputCSV::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     StatisticFieldsOutput::serialize_order(ser);
-    ser& m_Separator;
-    ser& m_FilePath;
-    ser& m_outputRank;
-    ser& m_outputSimTime;
-    ser& m_outputTopHeader;
-    ser& m_useCompression;
+    SST_SER(m_Separator);
+    SST_SER(m_FilePath);
+    SST_SER(m_outputRank);
+    SST_SER(m_outputSimTime);
+    SST_SER(m_outputTopHeader);
+    SST_SER(m_useCompression);
 }
 
 } // namespace SST::Statistics

@@ -582,10 +582,11 @@ StatisticProcessingEngine::addStatisticToCompStatMap(
 void
 StatisticProcessingEngine::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& m_SimulationStarted;
-    ser& m_statLoadLevel;
-    ser& m_statGroups; // Going to have to revisit if changing partitioning - will stat groups need to be global? Are
-                       // they global already?
+    SST_SER(m_SimulationStarted);
+    SST_SER(m_statLoadLevel);
+    SST_SER(m_statGroups);
+    // Going to have to revisit if changing partitioning - will stat groups need to be global?
+    // Are they global already?
 }
 
 } // namespace SST::Statistics

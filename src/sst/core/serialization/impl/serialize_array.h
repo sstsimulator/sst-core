@@ -21,7 +21,6 @@
 
 #include <array>
 #include <cstddef>
-#include <string>
 #include <type_traits>
 
 namespace SST::Core::Serialization {
@@ -50,7 +49,7 @@ void serialize_array(
 
 void serialize_array_map(
     serializer& ser, void* data, size_t size, ObjectMap* map,
-    void serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name));
+    void serialize_array_map_element(serializer& ser, void* data, size_t index, const char* name));
 
 // Serialize an array element
 // Separated out to reduce code size
@@ -58,25 +57,16 @@ template <typename ELEM_T>
 void
 serialize_array_element(serializer& ser, void* data, size_t index)
 {
-    ser& static_cast<ELEM_T*>(data)[index];
-}
-
-// Return a new map representing canonical fixed sized array (whether the original array came from ELEM_T[SIZE] or
-// std::array<ELEM_T, SIZE>)
-template <typename ELEM_T, size_t SIZE>
-ObjectMap*
-new_fixed_array_map(void* data)
-{
-    return new ObjectMapContainer<ELEM_T[SIZE]>(static_cast<ELEM_T(*)[SIZE]>(data));
+    SST_SER(static_cast<ELEM_T*>(data)[index]);
 }
 
 // Serialize an array map element
 // Separated out to reduce code size
 template <typename ELEM_T>
 void
-serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name)
+serialize_array_map_element(serializer& ser, void* data, size_t index, const char* name)
 {
-    sst_map_object(ser, static_cast<ELEM_T*>(data)[index], name);
+    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], name);
 }
 
 // Whether the element type is copyable with memcpy()
@@ -86,21 +76,25 @@ template <typename T>
 constexpr bool is_trivial_element_v = std::is_arithmetic_v<T> || std::is_enum_v<T>;
 
 // Serialize fixed arrays
+// ELEM_T:   Array element type
+// SIZE:     Fixed array size
+// OBJ_TYPE: Complete type of object being serialized
 template <typename OBJ_TYPE, typename ELEM_T, size_t SIZE>
 struct serialize_impl_fixed_array
 {
     void operator()(OBJ_TYPE& ary, serializer& ser)
     {
-        const auto& aPtr = get_ptr(ary);
+        const auto& aPtr = get_ptr(ary); // reference to ary if it's a pointer; &ary otherwise
         switch ( ser.mode() ) {
         case serializer::MAP:
             serialize_array_map(
-                ser, &(*aPtr)[0], SIZE, new_fixed_array_map<ELEM_T, SIZE>(&(*aPtr)[0]),
+                ser, &(*aPtr)[0], SIZE, new ObjectMapArray<ELEM_T>(&(*aPtr)[0], SIZE),
                 serialize_array_map_element<ELEM_T>);
             break;
 
         case serializer::UNPACK:
             if constexpr ( std::is_pointer_v<OBJ_TYPE> ) {
+                // for pointers to fixed arrays, we allocate the storage
                 if constexpr ( std::is_same_v<OBJ_TYPE, ELEM_T(*)[SIZE]> )
                     ary = new ELEM_T[SIZE];
                 else
@@ -147,9 +141,11 @@ struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
     {
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
-            // TODO: Implement mapping mode
-            // Functions like pvt::serialize_array_map() and pvt::new_fixed_array_map() should be used to reduce code
-            // size
+            if constexpr ( !std::is_void_v<ELEM_T> ) {
+                pvt::serialize_array_map(
+                    ser, ary.ptr, ary.size, new ObjectMapArray<ELEM_T>(ary.ptr, ary.size),
+                    pvt::serialize_array_map_element<ELEM_T>);
+            }
             break;
 
         default:
@@ -174,20 +170,7 @@ struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 template <typename ELEM_T>
 struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
 {
-    void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser)
-    {
-        switch ( ser.mode() ) {
-        case serializer::MAP:
-            // TODO: Implement mapping mode
-            // Functions like pvt::serialize_array_map() and pvt::new_fixed_array_map() should be used to reduce code
-            // size
-            break;
-
-        default:
-            ser.primitive(a.ptr);
-            break;
-        }
-    }
+    void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser) { ser.primitive(a.ptr); }
 };
 
 // Wrapper functions

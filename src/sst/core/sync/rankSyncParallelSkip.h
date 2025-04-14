@@ -71,7 +71,7 @@ private:
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& to_rank;
+            SST_SER(to_rank);
             // squeue - empty so recreate on restart
             // sbuf - empty so recreate on restart
             // remote_size - don't need
@@ -92,8 +92,8 @@ private:
 #endif
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& remote_rank;
-            ser& local_thread;
+            SST_SER(remote_rank);
+            SST_SER(local_thread);
             // activity_vec - empty so recreate on restart
             // rbuf - empty so recreate on restart
             // recv_done - don't need

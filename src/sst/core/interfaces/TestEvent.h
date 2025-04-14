@@ -33,7 +33,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& count;
+        SST_SER(count);
     }
 
     ImplementSerializable(SST::Interfaces::TestEvent);

@@ -157,10 +157,10 @@ Clock::serialize_order(SST::Core::Serialization::serializer& ser)
 
     // Won't serialize the handlers; they'll be re-registered at
     // restart
-    ser& currentCycle;
-    ser& period;
-    ser& next;
-    ser& scheduled;
+    SST_SER(currentCycle);
+    SST_SER(period);
+    SST_SER(next);
+    SST_SER(scheduled);
 }
 
 

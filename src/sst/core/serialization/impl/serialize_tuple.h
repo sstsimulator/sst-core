@@ -32,7 +32,7 @@ public:
     void operator()(T<Ts...>& t, serializer& ser)
     {
         // Serialize each element of tuple or pair
-        std::apply([&](auto&... e) { ((ser & e), ...); }, t);
+        std::apply([&](auto&... e) { ((SST_SER(e)), ...); }, t);
     }
 };
 

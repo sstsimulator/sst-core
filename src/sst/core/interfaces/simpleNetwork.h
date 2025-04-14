@@ -148,16 +148,16 @@ public:
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& dest;
-            ser& src;
-            ser& vn;
-            ser& size_in_bits;
-            ser& head;
-            ser& tail;
-            ser& payload;
-            ser& trace;
-            ser& traceID;
-            ser& allow_adaptive;
+            SST_SER(dest);
+            SST_SER(src);
+            SST_SER(vn);
+            SST_SER(size_in_bits);
+            SST_SER(head);
+            SST_SER(tail);
+            SST_SER(payload);
+            SST_SER(trace);
+            SST_SER(traceID);
+            SST_SER(allow_adaptive);
         }
 
     protected:

@@ -806,7 +806,10 @@ template <typename keyT, typename classT>
 class serialize<SST::SparseVectorMap<keyT, classT>>
 {
 public:
-    void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser) { ser& v.data; }
+    void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser)
+    {
+        SST_SER(v.data);
+    }
 };
 } // namespace SST::Core::Serialization
 

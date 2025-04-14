@@ -31,8 +31,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& modified;
-        ser& last;
+        SST_SER(modified);
+        SST_SER(last);
     }
 
     ImplementSerializable(SST::CoreTestPortModule::PortModuleEvent);
@@ -89,10 +89,10 @@ private:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::PortModule::serialize_order(ser);
-        ser& install_on_send_;
-        ser& modify_;
-        ser& drop_;
-        ser& replace_;
+        SST_SER(install_on_send_);
+        SST_SER(modify_);
+        SST_SER(drop_);
+        SST_SER(replace_);
     }
     ImplementSerializable(SST::CoreTestPortModule::TestPortModule)
 };
@@ -131,11 +131,11 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Component::serialize_order(ser);
-        ser& sendcount_;
-        ser& sub_;
-        ser& repeat_last_;
-        ser& left_;
-        ser& right_;
+        SST_SER(sendcount_);
+        SST_SER(sub_);
+        SST_SER(repeat_last_);
+        SST_SER(left_);
+        SST_SER(right_);
     }
     ImplementSerializable(SST::CoreTestPortModule::coreTestPortModuleComponent)
 
@@ -187,8 +187,8 @@ private:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::SubComponent::serialize_order(ser);
-        ser& left_;
-        ser& right_;
+        SST_SER(left_);
+        SST_SER(right_);
     }
     ImplementSerializable(SST::CoreTestPortModule::PortSubComponent)
 };

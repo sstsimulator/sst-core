@@ -158,12 +158,12 @@ public:
             if constexpr ( is_vector_bool<T>::value ) {
                 // For std::vector<bool>, iterate over bool values instead of references to elements
                 for ( bool e : t )
-                    ser& e;
+                    SST_SER(e);
             }
             else {
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : t )
-                    ser&(value_type&)e;
+                    SST_SER((value_type&)e);
             }
             break;
         }
@@ -182,7 +182,7 @@ public:
 
             for ( size_t i = 0; i < size; ++i ) {
                 value_type e {}; // For now, elements have to be default-initializable
-                ser&       e;    // Unpack the element
+                SST_SER(e);      // Unpack the element
 
                 // Insert the element, moving it for efficiency
                 if constexpr ( is_forward_list<T>::value )
@@ -205,12 +205,12 @@ public:
                 // std::vector<bool>
                 size_t i = 0;
                 for ( bool e : t )
-                    sst_map_object(ser, e, to_string(i++));
+                    sst_ser_object(ser, e, to_string(i++).c_str());
             }
             else if constexpr ( is_simple_map<T>::value ) {
                 // non-multi maps with a simple key
                 for ( auto& [key, value] : t )
-                    sst_map_object(ser, value, to_string(key));
+                    sst_ser_object(ser, value, to_string(key).c_str());
             }
             // TODO: handle is_simple_set
             else {
@@ -219,7 +219,7 @@ public:
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
                 for ( auto& e : t )
-                    sst_map_object(ser, (value_type&)e, to_string(i++));
+                    sst_ser_object(ser, (value_type&)e, to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;

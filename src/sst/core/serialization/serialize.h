@@ -95,7 +95,7 @@ public:
    be controlled at one point. The actual serialization will happen in
    serialize_impl classes.
  */
-template <class T>
+template <typename T>
 class serialize
 {
 public:
@@ -160,7 +160,7 @@ public:
     }
 };
 
-template <class T>
+template <typename T>
 class serialize<T*>
 {
 public:
@@ -283,7 +283,7 @@ public:
    Version of serialize that works for arithmetic and enum types.
  */
 
-template <class T>
+template <typename T>
 class serialize_impl<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
 public:
@@ -306,7 +306,7 @@ public:
    to into the buffer. If multiple objects point to the same location, they
    will each have an independent copy after deserialization.
  */
-template <class T>
+template <typename T>
 class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
     template <typename>
@@ -331,49 +331,52 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
     }
 };
 
-// All calls to serialize objects need to go through one of the
-// following functions, or through the serialize<T> template so that
-// pointer tracking can be done.
-template <class T>
-void
-sst_map_object(serializer& ser, T&& obj)
-{
-    if ( ser.mode() != serializer::MAP ) serialize<std::remove_reference_t<T>>()(obj, ser);
-}
+// All calls to serialize objects need to go through one of the following functions, or
+// through the serialize<T> template so that pointer tracking can be done.
+//
+// A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
+// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
+// matches serialization functions which only take lvalue references.
 
-template <class T, class STR>
-std::enable_if_t<std::is_convertible_v<STR, std::string>>
-sst_map_object(serializer& ser, T&& obj, STR&& name)
+template <typename T>
+void
+sst_ser_object(serializer& ser, T&& obj, const char* name = nullptr)
 {
     if ( ser.mode() == serializer::MAP ) {
-        ObjectMapContext context(ser, std::forward<STR>(name));
-        serialize<std::remove_reference_t<T>>()(obj, ser);
+        if ( name != nullptr ) {
+            ObjectMapContext context(ser, name);
+            serialize<std::remove_reference_t<T>>()(obj, ser);
+        }
     }
     else {
         serialize<std::remove_reference_t<T>>()(obj, ser);
     }
 }
 
-// A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
-// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
-// matches serialization functions which only take lvalue references.
-template <class T>
+template <typename T>
 void
-operator&(serializer& ser, T&& obj)
-{
-    sst_map_object(ser, obj);
-}
-
-template <class T>
-void
-operator|(serializer& ser, T&& obj)
+sst_ser_object_as_ptr(serializer& ser, T&& obj)
 {
     serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser);
 }
 
+template <typename T>
+[[deprecated("Use SST_SER(obj) macro or call sst_ser_object(ser, obj [, name]")]] void
+operator&(serializer& ser, T&& obj)
+{
+    sst_ser_object(ser, obj);
+}
+
+template <typename T>
+[[deprecated("Use SST_SER_AS_PTR(obj) macro or call sst_ser_object_as_ptr(ser, obj)")]] void
+operator|(serializer& ser, T&& obj)
+{
+    sst_ser_object_as_ptr(ser, obj);
+}
+
 // Serialization macros for checkpoint/debug serialization
-#define SST_SER(obj)        sst_map_object(ser, (obj), #obj);
-#define SST_SER_AS_PTR(obj) (ser | (obj));
+#define SST_SER(obj)        sst_ser_object(ser, (obj), #obj)
+#define SST_SER_AS_PTR(obj) sst_ser_object_as_ptr(ser, (obj))
 
 } // namespace SST::Core::Serialization
 

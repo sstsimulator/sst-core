@@ -67,19 +67,19 @@ PollingLinkQueue::serialize_order(SST::Core::Serialization::serializer& ser)
     case SST::Core::Serialization::serializer::PACK:
     {
         size_t size = data.size();
-        ser&   size;
+        SST_SER(size);
         for ( auto* x : data ) {
-            ser& x;
+            SST_SER(x);
         }
         break;
     }
     case SST::Core::Serialization::serializer::UNPACK:
     {
-        size_t    size;
-        ser&      size;
+        size_t size;
+        SST_SER(size);
         Activity* activity;
         for ( size_t i = 0; i < size; ++i ) {
-            ser& activity;
+            SST_SER(activity);
             data.insert(activity);
         }
     }

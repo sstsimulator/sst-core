@@ -199,8 +199,8 @@ ComponentInfo::~ComponentInfo()
 void
 ComponentInfo::serialize_comp(SST::Core::Serialization::serializer& ser)
 {
-    ser& component;
-    ser& link_map;
+    SST_SER(component);
+    SST_SER(link_map);
     for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
         it->second.serialize_comp(ser);
     }
@@ -219,21 +219,21 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
 
     // Serialize all my data except the component and link_map
 
-    ser& const_cast<ComponentId_t&>(id_);
-    ser& parent_info;
-    ser& const_cast<std::string&>(name);
-    ser& const_cast<std::string&>(type);
+    SST_SER(const_cast<ComponentId_t&>(id_));
+    SST_SER(parent_info);
+    SST_SER(const_cast<std::string&>(name));
+    SST_SER(const_cast<std::string&>(type));
 
     // Not used after construction, no need to serialize
-    // ser& params;
+    // SST_SER(params);
 
-    ser& defaultTimeBase;
+    SST_SER(defaultTimeBase);
 
-    // ser& coordinates;
-    ser& subIDIndex;
-    ser& const_cast<std::string&>(slot_name);
-    ser& slot_num;
-    ser& share_flags;
+    // SST_SER(coordinates);
+    SST_SER(subIDIndex);
+    SST_SER(const_cast<std::string&>(slot_name));
+    SST_SER(slot_num);
+    SST_SER(share_flags);
 
     // Serialize statistic data structures - only needed for late stat registration
     // No one else has these pointers so serialize the data structure & reallocate on UNPACK
@@ -243,39 +243,39 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
         std::map<std::string, StatisticId_t>     enabled_stat_names;
         bool                                     is_null = true;
 
-        ser& is_null;
+        SST_SER(is_null);
         if ( !is_null ) {
-            ser& stat_configs;
+            SST_SER(stat_configs);
             stat_configs_ = new std::map<StatisticId_t, ConfigStatistic>(stat_configs);
         }
 
-        ser& is_null;
+        SST_SER(is_null);
         if ( !is_null ) {
-            ser& all_stat_config;
+            SST_SER(all_stat_config);
             all_stat_config_ = new ConfigStatistic(all_stat_config);
         }
 
-        ser& is_null;
+        SST_SER(is_null);
         if ( !is_null ) {
-            ser& enabled_stat_names;
+            SST_SER(enabled_stat_names);
             enabled_stat_names_ = new std::map<std::string, StatisticId_t>(enabled_stat_names);
         }
     }
     else {
         bool is_null = stat_configs_ == nullptr;
-        ser& is_null;
-        if ( !is_null ) ser&(*stat_configs_);
+        SST_SER(is_null);
+        if ( !is_null ) SST_SER((*stat_configs_));
 
         is_null = all_stat_config_ == nullptr;
-        ser& is_null;
-        if ( !is_null ) ser&(*all_stat_config_);
+        SST_SER(is_null);
+        if ( !is_null ) SST_SER((*all_stat_config_));
 
         is_null = enabled_stat_names_ == nullptr;
-        ser& is_null;
-        if ( !is_null ) ser&(*enabled_stat_names_);
+        SST_SER(is_null);
+        if ( !is_null ) SST_SER((*enabled_stat_names_));
     }
 
-    ser& statLoadLevel; // Potentially needed for late stat registration
+    SST_SER(statLoadLevel); // Potentially needed for late stat registration
 
     // For SubComponents map, need to serialize map by hand since we
     // we will need to use the track non-pointer as pointer feature in
@@ -284,41 +284,41 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     // own SubCompenents that will need to point to the data location
     // in the map.
 
-    // ser& subComponents;
+    // SST_SER(subComponents);
     switch ( ser.mode() ) {
     case SST::Core::Serialization::serializer::SIZER:
     {
         size_t size = subComponents.size();
-        ser&   size;
+        SST_SER(size);
         for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
             // keys are const values - annoyingly
-            ser& const_cast<ComponentId_t&>(it->first);
-            ser | it->second;
+            SST_SER(const_cast<ComponentId_t&>(it->first));
+            SST_SER_AS_PTR(it->second);
         }
         break;
     }
     case SST::Core::Serialization::serializer::PACK:
     {
         size_t size = subComponents.size();
-        ser&   size;
+        SST_SER(size);
         for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
             // keys are const values - annoyingly
-            ser& const_cast<ComponentId_t&>(it->first);
-            ser | it->second;
+            SST_SER(const_cast<ComponentId_t&>(it->first));
+            SST_SER_AS_PTR(it->second);
         }
         break;
     }
     case SST::Core::Serialization::serializer::UNPACK:
     {
         size_t size;
-        ser&   size;
+        SST_SER(size);
         for ( size_t i = 0; i < size; ++i ) {
             ComponentId_t key;
-            ser&          key;
+            SST_SER(key);
 
             auto p = subComponents.emplace(key, ComponentInfo {});
 
-            ser | p.first->second;
+            SST_SER_AS_PTR(p.first->second);
         }
         break;
     }
