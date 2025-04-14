@@ -1364,7 +1364,7 @@ public:
         virtual SST::Event* convert(InvNotify* request)        = 0;
 
         /* Serialization */
-        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override;
+        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
         ImplementVirtualSerializable(RequestConverter);
     };
 
