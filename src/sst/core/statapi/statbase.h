@@ -318,12 +318,11 @@ private:
 /**
  \class StatisticCollector
  * Base type that creates the virtual addData(...) interface
- * Used for distinguishing fundamental types (collected by value)
+ * Used for distinguishing arithmetic types (collected by value)
  * and composite struct types (collected by reference)
  */
-template <class T, bool = std::is_fundamental_v<T>>
-struct StatisticCollector
-{};
+template <class T, bool = std::is_arithmetic_v<T>>
+struct StatisticCollector;
 
 template <class T>
 struct StatisticCollector<T, true>
