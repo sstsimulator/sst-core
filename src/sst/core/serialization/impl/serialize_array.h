@@ -20,160 +20,150 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
+#include <cstddef>
+#include <string>
 #include <type_traits>
 
 namespace SST::Core::Serialization {
+
+// Serialize arrays
+
 namespace pvt {
 
-template <class TPtr, class IntType>
-class ser_array_wrapper
+// Wrapper classes. They have no declared constructors so that they can be aggregate-initialized.
+template <typename ELEM_T, typename SIZE_T>
+struct array_wrapper
 {
-public:
-    TPtr*&   bufptr;
-    IntType& sizeptr;
-    ser_array_wrapper(TPtr*& buf, IntType& size) : bufptr(buf), sizeptr(size) {}
+    ELEM_T*& ptr;
+    SIZE_T&  size;
 };
 
-// template <class IntType>
-// class ser_buffer_wrapper
-// {
-// public:
-//     void*& bufptr;
-//     IntType& sizeptr;
-//     ser_buffer_wrapper(void*& buf, IntType& size) :
-//         bufptr(buf), sizeptr(size) {}
-// };
-
-template <class TPtr>
-class raw_ptr_wrapper
+template <typename ELEM_T>
+struct raw_ptr_wrapper
 {
-public:
-    TPtr*& bufptr;
-    raw_ptr_wrapper(TPtr*& ptr) : bufptr(ptr) {}
+    ELEM_T*& ptr;
+};
+
+// Functions for serializing arrays element by element
+void serialize_array(
+    serializer& ser, void* data, size_t size, void serialize_array_element(serializer& ser, void* data, size_t index));
+
+void serialize_array_map(
+    serializer& ser, void* data, size_t size, ObjectMap* map,
+    void serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name));
+
+// Serialize an array element
+// Separated out to reduce code size
+template <typename ELEM_T>
+void
+serialize_array_element(serializer& ser, void* data, size_t index)
+{
+    ser& static_cast<ELEM_T*>(data)[index];
+}
+
+// Return a new map representing canonical fixed sized array (whether the original array came from ELEM_T[SIZE] or
+// std::array<ELEM_T, SIZE>)
+template <typename ELEM_T, size_t SIZE>
+ObjectMap*
+new_fixed_array_map(void* data)
+{
+    return new ObjectMapContainer<ELEM_T[SIZE]>(static_cast<ELEM_T(*)[SIZE]>(data));
+}
+
+// Serialize an array map element
+// Separated out to reduce code size
+template <typename ELEM_T>
+void
+serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name)
+{
+    sst_map_object(ser, static_cast<ELEM_T*>(data)[index], name);
+}
+
+// Whether the element type is copyable with memcpy()
+// TODO: Implement with std::is_trivially_copyable and std::is_aggregate, using reflection to check for troublesome
+// members like pointers
+template <typename T>
+constexpr bool is_trivial_element_v = std::is_arithmetic_v<T> || std::is_enum_v<T>;
+
+// Serialize fixed arrays
+template <typename OBJ_TYPE, typename ELEM_T, size_t SIZE>
+struct serialize_impl_fixed_array
+{
+    void operator()(OBJ_TYPE& ary, serializer& ser)
+    {
+        const auto& aPtr = get_ptr(ary);
+        switch ( ser.mode() ) {
+        case serializer::MAP:
+            serialize_array_map(
+                ser, &(*aPtr)[0], SIZE, new_fixed_array_map<ELEM_T, SIZE>(&(*aPtr)[0]),
+                serialize_array_map_element<ELEM_T>);
+            break;
+
+        case serializer::UNPACK:
+            if constexpr ( std::is_pointer_v<OBJ_TYPE> ) {
+                if constexpr ( std::is_same_v<OBJ_TYPE, ELEM_T(*)[SIZE]> )
+                    ary = new ELEM_T[SIZE];
+                else
+                    ary = new std::remove_pointer_t<OBJ_TYPE>;
+            }
+            [[fallthrough]];
+
+        default:
+            if constexpr ( is_trivial_element_v<ELEM_T> )
+                ser.raw(&(*aPtr)[0], sizeof(ELEM_T) * SIZE);
+            else
+                serialize_array(ser, &(*aPtr)[0], SIZE, serialize_array_element<ELEM_T>);
+            break;
+        }
+    }
 };
 
 } // namespace pvt
-/** I have typedefing pointers, but no other way.
- *  T could be "void and TPtr void* */
-template <class TPtr, class IntType>
-inline pvt::ser_array_wrapper<TPtr, IntType>
-array(TPtr*& buf, IntType& size)
+
+// Serialize fixed arrays and pointers to them
+template <typename ELEM_T, size_t SIZE>
+struct serialize_impl<ELEM_T[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T[SIZE], ELEM_T, SIZE>
+{};
+
+template <typename ELEM_T, size_t SIZE>
+struct serialize_impl<std::array<ELEM_T, SIZE>> :
+    pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>, ELEM_T, SIZE>
+{};
+
+template <typename ELEM_T, size_t SIZE>
+struct serialize_impl<ELEM_T (*)[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T (*)[SIZE], ELEM_T, SIZE>
+{};
+
+template <typename ELEM_T, size_t SIZE>
+struct serialize_impl<std::array<ELEM_T, SIZE>*> :
+    pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>*, ELEM_T, SIZE>
+{};
+
+// Serialize dynamic arrays
+template <typename ELEM_T, typename SIZE_T>
+struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 {
-    return pvt::ser_array_wrapper<TPtr, IntType>(buf, size);
-}
-
-template <class IntType>
-inline pvt::ser_array_wrapper<void, IntType>
-buffer(void*& buf, IntType& size)
-{
-    return pvt::ser_array_wrapper<void, IntType>(buf, size);
-}
-
-template <class TPtr>
-inline pvt::raw_ptr_wrapper<TPtr>
-raw_ptr(TPtr*& ptr)
-{
-    return pvt::raw_ptr_wrapper<TPtr>(ptr);
-}
-
-/*****       Specializations of serialize class       *****/
-
-/***    For statically allocated arrays ***/
-
-/**
-   Version of serialize that works for statically allocated arrays of
-   arithmetic types and enums.
- */
-template <class T, size_t N>
-class serialize_impl<T[N], std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(T arr[N], serializer& ser)
+    void operator()(pvt::array_wrapper<ELEM_T, SIZE_T>& ary, serializer& ser)
     {
-        ser.array<T, N>(arr);
+        switch ( const auto mode = ser.mode() ) {
+        case serializer::MAP:
+            // TODO: Implement mapping mode
+            // Functions like pvt::serialize_array_map() and pvt::new_fixed_array_map() should be used to reduce code
+            // size
+            break;
 
-        // TODO: Implement mapping mode
-    }
-};
-
-/**
-   Version of serialize that works for statically allocated arrays of
-   non base types.
- */
-template <class T, size_t N>
-class serialize_impl<T[N], std::enable_if_t<!std::is_arithmetic_v<T> && !std::is_enum_v<T>>>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(T arr[N], serializer& ser)
-    {
-        for ( int i = 0; i < N; i++ ) {
-            ser& arr[i];
+        default:
+            if constexpr ( std::is_void_v<ELEM_T> || pvt::is_trivial_element_v<ELEM_T> )
+                ser.binary(ary.ptr, ary.size);
+            else {
+                ser.primitive(ary.size);
+                if ( mode == serializer::UNPACK ) ary.ptr = new ELEM_T[ary.size];
+                pvt::serialize_array(ser, ary.ptr, ary.size, pvt::serialize_array_element<ELEM_T>);
+            }
+            break;
         }
-
-        // TODO: Implement mapping mode
     }
 };
-
-/***  For dynamically allocated arrays ***/
-
-/**
-   Version of serialize that works for dynamically allocated arrays of
-   arithmetic types and enums.
- */
-template <class T, class IntType>
-class serialize_impl<pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser)
-    {
-        ser.binary(arr.bufptr, arr.sizeptr);
-
-        // TODO: Implement mapping mode
-    }
-};
-
-/**
-   Version of serialize that works for dynamically allocated arrays of
-   non base types.
- */
-template <class T, class IntType>
-class serialize_impl<
-    pvt::ser_array_wrapper<T, IntType>, std::enable_if_t<!std::is_arithmetic_v<T> && !std::is_enum_v<T>>>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser)
-    {
-        ser.primitive(arr.sizeptr);
-        for ( int i = 0; i < arr.sizeptr; i++ ) {
-            ser& arr[i];
-        }
-
-        // TODO: Implement mapping mode
-    }
-};
-
-/**
-   Version of serialize that works for statically allocated arrays of
-   void*.
- */
-template <class IntType>
-class serialize_impl<pvt::ser_array_wrapper<void, IntType>>
-{
-    template <class A>
-    friend class serialize;
-    void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser)
-    {
-        ser.binary(arr.bufptr, arr.sizeptr);
-
-        // TODO: Implement mapping mode
-    }
-};
-
-/***   Other Specializations (raw_ptr and trivially_serializable)  ***/
 
 /**
    Version of serialize that works for copying raw pointers (only
@@ -181,39 +171,46 @@ class serialize_impl<pvt::ser_array_wrapper<void, IntType>>
    if the value is going to be sent back to the originator, since it
    won't be valid on the other rank.
  */
-template <class TPtr>
-class serialize_impl<pvt::raw_ptr_wrapper<TPtr>>
+template <typename ELEM_T>
+struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
 {
-    template <class A>
-    friend class serialize;
-    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser)
+    void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser)
     {
-        ser.primitive(ptr.bufptr);
+        switch ( ser.mode() ) {
+        case serializer::MAP:
+            // TODO: Implement mapping mode
+            // Functions like pvt::serialize_array_map() and pvt::new_fixed_array_map() should be used to reduce code
+            // size
+            break;
 
-        // TODO: Implement mapping mode
+        default:
+            ser.primitive(a.ptr);
+            break;
+        }
     }
 };
 
-// Needed only because the default version in serialize.h can't get
-// the template expansions quite right trying to look through several
-// levels of expansion
-template <class TPtr, class IntType>
-inline void
-operator&(serializer& ser, pvt::ser_array_wrapper<TPtr, IntType> arr)
+// Wrapper functions
+
+template <typename ELEM_T, typename SIZE_T>
+pvt::array_wrapper<ELEM_T, SIZE_T>
+array(ELEM_T*& ptr, SIZE_T& size)
 {
-    operator&<pvt::ser_array_wrapper<TPtr, IntType>>(ser, arr);
-    // serialize<pvt::ser_array_wrapper<TPtr, IntType>>()(arr, ser);
+    return { ptr, size };
 }
 
-// Needed only because the default version in serialize.h can't get
-// the template expansions quite right trying to look through several
-// levels of expansion
-template <class TPtr>
-inline void
-operator&(serializer& ser, pvt::raw_ptr_wrapper<TPtr> ptr)
+template <typename SIZE_T>
+pvt::array_wrapper<void, SIZE_T>
+buffer(void*& ptr, SIZE_T& size)
 {
-    operator&<pvt::raw_ptr_wrapper<TPtr>>(ser, ptr);
-    // serialize<pvt::raw_ptr_wrapper<TPtr>>()(ptr, ser);
+    return { ptr, size };
+}
+
+template <typename ELEM_T>
+pvt::raw_ptr_wrapper<ELEM_T>
+raw_ptr(ELEM_T*& ptr)
+{
+    return { ptr };
 }
 
 } // namespace SST::Core::Serialization
