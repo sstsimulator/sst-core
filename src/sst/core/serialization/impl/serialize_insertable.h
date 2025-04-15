@@ -20,18 +20,86 @@
 #include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/serialization/serializer.h"
 
+#include <cstddef>
+#include <deque>
 #include <forward_list>
+#include <list>
 #include <map>
 #include <set>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace SST::Core::Serialization {
 
-// A type with begin(), end() methods with value_type elements which can call insert_element()
-// to insert them in begin() to end() order
-//
+// If the type is a pair with a const first, map it to pair with non-const first
+template <typename T>
+struct remove_const_key
+{
+    using type = T;
+};
+
+template <typename KEY, typename VALUE>
+struct remove_const_key<std::pair<const KEY, VALUE>>
+{
+    using type = std::pair<KEY, VALUE>;
+};
+
+// Whether a size() method exists for a type
+template <typename, typename = void>
+constexpr bool has_size_v = false;
+
+template <typename T>
+constexpr bool has_size_v<T, std::void_t<decltype(std::declval<T>().size())>> = true;
+
+// Whether std::distance(begin(), end()) exists for a type
+template <typename, typename = void>
+constexpr bool has_distance_v = false;
+
+template <typename T>
+constexpr bool
+    has_distance_v<T, std::void_t<decltype(std::distance(std::declval<T>().begin(), std::declval<T>().end()))>> = true;
+
+// Get the size of a container, using a size() method if it exists, otherwise distance(begin, end)
+template <typename T>
+std::enable_if_t<has_size_v<T> || has_distance_v<T>, size_t>
+get_size(const T& t)
+{
+    if constexpr ( has_size_v<T> )
+        return t.size();
+    else
+        return std::distance(t.begin(), t.end());
+}
+
+// Whether it is a std::vector<bool>
+template <typename>
+constexpr bool is_vector_bool_v = false;
+
+template <typename... Ts>
+constexpr bool is_vector_bool_v<std::vector<bool, Ts...>> = true;
+
+// Whether it is a simple map (not a multimap and has integral, floating-point, enum, or convertible to string keys)
+template <typename, typename = void>
+constexpr bool is_simple_map_v = false;
+
+template <template <typename...> class MAP, typename KEY, typename... REST>
+constexpr bool is_simple_map_v<
+    MAP<KEY, REST...>,
+    std::enable_if_t<(is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>)&&(
+        std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> = true;
+
+// Whether it is a simple set (not a multiset and has integral, floating-point, enum, or convertible to string keys)
+template <typename, typename = void>
+constexpr bool is_simple_set_v = false;
+
+template <template <typename...> class SET, typename KEY, typename... REST>
+constexpr bool is_simple_set_v<
+    SET<KEY, REST...>,
+    std::enable_if_t<(is_same_template_v<SET, std::set> || is_same_template_v<SET, std::unordered_set>)&&(
+        std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> = true;
+
 // std::deque
 // std::forward_list
 // std::list
@@ -45,152 +113,110 @@ namespace SST::Core::Serialization {
 // std::unordered_set
 // std::vector, including std::vector<bool>
 //
-// and any user-defined or future STL classes which have begin() and end() methods, a
-// value_type element type, and an insert_element() overload which can append value_type
-
-template <class T>
+// clang-format off
+template <template <typename...> class T, typename... Ts>
 class serialize_impl<
-    T, std::void_t<
-           // exclude std::string and std::string* to prevent specialization ambiguity
-           std::enable_if_t<!std::is_same_v<std::remove_pointer_t<T>, std::string>>,
-
-           // whether begin() method exists
-           decltype(std::declval<T>().begin()),
-
-           // whether end() method exists
-           decltype(std::declval<T>().end()),
-
-           // whether a clear() method exists
-           decltype(std::declval<T>().clear()),
-
-           // whether get_size() can determine size because it has a matching overload
-           decltype(get_size(std::declval<T>())),
-
-           // whether insert_element() can insert value_type elements
-           decltype(insert_element(std::declval<T>(), std::declval<typename T::value_type>()))>>
+    T<Ts...>, std::enable_if_t<
+                  is_same_template_v< T, std::deque              > ||
+                  is_same_template_v< T, std::forward_list       > ||
+                  is_same_template_v< T, std::list               > ||
+                  is_same_template_v< T, std::map                > ||
+                  is_same_template_v< T, std::multimap           > ||
+                  is_same_template_v< T, std::multiset           > ||
+                  is_same_template_v< T, std::set                > ||
+                  is_same_template_v< T, std::unordered_map      > ||
+                  is_same_template_v< T, std::unordered_multimap > ||
+                  is_same_template_v< T, std::unordered_multiset > ||
+                  is_same_template_v< T, std::unordered_set      > ||
+                  is_same_template_v< T, std::vector             >
+                > >
+// clang-format on
 {
-    // If the type is a pair with a const first, map it to pair with non-const first
-    template <typename U>
-    struct remove_const_key
-    {
-        using type = U;
-    };
+    // Object type = container template with template arguments
+    using OBJ = T<Ts...>;
 
-    template <typename KEY, typename VALUE>
-    struct remove_const_key<std::pair<const KEY, VALUE>>
-    {
-        using type = std::pair<KEY, VALUE>;
-    };
-
-    // Value type of element, with const removed from first of pair if it exists
-    using value_type = typename remove_const_key<typename T::value_type>::type;
-
-    // Note: the following use struct templates because of a GCC bug which does
-    // not allow static constexpr variable templates defined inside of a class.
-
-    // Whether it is a std::vector
-    template <typename>
-    struct is_vector : std::false_type
-    {};
-
-    template <typename... Ts>
-    struct is_vector<std::vector<Ts...>> : std::true_type
-    {};
-
-    // Whether it is a std::vector<bool>
-    template <typename>
-    struct is_vector_bool : std::false_type
-    {};
-
-    template <typename... Ts>
-    struct is_vector_bool<std::vector<bool, Ts...>> : std::true_type
-    {};
-
-    // Whether it is a std::forward_list
-    template <typename>
-    struct is_forward_list : std::false_type
-    {};
-
-    template <typename... Ts>
-    struct is_forward_list<std::forward_list<Ts...>> : std::true_type
-    {};
-
-    // Whether it is a simple map (not a multimap and has integral, floating-point, enum, or convertible to string keys)
-    template <typename, typename = void>
-    struct is_simple_map : std::false_type
-    {};
-
-    template <template <typename...> class MAP, typename KEY, typename... REST>
-    struct is_simple_map<
-        MAP<KEY, REST...>,
-        std::enable_if_t<(is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>)&&(
-            std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> :
-        std::true_type
-    {};
-
-    // Whether it is a simple set (not a multiset and has integral, floating-point, enum, or convertible to string keys)
-    template <typename, typename = void>
-    struct is_simple_set : std::false_type
-    {};
-
-    template <template <typename...> class SET, typename KEY, typename... REST>
-    struct is_simple_set<
-        SET<KEY, REST...>,
-        std::enable_if_t<(is_same_template_v<SET, std::set> || is_same_template_v<SET, std::unordered_set>)&&(
-            std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>)>> :
-        std::true_type
-    {};
+    // Value type of element with const removed from first of pair if it exists
+    using value_type = typename remove_const_key<typename OBJ::value_type>::type;
 
 public:
-    void operator()(T& t, serializer& ser)
+    void operator()(OBJ& obj, serializer& ser)
     {
         switch ( const auto mode = ser.mode() ) {
         case serializer::SIZER:
         case serializer::PACK:
         {
-            size_t size = get_size(t);
+            size_t size = get_size(obj);
 
             if ( mode == serializer::PACK )
                 ser.pack(size);
             else
                 ser.size(size);
 
-            if constexpr ( is_vector_bool<T>::value ) {
+            if constexpr ( is_vector_bool_v<OBJ> ) {
                 // For std::vector<bool>, iterate over bool values instead of references to elements
-                for ( bool e : t )
-                    ser& e;
+                for ( bool e : obj )
+                    SST_SER(e);
             }
             else {
                 // Iterate over references to elements, casting away any const in keys
-                for ( auto& e : t )
-                    ser&(value_type&)e;
+                for ( auto& e : obj )
+                    SST_SER((value_type&) e);
             }
             break;
         }
 
         case serializer::UNPACK:
         {
+            // Get the total size of the container
             size_t size;
             ser.unpack(size);
 
-            t.clear();                                            // Clear the container
-            if constexpr ( is_vector<T>::value ) t.reserve(size); // Reserve size of vector
+            // Erase the container
+            obj.clear();
+            if constexpr ( is_same_template_v<T, std::vector> ) obj.reserve(size); // Reserve size of vector
 
-            // For std::forward_list, last is iterator of last element inserted
-            decltype(t.begin()) last [[maybe_unused]];
-            if constexpr ( is_forward_list<T>::value ) last = t.before_begin();
-
-            for ( size_t i = 0; i < size; ++i ) {
-                value_type e {}; // For now, elements have to be default-initializable
-                ser&       e;    // Unpack the element
-
-                // Insert the element, moving it for efficiency
-                if constexpr ( is_forward_list<T>::value )
-                    last = insert_element(t, std::move(e), last);
-                else
-                    insert_element(t, std::move(e));
+            if constexpr ( is_same_template_v<T, std::forward_list> ) {
+                auto last = obj.before_begin(); // iterator of last element inserted
+                for ( size_t i = 0; i < size; ++i ) {
+                    last        = obj.emplace_after(last);
+                    auto& value = *last;
+                    SST_SER(value);
+                }
             }
-            // assert(size == get_size(t));
+            else {
+                for ( size_t i = 0; i < size; ++i ) {
+                    if constexpr ( is_same_template_v<T, std::map> || is_same_template_v<T, std::unordered_map> ) {
+                        typename OBJ::key_type key {};
+                        SST_SER(key);
+                        auto& value = obj[std::move(key)];
+                        SST_SER(value);
+                    }
+                    else if constexpr (
+                        is_same_template_v<T, std::multimap> || is_same_template_v<T, std::unordered_multimap> ) {
+                        typename OBJ::key_type key {};
+                        SST_SER(key);
+                        auto& value = obj.emplace(std::move(key), typename OBJ::mapped_type {})->second;
+                        SST_SER(value);
+                    }
+                    else if constexpr (
+                        is_same_template_v<T, std::set> || is_same_template_v<T, std::unordered_set> ||
+                        is_same_template_v<T, std::multiset> || is_same_template_v<T, std::unordered_multiset> ) {
+                        typename OBJ::key_type key {};
+                        SST_SER(key);
+                        obj.emplace(std::move(key));
+                    }
+                    else if constexpr ( is_vector_bool_v<OBJ> ) {
+                        bool value {};
+                        SST_SER(value);
+                        obj.push_back(value);
+                    }
+                    else { // std::vector, std::deque, std::list
+                        auto& value = obj.emplace_back();
+                        SST_SER(value);
+                    }
+                }
+            }
+            // assert(size == get_size(obj));
             break;
         }
 
@@ -198,18 +224,18 @@ public:
         {
             using SST::Core::to_string;
             const std::string& name    = ser.getMapName();
-            auto*              obj_map = new ObjectMapContainer<T>(&t);
+            auto*              obj_map = new ObjectMapContainer<OBJ>(&obj);
             ser.mapper().map_hierarchy_start(name, obj_map);
 
-            if constexpr ( is_vector_bool<T>::value ) {
+            if constexpr ( is_vector_bool_v<OBJ> ) {
                 // std::vector<bool>
                 size_t i = 0;
-                for ( bool e : t )
+                for ( bool e : obj )
                     sst_map_object(ser, e, to_string(i++));
             }
-            else if constexpr ( is_simple_map<T>::value ) {
+            else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
-                for ( auto& [key, value] : t )
+                for ( auto& [key, value] : obj )
                     sst_map_object(ser, value, to_string(key));
             }
             // TODO: handle is_simple_set
@@ -218,7 +244,7 @@ public:
                 // std::unordered_multimap, std::multiset, std::unordered_multiset, and
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
-                for ( auto& e : t )
+                for ( auto& e : obj )
                     sst_map_object(ser, (value_type&)e, to_string(i++));
             }
             ser.mapper().map_hierarchy_end();
