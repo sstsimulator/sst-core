@@ -45,7 +45,7 @@ struct checkSimpleSerializeDeserialize
     static bool check(T data)
     {
         auto buffer = SST::Comms::serialize(data);
-        T    result;
+        T    result {};
         SST::Comms::deserialize(buffer, result);
         DISABLE_WARN_MAYBE_UNINITIALIZED
         bool ret = data == result;

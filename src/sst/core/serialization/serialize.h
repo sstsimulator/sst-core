@@ -26,7 +26,7 @@ namespace SST::Core::Serialization {
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
 template <typename T>
-decltype(auto)
+constexpr decltype(auto)
 get_ptr(T& t)
 {
     if constexpr ( std::is_pointer_v<T> )
@@ -109,7 +109,7 @@ public:
        contains the actual struct and other places point to the data's
        location)
      */
-    inline void serialize_and_track_pointer(T& t, serializer& ser)
+    void serialize_and_track_pointer(T& t, serializer& ser)
     {
         if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T>()(t, ser);
 
@@ -164,7 +164,7 @@ template <class T>
 class serialize<T*>
 {
 public:
-    inline void operator()(T*& t, serializer& ser)
+    void operator()(T*& t, serializer& ser)
     {
         // We are a pointer, need to see if tracking is turned on
         if ( !ser.is_pointer_tracking_enabled() ) {
@@ -280,11 +280,11 @@ public:
 
 
 /**
-   Version of serialize that works for fundamental types and enums.
+   Version of serialize that works for arithmetic and enum types.
  */
 
 template <class T>
-class serialize_impl<T, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
 public:
     void operator()(T& t, serializer& ser)
@@ -300,15 +300,14 @@ public:
 };
 
 /**
-   Version of serialize that works for pointers to fundamental types
-   and enums. Note that the pointer tracking happens at a higher
-   level, and only if it is turned on.  If it is not turned on, then
-   this only copies the value pointed to into the buffer.  If multiple
-   objects point to the same location, they will each have an
-   independent copy after deserialization.
+   Version of serialize that works for pointers to arithmetic and enum types.
+   Note that the pointer tracking happens at a higher level, and only if it is
+   turned on. If it is not turned on, then this only copies the value pointed
+   to into the buffer. If multiple objects point to the same location, they
+   will each have an independent copy after deserialization.
  */
 template <class T>
-class serialize_impl<T*, std::enable_if_t<std::is_fundamental_v<T> || std::is_enum_v<T>>>
+class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
     template <typename>
     friend class serialize;
@@ -337,32 +336,39 @@ class serialize_impl<T*, std::enable_if_t<std::is_fundamental_v<T> || std::is_en
 // pointer tracking can be done.
 template <class T>
 void
-sst_map_object(serializer& ser, T& t, std::string name = "")
+sst_map_object(serializer& ser, T&& obj)
+{
+    if ( ser.mode() != serializer::MAP ) serialize<std::remove_reference_t<T>>()(obj, ser);
+}
+
+template <class T, class STR>
+std::enable_if_t<std::is_convertible_v<STR, std::string>>
+sst_map_object(serializer& ser, T&& obj, STR&& name)
 {
     if ( ser.mode() == serializer::MAP ) {
-        if ( !name.empty() ) { // Do nothing if name is empty
-            ser.pushMapName(std::move(name));
-            serialize<T>()(t, ser);
-            ser.popMapName();
-        }
+        ObjectMapContext context(ser, std::forward<STR>(name));
+        serialize<std::remove_reference_t<T>>()(obj, ser);
     }
     else {
-        serialize<T>()(t, ser);
+        serialize<std::remove_reference_t<T>>()(obj, ser);
     }
 }
 
+// A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
+// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
+// matches serialization functions which only take lvalue references.
 template <class T>
 void
-operator&(serializer& ser, T& obj)
+operator&(serializer& ser, T&& obj)
 {
     sst_map_object(ser, obj);
 }
 
 template <class T>
 void
-operator|(serializer& ser, T& obj)
+operator|(serializer& ser, T&& obj)
 {
-    serialize<T>().serialize_and_track_pointer(obj, ser);
+    serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser);
 }
 
 // Serialization macros for checkpoint/debug serialization

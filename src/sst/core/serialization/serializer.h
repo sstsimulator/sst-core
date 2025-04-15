@@ -35,6 +35,7 @@
 namespace SST::Core::Serialization {
 
 class ObjectMap;
+class ObjectMapContext;
 
 /**
  * This class is basically a wrapper for objects to declare the order in
@@ -107,63 +108,46 @@ public:
         }
     }
 
-    template <class T, size_t N>
-    void array(T arr[N])
+    void raw(void* data, size_t size)
     {
         switch ( mode_ ) {
         case SIZER:
-        {
-            sizer_.add(sizeof(T) * N);
+            sizer_.add(size);
             break;
-        }
         case PACK:
-        {
-            char* charstr = packer_.next_str(N * sizeof(T));
-            ::memcpy(charstr, arr, N * sizeof(T));
+            memcpy(packer_.next_str(size), data, size);
             break;
-        }
         case UNPACK:
-        {
-            char* charstr = unpacker_.next_str(N * sizeof(T));
-            ::memcpy(arr, charstr, N * sizeof(T));
+            memcpy(data, unpacker_.next_str(size), size);
             break;
-        }
         case MAP:
             break;
         }
     }
 
-    template <typename T, typename Int>
-    void binary(T*& buffer, Int& size)
+    template <typename ELEM_T, typename SIZE_T>
+    void binary(ELEM_T*& buffer, SIZE_T& size)
     {
         switch ( mode_ ) {
         case SIZER:
-        {
-            sizer_.add(sizeof(Int));
+            sizer_.add(sizeof(SIZE_T));
             sizer_.add(size);
             break;
-        }
         case PACK:
-        {
             if ( buffer ) {
                 packer_.pack(size);
-                packer_.pack_buffer(buffer, size * sizeof(T));
+                packer_.pack_buffer(buffer, size * sizeof(ELEM_T));
             }
             else {
-                Int nullsize = 0;
+                SIZE_T nullsize = 0;
                 packer_.pack(nullsize);
             }
             break;
-        }
         case UNPACK:
-        {
             unpacker_.unpack(size);
-            if ( size != 0 ) { unpacker_.unpack_buffer(&buffer, size * sizeof(T)); }
-            else {
-                buffer = nullptr;
-            }
+            buffer = nullptr;
+            if ( size ) unpacker_.unpack_buffer(&buffer, size * sizeof(ELEM_T));
             break;
-        }
         case MAP:
             break;
         }
@@ -174,9 +158,7 @@ public:
     template <typename Int>
     void binary(void*& buffer, Int& size)
     {
-        char* tmp = (char*)buffer;
-        binary<char>(tmp, size);
-        buffer = tmp;
+        binary(reinterpret_cast<char*&>(buffer), size);
     }
 
     void string(std::string& str);
@@ -261,20 +243,8 @@ public:
 
     void report_object_map(ObjectMap* ptr);
 
-    void pushMapName(std::string name) { map_name.push(std::move(name)); }
-
-    const std::string& getMapName() const
-    {
-        if ( map_name.empty() || map_name.top().empty() )
-            throw std::invalid_argument("Internal error: Empty map name when map serialization requires it");
-        return map_name.top();
-    }
-
-    void popMapName()
-    {
-        getMapName(); // make sure name exists
-        map_name.pop();
-    }
+    // Get the map name
+    const std::string& getMapName() const;
 
 protected:
     // only one of these is going to be valid for this serializer
@@ -290,8 +260,31 @@ protected:
     // Used for unpacking and mapping
     std::map<uintptr_t, uintptr_t> ser_pointer_map;
     uintptr_t                      split_key;
-    std::stack<std::string>        map_name;
-};
+    const ObjectMapContext*        mapContext = nullptr;
+    friend class ObjectMapContext;
+}; // class serializer
+
+/**
+   ObjectMap context which is saved in a virtual stack when name or other information changes.
+   When ObjectMapContext is destroyed, the serializer goes back to the previous ObjectMapContext.
+ */
+
+class ObjectMapContext
+{
+    serializer&                   ser;
+    const ObjectMapContext* const prevContext;
+    std::string const             name;
+
+public:
+    ObjectMapContext(serializer& ser, std::string name) : ser(ser), prevContext(ser.mapContext), name(std::move(name))
+    {
+        DIAG_DISABLE(dangling-pointer); // GCC 13 bug causes spurious warning
+        ser.mapContext = this;            // change the serializer's context to this new one
+        REENABLE_WARNING;
+    }
+    ~ObjectMapContext() { ser.mapContext = prevContext; } // restore the serializer's old context
+    const std::string& getName() const { return name; }
+}; // class ObjectMapContext
 
 } // namespace SST::Core::Serialization
 

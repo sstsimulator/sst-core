@@ -224,6 +224,7 @@ sst_core_sources = \
 	serialization/serializer.cc \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \
+	serialization/impl/serialize_array.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/stdMem.cc \

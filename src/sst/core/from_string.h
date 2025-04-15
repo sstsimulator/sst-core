@@ -99,14 +99,16 @@ from_string(const std::string& input)
     return static_cast<T>(from_string<std::underlying_type_t<T>>(input));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 template <class T>
 std::enable_if_t<!std::is_enum_v<T>, std::string>
 to_string(const T& input)
 {
-    if constexpr ( std::is_fundamental_v<T> )
+    if constexpr ( std::is_arithmetic_v<T> )
         return std::to_string(input);
     else
-        return typeid(T).name(); // For now, return a string if the type isn't fundamental or handled elsewhere
+        return typeid(T).name(); // For now, return a string if the type isn't handled elsewhere
 }
 
 template <class T>
@@ -116,6 +118,7 @@ to_string(const T& input)
     return std::to_string(static_cast<std::underlying_type_t<T>>(input));
 }
 
+// for std::string no-op, or class types which define operator std::string()
 inline std::string
 to_string(std::string s)
 {

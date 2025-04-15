@@ -14,7 +14,6 @@
 from sst_unittest import *
 from sst_unittest_support import *
 
-
 ####################################################################
 # These tests verify general operation of the SST Testing Frameworks
 ####################################################################
@@ -71,7 +70,7 @@ class testcase_testengine_testing_frameworks_operation(SSTTestCase):
     def test_frameworks_operation_run_timeout_success(self):
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
         cmd = "tail".format()
-        rtn = OSCommand(cmd).run(timeout_sec=3)
+        rtn = os_command(cmd).run(timeout_sec=3)
         log("Tail (forced Timeout) Rtn = {0}".format(rtn))
         self.assertEqual(True, rtn.timeout())
 
