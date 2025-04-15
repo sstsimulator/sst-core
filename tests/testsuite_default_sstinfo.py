@@ -14,7 +14,6 @@
 from sst_unittest import *
 from sst_unittest_support import *
 
-
 have_curses = sst_core_config_include_file_get_value(define="HAVE_CURSES", type=int, default=0, disable_warning=True) == 1
 
 
@@ -52,7 +51,7 @@ class testcase_sstinfo(SSTTestCase):
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
         cmd = '{0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
-        rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run(timeout_sec = 1)
+        rtn = os_command(cmd, output_file_path = outfile, error_file_path = errfile).run(timeout_sec = 1)
 
         if testtype == "coreTestElement":
             if rtn.result() != 0:

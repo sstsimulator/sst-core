@@ -22,24 +22,18 @@
     test developer.  More support functions exist within sst_unittest_support.py
 """
 
-import sys
-import os
-import unittest
-import threading
-import signal
-import time
 import multiprocessing
+import os
+import signal
+import sys
+import time
+import unittest
 from typing import Optional
 
 import test_engine_globals
 from sst_unittest_support import *
-from test_engine_support import OSCommand
-from test_engine_support import check_param_type
-from test_engine_support import strclass
-from test_engine_support import strqual
-from test_engine_junit import JUnitTestSuite
-from test_engine_junit import junit_to_xml_report_file
-#from test_engine_junit import junit_to_xml_report_string
+from test_engine_junit import JUnitTestSuite, junit_to_xml_report_file
+from test_engine_support import check_param_type, strclass, strqual
 
 if not sys.warnoptions:
     import warnings
@@ -370,7 +364,7 @@ class SSTTestCase(unittest.TestCase):
             log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
 
         # Launch SST
-        rtn = OSCommand(oscmd, output_file_path = out_file,
+        rtn = os_command(oscmd, output_file_path = out_file,
                         error_file_path = err_file,
                         set_cwd = set_cwd).run(timeout_sec=timeout_sec, send_signal=send_signal, signal_sec=signal_sec)
         if num_ranks > 1:
