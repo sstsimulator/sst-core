@@ -32,13 +32,15 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) : ConfigGraphOutp
 namespace {
 struct CompWrapper
 {
-    SST::ConfigComponent const* comp;
-    bool                        output_parition_info;
+    SST::ConfigComponent const*                comp;
+    std::map<SST::StatisticId_t, std::string>& sharedStatMap;
+    bool                                       output_parition_info;
 };
 
 struct SubCompWrapper
 {
-    SST::ConfigComponent const* comp;
+    SST::ConfigComponent const*                comp;
+    std::map<SST::StatisticId_t, std::string>& sharedStatMap;
 };
 
 struct LinkConfPair
@@ -50,6 +52,7 @@ struct LinkConfPair
 struct StatPair
 {
     std::pair<std::string, unsigned long> const& statkey;
+    std::map<SST::StatisticId_t, std::string>&   sharedStatMap;
     SST::ConfigComponent const*                  comp;
 };
 
@@ -69,10 +72,22 @@ struct StatGroupParamPair
 void
 to_json(json::ordered_json& j, StatPair const& sp)
 {
-    auto const& name = sp.statkey.first;
-    j                = json::ordered_json { { "name", name } };
-
     auto* si = sp.comp->findStatistic(sp.statkey.second);
+    if ( si->shared ) {
+        if ( sp.sharedStatMap.find(si->id) == sp.sharedStatMap.end() ) {
+            std::string name = "statObj" + std::to_string(sp.sharedStatMap.size()) + "_" + si->name;
+            sp.sharedStatMap[si->id].assign(name);
+            j = json::ordered_json { { "name", name } };
+        }
+        else {
+            std::string name = sp.sharedStatMap.find(si->id)->second;
+            j                = json::ordered_json { { "name", name } };
+        }
+    }
+    else {
+        auto const& name = sp.statkey.first;
+        j                = json::ordered_json { { "name", name } };
+    }
     for ( auto const& parmItr : si->params.getKeys() ) {
         j["params"][parmItr] = si->params.find<std::string>(parmItr);
     }
@@ -93,11 +108,11 @@ to_json(json::ordered_json& j, SubCompWrapper const& comp_wrapper)
     }
 
     for ( auto const& scItr : comp->subComponents ) {
-        j["subcomponents"].push_back(SubCompWrapper { scItr });
+        j["subcomponents"].push_back(SubCompWrapper { scItr, comp_wrapper.sharedStatMap });
     }
 
     for ( auto const& pair : comp->enabledStatNames ) {
-        j["statistics"].push_back(StatPair { pair, comp });
+        j["statistics"].push_back(StatPair { pair, comp_wrapper.sharedStatMap, comp });
     }
 }
 
@@ -116,11 +131,11 @@ to_json(json::ordered_json& j, CompWrapper const& comp_wrapper)
     }
 
     for ( auto const& scItr : comp->subComponents ) {
-        j["subcomponents"].push_back(SubCompWrapper { scItr });
+        j["subcomponents"].push_back(SubCompWrapper { scItr, comp_wrapper.sharedStatMap });
     }
 
     for ( auto const& pair : comp->enabledStatNames ) {
-        j["statistics"].push_back(StatPair { pair, comp });
+        j["statistics"].push_back(StatPair { pair, comp_wrapper.sharedStatMap, comp });
     }
 
     if ( comp_wrapper.output_parition_info ) {
@@ -256,7 +271,7 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     if ( const_cast<ConfigComponentMap_t&>(compMap).size() == 0 ) { outputJson["components"]; }
 
     for ( const auto& compItr : compMap ) {
-        outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition() });
+        outputJson["components"].emplace_back(CompWrapper { compItr, sharedStatMap, cfg->output_partition() });
     }
 
     // no links exist in this rank
@@ -273,4 +288,6 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     // lifetime extension, but this temp is the careful way.
     std::string outputString = ss.str();
     fprintf(outputFile, "%s", outputString.c_str());
+
+    sharedStatMap.clear();
 }

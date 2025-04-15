@@ -18,10 +18,7 @@
 
 #include <iostream>
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-namespace pvt {
+namespace SST::Core::Serialization::pvt {
 
 void
 ser_mapper::map_primitive(const std::string& name, ObjectMap* map)
@@ -83,8 +80,4 @@ ser_mapper::setNextObjectReadOnly()
     next_item_read_only = true;
 }
 
-
-} // namespace pvt
-} // namespace Serialization
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core::Serialization::pvt

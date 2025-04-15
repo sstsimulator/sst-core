@@ -16,20 +16,19 @@
     testsuites should live, and then discover and run tests.
 """
 
-import sys
-import os
-import unittest
 import argparse
-import shutil
 import configparser
 import multiprocessing
+import os
+import shutil
+import sys
+import unittest
 from typing import Any, Dict, List, Union
 
 import test_engine_globals
 from sst_unittest import *
 from sst_unittest_support import *
 from test_engine_unittest import *
-from test_engine_support import OSCommand
 
 ################################################################################
 
@@ -367,7 +366,7 @@ class TestEngine:
         concurrent_txt = ""
 
         cmd = "sst --version"
-        rtn = OSCommand(cmd).run()
+        rtn = os_command(cmd).run()
         sstcoreversion = rtn.output()
         sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
 
