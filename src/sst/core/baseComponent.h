@@ -1156,9 +1156,7 @@ public:
 template <class T>
 class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, T>>>
 {
-    template <class A>
-    friend class serialize;
-    void operator()(T*& s, serializer& ser)
+    void operator()(T*& s, serializer& ser, ser_opt_t UNUSED(options))
     {
         serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
@@ -1177,6 +1175,8 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
         }
         s = static_cast<T*>(sp);
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace Core::Serialization

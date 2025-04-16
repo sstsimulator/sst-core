@@ -58,7 +58,7 @@ template <typename ELEM_T>
 void
 serialize_array_element(serializer& ser, void* data, size_t index)
 {
-    ser& static_cast<ELEM_T*>(data)[index];
+    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index]);
 }
 
 // Return a new map representing canonical fixed sized array (whether the original array came from ELEM_T[SIZE] or
@@ -76,7 +76,8 @@ template <typename ELEM_T>
 void
 serialize_array_map_element(serializer& ser, void* data, size_t index, const std::string& name)
 {
-    sst_map_object(ser, static_cast<ELEM_T*>(data)[index], name);
+    // FIX ME: need to handle options correctly.  Also change to pass const char*
+    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], name.c_str(), 0);
 }
 
 // Whether the element type is copyable with memcpy()
@@ -89,7 +90,7 @@ constexpr bool is_trivial_element_v = std::is_arithmetic_v<T> || std::is_enum_v<
 template <typename OBJ_TYPE, typename ELEM_T, size_t SIZE>
 struct serialize_impl_fixed_array
 {
-    void operator()(OBJ_TYPE& ary, serializer& ser)
+    void operator()(OBJ_TYPE& ary, serializer& ser, ser_opt_t UNUSED(options))
     {
         const auto& aPtr = get_ptr(ary);
         switch ( ser.mode() ) {
@@ -122,28 +123,35 @@ struct serialize_impl_fixed_array
 
 // Serialize fixed arrays and pointers to them
 template <typename ELEM_T, size_t SIZE>
-struct serialize_impl<ELEM_T[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T[SIZE], ELEM_T, SIZE>
-{};
+class serialize_impl<ELEM_T[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T[SIZE], ELEM_T, SIZE>
+{
+    SST_FRIEND_SERIALZE();
+};
 
 template <typename ELEM_T, size_t SIZE>
-struct serialize_impl<std::array<ELEM_T, SIZE>> :
-    pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>, ELEM_T, SIZE>
-{};
+class serialize_impl<std::array<ELEM_T, SIZE>> : pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>, ELEM_T, SIZE>
+{
+    SST_FRIEND_SERIALZE();
+};
 
 template <typename ELEM_T, size_t SIZE>
-struct serialize_impl<ELEM_T (*)[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T (*)[SIZE], ELEM_T, SIZE>
-{};
+class serialize_impl<ELEM_T (*)[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T (*)[SIZE], ELEM_T, SIZE>
+{
+    SST_FRIEND_SERIALZE();
+};
 
 template <typename ELEM_T, size_t SIZE>
-struct serialize_impl<std::array<ELEM_T, SIZE>*> :
+class serialize_impl<std::array<ELEM_T, SIZE>*> :
     pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>*, ELEM_T, SIZE>
-{};
+{
+    SST_FRIEND_SERIALZE();
+};
 
 // Serialize dynamic arrays
 template <typename ELEM_T, typename SIZE_T>
-struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
+class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 {
-    void operator()(pvt::array_wrapper<ELEM_T, SIZE_T>& ary, serializer& ser)
+    void operator()(pvt::array_wrapper<ELEM_T, SIZE_T>& ary, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
@@ -163,6 +171,8 @@ struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
             break;
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 /**
@@ -174,7 +184,7 @@ struct serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 template <typename ELEM_T>
 struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
 {
-    void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser)
+    void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::MAP:
@@ -188,6 +198,8 @@ struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
             break;
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 // Wrapper functions

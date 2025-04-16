@@ -22,7 +22,67 @@
 #include <type_traits>
 #include <typeinfo>
 
-namespace SST::Core::Serialization {
+/**
+   Macro used in serialize_impl<> template specializations to
+   correctly friend the serialize<> template.  The operator() function
+   should be private in the serialize_impl<> implemenations.
+
+   NOTE: requires a semicolon after the call
+ */
+#define SST_FRIEND_SERIALZE() \
+    template <class SER>      \
+    friend class pvt::serialize
+
+namespace SST {
+
+/**
+    Types for options passed to serialization.  Putting in a higher
+    namespace to ease use by shortneing the fully qualified names
+**/
+
+/**
+   Type used to pass serilaization options
+*/
+using ser_opt_t = uint32_t;
+
+namespace SerOption {
+/**
+   Options use to control how serialization acts for specific elements
+   that are serialized
+ */
+enum SerOption : ser_opt_t {
+    // Used to track the address of a non-pointer object when pointer
+    // tracking is on
+    as_ptr        = 1 << 1,
+    // Used to pass the as_ptr option to the contents of a container
+    // when serialized
+    as_ptr_elem   = 1 << 2,
+    // Used to specify a variable should be read-only in mapping mode
+    map_read_only = 1 << 3,
+    // Used to specify a variable should not be available in mapping
+    // mode
+    no_map        = 1 << 4,
+    // User defined options are not currently supported
+};
+
+} // namespace SerOption
+
+namespace Core::Serialization {
+
+template <typename T>
+void sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options = 0);
+
+
+// Function to test if an options for serialization is set. Function
+// marked constexpr so that it can evaluate at compile time if all
+// values are available. Return type must match
+// SST::Core::Serialization::ser_opt_t
+constexpr bool
+isSerOptionSet(ser_opt_t flags, SerOption::SerOption option)
+{
+    return flags & static_cast<ser_opt_t>(option);
+}
+
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
 template <typename T>
@@ -34,6 +94,7 @@ get_ptr(T& t)
     else
         return &t;
 }
+
 
 /**
    Base serialize class.
@@ -65,7 +126,7 @@ class serialize_impl
         "Serializable class does not have serialize_order() method");
 
 public:
-    void operator()(T& t, serializer& ser)
+    void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
     {
         const auto& tPtr = get_ptr(t);
         const auto  mode = ser.mode();
@@ -89,17 +150,21 @@ public:
     }
 };
 
+namespace pvt {
+
 /**
-   Serialization "gateway" object.  All serializations must come
-   thorugh these template instances in order for pointer tracking to
-   be controlled at one point. The actual serialization will happen in
-   serialize_impl classes.
+   Serialization "gateway" object called by sst_ser_object().  All
+   serializations must come thorugh these template instances in order
+   for pointer tracking to be controlled at one point. The actual
+   serialization will happen in serialize_impl classes.
  */
 template <class T>
 class serialize
 {
-public:
-    void operator()(T& t, serializer& ser) { return serialize_impl<T>()(t, ser); }
+    template <class U>
+    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, const char* name, ser_opt_t options);
+
+    void operator()(T& t, serializer& ser, ser_opt_t options) { return serialize_impl<T>()(t, ser, options); }
 
     /**
        This will track the pointer to the object if pointer tracking
@@ -109,9 +174,9 @@ public:
        contains the actual struct and other places point to the data's
        location)
      */
-    void serialize_and_track_pointer(T& t, serializer& ser)
+    void serialize_and_track_pointer(T& t, serializer& ser, ser_opt_t options)
     {
-        if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T>()(t, ser);
+        if ( !ser.is_pointer_tracking_enabled() ) return serialize_impl<T>()(t, ser, options);
 
         // Get the pointer to the data that will be uesd for tracking.
         uintptr_t ptr = reinterpret_cast<uintptr_t>(&t);
@@ -129,7 +194,7 @@ public:
             // Always put the pointer in
             ser.size(ptr);
             // Count the data for the object
-            serialize_impl<T>()(t, ser);
+            serialize_impl<T>()(t, ser, options);
             break;
         case serializer::PACK:
             // Already checked serialization order during sizing, so
@@ -138,7 +203,7 @@ public:
             // Always put the pointer in
             ser.pack(ptr);
             // Serialize the data for the object
-            serialize_impl<T>()(t, ser);
+            serialize_impl<T>()(t, ser, options);
             break;
         case serializer::UNPACK:
             // Checked order on serialization, so don't need to do it
@@ -152,9 +217,10 @@ public:
             // Now add this to the tracking data
             ser.report_real_pointer(ptr_stored, ptr);
 
-            serialize_impl<T>()(t, ser);
+            serialize_impl<T>()(t, ser, options);
+            break;
         case serializer::MAP:
-            // Add your code here
+            serialize_impl<T>()(t, ser, options);
             break;
         }
     }
@@ -163,8 +229,9 @@ public:
 template <class T>
 class serialize<T*>
 {
-public:
-    void operator()(T*& t, serializer& ser)
+    template <class U>
+    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, const char* name, ser_opt_t options);
+    void        operator()(T*& t, serializer& ser, ser_opt_t options)
     {
         // We are a pointer, need to see if tracking is turned on
         if ( !ser.is_pointer_tracking_enabled() ) {
@@ -180,7 +247,7 @@ public:
                 if ( null_char == 0 ) return;
 
                 // Not nullptr, so we need to serialize the object
-                serialize_impl<T*>()(t, ser);
+                serialize_impl<T*>()(t, ser, options);
                 break;
             case serializer::PACK:
                 // We will always put in a char to tell whether or not
@@ -191,7 +258,7 @@ public:
                 if ( null_char == 0 ) return;
 
                 // Not nullptr, so we need to serialize the object
-                serialize_impl<T*>()(t, ser);
+                serialize_impl<T*>()(t, ser, options);
                 break;
             case serializer::UNPACK:
             {
@@ -204,7 +271,7 @@ public:
                     return;
                 }
                 // Not nullptr, so deserialize
-                serialize_impl<T*>()(t, ser);
+                serialize_impl<T*>()(t, ser, options);
             }
             case serializer::MAP:
                 // If this version of serialize gets called in mapping
@@ -227,7 +294,7 @@ public:
 
             // If we haven't seen this yet, also need to serialize the
             // object
-            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser); }
+            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser, options); }
             break;
         case serializer::PACK:
             // Always put the pointer in
@@ -236,7 +303,7 @@ public:
             // Nothing else to do if this is nullptr
             if ( 0 == ptr ) return;
 
-            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser); }
+            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser, options); }
             break;
         case serializer::UNPACK:
         {
@@ -256,7 +323,7 @@ public:
                 t = reinterpret_cast<T*>(real_ptr);
             }
             else {
-                serialize_impl<T*>()(t, ser);
+                serialize_impl<T*>()(t, ser, options);
                 ser.report_real_pointer(ptr_stored, reinterpret_cast<uintptr_t>(t));
             }
             break;
@@ -270,7 +337,7 @@ public:
                 ser.mapper().map_existing_object(ser.getMapName(), map);
             }
             else {
-                serialize_impl<T*>()(t, ser);
+                serialize_impl<T*>()(t, ser, options);
             }
             break;
         }
@@ -278,6 +345,7 @@ public:
     }
 };
 
+} // namespace pvt
 
 /**
    Version of serialize that works for arithmetic and enum types.
@@ -287,16 +355,18 @@ template <class T>
 class serialize_impl<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
 public:
-    void operator()(T& t, serializer& ser)
+    void operator()(T& t, serializer& ser, ser_opt_t options)
     {
         if ( ser.mode() == serializer::MAP ) {
             auto* obj_map = new ObjectMapFundamental<T>(&t);
+            if ( isSerOptionSet(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
         }
         else {
             ser.primitive(t);
         }
     }
+    SST_FRIEND_SERIALZE();
 };
 
 /**
@@ -309,13 +379,11 @@ public:
 template <class T>
 class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
 {
-    template <typename>
-    friend class serialize;
-    void operator()(T*& t, serializer& ser)
+    void operator()(T*& t, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
-            ser.size(*t);
+            ser.primitive(*t);
             break;
         case serializer::PACK:
             ser.primitive(*t);
@@ -325,32 +393,59 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
             ser.primitive(*t);
             break;
         case serializer::MAP:
-            // Add your code here
+        {
+            auto* obj_map = new ObjectMapFundamental<T>(t);
+            if ( isSerOptionSet(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
+        }
     }
+    SST_FRIEND_SERIALZE();
 };
 
-// All calls to serialize objects need to go through one of the
-// following functions, or through the serialize<T> template so that
-// pointer tracking can be done.
+
+// All serialization must go through this function to ensure
+// everything works correctly
+//
+// A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
+// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
+// matches serialization functions which only take lvalue references.
 template <class T>
 void
-sst_map_object(serializer& ser, T&& obj)
+sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options)
 {
-    if ( ser.mode() != serializer::MAP ) serialize<std::remove_reference_t<T>>()(obj, ser);
-}
+    // We will check for the "fast" path (i.e. event serialization for
+    // synchronizations).  We can detect this by see if pointer
+    // tracking is turned off, because it is turned on for both
+    // checkpointing and mapping mode.
+    if ( !ser.is_pointer_tracking_enabled() ) {
+        // Options are wiped out since none apply in this case
+        return pvt::serialize<std::remove_reference_t<T>>()(obj, ser, 0);
+    }
 
-template <class T, class STR>
-std::enable_if_t<std::is_convertible_v<STR, std::string>>
-sst_map_object(serializer& ser, T&& obj, STR&& name)
-{
+    // Mapping mode
     if ( ser.mode() == serializer::MAP ) {
-        ObjectMapContext context(ser, std::forward<STR>(name));
-        serialize<std::remove_reference_t<T>>()(obj, ser);
+        ObjectMapContext context(ser, name);
+        // Check to see if we are NOMAP
+        if ( isSerOptionSet(options, SerOption::no_map) ) return;
+
+        pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
+        return;
+    }
+
+    if constexpr ( !std::is_pointer_v<std::remove_reference_t<T>> ) {
+        // as_ptr is only valid for non-pointers
+        if ( isSerOptionSet(options, SerOption::as_ptr) ) {
+            pvt::serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser, options);
+        }
+        else {
+            pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
+        }
     }
     else {
-        serialize<std::remove_reference_t<T>>()(obj, ser);
+        // For pointer types, just call serialize
+        pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
     }
 }
 
@@ -358,24 +453,54 @@ sst_map_object(serializer& ser, T&& obj, STR&& name)
 // SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
 // matches serialization functions which only take lvalue references.
 template <class T>
-void
+[[deprecated(
+    "The ser& format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER macro "
+    "for serializing data. The macro "
+    "supports additional options to control the details of serialization.  See SerOption enum for details.")]] void
 operator&(serializer& ser, T&& obj)
 {
-    sst_map_object(ser, obj);
+    SST::Core::Serialization::sst_ser_object(ser, obj, "", SerOption::no_map);
 }
 
 template <class T>
-void
+[[deprecated("The ser| format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER "
+             "macro with the "
+             "SerOption::as_ptr flag for serializing data. The macro supports additional options to control the "
+             "details of serialization.  See SerOption enum for details.")]] void
 operator|(serializer& ser, T&& obj)
 {
-    serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser);
+    SST::Core::Serialization::sst_ser_object(ser, obj, "", SerOption::no_map | SerOption::as_ptr);
 }
 
-// Serialization macros for checkpoint/debug serialization
-#define SST_SER(obj)        sst_map_object(ser, (obj), #obj);
-#define SST_SER_AS_PTR(obj) (ser | (obj));
 
-} // namespace SST::Core::Serialization
+// Serialization macros for checkpoint/debug serialization
+#define SST_SER(obj, ...)                     \
+    SST::Core::Serialization::sst_ser_object( \
+        ser, (obj), #obj, SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__))
+
+#define SST_SER_NAME(obj, name, ...)          \
+    SST::Core::Serialization::sst_ser_object( \
+        ser, (obj), name, SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__))
+
+
+//#define SST_SER_AS_PTR(obj) (ser | (obj));
+
+namespace pvt {
+template <typename... Args>
+constexpr ser_opt_t
+sst_ser_or_helper(Args... args)
+{
+    if constexpr ( sizeof...(args) == 0 ) {
+        return 0; // Return 0 if no arguments are passed
+    }
+    else {
+        return static_cast<ser_opt_t>((args | ...)); // Fold expression to perform logical OR
+    }
+}
+
+} // namespace pvt
+} // namespace Core::Serialization
+} // namespace SST
 
 // These includes have guards to print warnings if they are included
 // independent of this file.  Set the #define that will disable the

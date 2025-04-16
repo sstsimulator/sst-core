@@ -29,7 +29,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& array;
+        SST_SER(array);
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent1);
@@ -51,7 +51,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& array;
+        SST_SER(array);
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent2);
@@ -73,7 +73,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& array;
+        SST_SER(array);
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent3);
@@ -95,7 +95,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& array;
+        SST_SER(array);
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestEvent4);
@@ -119,7 +119,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& rate;
+        SST_SER(rate);
     }
 
     ImplementSerializable(SST::CoreTestMemPoolTest::MemPoolTestPerformanceEvent);

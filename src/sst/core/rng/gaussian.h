@@ -123,12 +123,12 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& mean;
-        ser& stddev;
-        ser& baseDistrib;
-        ser& unusedPair;
-        ser& usePair;
-        ser& deleteDistrib;
+        SST_SER(mean);
+        SST_SER(stddev);
+        SST_SER(baseDistrib);
+        SST_SER(unusedPair);
+        SST_SER(usePair);
+        SST_SER(deleteDistrib);
     }
 
     /**

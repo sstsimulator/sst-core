@@ -23,7 +23,7 @@ void
 pack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
 {
     std::string type = Simulation_impl::getSimulation()->timeVortexType;
-    ser&        type;
+    SST_SER(type);
     s->serialize_order(ser);
 }
 
@@ -31,7 +31,7 @@ void
 unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
 {
     std::string tv_type;
-    ser&        tv_type;
+    SST_SER(tv_type);
 
     Params p;
     s = Factory::getFactory()->Create<TimeVortex>(tv_type, p);

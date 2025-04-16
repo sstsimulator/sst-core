@@ -60,8 +60,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Action::serialize_order(ser);
-        ser& message;
-        ser& print_message;
+        SST_SER(message);
+        SST_SER(print_message);
     }
     ImplementSerializable(SST::StopAction)
 };
