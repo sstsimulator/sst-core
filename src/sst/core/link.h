@@ -39,10 +39,10 @@ class Link;
 template <>
 class SST::Core::Serialization::serialize_impl<Link*>
 {
-    template <class A>
-    friend class serialize;
     // Function implemented in link.cc
-    void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, ser_opt_t options);
+
+    SST_FRIEND_SERIALZE();
 };
 
 

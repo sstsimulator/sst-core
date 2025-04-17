@@ -33,7 +33,7 @@
 namespace SST {
 
 void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser)
+SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser, ser_opt_t UNUSED(options))
 {
     // Need to treat Links and SelfLinks differently
     bool    self_link;
@@ -146,7 +146,6 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
                 // PollingLinkQueues don't work with the serialization
                 // functions.  Call things directly.
-                // SST_SER(queue);
                 queue->serialize_order(ser);
             }
 
@@ -254,7 +253,6 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
                 // PollingLinkQueues don't work with the serialization
                 // functions.  Call things directly.
-                // SST_SER(queue);
                 queue->serialize_order(ser);
             }
 
@@ -504,7 +502,6 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 PollingLinkQueue* queue;
                 // PollingLinkQueues don't work with the serialization
                 // functions.  Call things directly.
-                // SST_SER(queue);
                 queue = new PollingLinkQueue();
                 queue->serialize_order(ser);
                 s->send_queue = queue;

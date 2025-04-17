@@ -37,11 +37,12 @@ class serialize_impl<
         using T<Ts...>::c; // access protected container
     };
 
-public:
-    void operator()(T<Ts...>& v, serializer& ser)
+    void operator()(T<Ts...>& v, serializer& ser, ser_opt_t options)
     {
-        SST_SER(static_cast<S&>(v).c); // serialize the underlying container
+        SST_SER(static_cast<S&>(v).c, options); // serialize the underlying container
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST::Core::Serialization

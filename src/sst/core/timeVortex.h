@@ -70,10 +70,7 @@ void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser
 template <>
 class SST::Core::Serialization::serialize_impl<TimeVortex*>
 {
-    template <class A>
-    friend class serialize;
-
-    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
+    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -88,6 +85,8 @@ class SST::Core::Serialization::serialize_impl<TimeVortex*>
             break;
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST

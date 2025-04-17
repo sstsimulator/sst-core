@@ -24,9 +24,9 @@
 namespace SST::Core::Serialization {
 
 template <class T>
-struct serialize_impl<std::atomic<T>>
+class serialize_impl<std::atomic<T>>
 {
-    void operator()(std::atomic<T>& v, serializer& ser)
+    void operator()(std::atomic<T>& v, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -56,6 +56,8 @@ struct serialize_impl<std::atomic<T>>
         }
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST::Core::Serialization

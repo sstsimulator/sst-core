@@ -1077,19 +1077,18 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
             // on slotname and slotnum
             name_str += it->second.getSlotName() + "[" + std::to_string(it->second.getSlotNum()) + "]";
         }
-        // sst_ser_object(ser, it->second.component, it->second.getShortName().c_str());
-        sst_ser_object(ser, it->second.component, name_str.c_str());
+        SST_SER_NAME(it->second.component, name_str.c_str());
         it->second.serialize_comp(ser);
     }
 
     // Put in ComponentInfo data
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
     ser.mapper().map_hierarchy_start("my_info", my_info_dir);
-    ser.mapper().setNextObjectReadOnly();
-    sst_ser_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
-    ser.mapper().setNextObjectReadOnly();
-    sst_ser_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
-    sst_ser_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");
+
+    SST_SER_NAME(const_cast<ComponentId_t&>(comp->my_info->id_), "id", SerOption::map_read_only);
+    SST_SER_NAME(const_cast<std::string&>(comp->my_info->type), "type", SerOption::map_read_only);
+    SST_SER_NAME(comp->my_info->defaultTimeBase, "defaultTimeBase");
+
     ser.mapper().map_hierarchy_end(); // for my_info_dir
 
     s->serialize_order(ser);

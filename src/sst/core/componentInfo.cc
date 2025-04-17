@@ -264,15 +264,15 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     else {
         bool is_null = stat_configs_ == nullptr;
         SST_SER(is_null);
-        if ( !is_null ) SST_SER((*stat_configs_));
+        if ( !is_null ) SST_SER(*stat_configs_);
 
         is_null = all_stat_config_ == nullptr;
         SST_SER(is_null);
-        if ( !is_null ) SST_SER((*all_stat_config_));
+        if ( !is_null ) SST_SER(*all_stat_config_);
 
         is_null = enabled_stat_names_ == nullptr;
         SST_SER(is_null);
-        if ( !is_null ) SST_SER((*enabled_stat_names_));
+        if ( !is_null ) SST_SER(*enabled_stat_names_);
     }
 
     SST_SER(statLoadLevel); // Potentially needed for late stat registration
@@ -284,48 +284,7 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     // own SubCompenents that will need to point to the data location
     // in the map.
 
-    // SST_SER(subComponents);
-    switch ( ser.mode() ) {
-    case SST::Core::Serialization::serializer::SIZER:
-    {
-        size_t size = subComponents.size();
-        SST_SER(size);
-        for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
-            // keys are const values - annoyingly
-            SST_SER(const_cast<ComponentId_t&>(it->first));
-            SST_SER_AS_PTR(it->second);
-        }
-        break;
-    }
-    case SST::Core::Serialization::serializer::PACK:
-    {
-        size_t size = subComponents.size();
-        SST_SER(size);
-        for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
-            // keys are const values - annoyingly
-            SST_SER(const_cast<ComponentId_t&>(it->first));
-            SST_SER_AS_PTR(it->second);
-        }
-        break;
-    }
-    case SST::Core::Serialization::serializer::UNPACK:
-    {
-        size_t size;
-        SST_SER(size);
-        for ( size_t i = 0; i < size; ++i ) {
-            ComponentId_t key;
-            SST_SER(key);
-
-            auto p = subComponents.emplace(key, ComponentInfo {});
-
-            SST_SER_AS_PTR(p.first->second);
-        }
-        break;
-    }
-    case SST::Core::Serialization::serializer::MAP:
-        // Add your code here
-        break;
-    }
+    SST_SER(subComponents, SerOption::as_ptr_elem);
 
     // Only the parent Component will call serialize_comp directly.
     // This function will walk the hierarchy and call it on all of its

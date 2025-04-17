@@ -223,7 +223,7 @@ public:
 
 
 void
-serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
+serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, ser_opt_t options)
 {
     SimTime_t factor = 0;
 
@@ -255,6 +255,7 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
+        if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }

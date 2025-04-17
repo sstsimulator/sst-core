@@ -437,10 +437,7 @@ public:
 template <>
 class serialize_impl<UnitAlgebra>
 {
-    template <class A>
-    friend class serialize;
-
-    void operator()(UnitAlgebra& ua, serializer& ser)
+    void operator()(UnitAlgebra& ua, serializer& ser, ser_opt_t options)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -451,11 +448,14 @@ class serialize_impl<UnitAlgebra>
         case serializer::MAP:
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
+            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 
