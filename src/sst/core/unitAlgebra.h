@@ -228,8 +228,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) /* override */
     {
         // Do the unit
-        ser& unit.numerator;
-        ser& unit.denominator;
+        SST_SER(unit.numerator);
+        SST_SER(unit.denominator);
 
         // For value, need to convert cpp_dec_float to string and
         // reinit from string
@@ -239,13 +239,13 @@ public:
         {
             // std::string s = value.str(40, std::ios_base::fixed);
             std::string s = value.toString(0);
-            ser&        s;
+            SST_SER(s);
             break;
         }
         case SST::Core::Serialization::serializer::UNPACK:
         {
             std::string s;
-            ser&        s;
+            SST_SER(s);
             value = sst_big_num(s);
             break;
         }
@@ -437,10 +437,7 @@ public:
 template <>
 class serialize_impl<UnitAlgebra>
 {
-    template <class A>
-    friend class serialize;
-
-    void operator()(UnitAlgebra& ua, serializer& ser)
+    void operator()(UnitAlgebra& ua, serializer& ser, ser_opt_t options)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -451,11 +448,14 @@ class serialize_impl<UnitAlgebra>
         case serializer::MAP:
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
+            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 

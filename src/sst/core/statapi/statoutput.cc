@@ -36,8 +36,8 @@ SST_ELI_DEFINE_INFO_EXTERN(StatisticOutput)
 void
 StatisticOutput::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& m_statOutputName;
-    ser& m_outputParameters;
+    SST_SER(m_statOutputName);
+    SST_SER(m_outputParameters);
 }
 
 void

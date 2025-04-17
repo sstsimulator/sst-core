@@ -1470,7 +1470,7 @@ Simulation_impl::getComponentObjectMap()
     // ser.start_mapping(obj_map);
     for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
         ComponentInfo* compinfo = *comp;
-        // // ser&           compinfo->component;
+        // // SST_SER(compinfo->component);
         // sst_map_object(ser, compinfo->component, compinfo->getName().c_str());
         obj_map->addVariable(
             compinfo->getName(), new SST::Core::Serialization::ObjectMapDeferred<BaseComponent>(
@@ -1506,39 +1506,39 @@ Simulation_impl::checkpoint_write_globals(
 
     /* Section 1: Config options */
     ser.start_sizing();
-    ser&        num_ranks.rank;
-    ser&        num_ranks.thread;
+    SST_SER(num_ranks.rank);
+    SST_SER(num_ranks.thread);
     std::string libpath = factory->getSearchPaths();
-    ser&        libpath;
-    ser&        timeLord.timeBaseString;
-    ser&        output_directory;
+    SST_SER(libpath);
+    SST_SER(timeLord.timeBaseString);
+    SST_SER(output_directory);
     std::string prefix = sim_output.getPrefix();
-    ser&        prefix;
-    uint32_t    verbose = sim_output.getVerboseLevel();
-    ser&        verbose;
-    ser&        globalOutputFileName;
-    ser&        checkpoint_prefix_;
-    ser&        Params::keyMap;
-    ser&        Params::keyMapReverse;
-    ser&        Params::nextKeyID;
+    SST_SER(prefix);
+    uint32_t verbose = sim_output.getVerboseLevel();
+    SST_SER(verbose);
+    SST_SER(globalOutputFileName);
+    SST_SER(checkpoint_prefix_);
+    SST_SER(Params::keyMap);
+    SST_SER(Params::keyMapReverse);
+    SST_SER(Params::nextKeyID);
 
     size        = ser.size();
     buffer_size = size;
     buffer      = new char[buffer_size];
 
     ser.start_packing(buffer, size);
-    ser& num_ranks.rank;
-    ser& num_ranks.thread;
-    ser& libpath;
-    ser& timeLord.timeBaseString;
-    ser& output_directory;
-    ser& prefix;
-    ser& verbose;
-    ser& globalOutputFileName;
-    ser& checkpoint_prefix_;
-    ser& Params::keyMap;
-    ser& Params::keyMapReverse;
-    ser& Params::nextKeyID;
+    SST_SER(num_ranks.rank);
+    SST_SER(num_ranks.thread);
+    SST_SER(libpath);
+    SST_SER(timeLord.timeBaseString);
+    SST_SER(output_directory);
+    SST_SER(prefix);
+    SST_SER(verbose);
+    SST_SER(globalOutputFileName);
+    SST_SER(checkpoint_prefix_);
+    SST_SER(Params::keyMap);
+    SST_SER(Params::keyMapReverse);
+    SST_SER(Params::nextKeyID);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer, size);
@@ -1614,13 +1614,13 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     ser.start_sizing();
     std::set<std::string> libnames;
     factory->getLoadedLibraryNames(libnames);
-    ser& libnames;
+    SST_SER(libnames);
 
     size = ser.size();
     std::vector<char> buffer(size);
 
     ser.start_packing(&buffer[0], size);
-    ser& libnames;
+    SST_SER(libnames);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(&buffer[0], size);
@@ -1629,80 +1629,80 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 
     /* Section 3: Simulation_impl */
     ser.start_sizing();
-    ser& num_ranks;
-    ser& my_rank;
-    ser& currentSimCycle;
-    // ser& threadMinPartTC;
-    ser& minPart;
-    ser& minPartTC;
-    ser& interThreadLatencies;
-    ser& interThreadMinLatency;
-    ser& endSim;
-    ser& independent;
-    ser& timeVortexType; // Used by TimeVortex serialization
-    // ser& sim_output;
-    ser& runMode;
-    ser& currentPriority;
-    ser& endSimCycle;
-    ser& output_directory;
+    SST_SER(num_ranks);
+    SST_SER(my_rank);
+    SST_SER(currentSimCycle);
+    // SST_SER(threadMinPartTC);
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+    SST_SER(interThreadLatencies);
+    SST_SER(interThreadMinLatency);
+    SST_SER(endSim);
+    SST_SER(independent);
+    SST_SER(timeVortexType); // Used by TimeVortex serialization
+    // SST_SER(sim_output);
+    SST_SER(runMode);
+    SST_SER(currentPriority);
+    SST_SER(endSimCycle);
+    SST_SER(output_directory);
     // Actions that may also be in TV
-    ser& real_time_;
-    if ( my_rank.thread == 0 ) { ser& m_exit; }
-    ser& m_heartbeat;
+    SST_SER(real_time_);
+    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
+    SST_SER(m_heartbeat);
 
     // Add statistics engine and associated state
     // Individual statistics are checkpointing with component
-    if ( my_rank.thread == 0 ) { ser& StatisticProcessingEngine::m_statOutputs; }
-    ser& stat_engine;
+    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
+    SST_SER(stat_engine);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { ser& SharedObject::manager; }
+    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
 
     // Serialize the clockmap
-    ser& clockMap;
+    SST_SER(clockMap);
 
     // Last, get the timevortex
-    ser& timeVortex;
+    SST_SER(timeVortex);
 
     size = ser.size();
     buffer.resize(size);
 
     // Pack buffer
     ser.start_packing(&buffer[0], size);
-    ser& num_ranks;
-    ser& my_rank;
-    ser& currentSimCycle;
-    // ser& threadMinPartTC;
-    ser& minPart;
-    ser& minPartTC;
-    ser& interThreadLatencies;
-    ser& interThreadMinLatency;
-    ser& endSim;
-    ser& independent;
-    ser& timeVortexType; // Used by TimeVortex serialization
-    // ser& sim_output;
-    ser& runMode;
-    ser& currentPriority;
-    ser& endSimCycle;
-    ser& output_directory;
+    SST_SER(num_ranks);
+    SST_SER(my_rank);
+    SST_SER(currentSimCycle);
+    // SST_SER(threadMinPartTC);
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+    SST_SER(interThreadLatencies);
+    SST_SER(interThreadMinLatency);
+    SST_SER(endSim);
+    SST_SER(independent);
+    SST_SER(timeVortexType); // Used by TimeVortex serialization
+    // SST_SER(sim_output);
+    SST_SER(runMode);
+    SST_SER(currentPriority);
+    SST_SER(endSimCycle);
+    SST_SER(output_directory);
     // Actions that may also be in TV
-    ser& real_time_;
-    if ( my_rank.thread == 0 ) { ser& m_exit; }
-    ser& m_heartbeat;
+    SST_SER(real_time_);
+    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
+    SST_SER(m_heartbeat);
 
     // Add shared StatisticOutput vector
 
     // Add statistic engine
-    if ( my_rank.thread == 0 ) { ser& StatisticProcessingEngine::m_statOutputs; }
-    ser& stat_engine;
+    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
+    SST_SER(stat_engine);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { ser& SharedObject::manager; }
+    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
 
-    ser& clockMap;
+    SST_SER(clockMap);
 
     // Last, get the timevortex
-    ser& timeVortex;
+    SST_SER(timeVortex);
 
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1720,12 +1720,12 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
         ser.start_sizing();
         ComponentInfo* compinfo = *comp;
-        ser&           compinfo;
+        SST_SER(compinfo);
         size = ser.size();
         buffer.resize(size);
 
         ser.start_packing(&buffer[0], size);
-        ser& compinfo;
+        SST_SER(compinfo);
 
         component_blob_offsets_.emplace_back(compinfo->id_, offset);
         fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1779,7 +1779,7 @@ Simulation_impl::restart(Config* cfg)
     ser.start_unpacking(&buffer[0], size);
 
     std::set<std::string> libnames;
-    ser&                  libnames;
+    SST_SER(libnames);
 
     /* Load libraries before anything else */
     factory->loadUnloadedLibraries(libnames);
@@ -1791,25 +1791,25 @@ Simulation_impl::restart(Config* cfg)
 
     ser.start_unpacking(&buffer[0], size);
 
-    ser& num_ranks;
-    ser& my_rank;
-    ser& currentSimCycle;
-    // ser& threadMinPartTC;
-    ser& minPart;
-    ser& minPartTC;
-    ser& interThreadLatencies;
-    ser& interThreadMinLatency;
-    ser& endSim;
-    ser& independent;
-    ser& timeVortexType; // Used by TimeVortex serialization
-    // ser& sim_output;
-    ser& runMode;
-    ser& currentPriority;
-    ser& endSimCycle;
-    ser& output_directory;
+    SST_SER(num_ranks);
+    SST_SER(my_rank);
+    SST_SER(currentSimCycle);
+    // SST_SER(threadMinPartTC);
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+    SST_SER(interThreadLatencies);
+    SST_SER(interThreadMinLatency);
+    SST_SER(endSim);
+    SST_SER(independent);
+    SST_SER(timeVortexType); // Used by TimeVortex serialization
+    // SST_SER(sim_output);
+    SST_SER(runMode);
+    SST_SER(currentPriority);
+    SST_SER(endSimCycle);
+    SST_SER(output_directory);
     // Actions that may also be in TV
-    ser& real_time_;
-    if ( my_rank.thread == 0 ) { ser& m_exit; }
+    SST_SER(real_time_);
+    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
     initBarrier.wait();
 
     // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
@@ -1827,21 +1827,21 @@ Simulation_impl::restart(Config* cfg)
     syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
     // Look at simulation.cc line 365 on setting up profile tools
 
-    ser& m_heartbeat;
+    SST_SER(m_heartbeat);
 
     // Get statistics engine
-    if ( my_rank.thread == 0 ) { ser& StatisticProcessingEngine::m_statOutputs; }
+    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
     completeBarrier.wait();
-    ser& stat_engine;
+    SST_SER(stat_engine);
 
     /* Initial fix up of stat engine, the rest is after components re-register statistics */
     stat_engine.restart(this);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { ser& SharedObject::manager; }
-    ser& clockMap;
+    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
+    SST_SER(clockMap);
     // Last, get the timevortex
-    ser& timeVortex;
+    SST_SER(timeVortex);
 
     checkpoint_action_->insertIntoTimeVortex(this);
 
@@ -1856,7 +1856,7 @@ Simulation_impl::restart(Config* cfg)
         fs_blob.read(&buffer[0], size);
         ser.start_unpacking(&buffer[0], size);
         ComponentInfo* compInfo = new ComponentInfo();
-        ser&           compInfo;
+        SST_SER(compInfo);
         compInfoMap.insert(compInfo);
     }
 

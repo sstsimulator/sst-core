@@ -18,6 +18,7 @@
 #endif
 
 #include "sst/core/serialization/impl/serialize_utility.h"
+#include "sst/core/serialization/serialize.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <tuple>
@@ -28,12 +29,14 @@ namespace SST::Core::Serialization {
 template <template <typename...> class T, typename... Ts>
 class serialize_impl<T<Ts...>, std::enable_if_t<is_same_template_v<T, std::tuple> || is_same_template_v<T, std::pair>>>
 {
-public:
-    void operator()(T<Ts...>& t, serializer& ser)
+    void operator()(T<Ts...>& t, serializer& ser, ser_opt_t options)
     {
         // Serialize each element of tuple or pair
-        std::apply([&](auto&... e) { ((ser & e), ...); }, t);
+        ser_opt_t opt = (options & SerOption::as_ptr_elem) ? SerOption::as_ptr : 0;
+        std::apply([&](auto&... e) { ((sst_ser_object(ser, e, opt)), ...); }, t);
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST::Core::Serialization

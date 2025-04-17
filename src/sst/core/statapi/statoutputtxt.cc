@@ -417,13 +417,13 @@ void
 StatisticOutputTextBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     StatisticOutput::serialize_order(ser);
-    ser& m_outputTopHeader;
-    ser& m_outputInlineHeader;
-    ser& m_outputRank;
-    ser& m_outputSimTime;
-    ser& m_useCompression;
-    // ser& m_outputBuffer; // Rebuild during restart
-    ser& m_FilePath;
+    SST_SER(m_outputTopHeader);
+    SST_SER(m_outputInlineHeader);
+    SST_SER(m_outputRank);
+    SST_SER(m_outputSimTime);
+    SST_SER(m_useCompression);
+    // SST_SER(m_outputBuffer); // Rebuild during restart
+    SST_SER(m_FilePath);
 }
 
 StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)

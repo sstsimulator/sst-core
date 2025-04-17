@@ -90,7 +90,7 @@ RankSyncQueue::getData()
 
     ser.start_sizing();
 
-    ser& activities;
+    SST_SER(activities);
 
     size_t size = ser.size();
 
@@ -105,7 +105,7 @@ RankSyncQueue::getData()
 
     ser.start_packing(buffer + sizeof(RankSyncQueue::Header), size);
 
-    ser& activities;
+    SST_SER(activities);
 
     // Delete all the events
     for ( unsigned int i = 0; i < activities.size(); i++ ) {

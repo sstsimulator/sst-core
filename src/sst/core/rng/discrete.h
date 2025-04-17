@@ -111,16 +111,16 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& baseDistrib;
-        ser& deleteDistrib;
-        ser& probCount;
+        SST_SER(baseDistrib);
+        SST_SER(deleteDistrib);
+        SST_SER(probCount);
 
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             probabilities = (double*)malloc(sizeof(double) * probCount);
         }
 
         for ( uint32_t i = 0; i < probCount; i++ ) {
-            ser& probabilities[i];
+            SST_SER(probabilities[i]);
         }
     }
 

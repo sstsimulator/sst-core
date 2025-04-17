@@ -223,7 +223,7 @@ public:
 
 
 void
-serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
+serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, ser_opt_t options)
 {
     SimTime_t factor = 0;
 
@@ -232,11 +232,11 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
     case serializer::PACK:
         // If s is nullptr, just put in a 0, otherwise get the factor
         if ( nullptr != s ) factor = s->getFactor();
-        ser& factor;
+        SST_SER(factor);
         break;
     case serializer::UNPACK:
     {
-        ser& factor;
+        SST_SER(factor);
 
         // If we put in a nullptr, return a nullptr
         if ( factor == 0 ) {
@@ -255,6 +255,7 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser)
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
+        if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }

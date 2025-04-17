@@ -24,7 +24,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& payload;
+        SST_SER(payload);
     }
 
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentEvent);
