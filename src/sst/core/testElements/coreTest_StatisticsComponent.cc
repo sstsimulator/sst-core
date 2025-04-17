@@ -67,7 +67,7 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
 
     // First 1ns Clock
     output.output("REGISTER CLOCK #1 at 1 ns\n");
-    registerClock("1 ns", new Clock::Handler<StatisticsComponentInt>(this, &StatisticsComponentInt::Clock1Tick));
+    registerClock("1 ns", new Clock::Handler2<StatisticsComponentInt, &StatisticsComponentInt::Clock1Tick>(this));
 
     /////////////////////////////////////////
     // Create the Statistics objects
@@ -179,7 +179,7 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
 
     // First 1ns Clock
     output.output("REGISTER CLOCK #1 at 1 ns\n");
-    registerClock("1 ns", new Clock::Handler<StatisticsComponentFloat>(this, &StatisticsComponentFloat::Clock1Tick));
+    registerClock("1 ns", new Clock::Handler2<StatisticsComponentFloat, &StatisticsComponentFloat::Clock1Tick>(this));
 
     /////////////////////////////////////////
     // Create the Statistics objects

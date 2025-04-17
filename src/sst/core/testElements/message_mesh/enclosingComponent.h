@@ -58,6 +58,28 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<void, Event*, classT, dataT>;
 
+    /**
+       Used to create checkpointable handlers to notify the component
+       when a message has arrived. endpoint when the The callback
+       function is expected to be in the form of:
+
+         void func(Event* ev)
+
+       In which case, the class is created with:
+
+         new PortInterface::Handler2<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         void func(Event* ev, dataT data)
+
+       and the class is created with:
+
+         new PortInterface::Handler2<classname, &classname::function_name, dataT>(this, data)
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
+
     virtual void setNotifyOnReceive(HandlerBase* functor) { rFunctor = functor; }
 
     virtual void send(MessageEvent* ev) = 0;

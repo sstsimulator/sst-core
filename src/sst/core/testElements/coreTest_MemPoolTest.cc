@@ -48,7 +48,8 @@ MemPoolTestComponent::MemPoolTestComponent(ComponentId_t id, Params& params) :
         std::string port_name("port");
         port_name += std::to_string(count);
         Link* link = configureLink(
-            port_name, new Event::Handler<MemPoolTestComponent, int>(this, &MemPoolTestComponent::eventHandler, count));
+            port_name,
+            new Event::Handler2<MemPoolTestComponent, &MemPoolTestComponent::eventHandler, int>(this, count));
         if ( nullptr == link ) {
             done = true;
             break;

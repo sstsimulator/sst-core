@@ -185,8 +185,9 @@ StatisticProcessingEngine::finalizeInitialization()
         if ( g.outputFreq.getValue() != 0 ) {
             Simulation_impl::getSimulation()->registerClock(
                 g.outputFreq,
-                new Clock::Handler<StatisticProcessingEngine, StatisticGroup*>(
-                    this, &StatisticProcessingEngine::handleGroupClockEvent, &g),
+                new Clock::Handler2<
+                    StatisticProcessingEngine, &StatisticProcessingEngine::handleGroupClockEvent, StatisticGroup*>(
+                    this, &g),
                 STATISTICCLOCKPRIORITY);
         }
     }
@@ -304,8 +305,9 @@ StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, St
         if ( 0 != freq.getValue() ) {
 
             // This tcFactor is not found in the map, so create a new clock handler.
-            ClockHandler = new Clock::Handler<StatisticProcessingEngine, SimTime_t>(
-                this, &StatisticProcessingEngine::handleStatisticEngineClockEvent, tcFactor);
+            ClockHandler = new Clock::Handler2<
+                StatisticProcessingEngine, &StatisticProcessingEngine::handleStatisticEngineClockEvent, SimTime_t>(
+                this, tcFactor);
 
             // Set the clock priority so that normal clocks events will occur before
             // this clock event.
@@ -357,8 +359,9 @@ StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
         // See if the map contains an entry for this factor
         if ( m_StartTimeMap.find(tcFactor) == m_StartTimeMap.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(
-                this, &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, tcFactor);
+            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler2<
+                StatisticProcessingEngine, &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, SimTime_t>(
+                this, tcFactor);
 
             // Set the OneShot priority so that normal events will occur before this event.
             sim->registerOneShot(startTime, OneShotHandler, STATISTICCLOCKPRIORITY);
@@ -393,8 +396,9 @@ StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
         // See if the map contains an entry for this factor
         if ( m_StopTimeMap.find(tcFactor) == m_StopTimeMap.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(
-                this, &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, tcFactor);
+            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler2<
+                StatisticProcessingEngine, &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, SimTime_t>(
+                this, tcFactor);
 
             // Set the OneShot priority so that normal events will occur before this event.
             sim->registerOneShot(stopTime, OneShotHandler, STATISTICCLOCKPRIORITY);

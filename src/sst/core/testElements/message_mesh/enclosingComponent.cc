@@ -64,7 +64,7 @@ EnclosingComponent::setup()
     for ( size_t i = 0; i < ports.size(); ++i ) {
         ports[i]->send(new MessageEvent());
         ports[i]->setNotifyOnReceive(
-            new PortInterface::Handler<EnclosingComponent, int>(this, &EnclosingComponent::handleEvent, i));
+            new PortInterface::Handler2<EnclosingComponent, &EnclosingComponent::handleEvent, int>(this, i));
     }
 }
 
@@ -91,7 +91,7 @@ PortSlot::PortSlot(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
 
 MessagePort::MessagePort(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
 {
-    link = configureLink("port", new Event::Handler<MessagePort>(this, &MessagePort::handleEvent));
+    link = configureLink("port", new Event::Handler2<MessagePort, &MessagePort::handleEvent>(this));
 }
 
 void
