@@ -40,7 +40,7 @@ template <>
 class SST::Core::Serialization::serialize_impl<Link*>
 {
     // Function implemented in link.cc
-    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, ser_opt_t options);
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, SerOption opt);
 
     SST_FRIEND_SERIALZE();
 };

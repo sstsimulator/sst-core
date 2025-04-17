@@ -437,7 +437,7 @@ public:
 template <>
 class serialize_impl<UnitAlgebra>
 {
-    void operator()(UnitAlgebra& ua, serializer& ser, ser_opt_t options)
+    void operator()(UnitAlgebra& ua, serializer& ser, SerOption opt)
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -448,7 +448,7 @@ class serialize_impl<UnitAlgebra>
         case serializer::MAP:
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
-            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( hasOption(opt, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }

@@ -654,7 +654,7 @@ namespace Core::Serialization {
 template <class T>
 class serialize_impl<Statistics::Statistic<T>*>
 {
-    void operator()(Statistics::Statistic<T>*& s, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(Statistics::Statistic<T>*& s, serializer& ser, SerOption UNUSED(opt))
     {
         // For sizer and pack, need to get the information needed
         // to create a new statistic of the correct type on unpack.

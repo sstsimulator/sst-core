@@ -70,7 +70,7 @@ template <>
 class SST::Core::Serialization::serialize_impl<TimeConverter*>
 {
     // Function implemented in timeLord.cc
-    void operator()(TimeConverter*& s, serializer& ser, ser_opt_t options);
+    void operator()(TimeConverter*& s, serializer& ser, SerOption opt);
 
     SST_FRIEND_SERIALZE();
 };

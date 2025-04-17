@@ -1156,7 +1156,7 @@ public:
 template <class T>
 class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, T>>>
 {
-    void operator()(T*& s, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(T*& s, serializer& ser, SerOption UNUSED(opt))
     {
         serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {

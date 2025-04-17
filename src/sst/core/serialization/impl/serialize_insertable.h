@@ -138,8 +138,9 @@ class serialize_impl<
     // Value type of element with const removed from first of pair if it exists
     using value_type = typename remove_const_key<typename OBJ::value_type>::type;
 
-    void operator()(OBJ& obj, serializer& ser, ser_opt_t options)
+    void operator()(OBJ& obj, serializer& ser, SerOption opt)
     {
+        SerOption elem_opt = elemOption(opt);
         switch ( const auto mode = ser.mode() ) {
         case serializer::SIZER:
         case serializer::PACK:
@@ -154,15 +155,12 @@ class serialize_impl<
             if constexpr ( is_vector_bool_v<OBJ> ) {
                 // For std::vector<bool>, iterate over bool values instead of references to elements.
                 for ( bool e : obj )
-                    // as_ptr_elem not valid for bool
                     SST_SER(e);
             }
             else {
-                ser_opt_t opts = 0;
-                if ( isSerOptionSet(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : obj )
-                    SST_SER((value_type&) e, opts);
+                    SST_SER((value_type&) e, elem_opt);
             }
             break;
         }
@@ -173,9 +171,6 @@ class serialize_impl<
             size_t size;
             ser.unpack(size);
 
-            ser_opt_t opts = 0;
-            if ( isSerOptionSet(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
-
             // Erase the container
             obj.clear();
             if constexpr ( is_same_template_v<T, std::vector> ) obj.reserve(size); // Reserve size of vector
@@ -185,7 +180,7 @@ class serialize_impl<
                 for ( size_t i = 0; i < size; ++i ) {
                     last        = obj.emplace_after(last);
                     auto& value = *last;
-                    SST_SER(value, opts);
+                    SST_SER(value, elem_opt);
                 }
             }
             else {
@@ -194,14 +189,14 @@ class serialize_impl<
                         typename OBJ::key_type key {};
                         SST_SER(key);
                         auto& value = obj[std::move(key)];
-                        SST_SER(value, opts);
+                        SST_SER(value, elem_opt);
                     }
                     else if constexpr (
                         is_same_template_v<T, std::multimap> || is_same_template_v<T, std::unordered_multimap> ) {
                         typename OBJ::key_type key {};
                         SST_SER(key);
                         auto& value = obj.emplace(std::move(key), typename OBJ::mapped_type {})->second;
-                        SST_SER(value, opts);
+                        SST_SER(value, elem_opt);
                     }
                     else if constexpr (
                         is_same_template_v<T, std::set> || is_same_template_v<T, std::unordered_set> ||
@@ -218,7 +213,7 @@ class serialize_impl<
                     }
                     else { // std::vector, std::deque, std::list
                         auto& value = obj.emplace_back();
-                        SST_SER(value, opts);
+                        SST_SER(value, elem_opt);
                     }
                 }
             }
@@ -237,12 +232,12 @@ class serialize_impl<
                 // std::vector<bool>
                 size_t i = 0;
                 for ( bool e : obj )
-                    sst_ser_object(ser, e, to_string(i++).c_str(), 0);
+                    sst_ser_object(ser, e, SerOption::none, to_string(i++).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
                 for ( auto& [key, value] : obj )
-                    sst_ser_object(ser, value, to_string(key).c_str(), 0);
+                    sst_ser_object(ser, value, elem_opt, to_string(key).c_str());
             }
             // TODO: handle is_simple_set
             else {
@@ -251,7 +246,7 @@ class serialize_impl<
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
                 for ( auto& e : obj )
-                    sst_ser_object(ser, (value_type&)e, to_string(i++).c_str(), 0);
+                    sst_ser_object(ser, (value_type&)e, elem_opt, to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;

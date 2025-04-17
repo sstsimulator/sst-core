@@ -29,11 +29,10 @@ namespace SST::Core::Serialization {
 template <template <typename...> class T, typename... Ts>
 class serialize_impl<T<Ts...>, std::enable_if_t<is_same_template_v<T, std::tuple> || is_same_template_v<T, std::pair>>>
 {
-    void operator()(T<Ts...>& t, serializer& ser, ser_opt_t options)
+    void operator()(T<Ts...>& t, serializer& ser, SerOption opt)
     {
         // Serialize each element of tuple or pair
-        ser_opt_t opt = (options & SerOption::as_ptr_elem) ? SerOption::as_ptr : 0;
-        std::apply([&](auto&... e) { ((sst_ser_object(ser, e, nullptr, opt)), ...); }, t);
+        std::apply([&](auto&... e) { ((sst_ser_object(ser, e, elemOption(opt)), ...)); }, t);
     }
 
     SST_FRIEND_SERIALZE();

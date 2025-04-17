@@ -70,7 +70,7 @@ void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser
 template <>
 class SST::Core::Serialization::serialize_impl<TimeVortex*>
 {
-    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, SerOption UNUSED(opt))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:

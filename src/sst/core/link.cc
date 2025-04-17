@@ -33,7 +33,7 @@
 namespace SST {
 
 void
-SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser, ser_opt_t UNUSED(options))
+SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser, SerOption UNUSED(opt))
 {
     // Need to treat Links and SelfLinks differently
     bool    self_link;

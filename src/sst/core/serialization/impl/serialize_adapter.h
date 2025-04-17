@@ -37,9 +37,9 @@ class serialize_impl<
         using T<Ts...>::c; // access protected container
     };
 
-    void operator()(T<Ts...>& v, serializer& ser, ser_opt_t options)
+    void operator()(T<Ts...>& v, serializer& ser, SerOption opt)
     {
-        SST_SER(static_cast<S&>(v).c, options); // serialize the underlying container
+        SST_SER(static_cast<S&>(v).c, opt); // serialize the underlying container
     }
 
     SST_FRIEND_SERIALZE();

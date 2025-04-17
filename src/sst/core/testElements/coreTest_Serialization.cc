@@ -46,24 +46,24 @@ serializeDeserialize(T& input, T& output, bool with_tracking = false)
     // Set up serializer and buffers
     char*                                buffer;
     SST::Core::Serialization::serializer ser;
-    ser_opt_t                            options = 0;
+    SerOption                            opt = SerOption::none;
     if ( with_tracking ) {
         ser.enable_pointer_tracking();
-        if ( !std::is_pointer_v<T> ) options = SerOption::as_ptr;
+        if ( !std::is_pointer_v<T> ) opt = SerOption::as_ptr;
     }
 
     ser.start_sizing();
-    SST_SER(input, options);
+    SST_SER(input, opt);
 
     size_t size = ser.size();
 
     buffer = new char[size];
 
     ser.start_packing(buffer, size);
-    SST_SER(input, options);
+    SST_SER(input, opt);
 
     ser.start_unpacking(buffer, size);
-    SST_SER(output, options);
+    SST_SER(output, opt);
 
     delete[] buffer;
 }

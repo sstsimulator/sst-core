@@ -17,22 +17,21 @@ namespace SST::Core::Serialization::pvt {
 
 void
 serialize_array(
-    serializer& ser, void* data, size_t size,
-    void serialize_array_element(serializer& ser, void* data, size_t index, ser_opt_t opt), ser_opt_t opt)
+    serializer& ser, void* data, SerOption opt, size_t size,
+    void serialize_array_element(serializer& ser, void* data, SerOption opt, size_t index))
 {
     for ( size_t index = 0; index < size; ++index )
-        serialize_array_element(ser, data, index, opt);
+        serialize_array_element(ser, data, opt, index);
 }
 
 void
 serialize_array_map(
-    serializer& ser, void* data, size_t size, ObjectMap* map,
-    void      serialize_array_map_element(serializer& ser, void* data, size_t index, const char* name, ser_opt_t opt),
-    ser_opt_t opt)
+    serializer& ser, void* data, SerOption opt, size_t size, ObjectMap* map,
+    void serialize_array_map_element(serializer& ser, void* data, SerOption opt, size_t index, const char* name))
 {
     ser.mapper().map_hierarchy_start(ser.getMapName(), map);
     for ( size_t index = 0; index < size; ++index )
-        serialize_array_map_element(ser, data, index, std::to_string(index).c_str(), opt);
+        serialize_array_map_element(ser, data, opt, index, std::to_string(index).c_str());
     ser.mapper().map_hierarchy_end();
 }
 

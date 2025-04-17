@@ -26,7 +26,7 @@ namespace SST::Core::Serialization {
 template <class T>
 class serialize_impl<std::atomic<T>>
 {
-    void operator()(std::atomic<T>& v, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(std::atomic<T>& v, serializer& ser, SerOption UNUSED(opt))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:

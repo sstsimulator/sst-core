@@ -64,13 +64,13 @@ public:
 template <typename T>
 class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>, std::string>>>
 {
-    void operator()(T& str, serializer& ser, ser_opt_t options)
+    void operator()(T& str, serializer& ser, SerOption opt)
     {
         // sPtr is a reference to either str if it's a pointer, or to &str if it's not
         const auto& sPtr = get_ptr(str);
         const auto  mode = ser.mode();
         if ( mode == serializer::MAP ) {
-            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( hasOption(opt, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr));
         }
         else {
