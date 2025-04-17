@@ -45,43 +45,43 @@ namespace SST {
 */
 using ser_opt_t = uint32_t;
 
-namespace SerOption {
-/**
-   Options use to control how serialization acts for specific elements
-   that are serialized
- */
-enum SerOption : ser_opt_t {
-    // Used to track the address of a non-pointer object when pointer
-    // tracking is on
-    as_ptr        = 1 << 1,
-    // Used to pass the as_ptr option to the contents of a container
-    // when serialized
-    as_ptr_elem   = 1 << 2,
-    // Used to specify a variable should be read-only in mapping mode
-    map_read_only = 1 << 3,
-    // Used to specify a variable should not be available in mapping
-    // mode
-    no_map        = 1 << 4,
-    // User defined options are not currently supported
-};
+struct SerOption
+{
+    /**
+       Options use to control how serialization acts for specific
+       elements that are serialized
+    */
+    enum Options : ser_opt_t {
+        // No set options
+        none          = 0,
+        // Used to track the address of a non-pointer object when pointer
+        // tracking is on
+        as_ptr        = 1u << 1,
+        // Used to pass the as_ptr option to the contents of a container
+        // when serialized
+        as_ptr_elem   = 1u << 2,
+        // Used to specify a variable should be read-only in mapping mode
+        map_read_only = 1u << 3,
+        // Used to specify a variable should not be available in
+        // mapping mode
+        no_map        = 1u << 4,
+        // User defined options are not currently supported
+    };
 
-} // namespace SerOption
+    // Function to test if an options for serialization is
+    // set. Function marked constexpr so that it can evaluate at
+    // compile time if all values are available. Return type must
+    // match SST::Core::Serialization::ser_opt_t
+    static constexpr bool is_set(ser_opt_t flags, SerOption::Options option)
+    {
+        return flags & static_cast<ser_opt_t>(option);
+    }
+};
 
 namespace Core::Serialization {
 
 template <typename T>
-void sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options = 0);
-
-
-// Function to test if an options for serialization is set. Function
-// marked constexpr so that it can evaluate at compile time if all
-// values are available. Return type must match
-// SST::Core::Serialization::ser_opt_t
-constexpr bool
-isSerOptionSet(ser_opt_t flags, SerOption::SerOption option)
-{
-    return flags & static_cast<ser_opt_t>(option);
-}
+void sst_ser_object(serializer& ser, T&& obj, ser_opt_t options = SerOption::none, const char* name = nullptr);
 
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
@@ -162,7 +162,7 @@ template <class T>
 class serialize
 {
     template <class U>
-    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, const char* name, ser_opt_t options);
+    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
 
     void operator()(T& t, serializer& ser, ser_opt_t options) { return serialize_impl<T>()(t, ser, options); }
 
@@ -230,7 +230,7 @@ template <class T>
 class serialize<T*>
 {
     template <class U>
-    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, const char* name, ser_opt_t options);
+    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
     void        operator()(T*& t, serializer& ser, ser_opt_t options)
     {
         // We are a pointer, need to see if tracking is turned on
@@ -359,7 +359,7 @@ public:
     {
         if ( ser.mode() == serializer::MAP ) {
             auto* obj_map = new ObjectMapFundamental<T>(&t);
-            if ( isSerOptionSet(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
         }
         else {
@@ -395,7 +395,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
         case serializer::MAP:
         {
             auto* obj_map = new ObjectMapFundamental<T>(t);
-            if ( isSerOptionSet(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
@@ -413,7 +413,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
 // matches serialization functions which only take lvalue references.
 template <class T>
 void
-sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options)
+sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name)
 {
     // We will check for the "fast" path (i.e. event serialization for
     // synchronizations).  We can detect this by see if pointer
@@ -428,7 +428,7 @@ sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options)
     if ( ser.mode() == serializer::MAP ) {
         ObjectMapContext context(ser, name);
         // Check to see if we are NOMAP
-        if ( isSerOptionSet(options, SerOption::no_map) ) return;
+        if ( SerOption::is_set(options, SerOption::no_map) ) return;
 
         pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
         return;
@@ -436,7 +436,7 @@ sst_ser_object(serializer& ser, T&& obj, const char* name, ser_opt_t options)
 
     if constexpr ( !std::is_pointer_v<std::remove_reference_t<T>> ) {
         // as_ptr is only valid for non-pointers
-        if ( isSerOptionSet(options, SerOption::as_ptr) ) {
+        if ( SerOption::is_set(options, SerOption::as_ptr) ) {
             pvt::serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser, options);
         }
         else {
@@ -459,7 +459,7 @@ template <class T>
     "supports additional options to control the details of serialization.  See SerOption enum for details.")]] void
 operator&(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, "", SerOption::no_map);
+    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map);
 }
 
 template <class T>
@@ -469,18 +469,18 @@ template <class T>
              "details of serialization.  See SerOption enum for details.")]] void
 operator|(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, "", SerOption::no_map | SerOption::as_ptr);
+    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr);
 }
 
 
 // Serialization macros for checkpoint/debug serialization
 #define SST_SER(obj, ...)                     \
     SST::Core::Serialization::sst_ser_object( \
-        ser, (obj), #obj, SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__))
+        ser, (obj), SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__), #obj)
 
 #define SST_SER_NAME(obj, name, ...)          \
     SST::Core::Serialization::sst_ser_object( \
-        ser, (obj), name, SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__))
+        ser, (obj), SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__), name)
 
 
 //#define SST_SER_AS_PTR(obj) (ser | (obj));
@@ -490,12 +490,7 @@ template <typename... Args>
 constexpr ser_opt_t
 sst_ser_or_helper(Args... args)
 {
-    if constexpr ( sizeof...(args) == 0 ) {
-        return 0; // Return 0 if no arguments are passed
-    }
-    else {
-        return static_cast<ser_opt_t>((args | ...)); // Fold expression to perform logical OR
-    }
+    return (SerOption::none | ... | args); // Fold expression to perform logical OR
 }
 
 } // namespace pvt

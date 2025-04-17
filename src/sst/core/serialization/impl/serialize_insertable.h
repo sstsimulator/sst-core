@@ -17,7 +17,6 @@
     "The header file sst/core/serialization/impl/serialize_insertable.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
-#include "sst/core/output.h" // REM0VE ME
 #include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/serialization/serializer.h"
 
@@ -159,7 +158,7 @@ class serialize_impl<
             }
             else {
                 ser_opt_t opts = 0;
-                if ( isSerOptionSet(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
+                if ( SerOption::is_set(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : obj )
                     SST_SER((value_type&) e, opts);
@@ -174,7 +173,7 @@ class serialize_impl<
             ser.unpack(size);
 
             ser_opt_t opts = 0;
-            if ( isSerOptionSet(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
+            if ( SerOption::is_set(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
 
             // Erase the container
             obj.clear();
@@ -237,12 +236,12 @@ class serialize_impl<
                 // std::vector<bool>
                 size_t i = 0;
                 for ( bool e : obj )
-                    sst_ser_object(ser, e, to_string(i++).c_str(), 0);
+                    sst_ser_object(ser, e, SerOption::none, to_string(i++).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
                 for ( auto& [key, value] : obj )
-                    sst_ser_object(ser, value, to_string(key).c_str(), 0);
+                    sst_ser_object(ser, value, SerOption::none, to_string(key).c_str());
             }
             // TODO: handle is_simple_set
             else {
@@ -251,7 +250,7 @@ class serialize_impl<
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
                 for ( auto& e : obj )
-                    sst_ser_object(ser, (value_type&)e, to_string(i++).c_str(), 0);
+                    sst_ser_object(ser, (value_type&)e, SerOption::none, to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;

@@ -67,7 +67,7 @@ template <typename ELEM_T>
 void
 serialize_array_map_element(serializer& ser, void* data, ser_opt_t opt, size_t index, const char* name)
 {
-    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], nullptr, opt);
+    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], opt, name);
 }
 
 // Whether the element type is copyable with memcpy()
@@ -85,7 +85,7 @@ struct serialize_impl_fixed_array
 {
     void operator()(OBJ_TYPE& ary, serializer& ser, ser_opt_t opt)
     {
-        ser_opt_t   elem_opt = opt & SerOption::as_ptr_elem ? SerOption::as_ptr : ser_opt_t {};
+        ser_opt_t   elem_opt = opt & SerOption::as_ptr_elem ? SerOption::as_ptr : SerOption::none;
         const auto& aPtr     = get_ptr(ary); // reference to ary if it's a pointer; &ary otherwise
         switch ( ser.mode() ) {
         case serializer::MAP:
@@ -148,7 +148,7 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 {
     void operator()(pvt::array_wrapper<ELEM_T, SIZE_T>& ary, serializer& ser, ser_opt_t opt)
     {
-        ser_opt_t elem_opt = opt & SerOption::as_ptr_elem ? SerOption::as_ptr : ser_opt_t {};
+        ser_opt_t elem_opt = opt & SerOption::as_ptr_elem ? SerOption::as_ptr : SerOption::none;
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
             if constexpr ( !std::is_void_v<ELEM_T> ) {
