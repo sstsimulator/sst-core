@@ -829,6 +829,21 @@ public:
     ~ObjectMapContainer() override = default;
 };
 
+/**
+   Class used to map arrays
+ */
+template <class T>
+class ObjectMapArray : public ObjectMapContainer<T>
+{
+protected:
+    size_t size;
+
+public:
+    virtual size_t getSize() { return size; }
+    ObjectMapArray(T* addr, size_t size) : ObjectMapContainer<T>(addr), size(size) {}
+    ~ObjectMapArray() override = default;
+};
+
 } // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_OBJECTMAP_H

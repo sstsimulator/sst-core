@@ -341,12 +341,12 @@ sst_map_object(serializer& ser, T&& obj)
     if ( ser.mode() != serializer::MAP ) serialize<std::remove_reference_t<T>>()(obj, ser);
 }
 
-template <class T, class STR>
-std::enable_if_t<std::is_convertible_v<STR, std::string>>
-sst_map_object(serializer& ser, T&& obj, STR&& name)
+template <class T>
+void
+sst_map_object(serializer& ser, T&& obj, const char* name)
 {
     if ( ser.mode() == serializer::MAP ) {
-        ObjectMapContext context(ser, std::forward<STR>(name));
+        ObjectMapContext context(ser, name);
         serialize<std::remove_reference_t<T>>()(obj, ser);
     }
     else {
