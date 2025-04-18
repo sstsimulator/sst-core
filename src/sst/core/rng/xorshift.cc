@@ -142,8 +142,8 @@ XORShiftRNG::~XORShiftRNG() {}
 void
 XORShiftRNG::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& x;
-    ser& y;
-    ser& w;
-    ser& z;
+    SST_SER(x);
+    SST_SER(y);
+    SST_SER(w);
+    SST_SER(z);
 }

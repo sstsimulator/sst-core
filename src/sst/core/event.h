@@ -132,14 +132,14 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Activity::serialize_order(ser);
-        ser& delivery_info;
+        SST_SER(delivery_info);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-        ser& first_comp;
-        ser& first_type;
-        ser& first_port;
-        ser& last_comp;
-        ser& last_type;
-        ser& last_port;
+        SST_SER(first_comp);
+        SST_SER(first_type);
+        SST_SER(first_port);
+        SST_SER(last_comp);
+        SST_SER(last_type);
+        SST_SER(last_port);
 #endif
     }
 

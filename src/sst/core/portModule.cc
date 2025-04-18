@@ -55,7 +55,7 @@ PortModule::setComponent(SST::BaseComponent* comp)
 void
 PortModule::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& component_;
+    SST_SER(component_);
 }
 
 

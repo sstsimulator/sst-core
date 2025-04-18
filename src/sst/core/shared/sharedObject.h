@@ -73,7 +73,7 @@ public:
     const std::string& getName() { return name; }
 
 protected:
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& name; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectChangeSet);
 
@@ -206,7 +206,7 @@ protected:
      */
     virtual ~SharedObjectData() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& name; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectData);
 };
@@ -263,7 +263,7 @@ public:
 
     void updateState(bool finalize);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& shared_data; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(shared_data); }
     ImplementSerializable(SST::Shared::SharedObjectDataManager)
 };
 

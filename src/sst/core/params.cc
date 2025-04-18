@@ -273,7 +273,7 @@ Params::getParamName(uint32_t id)
 void
 Params::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser&                     my_data;
+    SST_SER(my_data);
     // Serialize global params
     std::vector<std::string> globals;
     switch ( ser.mode() ) {
@@ -282,10 +282,10 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
         for ( size_t i = 1; i < data.size(); ++i ) {
             globals.push_back((*data[i])[0]);
         }
-        ser& globals;
+        SST_SER(globals);
         break;
     case SST::Core::Serialization::serializer::UNPACK:
-        ser& globals;
+        SST_SER(globals);
         for ( auto x : globals )
             data.push_back(&global_params[x]);
         break;

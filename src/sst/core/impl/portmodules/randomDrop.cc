@@ -95,11 +95,11 @@ RandomDrop::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     SST::PortModule::serialize_order(ser);
 
-    ser& drop_prob_;
-    ser& verbose_;
-    ser& drop_on_send_;
-    ser& rng_;
-    ser& print_info_;
+    SST_SER(drop_prob_);
+    SST_SER(verbose_);
+    SST_SER(drop_on_send_);
+    SST_SER(rng_);
+    SST_SER(print_info_);
 }
 
 } // namespace SST::IMPL::PortModule

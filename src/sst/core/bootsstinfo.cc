@@ -15,6 +15,7 @@
 #include "sst/core/configShared.h"
 
 #include <cstdio>
+#include <memory>
 
 int
 main(int argc, char* argv[])
@@ -28,13 +29,13 @@ main(int argc, char* argv[])
     SST::ConfigShared cfg(true, true, true, true);
 
     // Make a copy of the argv array (shallow)
-    char* argv_copy[argc + 1];
+    auto argv_copy = std::make_unique<char*[]>(argc + 1);
     for ( int i = 0; i < argc; ++i ) {
         argv_copy[i] = argv[i];
     }
     argv[argc] = nullptr;
 
-    cfg.parseCmdLine(argc, argv_copy, true);
+    cfg.parseCmdLine(argc, argv_copy.get(), true);
 
     if ( cfg.no_env_config() ) config_env = false;
 

@@ -213,9 +213,9 @@ protected:
     // inherit from it need to be serializable.
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& delivery_time;
-        ser& priority_order;
-        ser& queue_order;
+        SST_SER(delivery_time);
+        SST_SER(priority_order);
+        SST_SER(queue_order);
     }
 
     ImplementVirtualSerializable(SST::Activity);

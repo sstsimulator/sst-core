@@ -96,18 +96,18 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<BinDataType>::serialize_order(ser);
-        ser& m_minValue;
-        ser& m_binWidth;
-        ser& m_numBins;
-        ser& m_OOBMinCount;
-        ser& m_OOBMaxCount;
-        ser& m_itemsBinnedCount;
-        ser& m_totalSummed;
-        ser& m_totalSummedSqr;
-        ser& m_binsMap;
-        ser& m_dumpBinsOnOutput;
-        ser& m_includeOutOfBounds;
-        // ser& m_Fields; // Rebuilt by stat output object
+        SST_SER(m_minValue);
+        SST_SER(m_binWidth);
+        SST_SER(m_numBins);
+        SST_SER(m_OOBMinCount);
+        SST_SER(m_OOBMaxCount);
+        SST_SER(m_itemsBinnedCount);
+        SST_SER(m_totalSummed);
+        SST_SER(m_totalSummedSqr);
+        SST_SER(m_binsMap);
+        SST_SER(m_dumpBinsOnOutput);
+        SST_SER(m_includeOutOfBounds);
+        // SST_SER(m_Fields); // Rebuilt by stat output object
     }
 
 protected:

@@ -420,61 +420,61 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& verbose_;
-        ser& configFile_;
-        ser& model_options_;
-        ser& print_timing_;
-        ser& stop_at_;
-        ser& exit_after_;
-        ser& partitioner_;
-        ser& heartbeat_wall_period_;
-        ser& heartbeat_sim_period_;
-        ser& output_directory_;
-        ser& output_core_prefix_;
+        SST_SER(verbose_);
+        SST_SER(configFile_);
+        SST_SER(model_options_);
+        SST_SER(print_timing_);
+        SST_SER(stop_at_);
+        SST_SER(exit_after_);
+        SST_SER(partitioner_);
+        SST_SER(heartbeat_wall_period_);
+        SST_SER(heartbeat_sim_period_);
+        SST_SER(output_directory_);
+        SST_SER(output_core_prefix_);
 
-        ser& output_config_graph_;
-        ser& output_json_;
-        ser& parallel_output_;
+        SST_SER(output_config_graph_);
+        SST_SER(output_json_);
+        SST_SER(parallel_output_);
 
-        ser& output_dot_;
-        ser& dot_verbosity_;
-        ser& component_partition_file_;
-        ser& output_partition_;
+        SST_SER(output_dot_);
+        SST_SER(dot_verbosity_);
+        SST_SER(component_partition_file_);
+        SST_SER(output_partition_);
 
-        ser& timeBase_;
-        ser& parallel_load_;
-        ser& parallel_load_mode_multi_;
-        ser& timeVortex_;
-        ser& interthread_links_;
+        SST_SER(timeBase_);
+        SST_SER(parallel_load_);
+        SST_SER(parallel_load_mode_multi_);
+        SST_SER(timeVortex_);
+        SST_SER(interthread_links_);
 #ifdef USE_MEMPOOL
-        ser& cache_align_mempools_;
+        SST_SER(cache_align_mempools_);
 #endif
-        ser& debugFile_;
-        ser& libpath_;
-        ser& addlibpath_;
+        SST_SER(debugFile_);
+        SST_SER(libpath_);
+        SST_SER(addlibpath_);
 #if PY_MINOR_VERSION >= 9
-        ser& enable_python_coverage_;
+        SST_SER(enable_python_coverage_);
 #endif
-        ser& enabled_profiling_;
-        ser& profiling_output_;
-        ser& runMode_;
-        ser& interactive_console_;
-        ser& interactive_start_time_;
+        SST_SER(enabled_profiling_);
+        SST_SER(profiling_output_);
+        SST_SER(runMode_);
+        SST_SER(interactive_console_);
+        SST_SER(interactive_start_time_);
 #ifdef USE_MEMPOOL
-        ser& event_dump_file_;
+        SST_SER(event_dump_file_);
 #endif
-        ser& load_from_checkpoint_;
-        ser& checkpoint_wall_period_;
-        ser& checkpoint_sim_period_;
-        ser& checkpoint_prefix_;
-        ser& checkpoint_name_format_;
+        SST_SER(load_from_checkpoint_);
+        SST_SER(checkpoint_wall_period_);
+        SST_SER(checkpoint_sim_period_);
+        SST_SER(checkpoint_prefix_);
+        SST_SER(checkpoint_name_format_);
 
-        ser& enable_sig_handling_;
-        ser& sigusr1_;
-        ser& sigusr2_;
-        ser& sigalrm_;
-        ser& print_env_;
-        ser& no_env_config_;
+        SST_SER(enable_sig_handling_);
+        SST_SER(sigusr1_);
+        SST_SER(sigusr2_);
+        SST_SER(sigalrm_);
+        SST_SER(print_env_);
+        SST_SER(no_env_config_);
     }
     ImplementSerializable(SST::Config);
 

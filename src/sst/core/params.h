@@ -54,7 +54,7 @@ class ConfigGraphOutput;
  * event, as serialization of Params objects only works correctly as
  * part of ConfigGraph serialization.
  */
-class Params : public SST::Core::Serialization::serializable
+class Params
 {
 private:
     struct KeyCompare
@@ -276,7 +276,7 @@ public:
     /** Create a copy of a Params object */
     Params(const Params& old);
 
-    virtual ~Params() {}
+    ~Params() {}
 
     /**
      *  @brief  Assignment operator.
@@ -841,8 +841,7 @@ public:
      */
     void popAllowedKeys();
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::Params)
+    void serialize_order(SST::Core::Serialization::serializer& ser);
 
 private:
     //// Functions used by model descriptions and config graph

@@ -69,10 +69,10 @@ private:
 template <>
 class SST::Core::Serialization::serialize_impl<TimeConverter*>
 {
-    template <class A>
-    friend class serialize;
     // Function implemented in timeLord.cc
-    void operator()(TimeConverter*& s, serializer& ser);
+    void operator()(TimeConverter*& s, serializer& ser, ser_opt_t options);
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST

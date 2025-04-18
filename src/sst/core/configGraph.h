@@ -87,17 +87,17 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& name;
-        ser& component[0];
-        ser& component[1];
-        ser& port[0];
-        ser& port[1];
-        ser& latency[0];
-        ser& latency[1];
-        ser& latency_str[0];
-        ser& latency_str[1];
-        ser& order;
+        SST_SER(id);
+        SST_SER(name);
+        SST_SER(component[0]);
+        SST_SER(component[1]);
+        SST_SER(port[0]);
+        SST_SER(port[1]);
+        SST_SER(latency[0]);
+        SST_SER(latency[1]);
+        SST_SER(latency_str[0]);
+        SST_SER(latency_str[1]);
+        SST_SER(order);
     }
 
     ImplementSerializable(SST::ConfigLink)
@@ -154,10 +154,10 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& shared;
-        ser& name;
-        ser& params;
+        SST_SER(id);
+        SST_SER(shared);
+        SST_SER(name);
+        SST_SER(params);
     }
 
     ImplementSerializable(ConfigStatistic)
@@ -191,11 +191,11 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& name;
-        ser& statMap;
-        ser& components;
-        ser& outputID;
-        ser& outputFrequency;
+        SST_SER(name);
+        SST_SER(statMap);
+        SST_SER(components);
+        SST_SER(outputID);
+        SST_SER(outputFrequency);
     }
 
     ImplementSerializable(SST::ConfigStatGroup)
@@ -214,8 +214,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& type;
-        ser& params;
+        SST_SER(type);
+        SST_SER(params);
     }
 
     ImplementSerializable(SST::ConfigStatOutput)
@@ -237,8 +237,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& type;
-        ser& params;
+        SST_SER(type);
+        SST_SER(params);
     }
     ImplementSerializable(SST::ConfigPortModule)
 };
@@ -332,25 +332,25 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& name;
-        ser& slot_num;
-        ser& type;
-        ser& weight;
-        ser& rank.rank;
-        ser& rank.thread;
-        ser& links;
-        ser& params;
-        ser& statLoadLevel;
-        ser& portModules;
-        ser& enabledStatNames;
-        ser& enabledAllStats;
-        ser& statistics_;
-        ser& allStatConfig;
-        ser& subComponents;
-        ser& coords;
-        ser& nextSubID;
-        ser& nextStatID;
+        SST_SER(id);
+        SST_SER(name);
+        SST_SER(slot_num);
+        SST_SER(type);
+        SST_SER(weight);
+        SST_SER(rank.rank);
+        SST_SER(rank.thread);
+        SST_SER(links);
+        SST_SER(params);
+        SST_SER(statLoadLevel);
+        SST_SER(portModules);
+        SST_SER(enabledStatNames);
+        SST_SER(enabledAllStats);
+        SST_SER(statistics_);
+        SST_SER(allStatConfig);
+        SST_SER(subComponents);
+        SST_SER(coords);
+        SST_SER(nextSubID);
+        SST_SER(nextStatID);
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -541,11 +541,11 @@ public:
     void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& links_;
-        ser& comps_;
-        ser& stat_outputs_;
-        ser& stat_load_level_;
-        ser& stat_groups_;
+        SST_SER(links_);
+        SST_SER(comps_);
+        SST_SER(stat_outputs_);
+        SST_SER(stat_load_level_);
+        SST_SER(stat_groups_);
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             // Need to reintialize the ConfigGraph ptrs in the
             // ConfigComponents

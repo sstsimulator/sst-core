@@ -121,10 +121,10 @@ void
 TimeVortexPQBase<TS>::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     TimeVortex::serialize_order(ser);
-    ser& insertOrder;
-    ser& max_depth;
-    ser& current_depth;
-    ser& data;
+    SST_SER(insertOrder);
+    SST_SER(max_depth);
+    SST_SER(current_depth);
+    SST_SER(data);
 }
 
 template <bool TS>

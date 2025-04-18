@@ -100,10 +100,10 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& baseDistrib;
-        ser& const_cast<bool&>(deleteDistrib);
-        ser& const_cast<uint32_t&>(probCount);
-        ser& probPerBin;
+        SST_SER(baseDistrib);
+        SST_SER(const_cast<bool&>(deleteDistrib));
+        SST_SER(const_cast<uint32_t&>(probCount));
+        SST_SER(probPerBin);
     }
 
     /**
