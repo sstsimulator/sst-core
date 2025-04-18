@@ -157,8 +157,8 @@ class serialize_impl<
                     SST_SER(e);
             }
             else {
-                ser_opt_t opts = 0;
-                if ( SerOption::is_set(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
+                ser_opt_t opts =
+                    SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : obj )
                     SST_SER((value_type&) e, opts);
@@ -172,8 +172,7 @@ class serialize_impl<
             size_t size;
             ser.unpack(size);
 
-            ser_opt_t opts = 0;
-            if ( SerOption::is_set(options, SerOption::as_ptr_elem) ) opts = SerOption::as_ptr;
+            ser_opt_t opts = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
 
             // Erase the container
             obj.clear();
