@@ -36,7 +36,7 @@ class serialize_impl<T<Ts...>, std::enable_if_t<is_same_template_v<T, std::tuple
         std::apply([&](auto&... e) { ((sst_ser_object(ser, e, opt)), ...); }, t);
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

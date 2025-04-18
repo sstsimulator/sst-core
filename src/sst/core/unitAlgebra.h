@@ -455,7 +455,7 @@ class serialize_impl<UnitAlgebra>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 

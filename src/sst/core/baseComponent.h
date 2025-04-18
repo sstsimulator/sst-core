@@ -150,13 +150,16 @@ public:
 
        @param tc TimeConverter specifying the units
     */
-    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
+                 "(i.e., no pointer) instead.")]] SimTime_t
+              getCurrentSimTime(TimeConverter* tc) const;
+    SimTime_t getCurrentSimTime(TimeConverter tc) const;
 
     /**
        Return the simulated time since the simulation began in the
        default timebase
     */
-    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info->defaultTimeBase); }
+    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(*(my_info->defaultTimeBase)); }
 
     /**
        Return the simulated time since the simulation began in
@@ -265,7 +268,12 @@ protected:
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'configureLink(const std::string& name, TimeConverter "
+        "time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Link*
+          configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
      * @param time_base - Time Base of the link as a string
@@ -294,7 +302,12 @@ protected:
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
+        "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Link*
+          configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
+
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param time_base - Time Base of the link as a string
@@ -346,10 +359,17 @@ protected:
         time base for all of the links connected to this component
         @return the TimeConverter object representing the clock frequency
     */
-    TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'registerClock(TimeConverter tc, Clock::HandlerBase* "
+        "handler, bool regAll)' (i.e., no TimeConverter pointer) instead.")]] TimeConverter*
+                   registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
+    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll = true);
 
     /** Removes a clock handler from the component */
-    void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'unregisterClock(TimeConverter tc, "
+                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] void
+         unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
+    void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
 
     /** Reactivates an existing Clock and Handler
      * @return time of next time clock handler will fire
@@ -360,7 +380,10 @@ protected:
      * clocks can run a few extra cycles. As a result, the return value just prior to
      * simulation end may be greater than the value returned after simulation end.
      */
-    Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'reregisterClock(TimeConverter freq, "
+                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Cycle_t
+            reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
+    Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
 
     /** Returns the next Cycle that the TimeConverter would fire
         If called prior to the simulation run loop, next Cycle is 0.
@@ -369,7 +392,11 @@ protected:
         the simulation. See Note in reregisterClock() for additional guidance
         when calling this function after simulation ends.
      */
-    Cycle_t getNextClockCycle(TimeConverter* freq);
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'getNextClockCycle(TimeConverter freq)' (i.e., "
+        "no TimeConverter pointer) instead.")]] Cycle_t
+            getNextClockCycle(TimeConverter* freq);
+    Cycle_t getNextClockCycle(TimeConverter freq);
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
@@ -409,6 +436,11 @@ private:
        and checkpointing.
      */
     void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll);
+
+    /**
+        Handles default timebase setup
+    */
+    Link* configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler = nullptr);
 
     template <typename T>
     Statistics::Statistic<T>*
@@ -1176,7 +1208,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<SST::BaseComponent, 
         s = static_cast<T*>(sp);
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace Core::Serialization

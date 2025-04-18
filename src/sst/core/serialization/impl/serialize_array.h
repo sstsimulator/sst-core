@@ -120,26 +120,26 @@ struct serialize_impl_fixed_array
 template <typename ELEM_T, size_t SIZE>
 class serialize_impl<ELEM_T[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T[SIZE], ELEM_T, SIZE>
 {
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 template <typename ELEM_T, size_t SIZE>
 class serialize_impl<std::array<ELEM_T, SIZE>> : pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>, ELEM_T, SIZE>
 {
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 template <typename ELEM_T, size_t SIZE>
 class serialize_impl<ELEM_T (*)[SIZE]> : pvt::serialize_impl_fixed_array<ELEM_T (*)[SIZE], ELEM_T, SIZE>
 {
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 template <typename ELEM_T, size_t SIZE>
 class serialize_impl<std::array<ELEM_T, SIZE>*> :
     pvt::serialize_impl_fixed_array<std::array<ELEM_T, SIZE>*, ELEM_T, SIZE>
 {
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 // Serialize dynamic arrays
@@ -170,7 +170,7 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 /**
@@ -183,7 +183,7 @@ template <typename ELEM_T>
 struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
 {
     void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser, ser_opt_t UNUSED(opt)) { ser.primitive(a.ptr); }
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 // Wrapper functions

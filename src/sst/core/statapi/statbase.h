@@ -684,7 +684,7 @@ class serialize_impl<Statistics::Statistic<T>*>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace Core::Serialization

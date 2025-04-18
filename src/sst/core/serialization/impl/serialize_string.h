@@ -81,7 +81,7 @@ class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

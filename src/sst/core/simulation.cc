@@ -1113,6 +1113,22 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
 }
 
 TimeConverter*
+Simulation_impl::registerClock(TimeConverter& tc_freq, Clock::HandlerBase* handler, int priority)
+{
+    // Use the simulation's instance of a timeconverter internally
+    TimeConverter*       tc_global = timeLord.getTimeConverter(tc_freq.getFactor());
+    clockMap_t::key_type mapKey    = std::make_pair(tc_freq.getFactor(), priority);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Clock* ce        = new Clock(tc_global, priority);
+        clockMap[mapKey] = ce;
+
+        ce->schedule();
+    }
+    clockMap[mapKey]->registerHandler(handler);
+    return &tc_freq;
+}
+
+TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
@@ -1140,6 +1156,18 @@ Simulation_impl::registerClock(SimTime_t factor, Clock::HandlerBase* handler, in
 }
 
 Cycle_t
+Simulation_impl::reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+        out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
+    }
+    clockMap[mapKey]->registerHandler(handler);
+    return clockMap[mapKey]->getNextCycle();
+}
+
+Cycle_t
 Simulation_impl::reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
@@ -1148,6 +1176,18 @@ Simulation_impl::reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler,
         out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
     clockMap[mapKey]->registerHandler(handler);
+    return clockMap[mapKey]->getNextCycle();
+}
+
+Cycle_t
+Simulation_impl::getNextClockCycle(TimeConverter& tc, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+        out.fatal(
+            CALL_INFO, 1, "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
+    }
     return clockMap[mapKey]->getNextCycle();
 }
 
@@ -1171,6 +1211,16 @@ Simulation_impl::getClockForHandler(Clock::HandlerBase* handler)
         if ( x.second->isHandlerRegistered(handler) ) { return x.first.first; }
     }
     return 0;
+}
+
+void
+Simulation_impl::unregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
+    if ( clockMap.find(mapKey) != clockMap.end() ) {
+        bool empty;
+        clockMap[mapKey]->unregisterHandler(handler, empty);
+    }
 }
 
 void
