@@ -54,7 +54,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<T>::serialize_order(ser);
-        ser& unique_set_;
+        SST_SER(unique_set_);
         // unique_count_field_ will be reset by statistics output object
     }
 

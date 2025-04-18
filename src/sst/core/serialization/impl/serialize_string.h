@@ -64,13 +64,15 @@ public:
 template <typename T>
 class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>, std::string>>>
 {
-public:
-    void operator()(T& str, serializer& ser)
+    void operator()(T& str, serializer& ser, ser_opt_t options)
     {
         // sPtr is a reference to either str if it's a pointer, or to &str if it's not
         const auto& sPtr = get_ptr(str);
         const auto  mode = ser.mode();
-        if ( mode == serializer::MAP ) { ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr)); }
+        if ( mode == serializer::MAP ) {
+            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+            ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr));
+        }
         else {
             if constexpr ( std::is_pointer_v<T> ) {
                 if ( mode == serializer::UNPACK ) str = new std::string();
@@ -78,6 +80,8 @@ public:
             ser.string(*sPtr);
         }
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST::Core::Serialization

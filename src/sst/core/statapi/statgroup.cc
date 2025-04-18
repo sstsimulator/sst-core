@@ -91,12 +91,12 @@ StatisticGroup::addStatistic(StatisticBase* stat)
 void
 StatisticGroup::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& isDefault;
-    ser& name;
-    ser& outputFreq;
-    ser& outputId;
-    ser& components;
-    ser& statNames;
+    SST_SER(isDefault);
+    SST_SER(name);
+    SST_SER(outputFreq);
+    SST_SER(outputId);
+    SST_SER(components);
+    SST_SER(statNames);
 }
 
 } // namespace SST::Statistics

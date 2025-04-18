@@ -481,12 +481,12 @@ Output::getThreadRank() const
 void
 Output::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& m_objInitialized;
-    ser& m_outputPrefix;
-    ser& m_verboseLevel;
-    ser& m_verboseMask;
-    ser& m_targetLoc;
-    ser& m_sstLocalFileName;
+    SST_SER(m_objInitialized);
+    SST_SER(m_outputPrefix);
+    SST_SER(m_verboseLevel);
+    SST_SER(m_verboseMask);
+    SST_SER(m_targetLoc);
+    SST_SER(m_sstLocalFileName);
 
     if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK && m_objInitialized ) {
         // Set Member Variables

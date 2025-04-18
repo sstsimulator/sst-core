@@ -212,7 +212,7 @@ RankSyncSerialSkip::exchange()
 
         std::vector<Activity*> activities;
         activities.clear();
-        ser& activities;
+        SST_SER(activities);
 
         deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 
@@ -327,7 +327,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
         ser.start_unpacking(&buffer[sizeof(RankSyncQueue::Header)], size - sizeof(RankSyncQueue::Header));
 
         std::vector<Activity*> activities;
-        ser&                   activities;
+        SST_SER(activities);
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
             Event* ev = static_cast<Event*>(activities[j]);

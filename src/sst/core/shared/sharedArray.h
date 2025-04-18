@@ -210,19 +210,19 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Shared::SharedObject::serialize_order(ser);
-        ser& published;
+        SST_SER(published);
         switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK:
         {
             std::string name = data->getName();
-            ser&        name;
+            SST_SER(name);
             break;
         }
         case SST::Core::Serialization::serializer::UNPACK:
         {
             std::string name;
-            ser&        name;
+            SST_SER(name);
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
@@ -360,7 +360,7 @@ private:
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             SharedObjectData::serialize_order(ser);
-            ser& array;
+            SST_SER(array);
         }
 
         ImplementSerializable(SST::Shared::SharedArray<T>::Data);
@@ -377,10 +377,10 @@ private:
             void serialize_order(SST::Core::Serialization::serializer& ser) override
             {
                 SharedObjectChangeSet::serialize_order(ser);
-                ser& changes;
-                ser& size;
-                ser& init;
-                ser& verify;
+                SST_SER(changes);
+                SST_SER(size);
+                SST_SER(init);
+                SST_SER(verify);
             }
 
             ImplementSerializable(SST::Shared::SharedArray<T>::Data::ChangeSet);
@@ -603,19 +603,19 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Shared::SharedObject::serialize_order(ser);
-        ser& published;
+        SST_SER(published);
         switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK:
         {
             std::string name = data->getName();
-            ser&        name;
+            SST_SER(name);
             break;
         }
         case SST::Core::Serialization::serializer::UNPACK:
         {
             std::string name;
-            ser&        name;
+            SST_SER(name);
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
@@ -753,7 +753,7 @@ private:
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             SharedObjectData::serialize_order(ser);
-            ser& array;
+            SST_SER(array);
             // All other members are not needed past init()
         }
 
@@ -771,10 +771,10 @@ private:
             void serialize_order(SST::Core::Serialization::serializer& ser) override
             {
                 SharedObjectChangeSet::serialize_order(ser);
-                ser& changes;
-                ser& size;
-                ser& init;
-                ser& verify;
+                SST_SER(changes);
+                SST_SER(size);
+                SST_SER(init);
+                SST_SER(verify);
             }
 
             ImplementSerializable(SST::Shared::SharedArray<bool>::Data::ChangeSet);

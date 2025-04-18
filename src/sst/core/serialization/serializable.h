@@ -48,10 +48,7 @@ void map_serializable(serializable_base*& s, serializer& ser);
 template <class T>
 class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 {
-
-    template <class A>
-    friend class serialize;
-    void operator()(T*& s, serializer& ser)
+    void operator()(T*& s, serializer& ser, ser_opt_t UNUSED(options))
     {
         serializable_base* sp = static_cast<serializable_base*>(s);
         switch ( ser.mode() ) {
@@ -70,6 +67,8 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<serializable, T>>>
         }
         s = static_cast<T*>(sp);
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 template <class T>
@@ -97,9 +96,7 @@ serialize_intrusive_ptr(T*& t, serializer& ser)
 template <class T>
 class serialize_impl<T, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 {
-    template <class A>
-    friend class serialize;
-    inline void operator()(T& t, serializer& ser)
+    inline void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
     {
         // T* tmp = &t;
         // serialize_intrusive_ptr(tmp, ser);
@@ -112,6 +109,8 @@ class serialize_impl<T, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 
         // For now mapping mode won't provide any data
     }
+
+    SST_FRIEND_SERIALZE();
 };
 
 } // namespace SST::Core::Serialization

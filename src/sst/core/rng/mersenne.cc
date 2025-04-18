@@ -160,10 +160,10 @@ MersenneRNG::~MersenneRNG()
 void
 MersenneRNG::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& index;
+    SST_SER(index);
 
     // Mersenne's default constructor mallocs numbers so UNPACK does not need to
     for ( int i = 0; i < 624; i++ ) {
-        ser& numbers[i];
+        SST_SER(numbers[i]);
     }
 }

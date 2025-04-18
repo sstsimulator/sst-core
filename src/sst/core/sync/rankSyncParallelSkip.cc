@@ -464,7 +464,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         ser.start_unpacking(&buffer[sizeof(RankSyncQueue::Header)], size - sizeof(RankSyncQueue::Header));
 
         std::vector<Activity*> activities;
-        ser&                   activities;
+        SST_SER(activities);
 
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
@@ -501,7 +501,7 @@ RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
     SST::Core::Serialization::serializer ser;
 
     ser.start_unpacking(&buffer[sizeof(RankSyncQueue::Header)], size - sizeof(RankSyncQueue::Header));
-    ser & msg->activity_vec;
+    SST_SER(msg->activity_vec);
 
     deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 }
