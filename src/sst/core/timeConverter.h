@@ -32,9 +32,18 @@ class TimeConverter
 public:
     /**
        Create a new TimeConverter object from a TimeConverter*
+       Use this to create a local TimeConverter from a TimeConverter*
+       returned by the BaseComponent and other public APIs.
        @param tc TimeConverter to initialize factor from
      */
-    TimeConverter(TimeConverter* tc) : factor(tc->getFactor()) {}
+    TimeConverter(TimeConverter* tc) : factor(tc->factor) {}
+
+    /**
+       Do not directly invoke this constructor from Components to get
+       a TimeConverter. Instead, use the BaseComponent API functions and the constructor
+       that uses a TimeConverter* to create a TimeConverter.
+     */
+    TimeConverter() {}
 
     /**
        Converts from the component's view to the core's view of time.
@@ -64,7 +73,6 @@ public:
      * Elements. This was moved to public due to needing to support ObjectMaps.
      */
     ~TimeConverter() {}
-    TimeConverter() {} // Only needed to simplify serialization
 
 private:
     /**

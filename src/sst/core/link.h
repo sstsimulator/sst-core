@@ -180,8 +180,9 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, TimeConverter tc, "
-                 "Event* event)' instead.")]] inline void
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, const TimeConverter& tc, "
+        "Event* event)' instead.")]] inline void
     send(SimTime_t delay, TimeConverter* tc, Event* event)
     {
         send(delay, *tc, event);
@@ -195,10 +196,7 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    inline void send(SimTime_t delay, TimeConverter& tc, Event* event)
-    {
-        send_impl(tc.convertToCoreTime(delay), event);
-    }
+    inline void send(SimTime_t delay, TimeConverter tc, Event* event) { send_impl(tc.convertToCoreTime(delay), event); }
 
 
     /** Send an event with additional delay. Sends an event over a link
@@ -228,6 +226,11 @@ public:
      * @param tc TimeConverter object for the timebase
      */
     void setDefaultTimeBase(TimeConverter* tc);
+
+    /** Manually set the default time base
+     * @param factor SimTime_T defining the timebase factor
+     */
+    void setDefaultTimeBase(SimTime_t factor) { defaultTimeBase = factor; }
 
     /** Return the default Time Base for this link
      * @return the default Time Base for this link

@@ -54,10 +54,11 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     // reregister clock
     clock_handler = new Clock::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleClock>(this);
 
-    TimeConverter* core_tc = registerClock(freq, clock_handler);
+    // TimeConverter* core_tc = registerClock(freq, clock_handler);
+    clock_tc         = registerClock(freq, clock_handler);
     // Get a local copy of the clock_tc so we aren't using core's
-    TimeConverter  local_tc(core_tc);
-    clock_tc         = local_tc;
+    // TimeConverter  local_tc(core_tc);
+    // clock_tc         = local_tc;
     duty_cycle       = params.find<int>("clock_duty_cycle", 10);
     duty_cycle_count = duty_cycle;
 
