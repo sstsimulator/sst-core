@@ -1523,7 +1523,10 @@ public:
     /**
      * Serialization function
      */
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST::SubComponent::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::SubComponent::serialize_order(ser);
+    }
 };
 
 } // namespace SST::Interfaces

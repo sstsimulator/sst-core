@@ -99,8 +99,8 @@ public:
     coreTestPerfComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestPerfComponent();
 
-    void setup() {}
-    void finish() { printf("Perf Test Component Finished.\n"); }
+    void setup() override {}
+    void finish() override { printf("Perf Test Component Finished.\n"); }
 
 private:
     coreTestPerfComponent();                                                 // for serialization only
