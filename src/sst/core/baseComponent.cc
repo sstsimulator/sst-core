@@ -185,6 +185,12 @@ BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, boo
 }
 
 Cycle_t
+BaseComponent::reregisterClock(TimeConverter& freq, Clock::HandlerBase* handler)
+{
+    return sim_->reregisterClock(freq, handler, CLOCKPRIORITY);
+}
+
+Cycle_t
 BaseComponent::reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler)
 {
     return sim_->reregisterClock(freq, handler, CLOCKPRIORITY);
@@ -427,6 +433,13 @@ BaseComponent::addSelfLink(const std::string& name)
     // Set default time base to the component time base
     link->setDefaultTimeBase(my_info->defaultTimeBase);
     myLinks->insertLink(name, link);
+}
+
+Link*
+BaseComponent::configureSelfLink(const std::string& name, TimeConverter& time_base, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name, time_base, handler);
 }
 
 Link*
