@@ -53,7 +53,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     // Need to keep a pointer to the clock handler so we can
     // reregister clock
     clock_handler = new Clock::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleClock>(this);
-    clock_tc      = registerClock(freq, clock_handler);
+    clock_tc      = TimeConverter(registerClock(freq, clock_handler));
 
     duty_cycle       = params.find<int>("clock_duty_cycle", 10);
     duty_cycle_count = duty_cycle;

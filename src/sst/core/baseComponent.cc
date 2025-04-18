@@ -169,6 +169,14 @@ BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handle
 }
 
 TimeConverter*
+BaseComponent::registerClock(TimeConverter& tc, Clock::HandlerBase* handler, bool regAll)
+{
+    TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
+    registerClock_impl(tcRet, handler, regAll);
+    return tcRet;
+}
+
+TimeConverter*
 BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
@@ -276,7 +284,7 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
 }
 
 Link*
-BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink_impl(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
 
@@ -375,21 +383,34 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 }
 
 Link*
+BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+{
+    // Lookup core-owned time_base in case it differs from the one passed in (unlikely but possible)
+    return configureLink_impl(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base->getPeriod()), handler);
+}
+
+Link*
+BaseComponent::configureLink(const std::string& name, TimeConverter& time_base, Event::HandlerBase* handler)
+{
+    return configureLink_impl(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base.getPeriod()), handler);
+}
+
+Link*
 BaseComponent::configureLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
+    return configureLink_impl(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
 }
 
 Link*
 BaseComponent::configureLink(const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
+    return configureLink_impl(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
 }
 
 Link*
 BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
-    return configureLink(name, nullptr, handler);
+    return configureLink_impl(name, nullptr, handler);
 }
 
 void
@@ -491,9 +512,15 @@ BaseComponent::getSimulationOutput() const
 }
 
 SimTime_t
+BaseComponent::getCurrentSimTime(TimeConverter tc) const
+{
+    return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
+}
+
+SimTime_t
 BaseComponent::getCurrentSimTime(TimeConverter* tc) const
 {
-    return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
+    return getCurrentSimTime(*tc);
 }
 
 SimTime_t
@@ -522,7 +549,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
     SimTime_t ret;
     try {
         TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
-        ret               = getCurrentSimTime(tc);
+        ret               = getCurrentSimTime(*tc);
     }
     catch ( std::underflow_error& e ) {
         // base is too small for the core timebase, fall back to using UnitAlgebra

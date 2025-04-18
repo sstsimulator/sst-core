@@ -129,7 +129,7 @@ private:
     SST::Link*          link_left;
     SST::Link*          link_right;
     SST::Link*          self_link;
-    TimeConverter*      clock_tc;
+    TimeConverter       clock_tc;
     Clock::HandlerBase* clock_handler;
     int                 duty_cycle;       // Used to count clock on and off cycles
     int                 duty_cycle_count; // Used to count clock on and off cycles

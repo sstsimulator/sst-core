@@ -86,7 +86,7 @@ class SST::Core::Serialization::serialize_impl<TimeVortex*>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST

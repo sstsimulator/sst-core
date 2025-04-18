@@ -42,7 +42,7 @@ class SST::Core::Serialization::serialize_impl<Link*>
     // Function implemented in link.cc
     void operator()(Link*& s, SST::Core::Serialization::serializer& ser, ser_opt_t options);
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 
@@ -134,7 +134,10 @@ public:
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addSendLatency(SimTime_t cycles, "
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
+         addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+    void addSendLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
@@ -146,7 +149,10 @@ public:
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addRecvLatency(SimTime_t cycles, "
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
+         addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
+    void addRecvLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set the callback function to be called when a message is
      * delivered. Not available for Polling links.
@@ -174,10 +180,23 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    inline void send(SimTime_t delay, TimeConverter* tc, Event* event)
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, TimeConverter tc, "
+                 "Event* event)' instead.")]] inline void
+    send(SimTime_t delay, TimeConverter* tc, Event* event)
     {
-        send_impl(tc->convertToCoreTime(delay), event);
+        send(delay, *tc, event);
     }
+
+    /** Send an event over the link with additional delay. Sends an event
+     * over a link with an additional delay specified with a
+     * TimeConverter. I.e. the total delay is the link's delay + the
+     * additional specified delay.
+     * @param delay - additional delay
+     * @param tc - time converter to specify units for the additional delay
+     * @param event - the Event to send
+     */
+    inline void send(SimTime_t delay, TimeConverter tc, Event* event) { send_impl(tc.convertToCoreTime(delay), event); }
+
 
     /** Send an event with additional delay. Sends an event over a link
      * with additional delay specified by the Link's default
@@ -202,7 +221,7 @@ public:
      */
     Event* recv();
 
-    /** Manually set the default detaulTimeBase
+    /** Manually set the default defaultTimeBase
      * @param tc TimeConverter object for the timebase
      */
     void setDefaultTimeBase(TimeConverter* tc);

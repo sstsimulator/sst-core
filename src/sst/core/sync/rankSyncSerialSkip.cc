@@ -138,10 +138,10 @@ RankSyncSerialSkip::exchange()
 #ifdef SST_CONFIG_HAVE_MPI
     // Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
-    MPI_Request sreqs[2 * comm_map.size()];
-    MPI_Request rreqs[comm_map.size()];
-    int         sreq_count = 0;
-    int         rreq_count = 0;
+    auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_map.size());
+    auto rreqs      = std::make_unique<MPI_Request[]>(comm_map.size());
+    int  sreq_count = 0;
+    int  rreq_count = 0;
 
     Simulation_impl* sim = Simulation_impl::getSimulation();
 
@@ -183,7 +183,7 @@ RankSyncSerialSkip::exchange()
     SimTime_t current_cycle = sim->getCurrentSimCycle();
 
     auto waitStart = SST::Core::Profile::now();
-    MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
+    MPI_Waitall(rreq_count, rreqs.get(), MPI_STATUSES_IGNORE);
     mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
@@ -228,7 +228,7 @@ RankSyncSerialSkip::exchange()
 
     // Clear the RankSyncQueues used to send the data after all the sends have completed
     waitStart = SST::Core::Profile::now();
-    MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
+    MPI_Waitall(sreq_count, sreqs.get(), MPI_STATUSES_IGNORE);
     mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
@@ -267,10 +267,10 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     if ( thread != 0 ) { return; }
     // Maximum number of outstanding requests is 3 times the number of
     // ranks I communicate with (1 recv, 2 sends per rank)
-    MPI_Request sreqs[2 * comm_map.size()];
-    MPI_Request rreqs[comm_map.size()];
-    int         rreq_count = 0;
-    int         sreq_count = 0;
+    auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_map.size());
+    auto rreqs      = std::make_unique<MPI_Request[]>(comm_map.size());
+    int  rreq_count = 0;
+    int  sreq_count = 0;
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
 
@@ -301,7 +301,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     }
 
     // Wait for all recvs to complete
-    MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
+    MPI_Waitall(rreq_count, rreqs.get(), MPI_STATUSES_IGNORE);
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
 
@@ -336,7 +336,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     }
 
     // Clear the RankSyncQueues used to send the data after all the sends have completed
-    MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
+    MPI_Waitall(sreq_count, sreqs.get(), MPI_STATUSES_IGNORE);
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
         i->second.squeue->clear();

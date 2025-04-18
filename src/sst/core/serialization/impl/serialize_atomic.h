@@ -57,7 +57,7 @@ class serialize_impl<std::atomic<T>>
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

@@ -31,6 +31,12 @@ class TimeConverter
 
 public:
     /**
+       Create a new TimeConverter object from a TimeConverter*
+       @param tc TimeConverter to initialize factor from
+     */
+    TimeConverter(TimeConverter* tc) : factor(tc->getFactor()) {}
+
+    /**
        Converts from the component's view to the core's view of time.
        @param time time to convert to core time
      */
@@ -53,6 +59,13 @@ public:
      */
     UnitAlgebra getPeriod() const; // Implemented in timeLord.cc
 
+    /**
+     * TimeConverter* returned by the core should *never* be deleted by
+     * Elements. This was moved to public due to needing to support ObjectMaps.
+     */
+    ~TimeConverter() {}
+    TimeConverter() {} // Only needed to simplify serialization
+
 private:
     /**
        Factor for converting between core and component time
@@ -60,10 +73,15 @@ private:
     SimTime_t factor;
 
     TimeConverter(SimTime_t fact) { factor = fact; }
+};
 
-    ~TimeConverter() {}
+template <>
+class SST::Core::Serialization::serialize_impl<TimeConverter>
+{
+    // Function implemented in timeLord.cc
+    void operator()(TimeConverter& s, serializer& ser, ser_opt_t options);
 
-    TimeConverter() {} // Only needed to simplify serialization
+    SST_FRIEND_SERIALIZE();
 };
 
 template <>
@@ -72,7 +90,7 @@ class SST::Core::Serialization::serialize_impl<TimeConverter*>
     // Function implemented in timeLord.cc
     void operator()(TimeConverter*& s, serializer& ser, ser_opt_t options);
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST

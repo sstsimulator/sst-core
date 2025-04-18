@@ -690,6 +690,12 @@ Link::addSendLatency(int cycles, const std::string& timebase)
 }
 
 void
+Link::addSendLatency(SimTime_t cycles, TimeConverter timebase)
+{
+    latency += timebase.convertToCoreTime(cycles);
+}
+
+void
 Link::addSendLatency(SimTime_t cycles, TimeConverter* timebase)
 {
     latency += timebase->convertToCoreTime(cycles);
@@ -700,6 +706,12 @@ Link::addRecvLatency(int cycles, const std::string& timebase)
 {
     SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
     pair_link->latency += (cycles * tb);
+}
+
+void
+Link::addRecvLatency(SimTime_t cycles, TimeConverter timebase)
+{
+    pair_link->latency += timebase.convertToCoreTime(cycles);
 }
 
 void

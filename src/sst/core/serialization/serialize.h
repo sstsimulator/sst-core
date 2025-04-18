@@ -29,8 +29,8 @@
 
    NOTE: requires a semicolon after the call
  */
-#define SST_FRIEND_SERIALZE() \
-    template <class SER>      \
+#define SST_FRIEND_SERIALIZE() \
+    template <class SER>       \
     friend class pvt::serialize
 
 namespace SST {
@@ -366,7 +366,7 @@ public:
             ser.primitive(t);
         }
     }
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 /**
@@ -401,7 +401,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
         }
         }
     }
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 

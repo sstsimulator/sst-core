@@ -258,7 +258,36 @@ class serialize_impl<
         }
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
+};
+
+// clang-format off
+template <template <typename...> class T, typename... Ts>
+class serialize_impl<
+    T<Ts...>*, std::enable_if_t<
+                  is_same_template_v< T, std::deque              > ||
+                  is_same_template_v< T, std::forward_list       > ||
+                  is_same_template_v< T, std::list               > ||
+                  is_same_template_v< T, std::map                > ||
+                  is_same_template_v< T, std::multimap           > ||
+                  is_same_template_v< T, std::multiset           > ||
+                  is_same_template_v< T, std::set                > ||
+                  is_same_template_v< T, std::unordered_map      > ||
+                  is_same_template_v< T, std::unordered_multimap > ||
+                  is_same_template_v< T, std::unordered_multiset > ||
+                  is_same_template_v< T, std::unordered_set      > ||
+                  is_same_template_v< T, std::vector             >
+                > >
+// clang-format on
+{
+    void operator()(T<Ts...>*& t, serializer& ser, ser_opt_t options)
+    {
+        if ( ser.mode() == serializer::UNPACK ) { t = new T<Ts...>(); }
+        SST_SER(*t, options);
+        // serialize_impl<T<Ts...>>()(*t, ser, options);
+    }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

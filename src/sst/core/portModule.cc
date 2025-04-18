@@ -90,9 +90,15 @@ PortModule::getSimulationOutput() const
 }
 
 SimTime_t
-PortModule::getCurrentSimTime(TimeConverter* tc) const
+PortModule::getCurrentSimTime(TimeConverter& tc) const
 {
     return component_->getCurrentSimTime(tc);
+}
+
+SimTime_t
+PortModule::getCurrentSimTime(TimeConverter* tc) const
+{
+    return component_->getCurrentSimTime(*tc);
 }
 
 SimTime_t

@@ -113,28 +113,31 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
     std::vector<char> buffer = Comms::serialize(data);
 
     size_t sendSize = buffer.size();
-    int    allSizes[world];
-    int    displ[world];
 
-    memset(allSizes, '\0', world * sizeof(int));
-    memset(displ, '\0', world * sizeof(int));
+    auto allSizes      = std::make_unique<int[]>(world);
+    auto displacements = std::make_unique<int[]>(world);
 
-    MPI_Allgather(&sendSize, sizeof(int), MPI_BYTE, &allSizes, sizeof(int), MPI_BYTE, MPI_COMM_WORLD);
+    memset(allSizes.get(), '\0', world * sizeof(int));
+    memset(displacements.get(), '\0', world * sizeof(int));
+
+    MPI_Allgather(&sendSize, sizeof(int), MPI_BYTE, allSizes.get(), sizeof(int), MPI_BYTE, MPI_COMM_WORLD);
 
     int totalBuf = 0;
     for ( int i = 0; i < world; i++ ) {
         totalBuf += allSizes[i];
-        if ( i > 0 ) displ[i] = displ[i - 1] + allSizes[i - 1];
+        if ( i > 0 ) displacements[i] = displacements[i - 1] + allSizes[i - 1];
     }
 
     auto bigBuff = std::unique_ptr<char[]>(new char[totalBuf]);
 
-    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes, displ, MPI_BYTE, MPI_COMM_WORLD);
+    MPI_Allgatherv(
+        buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes.get(), displacements.get(), MPI_BYTE,
+        MPI_COMM_WORLD);
 
     out_data.resize(world);
     for ( int i = 0; i < world; i++ ) {
         auto* bbuf = bigBuff.get();
-        Comms::deserialize(&bbuf[displ[i]], allSizes[i], out_data[i]);
+        Comms::deserialize(&bbuf[displacements[i]], allSizes[i], out_data[i]);
     }
 }
 

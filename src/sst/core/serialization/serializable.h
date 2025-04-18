@@ -68,7 +68,7 @@ class serialize_impl<T*, std::enable_if_t<std::is_base_of_v<serializable, T>>>
         s = static_cast<T*>(sp);
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 template <class T>
@@ -110,7 +110,7 @@ class serialize_impl<T, std::enable_if_t<std::is_base_of_v<serializable, T>>>
         // For now mapping mode won't provide any data
     }
 
-    SST_FRIEND_SERIALZE();
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

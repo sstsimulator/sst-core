@@ -298,20 +298,24 @@ public:
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
 
     TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
+    TimeConverter* registerClock(TimeConverter& tcFreq, Clock::HandlerBase* handler, int priority);
 
     // registerClock function used during checkpoint/restart
     void registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority);
 
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
+    void unregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority);
 
     /** Reactivate an existing clock and handler.
      * @return time when handler will next fire
      */
     Cycle_t reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
+    Cycle_t reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority);
 
-    /** Returns the next Cycle that the TImeConverter would fire. */
+    /** Returns the next Cycle that the TimeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
+    Cycle_t getNextClockCycle(TimeConverter& tc, int priority = CLOCKPRIORITY);
 
     /** Gets the clock the handler is registered with, represented by it's factor
      *
