@@ -32,7 +32,7 @@ class serialize_impl<T<Ts...>, std::enable_if_t<is_same_template_v<T, std::tuple
     void operator()(T<Ts...>& t, serializer& ser, ser_opt_t options)
     {
         // Serialize each element of tuple or pair
-        ser_opt_t opt = (options & SerOption::as_ptr_elem) ? SerOption::as_ptr : 0;
+        ser_opt_t opt = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
         std::apply([&](auto&... e) { ((sst_ser_object(ser, e, opt)), ...); }, t);
     }
 
