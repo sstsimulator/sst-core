@@ -195,7 +195,10 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    inline void send(SimTime_t delay, TimeConverter tc, Event* event) { send_impl(tc.convertToCoreTime(delay), event); }
+    inline void send(SimTime_t delay, TimeConverter& tc, Event* event)
+    {
+        send_impl(tc.convertToCoreTime(delay), event);
+    }
 
 
     /** Send an event with additional delay. Sends an event over a link

@@ -153,7 +153,7 @@ public:
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter timebase)' "
                  "(i.e., no pointer) instead.")]] SimTime_t
               getCurrentSimTime(TimeConverter* tc) const;
-    SimTime_t getCurrentSimTime(TimeConverter tc) const;
+    SimTime_t getCurrentSimTime(TimeConverter& tc) const;
 
     /**
        Return the simulated time since the simulation began in the
@@ -306,7 +306,7 @@ protected:
         "Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
         "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Link*
           configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
-    Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureSelfLink(const std::string& name, TimeConverter& time_base, Event::HandlerBase* handler = nullptr);
 
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
@@ -395,7 +395,7 @@ protected:
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getNextClockCycle(TimeConverter tc)' (i.e., "
                  "no TimeConverter pointer) instead.")]] Cycle_t
             getNextClockCycle(TimeConverter* freq);
-    Cycle_t getNextClockCycle(TimeConverter freq);
+    Cycle_t getNextClockCycle(TimeConverter& freq);
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for

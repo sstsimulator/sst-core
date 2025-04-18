@@ -58,9 +58,7 @@ class serialize_impl<
 
     void operator()(T<Ts...>*& v, serializer& ser, ser_opt_t options)
     {
-        if ( ser.mode() == serializer::UNPACK ) {
-            v = new T<Ts...>();
-        }
+        if ( ser.mode() == serializer::UNPACK ) { v = new T<Ts...>(); }
 
         SST_SER(static_cast<S&>(*v).c, options); // serialize the underlying container
     }

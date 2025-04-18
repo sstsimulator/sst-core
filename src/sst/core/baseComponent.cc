@@ -512,7 +512,7 @@ BaseComponent::getSimulationOutput() const
 }
 
 SimTime_t
-BaseComponent::getCurrentSimTime(TimeConverter tc) const
+BaseComponent::getCurrentSimTime(TimeConverter& tc) const
 {
     return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
 }
