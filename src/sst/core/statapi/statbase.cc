@@ -198,58 +198,6 @@ StatisticBase::operator==(StatisticBase& check_stat)
     return (getFullStatName() == check_stat.getFullStatName());
 }
 
-// GV_TODO: Potentially remove this. It doesn't work as intended and delays should be user-set, not component-set
-void
-StatisticBase::delayOutput(const char* delay_time)
-{
-    // Make sure only a single output delay is active
-    if ( false == info_->output_delayed_ ) {
-
-        // Save the Stat Output Enable setting and then disable the output
-        info_->saved_output_enabled_ = info_->output_enabled_;
-        info_->output_enabled_       = false;
-        info_->output_delayed_       = true;
-
-        Simulation_impl::getSimulation()->registerOneShot(
-            delay_time, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayOutputExpiredHandler),
-            STATISTICCLOCKPRIORITY);
-    }
-}
-
-// GV_TODO: Potentially remove this. It doesn't work as intended and delays should be user-set, not component-set
-void
-StatisticBase::delayCollection(const char* delay_time)
-{
-    // Make sure only a single collection delay is active
-    if ( false == info_->collection_delayed_ ) {
-
-        // Save the Stat Enable setting and then disable the Stat for collection
-        info_->saved_stat_enabled_ = info_->stat_enabled_;
-        info_->stat_enabled_       = false;
-        info_->collection_delayed_ = true;
-
-        Simulation_impl::getSimulation()->registerOneShot(
-            delay_time, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler),
-            STATISTICCLOCKPRIORITY);
-    }
-}
-
-void
-StatisticBase::delayOutputExpiredHandler()
-{
-    // Restore the Output Enable to its stored value
-    info_->output_enabled_ = info_->saved_output_enabled_;
-    info_->output_delayed_ = false;
-}
-
-void
-StatisticBase::delayCollectionExpiredHandler()
-{
-    // Restore the Statistic Enable to its stored value
-    info_->stat_enabled_       = info_->saved_stat_enabled_;
-    info_->collection_delayed_ = false;
-}
-
 void
 StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {

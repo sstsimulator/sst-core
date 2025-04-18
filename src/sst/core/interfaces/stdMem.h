@@ -98,9 +98,24 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<void, Request*, classT, dataT>;
 
-    // /**
-    //    New style (checkpointable) SSTHandler
-    // */
+    /**
+       Used to create checkpointable handlers for request handling.
+       The callback function is expected to be in the form of:
+
+         void func(Request* event)
+
+       In which case, the class is created with:
+
+         new StdMem::Handler<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         void func(Request* event, dataT data)
+
+       and the class is created with:
+
+         new stdMem::Handler<classname, &classname::function_name, dataT>(this, data)
+     */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler2 = SSTHandler2<void, Request*, classT, dataT, funcT>;
 

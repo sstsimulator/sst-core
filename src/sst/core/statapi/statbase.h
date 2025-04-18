@@ -171,17 +171,6 @@ public:
     /** Return the collection mode that is registered */
     StatMode_t getRegisteredCollectionMode() const { return info_->registered_collection_mode_; }
 
-    // Delay Methods (Uses OneShot to disable Statistic or Collection)
-    /** Delay the statistic from outputting data for a specified delay time
-     * @param delay_time - Value in UnitAlgebra format for delay (i.e. 10ns).
-     */
-    void delayOutput(const char* delay_time);
-
-    /** Delay the statistic from collecting data for a specified delay time.
-     * @param delayTime - Value in UnitAlgebra format for delay (i.e. 10ns).
-     */
-    void delayCollection(const char* delay_time);
-
     // Status of Statistic
     /** Indicate that the Statistic is Ready to be used */
     virtual bool isReady() const { return true; }
@@ -257,10 +246,6 @@ private:
     bool operator==(StatisticBase& check_stat);
 
     void checkEventForOutput();
-
-    // OneShot Callbacks:
-    void delayOutputExpiredHandler();     // Enable Output in handler
-    void delayCollectionExpiredHandler(); // Enable Collection in Handler
 
     const StatisticGroup* getGroup() const { return info_->group_; }
     void                  setGroup(const StatisticGroup* group) { info_->group_ = group; }
