@@ -18,6 +18,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <getopt.h>
 #include <iostream>
 #include <memory>

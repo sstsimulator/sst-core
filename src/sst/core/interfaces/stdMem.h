@@ -27,6 +27,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace SST {
 class Component;

@@ -20,8 +20,10 @@ DISABLE_WARN_MISSING_OVERRIDE
 #include "H5Cpp.h"
 REENABLE_WARNING
 
+#include <cstddef>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace SST::Statistics {
 

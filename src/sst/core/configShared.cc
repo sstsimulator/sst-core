@@ -16,6 +16,7 @@
 #include "sst/core/env/envquery.h"
 
 #include <functional>
+#include <set>
 
 namespace SST {
 

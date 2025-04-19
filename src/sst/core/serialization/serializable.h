@@ -15,6 +15,9 @@
 #include "sst/core/serialization/serializable_base.h"
 #include "sst/core/serialization/serialize.h"
 
+#include <cstdint>
+#include <type_traits>
+
 namespace SST::Core::Serialization {
 
 class serializable : public serializable_base

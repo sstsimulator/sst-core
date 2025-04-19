@@ -16,6 +16,8 @@
 #include "sst/core/module.h"
 #include "sst/core/serialization/serialize_impl_fwd.h"
 
+#include <cstdint>
+
 namespace SST {
 
 class Output;

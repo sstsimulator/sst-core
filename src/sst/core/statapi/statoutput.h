@@ -23,6 +23,7 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME     "sst.statOutputConsole"

@@ -27,8 +27,10 @@
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/warnmacros.h"
 
+#include <functional>
 #include <map>
 #include <string>
+#include <vector>
 
 using namespace SST::Statistics;
 

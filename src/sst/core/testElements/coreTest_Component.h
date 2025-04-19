@@ -16,6 +16,9 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/marsaglia.h"
 
+#include <cstddef>
+#include <cstdio>
+
 namespace SST::CoreTestComponent {
 
 // These first two classes are just base classes to test ELI

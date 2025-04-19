@@ -21,11 +21,13 @@
 #include <inttypes.h>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <stdlib.h>
 #include <utility>
+#include <vector>
 
 int main(int argc, char* argv[]);
 

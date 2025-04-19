@@ -15,6 +15,10 @@
 #include "sst/core/component.h"
 #include "sst/core/link.h"
 
+#include <cstdint>
+#include <cstdio>
+#include <string>
+
 namespace SST::CoreTestMessageGeneratorComponent {
 
 class coreTestMessageGeneratorComponent : public SST::Component

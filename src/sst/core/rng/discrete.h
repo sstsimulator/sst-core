@@ -17,6 +17,7 @@
 #include "mersenne.h"
 #include "rng.h"
 
+#include <cstdint>
 #include <cstdlib> // for malloc/free
 
 namespace SST::RNG {

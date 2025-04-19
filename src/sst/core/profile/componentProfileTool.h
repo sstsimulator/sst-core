@@ -19,6 +19,8 @@
 
 #include <chrono>
 #include <map>
+#include <string>
+#include <vector>
 
 namespace SST {
 class BaseComponent;

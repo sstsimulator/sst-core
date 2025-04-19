@@ -14,6 +14,8 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <type_traits>
+
 namespace SST::ELI {
 
 // ProvidesSimpleInfo is a class to quickly add ELI info to an ELI

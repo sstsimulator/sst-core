@@ -18,6 +18,9 @@
 #include "sst/core/rng/distrib.h"
 #include "sst/core/rng/rng.h"
 
+#include <cstdint>
+#include <string>
+
 namespace SST::CoreTestCheckpoint {
 
 // Very simple starting case

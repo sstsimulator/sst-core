@@ -29,9 +29,13 @@
 #include <atomic>
 #include <cstdio>
 #include <iostream>
+#include <map>
+#include <mutex>
+#include <set>
 #include <signal.h>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);

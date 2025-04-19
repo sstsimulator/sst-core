@@ -14,6 +14,7 @@
 #include "sst/core/bootshared.h"
 #include "sst/core/configShared.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>

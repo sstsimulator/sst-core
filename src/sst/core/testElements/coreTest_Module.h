@@ -17,6 +17,8 @@
 #include "sst/core/module.h"
 #include "sst/core/rng/rng.h"
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
 using namespace SST;

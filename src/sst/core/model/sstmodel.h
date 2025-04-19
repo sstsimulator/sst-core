@@ -16,6 +16,9 @@
 #include "sst/core/params.h"
 #include "sst/core/warnmacros.h"
 
+#include <string>
+#include <vector>
+
 namespace SST {
 
 class Config;

@@ -16,6 +16,7 @@
 #include "sst/core/link.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstdint>
 #include <vector>
 
 namespace SST::CoreTestSubComponent {

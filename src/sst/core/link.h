@@ -18,6 +18,10 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 namespace SST {
 
 #define _LINK_DBG(fmt, args...) __DBG(DBG_LINK, Link, fmt, ##args)
