@@ -1162,7 +1162,7 @@ public:
         virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
-        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override = 0;
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override = 0;
         // ImplementSerializable(SST::Interfaces::StandardMem::CustomData);
         ImplementVirtualSerializable(CustomData);
     };
