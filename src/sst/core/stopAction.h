@@ -38,7 +38,7 @@ public:
 
     /** Create a new StopAction which includes a message to be printed when it fires
      */
-    StopAction(const std::string& msg)
+    explicit StopAction(const std::string& msg)
     {
         setPriority(STOPACTIONPRIORITY);
         print_message = true;

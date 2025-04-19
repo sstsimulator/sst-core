@@ -73,7 +73,7 @@ protected:
     BaseComponent() = default; // For serialization only
 
 public:
-    BaseComponent(ComponentId_t id);
+    explicit BaseComponent(ComponentId_t id);
     virtual ~BaseComponent();
 
     BaseComponent(const BaseComponent&) = delete;

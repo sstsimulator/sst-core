@@ -59,7 +59,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesProfilePoints(T* UNUSED(t)) : points_(InfoProfilePoints<T>::get())
+    explicit ProvidesProfilePoints(T* UNUSED(t)) : points_(InfoProfilePoints<T>::get())
     {}
 
 private:

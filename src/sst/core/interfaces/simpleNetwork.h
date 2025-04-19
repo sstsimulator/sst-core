@@ -176,7 +176,7 @@ public:
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
-        NetworkInspector(ComponentId_t id) : SubComponent(id) {}
+        explicit NetworkInspector(ComponentId_t id) : SubComponent(id) {}
 
         virtual ~NetworkInspector() {}
 
@@ -245,7 +245,7 @@ public:
 
 public:
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
-    SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
+    explicit SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
 
     SimpleNetwork() : SubComponent() {} // For serialization
 

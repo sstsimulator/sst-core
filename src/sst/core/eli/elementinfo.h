@@ -114,7 +114,7 @@ class BuilderInfoImpl<void>
 {
 protected:
     template <class... Args>
-    BuilderInfoImpl(Args&&... UNUSED(args))
+    explicit BuilderInfoImpl(Args&&... UNUSED(args))
     {}
 
     template <class XMLNode>
@@ -141,7 +141,7 @@ class InfoLibrary
 public:
     using BaseInfo = typename Base::BuilderInfo;
 
-    InfoLibrary(const std::string& name) : name_(name) {}
+    explicit InfoLibrary(const std::string& name) : name_(name) {}
 
     BaseInfo* getInfo(const std::string& name)
     {

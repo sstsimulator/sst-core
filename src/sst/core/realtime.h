@@ -170,7 +170,7 @@ private:
 class RealTimeManager : public SST::Core::Serialization::serializable
 {
 public:
-    RealTimeManager(RankInfo num_ranks);
+    explicit RealTimeManager(RankInfo num_ranks);
     RealTimeManager();
 
     /** Register actions */

@@ -26,7 +26,7 @@ public:
     /** Create a new LinkPair.  This is used when the endpoints are in the same partition.
      * @param order Value used to enforce the link order.
      */
-    LinkPair(LinkId_t order) : left(new Link(order)), right(new Link(order))
+    explicit LinkPair(LinkId_t order) : left(new Link(order)), right(new Link(order))
     {
         my_id = order;
 

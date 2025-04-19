@@ -251,7 +251,10 @@ private:
         verify_type       verify;
 
         Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
-        Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
+        explicit Data(const std::string& name) :
+            SharedObjectData(name),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
@@ -388,7 +391,11 @@ private:
         public:
             // For serialization
             ChangeSet() : SharedObjectChangeSet() {}
-            ChangeSet(const std::string& name) : SharedObjectChangeSet(name), size(0), verify(VERIFY_UNINITIALIZED) {}
+            explicit ChangeSet(const std::string& name) :
+                SharedObjectChangeSet(name),
+                size(0),
+                verify(VERIFY_UNINITIALIZED)
+            {}
 
             void addChange(int index, const T& value) { changes.emplace_back(index, value); }
 
@@ -644,7 +651,10 @@ private:
         verify_type       verify;
 
         Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {} // For serialization ONLY
-        Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
+        explicit Data(const std::string& name) :
+            SharedObjectData(name),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
         {
             if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
@@ -782,7 +792,11 @@ private:
         public:
             // For serialization
             ChangeSet() : SharedObjectChangeSet() {}
-            ChangeSet(const std::string& name) : SharedObjectChangeSet(name), size(0), verify(VERIFY_UNINITIALIZED) {}
+            explicit ChangeSet(const std::string& name) :
+                SharedObjectChangeSet(name),
+                size(0),
+                verify(VERIFY_UNINITIALIZED)
+            {}
 
             void addChange(int index, bool value) { changes.emplace_back(index, value); }
 

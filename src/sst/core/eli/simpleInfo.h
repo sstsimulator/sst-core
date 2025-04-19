@@ -89,7 +89,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesSimpleInfo(T* UNUSED(t)) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
+    explicit ProvidesSimpleInfo(T* UNUSED(t)) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
     {}
 
 private:

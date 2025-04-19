@@ -38,7 +38,7 @@ public:
     static bool                            isElementParallelCapable(const std::string& type);
     static const std::vector<std::string>& getElementSupportedExtensions(const std::string& type);
 
-    SSTModelDescription(Config* cfg);
+    explicit SSTModelDescription(Config* cfg);
     virtual ~SSTModelDescription() {};
 
     /** Create the ConfigGraph

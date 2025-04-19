@@ -38,7 +38,7 @@ class SubCompInterface : public SST::SubComponent
 public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestSubComponent::SubCompInterface)
 
-    SubCompInterface(ComponentId_t id) : SubComponent(id) {}
+    explicit SubCompInterface(ComponentId_t id) : SubComponent(id) {}
     SubCompInterface(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
     SubCompInterface() : SubComponent() {}
     virtual ~SubCompInterface() {}
@@ -68,7 +68,7 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
-    SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
+    explicit SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
     SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSlotInterface() {}
 
@@ -214,7 +214,7 @@ public:
     )
 
 
-    SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
+    explicit SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
     SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSendRecvInterface() {}
 

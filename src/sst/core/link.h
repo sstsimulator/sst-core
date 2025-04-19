@@ -353,7 +353,7 @@ private:
         value used for enforce_link_order (if that feature is
         enabled).
      */
-    Link(LinkId_t tag);
+    explicit Link(LinkId_t tag);
 
     Link(const Link& l);
 

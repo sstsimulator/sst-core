@@ -33,7 +33,7 @@ public:
         Creates an uniform distribution with a specific number of bins
         \param probsCount Number of probability bins in this distribution
     */
-    UniformDistribution(const uint32_t probsCount) :
+    explicit UniformDistribution(const uint32_t probsCount) :
         RandomDistribution(),
         deleteDistrib(true),
         probCount(probsCount),

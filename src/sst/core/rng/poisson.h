@@ -33,7 +33,7 @@ public:
         Creates an Poisson distribution with a specific lambda
         \param mn The lambda of the Poisson distribution
     */
-    PoissonDistribution(const double mn) : RandomDistribution(), lambda(mn)
+    explicit PoissonDistribution(const double mn) : RandomDistribution(), lambda(mn)
     {
 
         baseDistrib   = new MersenneRNG();
