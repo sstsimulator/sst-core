@@ -68,7 +68,7 @@ public:
         { "install_on_send",  "Controls whether the PortModule is installed on the send or receive side.  Set to true to register on send and false to register on recieve.", "false" },
     )
 
-    TestPortModule(Params& params);
+    explicit TestPortModule(Params& params);
 
     // For serialization only
     TestPortModule() = default;

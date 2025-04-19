@@ -60,7 +60,7 @@ class EnvironmentConfigGroup
 {
 
 public:
-    EnvironmentConfigGroup(const std::string& name) : groupName(name) {}
+    explicit EnvironmentConfigGroup(const std::string& name) : groupName(name) {}
     std::string           getName() const;
     std::set<std::string> getKeys() const;
     std::string           getValue(const std::string& key);

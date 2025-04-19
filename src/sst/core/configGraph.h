@@ -100,7 +100,7 @@ public:
 
 private:
     friend class ConfigGraph;
-    ConfigLink(LinkId_t id) : id(id), no_cut(false)
+    explicit ConfigLink(LinkId_t id) : id(id), no_cut(false)
     {
         order = 0;
 
@@ -170,7 +170,7 @@ public:
     size_t                        outputID;
     UnitAlgebra                   outputFrequency;
 
-    ConfigStatGroup(const std::string& name) : name(name), outputID(0) {}
+    explicit ConfigStatGroup(const std::string& name) : name(name), outputID(0) {}
     ConfigStatGroup() {} /* Do not use */
 
     bool addComponent(ComponentId_t id);
@@ -203,7 +203,7 @@ public:
     std::string type;
     Params      params;
 
-    ConfigStatOutput(const std::string& type) : type(type) {}
+    explicit ConfigStatOutput(const std::string& type) : type(type) {}
     ConfigStatOutput() {}
 
     void addParameter(const std::string& key, const std::string& val) { params.insert(key, val); }
@@ -597,14 +597,14 @@ public:
 
     ComponentIdMap_t group;
 
-    PartitionComponent(const ConfigComponent* cc)
+    explicit PartitionComponent(const ConfigComponent* cc)
     {
         id     = cc->id;
         weight = cc->weight;
         rank   = cc->rank;
     }
 
-    PartitionComponent(LinkId_t id) : id(id), weight(0), rank(RankInfo(RankInfo::UNASSIGNED, 0)) {}
+    explicit PartitionComponent(LinkId_t id) : id(id), weight(0), rank(RankInfo(RankInfo::UNASSIGNED, 0)) {}
 
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
     void print(std::ostream& os, const PartitionGraph* graph) const;

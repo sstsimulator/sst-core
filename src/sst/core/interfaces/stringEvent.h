@@ -28,7 +28,7 @@ public:
     /** Create a new StringEvent
      * @param str - The String contents of this event
      */
-    StringEvent(const std::string& str) : SST::Event(), str(str) {}
+    explicit StringEvent(const std::string& str) : SST::Event(), str(str) {}
 
     /** Clone a StringEvent */
     virtual Event* clone() override { return new StringEvent(*this); }

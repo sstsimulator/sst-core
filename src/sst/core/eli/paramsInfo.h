@@ -64,7 +64,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesParams(T* UNUSED(t)) : params_(GetParams<T>::get())
+    explicit ProvidesParams(T* UNUSED(t)) : params_(GetParams<T>::get())
     {
         init();
     }

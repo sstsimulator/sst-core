@@ -507,7 +507,7 @@ public:
 
 protected:
     template <class T>
-    ImplementsStatFields(T* UNUSED(t)) :
+    explicit ImplementsStatFields(T* UNUSED(t)) :
         field_name_(T::ELI_fieldName()),
         short_name_(T::ELI_fieldShortName()),
         field_(T::ELI_registerField(T::ELI_fieldName(), T::ELI_fieldShortName()))

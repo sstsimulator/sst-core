@@ -39,7 +39,7 @@ public:
         Create a new Xorshift RNG with a specified seed
         @param[in] seed The seed for this RNG
     */
-    XORShiftRNG(unsigned int seed);
+    explicit XORShiftRNG(unsigned int seed);
 
     /**
         Creates a new Xorshift using a random seed which is obtained from the system

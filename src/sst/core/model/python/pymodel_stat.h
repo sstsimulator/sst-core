@@ -33,7 +33,7 @@ struct PyStatistic
 {
     StatisticId_t id;
 
-    PyStatistic(StatisticId_t id) : id(id) {}
+    explicit PyStatistic(StatisticId_t id) : id(id) {}
     virtual ~PyStatistic() {}
     ConfigStatistic* getStat();
     int              compare(PyStatistic* other);

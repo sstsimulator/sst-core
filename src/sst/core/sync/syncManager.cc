@@ -74,7 +74,7 @@ SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 class EmptyRankSync : public RankSync
 {
 public:
-    EmptyRankSync(const RankInfo& num_ranks) : RankSync(num_ranks) { nextSyncTime = MAX_SIMTIME_T; }
+    explicit EmptyRankSync(const RankInfo& num_ranks) : RankSync(num_ranks) { nextSyncTime = MAX_SIMTIME_T; }
     EmptyRankSync() {} // For serialization
     ~EmptyRankSync() {}
 
@@ -134,7 +134,7 @@ public:
     Simulation_impl* sim;
 
 public:
-    EmptyThreadSync(Simulation_impl* sim) : sim(sim) { nextSyncTime = MAX_SIMTIME_T; }
+    explicit EmptyThreadSync(Simulation_impl* sim) : sim(sim) { nextSyncTime = MAX_SIMTIME_T; }
     EmptyThreadSync() {} // For serialization
     ~EmptyThreadSync() {}
 

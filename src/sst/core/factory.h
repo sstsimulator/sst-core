@@ -311,7 +311,7 @@ private:
 
     [[noreturn]] void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
 
-    Factory(const std::string& searchPaths);
+    explicit Factory(const std::string& searchPaths);
     ~Factory();
 
     Factory(const Factory&) = delete;            // Don't Implement

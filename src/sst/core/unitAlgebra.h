@@ -268,7 +268,7 @@ public:
         /**
          * @param msg exception message displayed as-is without modification
          */
-        UnitAlgebraException(const std::string& msg);
+        explicit UnitAlgebraException(const std::string& msg);
     };
 
     /** Exception for when units are not recognized or are invalid
@@ -279,7 +279,7 @@ public:
         /**
          * @param type string containing invalid type
          */
-        InvalidUnitType(const std::string& type);
+        explicit InvalidUnitType(const std::string& type);
     };
 
     /** Exception for when number couldn't be parsed
@@ -290,7 +290,7 @@ public:
         /**
          * @param number string containing invalid number
          */
-        InvalidNumberString(const std::string& number);
+        explicit InvalidNumberString(const std::string& number);
     };
 
     /** Exception for when attempting operations between objects that do not have matching base units

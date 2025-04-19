@@ -39,7 +39,7 @@ class SyncProfileTool;
 class RankSync
 {
 public:
-    RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
+    explicit RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
     RankSync() : max_period(nullptr) {}
     virtual ~RankSync() {}
 

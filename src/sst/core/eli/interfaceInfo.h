@@ -32,7 +32,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesInterface(T* UNUSED(t)) : iface_(T::ELI_getInterface())
+    explicit ProvidesInterface(T* UNUSED(t)) : iface_(T::ELI_getInterface())
     {}
 
 private:

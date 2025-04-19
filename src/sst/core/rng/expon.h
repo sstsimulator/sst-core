@@ -33,7 +33,7 @@ public:
         Creates an exponential distribution with a specific lambda
         \param mn The lambda of the exponential distribution
     */
-    ExponentialDistribution(const double mn) : RandomDistribution()
+    explicit ExponentialDistribution(const double mn) : RandomDistribution()
     {
 
         lambda        = mn;

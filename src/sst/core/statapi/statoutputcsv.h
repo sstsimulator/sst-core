@@ -41,7 +41,7 @@ public:
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputCSV(Params& outputParameters);
+    explicit StatisticOutputCSV(Params& outputParameters);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputCSV)
