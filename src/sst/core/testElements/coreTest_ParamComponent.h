@@ -58,8 +58,8 @@ public:
 
     coreTestParamComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestParamComponent() {}
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     coreTestParamComponent();                                                  // for serialization only

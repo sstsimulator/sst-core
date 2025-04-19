@@ -57,8 +57,8 @@ public:
     )
 
     coreTestDistribComponent(SST::ComponentId_t id, SST::Params& params);
-    void finish();
-    void setup() {}
+    void finish() override;
+    void setup() override {}
 
 private:
     coreTestDistribComponent();                                                    // for serialization only

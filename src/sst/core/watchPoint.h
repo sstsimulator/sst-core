@@ -34,6 +34,7 @@ public:
     {
     public:
         virtual bool check() = 0;
+        virtual ~Logic()     = default;
     };
 
     WatchPoint(const std::string& name, Core::Serialization::ObjectMapComparison* obj) :

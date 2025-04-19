@@ -129,8 +129,8 @@ public:
 
     EnclosingComponent(ComponentId_t id, Params& params);
 
-    void setup();
-    void finish();
+    void setup() override;
+    void finish() override;
 
 private:
     void handleEvent(SST::Event* ev, int port);
@@ -210,7 +210,7 @@ public:
     MessagePort(ComponentId_t id, Params& params);
     ~MessagePort() {}
 
-    void send(MessageEvent* ev);
+    void send(MessageEvent* ev) override;
     void handleEvent(Event* ev);
 
 private:
