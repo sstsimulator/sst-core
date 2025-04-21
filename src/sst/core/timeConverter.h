@@ -74,11 +74,29 @@ public:
      */
     ~TimeConverter() {}
 
+    /**
+       Function to check to see if the TimeConverter is intialized
+       (non-zero factor)
+
+       @return true if TimeConverter is intialized (factor is
+       non-zero), false otherwise
+     */
+    bool isInitialized() const { return factor != 0; }
+
+    /**
+       Conversion to bool.  This will allow !tc to work to check if it
+       has been initialized (has a non-zero factor).
+
+       @return true if TimeConverter is initialized (factor is
+       non-zero)
+     */
+    explicit operator bool() const { return factor != 0; }
+
 private:
     /**
        Factor for converting between core and component time
     */
-    SimTime_t factor;
+    SimTime_t factor = 0;
 
     explicit TimeConverter(SimTime_t fact) { factor = fact; }
 };

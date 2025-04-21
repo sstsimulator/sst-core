@@ -229,7 +229,14 @@ public:
     /** Manually set the default defaultTimeBase
      * @param tc TimeConverter object for the timebase
      */
-    void setDefaultTimeBase(TimeConverter* tc);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)', "
+                 "(i.e., no pointer) instead.")]] void
+    setDefaultTimeBase(TimeConverter* tc);
+
+    /** Manually set the default defaultTimeBase
+     * @param tc TimeConverter object for the timebase
+     */
+    void setDefaultTimeBase(TimeConverter tc);
 
     /** Manually set the default time base
      * @param factor SimTime_T defining the timebase factor
