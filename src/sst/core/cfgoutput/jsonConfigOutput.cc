@@ -103,8 +103,8 @@ to_json(json::ordered_json& j, SubCompWrapper const& comp_wrapper)
         j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
     }
 
-    for ( auto const& paramsItr : comp->getSubscribedGlobalParamSets() ) {
-        j["params_global_sets"].push_back(paramsItr);
+    for ( auto const& paramsItr : comp->getSubscribedSharedParamSets() ) {
+        j["params_shared_sets"].push_back(paramsItr);
     }
 
     for ( auto const& scItr : comp->subComponents ) {
@@ -126,8 +126,8 @@ to_json(json::ordered_json& j, CompWrapper const& comp_wrapper)
         j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
     }
 
-    for ( auto const& paramsItr : comp->getSubscribedGlobalParamSets() ) {
-        j["params_global_sets"].push_back(paramsItr);
+    for ( auto const& paramsItr : comp->getSubscribedSharedParamSets() ) {
+        j["params_shared_sets"].push_back(paramsItr);
     }
 
     for ( auto const& scItr : comp->subComponents ) {
@@ -235,10 +235,10 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     outputJson["program_options"]["checkpoint-sim-period"]  = cfg->checkpoint_sim_period();
     outputJson["program_options"]["checkpoint-wall-period"] = std::to_string(cfg->checkpoint_wall_period());
 
-    // Put in the global param sets
-    for ( const auto& set : getGlobalParamSetNames() ) {
-        for ( const auto& kvp : getGlobalParamSet(set) ) {
-            if ( kvp.first != "<set_name>" ) outputJson["global_params"][set][kvp.first] = kvp.second;
+    // Put in the shared param sets
+    for ( const auto& set : getSharedParamSetNames() ) {
+        for ( const auto& kvp : getSharedParamSet(set) ) {
+            if ( kvp.first != "<set_name>" ) outputJson["shared_params"][set][kvp.first] = kvp.second;
         }
     }
 

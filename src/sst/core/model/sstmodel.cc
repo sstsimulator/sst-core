@@ -39,7 +39,7 @@ void
 SSTModelDescription::insertGlobalParameter(
     const std::string& set, const Params::key_type& key, const Params::key_type& value, bool overwrite)
 {
-    Params::insert_global(set, key, value, overwrite);
+    Params::insert_shared(set, key, value, overwrite);
 }
 
 

@@ -318,9 +318,22 @@ public:
     void setStatisticParameters(const std::string& statisticName, const Params& params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
 
-    void                     addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    void addSharedParamSet(const std::string& set) { params.addSharedParamSet(set); }
+    [[deprecated(
+        "addGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use addSharedParamSet()")]] void
+    addGlobalParamSet(const std::string& set)
+    {
+        params.addSharedParamSet(set);
+    }
     std::vector<std::string> getParamsLocalKeys() const { return params.getLocalKeys(); }
-    std::vector<std::string> getSubscribedGlobalParamSets() const { return params.getSubscribedGlobalParamSets(); }
+    std::vector<std::string> getSubscribedSharedParamSets() const { return params.getSubscribedSharedParamSets(); }
+
+    [[deprecated("getSubscribedGlobalParamSets() has been deprecated and will be removed in SST 16.  Please use "
+                 "getSubscribedSharedParamSets()")]] std::vector<std::string>
+    getSubscribedGlobalParamSets() const
+    {
+        return params.getSubscribedSharedParamSets();
+    }
 
     void addPortModule(const std::string& port, const std::string& type, const Params& params);
 
@@ -467,8 +480,12 @@ public:
     /** Create a new component */
     ComponentId_t addComponent(const std::string& name, const std::string& type);
 
-    /** Add a parameter to a global param set */
-    void addGlobalParam(const std::string& global_set, const std::string& key, const std::string& value);
+    /** Add a parameter to a shared param set */
+    void addSharedParam(const std::string& shared_set, const std::string& key, const std::string& value);
+
+    [[deprecated(
+        "addGlobalParam() has been deprecated and will be removed in SST 16.  Please use addSharedParam()")]] void
+    addGlobalParam(const std::string& shared_set, const std::string& key, const std::string& value);
 
     /** Set the statistic output module */
     void setStatisticOutput(const std::string& name);
