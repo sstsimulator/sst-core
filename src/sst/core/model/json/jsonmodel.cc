@@ -113,10 +113,10 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
             }
         }
 
-        // read all the global parameters
-        if ( subArray.contains("params_global_sets") ) {
-            for ( auto& globalArray : subArray["params_global_sets"].items() ) {
-                Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+        // read all the shared parameters
+        if ( subArray.contains("params_shared_sets") ) {
+            for ( auto& sharedArray : subArray["params_shared_sets"].items() ) {
+                Comp->addSharedParamSet(sharedArray.value().get<std::string>());
             }
         }
 
@@ -196,10 +196,10 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
             }
         }
 
-        // read all the global parameters
-        if ( compArray.contains("params_global_sets") ) {
-            for ( auto& globalArray : compArray["params_global_sets"].items() ) {
-                Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+        // read all the shared parameters
+        if ( compArray.contains("params_shared_sets") ) {
+            for ( auto& sharedArray : compArray["params_shared_sets"].items() ) {
+                Comp->addSharedParamSet(sharedArray.value().get<std::string>());
             }
         }
 
@@ -334,15 +334,15 @@ SSTJSONModelDefinition::discoverProgramOptions(const json& jFile)
 }
 
 void
-SSTJSONModelDefinition::discoverGlobalParams(const json& jFile)
+SSTJSONModelDefinition::discoverSharedParams(const json& jFile)
 {
-    std::string GlobalName;
+    std::string SharedName;
 
-    if ( jFile.contains("global_params") ) {
-        for ( auto& gp : jFile["global_params"].items() ) {
-            GlobalName = gp.key();
-            for ( auto& param : jFile["global_params"].at(GlobalName).items() ) {
-                graph->addGlobalParam(GlobalName, param.key(), param.value().get<std::string>());
+    if ( jFile.contains("shared_params") ) {
+        for ( auto& gp : jFile["shared_params"].items() ) {
+            SharedName = gp.key();
+            for ( auto& param : jFile["shared_params"].at(SharedName).items() ) {
+                graph->addSharedParam(SharedName, param.key(), param.value().get<std::string>());
             }
         }
     }
@@ -488,8 +488,8 @@ SSTJSONModelDefinition::createConfigGraph()
     // discover all the globals
     discoverProgramOptions(jFile);
 
-    // discover the global parameters
-    discoverGlobalParams(jFile);
+    // discover the shared parameters
+    discoverSharedParams(jFile);
 
     // discover the components
     discoverComponents(jFile);

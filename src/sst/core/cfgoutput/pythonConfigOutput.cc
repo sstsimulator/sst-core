@@ -72,9 +72,9 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
         fprintf(outputFile, "%s.addParams(", objName);
         generateParams(comp->params);
         fprintf(outputFile, ")\n");
-        // Add global param sets
-        for ( auto x : getSubscribedGlobalParamSets(comp->params) ) {
-            fprintf(outputFile, "%s.addGlobalParamSet(\"%s\")\n", objName, x.c_str());
+        // Add shared param sets
+        for ( auto x : getSubscribedSharedParamSets(comp->params) ) {
+            fprintf(outputFile, "%s.addSharedParamSet(\"%s\")\n", objName, x.c_str());
         }
     }
 
@@ -289,12 +289,12 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
         outputFile, "sst.setProgramOption(\"checkpoint-wall-period\", \"%" PRIu32 "\")\n",
         cfg->checkpoint_wall_period());
 
-    // Output the global params
-    fprintf(outputFile, "# Define the global parameter sets:\n");
-    std::vector<std::string> global_param_sets = getGlobalParamSetNames();
-    for ( auto& x : global_param_sets ) {
-        fprintf(outputFile, "sst.addGlobalParams(\"%s\", {\n", x.c_str());
-        for ( auto y : getGlobalParamSet(x) ) {
+    // Output the shared params
+    fprintf(outputFile, "# Define the shared parameter sets:\n");
+    std::vector<std::string> shared_param_sets = getSharedParamSetNames();
+    for ( auto& x : shared_param_sets ) {
+        fprintf(outputFile, "sst.addSharedParams(\"%s\", {\n", x.c_str());
+        for ( auto y : getSharedParamSet(x) ) {
             // If the key is <set_name>, then we can skip since it's
             // just metadata
             if ( y.first != "<set_name>" )

@@ -1,18 +1,16 @@
-# Some formatting has been changed to test the filters from
-# testing_compare_filtered_diff
 WARNING: Building component "c0" with no links assigned.
 Component c0:
   Contents of Params object (0):
     Local params:
-      bool_true_param =   True
-      bool_false_param =	False
-      int32t_param =     2147483647
+      bool_true_param = True
+      bool_false_param = False
+      int32t_param = 2147483647
       uint32t_param = 4294967295
       int64t_param = 9223372036854775807
       uint64t_param = 18446744073709551615
       float_param = 1.0101
       double_param = 1.3333e-10
-    Global params:
+    Shared params:
       <set_name> = test_set
       bool_true_param = yes
       bool_false_param = no
@@ -48,7 +46,7 @@ Component c1:
       uint64t_param = 18446744073709551615
       float_param = 1e-15
       double_param = 1.3333e-52
-    Global params:
+    Shared params:
       <set_name> = test_set
       bool_true_param = yes
       bool_false_param = no
@@ -85,7 +83,7 @@ Component c2:
       float_param = -1.0000e-15
       double_param = -1.33e7
       string_param = teststring456
-    Global params:
+    Shared params:
       <set_name> = test_set
       bool_true_param = yes
       bool_false_param = no
@@ -122,7 +120,7 @@ Component c3:
       string_param = teststring456
       scope.int32 = 100
       scope.bool = no
-    Global params:
+    Shared params:
       <set_name> = test_set
       bool_true_param = yes
       bool_false_param = no
