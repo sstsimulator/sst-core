@@ -457,7 +457,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     if ( !restart ) {
         double start_build = sst_get_cpu_time();
 
-
         barrier.wait();
 
         sim->processGraphInfo(*info.graph, info.myRank, info.min_part);

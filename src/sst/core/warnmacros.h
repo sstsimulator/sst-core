@@ -38,7 +38,11 @@
 
 #define DISABLE_WARN_STRICT_ALIASING DIAG_DISABLE(strict-aliasing)
 
+#if ( __clang_major__ >= 12 )
+#define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(suggest-override)
+#else
 #define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(inconsistent-missing-override)
+#endif
 
 #define DISABLE_WARN_DEPRECATED_DECLARATION DIAG_DISABLE(deprecated-declarations)
 

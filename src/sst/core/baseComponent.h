@@ -161,7 +161,7 @@ public:
        Return the simulated time since the simulation began in the
        default timebase
     */
-    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(*(my_info->defaultTimeBase)); }
+    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info->defaultTimeBase); }
 
     /**
        Return the simulated time since the simulation began in
@@ -879,7 +879,7 @@ private:
 
     void configureAllowedStatParams(SST::Params& params);
 
-    void setDefaultTimeBaseForLinks(TimeConverter* tc);
+    void setDefaultTimeBaseForLinks(TimeConverter tc);
 
     void pushValidParams(Params& params, const std::string& type);
 
@@ -935,12 +935,21 @@ protected:
 
     bool isUser() { return my_info->isUser(); }
 
-    /** Manually set the default detaulTimeBase */
-    void setDefaultTimeBase(TimeConverter* tc) { my_info->defaultTimeBase = tc; }
+    /** Manually set the default defaultTimeBase */
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
+                 "(i.e., no TimeConverter pointer) instead.")]] void
+    setDefaultTimeBase(TimeConverter* tc)
+    {
+        my_info->defaultTimeBase = tc;
+    }
 
-    TimeConverter* getDefaultTimeBase() { return my_info->defaultTimeBase; }
+    /** Manually set the default defaultTimeBase */
+    void setDefaultTimeBase(TimeConverter tc) { my_info->defaultTimeBase = tc; }
 
-    const TimeConverter* getDefaultTimeBase() const { return my_info->defaultTimeBase; }
+    // Can change this back to inline once we move completely away
+    // from TimeConverter*
+    TimeConverter*       getDefaultTimeBase();       // { return my_info->defaultTimeBase; }
+    const TimeConverter* getDefaultTimeBase() const; // { return my_info->defaultTimeBase; }
 
     bool doesSubComponentExist(const std::string& type);
 

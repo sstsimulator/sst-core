@@ -870,6 +870,12 @@ Link::setDefaultTimeBase(TimeConverter* tc)
         defaultTimeBase = tc->getFactor();
 }
 
+void
+Link::setDefaultTimeBase(TimeConverter tc)
+{
+    defaultTimeBase = tc.getFactor();
+}
+
 TimeConverter*
 Link::getDefaultTimeBase()
 {

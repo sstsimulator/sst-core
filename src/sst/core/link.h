@@ -229,12 +229,14 @@ public:
     /** Manually set the default defaultTimeBase
      * @param tc TimeConverter object for the timebase
      */
-    void setDefaultTimeBase(TimeConverter* tc);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)', "
+                 "(i.e., no pointer) instead.")]] void
+    setDefaultTimeBase(TimeConverter* tc);
 
-    /** Manually set the default time base
-     * @param factor SimTime_T defining the timebase factor
+    /** Manually set the default defaultTimeBase
+     * @param tc TimeConverter object for the timebase
      */
-    void setDefaultTimeBase(SimTime_t factor) { defaultTimeBase = factor; }
+    void setDefaultTimeBase(TimeConverter tc);
 
     /** Return the default Time Base for this link
      * @return the default Time Base for this link
@@ -384,6 +386,14 @@ private:
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;
     ToolList* attached_tools;
+
+    /** Manually set the default time base
+     * @param factor SimTime_T defining the timebase factor
+     */
+    void setDefaultTimeBase(SimTime_t factor) { defaultTimeBase = factor; }
+
+    /** Set the default time base fo uninitialized */
+    void resetDefaultTimeBase() { defaultTimeBase = 0; }
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

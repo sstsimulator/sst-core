@@ -120,7 +120,7 @@ public:
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
-    TimeConverter* getMaxPeriod() { return max_period; }
+    TimeConverter getMaxPeriod() { return max_period; }
 
     uint64_t getDataSize() const override { return 0; }
 
@@ -284,15 +284,15 @@ SyncManager::setupSyncObjects()
     // of the active threadsyncs.
     SimTime_t interthread_minlat = sim_->getInterThreadMinLatency();
     if ( num_ranks_.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
-        if ( Simulation_impl::getSimulation()->direct_interthread ) {
-            threadSync_ = new ThreadSyncDirectSkip(num_ranks_.thread, rank_.thread, Simulation_impl::getSimulation());
+        if ( sim_->direct_interthread ) {
+            threadSync_ = new ThreadSyncDirectSkip(num_ranks_.thread, rank_.thread, sim_);
         }
         else {
-            threadSync_ = new ThreadSyncSimpleSkip(num_ranks_.thread, rank_.thread, Simulation_impl::getSimulation());
+            threadSync_ = new ThreadSyncSimpleSkip(num_ranks_.thread, rank_.thread, sim_);
         }
     }
     else {
-        threadSync_ = new EmptyThreadSync(Simulation_impl::getSimulation());
+        threadSync_ = new EmptyThreadSync(sim_);
     }
 }
 
