@@ -93,7 +93,7 @@ Simulation_impl::getEndSimTime() const
 
 /** Simulation_impl functions **/
 
-TimeConverter*
+TimeConverter
 Simulation_impl::minPartToTC(SimTime_t cycles) const
 {
     return getTimeLord()->getTimeConverter(cycles);
@@ -1975,7 +1975,7 @@ Simulation_impl::printSimulationState()
     sim_output.output("currentSimCycle: %" PRIu64 "\n", currentSimCycle);
     // sim_output.output("threadMinPartTC: %" PRIu64 "\n", threadMinPartTC->getFactor());
     sim_output.output("minPart: %" PRIu64 "\n", minPart);
-    sim_output.output("minPartTC: %" PRIu64 "\n", minPartTC->getFactor());
+    sim_output.output("minPartTC: %" PRIu64 "\n", minPartTC.getFactor());
     for ( auto i : interThreadLatencies ) {
         tmp_str = tmp_str + " " + std::to_string(i);
     }
@@ -2139,7 +2139,7 @@ Core::ThreadSafe::Barrier  Simulation_impl::exitBarrier;
 Core::ThreadSafe::Barrier  Simulation_impl::finishBarrier;
 std::mutex                 Simulation_impl::simulationMutex;
 Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
-TimeConverter*             Simulation_impl::minPartTC = nullptr;
+TimeConverter              Simulation_impl::minPartTC;
 SimTime_t                  Simulation_impl::minPart;
 std::string                Simulation_impl::checkpoint_directory_ = "";
 

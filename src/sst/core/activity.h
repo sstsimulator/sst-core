@@ -22,7 +22,6 @@
 #include <cstring>
 #include <errno.h>
 #include <sstream>
-#include <unordered_map>
 
 // Default Priority Settings
 #define INTERACTIVEPRIOIRTY    0

@@ -53,7 +53,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks) :
     allDoneBarrier(num_ranks.thread)
 {
     max_period     = Simulation_impl::getSimulation()->getMinPartTC();
-    myNextSyncTime = max_period->getFactor();
+    myNextSyncTime = max_period.getFactor();
     recv_count     = new int[num_ranks_.thread];
     for ( uint32_t i = 0; i < num_ranks_.thread; i++ ) {
         recv_count[i] = 0;
@@ -374,7 +374,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     SimTime_t min_time;
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 
-    myNextSyncTime = min_time + max_period->getFactor();
+    myNextSyncTime = min_time + max_period.getFactor();
 
     /* Exchange signals */
     int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };

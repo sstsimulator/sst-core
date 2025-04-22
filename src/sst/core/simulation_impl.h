@@ -230,7 +230,7 @@ public:
 
     SimTime_t getInterThreadMinLatency() const { return interThreadMinLatency; }
 
-    static TimeConverter* getMinPartTC() { return minPartTC; }
+    static TimeConverter getMinPartTC() { return minPartTC; }
 
     LinkMap* getComponentLinkMap(ComponentId_t id) const
     {
@@ -348,7 +348,7 @@ public:
     /** Get a handle to a TimeConverter
      * @param cycles Frequency which is the base of the TimeConverter
      */
-    TimeConverter* minPartToTC(SimTime_t cycles) const;
+    TimeConverter minPartToTC(SimTime_t cycles) const;
 
     std::string initializeCheckpointInfrastructure(const std::string& prefix);
     void        scheduleCheckpoint();
@@ -427,10 +427,10 @@ public:
 
     TimeVortex*             timeVortex;
     std::string             timeVortexType;  // Required for checkpoint
-    TimeConverter*          threadMinPartTC; // Unused...?
+    TimeConverter           threadMinPartTC; // Unused...?
     Activity*               current_activity;
     static SimTime_t        minPart;
-    static TimeConverter*   minPartTC;
+    static TimeConverter    minPartTC;
     std::vector<SimTime_t>  interThreadLatencies;
     SimTime_t               interThreadMinLatency;
     SyncManager*            syncManager;

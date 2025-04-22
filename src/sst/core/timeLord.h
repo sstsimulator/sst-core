@@ -31,6 +31,7 @@ class Simulation;
 class Simulation_impl;
 class TimeConverter;
 class UnitAlgebra;
+class BaseComponent;
 
 /**
     Class for creating and managing TimeConverter objects
@@ -81,6 +82,7 @@ private:
     friend class SST::Simulation;
     friend class SST::Simulation_impl;
     friend class SST::Link;
+    friend class SST::BaseComponent;
 
     friend int ::main(int argc, char** argv);
 

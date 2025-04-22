@@ -45,7 +45,7 @@ SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 RankSyncSerialSkip::RankSyncSerialSkip(RankInfo num_ranks) : RankSync(num_ranks), mpiWaitTime(0.0), deserializeTime(0.0)
 {
     max_period     = Simulation_impl::getSimulation()->getMinPartTC();
-    myNextSyncTime = max_period->getFactor();
+    myNextSyncTime = max_period.getFactor();
 }
 
 RankSyncSerialSkip::~RankSyncSerialSkip()
@@ -248,7 +248,7 @@ RankSyncSerialSkip::exchange()
     SimTime_t min_time;
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 
-    myNextSyncTime = min_time + max_period->getFactor();
+    myNextSyncTime = min_time + max_period.getFactor();
 
     int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
     int32_t global_signals[3] = { 0, 0, 0 };

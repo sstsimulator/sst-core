@@ -28,6 +28,8 @@ class TimeConverter
 {
 
     friend class TimeLord;
+    friend class SST::Core::Serialization::serialize_impl<TimeConverter>;
+    friend class SST::Core::Serialization::serialize_impl<TimeConverter*>;
 
 public:
     /**
@@ -36,7 +38,9 @@ public:
        returned by the BaseComponent and other public APIs.
        @param tc TimeConverter to initialize factor from
      */
-    TimeConverter(TimeConverter* tc) : factor(tc->factor) {}
+    TimeConverter(TimeConverter* tc) { factor = tc->factor; }
+
+    [[deprecated]] TimeConverter(nullptr_t UNUSED(tc)) { factor = 0; }
 
     /**
        Do not directly invoke this constructor from Components to get
@@ -62,6 +66,11 @@ public:
      * @return The factor used for conversions with Core Time
      */
     SimTime_t getFactor() const { return factor; }
+
+    /**
+       Resets a TimeConverter to uninitialized state (factor = 0)
+     */
+    void reset() { factor = 0; }
 
     /**
        @return The period represented by this TimeConverter as a UnitAlgebra

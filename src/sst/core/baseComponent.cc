@@ -102,7 +102,7 @@ BaseComponent::~BaseComponent()
 }
 
 void
-BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc)
+BaseComponent::setDefaultTimeBaseForLinks(TimeConverter tc)
 {
     LinkMap* myLinks = my_info->getLinkMap();
     if ( nullptr != myLinks ) {
@@ -314,8 +314,8 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
                     my_info->link_map = myLinks;
                 }
                 myLinks->insertLink(name, tmp);
-                // Need to set the link's defaultTimeBase to nullptr
-                tmp->setDefaultTimeBase(nullptr);
+                // Need to set the link's defaultTimeBase to uninitialized
+                tmp->resetDefaultTimeBase();
 
                 // Need to see if I got any port_modules, if so, need
                 // to add them to my_info->portModules
@@ -391,8 +391,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
     SimTime_t factor = 0;
     if ( nullptr != time_base )
         factor = time_base->getFactor();
-    else if ( my_info->defaultTimeBase != nullptr )
-        factor = my_info->defaultTimeBase->getFactor();
+    else if ( my_info->defaultTimeBase.isInitialized() )
+        factor = my_info->defaultTimeBase.getFactor();
 
     return configureLink_impl(name, factor, handler);
 }
@@ -420,7 +420,7 @@ BaseComponent::configureLink(const std::string& name, const UnitAlgebra& time_ba
 Link*
 BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
-    SimTime_t factor = my_info->defaultTimeBase ? my_info->defaultTimeBase->getFactor() : 0;
+    SimTime_t factor = my_info->defaultTimeBase ? my_info->defaultTimeBase.getFactor() : 0;
     return configureLink_impl(name, factor, handler);
 }
 
@@ -724,6 +724,19 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
             name.c_str());
     }
     return info;
+}
+
+TimeConverter*
+BaseComponent::getDefaultTimeBase()
+{
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
+}
+
+
+const TimeConverter*
+BaseComponent::getDefaultTimeBase() const
+{
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
 }
 
 bool

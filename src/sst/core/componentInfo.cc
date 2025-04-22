@@ -28,7 +28,6 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     link_map(nullptr),
     component(nullptr),
     params(nullptr),
-    defaultTimeBase(nullptr),
     portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
@@ -50,7 +49,6 @@ ComponentInfo::ComponentInfo() :
     link_map(nullptr),
     component(nullptr),
     params(nullptr),
-    defaultTimeBase(nullptr),
     portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
@@ -92,7 +90,6 @@ ComponentInfo::ComponentInfo(
     link_map(nullptr),
     component(nullptr),
     params(/*new Params()*/ nullptr),
-    defaultTimeBase(nullptr),
     portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
@@ -116,8 +113,7 @@ ComponentInfo::ComponentInfo(
     type(ccomp->type),
     link_map(link_map),
     component(nullptr),
-    params(&ccomp->params), // Inaccessible after construction
-    defaultTimeBase(nullptr),
+    params(&ccomp->params),           // Inaccessible after construction
     portModules(&ccomp->portModules), // Inaccessible after construction
     enabled_all_stats_(ccomp->enabledAllStats),
     statLoadLevel(ccomp->statLoadLevel),
@@ -178,10 +174,10 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     slot_num(o.slot_num),
     share_flags(o.share_flags)
 {
-    o.parent_info     = nullptr;
-    o.link_map        = nullptr;
-    o.component       = nullptr;
-    o.defaultTimeBase = nullptr;
+    o.parent_info = nullptr;
+    o.link_map    = nullptr;
+    o.component   = nullptr;
+    o.defaultTimeBase.reset();
 }
 
 ComponentInfo::~ComponentInfo()
@@ -390,7 +386,7 @@ ComponentInfo::hasLinks() const
 ////  Functions for testing serialization
 
 ComponentInfo::ComponentInfo(
-    ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter* tv) :
+    ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter tv) :
     id_(id),
     parent_info(nullptr),
     name(name),
@@ -411,7 +407,7 @@ ComponentInfo::ComponentInfo(
 {}
 
 ComponentInfo*
-ComponentInfo::test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter* tv)
+ComponentInfo::test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter tv)
 {
     // Get next id, which is stored only in the ultimate parent
     ComponentInfo* real_comp = this;
@@ -432,7 +428,7 @@ ComponentInfo::test_printComponentInfoHierarchy(int indent)
     for ( int i = 0; i < indent; ++i )
         printf("  ");
     printf("id = %" PRIu64 ", name = %s, slot_name = %s", id_, name.c_str(), slot_name.c_str());
-    if ( defaultTimeBase != nullptr ) printf(", defaultTimeBase = %" PRI_SIMTIME, defaultTimeBase->getFactor());
+    if ( defaultTimeBase.isInitialized() ) printf(", defaultTimeBase = %" PRI_SIMTIME, defaultTimeBase.getFactor());
     if ( parent_info != nullptr ) printf(", parent_id = %" PRIu64, parent_info->id_);
     printf("\n");
 
