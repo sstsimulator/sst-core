@@ -935,7 +935,7 @@ protected:
 
     bool isUser() { return my_info->isUser(); }
 
-    /** Manually set the default detaulTimeBase */
+    /** Manually set the default defaultTimeBase */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
                  "(i.e., no TimeConverter pointer) instead.")]] void
     setDefaultTimeBase(TimeConverter* tc)
@@ -943,7 +943,7 @@ protected:
         my_info->defaultTimeBase = tc;
     }
 
-    /** Manually set the default detaulTimeBase */
+    /** Manually set the default defaultTimeBase */
     void setDefaultTimeBase(TimeConverter tc) { my_info->defaultTimeBase = tc; }
 
     // Can change this back to inline once we move completely away
