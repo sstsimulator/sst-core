@@ -40,7 +40,12 @@ public:
      */
     TimeConverter(TimeConverter* tc) { factor = tc->factor; }
 
-    [[deprecated]] TimeConverter(nullptr_t UNUSED(tc)) { factor = 0; }
+    [[deprecated("Use of shared TimeConverter objects is deprecated. If you're seeing this message, you likely have "
+                 "changed a TimeConverter* to TimeConverter, but are still assigning it to be nullptr at the point of "
+                 "this warning.")]] TimeConverter(std::nullptr_t UNUSED(tc))
+    {
+        factor = 0;
+    }
 
     /**
        Do not directly invoke this constructor from Components to get
