@@ -202,6 +202,12 @@ BaseComponent::getNextClockCycle(TimeConverter* freq)
     return sim_->getNextClockCycle(freq, CLOCKPRIORITY);
 }
 
+Cycle_t
+BaseComponent::getNextClockCycle(TimeConverter freq)
+{
+    return sim_->getNextClockCycle(freq, CLOCKPRIORITY);
+}
+
 void
 BaseComponent::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler)
 {
