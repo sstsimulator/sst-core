@@ -119,9 +119,9 @@ public:
 
 #endif
 
-    bool isEvent() final { return true; }
+    bool isEvent() override final { return true; }
 
-    void copyAllDeliveryInfo(const Activity* act) final
+    void copyAllDeliveryInfo(const Activity* act) override final
     {
         Activity::copyAllDeliveryInfo(act);
         const Event* ev = static_cast<const Event*>(act);
