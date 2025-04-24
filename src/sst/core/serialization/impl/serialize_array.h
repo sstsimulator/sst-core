@@ -58,7 +58,7 @@ template <typename ELEM_T>
 void
 serialize_array_element(serializer& ser, void* data, ser_opt_t opt, size_t index)
 {
-    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], nullptr, opt);
+    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], opt, nullptr);
 }
 
 // Serialize an array map element
