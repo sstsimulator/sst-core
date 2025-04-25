@@ -38,13 +38,13 @@ echo "Using clang-format ${CLANG_FORMAT_EXE} with arguments ${CLANG_FORMAT_ARG}.
 
 clang_format_version="$(${CLANG_FORMAT_EXE} --version)"
 currentver="$( ${CLANG_FORMAT_EXE} --version | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/' | sed 's/\.//g')"
-if [ "${currentver:=0}" -lt 1200 ]; then
-  echo "clang-format version is $clang_format_version. We require version 12."
+if [ "${currentver:=0}" -lt 2000 ]; then
+  echo "clang-format version is $clang_format_version. We require version 20."
   exit 1
 fi
 
-if [ "${currentver:=0}" -ge 1300 ]; then
-  echo "clang-format version is $clang_format_version. We require version 12."
+if [ "${currentver:=0}" -ge 2100 ]; then
+  echo "clang-format version is $clang_format_version. We require version 20."
   exit 1
 fi
 
