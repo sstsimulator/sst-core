@@ -213,7 +213,7 @@ protected:
                 }
             }
             size_t tool_count = tools.size();
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 // Serialize each tool, then call
                 // serializeEventAttachPointKey() to serialize any
@@ -221,7 +221,7 @@ protected:
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    ser& obj;
+                    SST_SER(obj);
                     x.first->serializeHandlerAttachPointKey(ser, x.second);
                 }
             }
@@ -230,14 +230,14 @@ protected:
         case Core::Serialization::serializer::UNPACK:
         {
             size_t tool_count;
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 attached_tools = new ToolList();
                 for ( size_t i = 0; i < tool_count; ++i ) {
                     SST::Core::Serialization::serializable* tool;
                     uintptr_t                               key;
-                    ser&                                    tool;
-                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    SST_SER(tool);
+                    AttachPoint* ap = dynamic_cast<AttachPoint*>(tool);
                     ap->serializeHandlerAttachPointKey(ser, key);
                     attached_tools->emplace_back(ap, key);
                 }
@@ -508,7 +508,7 @@ protected:
 
             // Serialize AttachPoint tools
             size_t tool_count = tools.attach_tools.size();
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 // Serialize each tool, then call
                 // serializeEventAttachPointKey() to serialize any
@@ -516,13 +516,13 @@ protected:
                 for ( auto x : tools.attach_tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    ser& obj;
+                    SST_SER(obj);
                     x.first->serializeHandlerAttachPointKey(ser, x.second);
                 }
             }
             // Serialize InterceptPoint tools
             tool_count = tools.intercept_tools.size();
-            ser& tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 // Serialize each tool, then call
                 // serializeEventAttachPointKey() to serialize any
@@ -530,7 +530,7 @@ protected:
                 for ( auto x : tools.intercept_tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    ser& obj;
+                    SST_SER(obj);
                     x.first->serializeHandlerInterceptPointKey(ser, x.second);
                 }
             }
@@ -540,14 +540,14 @@ protected:
         {
             // Get serialized AttachPoint tools
             size_t tool_count;
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 attached_tools = new ToolList();
                 for ( size_t i = 0; i < tool_count; ++i ) {
                     SST::Core::Serialization::serializable* tool;
                     uintptr_t                               key;
-                    ser&                                    tool;
-                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    SST_SER(tool);
+                    AttachPoint* ap = dynamic_cast<AttachPoint*>(tool);
                     ap->serializeHandlerAttachPointKey(ser, key);
                     attached_tools->attach_tools.emplace_back(ap, key);
                 }
@@ -557,14 +557,14 @@ protected:
             }
 
             // Get serialized InterceptPoint tools
-            ser& tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 if ( nullptr == attached_tools ) attached_tools = new ToolList();
                 for ( size_t i = 0; i < tool_count; ++i ) {
                     SST::Core::Serialization::serializable* tool;
                     uintptr_t                               key;
-                    ser&                                    tool;
-                    InterceptPoint*                         ip = dynamic_cast<InterceptPoint*>(tool);
+                    SST_SER(tool);
+                    InterceptPoint* ip = dynamic_cast<InterceptPoint*>(tool);
                     ip->serializeHandlerInterceptPointKey(ser, key);
                     attached_tools->intercept_tools.emplace_back(ip, key);
                 }
@@ -799,7 +799,7 @@ protected:
                 }
             }
             size_t tool_count = tools.size();
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 // Serialize each tool, then call
                 // serializeEventAttachPointKey() to serialize any
@@ -807,7 +807,7 @@ protected:
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    ser& obj;
+                    SST_SER(obj);
                     x.first->serializeHandlerAttachPointKey(ser, x.second);
                 }
             }
@@ -816,14 +816,14 @@ protected:
         case Core::Serialization::serializer::UNPACK:
         {
             size_t tool_count;
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 attached_tools = new ToolList();
                 for ( size_t i = 0; i < tool_count; ++i ) {
                     SST::Core::Serialization::serializable* tool;
                     uintptr_t                               key;
-                    ser&                                    tool;
-                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    SST_SER(tool);
+                    AttachPoint* ap = dynamic_cast<AttachPoint*>(tool);
                     ap->serializeHandlerAttachPointKey(ser, key);
                     attached_tools->emplace_back(ap, key);
                 }
@@ -1009,7 +1009,7 @@ protected:
                 }
             }
             size_t tool_count = tools.size();
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 // Serialize each tool, then call
                 // serializeEventAttachPointKey() to serialize any
@@ -1017,7 +1017,7 @@ protected:
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    ser& obj;
+                    SST_SER(obj);
                     x.first->serializeHandlerAttachPointKey(ser, x.second);
                 }
             }
@@ -1026,14 +1026,14 @@ protected:
         case Core::Serialization::serializer::UNPACK:
         {
             size_t tool_count;
-            ser&   tool_count;
+            SST_SER(tool_count);
             if ( tool_count > 0 ) {
                 attached_tools = new ToolList();
                 for ( size_t i = 0; i < tool_count; ++i ) {
                     SST::Core::Serialization::serializable* tool;
                     uintptr_t                               key;
-                    ser&                                    tool;
-                    AttachPoint*                            ap = dynamic_cast<AttachPoint*>(tool);
+                    SST_SER(tool);
+                    AttachPoint* ap = dynamic_cast<AttachPoint*>(tool);
                     ap->serializeHandlerAttachPointKey(ser, key);
                     attached_tools->emplace_back(ap, key);
                 }
@@ -1129,7 +1129,9 @@ using SSTHandlerBaseNoArgs = SSTHandlerBase<returnT, void>;
  * Handler class with user-data argument
  */
 template <typename returnT, typename argT, typename classT, typename dataT = void>
-class SSTHandler : public SSTHandlerBase<returnT, argT>
+class [[deprecated(
+    "Handler has been deprecated.  Please use Handler2 instead as it supports checkpointing")]] SSTHandler :
+    public SSTHandlerBase<returnT, argT>
 {
 private:
     using PtrMember = returnT (classT::*)(argT, dataT);
@@ -1163,7 +1165,8 @@ public:
  * Event Handler class with no user-data.
  */
 template <typename returnT, typename argT, typename classT>
-class SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
+class [[deprecated("Handler has been deprecated.  Please use Handler2 instead as it supports "
+                   "checkpointing")]] SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
 {
 private:
     using PtrMember = returnT (classT::*)(argT);
@@ -1191,7 +1194,9 @@ public:
  * Event Handler class with user-data argument
  */
 template <typename returnT, typename classT, typename dataT = void>
-class SSTHandlerNoArgs : public SSTHandlerBaseNoArgs<returnT>
+class [[deprecated(
+    "Handler has been deprecated.  Please use Handler2 instead as it supports checkpointing")]] SSTHandlerNoArgs :
+    public SSTHandlerBaseNoArgs<returnT>
 {
 private:
     using PtrMember = returnT (classT::*)(dataT);
@@ -1225,7 +1230,8 @@ public:
  * Event Handler class with no user-data.
  */
 template <typename returnT, typename classT>
-class SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
+class [[deprecated("Handler has been deprecated.  Please use Handler2 instead as it supports "
+                   "checkpointing")]] SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
 {
 private:
     using PtrMember = returnT (classT::*)();
@@ -1297,8 +1303,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SSTHandlerBase<returnT, argT>::serialize_order(ser);
-        ser& object;
-        ser& data;
+        SST_SER(object);
+        SST_SER(data);
     }
 
     ImplementSerializable(SSTHandler2)
@@ -1319,7 +1325,7 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
     SSTHandler2() {}
 
     SSTHandler2(const SSTHandler2&) = delete;
@@ -1330,7 +1336,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SSTHandlerBase<returnT, argT>::serialize_order(ser);
-        ser& object;
+        SST_SER(object);
     }
 
     ImplementSerializable(SSTHandler2)
@@ -1363,8 +1369,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SSTHandlerBase<returnT, void>::serialize_order(ser);
-        ser& object;
-        ser& data;
+        SST_SER(object);
+        SST_SER(data);
     }
 
     ImplementSerializable(SSTHandler2)
@@ -1385,7 +1391,7 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
+    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
     SSTHandler2() {}
 
     SSTHandler2(const SSTHandler2&) = delete;
@@ -1396,7 +1402,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SSTHandlerBase<returnT, void>::serialize_order(ser);
-        ser& object;
+        SST_SER(object);
     }
 
     ImplementSerializable(SSTHandler2)

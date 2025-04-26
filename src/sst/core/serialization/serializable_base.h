@@ -15,8 +15,10 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstring>
 #include <limits>
 #include <stdint.h>
+#include <string>
 #include <typeinfo>
 #include <unordered_map>
 

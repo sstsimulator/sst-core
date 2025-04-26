@@ -27,7 +27,7 @@ namespace Util {
 /**
    Class used to manage files and directories. One of the features is
    that you can set the base directory to be used for all files and
-   directories sepcified with a relative path.
+   directories specified with a relative path.
  */
 class Filesystem
 {
@@ -42,7 +42,7 @@ public:
        already exists, and if not, whether or not the user has
        permissions to create the directory. If the directory doesn't
        exist and the user doesn't have permission to create it, the
-       runction will return false and thee base_path will remain
+       function will return false and thee base_path will remain
        unchanged.  If the directory doesn't exist and the user has
        permissions to create it, the directory will be created on
        demand.

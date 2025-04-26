@@ -17,6 +17,9 @@
 #include "sst/core/ssthandler.h"
 
 #include <cinttypes>
+#include <deque>
+#include <string>
+#include <vector>
 
 #define _ONESHOT_DBG(fmt, args...) __DBG(DBG_ONESHOT, OneShot, fmt, ##args)
 
@@ -38,7 +41,7 @@ public:
     using HandlerBase = SSTHandlerBaseNoArgs<void>;
 
     /**
-       Used to create handlers for clock.  The callback function is
+       Used to create handlers for OneShot.  The callback function is
        expected to be in the form of:
 
          void func()
@@ -57,6 +60,27 @@ public:
      */
     template <typename classT, typename dataT = void>
     using Handler = SSTHandlerNoArgs<void, classT, dataT>;
+
+    /**
+       Used to create checkpointable handlers for OneShot.  The callback function is
+       expected to be in the form of:
+
+         void func()
+
+       In which case, the class is created with:
+
+         new OneShot::Handler2<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         void func(dataT data)
+
+       and the class is created with:
+
+         new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
+     */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<void, void, classT, dataT, funcT>;
 
 
     /////////////////////////////////////////////////

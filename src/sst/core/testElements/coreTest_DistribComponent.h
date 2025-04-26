@@ -15,6 +15,9 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/distrib.h"
 
+#include <map>
+#include <string>
+
 using namespace SST;
 using namespace SST::RNG;
 
@@ -57,8 +60,8 @@ public:
     )
 
     coreTestDistribComponent(SST::ComponentId_t id, SST::Params& params);
-    void finish();
-    void setup() {}
+    void finish() override;
+    void setup() override {}
 
 private:
     coreTestDistribComponent();                                                    // for serialization only

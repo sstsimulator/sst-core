@@ -121,10 +121,10 @@ void
 TimeVortexPQBase<TS>::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     TimeVortex::serialize_order(ser);
-    ser& insertOrder;
-    ser& max_depth;
-    ser& current_depth;
-    ser& data;
+    SST_SER(insertOrder);
+    SST_SER(max_depth);
+    SST_SER(current_depth);
+    SST_SER(data);
 }
 
 template <bool TS>
@@ -149,11 +149,14 @@ public:
         "TimeVortex based on std::priority_queue.")
 
 
-    TimeVortexPQ(Params& params) : TimeVortexPQBase<false>(params) {}
+    explicit TimeVortexPQ(Params& params) : TimeVortexPQBase<false>(params) {}
     TimeVortexPQ() : TimeVortexPQBase<false>() {} // For serialization only
     ~TimeVortexPQ() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<false>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<false>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ)
 };
@@ -171,11 +174,14 @@ public:
         " specify sst.timevortex.priority_queue and this version will be selected when it is needed based on other"
         " parameters.")
 
-    TimeVortexPQ_ts(Params& params) : TimeVortexPQBase<true>(params) {}
+    explicit TimeVortexPQ_ts(Params& params) : TimeVortexPQBase<true>(params) {}
     TimeVortexPQ_ts() : TimeVortexPQBase<true>() {} // For serialization only
     ~TimeVortexPQ_ts() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { TimeVortexPQBase<true>::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        TimeVortexPQBase<true>::serialize_order(ser);
+    }
 
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };

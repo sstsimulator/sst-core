@@ -15,6 +15,8 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/rng.h"
 
+#include <string>
+
 using namespace SST;
 using namespace SST::RNG;
 
@@ -56,8 +58,8 @@ public:
 
     coreTestRNGComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestRNGComponent();
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     coreTestRNGComponent();                                                // for serialization only

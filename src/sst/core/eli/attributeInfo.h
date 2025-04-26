@@ -62,7 +62,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesAttributes(T* UNUSED(t)) : attributes_(GetAttributes<T>::get())
+    explicit ProvidesAttributes(T* UNUSED(t)) : attributes_(GetAttributes<T>::get())
     {}
 
 private:

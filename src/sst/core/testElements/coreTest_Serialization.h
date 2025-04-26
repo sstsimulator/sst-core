@@ -15,6 +15,8 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/rng.h"
 
+#include <cstddef>
+
 namespace SST::CoreTestSerialization {
 
 class coreTestSerialization : public SST::Component

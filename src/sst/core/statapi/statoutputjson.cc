@@ -285,12 +285,12 @@ void
 StatisticOutputJSON::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     StatisticFieldsOutput::serialize_order(ser);
-    ser& m_FilePath;
-    ser& m_outputSimTime;
-    ser& m_outputRank;
-    ser& m_firstEntry;
-    ser& m_firstField;
-    ser& m_processedAnyStats;
+    SST_SER(m_FilePath);
+    SST_SER(m_outputSimTime);
+    SST_SER(m_outputRank);
+    SST_SER(m_firstEntry);
+    SST_SER(m_firstField);
+    SST_SER(m_processedAnyStats);
 }
 
 } // namespace SST::Statistics

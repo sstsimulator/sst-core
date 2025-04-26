@@ -16,6 +16,8 @@
 #include "sst/core/module.h"
 #include "sst/core/serialization/serialize_impl_fwd.h"
 
+#include <cstdint>
+
 namespace SST {
 
 class Output;
@@ -48,7 +50,7 @@ public:
     virtual void     dbg_print(Output& out) { print(out); }
 
     // Functions for checkpointing
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { ser& max_depth; }
+    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(max_depth); }
     virtual void fixup_handlers() {}
 
 protected:
@@ -70,10 +72,7 @@ void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser
 template <>
 class SST::Core::Serialization::serialize_impl<TimeVortex*>
 {
-    template <class A>
-    friend class serialize;
-
-    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
+    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
@@ -88,6 +87,8 @@ class SST::Core::Serialization::serialize_impl<TimeVortex*>
             break;
         }
     }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST

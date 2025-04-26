@@ -16,14 +16,16 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <cstddef>
 #include <map>
+#include <string>
 
 namespace SST::Core {
 
 class PythonConfigGraphOutput : public ConfigGraphOutput
 {
 public:
-    PythonConfigGraphOutput(const char* path);
+    explicit PythonConfigGraphOutput(const char* path);
 
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 

@@ -15,6 +15,10 @@
 #include "sst/core/component.h"
 #include "sst/core/link.h"
 
+#include <cstdint>
+#include <cstdio>
+#include <string>
+
 namespace SST::CoreTestMessageGeneratorComponent {
 
 class coreTestMessageGeneratorComponent : public SST::Component
@@ -50,8 +54,8 @@ public:
     )
 
     coreTestMessageGeneratorComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup() {}
-    void finish()
+    void setup() override {}
+    void finish() override
     {
         fprintf(stdout, "Component completed at: %" PRIu64 " milliseconds\n", (uint64_t)getCurrentSimTimeMilli());
     }

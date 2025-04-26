@@ -14,7 +14,11 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <map>
+#include <string>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 namespace SST::ELI {
 
@@ -37,7 +41,7 @@ class BuilderLibrary
 public:
     using BaseBuilder = Builder<Base, CtorArgs...>;
 
-    BuilderLibrary(const std::string& name) : name_(name) {}
+    explicit BuilderLibrary(const std::string& name) : name_(name) {}
 
     BaseBuilder* getBuilder(const std::string& name) { return factories_[name]; }
 

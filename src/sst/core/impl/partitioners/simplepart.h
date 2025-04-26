@@ -17,6 +17,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <cstdint>
 #include <map>
 
 namespace SST::IMPL::Partition {

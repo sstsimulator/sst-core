@@ -39,7 +39,7 @@ public:
         {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestPerfComponentBase(ComponentId_t id) : SST::Component(id) {}
+    explicit coreTestPerfComponentBase(ComponentId_t id) : SST::Component(id) {}
     ~coreTestPerfComponentBase() {}
 };
 
@@ -61,7 +61,7 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestPerfComponentBase2(ComponentId_t id) : coreTestPerfComponentBase(id) {}
+    explicit coreTestPerfComponentBase2(ComponentId_t id) : coreTestPerfComponentBase(id) {}
     ~coreTestPerfComponentBase2() {}
 };
 
@@ -99,8 +99,8 @@ public:
     coreTestPerfComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestPerfComponent();
 
-    void setup() {}
-    void finish() { printf("Perf Test Component Finished.\n"); }
+    void setup() override {}
+    void finish() override { printf("Perf Test Component Finished.\n"); }
 
 private:
     coreTestPerfComponent();                                                 // for serialization only

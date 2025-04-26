@@ -16,6 +16,7 @@
 
 #include "sst/core/link.h"
 #include "sst/core/params.h"
+#include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
@@ -26,6 +27,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace SST {
 class Component;
@@ -97,6 +99,27 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<void, Request*, classT, dataT>;
 
+    /**
+       Used to create checkpointable handlers for request handling.
+       The callback function is expected to be in the form of:
+
+         void func(Request* event)
+
+       In which case, the class is created with:
+
+         new StdMem::Handler<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         void func(Request* event, dataT data)
+
+       and the class is created with:
+
+         new stdMem::Handler<classname, &classname::function_name, dataT>(this, data)
+     */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<void, Request*, classT, dataT, funcT>;
+
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type
 
@@ -109,7 +132,7 @@ public:
     /**
      * Base class for StandardMem commands
      */
-    class Request
+    class Request : public SST::Core::Serialization::serializable
     {
     public:
         using id_t    = uint64_t;
@@ -127,7 +150,7 @@ public:
             F_RESERVED = 1 << 16, /* Flags <= F_RESERVED are reserved for future expansion */
         };
 
-        Request(flags_t fl = 0)
+        explicit Request(flags_t fl = 0)
         {
             id    = main_id++;
             flags = fl;
@@ -214,6 +237,15 @@ public:
             return str.str();
         }
 
+        // Serialization
+        ImplementVirtualSerializable(SST::Interfaces::StandardMem::Request);
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            SST_SER(id);
+            SST_SER(flags);
+            SST_SER(main_id);
+        }
+
     protected:
         id_t    id;
         flags_t flags;
@@ -255,6 +287,7 @@ public:
             tid(tid)
         {}
         virtual ~Read() {}
+        Read() : Request(0, 0) {}
 
         /** Create read response.
          * User must manually set read data on response if simulation is using actual data values
@@ -290,6 +323,19 @@ public:
         uint64_t size;  /* Number of bytes to read */
         Addr     iPtr;  /* Instruction pointer - optional metadata */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::Read);
     };
 
     /** Response to a Read */
@@ -349,6 +395,21 @@ public:
         std::vector<uint8_t> data;  /* Read data */
         Addr                 iPtr;  /* Instruction pointer - optional metadata */
         uint32_t             tid;   /* Thread ID */
+
+        /* Serialization */
+        ReadResp() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::Read);
     };
 
     /** Request to write data.
@@ -405,6 +466,23 @@ public:
         bool                 posted; /* Whether write is posted (requires no response) */
         Addr                 iPtr;   /* Instruction pointer - optional metadata */
         uint32_t             tid;    /* Thread ID */
+
+        /* Serialization */
+        Write() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(data);
+            SST_SER(posted);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::Write);
     };
 
     /** Response to a Write */
@@ -423,7 +501,7 @@ public:
             tid(tid)
         {}
         /** Automatically construct a write response from a Write */
-        WriteResp(Write* wr) :
+        explicit WriteResp(Write* wr) :
             Request(wr->getID(), wr->getAllFlags()),
             pAddr(wr->pAddr),
             vAddr(wr->vAddr),
@@ -458,6 +536,21 @@ public:
         uint64_t size;  /* Number of bytes to read */
         Addr     iPtr;  /* Instruction pointer - optional metadata */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        WriteResp() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::WriteResp);
     };
 
     /* Flush an address from cache
@@ -508,6 +601,23 @@ public:
                            L1 + L2, etc. */
         Addr     iPtr;  /* Instruction pointer */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        FlushAddr() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(inv);
+            SST_SER(depth);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::FlushAddr);
     };
 
     /* Flush an entire cache
@@ -517,7 +627,7 @@ public:
     class FlushCache : public Request
     {
     public:
-        FlushCache(
+        explicit FlushCache(
             uint32_t depth = std::numeric_limits<uint32_t>::max(), flags_t flags = 0, Addr instPtr = 0,
             uint32_t tid = 0) :
             Request(flags),
@@ -548,6 +658,17 @@ public:
                            L1 + L2, etc. */
         Addr     iPtr;  /* Instruction pointer */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(depth);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::FlushCache);
     };
 
     /** Response to a flush request.
@@ -566,7 +687,7 @@ public:
             iPtr(instPtr),
             tid(tid)
         {}
-        FlushResp(FlushAddr* fl, flags_t newFlags = 0) :
+        explicit FlushResp(FlushAddr* fl, flags_t newFlags = 0) :
             Request(fl->getID(), fl->getAllFlags() | newFlags),
             pAddr(fl->pAddr),
             vAddr(fl->vAddr),
@@ -574,7 +695,7 @@ public:
             iPtr(fl->iPtr),
             tid(fl->tid)
         {}
-        FlushResp(FlushCache* fc, flags_t newFlags = 0) :
+        explicit FlushResp(FlushCache* fc, flags_t newFlags = 0) :
             Request(fc->getID(), fc->getAllFlags() | newFlags),
             pAddr(0),
             vAddr(0),
@@ -607,6 +728,21 @@ public:
         uint64_t size;  /* Number of bytes to invalidate */
         Addr     iPtr;  /* Instruction pointer */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        FlushResp() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::FlushResp);
     };
 
     /**
@@ -660,6 +796,21 @@ public:
         uint64_t size;  /* Number of bytes to read */
         Addr     iPtr;  /* Instruction pointer - optional metadata */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        ReadLock() : Request(0, 0) {}
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::ReadLock);
     };
 
     /* WriteUnlock writes a locked address
@@ -715,6 +866,23 @@ public:
         bool                 posted; /* Whether write is posted (requires no response) */
         Addr                 iPtr;   /* Instruction pointer - optional metadata */
         uint32_t             tid;    /* Thread ID */
+
+        /* Serialization */
+        WriteUnlock() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(data);
+            SST_SER(posted);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::WriteUnlock);
     };
 
     /**
@@ -768,6 +936,21 @@ public:
         uint64_t size;  /* Number of bytes to read */
         Addr     iPtr;  /* Instruction pointer - optional metadata */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        LoadLink() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::LoadLink);
     };
 
     /* StoreConditional checks if a write to a prior LoadLink address will be atomic,
@@ -822,6 +1005,22 @@ public:
         std::vector<uint8_t> data;  /* Written data */
         Addr                 iPtr;  /* Instruction pointer - optional metadata */
         uint32_t             tid;   /* Thread ID */
+
+        /* Serialization */
+        StoreConditional() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(data);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::StoreConditional);
     };
 
     /* Explicit data movement */
@@ -874,6 +1073,24 @@ public:
         bool     posted; /* True if a response is needed */
         Addr     iPtr;   /* Instruction pointer */
         uint32_t tid;    /* Thread ID */
+
+        /* Serialization */
+        MoveData() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pSrc);
+            SST_SER(vSrc);
+            SST_SER(pDst);
+            SST_SER(vDst);
+            SST_SER(size);
+            SST_SER(posted);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::MoveData);
     };
 
     /** Notifies endpoint that an address has been invalidated from the L1.
@@ -914,6 +1131,21 @@ public:
         uint64_t size;  /* Number of bytes invalidated */
         Addr     iPtr;  /* Instruction pointer */
         uint32_t tid;   /* Thread ID */
+
+        /* Serialization */
+        InvNotify() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(pAddr);
+            SST_SER(vAddr);
+            SST_SER(size);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::InvNotify);
     };
 
     /* This class can be inherited to create custom events that can be handled in a limited fashion by existing
@@ -931,7 +1163,7 @@ public:
         virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
-        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override = 0;
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override = 0;
         // ImplementSerializable(SST::Interfaces::StandardMem::CustomData);
         ImplementVirtualSerializable(CustomData);
     };
@@ -939,7 +1171,7 @@ public:
     class CustomReq : public Request
     {
     public:
-        CustomReq(CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
+        explicit CustomReq(CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
             Request(flags),
             data(data),
             iPtr(iPtr),
@@ -1008,6 +1240,19 @@ public:
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
+
+        /* Serialization */
+        CustomReq() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(data);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::CustomReq);
     };
 
     class CustomResp : public Request
@@ -1019,7 +1264,7 @@ public:
             iPtr(iPtr),
             tid(tid)
         {}
-        CustomResp(CustomReq* req) :
+        explicit CustomResp(CustomReq* req) :
             Request(req->getID(), req->getAllFlags()),
             data(req->getData().makeResponse()),
             iPtr(req->iPtr),
@@ -1088,10 +1333,23 @@ public:
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
+
+        /* Serialization */
+        CustomResp() : Request(0, 0) {}
+
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            StandardMem::Request::serialize_order(ser);
+            SST_SER(data);
+            SST_SER(iPtr);
+            SST_SER(tid);
+        }
+
+        ImplementSerializable(SST::Interfaces::StandardMem::CustomResp);
     };
 
     /* Class for implementation-specific converter functions */
-    class RequestConverter
+    class RequestConverter : public SST::Core::Serialization::serializable
     {
     public:
         RequestConverter() {}
@@ -1120,14 +1378,19 @@ public:
         virtual SST::Event* convert(CustomReq* request)        = 0;
         virtual SST::Event* convert(CustomResp* request)       = 0;
         virtual SST::Event* convert(InvNotify* request)        = 0;
+
+        /* Serialization */
+        virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
+        ImplementVirtualSerializable(RequestConverter);
     };
 
     /* Class for implementation-specific handler functions */
-    class RequestHandler
+    class RequestHandler : public SST::Core::Serialization::serializable
     {
     public:
-        RequestHandler(SST::Output* o) : out(o) {}
-        virtual ~RequestHandler() {}
+        RequestHandler() = default;
+        explicit RequestHandler(SST::Output* o) : out(o) {}
+        virtual ~RequestHandler() = default;
 
         /* Built in command handlers */
         virtual void handle(Read* UNUSED(request))
@@ -1192,6 +1455,10 @@ public:
         }
 
         SST::Output* out;
+
+        /* Serialization */
+        virtual void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(out); }
+        ImplementSerializable(RequestHandler);
     };
 
     /** Constructor, designed to be used via 'loadUserSubComponent' and 'loadAnonymousSubComponent'.
@@ -1272,7 +1539,10 @@ public:
     /**
      * Serialization function
      */
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST::SubComponent::serialize_order(ser); }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST::SubComponent::serialize_order(ser);
+    }
 };
 
 } // namespace SST::Interfaces

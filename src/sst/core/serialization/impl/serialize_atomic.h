@@ -24,28 +24,28 @@
 namespace SST::Core::Serialization {
 
 template <class T>
-struct serialize_impl<std::atomic<T>>
+class serialize_impl<std::atomic<T>>
 {
-    void operator()(std::atomic<T>& v, serializer& ser)
+    void operator()(std::atomic<T>& v, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
         {
-            T    t = v.load();
-            ser& t;
+            T t = v.load();
+            SST_SER(t);
             // ser.size(t);
             break;
         }
         case serializer::PACK:
         {
-            T    t = v.load();
-            ser& t;
+            T t = v.load();
+            SST_SER(t);
             break;
         }
         case serializer::UNPACK:
         {
-            T    val {};
-            ser& val;
+            T val {};
+            SST_SER(val);
             v.store(val);
             break;
         }
@@ -56,6 +56,8 @@ struct serialize_impl<std::atomic<T>>
         }
         }
     }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

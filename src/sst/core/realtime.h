@@ -18,6 +18,8 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/warnmacros.h"
 
+#include <atomic>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <signal.h>
@@ -170,7 +172,7 @@ private:
 class RealTimeManager : public SST::Core::Serialization::serializable
 {
 public:
-    RealTimeManager(RankInfo num_ranks);
+    explicit RealTimeManager(RankInfo num_ranks);
     RealTimeManager();
 
     /** Register actions */

@@ -15,6 +15,7 @@
 #include "sst/core/params.h"
 #include "sst/core/serialization/serializer_fwd.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/timeConverter.h"
 
 #include <functional>
 #include <map>
@@ -32,7 +33,6 @@ class ConfigComponent;
 class ConfigStatistic;
 
 class Simulation_impl;
-class TimeConverter;
 
 namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
@@ -110,7 +110,7 @@ private:
     */
     Params* params;
 
-    TimeConverter* defaultTimeBase;
+    TimeConverter defaultTimeBase;
 
     std::map<std::string, std::vector<ConfigPortModule>>* portModules         = nullptr;
     std::map<StatisticId_t, ConfigStatistic>*             stat_configs_       = nullptr;
@@ -271,10 +271,11 @@ public:
     /**
        (DO NOT USE) Constructor used only for serialization testing
      */
-    ComponentInfo(ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter* tv = nullptr);
+    ComponentInfo(
+        ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
 
     ComponentInfo*
-    test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter* tv = nullptr);
+    test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
 
     void test_printComponentInfoHierarchy(int index = 0);
 };

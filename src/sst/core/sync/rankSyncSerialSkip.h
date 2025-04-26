@@ -16,7 +16,9 @@
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstdint>
 #include <map>
+#include <string>
 
 namespace SST {
 
@@ -27,7 +29,7 @@ class RankSyncSerialSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncSerialSkip(RankInfo num_ranks);
+    explicit RankSyncSerialSkip(RankInfo num_ranks);
     RankSyncSerialSkip() {} // For serialization
     virtual ~RankSyncSerialSkip();
 

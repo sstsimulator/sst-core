@@ -18,8 +18,11 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <iostream>
 #include <mutex>
+#include <set>
 #include <stdio.h>
+#include <vector>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);
@@ -311,7 +314,7 @@ private:
 
     [[noreturn]] void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
 
-    Factory(const std::string& searchPaths);
+    explicit Factory(const std::string& searchPaths);
     ~Factory();
 
     Factory(const Factory&) = delete;            // Don't Implement

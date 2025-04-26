@@ -123,9 +123,9 @@ void
 SimulatorHeartbeat::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     Action::serialize_order(ser);
-    ser& rank;
-    ser& m_period;
-    ser& lastTime;
+    SST_SER(rank);
+    SST_SER(m_period);
+    SST_SER(lastTime);
 }
 
 } // namespace SST

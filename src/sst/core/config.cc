@@ -665,7 +665,7 @@ public:
         msg.append("\nWithin the checkpoint directory, each checkpoint will create its own subdirectory with "
                    "a user specified name format (see extended help for --checkpoint-name-format). By default, "
                    "this is of the form <prefix>_<checkpoint_id>_<simulated_time>, where checkpoint_id starts "
-                   "at 0 and increments by one for each checkpoint.  Within this directory, there are three "
+                   "at 1 and increments by one for each checkpoint.  Within this directory, there are three "
                    "types of files:\n\n");
 
         msg.append("Registry file: The file contains a list of some "
@@ -689,16 +689,16 @@ public:
                    "\"checkpoint\" using two ranks with one thread each would look something like:\n\n"
                    "output directory\n"
                    "|--checkpoint\n"
-                   "   |--checkpoint_0_1000\n"
-                   "      |--checkpoint_0_1000.sstcpt\n"
-                   "      |--checkpoint_0_1000_globals.bin\n"
-                   "      |--checkpoint_0_1000_0_0.bin\n"
-                   "      |--checkpoint_0_1000_1_0.bin\n"
-                   "   |--checkpoint_1_2000\n"
-                   "      |--checkpoint_1_2000.sstcpt\n"
-                   "      |--checkpoint_1_2000_globals.bin\n"
-                   "      |--checkpoint_1_2000_0_0.bin\n"
-                   "      |--checkpoint_1_2000_1_0.bin\n\n");
+                   "   |--checkpoint_1_1000\n"
+                   "      |--checkpoint_1_1000.sstcpt\n"
+                   "      |--checkpoint_1_1000_globals.bin\n"
+                   "      |--checkpoint_1_1000_0_0.bin\n"
+                   "      |--checkpoint_1_1000_1_0.bin\n"
+                   "   |--checkpoint_2_2000\n"
+                   "      |--checkpoint_2_2000.sstcpt\n"
+                   "      |--checkpoint_2_2000_globals.bin\n"
+                   "      |--checkpoint_2_2000_0_0.bin\n"
+                   "      |--checkpoint_2_2000_1_0.bin\n\n");
 
         msg.append("When restarting from a checkpoint, the registry file (*.sstcpt) should be specified as the "
                    "input file.\n");

@@ -18,6 +18,9 @@
 #include "sst/core/rng/distrib.h"
 #include "sst/core/rng/rng.h"
 
+#include <cstdint>
+#include <string>
+
 namespace SST::CoreTestCheckpoint {
 
 // Very simple starting case
@@ -29,7 +32,7 @@ class coreTestCheckpointEvent : public SST::Event
 public:
     coreTestCheckpointEvent() : SST::Event(), counter(1000) {}
 
-    coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
+    explicit coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
 
     ~coreTestCheckpointEvent() {}
 
@@ -129,7 +132,7 @@ private:
     SST::Link*          link_left;
     SST::Link*          link_right;
     SST::Link*          self_link;
-    TimeConverter*      clock_tc;
+    TimeConverter       clock_tc;
     Clock::HandlerBase* clock_handler;
     int                 duty_cycle;       // Used to count clock on and off cycles
     int                 duty_cycle_count; // Used to count clock on and off cycles

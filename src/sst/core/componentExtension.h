@@ -29,7 +29,7 @@ class ComponentExtension : public BaseComponent
 {
 
 public:
-    ComponentExtension(ComponentId_t id);
+    explicit ComponentExtension(ComponentId_t id);
 
     virtual ~ComponentExtension() override = default;
 

@@ -18,6 +18,9 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstdint>
+#include <map>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -39,8 +42,8 @@ class SyncProfileTool;
 class RankSync
 {
 public:
-    RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
-    RankSync() : max_period(nullptr) {}
+    explicit RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
+    RankSync() {}
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
@@ -62,13 +65,13 @@ public:
 
     virtual void setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
-    TimeConverter* getMaxPeriod() { return max_period; }
+    TimeConverter getMaxPeriod() { return max_period; }
 
     virtual uint64_t getDataSize() const = 0;
 
 protected:
     SimTime_t      nextSyncTime;
-    TimeConverter* max_period;
+    TimeConverter  max_period;
     const RankInfo num_ranks_;
 
     std::vector<std::map<std::string, uintptr_t>> link_maps;
@@ -87,7 +90,7 @@ protected:
 class ThreadSync
 {
 public:
-    ThreadSync() : max_period(nullptr) {}
+    ThreadSync() {}
     virtual ~ThreadSync() {}
 
     virtual void before()                     = 0;
@@ -105,16 +108,16 @@ public:
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
     virtual void      setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
-    void           setMaxPeriod(TimeConverter* period) { max_period = period; }
-    TimeConverter* getMaxPeriod() { return max_period; }
+    void          setMaxPeriod(TimeConverter* period) { max_period = period; }
+    TimeConverter getMaxPeriod() { return max_period; }
 
     /** Register a Link which this Sync Object is responsible for */
     virtual void           registerLink(const std::string& name, Link* link)                = 0;
     virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
 
 protected:
-    SimTime_t      nextSyncTime;
-    TimeConverter* max_period;
+    SimTime_t     nextSyncTime;
+    TimeConverter max_period;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
 

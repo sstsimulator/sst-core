@@ -18,6 +18,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace SST {
 
@@ -36,8 +37,8 @@ private:
 
     void serialize_order(SST::Core::Serialization::serializer& ser)
     {
-        ser& linkMap;
-        ser& selfPorts;
+        SST_SER(linkMap);
+        SST_SER(selfPorts);
     }
 
 

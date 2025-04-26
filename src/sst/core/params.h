@@ -21,11 +21,13 @@
 #include <inttypes.h>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <stdlib.h>
 #include <utility>
+#include <vector>
 
 int main(int argc, char* argv[]);
 
@@ -52,7 +54,7 @@ class ConfigGraphOutput;
  * event, as serialization of Params objects only works correctly as
  * part of ConfigGraph serialization.
  */
-class Params : public SST::Core::Serialization::serializable
+class Params
 {
 private:
     struct KeyCompare
@@ -255,14 +257,14 @@ public:
 
     /**
      * Returns the size of the Params.  This will count both local and
-     * global params.
+     * shared params.
      *
      * @return number of key/value pairs in this Params object
      */
     size_t size() const;
     /**
      * Returns true if the Params is empty.  Checks both local and
-     * global param sets.
+     * shared param sets.
      *
      * @return true if this Params object is empty, false otherwise
      */
@@ -274,19 +276,19 @@ public:
     /** Create a copy of a Params object */
     Params(const Params& old);
 
-    virtual ~Params() {}
+    ~Params() {}
 
     /**
      *  @brief  Assignment operator.
      *  @param  old  Param to be copied
      *
      *  All the elements of old are copied,  This will also copy
-     *  over any references to global param sets
+     *  over any references to shared param sets
      */
     Params& operator=(const Params& old);
 
     /**
-     * Erases all elements, including deleting reference to global
+     * Erases all elements, including deleting reference to shared
      * param sets.
      */
     void clear();
@@ -294,9 +296,9 @@ public:
     /**
      *  @brief  Finds the number of elements with given key.
      *
-     *  The call will check both local and global params, but will
+     *  The call will check both local and shared params, but will
      *  still only report one instance if the given key is found in
-     *  both the local and global param sets.
+     *  both the local and shared param sets.
      *
      *  @param  k  Key of (key, value) pairs to be located.
      *  @return  Number of elements with specified key
@@ -790,8 +792,8 @@ public:
 
     /**
      * Add contents of input Params object to current Params object.
-     * This will also add any pointers to global param sets after the
-     * existing pointers to global param sets in this object.
+     * This will also add any pointers to shared param sets after the
+     * existing pointers to shared param sets in this object.
      *
      * @param params Params object that should added to current object
      */
@@ -799,7 +801,7 @@ public:
 
     /**
        Get all the keys contained in the Params object.  This will
-       give both local and global params.
+       give both local and shared params.
      */
     std::set<std::string> getKeys() const;
 
@@ -808,7 +810,7 @@ public:
      * specified scoped prefix (scopes are separated with "."  The
      * keys will be stripped of the "scope." prefix.
      *
-     * Function will search both local and global params, but all
+     * Function will search both local and shared params, but all
      * params will be copied into the local space of the new Params
      * object.
      *
@@ -821,7 +823,7 @@ public:
 
     /**
      * Search the container for a particular key.  This will search
-     * both local and global params.
+     * both local and shared params.
      *
      * @param k   Key to search for
      * @return    True if the params contains the key, false otherwise
@@ -839,8 +841,7 @@ public:
      */
     void popAllowedKeys();
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::Params)
+    void serialize_order(SST::Core::Serialization::serializer& ser);
 
 private:
     //// Functions used by model descriptions and config graph
@@ -857,19 +858,19 @@ private:
     void verifyParam(const key_type& k) const;
 
     /**
-     * Adds a global param set to be looked at in this Params object
-     * if the key isn't found locally.  It will search the global sets
+     * Adds a shared param set to be looked at in this Params object
+     * if the key isn't found locally.  It will search the shared sets
      * in the order they were inserted and return immediately after
      * finding the key in one of the sets.
      *
      * @param set set to add to the search list for this object
      */
-    void addGlobalParamSet(const std::string& set);
+    void addSharedParamSet(const std::string& set);
 
     /**
-     * Adds a key/value pair to the specified global set
+     * Adds a key/value pair to the specified shared set
      *
-     * @param set global set to add the key/value pair to
+     * @param set shared set to add the key/value pair to
      *
      * @param key key to add to the map
      *
@@ -879,26 +880,26 @@ private:
      * overwrite an existing pair in the set
      */
     static void
-    insert_global(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
+    insert_shared(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
 
     /**
-     * Get a named global parameter set.
+     * Get a named shared parameter set.
      *
      * @param name Name of the set to get
      *
-     * @return returns a copy of the reqeusted global param set
+     * @return returns a copy of the reqeusted shared param set
      *
      */
-    static std::map<std::string, std::string> getGlobalParamSet(const std::string& name);
+    static std::map<std::string, std::string> getSharedParamSet(const std::string& name);
 
     /**
-     * Get a vector of the names of available global parameter sets.
+     * Get a vector of the names of available shared parameter sets.
      *
-     * @return returns a vector of the names of available global param
+     * @return returns a vector of the names of available shared param
      * sets
      *
      */
-    static std::vector<std::string> getGlobalParamSetNames();
+    static std::vector<std::string> getSharedParamSetNames();
 
     /**
      * Get a vector of the local keys
@@ -910,14 +911,14 @@ private:
     std::vector<std::string> getLocalKeys() const;
 
     /**
-     * Get a vector of the global param sets this Params object is
+     * Get a vector of the shared param sets this Params object is
      * subscribed to
      *
-     * @return returns a vector of the global param sets his Params
+     * @return returns a vector of the shared param sets his Params
      * object is subscribed to
      *
      */
-    std::vector<std::string> getSubscribedGlobalParamSets() const;
+    std::vector<std::string> getSubscribedSharedParamSets() const;
 
 
     // Private functions used by Params
@@ -952,10 +953,10 @@ private:
     static std::map<std::string, uint32_t> keyMap;
     static std::vector<std::string>        keyMapReverse;
     static SST::Core::ThreadSafe::Spinlock keyLock;
-    static SST::Core::ThreadSafe::Spinlock globalLock;
+    static SST::Core::ThreadSafe::Spinlock sharedLock;
     static uint32_t                        nextKeyID;
 
-    static std::map<std::string, std::map<uint32_t, std::string>> global_params;
+    static std::map<std::string, std::map<uint32_t, std::string>> shared_params;
 };
 
 #if 0

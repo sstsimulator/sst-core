@@ -33,7 +33,7 @@ public:
         Creates an Poisson distribution with a specific lambda
         \param mn The lambda of the Poisson distribution
     */
-    PoissonDistribution(const double mn) : RandomDistribution(), lambda(mn)
+    explicit PoissonDistribution(const double mn) : RandomDistribution(), lambda(mn)
     {
 
         baseDistrib   = new MersenneRNG();
@@ -94,9 +94,9 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& const_cast<double&>(lambda);
-        ser& baseDistrib;
-        ser& deleteDistrib;
+        SST_SER(const_cast<double&>(lambda));
+        SST_SER(baseDistrib);
+        SST_SER(deleteDistrib);
     }
 
     /**

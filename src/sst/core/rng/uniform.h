@@ -17,6 +17,8 @@
 #include "mersenne.h"
 #include "rng.h"
 
+#include <cstdint>
+
 namespace SST::RNG {
 
 /**
@@ -33,7 +35,7 @@ public:
         Creates an uniform distribution with a specific number of bins
         \param probsCount Number of probability bins in this distribution
     */
-    UniformDistribution(const uint32_t probsCount) :
+    explicit UniformDistribution(const uint32_t probsCount) :
         RandomDistribution(),
         deleteDistrib(true),
         probCount(probsCount),
@@ -98,10 +100,10 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& baseDistrib;
-        ser& const_cast<bool&>(deleteDistrib);
-        ser& const_cast<uint32_t&>(probCount);
-        ser& probPerBin;
+        SST_SER(baseDistrib);
+        SST_SER(const_cast<bool&>(deleteDistrib));
+        SST_SER(const_cast<uint32_t&>(probCount));
+        SST_SER(probPerBin);
     }
 
     /**

@@ -12,6 +12,9 @@
 #ifndef SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
 #define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
 
+#include <cstddef>
+#include <cstdio>
+
 #include "sstmutex.h"
 
 namespace SST::Core::Interprocess {
@@ -21,7 +24,7 @@ class CircularBuffer
 {
 
 public:
-    CircularBuffer(size_t mSize = 0)
+    explicit CircularBuffer(size_t mSize = 0)
     {
         buffSize   = mSize;
         readIndex  = 0;

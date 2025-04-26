@@ -24,8 +24,12 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <map>
+#include <ostream>
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace SST::Statistics;
@@ -83,24 +87,24 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& name;
-        ser& component[0];
-        ser& component[1];
-        ser& port[0];
-        ser& port[1];
-        ser& latency[0];
-        ser& latency[1];
-        ser& latency_str[0];
-        ser& latency_str[1];
-        ser& order;
+        SST_SER(id);
+        SST_SER(name);
+        SST_SER(component[0]);
+        SST_SER(component[1]);
+        SST_SER(port[0]);
+        SST_SER(port[1]);
+        SST_SER(latency[0]);
+        SST_SER(latency[1]);
+        SST_SER(latency_str[0]);
+        SST_SER(latency_str[1]);
+        SST_SER(order);
     }
 
     ImplementSerializable(SST::ConfigLink)
 
 private:
     friend class ConfigGraph;
-    ConfigLink(LinkId_t id) : id(id), no_cut(false)
+    explicit ConfigLink(LinkId_t id) : id(id), no_cut(false)
     {
         order = 0;
 
@@ -150,10 +154,10 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& shared;
-        ser& name;
-        ser& params;
+        SST_SER(id);
+        SST_SER(shared);
+        SST_SER(name);
+        SST_SER(params);
     }
 
     ImplementSerializable(ConfigStatistic)
@@ -170,7 +174,7 @@ public:
     size_t                        outputID;
     UnitAlgebra                   outputFrequency;
 
-    ConfigStatGroup(const std::string& name) : name(name), outputID(0) {}
+    explicit ConfigStatGroup(const std::string& name) : name(name), outputID(0) {}
     ConfigStatGroup() {} /* Do not use */
 
     bool addComponent(ComponentId_t id);
@@ -187,11 +191,11 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& name;
-        ser& statMap;
-        ser& components;
-        ser& outputID;
-        ser& outputFrequency;
+        SST_SER(name);
+        SST_SER(statMap);
+        SST_SER(components);
+        SST_SER(outputID);
+        SST_SER(outputFrequency);
     }
 
     ImplementSerializable(SST::ConfigStatGroup)
@@ -203,15 +207,15 @@ public:
     std::string type;
     Params      params;
 
-    ConfigStatOutput(const std::string& type) : type(type) {}
+    explicit ConfigStatOutput(const std::string& type) : type(type) {}
     ConfigStatOutput() {}
 
     void addParameter(const std::string& key, const std::string& val) { params.insert(key, val); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& type;
-        ser& params;
+        SST_SER(type);
+        SST_SER(params);
     }
 
     ImplementSerializable(SST::ConfigStatOutput)
@@ -233,8 +237,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& type;
-        ser& params;
+        SST_SER(type);
+        SST_SER(params);
     }
     ImplementSerializable(SST::ConfigPortModule)
 };
@@ -314,9 +318,22 @@ public:
     void setStatisticParameters(const std::string& statisticName, const Params& params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
 
-    void                     addGlobalParamSet(const std::string& set) { params.addGlobalParamSet(set); }
+    void addSharedParamSet(const std::string& set) { params.addSharedParamSet(set); }
+    [[deprecated(
+        "addGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use addSharedParamSet()")]] void
+    addGlobalParamSet(const std::string& set)
+    {
+        params.addSharedParamSet(set);
+    }
     std::vector<std::string> getParamsLocalKeys() const { return params.getLocalKeys(); }
-    std::vector<std::string> getSubscribedGlobalParamSets() const { return params.getSubscribedGlobalParamSets(); }
+    std::vector<std::string> getSubscribedSharedParamSets() const { return params.getSubscribedSharedParamSets(); }
+
+    [[deprecated("getSubscribedGlobalParamSets() has been deprecated and will be removed in SST 16.  Please use "
+                 "getSubscribedSharedParamSets()")]] std::vector<std::string>
+    getSubscribedGlobalParamSets() const
+    {
+        return params.getSubscribedSharedParamSets();
+    }
 
     void addPortModule(const std::string& port, const std::string& type, const Params& params);
 
@@ -328,25 +345,25 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& id;
-        ser& name;
-        ser& slot_num;
-        ser& type;
-        ser& weight;
-        ser& rank.rank;
-        ser& rank.thread;
-        ser& links;
-        ser& params;
-        ser& statLoadLevel;
-        ser& portModules;
-        ser& enabledStatNames;
-        ser& enabledAllStats;
-        ser& statistics_;
-        ser& allStatConfig;
-        ser& subComponents;
-        ser& coords;
-        ser& nextSubID;
-        ser& nextStatID;
+        SST_SER(id);
+        SST_SER(name);
+        SST_SER(slot_num);
+        SST_SER(type);
+        SST_SER(weight);
+        SST_SER(rank.rank);
+        SST_SER(rank.thread);
+        SST_SER(links);
+        SST_SER(params);
+        SST_SER(statLoadLevel);
+        SST_SER(portModules);
+        SST_SER(enabledStatNames);
+        SST_SER(enabledAllStats);
+        SST_SER(statistics_);
+        SST_SER(allStatConfig);
+        SST_SER(subComponents);
+        SST_SER(coords);
+        SST_SER(nextSubID);
+        SST_SER(nextStatID);
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -463,8 +480,12 @@ public:
     /** Create a new component */
     ComponentId_t addComponent(const std::string& name, const std::string& type);
 
-    /** Add a parameter to a global param set */
-    void addGlobalParam(const std::string& global_set, const std::string& key, const std::string& value);
+    /** Add a parameter to a shared param set */
+    void addSharedParam(const std::string& shared_set, const std::string& key, const std::string& value);
+
+    [[deprecated(
+        "addGlobalParam() has been deprecated and will be removed in SST 16.  Please use addSharedParam()")]] void
+    addGlobalParam(const std::string& shared_set, const std::string& key, const std::string& value);
 
     /** Set the statistic output module */
     void setStatisticOutput(const std::string& name);
@@ -537,11 +558,11 @@ public:
     void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& links_;
-        ser& comps_;
-        ser& stat_outputs_;
-        ser& stat_load_level_;
-        ser& stat_groups_;
+        SST_SER(links_);
+        SST_SER(comps_);
+        SST_SER(stat_outputs_);
+        SST_SER(stat_load_level_);
+        SST_SER(stat_groups_);
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             // Need to reintialize the ConfigGraph ptrs in the
             // ConfigComponents
@@ -597,14 +618,14 @@ public:
 
     ComponentIdMap_t group;
 
-    PartitionComponent(const ConfigComponent* cc)
+    explicit PartitionComponent(const ConfigComponent* cc)
     {
         id     = cc->id;
         weight = cc->weight;
         rank   = cc->rank;
     }
 
-    PartitionComponent(LinkId_t id) : id(id), weight(0), rank(RankInfo(RankInfo::UNASSIGNED, 0)) {}
+    explicit PartitionComponent(LinkId_t id) : id(id), weight(0), rank(RankInfo(RankInfo::UNASSIGNED, 0)) {}
 
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
     void print(std::ostream& os, const PartitionGraph* graph) const;

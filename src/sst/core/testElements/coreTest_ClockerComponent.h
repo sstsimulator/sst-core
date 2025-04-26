@@ -14,6 +14,8 @@
 
 #include "sst/core/component.h"
 
+#include <string>
+
 namespace SST::CoreTestClockerComponent {
 
 class coreTestClockerComponent : public SST::Component
@@ -47,8 +49,8 @@ public:
     )
 
     coreTestClockerComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     coreTestClockerComponent();                                                    // for serialization only

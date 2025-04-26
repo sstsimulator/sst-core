@@ -69,7 +69,7 @@ coreTestRNGComponent::coreTestRNGComponent(ComponentId_t id, Params& params) : C
     primaryComponentDoNotEndSim();
 
     // set our clock
-    registerClock("1GHz", new Clock::Handler<coreTestRNGComponent>(this, &coreTestRNGComponent::tick));
+    registerClock("1GHz", new Clock::Handler2<coreTestRNGComponent, &coreTestRNGComponent::tick>(this));
 }
 
 coreTestRNGComponent::~coreTestRNGComponent()

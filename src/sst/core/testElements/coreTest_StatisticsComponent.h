@@ -15,6 +15,8 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/rng.h"
 
+#include <string>
+
 using namespace SST;
 using namespace SST::RNG;
 using namespace SST::Statistics;
@@ -60,8 +62,8 @@ public:
     )
 
     StatisticsComponentInt(ComponentId_t id, Params& params);
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     StatisticsComponentInt();
@@ -121,8 +123,8 @@ public:
     )
 
     StatisticsComponentFloat(ComponentId_t id, Params& params);
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     StatisticsComponentFloat();

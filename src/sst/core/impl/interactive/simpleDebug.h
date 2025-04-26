@@ -17,6 +17,9 @@
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/watchPoint.h"
 
+#include <string>
+#include <vector>
+
 namespace SST::IMPL::Interactive {
 
 
@@ -40,7 +43,7 @@ public:
     /**
        Creates a new self partition scheme.
     */
-    SimpleDebugger(Params& params);
+    explicit SimpleDebugger(Params& params);
 
     void execute(const std::string& msg) override;
 
@@ -63,8 +66,8 @@ private:
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
-    void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
-    void cmd_ls(std::vector<std::string>& UNUSED(tokens));
+    void cmd_pwd(std::vector<std::string>& tokens);
+    void cmd_ls(std::vector<std::string>& tokens);
     void cmd_cd(std::vector<std::string>& tokens);
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);

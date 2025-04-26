@@ -874,7 +874,7 @@ setCallPythonFinalize(PyObject* UNUSED(self), PyObject* arg)
 }
 
 static PyObject*
-globalAddParam(PyObject* UNUSED(self), PyObject* args)
+addSharedParam(PyObject* UNUSED(self), PyObject* args)
 {
     char*     set   = nullptr;
     char*     param = nullptr;
@@ -891,7 +891,7 @@ globalAddParam(PyObject* UNUSED(self), PyObject* args)
 }
 
 static PyObject*
-globalAddParams(PyObject* UNUSED(self), PyObject* args)
+addSharedParams(PyObject* UNUSED(self), PyObject* args)
 {
     char*     set  = nullptr;
     PyObject* dict = nullptr;
@@ -984,8 +984,10 @@ static PyMethodDef sstModuleMethods[] = {
     { "findComponentByName", findComponentByName, METH_O,
       "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none "
       "are to be found." },
-    { "addGlobalParam", globalAddParam, METH_VARARGS, "Add a parameter to the specified global set." },
-    { "addGlobalParams", globalAddParams, METH_VARARGS, "Add parameters in dictionary to the specified global set." },
+    { "addGlobalParam", addSharedParam, METH_VARARGS, "Add a parameter to the specified shared set." },
+    { "addGlobalParams", addSharedParams, METH_VARARGS, "Add parameters in dictionary to the specified shared set." },
+    { "addSharedParam", addSharedParam, METH_VARARGS, "Add a parameter to the specified shared set." },
+    { "addSharedParams", addSharedParams, METH_VARARGS, "Add parameters in dictionary to the specified shared set." },
     { "getElapsedExecutionTime", getElapsedExecutionTime, METH_NOARGS,
       "Gets the real elapsed time since simulation start, returned as a UnitAlgebra.  Not precise enough for "
       "getting fine timings.  For that, use the built-in time module." },

@@ -16,6 +16,8 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace SST {
@@ -30,7 +32,7 @@ namespace SST {
 class SyncQueue : public ActivityQueue
 {
 public:
-    SyncQueue(RankInfo to_rank) : ActivityQueue(), to_rank(to_rank) {}
+    explicit SyncQueue(RankInfo to_rank) : ActivityQueue(), to_rank(to_rank) {}
     ~SyncQueue() {}
 
     /** Accessor method to get to_rank */
@@ -57,7 +59,7 @@ public:
         uint32_t buffer_size;
     };
 
-    RankSyncQueue(RankInfo to_rank);
+    explicit RankSyncQueue(RankInfo to_rank);
     ~RankSyncQueue() = default;
 
     bool      empty() override;
@@ -85,7 +87,7 @@ private:
 class ThreadSyncQueue : public SyncQueue
 {
 public:
-    ThreadSyncQueue(RankInfo to_rank) : SyncQueue(to_rank) {}
+    explicit ThreadSyncQueue(RankInfo to_rank) : SyncQueue(to_rank) {}
     ~ThreadSyncQueue() {}
 
     /** Returns true if the queue is empty */

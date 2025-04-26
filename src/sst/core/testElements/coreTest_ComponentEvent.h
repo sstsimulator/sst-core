@@ -12,6 +12,8 @@
 #ifndef SST_CORE_CORETEST_COMPONENTEVENT_H
 #define SST_CORE_CORETEST_COMPONENTEVENT_H
 
+#include <vector>
+
 namespace SST::CoreTestComponent {
 
 class coreTestComponentEvent : public SST::Event
@@ -24,7 +26,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
-        ser& payload;
+        SST_SER(payload);
     }
 
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentEvent);

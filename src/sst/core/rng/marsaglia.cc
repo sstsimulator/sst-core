@@ -164,6 +164,6 @@ MarsagliaRNG::generateNextUInt32()
 void
 MarsagliaRNG::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& m_z;
-    ser& m_w;
+    SST_SER(m_z);
+    SST_SER(m_w);
 }

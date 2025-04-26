@@ -794,9 +794,9 @@ ConfigGraph::addComponent(const std::string& name, const std::string& type)
 }
 
 void
-ConfigGraph::addGlobalParam(const std::string& global_set, const std::string& key, const std::string& value)
+ConfigGraph::addSharedParam(const std::string& shared_set, const std::string& key, const std::string& value)
 {
-    Params::insert_global(global_set, key, value);
+    Params::insert_shared(shared_set, key, value);
 }
 
 void

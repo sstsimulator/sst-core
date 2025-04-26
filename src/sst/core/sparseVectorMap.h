@@ -18,6 +18,7 @@
 #include "sst/core/sst_types.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 namespace SST {
@@ -43,7 +44,7 @@ template <typename keyT, typename classT = keyT>
 class SparseVectorMap
 {
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, classT>>;
+    friend class SST::Core::Serialization::serialize_impl<SparseVectorMap<keyT, classT>>;
 
     /**
        Finds the insertion point for new data
@@ -275,7 +276,7 @@ public:
 class bad_filtered_key_error : public std::runtime_error
 {
 public:
-    bad_filtered_key_error(const std::string& what_arg) : runtime_error(what_arg) {}
+    explicit bad_filtered_key_error(const std::string& what_arg) : runtime_error(what_arg) {}
 };
 
 
@@ -300,7 +301,7 @@ template <typename keyT, typename classT>
 class SparseVectorMap<keyT, classT*>
 {
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, classT*>>;
+    friend class SST::Core::Serialization::serialize_impl<SparseVectorMap<keyT, classT*>>;
 
     /**
        Finds the insertion point for new data
@@ -577,7 +578,7 @@ template <typename keyT>
 class SparseVectorMap<keyT, keyT>
 {
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, keyT>>;
+    friend class SST::Core::Serialization::serialize_impl<SparseVectorMap<keyT, keyT>>;
 
     /**
        Finds the insertion point for new data
@@ -803,10 +804,13 @@ public:
 namespace SST::Core::Serialization {
 
 template <typename keyT, typename classT>
-class serialize<SST::SparseVectorMap<keyT, classT>>
+class serialize_impl<SST::SparseVectorMap<keyT, classT>>
 {
 public:
-    void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser) { ser& v.data; }
+    void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser, ser_opt_t options)
+    {
+        SST_SER(v.data, options);
+    }
 };
 } // namespace SST::Core::Serialization
 

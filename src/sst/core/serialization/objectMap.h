@@ -18,7 +18,9 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <typeinfo>
 #include <utility>
+#include <vector>
 
 namespace SST::Core::Serialization {
 
@@ -818,7 +820,7 @@ protected:
     T* addr_;
 
 public:
-    bool isContainer() override { return true; }
+    bool isContainer() final { return true; }
 
     std::string getType() override { return demangle_name(typeid(T).name()); }
 
@@ -827,6 +829,21 @@ public:
     explicit ObjectMapContainer(T* addr) : addr_(addr) {}
 
     ~ObjectMapContainer() override = default;
+};
+
+/**
+   Class used to map arrays
+ */
+template <class T>
+class ObjectMapArray : public ObjectMapContainer<T>
+{
+protected:
+    size_t size;
+
+public:
+    virtual size_t getSize() { return size; }
+    ObjectMapArray(T* addr, size_t size) : ObjectMapContainer<T>(addr), size(size) {}
+    ~ObjectMapArray() override = default;
 };
 
 } // namespace SST::Core::Serialization

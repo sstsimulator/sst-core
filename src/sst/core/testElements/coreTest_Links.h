@@ -53,8 +53,8 @@ public:
     coreTestLinks(SST::ComponentId_t id, SST::Params& params);
     ~coreTestLinks() = default;
 
-    void setup() {}
-    void finish() {}
+    void setup() override {}
+    void finish() override {}
 
 private:
     int my_id;

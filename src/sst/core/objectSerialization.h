@@ -25,7 +25,7 @@ serialize(dataType& data)
     SST::Core::Serialization::serializer ser;
 
     ser.start_sizing();
-    ser& data;
+    SST_SER(data);
 
     size_t size = ser.size();
 
@@ -33,7 +33,7 @@ serialize(dataType& data)
     buffer.resize(size);
 
     ser.start_packing(buffer.data(), size);
-    ser& data;
+    SST_SER(data);
 
     return buffer;
 }
@@ -48,7 +48,7 @@ deserialize(std::vector<char>& buffer)
     SST::Core::Serialization::serializer ser;
 
     ser.start_unpacking(buffer.data(), buffer.size());
-    ser& tgt;
+    SST_SER(tgt);
 
     return tgt;
 }
@@ -60,7 +60,7 @@ deserialize(std::vector<char>& buffer, dataType& tgt)
     SST::Core::Serialization::serializer ser;
 
     ser.start_unpacking(buffer.data(), buffer.size());
-    ser& tgt;
+    SST_SER(tgt);
 }
 
 template <typename dataType>
@@ -70,7 +70,7 @@ deserialize(char* buffer, int blen, dataType& tgt)
     SST::Core::Serialization::serializer ser;
 
     ser.start_unpacking(buffer, blen);
-    ser& tgt;
+    SST_SER(tgt);
 }
 
 } // namespace SST::Comms

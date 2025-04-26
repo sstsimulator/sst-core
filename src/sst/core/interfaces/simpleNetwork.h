@@ -148,16 +148,16 @@ public:
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& dest;
-            ser& src;
-            ser& vn;
-            ser& size_in_bits;
-            ser& head;
-            ser& tail;
-            ser& payload;
-            ser& trace;
-            ser& traceID;
-            ser& allow_adaptive;
+            SST_SER(dest);
+            SST_SER(src);
+            SST_SER(vn);
+            SST_SER(size_in_bits);
+            SST_SER(head);
+            SST_SER(tail);
+            SST_SER(payload);
+            SST_SER(trace);
+            SST_SER(traceID);
+            SST_SER(allow_adaptive);
         }
 
     protected:
@@ -176,7 +176,7 @@ public:
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
-        NetworkInspector(ComponentId_t id) : SubComponent(id) {}
+        explicit NetworkInspector(ComponentId_t id) : SubComponent(id) {}
 
         virtual ~NetworkInspector() {}
 
@@ -215,10 +215,39 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<bool, int, classT, dataT>;
 
+    /**
+       Used to create checkpointable handlers to notify the endpoint
+       when the SimpleNetwork sends or recieves a packet..  The
+       callback function is expected to be in the form of:
+
+         bool func(int vn)
+
+       In which case, the class is created with:
+
+         new SimpleNetwork::Handler2<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         bool func(int vn, dataT data)
+
+       and the class is created with:
+
+         new SimpleNetwork::Handler<classname, &classname::function_name, dataT>(this, data)
+
+       In both cases, the boolean that's returned indicates whether
+       the handler should be kept in the list or not.  On return
+       of true, the handler will be kept.  On return of false, the
+       handler will be removed from the clock list.
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<bool, int, classT, dataT, funcT>;
+
 
 public:
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
-    SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
+    explicit SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
+
+    SimpleNetwork() : SubComponent() {} // For serialization
 
     /**
      * Sends a network request during untimed phases (init() and
@@ -318,6 +347,9 @@ public:
      * @return Link bandwidth of associated link
      */
     virtual const UnitAlgebra& getLinkBW() const = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SubComponent::serialize_order(ser); }
+    ImplementVirtualSerializable(SST::Interfaces::SimpleNetwork)
 };
 
 } // namespace SST::Interfaces

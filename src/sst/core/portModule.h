@@ -231,7 +231,10 @@ protected:
 
        @param tc TimeConverter specifying the units
     */
-    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter& timebase)' "
+                 "(i.e., no pointer) instead.")]] SimTime_t
+              getCurrentSimTime(TimeConverter* tc) const;
+    SimTime_t getCurrentSimTime(TimeConverter& tc) const;
 
     /**
        Return the simulated time since the simulation began in

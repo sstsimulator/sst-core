@@ -30,26 +30,27 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
 
     // set our Main Clock
     registerClock(
-        clock_frequency_str, new Clock::Handler<coreTestClockerComponent>(this, &coreTestClockerComponent::tick));
+        clock_frequency_str, new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::tick>(this));
 
     // Set some other clocks
     // Second Clock (5ns)
     std::cout << "REGISTER CLOCK #2 at 5 ns" << std::endl;
     registerClock(
         "5 ns",
-        new Clock::Handler<coreTestClockerComponent, uint32_t>(this, &coreTestClockerComponent::Clock2Tick, 222));
+        new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
 
     // Third Clock (15ns)
     std::cout << "REGISTER CLOCK #3 at 15 ns" << std::endl;
     Clock3Handler =
-        new Clock::Handler<coreTestClockerComponent, uint32_t>(this, &coreTestClockerComponent::Clock3Tick, 333);
+        new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
     tc = registerClock("15 ns", Clock3Handler);
 
     // Create the OneShot Callback Handlers
-    callback1Handler = new OneShot::Handler<coreTestClockerComponent, uint32_t>(
-        this, &coreTestClockerComponent::Oneshot1Callback, 456);
+    callback1Handler =
+        new OneShot::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Oneshot1Callback, uint32_t>(
+            this, 456);
     callback2Handler =
-        new OneShot::Handler<coreTestClockerComponent>(this, &coreTestClockerComponent::Oneshot2Callback);
+        new OneShot::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Oneshot2Callback>(this);
 }
 
 coreTestClockerComponent::coreTestClockerComponent() : Component(-1)

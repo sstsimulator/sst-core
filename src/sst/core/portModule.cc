@@ -55,7 +55,7 @@ PortModule::setComponent(SST::BaseComponent* comp)
 void
 PortModule::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& component_;
+    SST_SER(component_);
 }
 
 
@@ -90,9 +90,15 @@ PortModule::getSimulationOutput() const
 }
 
 SimTime_t
-PortModule::getCurrentSimTime(TimeConverter* tc) const
+PortModule::getCurrentSimTime(TimeConverter& tc) const
 {
     return component_->getCurrentSimTime(tc);
+}
+
+SimTime_t
+PortModule::getCurrentSimTime(TimeConverter* tc) const
+{
+    return component_->getCurrentSimTime(*tc);
 }
 
 SimTime_t

@@ -16,6 +16,10 @@
 
 #include "pin.H"
 
+#include <cstddef>
+#include <cstdio>
+#include <string>
+
 namespace SST::Core::Interprocess {
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file
@@ -33,7 +37,7 @@ public:
      *
      * @param file_name Name of the shared file to mmap
      */
-    MMAPChild_Pin3(const std::string& file_name)
+    explicit MMAPChild_Pin3(const std::string& file_name)
     {
         filename = file_name;
         NATIVE_FD      fd;

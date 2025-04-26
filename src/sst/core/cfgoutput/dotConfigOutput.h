@@ -16,12 +16,14 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <cstdint>
+
 namespace SST::Core {
 
 class DotConfigGraphOutput : public ConfigGraphOutput
 {
 public:
-    DotConfigGraphOutput(const char* path);
+    explicit DotConfigGraphOutput(const char* path);
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:

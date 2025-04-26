@@ -16,6 +16,9 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/marsaglia.h"
 
+#include <cstddef>
+#include <cstdio>
+
 namespace SST::CoreTestComponent {
 
 // These first two classes are just base classes to test ELI
@@ -44,7 +47,7 @@ public:
         { "test_element", "true" }
     )
 
-    coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
+    explicit coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
     ~coreTestComponentBase() {}
     coreTestComponentBase() : SST::Component() {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override { SST::Component::serialize_order(ser); }
@@ -69,7 +72,7 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
+    explicit coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
     ~coreTestComponentBase2() {}
 
     coreTestComponentBase2() : coreTestComponentBase() {}

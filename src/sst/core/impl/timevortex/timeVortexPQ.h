@@ -16,6 +16,8 @@
 #include "sst/core/threadsafe.h"
 #include "sst/core/timeVortex.h"
 
+#include <atomic>
+#include <cstdint>
 #include <functional>
 #include <queue>
 #include <vector>
@@ -36,7 +38,7 @@ class TimeVortexPQBase : public TimeVortex
 
 public:
     // TimeVortexPQ();
-    TimeVortexPQBase(Params& params);
+    explicit TimeVortexPQBase(Params& params);
     TimeVortexPQBase(); // For serialization only
     ~TimeVortexPQBase();
 

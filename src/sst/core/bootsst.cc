@@ -14,8 +14,10 @@
 #include "sst/core/bootshared.h"
 #include "sst/core/configShared.h"
 
+#include <cstdio>
 #include <cstdlib>
-#include <string.h>
+#include <cstring>
+#include <memory>
 #include <unistd.h> // for opterr
 
 int
@@ -31,14 +33,14 @@ main(int argc, char* argv[])
     SST::ConfigShared cfg(true, true, true, true);
 
     // Make a copy of the argv array (shallow)
-    char* argv_copy[argc + 1];
+    auto argv_copy = std::make_unique<char*[]>(argc + 1);
     for ( int i = 0; i < argc; ++i ) {
         argv_copy[i] = argv[i];
     }
     argv[argc] = nullptr;
 
     // All ranks parse the command line
-    cfg.parseCmdLine(argc, argv_copy);
+    cfg.parseCmdLine(argc, argv_copy.get());
 
     if ( cfg.no_env_config() ) config_env = 0;
     if ( cfg.verbose() ) verbose = 1;

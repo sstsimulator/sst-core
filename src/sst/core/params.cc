@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#define SET_NAME_KEYWORD "GLOBAL_SET_NAME"
+#define SET_NAME_KEYWORD "SHARED_SET_NAME"
 
 namespace SST {
 
@@ -107,7 +107,7 @@ Params::print_all_params(std::ostream& os, const std::string& prefix) const
             level++;
         }
         else if ( level == 1 ) {
-            os << "Global params:" << std::endl;
+            os << "Shared params:" << std::endl;
             level++;
         }
 
@@ -127,7 +127,7 @@ Params::print_all_params(Output& out, const std::string& prefix) const
             level++;
         }
         else if ( level == 1 ) {
-            out.output("%sGlobal params:\n", prefix.c_str());
+            out.output("%sShared params:\n", prefix.c_str());
             level++;
         }
 
@@ -148,7 +148,7 @@ Params::toString(const std::string& prefix) const
             level++;
         }
         else if ( level == 1 ) {
-            str << "Global params:" << std::endl;
+            str << "Shared params:" << std::endl;
             level++;
         }
 
@@ -273,21 +273,21 @@ Params::getParamName(uint32_t id)
 void
 Params::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser&                     my_data;
-    // Serialize global params
-    std::vector<std::string> globals;
+    SST_SER(my_data);
+    // Serialize shared params
+    std::vector<std::string> shared;
     switch ( ser.mode() ) {
     case SST::Core::Serialization::serializer::PACK:
     case SST::Core::Serialization::serializer::SIZER:
         for ( size_t i = 1; i < data.size(); ++i ) {
-            globals.push_back((*data[i])[0]);
+            shared.push_back((*data[i])[0]);
         }
-        ser& globals;
+        SST_SER(shared);
         break;
     case SST::Core::Serialization::serializer::UNPACK:
-        ser& globals;
-        for ( auto x : globals )
-            data.push_back(&global_params[x]);
+        SST_SER(shared);
+        for ( auto x : shared )
+            data.push_back(&shared_params[x]);
         break;
     case SST::Core::Serialization::serializer::MAP:
         // This function not called in mapping mode
@@ -312,22 +312,22 @@ Params::getKey(const std::string& str)
 }
 
 void
-Params::addGlobalParamSet(const std::string& set)
+Params::addSharedParamSet(const std::string& set)
 {
-    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(globalLock);
-    if ( global_params.count(set) == 0 ) { global_params[set][0] = set; }
+    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
+    if ( shared_params.count(set) == 0 ) { shared_params[set][0] = set; }
 
-    data.push_back(&global_params[set]);
+    data.push_back(&shared_params[set]);
 }
 
 void
-Params::insert_global(const std::string& global_key, const std::string& key, const std::string& value, bool overwrite)
+Params::insert_shared(const std::string& shared_key, const std::string& key, const std::string& value, bool overwrite)
 {
-    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(globalLock);
-    if ( global_params.count(global_key) == 0 ) { global_params[global_key][0] = global_key; }
-    if ( overwrite ) { global_params[global_key][getKey(key)] = value; }
+    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
+    if ( shared_params.count(shared_key) == 0 ) { shared_params[shared_key][0] = shared_key; }
+    if ( overwrite ) { shared_params[shared_key][getKey(key)] = value; }
     else {
-        global_params[global_key].insert(std::make_pair(getKey(key), value));
+        shared_params[shared_key].insert(std::make_pair(getKey(key), value));
     }
 }
 
@@ -424,11 +424,11 @@ Params::cleanToken(std::string& token) const
 }
 
 std::map<std::string, std::string>
-Params::getGlobalParamSet(const std::string& name)
+Params::getSharedParamSet(const std::string& name)
 {
     std::map<std::string, std::string> ret;
-    auto                               it = global_params.find(name);
-    if ( it == global_params.end() ) return ret;
+    auto                               it = shared_params.find(name);
+    if ( it == shared_params.end() ) return ret;
 
     for ( auto x : it->second ) {
         ret[getParamName(x.first)] = x.second;
@@ -437,11 +437,11 @@ Params::getGlobalParamSet(const std::string& name)
 }
 
 std::vector<std::string>
-Params::getGlobalParamSetNames()
+Params::getSharedParamSetNames()
 {
     std::vector<std::string> ret;
-    ret.reserve(global_params.size());
-    for ( auto x : global_params ) {
+    ret.reserve(shared_params.size());
+    for ( auto x : shared_params ) {
         ret.push_back(x.first);
     }
     return ret;
@@ -461,7 +461,7 @@ Params::getLocalKeys() const
 
 
 std::vector<std::string>
-Params::getSubscribedGlobalParamSets() const
+Params::getSubscribedSharedParamSets() const
 {
     std::vector<std::string> ret;
     ret.reserve((data.size() - 1));
@@ -536,10 +536,10 @@ std::map<std::string, uint32_t> Params::keyMap;
 std::vector<std::string>        Params::keyMapReverse({ "<set_name>" });
 uint32_t                        Params::nextKeyID = 1;
 Core::ThreadSafe::Spinlock      Params::keyLock;
-Core::ThreadSafe::Spinlock      Params::globalLock;
+Core::ThreadSafe::Spinlock      Params::sharedLock;
 // ID 0 is reserved for holding metadata
 bool                            Params::g_verify_enabled = false;
 
-std::map<std::string, std::map<uint32_t, std::string>> Params::global_params;
+std::map<std::string, std::map<uint32_t, std::string>> Params::shared_params;
 
 } // namespace SST

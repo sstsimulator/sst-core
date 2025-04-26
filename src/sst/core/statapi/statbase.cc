@@ -198,72 +198,20 @@ StatisticBase::operator==(StatisticBase& check_stat)
     return (getFullStatName() == check_stat.getFullStatName());
 }
 
-// GV_TODO: Potentially remove this. It doesn't work as intended and delays should be user-set, not component-set
-void
-StatisticBase::delayOutput(const char* delay_time)
-{
-    // Make sure only a single output delay is active
-    if ( false == info_->output_delayed_ ) {
-
-        // Save the Stat Output Enable setting and then disable the output
-        info_->saved_output_enabled_ = info_->output_enabled_;
-        info_->output_enabled_       = false;
-        info_->output_delayed_       = true;
-
-        Simulation_impl::getSimulation()->registerOneShot(
-            delay_time, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayOutputExpiredHandler),
-            STATISTICCLOCKPRIORITY);
-    }
-}
-
-// GV_TODO: Potentially remove this. It doesn't work as intended and delays should be user-set, not component-set
-void
-StatisticBase::delayCollection(const char* delay_time)
-{
-    // Make sure only a single collection delay is active
-    if ( false == info_->collection_delayed_ ) {
-
-        // Save the Stat Enable setting and then disable the Stat for collection
-        info_->saved_stat_enabled_ = info_->stat_enabled_;
-        info_->stat_enabled_       = false;
-        info_->collection_delayed_ = true;
-
-        Simulation_impl::getSimulation()->registerOneShot(
-            delay_time, new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler),
-            STATISTICCLOCKPRIORITY);
-    }
-}
-
-void
-StatisticBase::delayOutputExpiredHandler()
-{
-    // Restore the Output Enable to its stored value
-    info_->output_enabled_ = info_->saved_output_enabled_;
-    info_->output_delayed_ = false;
-}
-
-void
-StatisticBase::delayCollectionExpiredHandler()
-{
-    // Restore the Statistic Enable to its stored value
-    info_->stat_enabled_       = info_->saved_stat_enabled_;
-    info_->collection_delayed_ = false;
-}
-
 void
 StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     /* Only serialize info if stat is non-null */
-    if ( !isNullStatistic() ) { ser& info_; }
+    if ( !isNullStatistic() ) { SST_SER(info_); }
 
     /* Store/restore data type */
     if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
         std::string name(StatisticFieldInfo::getFieldTypeShortName(stat_data_type_));
-        ser&        name;
+        SST_SER(name);
     }
     else {
         std::string name;
-        ser&        name;
+        SST_SER(name);
         stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
     }
 }
@@ -303,23 +251,23 @@ StatisticBase::StatisticInfo::serialize_order(SST::Core::Serialization::serializ
     // stat_name_ serialized by StatisticBase
     // stat_sub_id_ serialized by StatisticBase
     // group_ recreated on restart
-    ser& stat_type_name_;
-    ser& stat_full_name_;
-    ser& current_collection_count_;
-    ser& output_collection_count_;
-    ser& collection_count_limit_;
-    ser& registered_collection_mode_;
-    ser& start_at_time_;
-    ser& stop_at_time_;
-    ser& collection_rate_;
-    ser& stat_enabled_;
-    ser& output_enabled_;
-    ser& reset_count_on_output_;
-    ser& clear_data_on_output_;
-    ser& output_at_end_of_sim_;
-    ser& output_delayed_;
-    ser& saved_stat_enabled_;
-    ser& saved_output_enabled_;
+    SST_SER(stat_type_name_);
+    SST_SER(stat_full_name_);
+    SST_SER(current_collection_count_);
+    SST_SER(output_collection_count_);
+    SST_SER(collection_count_limit_);
+    SST_SER(registered_collection_mode_);
+    SST_SER(start_at_time_);
+    SST_SER(stop_at_time_);
+    SST_SER(collection_rate_);
+    SST_SER(stat_enabled_);
+    SST_SER(output_enabled_);
+    SST_SER(reset_count_on_output_);
+    SST_SER(clear_data_on_output_);
+    SST_SER(output_at_end_of_sim_);
+    SST_SER(output_delayed_);
+    SST_SER(saved_stat_enabled_);
+    SST_SER(saved_output_enabled_);
 }
 
 SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);

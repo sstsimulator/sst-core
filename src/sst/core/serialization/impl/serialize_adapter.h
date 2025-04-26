@@ -37,11 +37,33 @@ class serialize_impl<
         using T<Ts...>::c; // access protected container
     };
 
-public:
-    void operator()(T<Ts...>& v, serializer& ser)
+    void operator()(T<Ts...>& v, serializer& ser, ser_opt_t options)
     {
-        ser& static_cast<S&>(v).c; // serialize the underlying container
+        SST_SER(static_cast<S&>(v).c, options); // serialize the underlying container
     }
+
+    SST_FRIEND_SERIALIZE();
+};
+
+template <template <typename...> class T, typename... Ts>
+class serialize_impl<
+    T<Ts...>*, std::enable_if_t<
+                   is_same_template_v<T, std::stack> || is_same_template_v<T, std::queue> ||
+                   is_same_template_v<T, std::priority_queue>>>
+{
+    struct S : T<Ts...>
+    {
+        using T<Ts...>::c; // access protected container
+    };
+
+    void operator()(T<Ts...>*& v, serializer& ser, ser_opt_t options)
+    {
+        if ( ser.mode() == serializer::UNPACK ) { v = new T<Ts...>(); }
+
+        SST_SER(static_cast<S&>(*v).c, options); // serialize the underlying container
+    }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization

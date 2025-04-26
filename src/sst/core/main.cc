@@ -457,7 +457,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     if ( !restart ) {
         double start_build = sst_get_cpu_time();
 
-
         barrier.wait();
 
         sim->processGraphInfo(*info.graph, info.myRank, info.min_part);
@@ -792,18 +791,18 @@ main(int argc, char* argv[])
         uint32_t                        cpt_params_next_key_id;
 
         ser.start_unpacking(buffer, size);
-        ser& cpt_num_ranks;
-        ser& cpt_num_threads;
-        ser& cpt_lib_path;
-        ser& cpt_timebase;
-        ser& cpt_output_directory;
-        ser& cpt_output_core_prefix;
-        ser& cpt_output_verbose;
-        ser& cpt_debug_file;
-        ser& cpt_prefix;
-        ser& cpt_params_key_map;
-        ser& cpt_params_key_map_reverse;
-        ser& cpt_params_next_key_id;
+        SST_SER(cpt_num_ranks);
+        SST_SER(cpt_num_threads);
+        SST_SER(cpt_lib_path);
+        SST_SER(cpt_timebase);
+        SST_SER(cpt_output_directory);
+        SST_SER(cpt_output_core_prefix);
+        SST_SER(cpt_output_verbose);
+        SST_SER(cpt_debug_file);
+        SST_SER(cpt_prefix);
+        SST_SER(cpt_params_key_map);
+        SST_SER(cpt_params_key_map_reverse);
+        SST_SER(cpt_params_next_key_id);
 
         fs_globals.close();
         delete[] buffer;
@@ -1003,7 +1002,7 @@ main(int argc, char* argv[])
                 Comms::broadcast(Params::keyMap, 0);
                 Comms::broadcast(Params::keyMapReverse, 0);
                 Comms::broadcast(Params::nextKeyID, 0);
-                Comms::broadcast(Params::global_params, 0);
+                Comms::broadcast(Params::shared_params, 0);
 
                 std::set<uint32_t> my_ranks;
                 std::set<uint32_t> your_ranks;

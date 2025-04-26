@@ -33,7 +33,7 @@ public:
         Creates an exponential distribution with a specific lambda
         \param mn The lambda of the exponential distribution
     */
-    ExponentialDistribution(const double mn) : RandomDistribution()
+    explicit ExponentialDistribution(const double mn) : RandomDistribution()
     {
 
         lambda        = mn;
@@ -88,9 +88,9 @@ public:
     */
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& lambda;
-        ser& baseDistrib;
-        ser& deleteDistrib;
+        SST_SER(lambda);
+        SST_SER(baseDistrib);
+        SST_SER(deleteDistrib);
     }
 
     /**

@@ -24,7 +24,7 @@ class ElemLoader
 {
 public:
     /** Create a new ElementLoader with a given searchpath of directories */
-    ElemLoader(const std::string& searchPaths);
+    explicit ElemLoader(const std::string& searchPaths);
     ~ElemLoader();
 
     /** Attempt to load a library

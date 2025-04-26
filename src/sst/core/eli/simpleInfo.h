@@ -14,6 +14,8 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <type_traits>
+
 namespace SST::ELI {
 
 // ProvidesSimpleInfo is a class to quickly add ELI info to an ELI
@@ -89,7 +91,7 @@ public:
 
 protected:
     template <class T>
-    ProvidesSimpleInfo(T* UNUSED(t)) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
+    explicit ProvidesSimpleInfo(T* UNUSED(t)) : info_(ELI_templatedGetSimpleInfo<T, num, InfoType>())
     {}
 
 private:

@@ -541,7 +541,7 @@ compCreateStatistic(PyObject* self, PyObject* args)
 }
 
 static PyObject*
-compAddGlobalParamSet(PyObject* self, PyObject* arg)
+compAddSharedParamSet(PyObject* self, PyObject* arg)
 {
     const char* set = nullptr;
     PyErr_Clear();
@@ -549,7 +549,7 @@ compAddGlobalParamSet(PyObject* self, PyObject* arg)
 
     ConfigComponent* c = getComp(self);
 
-    if ( set != nullptr ) { c->addGlobalParamSet(set); }
+    if ( set != nullptr ) { c->addSharedParamSet(set); }
     else {
         return nullptr;
     }
@@ -579,7 +579,8 @@ static PyMethodDef componentMethods[] = {
     { "setSubComponent", compSetSubComponent, METH_VARARGS, "Bind a subcomponent to slot <name>, with type <type>" },
     { "setCoordinates", compSetCoords, METH_VARARGS,
       "Set (X,Y,Z) coordinates of this component, for use with visualization" },
-    { "addGlobalParamSet", compAddGlobalParamSet, METH_O, "Add global parameter set to the component" },
+    { "addSharedParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
+    { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { nullptr, nullptr, 0, nullptr }
 };
 
@@ -689,7 +690,8 @@ static PyMethodDef subComponentMethods[] = {
       "Enable a statistic with a name and return a handle to it" },
     { "setStatistic", compSetStatistic, METH_VARARGS, "Reuse a statistic for the binding" },
     { "setSubComponent", compSetSubComponent, METH_VARARGS, "Bind a subcomponent to slot <name>, with type <type>" },
-    { "addGlobalParamSet", compAddGlobalParamSet, METH_O, "Add global parameter set to the component" },
+    { "addSharedParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
+    { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { "setCoordinates", compSetCoords, METH_VARARGS,
       "Set (X,Y,Z) coordinates of this component, for use with visualization" },
     { nullptr, nullptr, 0, nullptr }

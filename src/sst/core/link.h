@@ -18,6 +18,10 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 namespace SST {
 
 #define _LINK_DBG(fmt, args...) __DBG(DBG_LINK, Link, fmt, ##args)
@@ -39,10 +43,10 @@ class Link;
 template <>
 class SST::Core::Serialization::serialize_impl<Link*>
 {
-    template <class A>
-    friend class serialize;
     // Function implemented in link.cc
-    void operator()(Link*& s, SST::Core::Serialization::serializer& ser);
+    void operator()(Link*& s, SST::Core::Serialization::serializer& ser, ser_opt_t options);
+
+    SST_FRIEND_SERIALIZE();
 };
 
 
@@ -134,7 +138,10 @@ public:
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addSendLatency(SimTime_t cycles, "
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
+         addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+    void addSendLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
@@ -146,7 +153,10 @@ public:
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addRecvLatency(SimTime_t cycles, "
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
+         addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
+    void addRecvLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set the callback function to be called when a message is
      * delivered. Not available for Polling links.
@@ -174,10 +184,24 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    inline void send(SimTime_t delay, TimeConverter* tc, Event* event)
+    [[deprecated(
+        "Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, const TimeConverter& tc, "
+        "Event* event)' instead.")]] inline void
+    send(SimTime_t delay, TimeConverter* tc, Event* event)
     {
-        send_impl(tc->convertToCoreTime(delay), event);
+        send(delay, *tc, event);
     }
+
+    /** Send an event over the link with additional delay. Sends an event
+     * over a link with an additional delay specified with a
+     * TimeConverter. I.e. the total delay is the link's delay + the
+     * additional specified delay.
+     * @param delay - additional delay
+     * @param tc - time converter to specify units for the additional delay
+     * @param event - the Event to send
+     */
+    inline void send(SimTime_t delay, TimeConverter tc, Event* event) { send_impl(tc.convertToCoreTime(delay), event); }
+
 
     /** Send an event with additional delay. Sends an event over a link
      * with additional delay specified by the Link's default
@@ -202,10 +226,17 @@ public:
      */
     Event* recv();
 
-    /** Manually set the default detaulTimeBase
+    /** Manually set the default defaultTimeBase
      * @param tc TimeConverter object for the timebase
      */
-    void setDefaultTimeBase(TimeConverter* tc);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)', "
+                 "(i.e., no pointer) instead.")]] void
+    setDefaultTimeBase(TimeConverter* tc);
+
+    /** Manually set the default defaultTimeBase
+     * @param tc TimeConverter object for the timebase
+     */
+    void setDefaultTimeBase(TimeConverter tc);
 
     /** Return the default Time Base for this link
      * @return the default Time Base for this link
@@ -328,7 +359,7 @@ private:
         value used for enforce_link_order (if that feature is
         enabled).
      */
-    Link(LinkId_t tag);
+    explicit Link(LinkId_t tag);
 
     Link(const Link& l);
 
@@ -355,6 +386,14 @@ private:
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;
     ToolList* attached_tools;
+
+    /** Manually set the default time base
+     * @param factor SimTime_T defining the timebase factor
+     */
+    void setDefaultTimeBase(SimTime_t factor) { defaultTimeBase = factor; }
+
+    /** Set the default time base fo uninitialized */
+    void resetDefaultTimeBase() { defaultTimeBase = 0; }
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

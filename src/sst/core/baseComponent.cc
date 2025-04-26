@@ -102,7 +102,7 @@ BaseComponent::~BaseComponent()
 }
 
 void
-BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc)
+BaseComponent::setDefaultTimeBaseForLinks(TimeConverter tc)
 {
     LinkMap* myLinks = my_info->getLinkMap();
     if ( nullptr != myLinks ) {
@@ -169,11 +169,25 @@ BaseComponent::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handle
 }
 
 TimeConverter*
+BaseComponent::registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll)
+{
+    TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
+    registerClock_impl(tcRet, handler, regAll);
+    return tcRet;
+}
+
+TimeConverter*
 BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
     registerClock_impl(tcRet, handler, regAll);
     return tcRet;
+}
+
+Cycle_t
+BaseComponent::reregisterClock(TimeConverter freq, Clock::HandlerBase* handler)
+{
+    return sim_->reregisterClock(freq, handler, CLOCKPRIORITY);
 }
 
 Cycle_t
@@ -184,6 +198,12 @@ BaseComponent::reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler)
 
 Cycle_t
 BaseComponent::getNextClockCycle(TimeConverter* freq)
+{
+    return sim_->getNextClockCycle(freq, CLOCKPRIORITY);
+}
+
+Cycle_t
+BaseComponent::getNextClockCycle(TimeConverter freq)
 {
     return sim_->getNextClockCycle(freq, CLOCKPRIORITY);
 }
@@ -276,7 +296,7 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
 }
 
 Link*
-BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
 
@@ -300,8 +320,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                     my_info->link_map = myLinks;
                 }
                 myLinks->insertLink(name, tmp);
-                // Need to set the link's defaultTimeBase to nullptr
-                tmp->setDefaultTimeBase(nullptr);
+                // Need to set the link's defaultTimeBase to uninitialized
+                tmp->resetDefaultTimeBase();
 
                 // Need to see if I got any port_modules, if so, need
                 // to add them to my_info->portModules
@@ -362,11 +382,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 }
             }
         }
-
-        if ( nullptr != time_base )
-            tmp->setDefaultTimeBase(time_base);
-        else
-            tmp->setDefaultTimeBase(my_info->defaultTimeBase);
+        tmp->setDefaultTimeBase(time_base);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
 #endif
@@ -375,21 +391,43 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 }
 
 Link*
+BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+{
+    // Lookup core-owned time_base in case it differs from the one passed in (unlikely but possible)
+    SimTime_t factor = 0;
+    if ( nullptr != time_base )
+        factor = time_base->getFactor();
+    else if ( my_info->defaultTimeBase.isInitialized() )
+        factor = my_info->defaultTimeBase.getFactor();
+
+    return configureLink_impl(name, factor, handler);
+}
+
+Link*
+BaseComponent::configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler)
+{
+    return configureLink_impl(name, time_base.getFactor(), handler);
+}
+
+Link*
 BaseComponent::configureLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
+    SimTime_t factor = Simulation_impl::getTimeLord()->getTimeConverter(time_base)->getFactor();
+    return configureLink_impl(name, factor, handler);
 }
 
 Link*
 BaseComponent::configureLink(const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name, Simulation_impl::getTimeLord()->getTimeConverter(time_base), handler);
+    SimTime_t factor = Simulation_impl::getTimeLord()->getTimeConverter(time_base)->getFactor();
+    return configureLink_impl(name, factor, handler);
 }
 
 Link*
 BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
-    return configureLink(name, nullptr, handler);
+    SimTime_t factor = my_info->defaultTimeBase ? my_info->defaultTimeBase.getFactor() : 0;
+    return configureLink_impl(name, factor, handler);
 }
 
 void
@@ -406,6 +444,13 @@ BaseComponent::addSelfLink(const std::string& name)
     // Set default time base to the component time base
     link->setDefaultTimeBase(my_info->defaultTimeBase);
     myLinks->insertLink(name, link);
+}
+
+Link*
+BaseComponent::configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name, time_base, handler);
 }
 
 Link*
@@ -491,9 +536,15 @@ BaseComponent::getSimulationOutput() const
 }
 
 SimTime_t
+BaseComponent::getCurrentSimTime(TimeConverter tc) const
+{
+    return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
+}
+
+SimTime_t
 BaseComponent::getCurrentSimTime(TimeConverter* tc) const
 {
-    return tc->convertFromCoreTime(sim_->getCurrentSimCycle());
+    return getCurrentSimTime(*tc);
 }
 
 SimTime_t
@@ -522,7 +573,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
     SimTime_t ret;
     try {
         TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
-        ret               = getCurrentSimTime(tc);
+        ret               = getCurrentSimTime(*tc);
     }
     catch ( std::underflow_error& e ) {
         // base is too small for the core timebase, fall back to using UnitAlgebra
@@ -679,6 +730,19 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
             name.c_str());
     }
     return info;
+}
+
+TimeConverter*
+BaseComponent::getDefaultTimeBase()
+{
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
+}
+
+
+const TimeConverter*
+BaseComponent::getDefaultTimeBase() const
+{
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
 }
 
 bool
@@ -887,8 +951,8 @@ BaseComponent::initiateInteractive(const std::string& msg)
 void
 BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    ser& my_info;
-    ser& isExtension;
+    SST_SER(my_info);
+    SST_SER(isExtension);
 
     switch ( ser.mode() ) {
     case SST::Core::Serialization::serializer::SIZER:
@@ -897,12 +961,12 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
         // Need to serialize each handler
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers = clock_handlers.size();
-        ser&                                      num_handlers;
+        SST_SER(num_handlers);
         for ( auto* handler : clock_handlers ) {
             p.first  = handler;
             // See if it's currently registered with a clock
             p.second = sim_->getClockForHandler(handler);
-            ser& p;
+            SST_SER(p);
         }
         break;
     }
@@ -911,9 +975,9 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
         sim_ = Simulation_impl::getSimulation();
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers;
-        ser&                                      num_handlers;
+        SST_SER(num_handlers);
         for ( size_t i = 0; i < num_handlers; ++i ) {
-            ser& p;
+            SST_SER(p);
             // Add handler to clock_handlers list
             clock_handlers.push_back(p.first);
             // If it was previously registered, register it now
@@ -1077,19 +1141,18 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
             // on slotname and slotnum
             name_str += it->second.getSlotName() + "[" + std::to_string(it->second.getSlotNum()) + "]";
         }
-        // sst_map_object(ser, it->second.component, it->second.getShortName().c_str());
-        sst_map_object(ser, it->second.component, name_str.c_str());
+        SST_SER_NAME(it->second.component, name_str.c_str());
         it->second.serialize_comp(ser);
     }
 
     // Put in ComponentInfo data
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
     ser.mapper().map_hierarchy_start("my_info", my_info_dir);
-    ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<ComponentId_t&>(comp->my_info->id_), "id");
-    ser.mapper().setNextObjectReadOnly();
-    sst_map_object(ser, const_cast<std::string&>(comp->my_info->type), "type");
-    sst_map_object(ser, comp->my_info->defaultTimeBase, "defaultTimeBase");
+
+    SST_SER_NAME(const_cast<ComponentId_t&>(comp->my_info->id_), "id", SerOption::map_read_only);
+    SST_SER_NAME(const_cast<std::string&>(comp->my_info->type), "type", SerOption::map_read_only);
+    SST_SER_NAME(comp->my_info->defaultTimeBase, "defaultTimeBase");
+
     ser.mapper().map_hierarchy_end(); // for my_info_dir
 
     s->serialize_order(ser);

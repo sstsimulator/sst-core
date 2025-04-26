@@ -17,7 +17,10 @@
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/threadsafe.h"
 
+#include <atomic>
+#include <cstdint>
 #include <map>
+#include <string>
 
 namespace SST {
 
@@ -28,7 +31,7 @@ class RankSyncParallelSkip : public RankSync
 {
 public:
     /** Create a new Sync object which fires with a specified period */
-    RankSyncParallelSkip(RankInfo num_ranks);
+    explicit RankSyncParallelSkip(RankInfo num_ranks);
     RankSyncParallelSkip() {} // For serialization
     virtual ~RankSyncParallelSkip();
 
@@ -71,7 +74,7 @@ private:
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& to_rank;
+            SST_SER(to_rank);
             // squeue - empty so recreate on restart
             // sbuf - empty so recreate on restart
             // remote_size - don't need
@@ -92,8 +95,8 @@ private:
 #endif
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
-            ser& remote_rank;
-            ser& local_thread;
+            SST_SER(remote_rank);
+            SST_SER(local_thread);
             // activity_vec - empty so recreate on restart
             // rbuf - empty so recreate on restart
             // recv_done - don't need

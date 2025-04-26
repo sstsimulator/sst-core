@@ -17,6 +17,7 @@
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 
+#include <map>
 #include <mutex>
 #include <string>
 
@@ -46,7 +47,7 @@ class SharedObjectChangeSet : public SST::Core::Serialization::serializable
 
 public:
     SharedObjectChangeSet() {}
-    SharedObjectChangeSet(const std::string& name) : name(name) {}
+    explicit SharedObjectChangeSet(const std::string& name) : name(name) {}
 
     /**
        Apply the changes to the name shared data.
@@ -54,7 +55,7 @@ public:
        @param manager The SharedObjectDataManager for the rank.  This
        is used to get the named shared data.
      */
-    virtual void applyChanges(SharedObjectDataManager* UNUSED(manager)) = 0;
+    virtual void applyChanges(SharedObjectDataManager* manager) = 0;
 
     /**
        Clears the data.  Used after transfering data to other ranks to
@@ -72,7 +73,7 @@ public:
     const std::string& getName() { return name; }
 
 protected:
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& name; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectChangeSet);
 
@@ -190,7 +191,7 @@ protected:
 
        @param name name of the SharedObject
      */
-    SharedObjectData(const std::string& name) :
+    explicit SharedObjectData(const std::string& name) :
         name(name),
         share_count(0),
         publish_count(0),
@@ -205,7 +206,7 @@ protected:
      */
     virtual ~SharedObjectData() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& name; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectData);
 };
@@ -262,7 +263,7 @@ public:
 
     void updateState(bool finalize);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { ser& shared_data; }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(shared_data); }
     ImplementSerializable(SST::Shared::SharedObjectDataManager)
 };
 

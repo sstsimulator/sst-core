@@ -16,6 +16,8 @@
 
 #include "sst/core/serialization/serializable.h"
 
+#include <cstdint>
+
 namespace SST {
 
 class RankInfo : public SST::Core::Serialization::serializable
@@ -66,8 +68,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& rank;
-        ser& thread;
+        SST_SER(rank);
+        SST_SER(thread);
     }
 
 private:

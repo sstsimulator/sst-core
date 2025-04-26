@@ -73,10 +73,10 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Statistics::Statistic<NumberBase>::serialize_order(ser);
-        ser& m_sum;
-        ser& m_sum_sq;
-        ser& m_min;
-        ser& m_max;
+        SST_SER(m_sum);
+        SST_SER(m_sum_sq);
+        SST_SER(m_min);
+        SST_SER(m_max);
         // Remaining fields will be reset by statistics output object
     }
 

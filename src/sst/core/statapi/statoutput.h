@@ -23,6 +23,7 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME     "sst.statOutputConsole"
@@ -152,7 +153,7 @@ protected:
     /** Construct a base StatisticOutput
      * @param outputParameters - The parameters for the statistic Output.
      */
-    StatisticOutput(Params& outputParameters);
+    explicit StatisticOutput(Params& outputParameters);
     StatisticOutput() { ; } // For serialization only
     void setStatisticOutputName(const std::string& name) { m_statOutputName = name; }
 
@@ -285,7 +286,7 @@ public:
         /** Construct a base StatisticOutput
          * @param outputParameters - The parameters for the statistic Output.
          */
-        StatisticFieldsOutput(Params& outputParameters);
+        explicit StatisticFieldsOutput(Params& outputParameters);
 
     // For Serialization
     StatisticFieldsOutput() : m_highestFieldHandle(0), m_currentFieldStatName("") {}

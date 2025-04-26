@@ -38,7 +38,7 @@ public:
 
     /** Create a new StopAction which includes a message to be printed when it fires
      */
-    StopAction(const std::string& msg)
+    explicit StopAction(const std::string& msg)
     {
         setPriority(STOPACTIONPRIORITY);
         print_message = true;
@@ -60,8 +60,8 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Action::serialize_order(ser);
-        ser& message;
-        ser& print_message;
+        SST_SER(message);
+        SST_SER(print_message);
     }
     ImplementSerializable(SST::StopAction)
 };

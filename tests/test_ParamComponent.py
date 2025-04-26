@@ -13,20 +13,20 @@ import sst
 ########################################################
 # Test Cases
 ########################################################
-# Global parameter sets
+# Shared parameter sets
 # Parameter parsing for bool from yes/no & true/false
 ########################################################
 
 # Define SST core options
 sst.setProgramOption("stop-at", "25us")
 
-global_params = {
+shared_params = {
     "bool_true_param" : "yes",
     "bool_false_param" : "no",
     "scope.string" : "scope test"
     }
 
-sst.addGlobalParams("test_set",global_params)
+sst.addSharedParams("test_set",shared_params)
 
 # Define the simulation components
 param_c0 = sst.Component("c0", "coreTestElement.coreTestParamComponent")
@@ -40,8 +40,8 @@ param_c0.addParams({
 	"float_param" : 1.0101,
 	"double_param" : 1.3333e-10
 })
-param_c0.addGlobalParamSet("test_set")
-param_c0.addGlobalParamSet("test_set2")
+param_c0.addSharedParamSet("test_set")
+param_c0.addSharedParamSet("test_set2")
 
 # Define the simulation components
 param_c1 = sst.Component("c1", "coreTestElement.coreTestParamComponent")
@@ -55,8 +55,8 @@ param_c1.addParams({
 	"float_param" : 1.00000000e-15,
 	"double_param" : 1.3333e-52
 })
-param_c1.addGlobalParamSet("test_set")
-param_c1.addGlobalParamSet("test_set2")
+param_c1.addSharedParamSet("test_set")
+param_c1.addSharedParamSet("test_set2")
 
 # Define the simulation components
 param_c2 = sst.Component("c2", "coreTestElement.coreTestParamComponent")
@@ -71,8 +71,8 @@ param_c2.addParams({
 	"double_param" : "-1.33e7",
 	"string_param" : "teststring456"
 })
-param_c2.addGlobalParamSet("test_set")
-param_c2.addGlobalParamSet("test_set2")
+param_c2.addSharedParamSet("test_set")
+param_c2.addSharedParamSet("test_set2")
 
 # Define the simulation components
 param_c3 = sst.Component("c3", "coreTestElement.coreTestParamComponent")
@@ -87,8 +87,8 @@ param_c3.addParams({
         "scope.int32" : "100",
         "scope.bool" : "no"
 })
-param_c3.addGlobalParamSet("test_set")
-param_c3.addGlobalParamSet("test_set2")
+param_c3.addSharedParamSet("test_set")
+param_c3.addSharedParamSet("test_set2")
 
 # Define the simulation components
 array_param = [ 1, 2, "4", "8" ]
@@ -101,4 +101,4 @@ param_c4.addParams({
         "map_param" : map_param
 })
 
-sst.addGlobalParam("test_set2","string_param","teststring123")
+sst.addSharedParam("test_set2","string_param","teststring123")

@@ -18,8 +18,10 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <getopt.h>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -317,13 +319,13 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         // Turn off printing of errors in getopt_long
         opterr = 0;
     }
-    struct option sst_long_options[num_options + 2];
+    auto sst_long_options = std::make_unique<option[]>(num_options + 2);
 
     // Because a zero index can mean two different things, we put in a
     // dummy so we don't ever get a zero index
     sst_long_options[0] = { "*DUMMY_ARGUMENT*", no_argument, nullptr, 0 };
-    int option_map[num_options + 1];
-    option_map[0] = 0;
+    auto option_map     = std::make_unique<int[]>(num_options + 1);
+    option_map[0]       = 0;
     {
         int count = 1;
 
@@ -359,7 +361,8 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
     int status = 0;
     while ( 0 == status ) {
         int       option_index = 0;
-        const int intC = getopt_long(my_argc, argv, short_options_string.c_str(), sst_long_options, &option_index);
+        const int intC =
+            getopt_long(my_argc, argv, short_options_string.c_str(), sst_long_options.get(), &option_index);
 
         if ( intC == -1 ) /* We're done */
             break;

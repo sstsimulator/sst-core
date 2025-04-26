@@ -17,7 +17,12 @@
 #include "sst/core/util/filesystem.h"
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace SST {
 class ConfigGraph;
@@ -31,7 +36,7 @@ namespace Core {
 class ConfigGraphOutputException : public std::exception
 {
 public:
-    ConfigGraphOutputException(const char* msg)
+    explicit ConfigGraphOutputException(const char* msg)
     {
         exMsg = (char*)malloc(sizeof(char) * (strlen(msg) + 1));
         std::strcpy(exMsg, msg);
@@ -55,7 +60,7 @@ protected:
 class ConfigGraphOutput
 {
 public:
-    ConfigGraphOutput(const char* path);
+    explicit ConfigGraphOutput(const char* path);
 
     virtual ~ConfigGraphOutput() { fclose(outputFile); }
 
@@ -70,28 +75,40 @@ protected:
     FILE* outputFile;
 
     /**
-     * Get a named global parameter set.
+     * Get a named shared parameter set.
      *
      * @param name Name of the set to get
      *
-     * @return returns a copy of the reqeusted global param set
+     * @return returns a copy of the reqeusted shared param set
      *
      */
-    static std::map<std::string, std::string> getGlobalParamSet(const std::string& name)
+    static std::map<std::string, std::string> getSharedParamSet(const std::string& name)
     {
-        return Params::getGlobalParamSet(name);
+        return Params::getSharedParamSet(name);
     }
 
 
+    [[deprecated("getGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use "
+                 "getSharedParamSet()")]] static std::map<std::string, std::string>
+    getGlobalParamSet(const std::string& name)
+    {
+        return getSharedParamSet(name);
+    }
     /**
-     * Get a vector of the names of available global parameter sets.
+     * Get a vector of the names of available shared parameter sets.
      *
-     * @return returns a vector of the names of available global param
+     * @return returns a vector of the names of available shared param
      * sets
      *
      */
-    static std::vector<std::string> getGlobalParamSetNames() { return Params::getGlobalParamSetNames(); }
+    static std::vector<std::string> getSharedParamSetNames() { return Params::getSharedParamSetNames(); }
 
+    [[deprecated("getGlobalParamSetNames() has been deprecated and will be removed in SST 16.  Please use "
+                 "getSharedParamSetNames()")]] static std::vector<std::string>
+    getGlobalParamSetNames()
+    {
+        return getSharedParamSetNames();
+    }
 
     /**
      * Get a vector of the local keys
@@ -104,16 +121,23 @@ protected:
 
 
     /**
-     * Get a vector of the global param sets this Params object is
+     * Get a vector of the shared param sets this Params object is
      * subscribed to
      *
-     * @return returns a vector of the global param sets his Params
+     * @return returns a vector of the shared param sets his Params
      * object is subscribed to
      *
      */
-    std::vector<std::string> getSubscribedGlobalParamSets(const Params& params) const
+    std::vector<std::string> getSubscribedSharedParamSets(const Params& params) const
     {
-        return params.getSubscribedGlobalParamSets();
+        return params.getSubscribedSharedParamSets();
+    }
+
+    [[deprecated("getSubscribedGlobalParamSets() has been deprecated and will be removed in SST 16.  Please use "
+                 "getSubscribedSharedParamSets()")]] std::vector<std::string>
+    getSubscribedGlobalParamSets(const Params& params) const
+    {
+        return getSubscribedSharedParamSets(params);
     }
 };
 

@@ -103,4 +103,11 @@ serializer::report_object_map(ObjectMap* ptr)
     ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
 }
 
+const char*
+serializer::getMapName() const
+{
+    if ( !mapContext ) throw std::invalid_argument("Internal error: Empty map name when map serialization requires it");
+    return mapContext->getName();
+}
+
 } // namespace SST::Core::Serialization

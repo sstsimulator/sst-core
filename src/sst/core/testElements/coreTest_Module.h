@@ -17,6 +17,8 @@
 #include "sst/core/module.h"
 #include "sst/core/rng/rng.h"
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
 using namespace SST;
@@ -41,7 +43,7 @@ public:
         { "seed",    "The seed to use for the random number generator.", "11" },
     )
 
-    CoreTestModuleExample(SST::Params& params);
+    explicit CoreTestModuleExample(SST::Params& params);
     ~CoreTestModuleExample();
     std::string getRNGType() const;
     uint32_t    getNext();

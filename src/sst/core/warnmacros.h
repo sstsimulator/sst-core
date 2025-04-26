@@ -14,7 +14,7 @@
 #ifndef SST_CORE_WARNMACROS_H
 #define SST_CORE_WARNMACROS_H
 
-#define UNUSED(x) x __attribute__((unused))
+#define UNUSED(x) x [[maybe_unused]]
 
 #define DIAG_STR(s)              #s
 #define DIAG_JOINSTR(x, y)       DIAG_STR(x##y)
@@ -38,17 +38,23 @@
 
 #define DISABLE_WARN_STRICT_ALIASING DIAG_DISABLE(strict-aliasing)
 
+#if ( __clang_major__ >= 12 )
+#define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(suggest-override)
+#else
 #define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(inconsistent-missing-override)
+#endif
 
 #define DISABLE_WARN_DEPRECATED_DECLARATION DIAG_DISABLE(deprecated-declarations)
 
 #define DISABLE_WARN_CAST_FUNCTION_TYPE DIAG_DISABLE(cast-function-type)
 
+#define DISABLE_WARN_DANGLING_POINTER DIAG_PRAGMA(DIAG_COMPILER, push)
+
 #elif defined(__GNUC__)
 
 #define DIAG_COMPILER GCC
 
-#define DISABLE_WARN_DEPRECATED_REGISTER
+#define DISABLE_WARN_DEPRECATED_REGISTER DIAG_PRAGMA(DIAG_COMPILER, push)
 
 #define DISABLE_WARN_FORMAT_SECURITY DIAG_DISABLE(format-security)
 
@@ -59,12 +65,18 @@
 #if ( __GNUC__ >= 5 )
 #define DISABLE_WARN_MISSING_OVERRIDE DIAG_DISABLE(suggest-override)
 #else
-#define DISABLE_WARN_MISSING_OVERRIDE
+#define DISABLE_WARN_MISSING_OVERRIDE DIAG_PRAGMA(DIAG_COMPILER, push)
 #endif
 
 #define DISABLE_WARN_DEPRECATED_DECLARATION DIAG_DISABLE(deprecated-declarations)
 
 #define DISABLE_WARN_CAST_FUNCTION_TYPE DIAG_DISABLE(cast-function-type)
+
+#if ( __GNUC__ >= 12 )
+#define DISABLE_WARN_DANGLING_POINTER DIAG_DISABLE(dangling-pointer)
+#else
+#define DISABLE_WARN_DANGLING_POINTER DIAG_PRAGMA(DIAG_COMPILER, push)
+#endif
 
 #else
 
@@ -76,6 +88,7 @@
 #define DISABLE_WARN_STRICT_ALIASING
 #define DISABLE_WARN_MISSING_OVERRIDE
 #define DISABLE_WARN_CAST_FUNCTION_TYPE
+#define DISABLE_WARN_DANGLING_POINTER
 
 #endif
 

@@ -15,8 +15,10 @@
 #include "sst/core/configShared.h"
 #include "sst/core/eli/elementinfo.h"
 
+#include <cstdio>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "tinyxml/tinyxml.h"
@@ -41,7 +43,7 @@ class SSTInfoConfig : public ConfigShared
 public:
     using FilterMap_t = std::multimap<std::string, std::string>;
     /** Create a new SSTInfo configuration and parse the Command Line. */
-    SSTInfoConfig(bool suppress_print);
+    explicit SSTInfoConfig(bool suppress_print);
     ~SSTInfoConfig() override = default;
 
     /** Return the list of elements to be processed. */
@@ -124,13 +126,13 @@ private:
         return 0;
     }
 
-    int setXMLOutput(const std::string& UNUSED(arg))
+    int setXMLOutput(const std::string& arg)
     {
         m_XMLFilePath = arg;
         return 0;
     }
 
-    int setLibs(const std::string& UNUSED(arg))
+    int setLibs(const std::string& arg)
     {
         addFilter(arg);
         return 0;
@@ -165,7 +167,7 @@ public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    SSTLibraryInfo(const std::string& name) : m_name(name) {}
+    explicit SSTLibraryInfo(const std::string& name) : m_name(name) {}
 
     /** Return the Name of the Library. */
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
