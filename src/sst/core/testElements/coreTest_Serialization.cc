@@ -76,11 +76,11 @@ struct checkSimpleSerializeDeserialize
 
     static bool check(TYPE data)
     {
-        T input;
-        T output;
+        T    input;
+        T    output;
+        TYPE obj [[maybe_unused]];
 
         if constexpr ( std::is_pointer_v<T> ) {
-            TYPE obj;
             obj    = data;
             input  = &obj;
             output = nullptr;

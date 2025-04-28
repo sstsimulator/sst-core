@@ -457,7 +457,7 @@ Link*
 BaseComponent::configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     addSelfLink(name);
-    return configureLink(name, time_base, handler);
+    return configureLink(name, *time_base, handler);
 }
 
 Link*
