@@ -1129,9 +1129,7 @@ using SSTHandlerBaseNoArgs = SSTHandlerBase<returnT, void>;
  * Handler class with user-data argument
  */
 template <typename returnT, typename argT, typename classT, typename dataT = void>
-class [[deprecated(
-    "Handler has been deprecated.  Please use Handler2 instead as it supports checkpointing")]] SSTHandler :
-    public SSTHandlerBase<returnT, argT>
+class SSTHandler : public SSTHandlerBase<returnT, argT>
 {
 private:
     using PtrMember = returnT (classT::*)(argT, dataT);
@@ -1165,8 +1163,7 @@ public:
  * Event Handler class with no user-data.
  */
 template <typename returnT, typename argT, typename classT>
-class [[deprecated("Handler has been deprecated.  Please use Handler2 instead as it supports "
-                   "checkpointing")]] SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
+class SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
 {
 private:
     using PtrMember = returnT (classT::*)(argT);
@@ -1194,9 +1191,7 @@ public:
  * Event Handler class with user-data argument
  */
 template <typename returnT, typename classT, typename dataT = void>
-class [[deprecated(
-    "Handler has been deprecated.  Please use Handler2 instead as it supports checkpointing")]] SSTHandlerNoArgs :
-    public SSTHandlerBaseNoArgs<returnT>
+class SSTHandlerNoArgs : public SSTHandlerBaseNoArgs<returnT>
 {
 private:
     using PtrMember = returnT (classT::*)(dataT);
@@ -1230,8 +1225,7 @@ public:
  * Event Handler class with no user-data.
  */
 template <typename returnT, typename classT>
-class [[deprecated("Handler has been deprecated.  Please use Handler2 instead as it supports "
-                   "checkpointing")]] SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
+class SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
 {
 private:
     using PtrMember = returnT (classT::*)();

@@ -210,12 +210,14 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                         is_same_type_template_v<OBJ, std::unordered_multiset> ) {
                         typename OBJ::key_type key {};
                         // TODO: Figure out how to make as_ptr_elem work with sets
-                        SST_SER(key);
+                        opts = SerOption::none;
+                        SST_SER(key, opts);
                         obj.emplace(std::move(key));
                     }
                     else if constexpr ( is_vector_bool_v<OBJ> ) {
                         bool value {};
-                        SST_SER(value);
+                        opts = SerOption::none;
+                        SST_SER(value, opts);
                         obj.push_back(value);
                     }
                     else { // std::vector, std::deque, std::list
