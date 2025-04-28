@@ -97,7 +97,9 @@ public:
          new stdMem::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Request*, classT, dataT>;
+    using Handler
+        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
+            SSTHandler<void, Request*, classT, dataT>;
 
     /**
        Used to create checkpointable handlers for request handling.

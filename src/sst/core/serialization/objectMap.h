@@ -820,7 +820,7 @@ protected:
     T* addr_;
 
 public:
-    bool isContainer() final { return true; }
+    bool isContainer() override final { return true; }
 
     std::string getType() override { return demangle_name(typeid(T).name()); }
 

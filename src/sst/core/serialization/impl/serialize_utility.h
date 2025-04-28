@@ -21,17 +21,19 @@
 
 namespace SST::Core::Serialization {
 
-// Whether two names are the same template. Similar to std::is_same.
+// Whether two names are the same template. Similar to std::is_same_v.
 template <template <typename...> class, template <typename...> class>
-struct is_same_template : std::false_type
-{};
+constexpr bool is_same_template_v = false;
 
 template <template <typename...> class T>
-struct is_same_template<T, T> : std::true_type
-{};
+constexpr bool is_same_template_v<T, T> = true;
 
-template <template <typename...> class A, template <typename...> class B>
-inline constexpr bool is_same_template_v = is_same_template<A, B>::value;
+// Whether a certain type is the same as a certain class template filled with arguments
+template <class, template <typename...> class>
+constexpr bool is_same_type_template_v = false;
+
+template <template <typename...> class T1, typename... T1ARGS, template <typename...> class T2>
+constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T1, T2>;
 
 } // namespace SST::Core::Serialization
 

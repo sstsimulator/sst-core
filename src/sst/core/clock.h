@@ -66,7 +66,8 @@ public:
        handler will be left in the clock list.
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<bool, Cycle_t, classT, dataT>;
+    using Handler [[deprecated("Handler has been deprecated. Please use Handler2 as it supports checkpointing.")]] =
+        SSTHandler<bool, Cycle_t, classT, dataT>;
 
     /**
        New style (checkpointable) SSTHandler

@@ -131,7 +131,7 @@ public:
         switch ( mode_ ) {
         case SIZER:
             sizer_.add(sizeof(SIZE_T));
-            sizer_.add(size);
+            sizer_.add(size * sizeof(ELEM_T));
             break;
         case PACK:
             if ( buffer ) {

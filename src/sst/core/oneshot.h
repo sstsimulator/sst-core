@@ -59,7 +59,9 @@ public:
          new OneShot::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandlerNoArgs<void, classT, dataT>;
+    using Handler
+        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
+            SSTHandlerNoArgs<void, classT, dataT>;
 
     /**
        Used to create checkpointable handlers for OneShot.  The callback function is

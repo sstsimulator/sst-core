@@ -58,7 +58,10 @@ public:
          new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Event*, classT, dataT>;
+    using Handler
+        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
+            SSTHandler<void, Event*, classT, dataT>;
+
 
     /**
        New style (checkpointable) SSTHandler
@@ -119,9 +122,9 @@ public:
 
 #endif
 
-    bool isEvent() final { return true; }
+    bool isEvent() override final { return true; }
 
-    void copyAllDeliveryInfo(const Activity* act) final
+    void copyAllDeliveryInfo(const Activity* act) override final
     {
         Activity::copyAllDeliveryInfo(act);
         const Event* ev = static_cast<const Event*>(act);
