@@ -161,7 +161,7 @@ class serialize_impl<
                     SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : obj )
-                    SST_SER((value_type&) e, opts);
+                    SST_SER(const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), opts);
             }
             break;
         }
@@ -251,7 +251,9 @@ class serialize_impl<
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
                 for ( auto& e : obj )
-                    sst_ser_object(ser, (value_type&)e, SerOption::none, to_string(i++).c_str());
+                    sst_ser_object(
+                        ser, const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), SerOption::none,
+                        to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;
