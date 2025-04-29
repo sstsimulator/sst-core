@@ -63,7 +63,7 @@ public:
 
 private:
     coreTestRNGComponent();                                                // for serialization only
-    coreTestRNGComponent(const coreTestRNGComponent&) = delete;            // do not implement
+    coreTestRNGComponent(const coreTestRNGComponent&)            = delete; // do not implement
     coreTestRNGComponent& operator=(const coreTestRNGComponent&) = delete; // do not implement
 
     virtual bool tick(SST::Cycle_t);

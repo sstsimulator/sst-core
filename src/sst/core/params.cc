@@ -53,7 +53,9 @@ Params::empty() const
     return getKeys().empty();
 }
 
-Params::Params() : my_data(), verify_enabled(true)
+Params::Params() :
+    my_data(),
+    verify_enabled(true)
 {
     data.push_back(&my_data);
 }
@@ -163,7 +165,9 @@ Params::toString(const std::string& prefix) const
 void
 Params::insert(const std::string& key, const std::string& value, bool overwrite)
 {
-    if ( overwrite ) { my_data[getKey(key)] = value; }
+    if ( overwrite ) {
+        my_data[getKey(key)] = value;
+    }
     else {
         uint32_t id = getKey(key);
         my_data.insert(std::make_pair(id, value));
@@ -205,7 +209,9 @@ Params::get_scoped_params(const std::string& scope) const
     for ( auto map : data ) {
         for ( auto value : *map ) {
             std::string key = keyMapReverse[value.first].substr(0, prefix.length());
-            if ( key == prefix ) { ret.insert(keyMapReverse[value.first].substr(prefix.length()), value.second); }
+            if ( key == prefix ) {
+                ret.insert(keyMapReverse[value.first].substr(prefix.length()), value.second);
+            }
         }
     }
     ret.allowedKeys = allowedKeys;
@@ -315,7 +321,9 @@ void
 Params::addSharedParamSet(const std::string& set)
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
-    if ( shared_params.count(set) == 0 ) { shared_params[set][0] = set; }
+    if ( shared_params.count(set) == 0 ) {
+        shared_params[set][0] = set;
+    }
 
     data.push_back(&shared_params[set]);
 }
@@ -324,8 +332,12 @@ void
 Params::insert_shared(const std::string& shared_key, const std::string& key, const std::string& value, bool overwrite)
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
-    if ( shared_params.count(shared_key) == 0 ) { shared_params[shared_key][0] = shared_key; }
-    if ( overwrite ) { shared_params[shared_key][getKey(key)] = value; }
+    if ( shared_params.count(shared_key) == 0 ) {
+        shared_params[shared_key][0] = shared_key;
+    }
+    if ( overwrite ) {
+        shared_params[shared_key][getKey(key)] = value;
+    }
     else {
         shared_params[shared_key].insert(std::make_pair(getKey(key), value));
     }
@@ -361,7 +373,9 @@ Params::getDelimitedTokens(const std::string& value, char delim, std::vector<std
                 ignore_next_char = true;
                 continue;
             }
-            if ( value[i] == quote_char ) { in_quote = false; }
+            if ( value[i] == quote_char ) {
+                in_quote = false;
+            }
         }
         else {
             // In a token
@@ -378,7 +392,9 @@ Params::getDelimitedTokens(const std::string& value, char delim, std::vector<std
         }
     }
     // Check to see if string ended in a token
-    if ( start_index != -1 ) { tokens.push_back(value.substr(start_index)); }
+    if ( start_index != -1 ) {
+        tokens.push_back(value.substr(start_index));
+    }
 }
 
 void

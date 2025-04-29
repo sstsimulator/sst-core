@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <assert.h>
+// #include <assert.h>
 
 #include "sst_config.h"
 
@@ -17,7 +17,8 @@
 
 namespace SST::CoreTestClockerComponent {
 
-coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     clock_frequency_str = params.find<std::string>("clock", "1GHz");
     clock_count         = params.find<int64_t>("clockcount", 1000);
@@ -35,8 +36,7 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
     // Set some other clocks
     // Second Clock (5ns)
     std::cout << "REGISTER CLOCK #2 at 5 ns" << std::endl;
-    registerClock(
-        "5 ns",
+    registerClock("5 ns",
         new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
 
     // Third Clock (15ns)
@@ -53,12 +53,14 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
         new OneShot::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Oneshot2Callback>(this);
 }
 
-coreTestClockerComponent::coreTestClockerComponent() : Component(-1)
+coreTestClockerComponent::coreTestClockerComponent() :
+    Component(-1)
 {
     // for serialization only
 }
 
-bool coreTestClockerComponent::tick(Cycle_t)
+bool
+coreTestClockerComponent::tick(Cycle_t)
 {
     clock_count--;
 
@@ -79,7 +81,9 @@ coreTestClockerComponent::Clock2Tick(SST::Cycle_t CycleNum, uint32_t Param)
     std::cout << "  CLOCK #2 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
 
     // return false so we keep going or true to stop
-    if ( CycleNum == 15 ) { return true; }
+    if ( CycleNum == 15 ) {
+        return true;
+    }
     else {
         return false;
     }
@@ -98,7 +102,9 @@ coreTestClockerComponent::Clock3Tick(SST::Cycle_t CycleNum, uint32_t Param)
     //    }
 
     // return false so we keep going or true to stop
-    if ( CycleNum == 15 ) { return true; }
+    if ( CycleNum == 15 ) {
+        return true;
+    }
     else {
         return false;
     }

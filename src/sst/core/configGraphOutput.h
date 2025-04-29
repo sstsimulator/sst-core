@@ -50,6 +50,7 @@ public:
     /**
      * Exception message generated on call.
      */
+
 protected:
     char* exMsg;
 };
@@ -89,8 +90,8 @@ protected:
 
 
     [[deprecated("getGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use "
-                 "getSharedParamSet()")]] static std::map<std::string, std::string>
-    getGlobalParamSet(const std::string& name)
+                 "getSharedParamSet()")]]
+    static std::map<std::string, std::string> getGlobalParamSet(const std::string& name)
     {
         return getSharedParamSet(name);
     }
@@ -104,8 +105,8 @@ protected:
     static std::vector<std::string> getSharedParamSetNames() { return Params::getSharedParamSetNames(); }
 
     [[deprecated("getGlobalParamSetNames() has been deprecated and will be removed in SST 16.  Please use "
-                 "getSharedParamSetNames()")]] static std::vector<std::string>
-    getGlobalParamSetNames()
+                 "getSharedParamSetNames()")]]
+    static std::vector<std::string> getGlobalParamSetNames()
     {
         return getSharedParamSetNames();
     }
@@ -134,8 +135,8 @@ protected:
     }
 
     [[deprecated("getSubscribedGlobalParamSets() has been deprecated and will be removed in SST 16.  Please use "
-                 "getSubscribedSharedParamSets()")]] std::vector<std::string>
-    getSubscribedGlobalParamSets(const Params& params) const
+                 "getSubscribedSharedParamSets()")]]
+    std::vector<std::string> getSubscribedGlobalParamSets(const Params& params) const
     {
         return getSubscribedSharedParamSets(params);
     }

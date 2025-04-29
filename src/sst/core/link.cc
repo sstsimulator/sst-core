@@ -90,7 +90,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             Link::ToolList tools;
             if ( s->attached_tools ) {
                 for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -209,7 +211,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             Link::ToolList tools;
             if ( s->attached_tools ) {
                 for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -290,7 +294,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             Link::ToolList tools;
             if ( s->attached_tools ) {
                 for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -569,7 +575,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
 class NullEvent : public Event
 {
 public:
-    NullEvent() : Event() {}
+    NullEvent() :
+        Event()
+    {}
     ~NullEvent() {}
 
     void execute() override
@@ -639,7 +647,9 @@ Link::finalizeConfiguration()
         pair_link->send_queue = nullptr;
     }
 
-    if ( HANDLER == type ) { pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex(); }
+    if ( HANDLER == type ) {
+        pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
+    }
     else if ( POLL == type ) {
         pair_link->send_queue = new PollingLinkQueue();
     }
@@ -660,7 +670,9 @@ Link::prepareForComplete()
         return;
     }
 
-    if ( POLL == type ) { delete pair_link->send_queue; }
+    if ( POLL == type ) {
+        delete pair_link->send_queue;
+    }
 
     pair_link->send_queue = nullptr;
 
@@ -752,7 +764,9 @@ Link::replaceFunctor(Event::HandlerBase* functor)
 Event::HandlerBase*
 Link::getFunctor()
 {
-    if ( UNLIKELY(type == POLL) ) { return nullptr; }
+    if ( UNLIKELY(type == POLL) ) {
+        return nullptr;
+    }
     return reinterpret_cast<Event::HandlerBase*>(pair_link->delivery_info);
 }
 
@@ -761,8 +775,7 @@ Link::send_impl(SimTime_t delay, Event* event)
 {
     if ( RUN != mode ) {
         if ( INIT == mode ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-                CALL_INFO, 1,
+            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
                 "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before "
                 "setup.\n");
         }
@@ -773,7 +786,9 @@ Link::send_impl(SimTime_t delay, Event* event)
     }
     Cycle_t cycle = current_time + delay + latency;
 
-    if ( event == nullptr ) { event = new NullEvent(); }
+    if ( event == nullptr ) {
+        event = new NullEvent();
+    }
     event->setDeliveryTime(cycle);
     event->setDeliveryInfo(tag, delivery_info);
 
@@ -819,12 +834,13 @@ void
 Link::sendUntimedData(Event* data)
 {
     if ( RUN == mode ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1,
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
             "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
     }
 
-    if ( send_queue == nullptr ) { send_queue = new InitQueue(); }
+    if ( send_queue == nullptr ) {
+        send_queue = new InitQueue();
+    }
     Simulation_impl::getSimulation()->untimed_msg_count++;
     data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
     data->setDeliveryInfo(tag, delivery_info);
@@ -840,7 +856,9 @@ Link::sendUntimedData(Event* data)
 void
 Link::sendUntimedData_sync(Event* data)
 {
-    if ( send_queue == nullptr ) { send_queue = new InitQueue(); }
+    if ( send_queue == nullptr ) {
+        send_queue = new InitQueue();
+    }
 
     send_queue->insert(data);
 }

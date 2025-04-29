@@ -26,7 +26,9 @@ namespace SST::Core::Serialization::pvt {
 class ser_sizer
 {
 public:
-    ser_sizer() : size_(0) {}
+    ser_sizer() :
+        size_(0)
+    {}
 
     template <class T>
     void size(T& UNUSED(t))

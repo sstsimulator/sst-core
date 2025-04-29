@@ -429,7 +429,10 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-    explicit ObjectMapFundamental(UnitAlgebra* addr) : ObjectMap(), addr_(addr) {}
+    explicit ObjectMapFundamental(UnitAlgebra* addr) :
+        ObjectMap(),
+        addr_(addr)
+    {}
 
     std::string getType() override { return demangle_name(typeid(UnitAlgebra).name()); }
 };
@@ -448,7 +451,9 @@ class serialize_impl<UnitAlgebra>
         case serializer::MAP:
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
-            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( options & SerOption::map_read_only ) {
+                ser.mapper().setNextObjectReadOnly();
+            }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }

@@ -48,8 +48,7 @@ ConfigBase::parseBoolean(const std::string& arg, bool& success, const std::strin
     else if ( arg_lower == "false" || arg_lower == "no" || arg_lower == "0" || arg_lower == "off" )
         return false;
     else {
-        fprintf(
-            stderr,
+        fprintf(stderr,
             "ERROR: Failed to parse \"%s\" as a bool for option \"%s\", "
             "please use true/false, yes/no or 1/0\n",
             arg.c_str(), option.c_str());
@@ -96,8 +95,7 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
             return seconds;
         }
     }
-    fprintf(
-        stderr, "ERROR: Argument passed to \"%s\" could not be parsed. Argument = [%s]\nValid formats are:\n",
+    fprintf(stderr, "ERROR: Argument passed to \"%s\" could not be parsed. Argument = [%s]\nValid formats are:\n",
         option.c_str(), arg.c_str());
     for ( size_t i = 0; i < n_templ; i++ ) {
         fprintf(stderr, "\t%s\n", templates[i]);
@@ -108,9 +106,8 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
 }
 
 void
-ConfigBase::addOption(
-    struct option opt, const char* argname, const char* desc, std::function<int(const char* arg)> callback,
-    std::vector<bool> annotations, std::function<std::string()> ext_help)
+ConfigBase::addOption(struct option opt, const char* argname, const char* desc,
+    std::function<int(const char* arg)> callback, std::vector<bool> annotations, std::function<std::string()> ext_help)
 {
     // Put this into the options vector
     options.emplace_back(opt, argname, desc, callback, false, annotations, ext_help, false);
@@ -128,8 +125,12 @@ ConfigBase::addOption(
 
     // See if this is the longest option
     size_t size = 0;
-    if ( new_option.opt.name != nullptr ) { size = strlen(new_option.opt.name); }
-    if ( new_option.argname != "" ) { size += new_option.argname.size() + 1; }
+    if ( new_option.opt.name != nullptr ) {
+        size = strlen(new_option.opt.name);
+    }
+    if ( new_option.argname != "" ) {
+        size += new_option.argname.size() + 1;
+    }
     if ( size > longest_option ) longest_option = size;
 
     if ( new_option.opt.val != 0 ) {
@@ -142,14 +143,18 @@ ConfigBase::addOption(
         // required.  If followed by two colons, an argument is
         // optonsal.  No colon means no arguments.
         short_options_string.push_back((char)new_option.opt.val);
-        if ( new_option.opt.has_arg == required_argument ) { short_options_string.push_back(':'); }
+        if ( new_option.opt.has_arg == required_argument ) {
+            short_options_string.push_back(':');
+        }
         else if ( new_option.opt.has_arg == optional_argument ) {
             short_options_string.append("::");
         }
     }
 
     // Handle any extra help functions
-    if ( ext_help ) { extra_help_map[opt.name] = ext_help; }
+    if ( ext_help ) {
+        extra_help_map[opt.name] = ext_help;
+    }
 }
 
 void
@@ -195,7 +200,9 @@ ConfigBase::printUsage()
     uint32_t MAX_WIDTH = 80;
 
     struct winsize size;
-    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) { MAX_WIDTH = size.ws_col; }
+    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
+        MAX_WIDTH = size.ws_col;
+    }
 
     if ( getenv("COLUMNS") ) {
         errno      = E_OK;
@@ -211,7 +218,9 @@ ConfigBase::printUsage()
     fprintf(stderr, "%s", getUsagePrelude().c_str());
 
     /* Print info about annotations */
-    if ( has_extended_help_ ) { fprintf(stderr, "\nOptions annotated with 'H' have extended help available\n"); }
+    if ( has_extended_help_ ) {
+        fprintf(stderr, "\nOptions annotated with 'H' have extended help available\n");
+    }
     for ( size_t i = 0; i < annotations_.size(); ++i ) {
         fprintf(stderr, "%s\n", annotations_[i].help.c_str());
     }
@@ -228,12 +237,16 @@ ConfigBase::printUsage()
 
         uint32_t npos = 0;
         // Check for short options
-        if ( option.opt.val ) { npos += fprintf(stderr, "-%c ", (char)option.opt.val); }
+        if ( option.opt.val ) {
+            npos += fprintf(stderr, "-%c ", (char)option.opt.val);
+        }
         else {
             npos += fprintf(stderr, "   ");
         }
         npos += fprintf(stderr, "--%s", option.opt.name);
-        if ( option.opt.has_arg != no_argument ) { npos += fprintf(stderr, "=%s", option.argname.c_str()); }
+        if ( option.opt.has_arg != no_argument ) {
+            npos += fprintf(stderr, "=%s", option.argname.c_str());
+        }
         // If we have already gone beyond the description start,
         // description starts on new line
         if ( npos >= ann_start ) {
@@ -385,7 +398,9 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         // is an unknown command
         if ( c == '?' ) {
             // Unknown option
-            if ( !ignore_unknown ) { status = printUsage(); }
+            if ( !ignore_unknown ) {
+                status = printUsage();
+            }
         }
         else if ( option_index != 0 ) {
             // Long options
@@ -407,7 +422,9 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         }
     }
 
-    if ( status != 0 ) { return status; }
+    if ( status != 0 ) {
+        return status;
+    }
 
     /* Handle positional arguments */
     int    pos   = optind;
@@ -466,7 +483,9 @@ bool
 ConfigBase::wasOptionSetOnCmdLine(const std::string& name)
 {
     for ( auto& option : options ) {
-        if ( !name.compare(option.opt.name) ) { return option.set_cmdline; }
+        if ( !name.compare(option.opt.name) ) {
+            return option.set_cmdline;
+        }
     }
     return false;
 }
@@ -478,7 +497,9 @@ ConfigBase::getAnnotation(const std::string& entryName, char annotation)
     // Need to look for the index of the annotation
     size_t index = std::numeric_limits<size_t>::max();
     for ( size_t i = 0; i < annotations_.size(); ++i ) {
-        if ( annotations_[i].annotation == annotation ) { index = i; }
+        if ( annotations_[i].annotation == annotation ) {
+            index = i;
+        }
     }
 
     if ( index == std::numeric_limits<size_t>::max() ) {

@@ -131,7 +131,8 @@ public:
 
 protected:
     enum cxn_flag_t { ConstructorFlag };
-    [[noreturn]] static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
+    [[noreturn]]
+    static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
 };
 
 
@@ -140,13 +141,17 @@ class serializable_type
 {};
 
 #define ImplementVirtualSerializable(obj)                                                                          \
+                                                                                                                   \
 public:                                                                                                            \
     static void throw_exc()                                                                                        \
     {                                                                                                              \
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
     }                                                                                                              \
-    virtual const char* cls_name() const override { return #obj; }                                                 \
-    virtual uint32_t    cls_id() const override                                                                    \
+    virtual const char* cls_name() const override                                                                  \
+    {                                                                                                              \
+        return #obj;                                                                                               \
+    }                                                                                                              \
+    virtual uint32_t cls_id() const override                                                                       \
     {                                                                                                              \
         throw_exc();                                                                                               \
         return 0;                                                                                                  \
@@ -158,12 +163,16 @@ public:                                                                         
     }
 
 #define NotSerializable(obj)                                                                                       \
+                                                                                                                   \
 public:                                                                                                            \
     static void throw_exc()                                                                                        \
     {                                                                                                              \
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
     }                                                                                                              \
-    virtual void     serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override { throw_exc(); }  \
+    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override                       \
+    {                                                                                                              \
+        throw_exc();                                                                                               \
+    }                                                                                                              \
     virtual uint32_t cls_id() const override                                                                       \
     {                                                                                                              \
         throw_exc();                                                                                               \
@@ -179,10 +188,14 @@ public:                                                                         
         throw_exc();                                                                                               \
         return "";                                                                                                 \
     }                                                                                                              \
-    virtual const char* cls_name() const override { return #obj; }
+    virtual const char* cls_name() const override                                                                  \
+    {                                                                                                              \
+        return #obj;                                                                                               \
+    }
 
 //    virtual const char* cls_name() const override { return obj_str; }
 #define ImplementSerializableDefaultConstructor(obj, obj_str)                             \
+                                                                                          \
 public:                                                                                   \
     virtual const char* cls_name() const override                                         \
     {                                                                                     \
@@ -192,16 +205,26 @@ public:                                                                         
     {                                                                                     \
         return SST::Core::Serialization::serializable_builder_impl<obj>::static_cls_id(); \
     }                                                                                     \
-    static obj*         construct_deserialize_stub() { return new obj; }                  \
-    virtual std::string serialization_name() const override { return obj_str; }           \
+    static obj* construct_deserialize_stub()                                              \
+    {                                                                                     \
+        return new obj;                                                                   \
+    }                                                                                     \
+    virtual std::string serialization_name() const override                               \
+    {                                                                                     \
+        return obj_str;                                                                   \
+    }                                                                                     \
                                                                                           \
 private:                                                                                  \
     friend class SST::Core::Serialization::serializable_builder_impl<obj>;                \
-    static bool you_forgot_to_add_ImplementSerializable_to_this_class() { return false; }
+    static bool you_forgot_to_add_ImplementSerializable_to_this_class()                   \
+    {                                                                                     \
+        return false;                                                                     \
+    }
 
 #define SER_FORWARD_AS_ONE(...) __VA_ARGS__
 
 #define ImplementSerializable(...) \
+                                   \
 public:                            \
     ImplementSerializableDefaultConstructor(SER_FORWARD_AS_ONE(__VA_ARGS__), #__VA_ARGS__)
 
@@ -279,6 +302,6 @@ const uint32_t serializable_builder_impl<T>::cls_id_ =
 
 #define DeclareSerializable(obj)
 
-//#include "sst/core/serialization/serialize_serializable_base.h"
+// #include "sst/core/serialization/serialize_serializable_base.h"
 
 #endif

@@ -36,7 +36,9 @@ uint32_t
 // serializable_factory::add_builder(serializable_builder* builder, uint32_t cls_id)
 serializable_factory::add_builder(serializable_builder* builder, const char* name)
 {
-    if ( builders_ == nullptr ) { builders_ = new builder_map; }
+    if ( builders_ == nullptr ) {
+        builders_ = new builder_map;
+    }
 
     const char* key  = name;
     int         len  = ::strlen(key);

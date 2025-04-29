@@ -32,10 +32,14 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
 
     // get parameters
     workPerCycle = params.find<int64_t>("workPerCycle", 0, found);
-    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n"); }
+    if ( !found ) {
+        getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n");
+    }
 
     commFreq = params.find<int64_t>("commFreq", 0, found);
-    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find communication frequency\n"); }
+    if ( !found ) {
+        getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find communication frequency\n");
+    }
 
     commSize = params.find<int64_t>("commSize", 16);
 
@@ -73,7 +77,8 @@ coreTestPerfComponent::~coreTestPerfComponent()
     delete rng;
 }
 
-coreTestPerfComponent::coreTestPerfComponent() : coreTestPerfComponentBase2(-1)
+coreTestPerfComponent::coreTestPerfComponent() :
+    coreTestPerfComponentBase2(-1)
 {
     // for serialization only
 }
@@ -88,7 +93,7 @@ coreTestPerfComponent::handleEvent(Event* ev)
     if ( event ) {
         // scan through each element in the payload and do something to it
         for ( SST::CoreTestComponent::coreTestComponentEvent::dataVec::iterator i = event->payload.begin();
-              i != event->payload.end(); ++i ) {
+            i != event->payload.end(); ++i ) {
             event->payload[0] += *i;
         }
         delete event;
@@ -101,7 +106,8 @@ coreTestPerfComponent::handleEvent(Event* ev)
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestPerfComponent::clockTic(Cycle_t)
+bool
+coreTestPerfComponent::clockTic(Cycle_t)
 {
     // do work
     // loop becomes:

@@ -42,7 +42,9 @@ public:
 
     T* remove()
     {
-        if ( pool.empty() ) { pool.push_back(new T()); }
+        if ( pool.empty() ) {
+            pool.push_back(new T());
+        }
         auto ret = pool.back();
         pool.pop_back();
         return ret;
@@ -71,7 +73,9 @@ private:
 
     public:
         // Create with initial event
-        TimeUnit() : sorted(false) {}
+        TimeUnit() :
+            sorted(false)
+        {}
 
         ~TimeUnit()
         {

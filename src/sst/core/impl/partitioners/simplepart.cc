@@ -66,8 +66,7 @@ findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis)
 // Cost up all of the links between two sets (that is all links which originate in A
 // and connect to a vertex in B
 static SimTime_t
-cost_external_links(
-    ComponentId_t* setA, const int lengthA, ComponentId_t* setB, const int lengthB,
+cost_external_links(ComponentId_t* setA, const int lengthA, ComponentId_t* setB, const int lengthB,
     std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*>& timeTable)
 {
 
@@ -76,7 +75,9 @@ cost_external_links(
     for ( int i = 0; i < lengthA; i++ ) {
         auto* compMap = timeTable[setA[i]];
         for ( auto compMapItr = compMap->cbegin(); compMapItr != compMap->cend(); compMapItr++ ) {
-            if ( findIndex(setB, lengthB, compMapItr->first) > -1 ) { cost += compMapItr->second; }
+            if ( findIndex(setB, lengthB, compMapItr->first) > -1 ) {
+                cost += compMapItr->second;
+            }
         }
     }
 
@@ -85,9 +86,9 @@ cost_external_links(
 
 // Perform one step of the recursive algorithm to partition the graph
 void
-SimplePartitioner::simple_partition_step(
-    PartitionComponentMap_t& component_map, ComponentId_t* setA, const int lengthA, int rankA, ComponentId_t* setB,
-    const int lengthB, int rankB, std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable, int step)
+SimplePartitioner::simple_partition_step(PartitionComponentMap_t& component_map, ComponentId_t* setA, const int lengthA,
+    int rankA, ComponentId_t* setB, const int lengthB, int rankB,
+    std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable, int step)
 {
 
     SimTime_t costExt = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
@@ -101,7 +102,9 @@ SimplePartitioner::simple_partition_step(
             SimTime_t newCost = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
 
             // check higher? if yes then keep otherwise swap back
-            if ( newCost >= costExt ) { costExt = newCost; }
+            if ( newCost >= costExt ) {
+                costExt = newCost;
+            }
             else {
                 ComponentId_t tempB = setB[j];
                 setB[j]             = setA[i];
@@ -134,7 +137,9 @@ SimplePartitioner::simple_partition_step(
         int A2index = 0;
 
         for ( int i = 0; i < lengthA; i++ ) {
-            if ( i % 2 == 0 ) { setA1[A1index++] = setA[i]; }
+            if ( i % 2 == 0 ) {
+                setA1[A1index++] = setA[i];
+            }
             else {
                 setA2[A2index++] = setA[i];
             }
@@ -160,7 +165,9 @@ SimplePartitioner::simple_partition_step(
         int B2index = 0;
 
         for ( int i = 0; i < lengthB; i++ ) {
-            if ( i % 2 == 0 ) { setB1[B1index++] = setB[i]; }
+            if ( i % 2 == 0 ) {
+                setB1[B1index++] = setB[i];
+            }
             else {
                 setB2[B2index++] = setB[i];
             }
@@ -180,7 +187,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
 
     if ( total_parts == 1 ) {
         for ( PartitionComponentMap_t::iterator compItr = component_map.begin(); compItr != component_map.end();
-              ++compItr ) {
+            ++compItr ) {
 
             (*compItr)->rank = RankInfo(0, 0);
         }
@@ -205,13 +212,15 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
         // size_t nComp = component_map.size();
         // for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
         for ( PartitionComponentMap_t::iterator compItr = component_map.begin(); compItr != component_map.end();
-              ++compItr ) {
+            ++compItr ) {
 
             ComponentId_t theComponent = (*compItr)->id;
 
             auto compConnectMap = timeTable[theComponent] = new std::map<ComponentId_t, SimTime_t>();
 
-            if ( count++ % 2 == 0 ) { setA[indexA++] = theComponent; }
+            if ( count++ % 2 == 0 ) {
+                setA[indexA++] = theComponent;
+            }
             else {
                 setB[indexB++] = theComponent;
             }
@@ -221,7 +230,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
             PartitionLinkMap_t& linkMap = graph->getLinkMap();
 
             for ( LinkIdMap_t::const_iterator linkItr = component_links.begin(); linkItr != component_links.end();
-                  linkItr++ ) {
+                linkItr++ ) {
 
                 // ConfigLink* theLink = (*linkItr);
                 PartitionLink& theLink = linkMap[*linkItr];

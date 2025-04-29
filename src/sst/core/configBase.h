@@ -41,9 +41,9 @@ struct LongOption
     std::function<std::string()>        ext_help;
     mutable bool                        set_cmdline;
 
-    LongOption(
-        struct option opt, const char* argname, const char* desc, const std::function<int(const char* arg)>& callback,
-        bool header, std::vector<bool> annotations, std::function<std::string()> ext_help, bool set_cmdline) :
+    LongOption(struct option opt, const char* argname, const char* desc,
+        const std::function<int(const char* arg)>& callback, bool header, std::vector<bool> annotations,
+        std::function<std::string()> ext_help, bool set_cmdline) :
         opt(opt),
         argname(argname),
         desc(desc),
@@ -112,7 +112,9 @@ protected:
        ConfigBase constructor.  Meant to only be created by main
        function
      */
-    explicit ConfigBase(bool suppress_print) : suppress_print_(suppress_print) {}
+    explicit ConfigBase(bool suppress_print) :
+        suppress_print_(suppress_print)
+    {}
 
     /**
        Default constructor used for serialization.  After
@@ -122,7 +124,11 @@ protected:
        to true. None of this class needs to be serialized because it
        it's state is only for parsing the arguments.
      */
-    ConfigBase() : suppress_print_(true) { options.reserve(100); }
+    ConfigBase() :
+        suppress_print_(true)
+    {
+        options.reserve(100);
+    }
 
 
     ConfigBase(bool suppress_print, std::vector<AnnotationInfo> annotations) :
@@ -146,9 +152,9 @@ protected:
        the order they are in the input array, and across calls to the
        function.
      */
-    void addOption(
-        struct option opt, const char* argname, const char* desc, std::function<int(const char* arg)> callback,
-        std::vector<bool> annotations, std::function<std::string()> ext_help = std::function<std::string()>());
+    void addOption(struct option opt, const char* argname, const char* desc,
+        std::function<int(const char* arg)> callback, std::vector<bool> annotations,
+        std::function<std::string()> ext_help = std::function<std::string()>());
 
     /**
        Adds a heading to the usage output

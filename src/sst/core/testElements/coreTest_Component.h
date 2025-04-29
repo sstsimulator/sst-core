@@ -47,9 +47,13 @@ public:
         { "test_element", "true" }
     )
 
-    explicit coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
+    explicit coreTestComponentBase(ComponentId_t id) :
+        SST::Component(id)
+    {}
     ~coreTestComponentBase() {}
-    coreTestComponentBase() : SST::Component() {}
+    coreTestComponentBase() :
+        SST::Component()
+    {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override { SST::Component::serialize_order(ser); }
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentBase)
 };
@@ -72,10 +76,14 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    explicit coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
+    explicit coreTestComponentBase2(ComponentId_t id) :
+        coreTestComponentBase(id)
+    {}
     ~coreTestComponentBase2() {}
 
-    coreTestComponentBase2() : coreTestComponentBase() {}
+    coreTestComponentBase2() :
+        coreTestComponentBase()
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -126,7 +134,7 @@ public:
     coreTestComponent() = default; // for serialization only
 
 private:
-    coreTestComponent(const coreTestComponent&) = delete;            // do not implement
+    coreTestComponent(const coreTestComponent&)            = delete; // do not implement
     coreTestComponent& operator=(const coreTestComponent&) = delete; // do not implement
 
     void         handleEvent(SST::Event* ev);

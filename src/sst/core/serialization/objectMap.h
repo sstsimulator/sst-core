@@ -50,9 +50,12 @@ struct ObjectMapMetaData
     /**
        Constructor for intializing data memebers
      */
-    ObjectMapMetaData(ObjectMap* parent, const std::string& name) : parent(parent), name(name) {}
+    ObjectMapMetaData(ObjectMap* parent, const std::string& name) :
+        parent(parent),
+        name(name)
+    {}
 
-    ObjectMapMetaData(const ObjectMapMetaData&) = delete;
+    ObjectMapMetaData(const ObjectMapMetaData&)            = delete;
     ObjectMapMetaData& operator=(const ObjectMapMetaData&) = delete;
 };
 
@@ -85,7 +88,9 @@ public:
 
     ObjectMapComparison() = default;
 
-    ObjectMapComparison(const std::string& name) : name_(name) {}
+    ObjectMapComparison(const std::string& name) :
+        name_(name)
+    {}
     virtual ~ObjectMapComparison() = default;
 
     virtual bool        compare()         = 0;
@@ -271,8 +276,8 @@ public:
        Get a watch point for this object.  If it is not a valid object
        for a watch point, nullptr will be returned.
     */
-    virtual ObjectMapComparison*
-    getComparison(const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value))
+    virtual ObjectMapComparison* getComparison(
+        const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value))
     {
         return nullptr;
     }
@@ -401,7 +406,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMap(const ObjectMap&) = delete;
+    ObjectMap(const ObjectMap&)            = delete;
     ObjectMap& operator=(const ObjectMap&) = delete;
 
     /**
@@ -532,7 +537,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapWithChildren(const ObjectMapWithChildren&) = delete;
+    ObjectMapWithChildren(const ObjectMapWithChildren&)            = delete;
     ObjectMapWithChildren& operator=(const ObjectMapWithChildren&) = delete;
 
     /**
@@ -624,7 +629,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapClass(const ObjectMapClass&) = delete;
+    ObjectMapClass(const ObjectMapClass&)            = delete;
     ObjectMapClass& operator=(const ObjectMapClass&) = delete;
 
     /**
@@ -678,7 +683,9 @@ public:
     {
         // If we are looking for changes, get the current value as the
         // comp_value_
-        if ( op_ == Op::CHANGED ) { comp_value_ = *var_; }
+        if ( op_ == Op::CHANGED ) {
+            comp_value_ = *var_;
+        }
         // Otherwise, we have to have a valid value.  If the value is
         // not valid, it will throw an exception.
         else {
@@ -778,7 +785,9 @@ public:
      */
     void* getAddr() override { return (void*)addr_; }
 
-    explicit ObjectMapFundamental(T* addr) : addr_(addr) {}
+    explicit ObjectMapFundamental(T* addr) :
+        addr_(addr)
+    {}
 
     /**
        Destructor.  Should not be called directly (i.e. do not call
@@ -792,7 +801,7 @@ public:
        Disallow copying and assignment
      */
 
-    ObjectMapFundamental(const ObjectMapFundamental&) = delete;
+    ObjectMapFundamental(const ObjectMapFundamental&)            = delete;
     ObjectMapFundamental& operator=(const ObjectMapFundamental&) = delete;
 
     /**
@@ -803,8 +812,8 @@ public:
      */
     std::string getType() override { return demangle_name(typeid(T).name()); }
 
-    ObjectMapComparison*
-    getComparison(const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
+    ObjectMapComparison* getComparison(
+        const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
     {
         return new ObjectMapComparison_impl<T>(name, addr_, op, value);
     }
@@ -826,7 +835,9 @@ public:
 
     void* getAddr() override { return addr_; }
 
-    explicit ObjectMapContainer(T* addr) : addr_(addr) {}
+    explicit ObjectMapContainer(T* addr) :
+        addr_(addr)
+    {}
 
     ~ObjectMapContainer() override = default;
 };
@@ -842,7 +853,10 @@ protected:
 
 public:
     virtual size_t getSize() { return size; }
-    ObjectMapArray(T* addr, size_t size) : ObjectMapContainer<T>(addr), size(size) {}
+    ObjectMapArray(T* addr, size_t size) :
+        ObjectMapContainer<T>(addr),
+        size(size)
+    {}
     ~ObjectMapArray() override = default;
 };
 

@@ -17,7 +17,9 @@ namespace SST::CoreTestMessageGeneratorComponent {
 class coreTestMessage : public SST::Event
 {
 public:
-    coreTestMessage() : SST::Event() {}
+    coreTestMessage() :
+        SST::Event()
+    {}
 
 public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override { Event::serialize_order(ser); }

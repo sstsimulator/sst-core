@@ -113,16 +113,10 @@ public:
 struct SearchableData
 {
     const std::map<std::string, std::string> componentTags = { { "description", "Description" },
-                                                               { "version", "ELI version" },
-                                                               { "compiledate", "Compiled on" },
-                                                               { "category", "Category" },
-                                                               { "interface", "Interface" },
-                                                               { "parameters", "Parameters" },
-                                                               { "ports", "Ports" },
-                                                               { "subcomponents", "SubComponent Slots" },
-                                                               { "statistics", "Statistics" },
-                                                               { "profile", "Profile Points" },
-                                                               { "attributes", "Attributes" } };
+        { "version", "ELI version" }, { "compiledate", "Compiled on" }, { "category", "Category" },
+        { "interface", "Interface" }, { "parameters", "Parameters" }, { "ports", "Ports" },
+        { "subcomponents", "SubComponent Slots" }, { "statistics", "Statistics" }, { "profile", "Profile Points" },
+        { "attributes", "Attributes" } };
     // Can add more in the future
 } g_searchData;
 
@@ -179,7 +173,9 @@ main(int argc, char* argv[])
     processSSTElementFiles();
 
     // Run interactive mode
-    if ( g_configuration.interactiveEnabled() ) { g_window.start(); }
+    if ( g_configuration.interactiveEnabled() ) {
+        g_window.start();
+    }
 
     return 0;
 }
@@ -282,7 +278,9 @@ parseInput(std::string input)
         auto                   end   = inputWords.end();
         std::list<std::string> args(start, end);
 
-        if ( command == "list" ) { text = listLibraryInfo(args); }
+        if ( command == "list" ) {
+            text = listLibraryInfo(args);
+        }
         else if ( command == "find" ) {
             text = findLibraryInfo(args);
 
@@ -293,7 +291,9 @@ parseInput(std::string input)
         }
 
         // Handle errors from getting text from library info
-        if ( text == "ERR" ) { text = getErrorText(command, args); }
+        if ( text == "ERR" ) {
+            text = getErrorText(command, args);
+        }
     }
 
     return text;
@@ -306,7 +306,9 @@ addLibFilter(std::string libFilter, std::string componentFilter = "")
         if ( library.getLibraryName() == libFilter ) {
             library.setLibraryFilter(true);
 
-            if ( componentFilter != "" ) { return library.setComponentFilter(componentFilter); }
+            if ( componentFilter != "" ) {
+                return library.setComponentFilter(componentFilter);
+            }
             return 0;
         }
     }
@@ -354,14 +356,18 @@ listLibraryInfo(std::list<std::string> args)
 
         // Parse library.component
         size_t split = arg.find('.');
-        if ( split == std::string::npos ) { library = arg; }
+        if ( split == std::string::npos ) {
+            library = arg;
+        }
         else {
             library   = arg.substr(0, split);
             component = arg.substr(split + 1);
         }
 
         // Check for invalid library name
-        if ( addLibFilter(library, component) ) { return "ERR"; }
+        if ( addLibFilter(library, component) ) {
+            return "ERR";
+        }
     }
     outputStream << "-~\n";
 
@@ -378,7 +384,9 @@ findLibraryInfo(std::list<std::string> args)
 {
     std::stringstream outputStream;
 
-    if ( args.size() == 1 ) { return "Missing search term -- See 'find' documentation to see usage."; }
+    if ( args.size() == 1 ) {
+        return "Missing search term -- See 'find' documentation to see usage.";
+    }
 
     std::string inputTag = convertToLower(args.front());
 
@@ -391,7 +399,9 @@ findLibraryInfo(std::list<std::string> args)
         args.pop_front();
         std::string searchTerm = "";
         for ( std::string arg : args ) {
-            if ( arg == args.back() ) { searchTerm += arg; }
+            if ( arg == args.back() ) {
+                searchTerm += arg;
+            }
             else {
                 searchTerm += arg + " ";
             }
@@ -433,7 +443,9 @@ getClosestTerm(std::string source, std::list<std::string> dict)
         for ( int j = 1; j <= n; j++ ) {
             for ( int i = 1; i <= m; i++ ) {
                 int subCost = 0;
-                if ( s[i] != t[j] ) { subCost = 1; }
+                if ( s[i] != t[j] ) {
+                    subCost = 1;
+                }
                 matrix[i][j] = std::min({ matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + subCost });
             }
         }
@@ -481,7 +493,9 @@ getErrorText(std::string command, std::list<std::string> args)
             std::string component = "";
 
             size_t split = arg.find('.');
-            if ( split == std::string::npos ) { library = arg; }
+            if ( split == std::string::npos ) {
+                library = arg;
+            }
             else {
                 library   = arg.substr(0, split);
                 component = arg.substr(split + 1);
@@ -580,7 +594,9 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
         fprintf(stderr, "**** CHECK: sst-info searches are case-sensitive\n");
         fprintf(stderr, "**** CHECK: Do not include the prefix or file extension when using the lib option.\n");
         fprintf(stderr, "**** EXAMPLE: 'sst-info -l PaintShop' to display model information from libPaintShop.so\n");
-        if ( g_configuration.debugEnabled() ) { std::cerr << err_sstr.str() << std::endl; }
+        if ( g_configuration.debugEnabled() ) {
+            std::cerr << err_sstr.str() << std::endl;
+        }
     }
     else {
         fprintf(stderr, "**** %s not Found!\n", lib.c_str());
@@ -616,10 +632,14 @@ processSSTElementFiles()
     }
     else {
         // Do we output in Human Readable form
-        if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) { outputSSTElementInfo(); }
+        if ( g_configuration.getOptionBits() & CFG_OUTPUTHUMAN ) {
+            outputSSTElementInfo();
+        }
 
         // Do we output an XML File
-        if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) { generateXMLOutputFile(); }
+        if ( g_configuration.getOptionBits() & CFG_OUTPUTXML ) {
+            generateXMLOutputFile();
+        }
     }
 }
 
@@ -711,7 +731,8 @@ OverallOutputter::outputXML()
     XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
-SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print, {})
+SSTInfoConfig::SSTInfoConfig(bool suppress_print) :
+    ConfigShared(suppress_print, {})
 {
     using namespace std::placeholders;
 
@@ -730,18 +751,15 @@ SSTInfoConfig::SSTInfoConfig(bool suppress_print) : ConfigShared(suppress_print,
     DEF_FLAG("debug", 'd', "Enable debugging messages", std::bind(&SSTInfoConfig::setEnableDebug, this, _1));
     DEF_FLAG(
         "nodisplay", 'n', "Do not display output [default: off]", std::bind(&SSTInfoConfig::setNoDisplay, this, _1));
-    DEF_FLAG(
-        "interactive", 'i', "(EXPERIMENTAL) Enable interactive command line mode",
+    DEF_FLAG("interactive", 'i', "(EXPERIMENTAL) Enable interactive command line mode",
         std::bind(&SSTInfoConfig::setInteractive, this, _1));
     DEF_SECTION_HEADING("XML Options");
     DEF_FLAG("xml", 'x', "Generate XML data [default:off]", std::bind(&SSTInfoConfig::setXML, this, _1));
-    DEF_ARG(
-        "outputxml", 'o', "FILE", "Filepath to XML file [default: SSTInfo.xml]",
+    DEF_ARG("outputxml", 'o', "FILE", "Filepath to XML file [default: SSTInfo.xml]",
         std::bind(&SSTInfoConfig::setXMLOutput, this, _1), false);
 
     DEF_SECTION_HEADING("Library and Path Options");
-    DEF_ARG(
-        "libs", 'l', "LIBS",
+    DEF_ARG("libs", 'l', "LIBS",
         "Element libraries to process (all, <element>) [default: all]. <element> can be an element library, or it can "
         "be a single element within the library.",
         std::bind(&SSTInfoConfig::setLibs, this, _1), false);
@@ -787,7 +805,9 @@ SSTInfoConfig::addFilter(const std::string& name_str)
     if ( name.size() > 3 && name.substr(0, 3) == "lib" ) name = name.substr(3);
 
     size_t dotLoc = name.find(".");
-    if ( dotLoc == std::string::npos ) { m_filters.insert(std::make_pair(name, "")); }
+    if ( dotLoc == std::string::npos ) {
+        m_filters.insert(std::make_pair(name, ""));
+    }
     else {
         m_filters.insert(std::make_pair(std::string(name, 0, dotLoc), std::string(name, dotLoc + 1)));
     }
@@ -869,9 +889,8 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
                 auto component = pair.second[idx];
 
                 // Apply filter
-                bool filtered =
-                    std::find(m_componentFilters.begin(), m_componentFilters.end(), component.componentName) !=
-                    m_componentFilters.end();
+                bool filtered = std::find(m_componentFilters.begin(), m_componentFilters.end(),
+                                    component.componentName) != m_componentFilters.end();
                 if ( (m_componentFilters.size() == 0) || filtered ) {
                     outputStream << "  " << componentType << " " << idx << ": " << component.componentName << endl;
 
@@ -879,7 +898,9 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
                     for ( auto key : component.stringIndexer ) {
                         std::string val = component.infoMap[key];
 
-                        if ( val == "" ) { outputStream << key << endl; }
+                        if ( val == "" ) {
+                            outputStream << key << endl;
+                        }
                         else {
                             outputStream << key << ": " << val << endl;
                         }
@@ -894,8 +915,8 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
 void
 SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, std::string searchTerm)
 {
-    std::vector<std::string> stringList = { "Parameters", "Ports",          "SubComponent Slots",
-                                            "Statistics", "Profile Points", "Attributes" };
+    std::vector<std::string> stringList = { "Parameters", "Ports", "SubComponent Slots", "Statistics", "Profile Points",
+        "Attributes" };
     std::string              prefix     = "         ";
     int                      count      = 0;
     for ( auto& pair : m_components ) {
@@ -934,7 +955,9 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                         searchString += mapTag + ": " + component.infoMap[mapTag] + "\n";
                     }
                     else {
-                        if ( found ) { break; }
+                        if ( found ) {
+                            break;
+                        }
                     }
                 }
             }
@@ -1140,7 +1163,9 @@ InteractiveWindow::getInput()
                 g_prevInput.push_front(input);
                 output = parseInput(input);
 
-                if ( output == "quit" ) { break; }
+                if ( output == "quit" ) {
+                    break;
+                }
 
                 setInfoText(output);
                 g_window.draw();
@@ -1177,7 +1202,9 @@ InteractiveWindow::getInput()
         }
         // Cycle through previous commands
         else if ( c == KEY_PPAGE ) {
-            if ( entryIdx == -1 ) { stashedInput = input; }
+            if ( entryIdx == -1 ) {
+                stashedInput = input;
+            }
 
             if ( entryIdx < int(g_prevInput.size() - 1) ) {
                 entryIdx++;
@@ -1191,7 +1218,9 @@ InteractiveWindow::getInput()
         else if ( c == KEY_NPAGE ) {
             if ( entryIdx >= 0 ) {
                 entryIdx--;
-                if ( entryIdx == -1 ) { input = stashedInput; }
+                if ( entryIdx == -1 ) {
+                    input = stashedInput;
+                }
                 else {
                     input = g_prevInput[entryIdx];
                 }

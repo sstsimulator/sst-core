@@ -63,7 +63,7 @@ public:
 
 private:
     coreTestParamComponent();                                                  // for serialization only
-    coreTestParamComponent(const coreTestParamComponent&) = delete;            // do not implement
+    coreTestParamComponent(const coreTestParamComponent&)            = delete; // do not implement
     coreTestParamComponent& operator=(const coreTestParamComponent&) = delete; // do not implement
 };
 

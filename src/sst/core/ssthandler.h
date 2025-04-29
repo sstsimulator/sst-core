@@ -146,8 +146,7 @@ public:
            If argT is a pointer, this will be passed as a const
            pointer, if not, it will be passed as a const reference
         */
-        virtual void beforeHandler(
-            uintptr_t                                                                                    key,
+        virtual void beforeHandler(uintptr_t                                                             key,
             std::conditional_t<std::is_pointer_v<argT>, const std::remove_pointer_t<argT>*, const argT&> arg) = 0;
 
         /**
@@ -161,8 +160,7 @@ public:
            retunT is a pointer, this will be passed as a const
            pointer, if not, it will be passed as a const reference
         */
-        virtual void afterHandler(
-            uintptr_t key,
+        virtual void afterHandler(uintptr_t key,
             std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
                 ret_value) = 0;
 
@@ -187,8 +185,8 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        virtual void serializeHandlerAttachPointKey(
+            SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
     };
 
@@ -209,7 +207,9 @@ protected:
             ToolList tools;
             if ( attached_tools ) {
                 for ( auto x : *attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -367,8 +367,7 @@ public:
            If argT is a pointer, this will be passed as a const
            pointer, if not, it will be passed as a const reference
         */
-        virtual void beforeHandler(
-            uintptr_t                                                                                    key,
+        virtual void beforeHandler(uintptr_t                                                             key,
             std::conditional_t<std::is_pointer_v<argT>, const std::remove_pointer_t<argT>*, const argT&> arg) = 0;
 
         /**
@@ -401,8 +400,8 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        virtual void serializeHandlerAttachPointKey(
+            SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
     };
 
@@ -467,8 +466,8 @@ public:
 
            @param key Key that would be passed into the interceptHandler() function.
          */
-        virtual void
-        serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        virtual void serializeHandlerInterceptPointKey(
+            SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
 
         virtual ~InterceptPoint() = default;
@@ -599,7 +598,9 @@ public:
                 break;
             }
         }
-        if ( !cancel ) { operator_impl(arg); }
+        if ( !cancel ) {
+            operator_impl(arg);
+        }
 
         for ( auto& x : attached_tools->attach_tools )
             x.first->afterHandler(x.second);
@@ -747,8 +748,7 @@ public:
            retunT is a pointer, this will be passed as a const
            pointer, if not, it will be passed as a const reference
         */
-        virtual void afterHandler(
-            uintptr_t key,
+        virtual void afterHandler(uintptr_t key,
             std::conditional_t<std::is_pointer_v<returnT>, const std::remove_pointer_t<returnT>*, const returnT&>
                 ret_value) = 0;
 
@@ -773,8 +773,8 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        virtual void serializeHandlerAttachPointKey(
+            SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
     };
 
@@ -795,7 +795,9 @@ protected:
             ToolList tools;
             if ( attached_tools ) {
                 for ( auto x : *attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -983,8 +985,8 @@ public:
            @param key Key that would be passed into the
            beforeHandler() and afterHandler() functions.
          */
-        virtual void
-        serializeHandlerAttachPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
+        virtual void serializeHandlerAttachPointKey(
+            SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& UNUSED(key))
         {}
     };
 
@@ -1005,7 +1007,9 @@ protected:
             ToolList tools;
             if ( attached_tools ) {
                 for ( auto x : *attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) { tools.push_back(x); }
+                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                        tools.push_back(x);
+                    }
                 }
             }
             size_t tool_count = tools.size();
@@ -1150,7 +1154,7 @@ public:
         data(data)
     {}
 
-    SSTHandler(const SSTHandler&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
     SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*member)(arg, data); }
@@ -1175,10 +1179,13 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    SSTHandler(classT* const object, PtrMember member) : SSTHandlerBase<returnT, argT>(), member(member), object(object)
+    SSTHandler(classT* const object, PtrMember member) :
+        SSTHandlerBase<returnT, argT>(),
+        member(member),
+        object(object)
     {}
 
-    SSTHandler(const SSTHandler&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
     SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*member)(arg); }
@@ -1212,7 +1219,7 @@ public:
         data(data)
     {}
 
-    SSTHandlerNoArgs(const SSTHandlerNoArgs&) = delete;
+    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
     SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
 
     void operator_impl() override { return (object->*member)(data); }
@@ -1243,7 +1250,7 @@ public:
         object(object)
     {}
 
-    SSTHandlerNoArgs(const SSTHandlerNoArgs&) = delete;
+    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
     SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
 
     void operator_impl() override { return (object->*member)(); }
@@ -1285,11 +1292,15 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object, dataT data) : SSTHandlerBase<returnT, argT>(), object(object), data(data) {}
+    SSTHandler2(classT* const object, dataT data) :
+        SSTHandlerBase<returnT, argT>(),
+        object(object),
+        data(data)
+    {}
 
     SSTHandler2() {}
 
-    SSTHandler2(const SSTHandler2&) = delete;
+    SSTHandler2(const SSTHandler2&)            = delete;
     SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg, data); }
@@ -1319,10 +1330,13 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, argT>(), object(object) {}
+    explicit SSTHandler2(classT* const object) :
+        SSTHandlerBase<returnT, argT>(),
+        object(object)
+    {}
     SSTHandler2() {}
 
-    SSTHandler2(const SSTHandler2&) = delete;
+    SSTHandler2(const SSTHandler2&)            = delete;
     SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg); }
@@ -1352,10 +1366,14 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object, dataT data) : SSTHandlerBase<returnT, void>(), object(object), data(data) {}
+    SSTHandler2(classT* const object, dataT data) :
+        SSTHandlerBase<returnT, void>(),
+        object(object),
+        data(data)
+    {}
     SSTHandler2() {}
 
-    SSTHandler2(const SSTHandler2&) = delete;
+    SSTHandler2(const SSTHandler2&)            = delete;
     SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl() override { return (object->*funcT)(data); }
@@ -1385,10 +1403,13 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    explicit SSTHandler2(classT* const object) : SSTHandlerBase<returnT, void>(), object(object) {}
+    explicit SSTHandler2(classT* const object) :
+        SSTHandlerBase<returnT, void>(),
+        object(object)
+    {}
     SSTHandler2() {}
 
-    SSTHandler2(const SSTHandler2&) = delete;
+    SSTHandler2(const SSTHandler2&)            = delete;
     SSTHandler2& operator=(const SSTHandler2&) = delete;
 
     returnT operator_impl() override { return (object->*funcT)(); }

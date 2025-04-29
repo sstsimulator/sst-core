@@ -23,7 +23,9 @@ std::enable_if_t<std::is_integral_v<T>, T>
 from_string(const std::string& input)
 {
     if constexpr ( std::is_signed_v<T> ) {
-        if constexpr ( std::is_same_v<int, T> ) { return std::stoi(input, nullptr, 0); }
+        if constexpr ( std::is_same_v<int, T> ) {
+            return std::stoi(input, nullptr, 0);
+        }
         else if constexpr ( std::is_same_v<long, T> ) {
             return std::stol(input, nullptr, 0);
         }
@@ -44,9 +46,8 @@ from_string(const std::string& input)
                  transform == "on" || transform == "1" ) {
                 return true;
             }
-            else if (
-                transform == "false" || transform == "f" || transform == "no" || transform == "n" ||
-                transform == "off" || transform == "0" ) {
+            else if ( transform == "false" || transform == "f" || transform == "no" || transform == "n" ||
+                      transform == "off" || transform == "0" ) {
                 return false;
             }
             else {
@@ -69,7 +70,9 @@ template <class T>
 std::enable_if_t<std::is_floating_point_v<T>, T>
 from_string(const std::string& input)
 {
-    if constexpr ( std::is_same_v<float, T> ) { return stof(input); }
+    if constexpr ( std::is_same_v<float, T> ) {
+        return stof(input);
+    }
     else if constexpr ( std::is_same_v<double, T> ) {
         return stod(input);
     }
@@ -85,8 +88,7 @@ template <class T>
 std::enable_if_t<std::is_class_v<T>, T>
 from_string(const std::string& input)
 {
-    static_assert(
-        std::is_constructible_v<T, std::string>,
+    static_assert(std::is_constructible_v<T, std::string>,
         "ERROR: from_string can only be used with integral and floating point types and with classes that have a "
         "constructor that takes a single string as input.\n");
     return T(input);

@@ -59,7 +59,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesProfilePoints(T* UNUSED(t)) : points_(InfoProfilePoints<T>::get())
+    explicit ProvidesProfilePoints(T* UNUSED(t)) :
+        points_(InfoProfilePoints<T>::get())
     {}
 
 private:
@@ -79,9 +80,6 @@ private:
         return var;                                                                                           \
     }
 // clang-format on
-#define SST_ELI_DELETE_PROFILE_POINT(point) \
-    {                                       \
-        point, nullptr, nullptr             \
-    }
+#define SST_ELI_DELETE_PROFILE_POINT(point) { point, nullptr, nullptr }
 
 #endif // SST_CORE_ELI_PROFILEPOINTINFO_H

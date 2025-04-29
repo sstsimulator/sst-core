@@ -63,7 +63,9 @@ public:
         checkRegisterConflict(short_name_, short_name);
         field_name_ = name;
         short_name_ = short_name;
-        if ( field_enum_ == 0 ) { field_enum_ = allocateFieldEnum(); }
+        if ( field_enum_ == 0 ) {
+            field_enum_ = allocateFieldEnum();
+        }
 
         field_name_ = name;
         short_name_ = short_name;

@@ -92,7 +92,8 @@ StatisticOutput::getAbsolutePathForOutputFile(const std::string& filename)
     return Simulation_impl::filesystem.getAbsolutePath(filename);
 }
 
-StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) : StatisticOutput(outputParameters)
+StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) :
+    StatisticOutput(outputParameters)
 {
     m_highestFieldHandle   = 0;
     m_currentFieldStatName = "";
@@ -109,8 +110,8 @@ StatisticFieldsOutput::addFieldToLists(const char* fieldName, fieldType_t fieldT
         fieldHandle_t       id                    = iter->second;
         StatisticFieldInfo* ExistingStatFieldInfo = m_outputFieldInfoArray[id];
         if ( ExistingStatFieldInfo->getFieldType() != fieldType ) {
-            Simulation_impl::getSimulationOutput().fatal(
-                CALL_INFO, 1, "StatisticOutput %s registering the same column (%s) with two different types",
+            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
+                "StatisticOutput %s registering the same column (%s) with two different types",
                 getStatisticOutputName().c_str(), fieldName);
         }
         return ExistingStatFieldInfo;
@@ -139,7 +140,9 @@ StatisticFieldsOutput::generateFieldHandle(StatisticFieldInfo* FieldInfo)
 StatisticFieldInfo*
 StatisticFieldsOutput::getRegisteredField(fieldHandle_t fieldHandle)
 {
-    if ( fieldHandle <= m_highestFieldHandle ) { return m_outputFieldInfoArray[fieldHandle]; }
+    if ( fieldHandle <= m_highestFieldHandle ) {
+        return m_outputFieldInfoArray[fieldHandle];
+    }
     return nullptr;
 }
 

@@ -27,9 +27,15 @@ struct setItem : public SST::Core::Serialization::serializable
     int key;
     int value;
 
-    setItem() : key(0), value(0) {}
+    setItem() :
+        key(0),
+        value(0)
+    {}
 
-    setItem(int key, int value) : key(key), value(value) {}
+    setItem(int key, int value) :
+        key(key),
+        value(value)
+    {}
 
     bool operator<(const setItem& lhs) const { return key < lhs.key; }
 
@@ -102,7 +108,9 @@ public:
 
     bool tick(SST::Cycle_t);
 
-    coreTestSharedObjectsComponent() : Component() {} // For serialization ONLY
+    coreTestSharedObjectsComponent() :
+        Component()
+    {} // For serialization ONLY
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTestSharedObjectsComponent::coreTestSharedObjectsComponent)
 

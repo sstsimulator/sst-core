@@ -97,7 +97,9 @@ public:
         delete tunnel;
 
         munmap(shmPtr, shmSize);
-        if ( remove(filename.c_str()) != 0 ) { fprintf(stderr, "Error deleting tunnel file: %s\n", filename.c_str()); }
+        if ( remove(filename.c_str()) != 0 ) {
+            fprintf(stderr, "Error deleting tunnel file: %s\n", filename.c_str());
+        }
     }
 
     /** returns name of the mmap'd file */

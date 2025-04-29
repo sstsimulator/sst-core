@@ -18,7 +18,9 @@
 using namespace SST;
 using namespace SST::CoreTestComponent;
 
-coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) : Component(id), recv_count(0)
+coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
+    Component(id),
+    recv_count(0)
 {
     bool found_sendlat;
     bool found_recvlat;
@@ -34,11 +36,9 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) : Component(id), 
     UnitAlgebra recv_lat = params.find<UnitAlgebra>("added_recv_latency", found_recvlat);
 
     // configure out links
-    E = configureLink(
-        "Elink", link_tb.toString(),
+    E = configureLink("Elink", link_tb.toString(),
         new Event::Handler2<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "East"));
-    W = configureLink(
-        "Wlink", link_tb.toString(),
+    W = configureLink("Wlink", link_tb.toString(),
         new Event::Handler2<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "West"));
 
     if ( found_sendlat ) {
@@ -63,14 +63,18 @@ coreTestLinks::handleEvent(Event* ev, std::string from)
         "%d: received event at: %" PRIu64 " ns on link %s\n", my_id, getCurrentSimTimeNano(), from.c_str());
     delete ev;
     recv_count++;
-    if ( recv_count == 8 ) { primaryComponentOKToEndSim(); }
+    if ( recv_count == 8 ) {
+        primaryComponentOKToEndSim();
+    }
 }
 
 bool
 coreTestLinks::clockTic(Cycle_t cycle)
 {
     // Each clock cycle, send with increasing addtional latency, for 4 cycles, end of 5th
-    if ( cycle == 5 ) { return true; }
+    if ( cycle == 5 ) {
+        return true;
+    }
 
     E->send(cycle, nullptr);
     W->send(cycle, nullptr);

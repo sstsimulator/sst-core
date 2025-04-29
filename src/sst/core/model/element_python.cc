@@ -115,14 +115,13 @@ SSTElementPythonModuleCode::load(void* parent_module)
     PyObject* pm            = (PyObject*)parent_module;
     PyObject* compiled_code = Py_CompileString(code, filename.c_str(), Py_file_input);
     if ( compiled_code == nullptr )
-        abortOnPyErr(
-            CALL_INFO, 1, "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
+        abortOnPyErr(CALL_INFO, 1, "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
             filename.c_str());
 
     PyObject* module = PyImport_ExecCodeModule(const_cast<char*>(getFullModuleName().c_str()), compiled_code);
     if ( module == nullptr )
-        abortOnPyErr(
-            CALL_INFO, 1, "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
+        abortOnPyErr(CALL_INFO, 1,
+            "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
             filename.c_str());
 
     // All but the top level module need to add themselves to the top level module
@@ -166,14 +165,13 @@ SSTElementPythonModule::load()
     }
     PyObject* code = Py_CompileString(primary_module, pylibrary.c_str(), Py_file_input);
     if ( code == nullptr )
-        abortOnPyErr(
-            CALL_INFO, 1, "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
+        abortOnPyErr(CALL_INFO, 1, "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
             const_cast<char*>(pylibrary.c_str()));
 
     PyObject* module = PyImport_ExecCodeModule(const_cast<char*>(sstlibrary.c_str()), code);
     if ( module == nullptr )
-        abortOnPyErr(
-            CALL_INFO, 1, "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
+        abortOnPyErr(CALL_INFO, 1,
+            "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
             const_cast<char*>(sstlibrary.c_str()));
 
     for ( auto item : sub_modules ) {
@@ -182,14 +180,14 @@ SSTElementPythonModule::load()
 
         PyObject* subcode = Py_CompileString(item.second, pylib.c_str(), Py_file_input);
         if ( subcode == nullptr )
-            abortOnPyErr(
-                CALL_INFO, 1, "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
+            abortOnPyErr(CALL_INFO, 1,
+                "SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n",
                 const_cast<char*>(pylib.c_str()));
 
         PyObject* submodule = PyImport_ExecCodeModule(const_cast<char*>(sstlib.c_str()), subcode);
         if ( submodule == nullptr )
-            abortOnPyErr(
-                CALL_INFO, 1, "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
+            abortOnPyErr(CALL_INFO, 1,
+                "SSTElementPythonModule: Error running PyImport_ExecCodeModule on %s.  Details follow:\n",
                 const_cast<char*>(sstlib.c_str()));
         PyModule_AddObject(module, item.first.c_str(), submodule);
     }

@@ -34,8 +34,7 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
 {
 
     if ( !output->acceptsGroups() ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
             output->getStatisticOutputName().c_str());
     }
 
@@ -53,8 +52,7 @@ StatisticGroup::restartGroup(StatisticProcessingEngine* engine)
 {
     output = const_cast<StatisticOutput*>(engine->getStatOutputs()[outputId]);
     if ( !output->acceptsGroups() ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
             output->getStatisticOutputName().c_str());
     }
 }

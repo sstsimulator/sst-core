@@ -41,7 +41,9 @@ class BuilderLibrary
 public:
     using BaseBuilder = Builder<Base, CtorArgs...>;
 
-    explicit BuilderLibrary(const std::string& name) : name_(name) {}
+    explicit BuilderLibrary(const std::string& name) :
+        name_(name)
+    {}
 
     BaseBuilder* getBuilder(const std::string& name) { return factories_[name]; }
 
@@ -111,7 +113,7 @@ struct BuilderLoader : public LibraryLoader
         BuilderLibraryDatabase<Base, CtorArgs...>::getLibrary(elemlib_)->readdBuilder(elem_, alias_, builder_);
     }
 
-    BuilderLoader(const BuilderLoader&) = delete;
+    BuilderLoader(const BuilderLoader&)            = delete;
     BuilderLoader& operator=(const BuilderLoader&) = delete;
 
 private:
@@ -328,14 +330,13 @@ struct CtorList<Base, void>
         return Ctor::template add<0, __TT>(lib, elem);                                                               \
     }
 
-#define SST_ELI_DECLARE_CTORS(...)                                                            \
-    SST_ELI_CTORS_COMMON(ELI_FORWARD_AS_ONE(__VA_ARGS__))                                     \
-    template <class... Args>                                                                  \
-    static bool addBuilder(                                                                   \
-        const std::string& elemlib, const std::string& elem, const std::string& alias,        \
-        SST::ELI::Builder<__LocalEliBase, Args...>* builder)                                  \
-    {                                                                                         \
-        return getBuilderLibraryTemplate<Args...>(elemlib)->addBuilder(elem, alias, builder); \
+#define SST_ELI_DECLARE_CTORS(...)                                                                        \
+    SST_ELI_CTORS_COMMON(ELI_FORWARD_AS_ONE(__VA_ARGS__))                                                 \
+    template <class... Args>                                                                              \
+    static bool addBuilder(const std::string& elemlib, const std::string& elem, const std::string& alias, \
+        SST::ELI::Builder<__LocalEliBase, Args...>* builder)                                              \
+    {                                                                                                     \
+        return getBuilderLibraryTemplate<Args...>(elemlib)->addBuilder(elem, alias, builder);             \
     }
 
 #define SST_ELI_DECLARE_CTORS_EXTERN(...) SST_ELI_CTORS_COMMON(ELI_FORWARD_AS_ONE(__VA_ARGS__))

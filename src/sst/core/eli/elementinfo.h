@@ -64,7 +64,9 @@ public:
         if ( libiter != infos().end() ) {
             auto& submap   = libiter->second;
             auto  elemiter = submap.find(elem);
-            if ( elemiter != submap.end() ) { return elemiter->second; }
+            if ( elemiter != submap.end() ) {
+                return elemiter->second;
+            }
         }
         return nullptr;
     }
@@ -106,7 +108,7 @@ public:
         Parent::toString(os);
     }
 
-    BuilderInfoImpl(const BuilderInfoImpl&) = delete;
+    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
     BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
@@ -124,7 +126,7 @@ protected:
 
     void toString(std::ostream& UNUSED(os)) const {}
 
-    BuilderInfoImpl(const BuilderInfoImpl&) = delete;
+    BuilderInfoImpl(const BuilderInfoImpl&)            = delete;
     BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
@@ -142,12 +144,16 @@ class InfoLibrary
 public:
     using BaseInfo = typename Base::BuilderInfo;
 
-    explicit InfoLibrary(const std::string& name) : name_(name) {}
+    explicit InfoLibrary(const std::string& name) :
+        name_(name)
+    {}
 
     BaseInfo* getInfo(const std::string& name)
     {
         auto iter = infos_.find(name);
-        if ( iter == infos_.end() ) { return nullptr; }
+        if ( iter == infos_.end() ) {
+            return nullptr;
+        }
         else {
             return iter->second;
         }
@@ -243,7 +249,9 @@ struct InfoLoader : public LibraryLoader
     void load() override
     {
         auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib_);
-        if ( !lib->hasInfo(elem_) ) { lib->readdInfo(elem_, info_); }
+        if ( !lib->hasInfo(elem_) ) {
+            lib->readdInfo(elem_, info_);
+        }
     }
 
 private:
@@ -251,7 +259,7 @@ private:
     std::string elem_;
     Info*       info_;
 
-    InfoLoader(const InfoLoader&) = delete;
+    InfoLoader(const InfoLoader&)            = delete;
     InfoLoader& operator=(const InfoLoader&) = delete;
 };
 
@@ -416,15 +424,15 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
 // this class.  Sny local information will overwrite any inherited
 // information.  See comment for SST_ELI_DECLARE_BASE in elibase.h for
 // info on how __EliDerivedLevel is used.
-#define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)    \
-    [[maybe_unused]] static constexpr int __EliDerivedLevel =            \
-        std::is_same_v<base, cls> ? __EliBaseLevel : __EliBaseLevel + 1; \
-    static bool ELI_isLoaded()                                           \
-    {                                                                    \
-        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&    \
-               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();  \
-    }                                                                    \
-    SST_ELI_FORCE_INSTANTIATION(base, cls)                               \
+#define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)                                         \
+    [[maybe_unused]]                                                                                          \
+    static constexpr int __EliDerivedLevel = std::is_same_v<base, cls> ? __EliBaseLevel : __EliBaseLevel + 1; \
+    static bool          ELI_isLoaded()                                                                       \
+    {                                                                                                         \
+        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&                                         \
+               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();                                       \
+    }                                                                                                         \
+    SST_ELI_FORCE_INSTANTIATION(base, cls)                                                                    \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)
 
 #define SST_ELI_REGISTER_EXTERN(base, cls)                              \

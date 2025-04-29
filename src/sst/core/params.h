@@ -149,7 +149,9 @@ NO_VARIABLE:
         verifyKey(k);
         // const_iterator i = data.find(getKey(k));
         const std::string& value = getString(k, found);
-        if ( !found ) { return default_value; }
+        if ( !found ) {
+            return default_value;
+        }
         else {
             return convert_value<T>(k, value);
         }
@@ -253,7 +255,10 @@ public:
      * after construction of the config graph so that warnings are
      * not generated during construction.
      */
-    static void enableVerify() { g_verify_enabled = true; };
+    static void enableVerify()
+    {
+        g_verify_enabled = true;
+    };
 
     /**
      * Returns the size of the Params.  This will count both local and
@@ -351,10 +356,12 @@ public:
      *   specified as a string literal
      */
     template <class T>
-    std::enable_if_t<std::is_same_v<bool, T>, T>
-    find(const std::string& k, const char* default_value, bool& found) const
+    std::enable_if_t<std::is_same_v<bool, T>, T> find(
+        const std::string& k, const char* default_value, bool& found) const
     {
-        if ( nullptr == default_value ) { return find_impl<T>(k, static_cast<T>(0), found); }
+        if ( nullptr == default_value ) {
+            return find_impl<T>(k, static_cast<T>(0), found);
+        }
         return find_impl<T>(k, std::string(default_value), found);
     }
 
@@ -403,7 +410,9 @@ public:
     std::enable_if_t<std::is_same_v<bool, T>, T> find(const std::string& k, const char* default_value) const
     {
         bool tmp;
-        if ( nullptr == default_value ) { return find_impl<T>(k, static_cast<T>(0), tmp); }
+        if ( nullptr == default_value ) {
+            return find_impl<T>(k, static_cast<T>(0), tmp);
+        }
         return find_impl<T>(k, std::string(default_value), tmp);
     }
 
@@ -767,7 +776,9 @@ public:
         std::string value = getString(k, found);
         if ( !found ) return false;
         // String should start with [ and end with ]
-        if ( (value.find("[") == std::string::npos) || (value.find("]") == std::string::npos) ) { return false; }
+        if ( (value.find("[") == std::string::npos) || (value.find("]") == std::string::npos) ) {
+            return false;
+        }
         return true;
     }
 
@@ -879,8 +890,8 @@ private:
      * @param overwrite controls whether the key/value pair will
      * overwrite an existing pair in the set
      */
-    static void
-    insert_shared(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
+    static void insert_shared(
+        const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
 
     /**
      * Get a named shared parameter set.

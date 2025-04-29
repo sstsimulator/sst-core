@@ -45,7 +45,11 @@ namespace SST {
 class Activity : public SST::Core::MemPoolItem
 {
 public:
-    Activity() : delivery_time(0), priority_order(0), queue_order(0) {}
+    Activity() :
+        delivery_time(0),
+        priority_order(0),
+        queue_order(0)
+    {}
     virtual ~Activity() {}
 
     /**

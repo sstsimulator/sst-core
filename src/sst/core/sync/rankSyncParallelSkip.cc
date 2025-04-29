@@ -77,9 +77,8 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
     delete[] link_send_queue;
 
     if ( mpiWaitTime > 0.0 || deserializeTime > 0.0 )
-        Output::getDefaultObject().verbose(
-            CALL_INFO, 1, 0, "RankSyncParallelSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime,
-            deserializeTime);
+        Output::getDefaultObject().verbose(CALL_INFO, 1, 0,
+            "RankSyncParallelSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
 }
 
 ActivityQueue*
@@ -122,7 +121,9 @@ RankSyncParallelSkip::registerLink(
 void
 RankSyncParallelSkip::setRestartTime(SimTime_t time)
 {
-    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) { myNextSyncTime = time; }
+    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) {
+        myNextSyncTime = time;
+    }
 }
 
 void
@@ -288,8 +289,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
             if ( send->remote_size < hdr->buffer_size ) {
                 // not big enough, send message that will tell remote side to get larger buffer
                 hdr->mode = 1;
-                MPI_Isend(
-                    send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, send->to_rank.rank /*dest*/, tag,
+                MPI_Isend(send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, send->to_rank.rank /*dest*/, tag,
                     MPI_COMM_WORLD, &sreqs[sreq_count++]);
                 send->remote_size = hdr->buffer_size;
                 tag               = 2 * send->to_rank.thread + 1;
@@ -297,8 +297,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
             else {
                 hdr->mode = 0;
             }
-            MPI_Isend(
-                send_buffer, hdr->buffer_size, MPI_BYTE, send->to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
+            MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, send->to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
                 &sreqs[sreq_count++]);
         }
         else if ( serialize_queue.try_remove(send) ) {
@@ -340,8 +339,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
                             i->second.rbuf       = new char[size];
                             i->second.local_size = size;
                         }
-                        MPI_Recv(
-                            i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank,
+                        MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank,
                             2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                         buffer = i->second.rbuf;
                     }
@@ -392,7 +390,9 @@ void
 RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
 {
 #ifdef SST_CONFIG_HAVE_MPI
-    if ( thread != 0 ) { return; }
+    if ( thread != 0 ) {
+        return;
+    }
     // Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
     auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_send_map.size());
@@ -403,8 +403,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
     for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
         // Post all the receives
         int tag = 2 * i->second.local_thread;
-        MPI_Irecv(
-            i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank, tag, MPI_COMM_WORLD,
+        MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank, tag, MPI_COMM_WORLD,
             &rreqs[rreq_count++]);
     }
 
@@ -421,8 +420,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         if ( i->second.remote_size < hdr->buffer_size ) {
             // not big enough, send message that will tell remote side to get larger buffer
             hdr->mode = 1;
-            MPI_Isend(
-                send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, i->second.to_rank.rank /*dest*/, tag,
+            MPI_Isend(send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, i->second.to_rank.rank /*dest*/, tag,
                 MPI_COMM_WORLD, &sreqs[sreq_count++]);
             i->second.remote_size = hdr->buffer_size;
             tag                   = 2 * i->second.to_rank.thread + 1;
@@ -430,8 +428,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         else {
             hdr->mode = 0;
         }
-        MPI_Isend(
-            send_buffer, hdr->buffer_size, MPI_BYTE, i->second.to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
+        MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, i->second.to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
             &sreqs[sreq_count++]);
     }
 
@@ -454,9 +451,8 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
                 i->second.rbuf       = new char[size];
                 i->second.local_size = size;
             }
-            MPI_Recv(
-                i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank, 2 * i->second.local_thread + 1,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank,
+                2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             buffer = i->second.rbuf;
         }
 

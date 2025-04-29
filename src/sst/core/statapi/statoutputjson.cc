@@ -18,7 +18,8 @@
 
 namespace SST::Statistics {
 
-StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
+StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) :
+    StatisticFieldsOutput(outputParameters)
 {
     // Announce this output object's name
     Output& out = getSimulationOutput();
@@ -44,7 +45,9 @@ StatisticOutputJSON::checkOutputParameters()
 
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) { return false; }
+    if ( true == foundKey ) {
+        return false;
+    }
 
     // Get the parameters
     m_FilePath      = getOutputParameters().find<std::string>("filepath", "StatisticOutput.json");
@@ -136,7 +139,9 @@ StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
         printIndent();
         fprintf(m_hFile, "\"name\" : \"%s\",\n", statistic->getCompName().c_str());
         printIndent();
-        if ( m_outputSimTime ) { fprintf(m_hFile, "\"simtime\" : %" PRIu64 ",\n", getCurrentSimCycle()); }
+        if ( m_outputSimTime ) {
+            fprintf(m_hFile, "\"simtime\" : %" PRIu64 ",\n", getCurrentSimCycle());
+        }
 
         printIndent();
         fprintf(m_hFile, "\"statistics\" : [\n");
@@ -151,7 +156,9 @@ StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
     m_currentStatisticSubId = statistic->getStatSubId();
     m_currentStatisticType  = statistic->getStatTypeName();
 
-    if ( m_firstEntry ) { m_firstEntry = false; }
+    if ( m_firstEntry ) {
+        m_firstEntry = false;
+    }
     else {
         fprintf(m_hFile, ",\n");
     }
@@ -172,7 +179,9 @@ StatisticOutputJSON::implStopOutputEntries()
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%" PRId32, data);
 
@@ -182,7 +191,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%" PRIu32, data);
 
@@ -192,7 +203,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t dat
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%" PRId64, data);
 
@@ -202,7 +215,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%" PRIu64, data);
 
@@ -212,7 +227,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t dat
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%f ", data);
 
@@ -222,7 +239,9 @@ StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
 void
 StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 {
-    if ( !m_firstField ) { fprintf(m_hFile, ", "); }
+    if ( !m_firstField ) {
+        fprintf(m_hFile, ", ");
+    }
 
     fprintf(m_hFile, "%f ", data);
 
@@ -258,8 +277,7 @@ StatisticOutputJSON::openFile()
     if ( nullptr == m_hFile ) {
         // We got an error of some sort
         Output out = getSimulationOutput();
-        out.fatal(
-            CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(),
+        out.fatal(CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(),
             strerror(errno));
         return false;
     }

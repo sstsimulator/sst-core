@@ -83,9 +83,8 @@ public:
      */
     void print(const std::string& header, Output& out) const override
     {
-        out.output(
-            "%s Exit Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
-            getPriority());
+        out.output("%s Exit Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(),
+            getDeliveryTime(), getPriority());
     }
 
 
@@ -98,10 +97,11 @@ public:
      */
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Exit)
+
 private:
-    Exit()            = default;           // for serialization only
-    Exit(const Exit&) = delete;            // Don't implement
-    Exit& operator=(const Exit&) = delete; // Don't implement
+    Exit()                       = default; // for serialization only
+    Exit(const Exit&)            = delete;  // Don't implement
+    Exit& operator=(const Exit&) = delete;  // Don't implement
 
     //     bool handler( Event* );
 

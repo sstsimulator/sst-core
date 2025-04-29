@@ -21,7 +21,9 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SSTModelDescription)
 SST_ELI_DEFINE_CTOR_EXTERN(SSTModelDescription)
 
-SSTModelDescription::SSTModelDescription(Config* cfg) : config(cfg) {}
+SSTModelDescription::SSTModelDescription(Config* cfg) :
+    config(cfg)
+{}
 
 bool
 SSTModelDescription::setOptionFromModel(const std::string& entryName, const std::string& value)

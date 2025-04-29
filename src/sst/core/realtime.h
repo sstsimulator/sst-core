@@ -36,8 +36,7 @@ class UnitAlgebra;
 class ExitCleanRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        ExitCleanRealTimeAction, "sst", "rt.exit.clean", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(ExitCleanRealTimeAction, "sst", "rt.exit.clean", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes an immediate, but non-emergency shutdown. This is the default action for the "
         "'--exit-after' option.")
 
@@ -50,8 +49,8 @@ public:
 class ExitEmergencyRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        ExitEmergencyRealTimeAction, "sst", "rt.exit.emergency", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(ExitEmergencyRealTimeAction, "sst", "rt.exit.emergency",
+        SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes an emergency shutdown. This is the default action for SIGTERM and SIGINT.")
 
     ExitEmergencyRealTimeAction();
@@ -62,8 +61,7 @@ public:
 class CoreStatusRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        CoreStatusRealTimeAction, "sst", "rt.status.core", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(CoreStatusRealTimeAction, "sst", "rt.status.core", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST-Core to print its status. This is the default action for SIGUSR1.")
 
     CoreStatusRealTimeAction();
@@ -74,8 +72,8 @@ public:
 class ComponentStatusRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        ComponentStatusRealTimeAction, "sst", "rt.status.all", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(ComponentStatusRealTimeAction, "sst", "rt.status.all",
+        SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST-Core to print its status along with component status. This is the default "
         "action for SIGUSR2.")
 
@@ -87,8 +85,7 @@ public:
 class CheckpointRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        CheckpointRealTimeAction, "sst", "rt.checkpoint", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(CheckpointRealTimeAction, "sst", "rt.checkpoint", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a checkpoint. This is the default action for the "
         "'--checkpoint-wall-period' option.")
 
@@ -103,8 +100,7 @@ public:
 class HeartbeatRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        HeartbeatRealTimeAction, "sst", "rt.heartbeat", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(HeartbeatRealTimeAction, "sst", "rt.heartbeat", SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to generate a heartbeat message (status and some resource usage information). "
         "This is the default action for the '--heartbeat-wall-period' option.")
 
@@ -123,8 +119,8 @@ private:
 class InteractiveRealTimeAction : public RealTimeAction
 {
 public:
-    SST_ELI_REGISTER_REALTIMEACTION(
-        InteractiveRealTimeAction, "sst", "rt.interactive", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+    SST_ELI_REGISTER_REALTIMEACTION(InteractiveRealTimeAction, "sst", "rt.interactive",
+        SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "Signal handler that causes SST to break into an interactive console based on the --interactive-console flag.")
 
     InteractiveRealTimeAction();
@@ -159,6 +155,7 @@ public:
     void         execute() override;
     void         addIntervalAction(uint32_t interval, RealTimeAction* action);
     virtual void begin(time_t scheduled_time) override; // Start alarms
+
 private:
     std::vector<RealTimeIntervalAction> interval_actions_;
     bool                                alarm_manager_; /* The instance on thread 0/rank 0 is the manager */

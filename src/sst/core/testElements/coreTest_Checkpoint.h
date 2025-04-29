@@ -30,9 +30,15 @@ namespace SST::CoreTestCheckpoint {
 class coreTestCheckpointEvent : public SST::Event
 {
 public:
-    coreTestCheckpointEvent() : SST::Event(), counter(1000) {}
+    coreTestCheckpointEvent() :
+        SST::Event(),
+        counter(1000)
+    {}
 
-    explicit coreTestCheckpointEvent(uint32_t c) : SST::Event(), counter(c) {}
+    explicit coreTestCheckpointEvent(uint32_t c) :
+        SST::Event(),
+        counter(c)
+    {}
 
     ~coreTestCheckpointEvent() {}
 
@@ -120,7 +126,9 @@ public:
     void emergencyShutdown() override;
 
     // Serialization functions and macro
-    coreTestCheckpoint() : Component() {} // For serialization only
+    coreTestCheckpoint() :
+        Component()
+    {} // For serialization only
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTestCheckpoint::coreTestCheckpoint)
 

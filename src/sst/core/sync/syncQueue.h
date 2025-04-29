@@ -32,7 +32,10 @@ namespace SST {
 class SyncQueue : public ActivityQueue
 {
 public:
-    explicit SyncQueue(RankInfo to_rank) : ActivityQueue(), to_rank(to_rank) {}
+    explicit SyncQueue(RankInfo to_rank) :
+        ActivityQueue(),
+        to_rank(to_rank)
+    {}
     ~SyncQueue() {}
 
     /** Accessor method to get to_rank */
@@ -87,7 +90,9 @@ private:
 class ThreadSyncQueue : public SyncQueue
 {
 public:
-    explicit ThreadSyncQueue(RankInfo to_rank) : SyncQueue(to_rank) {}
+    explicit ThreadSyncQueue(RankInfo to_rank) :
+        SyncQueue(to_rank)
+    {}
     ~ThreadSyncQueue() {}
 
     /** Returns true if the queue is empty */

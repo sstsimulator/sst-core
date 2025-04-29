@@ -45,15 +45,13 @@ public:
 
         if ( !OS_RETURN_CODE_IS_SUCCESS(retval) ) {
             // Not using Output because IPC means Output might not be available
-            fprintf(
-                stderr, "Failed to open file for IPC '%s' (%d): %s\n", filename.c_str(), retval.os_specific_err,
+            fprintf(stderr, "Failed to open file for IPC '%s' (%d): %s\n", filename.c_str(), retval.os_specific_err,
                 strerror(retval.os_specific_err));
             exit(1);
         }
 
         shmPtr = NULL;
-        retval = OS_MapFileToMemory(
-            NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE,
+        retval = OS_MapFileToMemory(NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE,
             sizeof(InternalSharedData), OS_MEMORY_FLAGS_SHARED, fd, 0, &shmPtr);
 
         if ( !OS_RETURN_CODE_IS_SUCCESS(retval) ) {
@@ -69,9 +67,8 @@ public:
         OS_FreeMemory(NATIVE_PID_CURRENT, shmPtr, sizeof(InternalSharedData));
 
         // Remap with correct size
-        retval = OS_MapFileToMemory(
-            NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE, shmSize,
-            OS_MEMORY_FLAGS_SHARED, fd, 0, &shmPtr);
+        retval = OS_MapFileToMemory(NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE,
+            shmSize, OS_MEMORY_FLAGS_SHARED, fd, 0, &shmPtr);
 
         if ( !OS_RETURN_CODE_IS_SUCCESS(retval) ) {
             // Not using Output because IPC means Output might not be available

@@ -88,7 +88,9 @@ SharedObjectDataManager::updateState(bool finalize)
         for ( auto x : allFullyPub ) {
             for ( auto y : x ) {
                 auto it = pub_map.find(y.first);
-                if ( it == pub_map.end() ) { pub_map[y.first] = y.second; }
+                if ( it == pub_map.end() ) {
+                    pub_map[y.first] = y.second;
+                }
                 else {
                     it->second = it->second & y.second;
                 }

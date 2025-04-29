@@ -43,7 +43,8 @@ extern int main(int argc, char** argv);
 namespace SST {
 
 // Function to exit, guarding against race conditions if multiple threads call it
-[[noreturn]] void SST_Exit(int exit_code);
+[[noreturn]]
+void SST_Exit(int exit_code);
 
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
 #define STATALLFLAG            "--ALLSTATS--"
@@ -235,7 +236,9 @@ public:
     LinkMap* getComponentLinkMap(ComponentId_t id) const
     {
         ComponentInfo* info = compInfoMap.getByID(id);
-        if ( nullptr == info ) { return nullptr; }
+        if ( nullptr == info ) {
+            return nullptr;
+        }
         else {
             return info->getLinkMap();
         }
@@ -249,7 +252,9 @@ public:
     {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) { return i->getComponent(); }
+        if ( nullptr != i ) {
+            return i->getComponent();
+        }
         else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             SST_Exit(1);
@@ -261,7 +266,9 @@ public:
     {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) { return i; }
+        if ( nullptr != i ) {
+            return i;
+        }
         else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             SST_Exit(1);
@@ -342,7 +349,7 @@ public:
     friend int ::main(int argc, char** argv);
 
     Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
-    Simulation_impl(const Simulation_impl&) = delete;            // Don't Implement
+    Simulation_impl(const Simulation_impl&)            = delete; // Don't Implement
     Simulation_impl& operator=(const Simulation_impl&) = delete; // Don't implement
 
     /** Get a handle to a TimeConverter
@@ -492,8 +499,7 @@ public:
                     T* tool = dynamic_cast<T*>(val);
                     if ( !tool ) {
                         //  Not the right type, fatal
-                        Output::getDefaultObject().fatal(
-                            CALL_INFO_LONG, 1,
+                        Output::getDefaultObject().fatal(CALL_INFO_LONG, 1,
                             "ERROR: wrong type of profiling tool found (name = %s).  Check to make sure the profiling "
                             "points enabled for this tool accept the type specified\n",
                             x.c_str());
@@ -503,8 +509,7 @@ public:
                 catch ( std::out_of_range& e ) {
                     // This shouldn't happen.  If it does, then something
                     // didn't get initialized correctly.
-                    Output::getDefaultObject().fatal(
-                        CALL_INFO_LONG, 1,
+                    Output::getDefaultObject().fatal(CALL_INFO_LONG, 1,
                         "INTERNAL ERROR: ProfileTool refered to in profiler_map not found in profile_tools map\n");
                     return ret;
                 }

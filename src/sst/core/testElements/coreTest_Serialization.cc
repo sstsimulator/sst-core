@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <assert.h>
+// #include <assert.h>
 
 #include "sst_config.h"
 
@@ -78,7 +78,8 @@ struct checkSimpleSerializeDeserialize
     {
         T    input;
         T    output;
-        TYPE obj [[maybe_unused]];
+        TYPE obj [[maybe_unused]]
+        ;
 
         if constexpr ( std::is_pointer_v<T> ) {
             obj    = data;
@@ -91,7 +92,9 @@ struct checkSimpleSerializeDeserialize
         }
 
         serializeDeserialize(input, output);
-        if constexpr ( std::is_pointer_v<T> ) { return data == *output; }
+        if constexpr ( std::is_pointer_v<T> ) {
+            return data == *output;
+        }
         else {
             return data == output;
         }
@@ -412,7 +415,9 @@ class pointed_to_class : public SST::Core::Serialization::serializable
     int value = -1;
 
 public:
-    explicit pointed_to_class(int val) : value(val) {}
+    explicit pointed_to_class(int val) :
+        value(val)
+    {}
     pointed_to_class() {}
 
     int  getValue() { return value; }
@@ -429,7 +434,10 @@ class shell : public SST::Core::Serialization::serializable
     pointed_to_class* pointed_to = nullptr;
 
 public:
-    shell(int val, pointed_to_class* ptc = nullptr) : value(val), pointed_to(ptc) {}
+    shell(int val, pointed_to_class* ptc = nullptr) :
+        value(val),
+        pointed_to(ptc)
+    {}
     shell() {}
 
     int  getValue() { return value; }
@@ -505,7 +513,9 @@ struct HandlerTest : public SST::Core::Serialization::serializable
 
     int value = -1;
 
-    explicit HandlerTest(int in) : value(in) {}
+    explicit HandlerTest(int in) :
+        value(in)
+    {}
     HandlerTest() {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(value); }
@@ -530,7 +540,8 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
     int                                                                            value;
 
     RecursiveSerializationTest() {}
-    explicit RecursiveSerializationTest(int in) : value(in)
+    explicit RecursiveSerializationTest(int in) :
+        value(in)
     {
         handler = new Handler<RecursiveSerializationTest, &RecursiveSerializationTest::call, float>(this, 8.9);
     }
@@ -544,7 +555,8 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
     ImplementSerializable(RecursiveSerializationTest)
 };
 
-coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) : Component(id)
+coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
+    Component(id)
 {
     // Test serialization for various data types
 
@@ -625,7 +637,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             if ( !passed ) out.output("ERROR: std::array<int32_t, 10> did not serialize/deserialize properly\n");
         }
         {
-            int32_t(*array_in)[10] = reinterpret_cast<int32_t(*)[10]>(new int32_t[10]);
+            int32_t (*array_in)[10] = reinterpret_cast<int32_t (*)[10]>(new int32_t[10]);
             for ( size_t i = 0; i < 10; ++i )
                 (*array_in)[i] = rng->generateNextInt32();
             passed = checkFixedArraySerializeDeserialize(array_in);
@@ -842,9 +854,8 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // std::map<std::string, uintptr_t> and deserialize as a
         // std::vector<std::pair<std::string, uintptr_t>>, so check that
         // here
-        std::map<std::string, uintptr_t> map2vec_in = {
-            { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 }, { "s5", 5 }
-        };
+        std::map<std::string, uintptr_t> map2vec_in = { { "s1", 1 }, { "s2", 2 }, { "s3", 3 }, { "s4", 4 },
+            { "s5", 5 } };
         std::vector<std::pair<std::string, uintptr_t>> map2vec_out;
 
         auto buffer = SST::Comms::serialize(map2vec_in);

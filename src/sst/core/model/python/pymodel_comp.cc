@@ -138,7 +138,9 @@ compAddParams(PyObject* self, PyObject* args)
     ConfigComponent* c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    if ( !PyDict_Check(args) ) { return nullptr; }
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
 
     Py_ssize_t pos = 0;
     PyObject * key, *val;
@@ -166,7 +168,9 @@ compSetRank(PyObject* self, PyObject* args)
     unsigned long rank   = (unsigned long)-1;
     unsigned long thread = (unsigned long)0;
 
-    if ( !PyArg_ParseTuple(args, "k|k", &rank, &thread) ) { return nullptr; }
+    if ( !PyArg_ParseTuple(args, "k|k", &rank, &thread) ) {
+        return nullptr;
+    }
 
     c->setRank(RankInfo(rank, thread));
 
@@ -202,7 +206,9 @@ compAddLink(PyObject* self, PyObject* args)
     char*       port = nullptr;
     const char* lat  = nullptr;
 
-    if ( !PyArg_ParseTuple(args, "O!s|O", &PyModel_LinkType, &plink, &port, &plat) ) { return nullptr; }
+    if ( !PyArg_ParseTuple(args, "O!s|O", &PyModel_LinkType, &plink, &port, &plat) ) {
+        return nullptr;
+    }
     LinkPy_t* link = (LinkPy_t*)plink;
 
     if ( nullptr != plat ) {
@@ -360,7 +366,9 @@ compEnableStatistic(PyObject* self, PyObject* args)
     char*     name      = nullptr;
     PyObject* py_params = nullptr;
 
-    if ( !PyArg_ParseTuple(args, "s|O", &name, &py_params) ) { return nullptr; }
+    if ( !PyArg_ParseTuple(args, "s|O", &name, &py_params) ) {
+        return nullptr;
+    }
     ConfigComponent* c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
@@ -415,7 +423,9 @@ compSetStatisticLoadLevel(PyObject* self, PyObject* args)
     argOK     = PyArg_ParseTuple(args, "i|i", &loadLevel, &apply_to_children);
     loadLevel = loadLevel & 0xff;
 
-    if ( argOK ) { c->setStatisticLoadLevel(loadLevel, apply_to_children); }
+    if ( argOK ) {
+        c->setStatisticLoadLevel(loadLevel, apply_to_children);
+    }
     else {
         return nullptr;
     }
@@ -443,7 +453,9 @@ compEnableAllStatistics(PyObject* self, PyObject* args)
     // Parse the Python Args and get optional Stat Params (as a Dictionary)
     argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict, &apply_to_children);
 
-    if ( argOK ) { c->enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), apply_to_children); }
+    if ( argOK ) {
+        c->enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), apply_to_children);
+    }
     else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -489,7 +501,9 @@ compEnableStatistics(PyObject* self, PyObject* args)
     if ( argOK ) {
         // Generate the Statistic Parameters
         // Make sure we have a list
-        if ( !PyList_Check(statList) ) { return nullptr; }
+        if ( !PyList_Check(statList) ) {
+            return nullptr;
+        }
         PyObject* statObjList = buildEnabledStatistics(cc, statList, statParamDict, apply_to_children);
         Py_XDECREF(statList);
         return statObjList;
@@ -532,7 +546,9 @@ compCreateStatistic(PyObject* self, PyObject* args)
         return nullptr;
     }
 
-    if ( py_params ) { cs->params.insert(pythonToCppParams(py_params)); }
+    if ( py_params ) {
+        cs->params.insert(pythonToCppParams(py_params));
+    }
 
     cs->shared = true;
     cs->name   = name;
@@ -549,15 +565,16 @@ compAddSharedParamSet(PyObject* self, PyObject* arg)
 
     ConfigComponent* c = getComp(self);
 
-    if ( set != nullptr ) { c->addSharedParamSet(set); }
+    if ( set != nullptr ) {
+        c->addSharedParamSet(set);
+    }
     else {
         return nullptr;
     }
     return SST_ConvertToPythonLong(0);
 }
 
-static PyMethodDef componentMethods[] = {
-    { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+static PyMethodDef componentMethods[] = { { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
     { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
     { "setRank", compSetRank, METH_VARARGS, "Sets which rank on which this component should sit" },
     { "setWeight", compSetWeight, METH_O, "Sets the weight of the component" },
@@ -566,23 +583,22 @@ static PyMethodDef componentMethods[] = {
     { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name of the component." },
     { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
     { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,
-      "Sets the statistics load level for this component" },
+        "Sets the statistics load level for this component" },
     { "createStatistic", compCreateStatistic, METH_VARARGS,
-      "Create a Statistic Object in the component with optional parameters" },
+        "Create a Statistic Object in the component with optional parameters" },
     { "enableAllStatistics", compEnableAllStatistics, METH_VARARGS,
-      "Enable all Statistics in the component with optional parameters" },
+        "Enable all Statistics in the component with optional parameters" },
     { "enableStatistic", compEnableStatistic, METH_VARARGS,
-      "Enable a statistic with a name and return a handle to it" },
+        "Enable a statistic with a name and return a handle to it" },
     { "enableStatistics", compEnableStatistics, METH_VARARGS,
-      "Enables Multiple Statistics in the component with optional parameters" },
+        "Enables Multiple Statistics in the component with optional parameters" },
     { "setStatistic", compSetStatistic, METH_VARARGS, "Bind a statistic with name <name> to a statistic object" },
     { "setSubComponent", compSetSubComponent, METH_VARARGS, "Bind a subcomponent to slot <name>, with type <type>" },
     { "setCoordinates", compSetCoords, METH_VARARGS,
-      "Set (X,Y,Z) coordinates of this component, for use with visualization" },
+        "Set (X,Y,Z) coordinates of this component, for use with visualization" },
     { "addSharedParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
-    { nullptr, nullptr, 0, nullptr }
-};
+    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -660,9 +676,8 @@ subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 
     self->obj = obj;
 
-    gModel->getOutput()->verbose(
-        CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", getComp((PyObject*)self)->name.c_str(),
-        getComp((PyObject*)self)->type.c_str());
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n",
+        getComp((PyObject*)self)->name.c_str(), getComp((PyObject*)self)->type.c_str());
 
     return 0;
 }
@@ -670,32 +685,33 @@ subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 static void
 subCompDealloc(ComponentPy_t* self)
 {
-    if ( self->obj ) { delete self->obj; }
+    if ( self->obj ) {
+        delete self->obj;
+    }
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyMethodDef subComponentMethods[] = {
-    { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+static PyMethodDef subComponentMethods[] = { { "addParam", compAddParam, METH_VARARGS,
+                                                 "Adds a parameter(name, value)" },
     { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
     { "addLink", compAddLink, METH_VARARGS, "Connects this subComponent to a Link" },
     { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name, after any prefix, of the component." },
     { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
     { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,
-      "Sets the statistics load level for this component" },
+        "Sets the statistics load level for this component" },
     { "enableAllStatistics", compEnableAllStatistics, METH_VARARGS,
-      "Enable all Statistics in the component with optional parameters" },
+        "Enable all Statistics in the component with optional parameters" },
     { "enableStatistics", compEnableStatistics, METH_VARARGS,
-      "Enables Multiple Statistics in the component with optional parameters" },
+        "Enables Multiple Statistics in the component with optional parameters" },
     { "enableStatistic", compEnableStatistic, METH_VARARGS,
-      "Enable a statistic with a name and return a handle to it" },
+        "Enable a statistic with a name and return a handle to it" },
     { "setStatistic", compSetStatistic, METH_VARARGS, "Reuse a statistic for the binding" },
     { "setSubComponent", compSetSubComponent, METH_VARARGS, "Bind a subcomponent to slot <name>, with type <type>" },
     { "addSharedParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { "setCoordinates", compSetCoords, METH_VARARGS,
-      "Set (X,Y,Z) coordinates of this component, for use with visualization" },
-    { nullptr, nullptr, 0, nullptr }
-};
+        "Set (X,Y,Z) coordinates of this component, for use with visualization" },
+    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

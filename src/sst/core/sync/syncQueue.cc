@@ -32,7 +32,11 @@ namespace SST {
 using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
 
-RankSyncQueue::RankSyncQueue(RankInfo to_rank) : SyncQueue(to_rank), buffer(nullptr), buf_size(0) {}
+RankSyncQueue::RankSyncQueue(RankInfo to_rank) :
+    SyncQueue(to_rank),
+    buffer(nullptr),
+    buf_size(0)
+{}
 
 bool
 RankSyncQueue::empty()
@@ -97,7 +101,9 @@ RankSyncQueue::getData()
     SST_EVENT_PROFILE_SIZE(activities.size(), size)
 
     if ( buf_size < (size + sizeof(RankSyncQueue::Header)) ) {
-        if ( buffer != nullptr ) { delete[] buffer; }
+        if ( buffer != nullptr ) {
+            delete[] buffer;
+        }
 
         buf_size = size + sizeof(RankSyncQueue::Header);
         buffer   = new char[buf_size];

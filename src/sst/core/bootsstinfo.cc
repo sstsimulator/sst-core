@@ -40,7 +40,9 @@ main(int argc, char* argv[])
     if ( cfg.no_env_config() ) config_env = false;
 
 
-    if ( cfg.verbose() && config_env ) { printf("Launching SST with automatic environment processing enabled...\n"); }
+    if ( cfg.verbose() && config_env ) {
+        printf("Launching SST with automatic environment processing enabled...\n");
+    }
 
     if ( cfg.print_env() ) {
         int next_index = 0;
@@ -53,7 +55,9 @@ main(int argc, char* argv[])
         }
     }
 
-    if ( config_env ) { boot_sst_configure_env(cfg.getLibPath()); }
+    if ( config_env ) {
+        boot_sst_configure_env(cfg.getLibPath());
+    }
 
     boot_sst_executable("sstinfo.x", cfg.verbose(), argv, argc);
 }

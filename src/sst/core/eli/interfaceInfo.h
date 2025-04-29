@@ -32,7 +32,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesInterface(T* UNUSED(t)) : iface_(T::ELI_getInterface())
+    explicit ProvidesInterface(T* UNUSED(t)) :
+        iface_(T::ELI_getInterface())
     {}
 
 private:
@@ -41,7 +42,10 @@ private:
 
 } // namespace SST::ELI
 
-#define SST_ELI_INTERFACE_INFO(interface) \
-    static const std::string ELI_getInterface() { return interface; }
+#define SST_ELI_INTERFACE_INFO(interface)       \
+    static const std::string ELI_getInterface() \
+    {                                           \
+        return interface;                       \
+    }
 
 #endif // SST_CORE_ELI_INTERFACE_INFO_H

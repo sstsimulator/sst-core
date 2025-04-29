@@ -47,7 +47,9 @@ public:
 
     ~UniqueCountStatistic() {};
 
-    UniqueCountStatistic() : Statistic<T>() {}
+    UniqueCountStatistic() :
+        Statistic<T>()
+    {}
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 

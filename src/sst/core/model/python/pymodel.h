@@ -16,7 +16,7 @@
 
 // This only works if we have Python defined from configure, otherwise this is
 // a compile time error.
-//#ifdef SST_CONFIG_HAVE_PYTHON
+// #ifdef SST_CONFIG_HAVE_PYTHON
 
 #include "sst/core/config.h"
 #include "sst/core/configGraph.h"
@@ -170,8 +170,8 @@ private:
 std::map<std::string, std::string> generateStatisticParameters(PyObject* statParamDict);
 SST::Params                        pythonToCppParams(PyObject* statParamDict);
 PyObject*                          buildStatisticObject(StatisticId_t id);
-PyObject*
-buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children);
+PyObject*                          buildEnabledStatistic(
+                             ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children);
 PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict, bool apply_to_children);
 
 } // namespace SST::Core

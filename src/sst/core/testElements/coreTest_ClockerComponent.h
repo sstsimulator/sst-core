@@ -54,7 +54,7 @@ public:
 
 private:
     coreTestClockerComponent();                                                    // for serialization only
-    coreTestClockerComponent(const coreTestClockerComponent&) = delete;            // do not implement
+    coreTestClockerComponent(const coreTestClockerComponent&)            = delete; // do not implement
     coreTestClockerComponent& operator=(const coreTestClockerComponent&) = delete; // do not implement
 
     virtual bool tick(SST::Cycle_t);

@@ -17,7 +17,8 @@
 
 namespace SST::Statistics {
 
-StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) : StatisticFieldsOutput(outputParameters)
+StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) :
+    StatisticFieldsOutput(outputParameters)
 {
     m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
@@ -36,7 +37,9 @@ StatisticOutputCSV::checkOutputParameters()
 
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) { return false; }
+    if ( true == foundKey ) {
+        return false;
+    }
 
     // Get the parameters
     m_Separator       = getOutputParameters().find<std::string>("separator", ", ");
@@ -132,7 +135,9 @@ StatisticOutputCSV::startOfSimulation()
             // Increment the iterator
             it_v++;
             // If not the last field, tack on a separator
-            if ( it_v != getFieldInfoArray().end() ) { outputBuffer += m_Separator; }
+            if ( it_v != getFieldInfoArray().end() ) {
+                outputBuffer += m_Separator;
+            }
 
             print("%s", outputBuffer.c_str());
         }
@@ -196,7 +201,9 @@ StatisticOutputCSV::implStopOutputEntries()
     while ( x < m_OutputBufferArray.size() ) {
         print("%s", m_OutputBufferArray[x].c_str());
         x++;
-        if ( x != m_OutputBufferArray.size() ) { print("%s", m_Separator.c_str()); }
+        if ( x != m_OutputBufferArray.size() ) {
+            print("%s", m_Separator.c_str());
+        }
     }
     print("\n");
 }
@@ -280,9 +287,8 @@ StatisticOutputCSV::openFile()
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();
-            out.fatal(
-                CALL_INFO, 1, " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(),
-                strerror(errno));
+            out.fatal(CALL_INFO, 1, " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n",
+                m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -294,8 +300,7 @@ StatisticOutputCSV::openFile()
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();
-            out.fatal(
-                CALL_INFO, 1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(),
+            out.fatal(CALL_INFO, 1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
             return false;
             ;
@@ -339,7 +344,9 @@ StatisticOutputCSV::print(const char* fmt, ...)
             ssize_t n = vsnprintf(buf, bufSize, fmt, args);
             va_end(args);
 
-            if ( n < 0 ) { retry = false; }
+            if ( n < 0 ) {
+                retry = false;
+            }
             else if ( n < bufSize ) {
                 gzprintf(m_gzFile, "%s", buf);
                 /* Success */

@@ -30,7 +30,9 @@ PortModule::registerLinkAttachTool(const AttachPointMetaData& UNUSED(mdata))
 void
 PortModule::serializeEventAttachPointKey(SST::Core::Serialization::serializer& ser, uintptr_t& key)
 {
-    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { key = 0; }
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        key = 0;
+    }
 }
 
 uintptr_t
@@ -42,7 +44,9 @@ PortModule::registerHandlerIntercept(const AttachPointMetaData& UNUSED(mdata))
 void
 PortModule::serializeHandlerInterceptPointKey(SST::Core::Serialization::serializer& UNUSED(ser), uintptr_t& key)
 {
-    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) { key = 0; }
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        key = 0;
+    }
 }
 
 void

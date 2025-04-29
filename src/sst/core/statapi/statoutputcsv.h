@@ -49,6 +49,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticOutputCSV)
+
 protected:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable

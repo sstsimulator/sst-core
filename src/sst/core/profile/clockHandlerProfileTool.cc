@@ -21,7 +21,8 @@
 
 namespace SST::Profile {
 
-ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) : ProfileTool(name)
+ClockHandlerProfileTool::ClockHandlerProfileTool(const std::string& name, Params& params) :
+    ProfileTool(name)
 {
     std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
@@ -111,8 +112,7 @@ ClockHandlerProfileToolTime<T>::outputData(FILE* fp)
     fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "Name, count, handler time (s), avg. handler time (ns)\n");
     for ( auto& x : times_ ) {
-        fprintf(
-            fp, "%s, %" PRIu64 ", %lf, %" PRIu64 "\n", x.first.c_str(), x.second.count,
+        fprintf(fp, "%s, %" PRIu64 ", %lf, %" PRIu64 "\n", x.first.c_str(), x.second.count,
             ((double)x.second.time) / 1000000000.0, x.second.count == 0 ? 0 : x.second.time / x.second.count);
     }
 }

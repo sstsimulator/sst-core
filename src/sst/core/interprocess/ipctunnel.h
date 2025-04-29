@@ -127,7 +127,10 @@ public:
      * Access an existing Tunnel
      * @param region_name Name of the shared-memory region to access
      */
-    explicit IPCTunnel(const std::string& region_name) : master(false), shmPtr(nullptr), fd(-1)
+    explicit IPCTunnel(const std::string& region_name) :
+        master(false),
+        shmPtr(nullptr),
+        fd(-1)
     {
         fd       = shm_open(region_name.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
         filename = region_name;
@@ -163,7 +166,9 @@ public:
         }
 
         /* Clean up if we're the last to attach */
-        if ( --isd->expectedChildren == 0 ) { shm_unlink(filename.c_str()); }
+        if ( --isd->expectedChildren == 0 ) {
+            shm_unlink(filename.c_str());
+        }
     }
 
     /**
