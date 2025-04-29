@@ -40,8 +40,8 @@ namespace SST::CoreTestSerialization {
 using SST::Core::Serialization::get_size;
 
 template <typename T>
-static void
-serializeDeserialize(T& input, T& output, bool with_tracking = false)
+void
+serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
 {
     // Set up serializer and buffers
     char*                                buffer;
@@ -220,6 +220,57 @@ checkContainerSerializeDeserialize(T*& data)
     return true;
 };
 
+// Arrays
+
+template <typename>
+constexpr size_t array_size = 0;
+
+template <typename T, size_t S>
+constexpr size_t array_size<T[S]> = S;
+
+template <typename T, size_t S>
+constexpr size_t array_size<std::array<T, S>> = S;
+
+template <typename T>
+bool
+checkFixedArraySerializeDeserialize(T& data)
+{
+    T result;
+    serializeDeserialize(data, result);
+
+    for ( size_t i = 0; i < array_size<std::remove_pointer_t<T>>; ++i ) {
+        if constexpr ( std::is_pointer_v<T> ) {
+            if ( (*data)[i] != (*result)[i] ) return false;
+        }
+        else {
+            if ( data[i] != result[i] ) return false;
+        }
+    }
+    if constexpr ( std::is_pointer_v<T> ) delete[] result;
+    return true;
+};
+
+template <typename T>
+bool
+checkArraySerializeDeserialize(T* data, size_t dataSize)
+{
+    using SST::Core::Serialization::array;
+
+    T*     result     = nullptr;
+    size_t resultSize = ~size_t {};
+
+    serializeDeserialize(array(data, dataSize), array(result, resultSize));
+
+    if ( resultSize != dataSize ) return false;
+
+    for ( size_t i = 0; i < dataSize; ++i ) {
+        if ( data[i] != result[i] ) return false;
+    }
+
+    delete[] result;
+
+    return true;
+};
 
 // For ordered but non-iterable contaienrs
 template <typename T>
@@ -557,6 +608,47 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<float*>::check_all(rng->nextUniform() * 1000, out, "float*");
         checkSimpleSerializeDeserialize<double*>::check_all(rng->nextUniform() * 1000000, out, "double*");
         checkSimpleSerializeDeserialize<std::string*>::check_all("test_string", out, "std::string*");
+    }
+    else if ( test == "array" ) {
+        {
+            int32_t array_in[10];
+            for ( size_t i = 0; i < 10; ++i )
+                array_in[i] = rng->generateNextInt32();
+            passed = checkFixedArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: int32_t[10] did not serialize/deserialize properly\n");
+        }
+        {
+            std::array<int32_t, 10> array_in;
+            for ( size_t i = 0; i < 10; ++i )
+                array_in[i] = rng->generateNextInt32();
+            passed = checkFixedArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: std::array<int32_t, 10> did not serialize/deserialize properly\n");
+        }
+        {
+            int32_t(*array_in)[10] = reinterpret_cast<int32_t(*)[10]>(new int32_t[10]);
+            for ( size_t i = 0; i < 10; ++i )
+                (*array_in)[i] = rng->generateNextInt32();
+            passed = checkFixedArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: int32_t[10] did not serialize/deserialize properly\n");
+            delete[] array_in;
+        }
+        {
+            std::array<int32_t, 10>* array_in = new std::array<int32_t, 10>;
+            for ( size_t i = 0; i < 10; ++i )
+                (*array_in)[i] = rng->generateNextInt32();
+            passed = checkFixedArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: std::array<int32_t, 10> did not serialize/deserialize properly\n");
+            delete array_in;
+        }
+        {
+            size_t   size     = 100;
+            int32_t* array_in = new int32_t[size];
+            for ( size_t i = 0; i < size; ++i )
+                array_in[i] = rng->generateNextInt32();
+            passed = checkArraySerializeDeserialize(array_in, size);
+            if ( !passed ) out.output("ERROR: std::array<int32_t, %zu> did not serialize/deserialize properly\n", size);
+            delete[] array_in;
+        }
     }
     else if ( test == "ordered_containers" ) {
         // Ordered Containers
