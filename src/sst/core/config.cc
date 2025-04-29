@@ -445,25 +445,25 @@ public:
 
     static std::string getProfilingExtHelp()
     {
-        std::string msg = "Profiling Points [EXPERIMENTAL]:\n\n";
+        std::string msg = "Profiling Points [API Not Yet Final]:\n\n";
         msg.append(
-            "NOTE: Profiling points are still in development and syntax for enabling profiling tools, as well as "
-            "available profiling points is subject to change.  However, it is intended that profiling points "
-            "will continue to be supported into the future.\n\n");
-        msg.append("  Profiling points are points in the code where a profiling tool can be instantiated.  The "
+            "NOTE: Profiling points are still in development and syntax for enabling profiling tools is subject to "
+            "change. Additional profiling points may also be added in the future.\n\n");
+        msg.append("Profiling points are points in the code where a profiling tool can be instantiated.  The "
                    "profiling tool allows you to collect various data about code segments.  There are currently three "
-                   "profiling points in SST core:\n");
-        msg.append("   - clock: profiles calls to user registered clock handlers\n");
-        msg.append("   - event: profiles calls to user registered event handlers set on Links\n");
-        msg.append("   - sync: profiles calls into the SyncManager (only valid for parallel simulations)\n");
+                   "profiling points in SST core:\n\n");
+        msg.append("\tclock: \t\vprofiles calls to user registered clock handlers\n");
+        msg.append("\tevent: \t\vprofiles calls to user registered event handlers set on Links\n");
+        msg.append("\tsync:  \t\vprofiles calls into the SyncManager (only valid for parallel simulations)\n");
         msg.append("\n");
-        msg.append("  The format for enabling profile point is a semicolon separated list where each item specifies "
-                   "details for a given profiling tool using the following format:\n");
-        msg.append("   name:type(params)[point]\n");
-        msg.append("     name: name of tool to be shown in output\n");
-        msg.append("     type: type of profiling tool in ELI format (lib.type)\n");
-        msg.append("     params: optional parameters to pass to profiling tool, format is key=value,key=value...\n");
-        msg.append("     point: profiling point to load the tool into\n");
+        msg.append("The format for enabling profile point is a semicolon separated list where each item specifies "
+                   "details for a given profiling tool using the following format:\n\n");
+        msg.append("\tname:type(params)[point], where\n");
+        msg.append("\t\tname   \t= \vname of tool to be shown in output\n");
+        msg.append("\t\ttype   \t= \vtype of profiling tool in ELI format (lib.type)\n");
+        msg.append(
+            "\t\tparams \t= \voptional parameters to pass to profiling tool, format is key=value,key=value...\n");
+        msg.append("\t\tpoint  \t= \vprofiling point to load the tool into\n");
         msg.append("\n");
         msg.append("Profiling tools can all be enabled in a single instance of --enable-profiling, or you can use "
                    "multiple instances of --enable-profiling to enable more than one profiling tool.  It "
@@ -771,7 +771,7 @@ public:
     // Extended help for SIGALRM
     static std::string getSignalExtHelp()
     {
-        std::string msg = "RealTime Actions [EXPERIMENTAL]:\n\n";
+        std::string msg = "RealTime Actions:\n\n";
         msg.append("  RealTimeActions are actions that execute in response to system signals SIGUSR1, SIGUSR2, and/or "
                    "SIGALRM. "
                    "The following actions are available from SST core or custom actions may also be defined.\n"
@@ -1133,7 +1133,7 @@ Config::insertOptions()
 #endif
 
     /* Advanced Features - Profiling */
-    DEF_SECTION_HEADING("Advanced Options - Profiling (EXPERIMENTAL)");
+    DEF_SECTION_HEADING("Advanced Options - Profiling (API Not Yet Final)");
     DEF_ARG_EH(
         "enable-profiling", 0, "POINTS",
         "Enables default profiling for the specified points.  Argument is a semicolon separated list specifying the "
