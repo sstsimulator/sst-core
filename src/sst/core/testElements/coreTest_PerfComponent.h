@@ -39,7 +39,9 @@ public:
         {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    explicit coreTestPerfComponentBase(ComponentId_t id) : SST::Component(id) {}
+    explicit coreTestPerfComponentBase(ComponentId_t id) :
+        SST::Component(id)
+    {}
     ~coreTestPerfComponentBase() {}
 };
 
@@ -61,7 +63,9 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    explicit coreTestPerfComponentBase2(ComponentId_t id) : coreTestPerfComponentBase(id) {}
+    explicit coreTestPerfComponentBase2(ComponentId_t id) :
+        coreTestPerfComponentBase(id)
+    {}
     ~coreTestPerfComponentBase2() {}
 };
 
@@ -104,7 +108,7 @@ public:
 
 private:
     coreTestPerfComponent();                                                 // for serialization only
-    coreTestPerfComponent(const coreTestPerfComponent&) = delete;            // do not implement
+    coreTestPerfComponent(const coreTestPerfComponent&)            = delete; // do not implement
     coreTestPerfComponent& operator=(const coreTestPerfComponent&) = delete; // do not implement
 
     void         handleEvent(SST::Event* ev);

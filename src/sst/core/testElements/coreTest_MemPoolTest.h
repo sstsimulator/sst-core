@@ -26,7 +26,9 @@ namespace SST::CoreTestMemPoolTest {
 class MemPoolTestEvent1 : public SST::Event
 {
 public:
-    MemPoolTestEvent1() : SST::Event() {}
+    MemPoolTestEvent1() :
+        SST::Event()
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -48,7 +50,9 @@ private:
 class MemPoolTestEvent2 : public SST::Event
 {
 public:
-    MemPoolTestEvent2() : SST::Event() {}
+    MemPoolTestEvent2() :
+        SST::Event()
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -70,7 +74,9 @@ private:
 class MemPoolTestEvent3 : public SST::Event
 {
 public:
-    MemPoolTestEvent3() : SST::Event() {}
+    MemPoolTestEvent3() :
+        SST::Event()
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -92,7 +98,9 @@ private:
 class MemPoolTestEvent4 : public SST::Event
 {
 public:
-    MemPoolTestEvent4() : SST::Event() {}
+    MemPoolTestEvent4() :
+        SST::Event()
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -114,7 +122,9 @@ private:
 class MemPoolTestPerformanceEvent : public SST::Event
 {
 public:
-    MemPoolTestPerformanceEvent() : SST::Event() {}
+    MemPoolTestPerformanceEvent() :
+        SST::Event()
+    {}
 
     double rate;
 

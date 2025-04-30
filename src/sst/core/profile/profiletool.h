@@ -56,16 +56,16 @@ protected:
 // Register profile tools.  Must register an interface
 // (API) first, then you can register a subcomponent that implements
 // it
-#define SST_ELI_REGISTER_PROFILETOOL_API(cls, ...)            \
-    SST_ELI_DECLARE_NEW_BASE(SST::Profile::ProfileTool,::cls) \
+#define SST_ELI_REGISTER_PROFILETOOL_API(cls, ...) \
+    SST_ELI_DECLARE_NEW_BASE(SST::Profile::ProfileTool,::cls)                       \
     SST_ELI_NEW_BASE_CTOR(const std::string&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_PROFILETOOL_DERIVED_API(cls, base, ...) \
-    SST_ELI_DECLARE_NEW_BASE(::base,::cls)                       \
+    SST_ELI_DECLARE_NEW_BASE(::base,::cls)                                     \
     SST_ELI_NEW_BASE_CTOR(const std::string&,##__VA_ARGS__)
 
-#define SST_ELI_REGISTER_PROFILETOOL(cls, interface, lib, name, version, desc)          \
-    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+#define SST_ELI_REGISTER_PROFILETOOL(cls, interface, lib, name, version, desc) \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)                                                   \
     SST_ELI_INTERFACE_INFO(#interface)
 
 #endif // SST_CORE_SUBCOMPONENT_H

@@ -33,7 +33,9 @@ struct PyStatistic
 {
     StatisticId_t id;
 
-    explicit PyStatistic(StatisticId_t id) : id(id) {}
+    explicit PyStatistic(StatisticId_t id) :
+        id(id)
+    {}
     virtual ~PyStatistic() {}
     ConfigStatistic* getStat();
     int              compare(PyStatistic* other);
@@ -51,7 +53,9 @@ static inline ConfigStatistic*
 getStat(PyObject* pobj)
 {
     ConfigStatistic* c = ((StatisticPy_t*)pobj)->obj->getStat();
-    if ( c == nullptr ) { PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigStatistic"); }
+    if ( c == nullptr ) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigStatistic");
+    }
     return c;
 }
 

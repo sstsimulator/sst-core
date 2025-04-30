@@ -24,7 +24,9 @@ size_serializable(serializable_base* s, serializer& ser)
 {
     long dummy = 0;
     ser.size(dummy);
-    if ( s ) { s->serialize_order(ser); }
+    if ( s ) {
+        s->serialize_order(ser);
+    }
 }
 
 void
@@ -46,7 +48,9 @@ unpack_serializable(serializable_base*& s, serializer& ser)
 {
     long cls_id;
     ser.unpack(cls_id);
-    if ( cls_id == null_ptr_id ) { s = nullptr; }
+    if ( cls_id == null_ptr_id ) {
+        s = nullptr;
+    }
     else {
         s = serializable_factory::get_serializable(cls_id);
         ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));

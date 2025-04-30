@@ -19,7 +19,9 @@ std::list<statics::clear_fxn>* statics::fxns_ = nullptr;
 void
 statics::register_finish(clear_fxn fxn)
 {
-    if ( fxns_ == nullptr ) { fxns_ = new std::list<statics::clear_fxn>; }
+    if ( fxns_ == nullptr ) {
+        fxns_ = new std::list<statics::clear_fxn>;
+    }
     fxns_->push_back(fxn);
 }
 

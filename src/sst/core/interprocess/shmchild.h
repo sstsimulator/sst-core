@@ -41,7 +41,9 @@ public:
      *
      * @param region_name Name of the shared-memory region to access
      */
-    explicit SHMChild(const std::string& region_name) : shmPtr(nullptr), fd(-1)
+    explicit SHMChild(const std::string& region_name) :
+        shmPtr(nullptr),
+        fd(-1)
     {
         fd       = shm_open(region_name.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
         filename = region_name;
@@ -71,7 +73,9 @@ public:
             exit(1);
         }
         uint32_t childnum = tunnel->initialize(shmPtr);
-        if ( childnum == 0 ) { shm_unlink(filename.c_str()); }
+        if ( childnum == 0 ) {
+            shm_unlink(filename.c_str());
+        }
     }
 
     /** Destructor */

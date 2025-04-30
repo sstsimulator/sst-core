@@ -26,7 +26,9 @@ using namespace SST;
 using namespace SST::CoreTest;
 using namespace SST::CoreTest::MessageMesh;
 
-EnclosingComponent::EnclosingComponent(ComponentId_t id, Params& params) : Component(id), message_count(0)
+EnclosingComponent::EnclosingComponent(ComponentId_t id, Params& params) :
+    Component(id),
+    message_count(0)
 {
 
     my_id = params.find<int>("id", -1);
@@ -37,8 +39,7 @@ EnclosingComponent::EnclosingComponent(ComponentId_t id, Params& params) : Compo
     // Need to check to see how many ports there are and create all the SubComponents
     SubComponentSlotInfo* info = getSubComponentSlotInfo("ports");
     if ( !info ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, -1,
+        Output::getDefaultObject().fatal(CALL_INFO, -1,
             "Must specify at least one PortInterface SubComponent for slot 'ports' in EnclosingComponent\n");
     }
 
@@ -47,8 +48,7 @@ EnclosingComponent::EnclosingComponent(ComponentId_t id, Params& params) : Compo
     // Need to get the "route" object
     route = loadUserSubComponent<RouteInterface>("route", ComponentInfo::SHARE_NONE, ports, my_id);
     if ( !info ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, -1,
+        Output::getDefaultObject().fatal(CALL_INFO, -1,
             "Must specify The RouteInterface SubComponent to use for slot 'route' in EnclosingComponent\n");
     }
 
@@ -84,12 +84,14 @@ EnclosingComponent::handleEvent(SST::Event* ev, int port)
     route->send(mev, port);
 }
 
-PortSlot::PortSlot(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
+PortSlot::PortSlot(ComponentId_t id, Params& UNUSED(params)) :
+    PortInterface(id)
 {
     port = loadUserSubComponent<PortInterface>("port");
 }
 
-MessagePort::MessagePort(ComponentId_t id, Params& UNUSED(params)) : PortInterface(id)
+MessagePort::MessagePort(ComponentId_t id, Params& UNUSED(params)) :
+    PortInterface(id)
 {
     link = configureLink("port", new Event::Handler2<MessagePort, &MessagePort::handleEvent>(this));
 }

@@ -37,7 +37,9 @@ public:
         \param probs An array of probabilities for each outcome
         \param probsCount The number of discrete outcomes
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount) : RandomDistribution(), probCount(probsCount)
+    DiscreteDistribution(const double* probs, const uint32_t probsCount) :
+        RandomDistribution(),
+        probCount(probsCount)
     {
 
         probabilities   = (double*)malloc(sizeof(double) * probsCount);
@@ -81,7 +83,9 @@ public:
     {
         free(probabilities);
 
-        if ( deleteDistrib ) { delete baseDistrib; }
+        if ( deleteDistrib ) {
+            delete baseDistrib;
+        }
     }
 
     /**
@@ -96,7 +100,9 @@ public:
         uint32_t index = 0;
 
         for ( ; index < probCount; index++ ) {
-            if ( probabilities[index] >= nextD ) { break; }
+            if ( probabilities[index] >= nextD ) {
+                break;
+            }
         }
 
         return (double)index;
@@ -105,7 +111,9 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    DiscreteDistribution() : RandomDistribution() {}
+    DiscreteDistribution() :
+        RandomDistribution()
+    {}
 
     /**
         Serialization function for checkpoint

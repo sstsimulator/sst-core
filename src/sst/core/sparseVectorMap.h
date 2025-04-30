@@ -145,9 +145,8 @@ public:
     {
         data.swap(new_data);
         if ( !sorted ) {
-            std::sort(data.begin(), data.end, [](const classT& lhs, const classT& rhs) -> bool {
-                return lhs.key() < rhs.key();
-            });
+            std::sort(data.begin(), data.end,
+                [](const classT& lhs, const classT& rhs) -> bool { return lhs.key() < rhs.key(); });
         }
     }
 
@@ -276,7 +275,9 @@ public:
 class bad_filtered_key_error : public std::runtime_error
 {
 public:
-    explicit bad_filtered_key_error(const std::string& what_arg) : runtime_error(what_arg) {}
+    explicit bad_filtered_key_error(const std::string& what_arg) :
+        runtime_error(what_arg)
+    {}
 };
 
 
@@ -402,9 +403,8 @@ public:
     {
         data.swap(new_data);
         if ( !sorted ) {
-            std::sort(data.begin(), data.end, [](const classT* lhs, const classT* rhs) -> bool {
-                return lhs->key() < rhs->key();
-            });
+            std::sort(data.begin(), data.end,
+                [](const classT* lhs, const classT* rhs) -> bool { return lhs->key() < rhs->key(); });
         }
     }
 

@@ -18,7 +18,8 @@
 
 namespace SST::IMPL::PortModule {
 
-RandomDrop::RandomDrop(Params& params) : rng_(7, 13)
+RandomDrop::RandomDrop(Params& params) :
+    rng_(7, 13)
 {
     // Restart the RNG to ensure completely consistent results
     // Seed with user-provided seed

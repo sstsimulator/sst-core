@@ -59,7 +59,9 @@ main(int argc, char* argv[])
     if ( nullptr == cfgFile ) {
         char* envHome = getenv("HOME");
 
-        if ( nullptr == envHome ) { snprintf(cfgPath, PATH_MAX, "~/.sst/sstsimulator.conf"); }
+        if ( nullptr == envHome ) {
+            snprintf(cfgPath, PATH_MAX, "~/.sst/sstsimulator.conf");
+        }
         else {
             snprintf(cfgPath, PATH_MAX, "%s/.sst/sstsimulator.conf", envHome);
         }
@@ -67,8 +69,7 @@ main(int argc, char* argv[])
         cfgFile = fopen(cfgPath, "r+");
 
         if ( nullptr == cfgFile ) {
-            fprintf(
-                stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
+            fprintf(stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
                 SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", cfgPath);
             exit(-1);
         }
@@ -115,7 +116,9 @@ sstRegister(char* argv[])
     size_t equalsIndex = 0;
 
     for ( equalsIndex = 0; equalsIndex < keyValPair.size(); equalsIndex++ ) {
-        if ( '=' == argv[2][equalsIndex] ) { break; }
+        if ( '=' == argv[2][equalsIndex] ) {
+            break;
+        }
     }
 
     std::string key   = keyValPair.substr(0, equalsIndex);
@@ -176,7 +179,9 @@ sstUnregister(const std::string& element)
             outfile << s << "\n";
     }
 
-    if ( found ) { std::cout << "\tModel " << element << " has been unregistered!\n"; }
+    if ( found ) {
+        std::cout << "\tModel " << element << " has been unregistered!\n";
+    }
     else
         std::cout << "\tModel " << element << " not found\n\n";
 

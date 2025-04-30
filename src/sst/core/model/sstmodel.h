@@ -97,8 +97,8 @@ private:
 // extensions handled by the model.  These are only useful for the
 // built-in models as external models will have to use the command
 // line option to load them and then the extension will be ignored.
-#define SST_ELI_REGISTER_MODEL_DESCRIPTION(cls, lib, name, version, desc, parallel_capable)             \
-    SST_ELI_REGISTER_DERIVED(SST::SSTModelDescription, ::cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+#define SST_ELI_REGISTER_MODEL_DESCRIPTION(cls, lib, name, version, desc, parallel_capable) \
+    SST_ELI_REGISTER_DERIVED(SST::SSTModelDescription, ::cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)                                                                \
     SST_ELI_DOCUMENT_SIMPLE_INFO(bool,0,parallel_capable)
 
 #define SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS(...) \

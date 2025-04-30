@@ -127,7 +127,9 @@ private:
     class DataSet
     {
     public:
-        explicit DataSet(H5::H5File* file) : file(file) {}
+        explicit DataSet(H5::H5File* file) :
+            file(file)
+        {}
         virtual ~DataSet() {}
         H5::H5File*  getFile() { return file; }
         virtual bool isGroup() const = 0;
@@ -164,7 +166,10 @@ private:
         hsize_t nEntries;
 
     public:
-        StatisticInfo(StatisticBase* stat, H5::H5File* file) : DataSet(file), statistic(stat), nEntries(0)
+        StatisticInfo(StatisticBase* stat, H5::H5File* file) :
+            DataSet(file),
+            statistic(stat),
+            nEntries(0)
         {
             typeList.push_back(StatisticFieldType<uint64_t>::id());
             indexMap.push_back(-1);

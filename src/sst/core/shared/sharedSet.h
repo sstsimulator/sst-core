@@ -35,7 +35,11 @@ class SharedSet : public SharedObject
     class Data;
 
 public:
-    SharedSet() : SharedObject(), published(false), data(nullptr) {}
+    SharedSet() :
+        SharedObject(),
+        published(false),
+        data(nullptr)
+    {}
 
     ~SharedSet()
     {
@@ -232,13 +236,19 @@ private:
 
         verify_type verify;
 
-        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
+        Data() :
+            SharedObjectData(),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
+        {}
         explicit Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
             verify(VERIFY_UNINITIALIZED)
         {
-            if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getNumRanks().rank > 1 ) {
+                change_set = new ChangeSet(name);
+            }
         }
 
         ~Data()
@@ -271,9 +281,8 @@ private:
             if ( !success.second ) {
                 // Wrote to a value that already existed
                 if ( verify != NO_VERIFY && !(value == *(success.first)) ) {
-                    Private::getSimulationOutput().fatal(
-                        CALL_INFO, 1, "ERROR: wrote two non-equal values to same set item in SharedSet %s\n",
-                        name.c_str());
+                    Private::getSimulationOutput().fatal(CALL_INFO, 1,
+                        "ERROR: wrote two non-equal values to same set item in SharedSet %s\n", name.c_str());
                 }
             }
         }
@@ -332,8 +341,14 @@ private:
 
         public:
             // For serialization
-            ChangeSet() : SharedObjectChangeSet(), verify(VERIFY_UNINITIALIZED) {}
-            explicit ChangeSet(const std::string& name) : SharedObjectChangeSet(name), verify(VERIFY_UNINITIALIZED) {}
+            ChangeSet() :
+                SharedObjectChangeSet(),
+                verify(VERIFY_UNINITIALIZED)
+            {}
+            explicit ChangeSet(const std::string& name) :
+                SharedObjectChangeSet(name),
+                verify(VERIFY_UNINITIALIZED)
+            {}
 
             void addChange(const valT& value) { changes.insert(value); }
 

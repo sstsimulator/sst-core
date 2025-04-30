@@ -20,7 +20,9 @@ class coreTestComponentEvent : public SST::Event
 {
 public:
     using dataVec = std::vector<char>;
-    coreTestComponentEvent() : SST::Event() {}
+    coreTestComponentEvent() :
+        SST::Event()
+    {}
     dataVec payload;
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override

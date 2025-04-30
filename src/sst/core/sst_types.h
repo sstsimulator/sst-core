@@ -35,12 +35,12 @@ static constexpr StatisticId_t STATALL_ID = std::numeric_limits<StatisticId_t>::
 #define UNSET_COMPONENT_ID                      0xFFFFFFFFFFFFFFFFULL
 #define UNSET_STATISTIC_ID                      0xFFFFFFFFFFFFFFFFULL
 #define COMPONENT_ID_BITS                       32
-#define COMPONENT_ID_MASK(x)                    ((x)&0xFFFFFFFFULL)
+#define COMPONENT_ID_MASK(x)                    ((x) & 0xFFFFFFFFULL)
 #define SUBCOMPONENT_ID_BITS                    16
 #define SUBCOMPONENT_ID_MASK(x)                 ((x) >> COMPONENT_ID_BITS)
 #define SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId)
 #define CONFIG_COMPONENT_ID_BITS                (COMPONENT_ID_BITS + SUBCOMPONENT_ID_BITS)
-#define CONFIG_COMPONENT_ID_MASK(x)             ((x)&0xFFFFFFFFFFFFULL)
+#define CONFIG_COMPONENT_ID_MASK(x)             ((x) & 0xFFFFFFFFFFFFULL)
 #define STATISTIC_ID_CREATE(compId, statId)     ((((uint64_t)statId) << CONFIG_COMPONENT_ID_BITS) | compId)
 #define COMPDEFINED_SUBCOMPONENT_ID_MASK(x)     ((x) >> 63)
 #define COMPDEFINED_SUBCOMPONENT_ID_CREATE(compId, sCompId) \

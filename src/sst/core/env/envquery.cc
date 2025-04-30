@@ -147,7 +147,9 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
     // LOWEST PRIORITY - GLOBAL INSTALL CONFIG
     std::string prefixConfig = "";
 
-    if ( 0 == strcmp(SST_INSTALL_PREFIX, "NONE") ) { prefixConfig = "/usr/local/etc/sst/sstsimulator.conf"; }
+    if ( 0 == strcmp(SST_INSTALL_PREFIX, "NONE") ) {
+        prefixConfig = "/usr/local/etc/sst/sstsimulator.conf";
+    }
     else {
         prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
     }
@@ -158,7 +160,9 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
     char* homeConfigPath = (char*)malloc(sizeof(char) * PATH_MAX);
     char* userHome       = getenv("HOME");
 
-    if ( nullptr == userHome ) { snprintf(homeConfigPath, PATH_MAX, "~/.sst/sstsimulator.conf"); }
+    if ( nullptr == userHome ) {
+        snprintf(homeConfigPath, PATH_MAX, "~/.sst/sstsimulator.conf");
+    }
     else {
         snprintf(homeConfigPath, PATH_MAX, "%s/.sst/sstsimulator.conf", userHome);
     }
@@ -174,7 +178,9 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
 
     // If this isn't specified by the environment, we will default to UNIX ":" to be
     // safe.
-    if ( nullptr == envConfigPathSep ) { envConfigPathSep = ":"; }
+    if ( nullptr == envConfigPathSep ) {
+        envConfigPathSep = ":";
+    }
 
     if ( nullptr != envConfigPaths ) {
         char* envConfigPathBuffer = (char*)malloc(sizeof(char) * (strlen(envConfigPaths) + 1));

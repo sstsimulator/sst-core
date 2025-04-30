@@ -161,7 +161,9 @@ public:
         for ( std::vector<std::string>::const_iterator i = selfPorts.begin(); i != selfPorts.end(); ++i ) {
             /* Compare name with stored name, which may have wildcards */
             // if ( checkPort(i->c_str(), x) ) {
-            if ( name == *i ) { return true; }
+            if ( name == *i ) {
+                return true;
+            }
         }
         return false;
     }

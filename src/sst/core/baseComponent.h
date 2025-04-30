@@ -68,9 +68,9 @@ class BaseComponent : public SST::Core::Serialization::serializable_base
     friend class SubComponentSlotInfo;
 
 protected:
-    using StatCreateFunction = std::function<Statistics::StatisticBase*(
-        BaseComponent*, Statistics::StatisticProcessingEngine*, const std::string& /*type*/,
-        const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
+    using StatCreateFunction =
+        std::function<Statistics::StatisticBase*(BaseComponent*, Statistics::StatisticProcessingEngine*,
+            const std::string& /*type*/, const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
 
     BaseComponent() = default; // For serialization only
 
@@ -78,7 +78,7 @@ public:
     explicit BaseComponent(ComponentId_t id);
     virtual ~BaseComponent();
 
-    BaseComponent(const BaseComponent&) = delete;
+    BaseComponent(const BaseComponent&)            = delete;
     BaseComponent& operator=(const BaseComponent&) = delete;
 
     const std::string& getType() const { return my_info->getType(); }
@@ -153,8 +153,8 @@ public:
        @param tc TimeConverter specifying the units
     */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
-                 "(i.e., no pointer) instead.")]] SimTime_t
-              getCurrentSimTime(TimeConverter* tc) const;
+                 "(i.e., no pointer) instead.")]]
+    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
     SimTime_t getCurrentSimTime(TimeConverter tc) const;
 
     /**
@@ -273,8 +273,8 @@ protected:
 
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'configureLink(const std::string& name, TimeConverter "
-        "time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Link*
-          configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+        "time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    Link* configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
     Link* configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
@@ -304,10 +304,9 @@ protected:
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    [[deprecated(
-        "Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
-        "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Link*
-          configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
+                 "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    Link* configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
     Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
 
     /** Configure a SelfLink  (Loopback link)
@@ -316,16 +315,16 @@ protected:
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link*
-    configureSelfLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureSelfLink(
+        const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param time_base - Time Base of the link as a UnitAlgebra
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link*
-    configureSelfLink(const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureSelfLink(
+        const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param handler - Optional Handler to be called when an Event is received
@@ -363,14 +362,14 @@ protected:
     */
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'registerClock(TimeConverter tc, Clock::HandlerBase* "
-        "handler, bool regAll)' (i.e., no TimeConverter pointer) instead.")]] TimeConverter*
-                   registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
+        "handler, bool regAll)' (i.e., no TimeConverter pointer) instead.")]]
+    TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
     TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll = true);
 
     /** Removes a clock handler from the component */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'unregisterClock(TimeConverter tc, "
-                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] void
-         unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
+                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
     void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
 
     /** Reactivates an existing Clock and Handler
@@ -383,8 +382,8 @@ protected:
      * simulation end may be greater than the value returned after simulation end.
      */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'reregisterClock(TimeConverter freq, "
-                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]] Cycle_t
-            reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
+                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
     Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
 
     /** Returns the next Cycle that the TimeConverter would fire
@@ -396,8 +395,8 @@ protected:
      */
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'getNextClockCycle(TimeConverter freq)' (i.e., "
-        "no TimeConverter pointer) instead.")]] Cycle_t
-            getNextClockCycle(TimeConverter* freq);
+        "no TimeConverter pointer) instead.")]]
+    Cycle_t getNextClockCycle(TimeConverter* freq);
     Cycle_t getNextClockCycle(TimeConverter freq);
 
     /** Registers a default time base for the component and optionally
@@ -416,7 +415,9 @@ protected:
     bool isStatisticShared(const std::string& statName, bool include_me = false)
     {
         if ( include_me ) {
-            if ( doesComponentInfoStatisticExist(statName) ) { return true; }
+            if ( doesComponentInfoStatisticExist(statName) ) {
+                return true;
+            }
         }
         if ( my_info->sharesStatistics() ) {
             return my_info->parent_info->component->isStatisticShared(statName, true);
@@ -445,8 +446,8 @@ private:
     Link* configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler = nullptr);
 
     template <typename T>
-    Statistics::Statistic<T>*
-    createStatistic(SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
+    Statistics::Statistic<T>* createStatistic(
+        SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId)
     {
         /* I would prefer to avoid this std::function with dynamic cast,
          * but the code is just a lot cleaner and avoids many unnecessary template instantiations
@@ -471,26 +472,27 @@ private:
 
         // Ugh, dynamic casts hurt my eyes, but I must do this
         auto* statistic = dynamic_cast<Statistics::Statistic<T>*>(base_stat);
-        if ( statistic ) { return statistic; }
+        if ( statistic ) {
+            return statistic;
+        }
         else {
-            fatal(
-                __LINE__, __FILE__, "createStatistic", 1, "failed to cast created statistic '%s' to expected type",
+            fatal(__LINE__, __FILE__, "createStatistic", 1, "failed to cast created statistic '%s' to expected type",
                 name.c_str());
             return nullptr; // avoid compiler warnings
         }
     }
 
     template <typename T>
-    Statistics::Statistic<T>*
-    createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId = "")
+    Statistics::Statistic<T>* createNullStatistic(
+        SST::Params& params, const std::string& name, const std::string& statSubId = "")
     {
         auto* engine = getStatEngine();
         return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
     }
 
     template <typename T>
-    Statistics::Statistic<T>*
-    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
+    Statistics::Statistic<T>* registerStatistic(
+        SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
         if ( my_info->enabled_stat_names_ ) {
             auto iter = my_info->enabled_stat_names_->find(statName);
@@ -506,7 +508,9 @@ private:
         // if we got here, this is not a stat we explicitly enabled
         if ( inserting || doesComponentInfoStatisticExist(statName) ) {
             // this is a statistic that I registered
-            if ( my_info->enabled_all_stats_ ) { return createStatistic<T>(params, STATALL_ID, statName, statSubId); }
+            if ( my_info->enabled_all_stats_ ) {
+                return createStatistic<T>(params, STATALL_ID, statName, statSubId);
+            }
             else if ( my_info->parent_info && my_info->canInsertStatistics() ) {
                 // I did not explicitly enable nor enable all
                 // but I can insert statistics into my parent
@@ -525,8 +529,7 @@ private:
         }
         else {
             // not a valid stat and I won't be able to share my parent's statistic
-            fatal(
-                __LINE__, __FILE__, "registerStatistic", 1, "attempting to register unknown statistic '%s'",
+            fatal(__LINE__, __FILE__, "registerStatistic", 1, "attempting to register unknown statistic '%s'",
                 statName.c_str());
             return nullptr; // get rid of warning
         }
@@ -551,8 +554,8 @@ protected:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistics::Statistic<T>*
-    registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<T>* registerStatistic(
+        SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
         return registerStatistic<T>(params, statName, statSubId, false);
     }
@@ -565,16 +568,16 @@ protected:
     }
 
     template <typename... Args>
-    Statistics::Statistic<std::tuple<Args...>>*
-    registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<std::tuple<Args...>>* registerMultiStatistic(
+        const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty {};
         return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId, false);
     }
 
     template <typename... Args>
-    Statistics::Statistic<std::tuple<Args...>>*
-    registerMultiStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<std::tuple<Args...>>* registerMultiStatistic(
+        SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
         return registerStatistic<std::tuple<Args...>>(params, statName, statSubId, false);
     }
@@ -615,8 +618,7 @@ protected:
             T* tool = dynamic_cast<T*>(x);
             if ( nullptr == tool ) {
                 //  Not the right type, fatal
-                fatal(
-                    CALL_INFO_LONG, 1, "ERROR: wrong type of profiling tool for profiling point %s)\n",
+                fatal(CALL_INFO_LONG, 1, "ERROR: wrong type of profiling tool for profiling point %s)\n",
                     pointName.c_str());
             }
             ret->registerProfilePoint(tool, pointName, getId(), getName(), getType());
@@ -689,8 +691,7 @@ protected:
 
         if ( sub_count > 1 ) {
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-            outXX.fatal(
-                CALL_INFO, 1,
+            outXX.fatal(CALL_INFO, 1,
                 "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
                 slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
@@ -715,9 +716,8 @@ protected:
        unsuccessful.
     */
     template <class T, class... ARGS>
-    T* loadAnonymousSubComponent(
-        const std::string& type, const std::string& slot_name, int slot_num, uint64_t share_flags, Params& params,
-        ARGS... args)
+    T* loadAnonymousSubComponent(const std::string& type, const std::string& slot_name, int slot_num,
+        uint64_t share_flags, Params& params, ARGS... args)
     {
 
         share_flags             = share_flags & ComponentInfo::USER_FLAGS;
@@ -784,8 +784,7 @@ protected:
 
         if ( sub_count > 1 ) {
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-            outXX.fatal(
-                CALL_INFO, 1,
+            outXX.fatal(CALL_INFO, 1,
                 "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
                 slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
@@ -813,8 +812,8 @@ protected:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    [[noreturn]] void
-    fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+    [[noreturn]]
+    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
     /** Convenience function for testing for and reporting fatal
@@ -840,9 +839,8 @@ protected:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void sst_assert(
-        bool condition, uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
-        __attribute__((format(printf, 7, 8)));
+    void sst_assert(bool condition, uint32_t line, const char* file, const char* func, int exit_code,
+        const char* format, ...) const __attribute__((format(printf, 7, 8)));
 
 private:
     SimTime_t processCurrentTimeWithUnderflowedBase(const std::string& base) const;
@@ -857,9 +855,8 @@ private:
      * @param statSubId
      * @return that matching stat if the stat already was created for the given ID, otherwise nullptr
      */
-    Statistics::StatisticBase* createExplicitlyEnabledStatistic(
-        SST::Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId,
-        StatCreateFunction create);
+    Statistics::StatisticBase* createExplicitlyEnabledStatistic(SST::Params& params, StatisticId_t id,
+        const std::string& name, const std::string& statSubId, StatCreateFunction create);
 
     /**
      * @brief createStatistic Helper function used by both enable all and explicit enable
@@ -870,9 +867,8 @@ private:
      * @param create A type-erased factory for creating stats of a particulary type T
      * @return The statistic created
      */
-    Statistics::StatisticBase* createStatistic(
-        SST::Params& cpp_params, const SST::Params& python_params, const std::string& name,
-        const std::string& statSubId, bool check_load_level, StatCreateFunction create);
+    Statistics::StatisticBase* createStatistic(SST::Params& cpp_params, const SST::Params& python_params,
+        const std::string& name, const std::string& statSubId, bool check_load_level, StatCreateFunction create);
 
     Statistics::StatisticBase* createEnabledAllStatistic(
         SST::Params& params, const std::string& name, const std::string& statSubId, StatCreateFunction create);
@@ -914,8 +910,8 @@ private:
     }
 
     // Utility function used by fatal and sst_assert
-    [[noreturn]] void
-    vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
+    [[noreturn]]
+    void vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
         __attribute__((format(printf, 6, 0)));
 
     // Get the statengine from Simulation_impl
@@ -937,8 +933,8 @@ protected:
 
     /** Manually set the default defaultTimeBase */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
-                 "(i.e., no TimeConverter pointer) instead.")]] void
-    setDefaultTimeBase(TimeConverter* tc)
+                 "(i.e., no TimeConverter pointer) instead.")]]
+    void setDefaultTimeBase(TimeConverter* tc)
     {
         my_info->defaultTimeBase = tc;
     }
@@ -1009,7 +1005,9 @@ class SubComponentSlotInfo
 public:
     ~SubComponentSlotInfo() {}
 
-    SubComponentSlotInfo(BaseComponent* comp, const std::string& slot_name) : comp(comp), slot_name(slot_name)
+    SubComponentSlotInfo(BaseComponent* comp, const std::string& slot_name) :
+        comp(comp),
+        slot_name(slot_name)
     {
         const std::map<ComponentId_t, ComponentInfo>& subcomps = comp->my_info->getSubComponents();
 

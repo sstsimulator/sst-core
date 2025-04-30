@@ -135,8 +135,8 @@ public:
     static bool isLoaded(const std::string& name) { return getLoaders().count(name) != 0; }
 
     // @return A boolean indicated successfully added
-    static bool
-    addLoader(const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader);
+    static bool addLoader(
+        const std::string& lib, const std::string& name, const std::string& alias, LibraryLoader* loader);
 
     static LibraryMap& getLoaders()
     {
@@ -184,7 +184,10 @@ struct GetAlias<T, std::void_t<decltype(T::ELI_getAlias())>>
     using __ParentEliBase                  = void; \
     static constexpr int __EliBaseLevel    = 0;    \
     static constexpr int __EliDerivedLevel = 0;    \
-    static const char*   ELI_baseName() { return #Base; }
+    static const char*   ELI_baseName()            \
+    {                                              \
+        return #Base;                              \
+    }
 
 #define SST_ELI_DECLARE_INFO_COMMON()                                           \
     using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>;                \
@@ -205,8 +208,11 @@ struct GetAlias<T, std::void_t<decltype(T::ELI_getAlias())>>
     using __LocalEliBase                = NewBase;                                           \
     using __ParentEliBase               = OldBase;                                           \
     static constexpr int __EliBaseLevel = OldBase::__EliBaseLevel + 2;                       \
-    SST_ELI_DECLARE_INFO_COMMON()                                                            \
-    static const char* ELI_baseName() { return #NewBase; }                                   \
+    SST_ELI_DECLARE_INFO_COMMON()                                                              \
+    static const char* ELI_baseName()                                                        \
+    {                                                                                        \
+        return #NewBase;                                                                     \
+    }                                                                                        \
     template <class InfoImpl>                                                                \
     static bool addInfo(const std::string& elemlib, const std::string& elem, InfoImpl* info) \
     {                                                                                        \

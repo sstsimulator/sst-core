@@ -75,9 +75,8 @@ static PyObject* mlCreateModule(PyObject* self, PyObject* args);
 static PyObject* mlExecModule(PyObject* self, PyObject* args);
 
 static PyMethodDef mlMethods[] = { { "find_module", mlFindModule, METH_VARARGS, "Finds an SST Element Module" },
-                                   { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
-                                   { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" },
-                                   { nullptr, nullptr, 0, nullptr } };
+    { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
+    { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" }, { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -187,17 +186,16 @@ mlFindModule(PyObject* self, PyObject* args)
 static PyMethodDef emptyModMethods[] = { { nullptr, nullptr, 0, nullptr } };
 #if PY_MAJOR_VERSION >= 3
 /* This defines an empty module used if modName is not found during mlLoadModule() */
-static struct PyModuleDef emptyModDef
-{
+static struct PyModuleDef emptyModDef {
     PyModuleDef_HEAD_INIT, /* m_base */
-        "sstempty",        /* m_name */
-        nullptr,           /* m_doc */
-        -1,                /* m_size */
-        emptyModMethods,   /* m_methods */
-        nullptr,           /* m_slots */
-        nullptr,           /* m_traverse */
-        nullptr,           /* m_clear */
-        nullptr,           /* m_free */
+    "sstempty",            /* m_name */
+    nullptr,               /* m_doc */
+    -1,                    /* m_size */
+    emptyModMethods,       /* m_methods */
+    nullptr,               /* m_slots */
+    nullptr,               /* m_traverse */
+    nullptr,               /* m_clear */
+    nullptr,               /* m_free */
 };
 #endif
 
@@ -225,7 +223,9 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     const char* name;
 
     nameobj = PyObject_GetAttrString(spec, "name");
-    if ( nameobj == nullptr ) { return nullptr; }
+    if ( nameobj == nullptr ) {
+        return nullptr;
+    }
     name = SST_ConvertToCppString(nameobj);
 
     if ( strncmp(name, "sst.", 4) ) {
@@ -239,7 +239,9 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject*               mod   = nullptr;
-    if ( !pymod ) { mod = PyModule_Create(&emptyModDef); }
+    if ( !pymod ) {
+        mod = PyModule_Create(&emptyModDef);
+    }
     else {
         mod = static_cast<PyObject*>(pymod->load());
     }
@@ -304,7 +306,9 @@ setProgramOption(PyObject* UNUSED(self), PyObject* args)
 static PyObject*
 setProgramOptions(PyObject* UNUSED(self), PyObject* args)
 {
-    if ( !PyDict_Check(args) ) { return nullptr; }
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
     Py_ssize_t pos = 0;
     PyObject * key, *val;
     long       count = 0;
@@ -331,25 +335,19 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(dict, SST_ConvertToPythonString("exit-after"), SST_ConvertToPythonLong(cfg->exit_after()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("heartbeat-period"),
         SST_ConvertToPythonString(cfg->heartbeat_sim_period().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-sim-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("heartbeat-sim-period"),
         SST_ConvertToPythonString(cfg->heartbeat_sim_period().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-wall-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("heartbeat-wall-period"),
         SST_ConvertToPythonLong(cfg->heartbeat_wall_period()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-directory"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-directory"),
         SST_ConvertToPythonString(cfg->output_directory().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-prefix-core"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-prefix-core"),
         SST_ConvertToPythonString(cfg->output_core_prefix().c_str()));
 
     // Configuration output options
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-config"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-config"),
         SST_ConvertToPythonString(cfg->output_config_graph().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-json"), SST_ConvertToPythonString(cfg->output_json().c_str()));
@@ -358,8 +356,7 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     // Graph output options
     PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("dot-verbosity"), SST_ConvertToPythonLong(cfg->dot_verbosity()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-partition"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-partition"),
         SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
 
     // Advanced options
@@ -376,8 +373,7 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
         dict, SST_ConvertToPythonString("add-lib-path"), SST_ConvertToPythonString(cfg->addLibPath().c_str()));
 
     // Advanced options - profiling
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("enable-profiling"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("enable-profiling"),
         SST_ConvertToPythonString(cfg->enabledProfiling().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("profiling-output"), SST_ConvertToPythonString(cfg->profilingOutput().c_str()));
@@ -385,25 +381,20 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     // Advanced options - debug
     PyDict_SetItem(dict, SST_ConvertToPythonString("run-mode"), SST_ConvertToPythonString(cfg->runMode_str().c_str()));
 #ifdef USE_MEMPOOL
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-undeleted-events"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-undeleted-events"),
         SST_ConvertToPythonString(cfg->event_dump_file().c_str()));
 #endif
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("force-rank-seq-startup"), SST_ConvertToPythonBool(cfg->rank_seq_startup()));
 
     // Advanced options - checkpointing
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("checkpoint-sim-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("checkpoint-sim-period"),
         SST_ConvertToPythonString(cfg->checkpoint_sim_period().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("checkpoint-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("checkpoint-period"),
         SST_ConvertToPythonString(cfg->checkpoint_sim_period().c_str()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("checkpoint-wall-period"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("checkpoint-wall-period"),
         SST_ConvertToPythonLong(cfg->checkpoint_wall_period()));
-    PyDict_SetItem(
-        dict, SST_ConvertToPythonString("checkpoint-prefix"),
+    PyDict_SetItem(dict, SST_ConvertToPythonString("checkpoint-prefix"),
         SST_ConvertToPythonString(cfg->checkpoint_prefix().c_str()));
 
     return dict;
@@ -416,7 +407,9 @@ pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
     PyErr_Clear();
     name = SST_ConvertToCppString(arg);
 
-    if ( name != nullptr ) { gModel->pushNamePrefix(name); }
+    if ( name != nullptr ) {
+        gModel->pushNamePrefix(name);
+    }
     else {
         return nullptr;
     }
@@ -511,7 +504,9 @@ setStatisticOutputOption(PyObject* UNUSED(self), PyObject* args)
 
     argOK = PyArg_ParseTuple(args, "ss", &param, &value);
 
-    if ( argOK ) { gModel->addStatisticOutputParameter(param, value); }
+    if ( argOK ) {
+        gModel->addStatisticOutputParameter(param, value);
+    }
     else {
         return nullptr;
     }
@@ -523,7 +518,9 @@ setStatisticOutputOptions(PyObject* UNUSED(self), PyObject* args)
 {
     PyErr_Clear();
 
-    if ( !PyDict_Check(args) ) { return nullptr; }
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
 
     // Generate and Add the Statistic Output Parameters
     for ( auto p : generateStatisticParameters(args) ) {
@@ -666,11 +663,12 @@ enableStatisticsForComponentName(PyObject* UNUSED(self), PyObject* args)
 }
 
 static void
-enableStatisticForComponentType(
-    ConfigComponent* cc, const std::string& compType, const std::string& statName, const SST::Params& params,
-    bool is_all_types, bool apply_to_children)
+enableStatisticForComponentType(ConfigComponent* cc, const std::string& compType, const std::string& statName,
+    const SST::Params& params, bool is_all_types, bool apply_to_children)
 {
-    if ( is_all_types || cc->type == compType ) { cc->enableStatistic(statName, params, apply_to_children); }
+    if ( is_all_types || cc->type == compType ) {
+        cc->enableStatistic(statName, params, apply_to_children);
+    }
     for ( auto sc : cc->subComponents ) {
         enableStatisticForComponentType(sc, compType, statName, params, is_all_types, apply_to_children);
     }
@@ -800,9 +798,8 @@ setStatisticLoadLevelForComponentName(PyObject* UNUSED(self), PyObject* args)
         // Get the component
         ConfigComponent* cc = gModel->findComponentByName(compName);
         if ( nullptr == cc ) {
-            gModel->getOutput()->fatal(
-                CALL_INFO, 1, "component name not found in call to setStatisticLoadLevelForComponentName(): %s\n",
-                compName);
+            gModel->getOutput()->fatal(CALL_INFO, 1,
+                "component name not found in call to setStatisticLoadLevelForComponentName(): %s\n", compName);
         }
 
         cc->setStatisticLoadLevel(level, apply_to_children);
@@ -817,7 +814,9 @@ static void
 setStatisticLoadLevelForComponentType(
     ConfigComponent* cc, bool is_all_types, const std::string& compType, uint8_t level, int apply_to_children)
 {
-    if ( is_all_types || cc->type == compType ) { cc->setStatisticLoadLevel(level, apply_to_children); }
+    if ( is_all_types || cc->type == compType ) {
+        cc->setStatisticLoadLevel(level, apply_to_children);
+    }
     for ( auto sc : cc->subComponents ) {
         setStatisticLoadLevelForComponentType(sc, is_all_types, compType, level, apply_to_children);
     }
@@ -897,7 +896,9 @@ addSharedParams(PyObject* UNUSED(self), PyObject* args)
     PyObject* dict = nullptr;
     if ( !PyArg_ParseTuple(args, "sO", &set, &dict) ) return nullptr;
 
-    if ( !PyDict_Check(dict) ) { return nullptr; }
+    if ( !PyDict_Check(dict) ) {
+        return nullptr;
+    }
 
     Py_ssize_t pos = 0;
     PyObject * key, *val;
@@ -942,75 +943,74 @@ getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
 
 static PyMethodDef sstModuleMethods[] = {
     { "setProgramOption", setProgramOption, METH_VARARGS,
-      "Sets a single program configuration option (form:  setProgramOption(name, value))" },
+        "Sets a single program configuration option (form:  setProgramOption(name, value))" },
     { "setProgramOptions", setProgramOptions, METH_O, "Sets multiple program configuration option from a dict." },
     { "getProgramOptions", getProgramOptions, METH_NOARGS, "Returns a dict of the current program options." },
     { "pushNamePrefix", pushNamePrefix, METH_O, "Pushes a string onto the prefix of new component and link names" },
     { "popNamePrefix", popNamePrefix, METH_NOARGS,
-      "Removes the most recent addition to the prefix of new component and link names" },
+        "Removes the most recent addition to the prefix of new component and link names" },
     { "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
     { "getMPIRankCount", getSSTMPIWorldSize, METH_NOARGS,
-      "Gets the number of MPI ranks currently being used to run SST" },
+        "Gets the number of MPI ranks currently being used to run SST" },
     { "getMyMPIRank", getSSTMyMPIRank, METH_NOARGS, "Gets the SST MPI rank the script is running on" },
     { "getThreadCount", getSSTThreadCount, METH_NOARGS,
-      "Gets the number of threads on each rank currently being used to run SST" },
+        "Gets the number of threads on each rank currently being used to run SST" },
     { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },
     { "setStatisticOutput", setStatisticOutput, METH_VARARGS,
-      "Sets the Statistic Output - default is console output." },
+        "Sets the Statistic Output - default is console output." },
     { "setStatisticLoadLevel", setStatisticLoadLevel, METH_O,
-      "Sets the Statistic Load Level (0 - 10) - default is 0 (disabled)." },
+        "Sets the Statistic Load Level (0 - 10) - default is 0 (disabled)." },
     { "setStatisticOutputOption", setStatisticOutputOption, METH_VARARGS,
-      "Sets a single Statistic output option (form: setStatisticOutputOption(name, value))" },
+        "Sets a single Statistic output option (form: setStatisticOutputOption(name, value))" },
     { "setStatisticOutputOptions", setStatisticOutputOptions, METH_O,
-      "Sets multiple Statistic output options from a dict." },
+        "Sets multiple Statistic output options from a dict." },
     { "enableAllStatisticsForAllComponents", enableAllStatisticsForAllComponents, METH_VARARGS,
-      "Enables all statistics on all components with output at end of simulation." },
+        "Enables all statistics on all components with output at end of simulation." },
     { "enableAllStatisticsForComponentName", enableAllStatisticsForComponentName, METH_VARARGS,
-      "Enables all statistics on a component with output occurring at defined rate." },
+        "Enables all statistics on a component with output occurring at defined rate." },
     { "enableStatisticForComponentName", enableStatisticForComponentName, METH_VARARGS,
-      "Enables a single statistic on a component with output occurring at defined rate." },
+        "Enables a single statistic on a component with output occurring at defined rate." },
     { "enableStatisticsForComponentName", enableStatisticsForComponentName, METH_VARARGS,
-      "Enables a mulitple statistics on a component with output occurring at defined rate." },
+        "Enables a mulitple statistics on a component with output occurring at defined rate." },
     { "enableAllStatisticsForComponentType", enableAllStatisticsForComponentType, METH_VARARGS,
-      "Enables all statistics on all components of component type with output occurring at defined rate." },
+        "Enables all statistics on all components of component type with output occurring at defined rate." },
     { "enableStatisticForComponentType", enableStatisticForComponentType, METH_VARARGS,
-      "Enables a single statistic on all components of component type with output occurring at defined rate." },
+        "Enables a single statistic on all components of component type with output occurring at defined rate." },
     { "enableStatisticsForComponentType", enableStatisticsForComponentType, METH_VARARGS,
-      "Enables a list of statistics on all components of component type with output occurring at defined rate." },
+        "Enables a list of statistics on all components of component type with output occurring at defined rate." },
     { "setStatisticLoadLevelForComponentName", setStatisticLoadLevelForComponentName, METH_VARARGS,
-      "Sets the statistic load level for the specified component name." },
+        "Sets the statistic load level for the specified component name." },
     { "setStatisticLoadLevelForComponentType", setStatisticLoadLevelForComponentType, METH_VARARGS,
-      "Sets the statistic load level for all components of the specified type." },
+        "Sets the statistic load level for all components of the specified type." },
     { "findComponentByName", findComponentByName, METH_O,
-      "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none "
-      "are to be found." },
+        "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none "
+        "are to be found." },
     { "addGlobalParam", addSharedParam, METH_VARARGS, "Add a parameter to the specified shared set." },
     { "addGlobalParams", addSharedParams, METH_VARARGS, "Add parameters in dictionary to the specified shared set." },
     { "addSharedParam", addSharedParam, METH_VARARGS, "Add a parameter to the specified shared set." },
     { "addSharedParams", addSharedParams, METH_VARARGS, "Add parameters in dictionary to the specified shared set." },
     { "getElapsedExecutionTime", getElapsedExecutionTime, METH_NOARGS,
-      "Gets the real elapsed time since simulation start, returned as a UnitAlgebra.  Not precise enough for "
-      "getting fine timings.  For that, use the built-in time module." },
+        "Gets the real elapsed time since simulation start, returned as a UnitAlgebra.  Not precise enough for "
+        "getting fine timings.  For that, use the built-in time module." },
     { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
-      "Gets the current memory use, returned as a UnitAlgebra" },
+        "Gets the current memory use, returned as a UnitAlgebra" },
     { "setCallPythonFinalize", setCallPythonFinalize, METH_O,
-      "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
-      "called by default if this function is not called." },
+        "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
+        "called by default if this function is not called." },
     { nullptr, nullptr, 0, nullptr }
 };
 
 #if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef sstModuleDef
-{
+static struct PyModuleDef sstModuleDef {
     PyModuleDef_HEAD_INIT, /* m_base */
-        "sst",             /* m_name */
-        nullptr,           /* m_doc */
-        -1,                /* m_size */
-        sstModuleMethods,  /* m_methods */
-        nullptr,           /* m_slots */
-        nullptr,           /* m_traverse */
-        nullptr,           /* m_clear */
-        nullptr,           /* m_free */
+    "sst",                 /* m_name */
+    nullptr,               /* m_doc */
+    -1,                    /* m_size */
+    sstModuleMethods,      /* m_methods */
+    nullptr,               /* m_slots */
+    nullptr,               /* m_traverse */
+    nullptr,               /* m_clear */
+    nullptr,               /* m_free */
 };
 #endif
 
@@ -1066,7 +1066,9 @@ SSTPythonModelDefinition::initModel(
 {
     output = new Output("SSTPythonModel: ", verbosity, 0, SST::Output::STDOUT);
 
-    if ( gModel ) { output->fatal(CALL_INFO, 1, "A Python Config Model is already in progress.\n"); }
+    if ( gModel ) {
+        output->fatal(CALL_INFO, 1, "A Python Config Model is already in progress.\n");
+    }
     gModel = this;
 
     graph           = new ConfigGraph();
@@ -1085,8 +1087,7 @@ SSTPythonModelDefinition::initModel(
     const std::string file_name_only = script_file.substr(std::max(0, substr_index));
     local_script_name                = file_name_only.substr(0, file_name_only.size() - 3);
 
-    output->verbose(
-        CALL_INFO, 2, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
+    output->verbose(CALL_INFO, 2, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
         local_script_name.c_str());
 
 
@@ -1147,7 +1148,9 @@ SSTPythonModelDefinition::initModel(
 
     // Check to see if we need to import the coverage module (only works in Python >=3.9
 #if PY_MINOR_VERSION >= 9
-    if ( config->enablePythonCoverage() ) { enablePythonCoverage = true; }
+    if ( config->enablePythonCoverage() ) {
+        enablePythonCoverage = true;
+    }
     else {
         const char* envConfigCoverage = getenv("SST_CONFIG_PYTHON_COVERAGE");
         if ( nullptr != envConfigCoverage ) {
@@ -1156,8 +1159,7 @@ SSTPythonModelDefinition::initModel(
                 enablePythonCoverage = SST::Core::from_string<bool>(value);
             }
             catch ( std::invalid_argument& e ) {
-                output->fatal(
-                    CALL_INFO, 1,
+                output->fatal(CALL_INFO, 1,
                     "ERROR: Invalid format for SST_CONFIG_PYTHON_COVERAGE. Valid boolean pairs are true/false, t/f, "
                     "yes/no, y/n, on/off, or 1/0\n");
                 enablePythonCoverage = false;
@@ -1201,9 +1203,13 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
             }
         }
         else if ( configObj->model_options().substr(i, 1) == " " ) {
-            if ( in_string ) { temp += " "; }
+            if ( in_string ) {
+                temp += " ";
+            }
             else {
-                if ( !(temp == "") ) { argv_vector.push_back(temp); }
+                if ( !(temp == "") ) {
+                    argv_vector.push_back(temp);
+                }
 
                 temp = "";
             }
@@ -1219,7 +1225,9 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
             // this maybe en error?
         }
         else {
-            if ( !(temp == "") ) { argv_vector.push_back(temp); }
+            if ( !(temp == "") ) {
+                argv_vector.push_back(temp);
+            }
         }
     }
 
@@ -1251,7 +1259,9 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition()
     gModel = nullptr;
 
     if ( nullptr != namePrefix ) free(namePrefix);
-    if ( callPythonFinalize ) { Py_Finalize(); }
+    if ( callPythonFinalize ) {
+        Py_Finalize();
+    }
     else {
         PyGC_Collect();
     }
@@ -1270,8 +1280,7 @@ SSTPythonModelDefinition::createConfigGraph()
                                                      "zzzSSTPythonCoverageModule.start()\n");
         if ( nullptr != PyErr_Occurred() ) {
             // Print the Python error and then let SST exit as a fatal-stop.
-            output->fatal(
-                CALL_INFO, 1,
+            output->fatal(CALL_INFO, 1,
                 "ERROR: Error occurred starting test coverage of the SST model script. Reported error:\n");
             PyErr_Print();
         }
@@ -1283,7 +1292,9 @@ SSTPythonModelDefinition::createConfigGraph()
 
     // Open the input script
     FILE* fp = fopen(scriptName.c_str(), "r");
-    if ( !fp ) { output->fatal(CALL_INFO, 1, "Unable to open python script %s\n", scriptName.c_str()); }
+    if ( !fp ) {
+        output->fatal(CALL_INFO, 1, "Unable to open python script %s\n", scriptName.c_str());
+    }
     PyErr_Clear();
     int createReturn = PyRun_AnyFileEx(fp, scriptName.c_str(), 1);
 
@@ -1361,7 +1372,9 @@ SSTPythonModelDefinition::popNamePrefix()
 char*
 SSTPythonModelDefinition::addNamePrefix(const char* name) const
 {
-    if ( nameStack.empty() || strlen(namePrefix) == 0 ) { return strdup(name); }
+    if ( nameStack.empty() || strlen(namePrefix) == 0 ) {
+        return strdup(name);
+    }
     size_t prefixLen = strlen(namePrefix);
     char*  buf       = (char*)malloc(prefixLen + 2 + strlen(name));
 

@@ -46,7 +46,8 @@ class OverflowFreeList
         size_t                          size;
         std::vector<std::vector<void*>> lists;
 
-        OverflowList(size_t size, std::vector<void*>& list) : size(size)
+        OverflowList(size_t size, std::vector<void*>& list) :
+            size(size)
         {
             lists.emplace_back();
             lists.back().swap(list);
@@ -69,7 +70,9 @@ public:
                 x.lists.back().swap(list);
             }
         }
-        if ( !found ) { store.emplace_back(size, list); }
+        if ( !found ) {
+            store.emplace_back(size, list);
+        }
     }
 
     bool remove(size_t size, std::vector<void*>& list)
@@ -189,7 +192,9 @@ public:
         // goes in overflow.
         if ( freelist.size() >= max_freelist_size ) {
             overflow.push_back(ptr);
-            if ( overflow.size() == max_overflow_size ) { shared_overflow.insert(elemSize, overflow); }
+            if ( overflow.size() == max_overflow_size ) {
+                shared_overflow.insert(elemSize, overflow);
+            }
         }
         else {
             freelist.push_back(ptr);
@@ -230,7 +235,9 @@ private:
     bool allocPool()
     {
         uint8_t* newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-        if ( MAP_FAILED == newPool ) { return false; }
+        if ( MAP_FAILED == newPool ) {
+            return false;
+        }
         std::memset(newPool, 0, arenaSize);
         arenas.push_back(newPool);
         size_t nelem = arenaSize / allocSize;
@@ -264,7 +271,10 @@ struct PoolInfo_t
     size_t          size;
     MemPoolNoMutex* pool;
 
-    PoolInfo_t(size_t size, Core::MemPoolNoMutex* pool) : size(size), pool(pool) {}
+    PoolInfo_t(size_t size, Core::MemPoolNoMutex* pool) :
+        size(size),
+        pool(pool)
+    {}
 };
 
 
@@ -304,7 +314,9 @@ void
 MemPoolAccessor::initializeGlobalData(int num_threads, bool cache_align)
 {
     // Only resize once
-    if ( memPoolThreadVector.size() == 0 ) { memPoolThreadVector.resize(num_threads); }
+    if ( memPoolThreadVector.size() == 0 ) {
+        memPoolThreadVector.resize(num_threads);
+    }
     memPoolCacheAlign = cache_align;
 }
 
@@ -412,8 +424,7 @@ MemPoolItem::operator delete(void* ptr)
     uint64_t  size = *ptr8;
     if ( *ptr8 == 0 ) {
         // This item has already been deleted, error
-        Output::getDefaultObject().fatal(
-            CALL_INFO, 1, "ERROR: Double deletion of mempool item detected: %s",
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: Double deletion of mempool item detected: %s",
             static_cast<MemPoolItem*>(ptr)->toString().c_str());
     }
     *ptr8 = 0;

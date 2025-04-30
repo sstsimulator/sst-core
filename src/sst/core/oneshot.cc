@@ -18,7 +18,10 @@
 
 namespace SST {
 
-OneShot::OneShot(TimeConverter* timeDelay, int priority) : Action(), m_timeDelay(timeDelay), m_scheduled(false)
+OneShot::OneShot(TimeConverter* timeDelay, int priority) :
+    Action(),
+    m_timeDelay(timeDelay),
+    m_scheduled(false)
 {
     setPriority(priority);
 }
@@ -139,8 +142,7 @@ OneShot::execute()
 void
 OneShot::print(const std::string& header, Output& out) const
 {
-    out.output(
-        "%s OneShot Activity with time delay of %" PRIu64 " to be delivered at %" PRIu64 " with priority %d\n",
+    out.output("%s OneShot Activity with time delay of %" PRIu64 " to be delivered at %" PRIu64 " with priority %d\n",
         header.c_str(), m_timeDelay->getFactor(), getDeliveryTime(), getPriority());
 }
 

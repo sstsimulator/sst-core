@@ -109,7 +109,7 @@ private:
 
     Clock() {}
 
-    Clock(const Clock&) = delete;
+    Clock(const Clock&)            = delete;
     Clock& operator=(const Clock&) = delete;
 
     void execute() override;

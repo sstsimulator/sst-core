@@ -92,10 +92,12 @@ private:
     // TimeConverter object.
     TimeConverter* getTimeConverter(SimTime_t simCycles);
 
-    TimeLord() : initialized(false) {}
+    TimeLord() :
+        initialized(false)
+    {}
     ~TimeLord();
 
-    TimeLord(const TimeLord&) = delete;            // Don't Implement
+    TimeLord(const TimeLord&)            = delete; // Don't Implement
     TimeLord& operator=(const TimeLord&) = delete; // Don't Implement
 
     bool                 initialized;

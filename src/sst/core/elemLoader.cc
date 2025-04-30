@@ -52,8 +52,7 @@ checkForValidParamNames(const std::string& libname)
             const auto&       param_map = x.second->getValidParams();
             for ( auto& param : param_map ) {
                 if ( !SST::NameCheck::isParamNameValid(param.name) ) {
-                    printf(
-                        "WARNING: Element %s.%s has parameter with an invalid name: %s\n", libname.c_str(),
+                    printf("WARNING: Element %s.%s has parameter with an invalid name: %s\n", libname.c_str(),
                         comp_name.c_str(), param.name);
                 }
             }
@@ -73,8 +72,7 @@ checkForValidPortNames(const std::string& libname)
             const auto&       port_map = x.second->getValidPorts();
             for ( auto& port : port_map ) {
                 if ( !SST::NameCheck::isPortNameValid(port.name) ) {
-                    printf(
-                        "WARNING: Element %s.%s has port with an invalid name: %s\n", libname.c_str(),
+                    printf("WARNING: Element %s.%s has port with an invalid name: %s\n", libname.c_str(),
                         comp_name.c_str(), port.name);
                 }
             }
@@ -94,8 +92,7 @@ checkForValidSlotNames(const std::string& libname)
             const auto&       slot_map = x.second->getSubComponentSlots();
             for ( auto& slot : slot_map ) {
                 if ( !SST::NameCheck::isSlotNameValid(slot.name) ) {
-                    printf(
-                        "WARNING: Element %s.%s has slot with an invalid name: %s\n", libname.c_str(),
+                    printf("WARNING: Element %s.%s has slot with an invalid name: %s\n", libname.c_str(),
                         comp_name.c_str(), slot.name);
                 }
             }
@@ -131,7 +128,9 @@ ElemLoader::ElemLoader(const std::string& searchPaths) :
 {
 
     const char* verbose_env = getenv("SST_CORE_DL_VERBOSE");
-    if ( nullptr != verbose_env ) { verbose = atoi(verbose_env) > 0; }
+    if ( nullptr != verbose_env ) {
+        verbose = atoi(verbose_env) > 0;
+    }
 
     const char* bind_env = getenv("SST_CORE_DL_BIND_POLICY");
     if ( (nullptr != bind_env) && ((!strcmp(bind_env, "now")) || (!strcmp(bind_env, "NOW"))) ) {
@@ -157,7 +156,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     std::vector<std::string> error_msgs;
 
     for ( std::string const& next_path : paths ) {
-        if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
+        if ( verbose ) {
+            printf("SST-DL: Searching: %s\n", next_path.c_str());
+        }
 
         if ( next_path.back() == '/' ) {
             snprintf(full_path, PATH_MAX, "%slib%s.so", next_path.c_str(), elemlib.c_str());
@@ -166,14 +167,18 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
             snprintf(full_path, PATH_MAX, "%s/lib%s.so", next_path.c_str(), elemlib.c_str());
         }
 
-        if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
+        if ( verbose ) {
+            printf("SST-DL: Attempting to load %s\n", full_path);
+        }
 
         // use a global bind policy read from environment, default to RTLD_LAZY
         void* handle = dlopen(full_path, bindPolicy);
 
 #ifdef SST_COMPILE_MACOSX
         if ( nullptr == handle ) {
-            if ( verbose ) { printf("SST-DL: Loading failed for %s, error: %s\n", full_path, dlerror()); }
+            if ( verbose ) {
+                printf("SST-DL: Loading failed for %s, error: %s\n", full_path, dlerror());
+            }
             else {
                 // Check to see if file exists.  If not, we don't need
                 // to record the error message.
@@ -200,7 +205,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
                 snprintf(full_path, PATH_MAX, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
             }
 
-            if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
+            if ( verbose ) {
+                printf("SST-DL: Attempting to load %s\n", full_path);
+            }
 
             // use a global bind policy read from environment, default to RTLD_LAZY
             handle = dlopen(full_path, bindPolicy);
@@ -208,7 +215,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 #endif
 
         if ( nullptr == handle ) {
-            if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
+            if ( verbose ) {
+                printf("SST-DL: Loading failed, error: %s\n", dlerror());
+            }
             else {
                 // Check to see if file exists.  If not, we don't need
                 // to record the error message.
@@ -222,7 +231,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
             }
         }
         else {
-            if ( verbose ) { printf("SST-DL: Load was successful.\n"); }
+            if ( verbose ) {
+                printf("SST-DL: Load was successful.\n");
+            }
 
             found_element = true;
 

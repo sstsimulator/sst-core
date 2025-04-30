@@ -94,7 +94,7 @@ public:
     NotSerializable(SST::CheckpointAction);
 
 private:
-    CheckpointAction(const CheckpointAction&) = delete;
+    CheckpointAction(const CheckpointAction&)            = delete;
     CheckpointAction& operator=(const CheckpointAction&) = delete;
 
     void createCheckpoint(Simulation_impl* sim); // The actual checkpoint operation

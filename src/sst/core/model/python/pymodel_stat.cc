@@ -105,7 +105,9 @@ statAddParams(PyObject* self, PyObject* args)
     ConfigStatistic* c = getStat(self);
     if ( nullptr == c ) return nullptr;
 
-    if ( !PyDict_Check(args) ) { return nullptr; }
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
 
     Py_ssize_t pos = 0;
     PyObject * key, *val;
@@ -161,9 +163,7 @@ statCompare(PyObject* obj0, PyObject* obj1)
 #endif
 
 static PyMethodDef statisticMethods[] = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
-                                          { "addParams", statAddParams, METH_O,
-                                            "Adds Multiple Parameters from a dict" },
-                                          { nullptr, nullptr, 0, nullptr } };
+    { "addParams", statAddParams, METH_O, "Adds Multiple Parameters from a dict" }, { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

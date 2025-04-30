@@ -232,8 +232,8 @@ protected:
        @param tc TimeConverter specifying the units
     */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter& timebase)' "
-                 "(i.e., no pointer) instead.")]] SimTime_t
-              getCurrentSimTime(TimeConverter* tc) const;
+                 "(i.e., no pointer) instead.")]]
+    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
     SimTime_t getCurrentSimTime(TimeConverter& tc) const;
 
     /**

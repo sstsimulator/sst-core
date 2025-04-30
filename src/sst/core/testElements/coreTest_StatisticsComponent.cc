@@ -92,7 +92,10 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
     //    stat1_U32->delayCollection("10 ns");
 }
 
-StatisticsComponentInt::StatisticsComponentInt() : Component(-1), output(getSimulationOutput()) {}
+StatisticsComponentInt::StatisticsComponentInt() :
+    Component(-1),
+    output(getSimulationOutput())
+{}
 
 bool
 StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
@@ -120,7 +123,9 @@ StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
     if ( stat5_dyn ) stat5_dyn->addData(scaled_I64);
 
     // Check dynamic (during run time) registration
-    if ( rng_count == dynamic_reg ) { stat5_dyn = registerStatistic<int64_t>("stat5_dyn"); }
+    if ( rng_count == dynamic_reg ) {
+        stat5_dyn = registerStatistic<int64_t>("stat5_dyn");
+    }
 
     // return false so we keep going or true to stop
     if ( rng_count >= rng_max_count ) {
@@ -188,7 +193,10 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
     stat3_F64 = registerStatistic<double>("stat3_F64", "3");
 }
 
-StatisticsComponentFloat::StatisticsComponentFloat() : Component(-1), output(getSimulationOutput()) {}
+StatisticsComponentFloat::StatisticsComponentFloat() :
+    Component(-1),
+    output(getSimulationOutput())
+{}
 
 bool
 StatisticsComponentFloat::Clock1Tick(Cycle_t UNUSED(CycleNum))

@@ -46,7 +46,9 @@ update_env_var(const char* name, const std::string& path)
     // Set the SST_ROOT information
 #ifdef SST_INSTALL_PREFIX
     // If SST_ROOT not previous set, then we will provide our own
-    if ( nullptr == getenv("SST_ROOT") ) { setenv("SST_ROOT", SST_INSTALL_PREFIX, 1); }
+    if ( nullptr == getenv("SST_ROOT") ) {
+        setenv("SST_ROOT", SST_INSTALL_PREFIX, 1);
+    }
 #endif
     free(new_ld_path);
 }
@@ -78,7 +80,9 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
         }
     }
 
-    if ( verbose ) { printf("Launching SST executable (%s)...\n", real_binary_path); }
+    if ( verbose ) {
+        printf("Launching SST executable (%s)...\n", real_binary_path);
+    }
 
     // Flush standard out in case binary crashes
     fflush(stdout);
@@ -92,10 +96,10 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
             break;
 
         case EACCES:
-            fprintf(
-                stderr, "Unable to launch SST, part of the path does not have the appropriate read/search access "
-                        "permissions, check you can read the install location or the path is not an executable, did "
-                        "you install correctly?\n");
+            fprintf(stderr,
+                "Unable to launch SST, part of the path does not have the appropriate read/search access "
+                "permissions, check you can read the install location or the path is not an executable, did "
+                "you install correctly?\n");
             break;
 
         case EFAULT:
@@ -107,9 +111,9 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
             break;
 
         case ENAMETOOLONG:
-            fprintf(
-                stderr, "Unable to launch SST, the path to the executable exceeds the operating system maximum. Try "
-                        "installing to a shorter path.\n");
+            fprintf(stderr,
+                "Unable to launch SST, the path to the executable exceeds the operating system maximum. Try "
+                "installing to a shorter path.\n");
             break;
 
         case ENOENT:
@@ -117,15 +121,15 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
             break;
 
         case ENOMEM:
-            fprintf(
-                stderr, "Unable to run SST, the program requested more virtual memory than is allowed in the machine "
-                        "limits. You may need to contact the system administrator to have this limit increased.\n");
+            fprintf(stderr,
+                "Unable to run SST, the program requested more virtual memory than is allowed in the machine "
+                "limits. You may need to contact the system administrator to have this limit increased.\n");
             break;
 
         case ENOTDIR:
-            fprintf(
-                stderr, "Unable to launch SST, one part of the path to the executable is not a directory. Check the "
-                        "path and install prefix.\n");
+            fprintf(stderr,
+                "Unable to launch SST, one part of the path to the executable is not a directory. Check the "
+                "path and install prefix.\n");
             break;
 
         case ETXTBSY:

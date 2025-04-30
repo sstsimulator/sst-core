@@ -80,9 +80,8 @@ ComponentInfo::ComponentInfo() :
 // }
 
 // Constructor used for Anonymous SubComponents
-ComponentInfo::ComponentInfo(
-    ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name, int slot_num,
-    uint64_t share_flags /*, const Params& params_in*/) :
+ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type,
+    const std::string& slot_name, int slot_num, uint64_t share_flags /*, const Params& params_in*/) :
     id_(id),
     parent_info(parent_info),
     name(""),
@@ -140,15 +139,16 @@ ComponentInfo::ComponentInfo(
             sub_name += std::to_string(sc->slot_num);
             sub_name += "]";
         }
-        subComponents.emplace_hint(
-            subComponents.end(), std::piecewise_construct, std::make_tuple(sc->id),
+        subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(sc->id),
             std::forward_as_tuple(sc, sub_name, this, new LinkMap()));
     }
 
     // TODO if possible, optimize enableAllStatisticsFor... calls to share rather than
     // replicate parameters across components
     all_stat_config_ = nullptr;
-    if ( enabled_all_stats_ ) { all_stat_config_ = new ConfigStatistic(ccomp->allStatConfig); }
+    if ( enabled_all_stats_ ) {
+        all_stat_config_ = new ConfigStatistic(ccomp->allStatConfig);
+    }
 
     enabled_stat_names_ = new std::map<std::string, StatisticId_t>(ccomp->enabledStatNames);
     stat_configs_       = new std::map<StatisticId_t, ConfigStatistic>(ccomp->statistics_);
@@ -285,7 +285,9 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
     // Only the parent Component will call serialize_comp directly.
     // This function will walk the hierarchy and call it on all of its
     // subcomponent children.
-    if ( parent_info == nullptr ) { serialize_comp(ser); }
+    if ( parent_info == nullptr ) {
+        serialize_comp(ser);
+    }
 }
 
 
@@ -297,9 +299,8 @@ ComponentInfo::getLinkMap()
 }
 
 ComponentId_t
-ComponentInfo::addAnonymousSubComponent(
-    ComponentInfo* parent_info, const std::string& type, const std::string& slot_name, int slot_num,
-    uint64_t share_flags)
+ComponentInfo::addAnonymousSubComponent(ComponentInfo* parent_info, const std::string& type,
+    const std::string& slot_name, int slot_num, uint64_t share_flags)
 {
     // First, get the next subIDIndex by working our way up to the
     // actual component (parent pointer will be nullptr).
@@ -312,8 +313,7 @@ ComponentInfo::addAnonymousSubComponent(
 
     ComponentId_t cid = COMPDEFINED_SUBCOMPONENT_ID_CREATE(COMPONENT_ID_MASK(id_), sub_id);
 
-    subComponents.emplace_hint(
-        subComponents.end(), std::piecewise_construct, std::make_tuple(cid),
+    subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(cid),
         std::forward_as_tuple(cid, parent_info, type, slot_name, slot_num, share_flags));
 
     return cid;
@@ -414,8 +414,7 @@ ComponentInfo::test_addSubComponentInfo(const std::string& name, const std::stri
     while ( real_comp->parent_info != nullptr )
         real_comp = real_comp->parent_info;
 
-    auto ret = subComponents.emplace(
-        std::piecewise_construct, std::forward_as_tuple(real_comp->subIDIndex),
+    auto ret = subComponents.emplace(std::piecewise_construct, std::forward_as_tuple(real_comp->subIDIndex),
         std::forward_as_tuple(real_comp->subIDIndex, name, slot_name, tv));
     real_comp->subIDIndex++;
     ret.first->second.parent_info = this;

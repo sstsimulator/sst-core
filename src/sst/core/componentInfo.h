@@ -159,9 +159,8 @@ private:
     void finalizeLinkConfiguration() const;
     void prepareForComplete() const;
 
-    ComponentId_t addAnonymousSubComponent(
-        ComponentInfo* parent_info, const std::string& type, const std::string& slot_name, int slot_num,
-        uint64_t share_flags);
+    ComponentId_t addAnonymousSubComponent(ComponentInfo* parent_info, const std::string& type,
+        const std::string& slot_name, int slot_num, uint64_t share_flags);
 
 public:
     /**
@@ -179,8 +178,7 @@ public:
     ComponentInfo(const std::string& type, const Params* params, const ComponentInfo* parent_info);
 
     /* Anonymous SubComponent */
-    ComponentInfo(
-        ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
+    ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
         int slot_num, uint64_t share_flags /*, const Params& params_in*/);
 
     /* New ELI Style */
@@ -274,8 +272,8 @@ public:
     ComponentInfo(
         ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
 
-    ComponentInfo*
-    test_addSubComponentInfo(const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
+    ComponentInfo* test_addSubComponentInfo(
+        const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
 
     void test_printComponentInfoHierarchy(int index = 0);
 };

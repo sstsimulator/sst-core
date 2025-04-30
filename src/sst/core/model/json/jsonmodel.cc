@@ -35,7 +35,9 @@ SSTJSONModelDefinition::SSTJSONModelDefinition(
     output = new Output("SSTJSONModel: ", verbosity, 0, SST::Output::STDOUT);
 
     graph = new ConfigGraph();
-    if ( !graph ) { output->fatal(CALL_INFO, 1, "Could not create graph object in JSON loader.\n"); }
+    if ( !graph ) {
+        output->fatal(CALL_INFO, 1, "Could not create graph object in JSON loader.\n");
+    }
 
     output->verbose(CALL_INFO, 2, 0, "SST loading a JSON model from script: %s\n", script_file.c_str());
 }
@@ -82,7 +84,9 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
 
         // -- Slot Name
         auto x = subArray.find("slot_name");
-        if ( x != subArray.end() ) { Name = x.value(); }
+        if ( x != subArray.end() ) {
+            Name = x.value();
+        }
         else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering subcomponent slot name from script: %s\n", scriptName.c_str());
@@ -90,14 +94,18 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
 
         // -- Type
         x = subArray.find("type");
-        if ( x != subArray.end() ) { Type = x.value(); }
+        if ( x != subArray.end() ) {
+            Type = x.value();
+        }
         else {
             output->fatal(CALL_INFO, 1, "Error discovering subcomponent type from script: %s\n", scriptName.c_str());
         }
 
         // -- Slot index
         x = subArray.find("slot_number");
-        if ( x != subArray.end() ) { Slot = x.value(); }
+        if ( x != subArray.end() ) {
+            Slot = x.value();
+        }
         else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering subcomponent slot number from script: %s\n", scriptName.c_str());
@@ -126,10 +134,11 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
                 // -- stat name
                 if ( stats.contains("name") ) {
                     auto sn = stats.find("name");
-                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    if ( sn != stats.end() ) {
+                        StatName = sn.value();
+                    }
                     else {
-                        output->fatal(
-                            CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
+                        output->fatal(CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
                             scriptName.c_str());
                     }
                 }
@@ -149,7 +158,9 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlo
         // recursively build up the subcomponents
         if ( subArray.contains("subcomponents") ) {
             auto& subsubArray = subArray["subcomponents"];
-            if ( subsubArray.size() > 0 ) { recursiveSubcomponent(Comp, subArray); }
+            if ( subsubArray.size() > 0 ) {
+                recursiveSubcomponent(Comp, subArray);
+            }
         }
     }
 }
@@ -172,14 +183,18 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
     for ( auto& compArray : jFile["components"] ) {
         // -- Name
         auto x = compArray.find("name");
-        if ( x != compArray.end() ) { Name = x.value(); }
+        if ( x != compArray.end() ) {
+            Name = x.value();
+        }
         else {
             output->fatal(CALL_INFO, 1, "Error discovering component name from script: %s\n", scriptName.c_str());
         }
 
         // -- Type
         x = compArray.find("type");
-        if ( x != compArray.end() ) { Type = x.value(); }
+        if ( x != compArray.end() ) {
+            Type = x.value();
+        }
         else {
             output->fatal(CALL_INFO, 1, "Error discovering component type from script: %s\n", scriptName.c_str());
         }
@@ -206,7 +221,9 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
         // read the partition info
         if ( compArray.contains("partition") ) {
             for ( auto& partArray : compArray["partition"].items() ) {
-                if ( partArray.key() == "rank" ) { rank = partArray.value(); }
+                if ( partArray.key() == "rank" ) {
+                    rank = partArray.value();
+                }
                 else if ( partArray.key() == "thread" ) {
                     thread = partArray.value();
                 }
@@ -219,10 +236,11 @@ SSTJSONModelDefinition::discoverComponents(const json& jFile)
                 // -- stat name
                 if ( stats.contains("name") ) {
                     auto sn = stats.find("name");
-                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    if ( sn != stats.end() ) {
+                        StatName = sn.value();
+                    }
                     else {
-                        output->fatal(
-                            CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
+                        output->fatal(CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
                             scriptName.c_str());
                     }
                 }
@@ -269,14 +287,18 @@ SSTJSONModelDefinition::discoverLinks(const json& jFile)
     for ( auto& linkArray : jFile["links"] ) {
         // -- Name
         auto x = linkArray.find("name");
-        if ( x != linkArray.end() ) { Name = x.value(); }
+        if ( x != linkArray.end() ) {
+            Name = x.value();
+        }
         else {
             output->fatal(CALL_INFO, 1, "Error discovering link name from script: %s\n", scriptName.c_str());
         }
 
         // -- NoCut
         x = linkArray.find("noCut");
-        if ( x != linkArray.end() ) { NoCut = x.value(); }
+        if ( x != linkArray.end() ) {
+            NoCut = x.value();
+        }
         else {
             NoCut = false;
         }
@@ -286,35 +308,40 @@ SSTJSONModelDefinition::discoverLinks(const json& jFile)
         for ( int i = 0; i < 2; ++i ) {
             auto side = linkArray.find(sides[i]);
             if ( side == linkArray.end() ) {
-                output->fatal(
-                    CALL_INFO, 1, "Error discovering %s link component for Link=%s from script: %s\n", sides[i].c_str(),
-                    Name.c_str(), scriptName.c_str());
+                output->fatal(CALL_INFO, 1, "Error discovering %s link component for Link=%s from script: %s\n",
+                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
             }
 
             auto item = side->find("component");
-            if ( item != side->end() ) { Comp[i] = item.value(); }
+            if ( item != side->end() ) {
+                Comp[i] = item.value();
+            }
             else {
-                output->fatal(
-                    CALL_INFO, 1, "Error finding component field of %s link component for Link=%s from script: %s\n",
+                output->fatal(CALL_INFO, 1,
+                    "Error finding component field of %s link component for Link=%s from script: %s\n",
                     sides[i].c_str(), Name.c_str(), scriptName.c_str());
             }
 
             // -- Port
             item = side->find("port");
-            if ( item != side->end() ) { Port[i] = item.value(); }
+            if ( item != side->end() ) {
+                Port[i] = item.value();
+            }
             else {
-                output->fatal(
-                    CALL_INFO, 1, "Error finding port field of %s link component for Link=%s from script: %s\n",
-                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
+                output->fatal(CALL_INFO, 1,
+                    "Error finding port field of %s link component for Link=%s from script: %s\n", sides[i].c_str(),
+                    Name.c_str(), scriptName.c_str());
             }
 
             // -- Latency
             item = side->find("latency");
-            if ( item != side->end() ) { Latency[i] = item.value(); }
+            if ( item != side->end() ) {
+                Latency[i] = item.value();
+            }
             else {
-                output->fatal(
-                    CALL_INFO, 1, "Error finding latency field of %s link component for Link=%s from script: %s\n",
-                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
+                output->fatal(CALL_INFO, 1,
+                    "Error finding latency field of %s link component for Link=%s from script: %s\n", sides[i].c_str(),
+                    Name.c_str(), scriptName.c_str());
             }
 
             LinkID = findComponentIdByName(Comp[i]);
@@ -359,7 +386,9 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
     for ( auto& statArray : jFile.at("statistics_group") ) {
         // -- name
         auto x = statArray.find("name");
-        if ( x != statArray.end() ) { Name = x.value(); }
+        if ( x != statArray.end() ) {
+            Name = x.value();
+        }
         else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering statistics group name from script: %s\n", scriptName.c_str());
@@ -367,8 +396,7 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
 
         auto* csg = graph->getStatGroup(Name);
         if ( csg == nullptr ) {
-            output->fatal(
-                CALL_INFO, 1, "Error creating statistics group from script %s; name=%s\n", scriptName.c_str(),
+            output->fatal(CALL_INFO, 1, "Error creating statistics group from script %s; name=%s\n", scriptName.c_str(),
                 Name.c_str());
         }
 
@@ -384,7 +412,9 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
         // -- output
         if ( statArray.contains("output") ) {
             auto& statOuts = graph->getStatOutputs();
-            if ( statArray.at("output").contains("type") ) { statArray.at("output").at("type").get_to(Type); }
+            if ( statArray.at("output").contains("type") ) {
+                statArray.at("output").at("type").get_to(Type);
+            }
             else {
                 output->fatal(
                     CALL_INFO, 1, "Error discovering statistics group output type for group: %s\n", Name.c_str());
@@ -406,10 +436,11 @@ SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
                 // -- stat name
                 if ( stats.contains("name") ) {
                     auto sn = stats.find("name");
-                    if ( sn != stats.end() ) { StatName = sn.value(); }
+                    if ( sn != stats.end() ) {
+                        StatName = sn.value();
+                    }
                     else {
-                        output->fatal(
-                            CALL_INFO, 1, "Error discovering statistics group stat name from script: %s\n",
+                        output->fatal(CALL_INFO, 1, "Error discovering statistics group stat name from script: %s\n",
                             scriptName.c_str());
                     }
                 }
@@ -466,7 +497,9 @@ SSTJSONModelDefinition::discoverStatistics(const json& jFile)
         }
     }
     // discover the statistics groups
-    if ( jFile.contains("statistics_group") ) { setStatGroupOptions(jFile); }
+    if ( jFile.contains("statistics_group") ) {
+        setStatGroupOptions(jFile);
+    }
 }
 
 ConfigGraph*

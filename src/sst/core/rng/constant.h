@@ -31,7 +31,11 @@ public:
         Creates a constant distribution which returns a constant value.
         \param v Is the constant value the user wants returned by the distribution
     */
-    explicit ConstantDistribution(double v) : RandomDistribution() { mean = v; }
+    explicit ConstantDistribution(double v) :
+        RandomDistribution()
+    {
+        mean = v;
+    }
 
     /**
         Destroys the constant distribution
@@ -54,7 +58,9 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    ConstantDistribution() : RandomDistribution() {}
+    ConstantDistribution() :
+        RandomDistribution()
+    {}
 
     /**
         Serialization function for checkpoint

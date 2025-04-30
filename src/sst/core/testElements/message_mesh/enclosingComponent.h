@@ -30,7 +30,9 @@ class PortInterface : public SST::SubComponent
 public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::PortInterface)
 
-    explicit PortInterface(ComponentId_t id) : SubComponent(id) {}
+    explicit PortInterface(ComponentId_t id) :
+        SubComponent(id)
+    {}
     virtual ~PortInterface() {}
 
     /**
@@ -95,7 +97,9 @@ class RouteInterface : public SST::SubComponent
 public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::RouteInterface, const std::vector<PortInterface*>&, int)
 
-    explicit RouteInterface(ComponentId_t id) : SubComponent(id) {}
+    explicit RouteInterface(ComponentId_t id) :
+        SubComponent(id)
+    {}
     virtual ~RouteInterface() {}
 
     virtual void send(MessageEvent* ev, int incoming_port) = 0;

@@ -104,7 +104,9 @@ public:
 
 private:
     friend class ConfigGraph;
-    explicit ConfigLink(LinkId_t id) : id(id), no_cut(false)
+    explicit ConfigLink(LinkId_t id) :
+        id(id),
+        no_cut(false)
     {
         order = 0;
 
@@ -113,7 +115,9 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    ConfigLink(LinkId_t id, const std::string& n) : id(id), no_cut(false)
+    ConfigLink(LinkId_t id, const std::string& n) :
+        id(id),
+        no_cut(false)
     {
         order = 0;
         name  = n;
@@ -140,13 +144,15 @@ public:
         name(_name)
     {}
 
-    ConfigStatistic() : id(stat_null_id) {}
+    ConfigStatistic() :
+        id(stat_null_id)
+    {}
 
-    ConfigStatistic(const ConfigStatistic&) = default;
-    ConfigStatistic(ConfigStatistic&&)      = default;
+    ConfigStatistic(const ConfigStatistic&)            = default;
+    ConfigStatistic(ConfigStatistic&&)                 = default;
     ConfigStatistic& operator=(const ConfigStatistic&) = default;
-    ConfigStatistic& operator=(ConfigStatistic&&) = default;
-    ~ConfigStatistic() override                   = default;
+    ConfigStatistic& operator=(ConfigStatistic&&)      = default;
+    ~ConfigStatistic() override                        = default;
 
     inline const StatisticId_t& getId() const { return id; }
 
@@ -174,7 +180,10 @@ public:
     size_t                        outputID;
     UnitAlgebra                   outputFrequency;
 
-    explicit ConfigStatGroup(const std::string& name) : name(name), outputID(0) {}
+    explicit ConfigStatGroup(const std::string& name) :
+        name(name),
+        outputID(0)
+    {}
     ConfigStatGroup() {} /* Do not use */
 
     bool addComponent(ComponentId_t id);
@@ -207,7 +216,9 @@ public:
     std::string type;
     Params      params;
 
-    explicit ConfigStatOutput(const std::string& type) : type(type) {}
+    explicit ConfigStatOutput(const std::string& type) :
+        type(type)
+    {}
     ConfigStatOutput() {}
 
     void addParameter(const std::string& key, const std::string& val) { params.insert(key, val); }
@@ -233,7 +244,10 @@ public:
     Params      params;
 
     ConfigPortModule() = default;
-    ConfigPortModule(const std::string& type, const Params& params) : type(type), params(params) {}
+    ConfigPortModule(const std::string& type, const Params& params) :
+        type(type),
+        params(params)
+    {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
@@ -309,8 +323,8 @@ public:
     ConfigStatistic*       findStatistic(const std::string& name) const;
     ConfigStatistic*       insertStatistic(StatisticId_t id);
     ConfigStatistic*       findStatistic(StatisticId_t) const;
-    ConfigStatistic*
-    enableStatistic(const std::string& statisticName, const SST::Params& params, bool recursively = false);
+    ConfigStatistic*       enableStatistic(
+              const std::string& statisticName, const SST::Params& params, bool recursively = false);
     ConfigStatistic* createStatistic();
     bool             reuseStatistic(const std::string& statisticName, StatisticId_t sid);
     void             addStatisticParameter(
@@ -320,8 +334,8 @@ public:
 
     void addSharedParamSet(const std::string& set) { params.addSharedParamSet(set); }
     [[deprecated(
-        "addGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use addSharedParamSet()")]] void
-    addGlobalParamSet(const std::string& set)
+        "addGlobalParamSet() has been deprecated and will be removed in SST 16.  Please use addSharedParamSet()")]]
+    void addGlobalParamSet(const std::string& set)
     {
         params.addSharedParamSet(set);
     }
@@ -329,8 +343,8 @@ public:
     std::vector<std::string> getSubscribedSharedParamSets() const { return params.getSubscribedSharedParamSets(); }
 
     [[deprecated("getSubscribedGlobalParamSets() has been deprecated and will be removed in SST 16.  Please use "
-                 "getSubscribedSharedParamSets()")]] std::vector<std::string>
-    getSubscribedGlobalParamSets() const
+                 "getSubscribedSharedParamSets()")]]
+    std::vector<std::string> getSubscribedGlobalParamSets() const
     {
         return params.getSubscribedSharedParamSets();
     }
@@ -380,9 +394,8 @@ private:
     void checkPorts() const;
 
     /** Create a new Component */
-    ConfigComponent(
-        ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type, float weight,
-        RankInfo rank) :
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type,
+        float weight, RankInfo rank) :
         id(id),
         graph(graph),
         name(name),
@@ -398,8 +411,7 @@ private:
         coords.resize(3, 0.0);
     }
 
-    ConfigComponent(
-        ComponentId_t id, ConfigGraph* graph, uint16_t parent_subid, const std::string& name, int slot_num,
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, uint16_t parent_subid, const std::string& name, int slot_num,
         const std::string& type, float weight, RankInfo rank) :
         id(id),
         graph(graph),
@@ -446,7 +458,8 @@ public:
         }
     }
 
-    ConfigGraph() : nextComponentId(0)
+    ConfigGraph() :
+        nextComponentId(0)
     {
         links_.clear();
         comps_.clear();
@@ -483,9 +496,8 @@ public:
     /** Add a parameter to a shared param set */
     void addSharedParam(const std::string& shared_set, const std::string& key, const std::string& value);
 
-    [[deprecated(
-        "addGlobalParam() has been deprecated and will be removed in SST 16.  Please use addSharedParam()")]] void
-    addGlobalParam(const std::string& shared_set, const std::string& key, const std::string& value);
+    [[deprecated("addGlobalParam() has been deprecated and will be removed in SST 16.  Please use addSharedParam()")]]
+    void addGlobalParam(const std::string& shared_set, const std::string& key, const std::string& value);
 
     /** Set the statistic output module */
     void setStatisticOutput(const std::string& name);
@@ -506,9 +518,8 @@ public:
     long getStatLoadLevel() const { return stat_load_level_; }
 
     /** Add a Link to a Component on a given Port */
-    void addLink(
-        ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str,
-        bool no_cut = false);
+    void addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
+        const std::string& latency_str, bool no_cut = false);
 
     /** Set a Link to be no-cut */
     void setLinkNoCut(const std::string& link_name);
@@ -599,8 +610,7 @@ private:
         const std::set<uint32_t>& nset_;
 
     public:
-        GraphFilter(
-            ConfigGraph* original_graph, ConfigGraph* new_graph, const std::set<uint32_t>& original_rank_set,
+        GraphFilter(ConfigGraph* original_graph, ConfigGraph* new_graph, const std::set<uint32_t>& original_rank_set,
             const std::set<uint32_t>& new_rank_set);
 
         ConfigLink*      operator()(ConfigLink* link);
@@ -625,7 +635,11 @@ public:
         rank   = cc->rank;
     }
 
-    explicit PartitionComponent(LinkId_t id) : id(id), weight(0), rank(RankInfo(RankInfo::UNASSIGNED, 0)) {}
+    explicit PartitionComponent(LinkId_t id) :
+        id(id),
+        weight(0),
+        rank(RankInfo(RankInfo::UNASSIGNED, 0))
+    {}
 
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
     void print(std::ostream& os, const PartitionGraph* graph) const;

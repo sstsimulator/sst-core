@@ -16,8 +16,7 @@
 namespace SST::Core::Serialization::pvt {
 
 void
-serialize_array(
-    serializer& ser, void* data, ser_opt_t opt, size_t size,
+serialize_array(serializer& ser, void* data, ser_opt_t opt, size_t size,
     void serialize_array_element(serializer& ser, void* data, ser_opt_t opt, size_t index))
 {
     for ( size_t index = 0; index < size; ++index )
@@ -25,8 +24,7 @@ serialize_array(
 }
 
 void
-serialize_array_map(
-    serializer& ser, void* data, ser_opt_t opt, size_t size, ObjectMap* map,
+serialize_array_map(serializer& ser, void* data, ser_opt_t opt, size_t size, ObjectMap* map,
     void serialize_array_map_element(serializer& ser, void* data, ser_opt_t opt, size_t index, const char* name))
 {
     ser.mapper().map_hierarchy_start(ser.getMapName(), map);

@@ -47,8 +47,7 @@ int                                           Output::m_worldSize_ranks;
 int                                           Output::m_worldSize_threads;
 int                                           Output::m_mpiRank = 0;
 
-Output::Output(
-    const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+Output::Output(const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
     const std::string& localoutputfilename /*=""*/)
 {
     m_objInitialized = false;
@@ -69,8 +68,7 @@ Output::Output()
 }
 
 void
-Output::init(
-    const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+Output::init(const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
     const std::string& localoutputfilename /*=""*/)
 {
     // Only initialize if the object has not yet been initialized.
@@ -151,7 +149,8 @@ Output::getOutputLocation() const
     return m_targetLoc;
 }
 
-[[noreturn]] void
+[[noreturn]]
+void
 Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
 {
     va_list     arg1;
@@ -229,10 +228,11 @@ Output::setFileName(const std::string& filename) /* STATIC METHOD */
     }
 
     // Set the Filename, only if it has not yet been set.
-    if ( 0 == m_sstGlobalSimFileName.length() ) { m_sstGlobalSimFileName = filename; }
+    if ( 0 == m_sstGlobalSimFileName.length() ) {
+        m_sstGlobalSimFileName = filename;
+    }
     else {
-        fprintf(
-            stderr, "ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n",
+        fprintf(stderr, "ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n",
             m_sstGlobalSimFileName.c_str());
         exit(-1);
     }
@@ -301,11 +301,12 @@ Output::openSSTTargetFile() const
 
                 // Now try to open the file
                 handle = fopen(tempFileName.c_str(), "w");
-                if ( nullptr != handle ) { *m_targetFileHandleRef = handle; }
+                if ( nullptr != handle ) {
+                    *m_targetFileHandleRef = handle;
+                }
                 else {
                     // We got an error of some sort
-                    fprintf(
-                        stderr, "ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n",
+                    fprintf(stderr, "ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n",
                         tempFileName.c_str(), strerror(errno));
                     exit(-1);
                 }
@@ -319,7 +320,9 @@ Output::closeSSTTargetFile()
 {
     if ( (true == m_objInitialized) && (FILE == m_targetLoc) ) {
         // Decrement the Access count for the file
-        if ( *m_targetFileAccessCountRef > 0 ) { (*m_targetFileAccessCountRef)--; }
+        if ( *m_targetFileAccessCountRef > 0 ) {
+            (*m_targetFileAccessCountRef)--;
+        }
 
         // If the access count is zero, and the file has been opened, then close it
         if ( (0 == *m_targetFileAccessCountRef) && (nullptr != *m_targetFileHandleRef) && (FILE == m_targetLoc) ) {
@@ -364,7 +367,9 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 'r':
-                if ( 1 == getMPIWorldSize() ) { rtnstring += ""; }
+                if ( 1 == getMPIWorldSize() ) {
+                    rtnstring += "";
+                }
                 else {
                     snprintf(tempBuf, 256, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
@@ -372,7 +377,9 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 'R':
-                if ( 1 == getMPIWorldSize() ) { rtnstring += "0"; }
+                if ( 1 == getMPIWorldSize() ) {
+                    rtnstring += "0";
+                }
                 else {
                     snprintf(tempBuf, 256, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
@@ -380,7 +387,9 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 'i':
-                if ( 1 == getNumThreads() ) { rtnstring += ""; }
+                if ( 1 == getNumThreads() ) {
+                    rtnstring += "";
+                }
                 else {
                     snprintf(tempBuf, 256, "%u", getThreadRank());
                     rtnstring += tempBuf;
@@ -523,7 +532,9 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
 
         if ( sim ) {
             RankInfo ri = sim->getNumRanks();
-            if ( ri.rank > 1 || ri.thread > 1 ) { output_obj_.init("@x (@t): " /*prefix*/, 0, 0, Output::STDOUT); }
+            if ( ri.rank > 1 || ri.thread > 1 ) {
+                output_obj_.init("@x (@t): " /*prefix*/, 0, 0, Output::STDOUT);
+            }
             else {
                 output_obj_.init("(@t): ", 0, 0, Output::STDOUT);
             }
@@ -661,7 +672,9 @@ bool
 is_trace_function_active()
 {
     const char* var = getenv("SST_TRACEFUNCTION_ACTIVATE");
-    if ( var ) { return true; }
+    if ( var ) {
+        return true;
+    }
     else {
         return false;
     }

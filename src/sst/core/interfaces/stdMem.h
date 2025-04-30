@@ -159,7 +159,8 @@ public:
         } /* Requests get a new ID */
         Request(id_t rid, flags_t flags = 0) :
             id(rid),
-            flags(flags) {} /* Responses share an ID with the matching request */
+            flags(flags)
+        {} /* Responses share an ID with the matching request */
 
         virtual ~Request() {}
 
@@ -213,14 +214,18 @@ public:
                 comma = true;
             }
             if ( getFail() ) {
-                if ( comma ) { str << ","; }
+                if ( comma ) {
+                    str << ",";
+                }
                 else {
                     comma = true;
                 }
                 str << "F_FAIL";
             }
             if ( getTrace() ) {
-                if ( comma ) { str << ","; }
+                if ( comma ) {
+                    str << ",";
+                }
                 else {
                     comma = true;
                 }
@@ -229,7 +234,9 @@ public:
             for ( unsigned int i = 4; i < sizeof(flags_t) * CHAR_BIT; i++ ) {
                 flags_t shift = 1 << i;
                 if ( getFlag(shift) ) {
-                    if ( comma ) { str << ","; }
+                    if ( comma ) {
+                        str << ",";
+                    }
                     else {
                         comma = true;
                     }
@@ -289,7 +296,9 @@ public:
             tid(tid)
         {}
         virtual ~Read() {}
-        Read() : Request(0, 0) {}
+        Read() :
+            Request(0, 0)
+        {}
 
         /** Create read response.
          * User must manually set read data on response if simulation is using actual data values
@@ -344,9 +353,8 @@ public:
     class ReadResp : public Request
     {
     public:
-        ReadResp(
-            id_t rid, Addr physAddr, uint64_t size, std::vector<uint8_t> respData, flags_t flags = 0, Addr virtAddr = 0,
-            Addr instPtr = 0, uint32_t tid = 0) :
+        ReadResp(id_t rid, Addr physAddr, uint64_t size, std::vector<uint8_t> respData, flags_t flags = 0,
+            Addr virtAddr = 0, Addr instPtr = 0, uint32_t tid = 0) :
             Request(rid, flags),
             pAddr(physAddr),
             vAddr(virtAddr),
@@ -399,7 +407,9 @@ public:
         uint32_t             tid;   /* Thread ID */
 
         /* Serialization */
-        ReadResp() : Request(0, 0) {}
+        ReadResp() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -422,8 +432,7 @@ public:
     {
     public:
         /* Constructor */
-        Write(
-            Addr physAddr, uint64_t size, std::vector<uint8_t> wData, bool posted = false, flags_t flags = 0,
+        Write(Addr physAddr, uint64_t size, std::vector<uint8_t> wData, bool posted = false, flags_t flags = 0,
             Addr virtAddr = 0, Addr instPtr = 0, uint32_t tid = 0) :
             Request(flags),
             pAddr(physAddr),
@@ -470,7 +479,9 @@ public:
         uint32_t             tid;    /* Thread ID */
 
         /* Serialization */
-        Write() : Request(0, 0) {}
+        Write() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -492,8 +503,7 @@ public:
     {
     public:
         /** Manually construct a write response */
-        WriteResp(
-            id_t id, Addr physAddr, uint64_t size, flags_t flags = 0, Addr virtAddr = 0, Addr instPtr = 0,
+        WriteResp(id_t id, Addr physAddr, uint64_t size, flags_t flags = 0, Addr virtAddr = 0, Addr instPtr = 0,
             uint32_t tid = 0) :
             Request(id, flags),
             pAddr(physAddr),
@@ -540,7 +550,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        WriteResp() : Request(0, 0) {}
+        WriteResp() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -563,8 +575,7 @@ public:
     class FlushAddr : public Request
     {
     public:
-        FlushAddr(
-            Addr physAddr, uint64_t size, bool inv, uint32_t depth, flags_t flags = 0, Addr virtAddr = 0,
+        FlushAddr(Addr physAddr, uint64_t size, bool inv, uint32_t depth, flags_t flags = 0, Addr virtAddr = 0,
             Addr instPtr = 0, uint32_t tid = 0) :
             Request(flags),
             pAddr(physAddr),
@@ -605,7 +616,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        FlushAddr() : Request(0, 0) {}
+        FlushAddr() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -629,8 +642,7 @@ public:
     class FlushCache : public Request
     {
     public:
-        explicit FlushCache(
-            uint32_t depth = std::numeric_limits<uint32_t>::max(), flags_t flags = 0, Addr instPtr = 0,
+        explicit FlushCache(uint32_t depth = std::numeric_limits<uint32_t>::max(), flags_t flags = 0, Addr instPtr = 0,
             uint32_t tid = 0) :
             Request(flags),
             depth(depth),
@@ -679,8 +691,7 @@ public:
     class FlushResp : public Request
     {
     public:
-        FlushResp(
-            id_t id, Addr physAddr, uint64_t size, flags_t flags = 0, Addr vAddr = 0, Addr instPtr = 0,
+        FlushResp(id_t id, Addr physAddr, uint64_t size, flags_t flags = 0, Addr vAddr = 0, Addr instPtr = 0,
             uint32_t tid = 0) :
             Request(id, flags),
             pAddr(physAddr),
@@ -732,7 +743,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        FlushResp() : Request(0, 0) {}
+        FlushResp() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -800,7 +813,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        ReadLock() : Request(0, 0) {}
+        ReadLock() :
+            Request(0, 0)
+        {}
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -822,8 +837,7 @@ public:
     class WriteUnlock : public Request
     {
     public:
-        WriteUnlock(
-            Addr physAddr, uint64_t size, std::vector<uint8_t> wData, bool posted = false, flags_t flags = 0,
+        WriteUnlock(Addr physAddr, uint64_t size, std::vector<uint8_t> wData, bool posted = false, flags_t flags = 0,
             Addr virtAddr = 0, Addr instPtr = 0, uint32_t tid = 0) :
             Request(flags),
             pAddr(physAddr),
@@ -870,7 +884,9 @@ public:
         uint32_t             tid;    /* Thread ID */
 
         /* Serialization */
-        WriteUnlock() : Request(0, 0) {}
+        WriteUnlock() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -940,7 +956,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        LoadLink() : Request(0, 0) {}
+        LoadLink() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -962,8 +980,7 @@ public:
     class StoreConditional : public Request
     {
     public:
-        StoreConditional(
-            Addr physAddr, uint64_t size, std::vector<uint8_t> wData, flags_t flags = 0, Addr virtAddr = 0,
+        StoreConditional(Addr physAddr, uint64_t size, std::vector<uint8_t> wData, flags_t flags = 0, Addr virtAddr = 0,
             Addr instPtr = 0, uint32_t tid = 0) :
             Request(flags),
             pAddr(physAddr),
@@ -1009,7 +1026,9 @@ public:
         uint32_t             tid;   /* Thread ID */
 
         /* Serialization */
-        StoreConditional() : Request(0, 0) {}
+        StoreConditional() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -1032,9 +1051,8 @@ public:
     class MoveData : public Request
     {
     public:
-        MoveData(
-            Addr pSrc, Addr pDst, uint64_t size, bool posted = false, flags_t flags = 0, Addr vSrc = 0, Addr vDst = 0,
-            Addr iPtr = 0, uint32_t tid = 0) :
+        MoveData(Addr pSrc, Addr pDst, uint64_t size, bool posted = false, flags_t flags = 0, Addr vSrc = 0,
+            Addr vDst = 0, Addr iPtr = 0, uint32_t tid = 0) :
             Request(flags),
             pSrc(pSrc),
             vSrc(vSrc),
@@ -1077,7 +1095,9 @@ public:
         uint32_t tid;    /* Thread ID */
 
         /* Serialization */
-        MoveData() : Request(0, 0) {}
+        MoveData() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -1135,7 +1155,9 @@ public:
         uint32_t tid;   /* Thread ID */
 
         /* Serialization */
-        InvNotify() : Request(0, 0) {}
+        InvNotify() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -1244,7 +1266,9 @@ public:
         uint32_t    tid;  /* Thread ID */
 
         /* Serialization */
-        CustomReq() : Request(0, 0) {}
+        CustomReq() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -1337,7 +1361,9 @@ public:
         uint32_t    tid;  /* Thread ID */
 
         /* Serialization */
-        CustomResp() : Request(0, 0) {}
+        CustomResp() :
+            Request(0, 0)
+        {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -1391,7 +1417,9 @@ public:
     {
     public:
         RequestHandler() = default;
-        explicit RequestHandler(SST::Output* o) : out(o) {}
+        explicit RequestHandler(SST::Output* o) :
+            out(o)
+        {}
         virtual ~RequestHandler() = default;
 
         /* Built in command handlers */
@@ -1476,7 +1504,9 @@ public:
     {}
 
     /** Default constructor, used for serialization ONLY */
-    StandardMem() : SubComponent() {}
+    StandardMem() :
+        SubComponent()
+    {}
 
     /**
      * Sends a memory-based request during the init()/complete() phases

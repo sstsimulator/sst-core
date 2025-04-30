@@ -50,7 +50,8 @@ private:
 
 protected:
     template <class T>
-    explicit ProvidesStats(T* UNUSED(t)) : stats_(InfoStats<T>::get())
+    explicit ProvidesStats(T* UNUSED(t)) :
+        stats_(InfoStats<T>::get())
     {
         init();
     }
@@ -94,9 +95,6 @@ public:
     }
 // clang-format on
 
-#define SST_ELI_DELETE_STAT(stat) \
-    {                             \
-        stat, nullptr, nullptr, 0 \
-    }
+#define SST_ELI_DELETE_STAT(stat) { stat, nullptr, nullptr, 0 }
 
 #endif

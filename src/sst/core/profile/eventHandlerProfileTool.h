@@ -75,7 +75,10 @@ class EventHandlerProfileToolCount : public EventHandlerProfileTool
         uint64_t recv_count;
         uint64_t send_count;
 
-        event_data_t() : recv_count(0), send_count(0) {}
+        event_data_t() :
+            recv_count(0),
+            send_count(0)
+        {}
     };
 
 public:
@@ -117,7 +120,11 @@ class EventHandlerProfileToolTime : public EventHandlerProfileTool
         uint64_t recv_count;
         uint64_t send_count;
 
-        event_data_t() : recv_time(0), recv_count(0), send_count(0) {}
+        event_data_t() :
+            recv_time(0),
+            recv_count(0),
+            send_count(0)
+        {}
     };
 
 public:

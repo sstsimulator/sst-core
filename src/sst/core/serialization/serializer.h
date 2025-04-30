@@ -47,7 +47,8 @@ public:
     enum SERIALIZE_MODE { SIZER, PACK, UNPACK, MAP };
 
 public:
-    serializer() : mode_(SIZER) // just sizing by default
+    serializer() :
+        mode_(SIZER) // just sizing by default
     {}
 
     pvt::ser_mapper& mapper() { return mapper_; }
@@ -220,7 +221,9 @@ public:
     inline uintptr_t check_pointer_unpack(uintptr_t ptr)
     {
         auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) { return it->second; }
+        if ( it != ser_pointer_map.end() ) {
+            return it->second;
+        }
         // Keep a copy of the ptr in case we have a split report
         split_key = ptr;
         return 0;
@@ -229,7 +232,9 @@ public:
     ObjectMap* check_pointer_map(uintptr_t ptr)
     {
         auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) { return reinterpret_cast<ObjectMap*>(it->second); }
+        if ( it != ser_pointer_map.end() ) {
+            return reinterpret_cast<ObjectMap*>(it->second);
+        }
         return nullptr;
     }
 
@@ -276,7 +281,10 @@ class ObjectMapContext
     const char* const             name;
 
 public:
-    ObjectMapContext(serializer& ser, const char* name) : ser(ser), prevContext(ser.mapContext), name(name)
+    ObjectMapContext(serializer& ser, const char* name) :
+        ser(ser),
+        prevContext(ser.mapContext),
+        name(name)
     {
         DISABLE_WARN_DANGLING_POINTER // GCC 13 bug causes spurious warning
             ser.mapContext = this;    // change the serializer's context to this new one

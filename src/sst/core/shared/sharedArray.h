@@ -39,7 +39,11 @@ public:
     /**
        Default constructor for SharedArray.
     */
-    SharedArray() : SharedObject(), published(false), data(nullptr) {}
+    SharedArray() :
+        SharedObject(),
+        published(false),
+        data(nullptr)
+    {}
 
     /**
        Shared Array Destructor
@@ -90,8 +94,7 @@ public:
         }
 
         if ( v_type == VERIFY_UNINITIALIZED ) {
-            Private::getSimulationOutput().fatal(
-                CALL_INFO, 1,
+            Private::getSimulationOutput().fatal(CALL_INFO, 1,
                 "ERROR: VERIFY_UNINITIALIZED passed into instance of SharedArray %s.  "
                 "This is a reserved value and cannot be passed in here. \n",
                 obj_name.c_str());
@@ -253,13 +256,19 @@ private:
         T                 init;
         verify_type       verify;
 
-        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
+        Data() :
+            SharedObjectData(),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
+        {}
         explicit Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
             verify(VERIFY_UNINITIALIZED)
         {
-            if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getNumRanks().rank > 1 ) {
+                change_set = new ChangeSet(name);
+            }
         }
 
         ~Data()
@@ -283,7 +292,9 @@ private:
             if ( size > array.size() ) {
                 // Need to resize the vector
                 array.resize(size, init_data);
-                if ( v_type == FE_VERIFY ) { written.resize(size); }
+                if ( v_type == FE_VERIFY ) {
+                    written.resize(size);
+                }
                 if ( change_set ) change_set->setSize(size, init_data, v_type);
             }
             // init and verify must match across all intances.  We can
@@ -291,9 +302,8 @@ private:
             // VERIFY_UNINITIALIZED.
             if ( verify != VERIFY_UNINITIALIZED ) {
                 if ( init != init_data ) {
-                    Private::getSimulationOutput().fatal(
-                        CALL_INFO, 1, "ERROR: Two different init_data values passed into SharedArray %s\n",
-                        name.c_str());
+                    Private::getSimulationOutput().fatal(CALL_INFO, 1,
+                        "ERROR: Two different init_data values passed into SharedArray %s\n", name.c_str());
                 }
 
                 if ( verify != v_type ) {
@@ -328,9 +338,8 @@ private:
                 break;
             }
             if ( check && (array[index] != data) ) {
-                Private::getSimulationOutput().fatal(
-                    CALL_INFO, 1, "ERROR: wrote two different values to index %d of SharedArray %s\n", index,
-                    name.c_str());
+                Private::getSimulationOutput().fatal(CALL_INFO, 1,
+                    "ERROR: wrote two different values to index %d of SharedArray %s\n", index, name.c_str());
             }
             array[index] = data;
             if ( verify == FE_VERIFY ) written[index] = true;
@@ -393,7 +402,9 @@ private:
 
         public:
             // For serialization
-            ChangeSet() : SharedObjectChangeSet() {}
+            ChangeSet() :
+                SharedObjectChangeSet()
+            {}
             explicit ChangeSet(const std::string& name) :
                 SharedObjectChangeSet(name),
                 size(0),
@@ -438,7 +449,11 @@ public:
     /**
        Default constructor for SharedArray.
     */
-    SharedArray() : SharedObject(), published(false), data(nullptr) {}
+    SharedArray() :
+        SharedObject(),
+        published(false),
+        data(nullptr)
+    {}
 
     /**
        Shared Array Destructor
@@ -490,15 +505,16 @@ public:
         }
 
         if ( v_type == VERIFY_UNINITIALIZED ) {
-            Private::getSimulationOutput().fatal(
-                CALL_INFO, 1,
+            Private::getSimulationOutput().fatal(CALL_INFO, 1,
                 "ERROR: VERIFY_UNINITIALIZED passed into instance of SharedArray %s.  "
                 "This is a reserved value and cannot be passed in here. \n",
                 obj_name.c_str());
         }
         data    = manager.getSharedObjectData<Data>(obj_name);
         int ret = incShareCount(data);
-        if ( length != 0 ) { data->setSize(length, init_value, v_type); }
+        if ( length != 0 ) {
+            data->setSize(length, init_value, v_type);
+        }
 
         return ret;
     }
@@ -653,13 +669,19 @@ private:
         bool              init;
         verify_type       verify;
 
-        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {} // For serialization ONLY
+        Data() :
+            SharedObjectData(),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
+        {} // For serialization ONLY
         explicit Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
             verify(VERIFY_UNINITIALIZED)
         {
-            if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getNumRanks().rank > 1 ) {
+                change_set = new ChangeSet(name);
+            }
         }
 
         ~Data()
@@ -683,7 +705,9 @@ private:
             if ( size > array.size() ) {
                 // Need to resize the vector
                 array.resize(size, init_data);
-                if ( v_type == FE_VERIFY ) { written.resize(size); }
+                if ( v_type == FE_VERIFY ) {
+                    written.resize(size);
+                }
                 if ( change_set ) change_set->setSize(size, init_data, v_type);
             }
             // init and verify must match across all intances.  We can
@@ -691,9 +715,8 @@ private:
             // VERIFY_UNINITIALIZED.
             if ( verify != VERIFY_UNINITIALIZED ) {
                 if ( init != init_data ) {
-                    Private::getSimulationOutput().fatal(
-                        CALL_INFO, 1, "ERROR: Two different init_data values passed into SharedArray %s\n",
-                        name.c_str());
+                    Private::getSimulationOutput().fatal(CALL_INFO, 1,
+                        "ERROR: Two different init_data values passed into SharedArray %s\n", name.c_str());
                 }
 
                 if ( verify != v_type ) {
@@ -728,9 +751,8 @@ private:
                 break;
             }
             if ( check && (array[index] != data) ) {
-                Private::getSimulationOutput().fatal(
-                    CALL_INFO, 1, "ERROR: wrote two different values to index %d of SharedArray %s\n", index,
-                    name.c_str());
+                Private::getSimulationOutput().fatal(CALL_INFO, 1,
+                    "ERROR: wrote two different values to index %d of SharedArray %s\n", index, name.c_str());
             }
             array[index] = data;
             if ( verify == FE_VERIFY ) written[index] = true;
@@ -794,7 +816,9 @@ private:
 
         public:
             // For serialization
-            ChangeSet() : SharedObjectChangeSet() {}
+            ChangeSet() :
+                SharedObjectChangeSet()
+            {}
             explicit ChangeSet(const std::string& name) :
                 SharedObjectChangeSet(name),
                 size(0),

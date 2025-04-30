@@ -33,7 +33,9 @@ SimulatorHeartbeat::SimulatorHeartbeat(
 
     sim->insertActivity(next, this);
 
-    if ( (0 == this_rank) ) { lastTime = sst_get_cpu_time(); }
+    if ( (0 == this_rank) ) {
+        lastTime = sst_get_cpu_time();
+    }
 }
 
 void
@@ -44,7 +46,9 @@ SimulatorHeartbeat::schedule()
         (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
     sim->insertActivity(next, this);
 
-    if ( (0 == rank) ) { lastTime = sst_get_cpu_time(); }
+    if ( (0 == rank) ) {
+        lastTime = sst_get_cpu_time();
+    }
 }
 
 void

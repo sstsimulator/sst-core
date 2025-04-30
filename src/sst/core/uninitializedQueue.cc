@@ -19,7 +19,10 @@
 
 namespace SST {
 
-UninitializedQueue::UninitializedQueue(const std::string& message) : ActivityQueue(), message(message) {}
+UninitializedQueue::UninitializedQueue(const std::string& message) :
+    ActivityQueue(),
+    message(message)
+{}
 
 bool
 UninitializedQueue::empty()

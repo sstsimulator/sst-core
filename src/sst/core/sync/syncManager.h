@@ -42,13 +42,17 @@ class SyncProfileTool;
 class RankSync
 {
 public:
-    explicit RankSync(RankInfo num_ranks) : num_ranks_(num_ranks) { link_maps.resize(num_ranks_.rank); }
+    explicit RankSync(RankInfo num_ranks) :
+        num_ranks_(num_ranks)
+    {
+        link_maps.resize(num_ranks_.rank);
+    }
     RankSync() {}
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) = 0;
+    virtual ActivityQueue* registerLink(
+        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) = 0;
     void exchangeLinkInfo(uint32_t my_rank);
 
     virtual void execute(int thread)                                              = 0;
@@ -133,15 +137,14 @@ protected:
 class SyncManager : public Action
 {
 public:
-    SyncManager(
-        const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
+    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
         const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time);
     SyncManager(); // For serialization only
     virtual ~SyncManager() = default;
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
+    ActivityQueue* registerLink(
+        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
     void exchangeLinkInfo();
     void execute() override;
 

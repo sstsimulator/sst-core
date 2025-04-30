@@ -23,7 +23,8 @@ using namespace SST;
 using namespace SST::RNG;
 using namespace SST::CoreTestRNGComponent;
 
-coreTestRNGComponent::coreTestRNGComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestRNGComponent::coreTestRNGComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     rng_count     = 0;
     rng_max_count = params.find<int64_t>("count", 1000);
@@ -77,12 +78,14 @@ coreTestRNGComponent::~coreTestRNGComponent()
     delete output;
 }
 
-coreTestRNGComponent::coreTestRNGComponent() : Component(-1)
+coreTestRNGComponent::coreTestRNGComponent() :
+    Component(-1)
 {
     // for serialization only
 }
 
-bool coreTestRNGComponent::tick(Cycle_t)
+bool
+coreTestRNGComponent::tick(Cycle_t)
 {
     double   nU  = rng->nextUniform();
     uint32_t U32 = rng->generateNextUInt32();
@@ -91,8 +94,7 @@ bool coreTestRNGComponent::tick(Cycle_t)
     int64_t  I64 = rng->generateNextInt64();
     rng_count++;
 
-    output->verbose(
-        CALL_INFO, 1, 0,
+    output->verbose(CALL_INFO, 1, 0,
         "Random: %" PRIu32 " of %" PRIu32 " %18.15f %" PRIu32 ", %" PRIu64 ", %" PRId32 ", %" PRId64 "\n", rng_count,
         rng_max_count, nU, U32, U64, I32, I64);
 

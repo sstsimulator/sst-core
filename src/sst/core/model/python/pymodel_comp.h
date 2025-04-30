@@ -37,7 +37,10 @@ struct ComponentHolder
     ComponentPy_t*     pobj;
     SST::ComponentId_t id;
 
-    ComponentHolder(ComponentPy_t* pobj, SST::ComponentId_t id) : pobj(pobj), id(id) {}
+    ComponentHolder(ComponentPy_t* pobj, SST::ComponentId_t id) :
+        pobj(pobj),
+        id(id)
+    {}
     virtual ~ComponentHolder() {}
     virtual SST::ConfigComponent* getComp();
     virtual int                   compare(ComponentHolder* other);
@@ -45,7 +48,7 @@ struct ComponentHolder
     SST::ComponentId_t            getID();
     SST::ConfigComponent*         getSubComp(const std::string& name, int slot_num);
 
-    ComponentHolder(const ComponentHolder&) = delete;
+    ComponentHolder(const ComponentHolder&)            = delete;
     ComponentHolder& operator=(const ComponentHolder&) = delete;
 };
 
@@ -53,13 +56,18 @@ struct PyComponent : ComponentHolder
 {
     uint16_t subCompId;
 
-    PyComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id), subCompId(0) {}
+    PyComponent(ComponentPy_t* pobj, SST::ComponentId_t id) :
+        ComponentHolder(pobj, id),
+        subCompId(0)
+    {}
     ~PyComponent() override = default;
 };
 
 struct PySubComponent : ComponentHolder
 {
-    PySubComponent(ComponentPy_t* pobj, SST::ComponentId_t id) : ComponentHolder(pobj, id) {}
+    PySubComponent(ComponentPy_t* pobj, SST::ComponentId_t id) :
+        ComponentHolder(pobj, id)
+    {}
     ~PySubComponent() override = default;
     int getSlot();
 };
@@ -76,7 +84,9 @@ static inline SST::ConfigComponent*
 getComp(PyObject* pobj)
 {
     SST::ConfigComponent* c = ((ComponentPy_t*)pobj)->obj->getComp();
-    if ( c == nullptr ) { PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent"); }
+    if ( c == nullptr ) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
+    }
     return c;
 }
 

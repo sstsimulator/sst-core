@@ -139,8 +139,8 @@ public:
      * @param timebase Base Units of cycles
      */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addSendLatency(SimTime_t cycles, "
-                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
-         addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]]
+    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
     void addSendLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set additional Latency to be added on to events coming in on this link.
@@ -154,8 +154,8 @@ public:
      * @param timebase Base Units of cycles
      */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addRecvLatency(SimTime_t cycles, "
-                 "TimeConverter timebase)' (i.e., no pointer) instead.")]] void
-         addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
+                 "TimeConverter timebase)' (i.e., no pointer) instead.")]]
+    void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
     void addRecvLatency(SimTime_t cycles, TimeConverter timebase);
 
     /** Set the callback function to be called when a message is
@@ -186,8 +186,8 @@ public:
      */
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, const TimeConverter& tc, "
-        "Event* event)' instead.")]] inline void
-    send(SimTime_t delay, TimeConverter* tc, Event* event)
+        "Event* event)' instead.")]]
+    inline void send(SimTime_t delay, TimeConverter* tc, Event* event)
     {
         send(delay, *tc, event);
     }
@@ -230,8 +230,8 @@ public:
      * @param tc TimeConverter object for the timebase
      */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)', "
-                 "(i.e., no pointer) instead.")]] void
-    setDefaultTimeBase(TimeConverter* tc);
+                 "(i.e., no pointer) instead.")]]
+    void setDefaultTimeBase(TimeConverter* tc);
 
     /** Manually set the default defaultTimeBase
      * @param tc TimeConverter object for the timebase
@@ -376,8 +376,8 @@ private:
     void finalizeConfiguration();
     void prepareForComplete();
 
-    std::string
-    createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankInfo remote_rank, uintptr_t remote_ptr);
+    std::string createUniqueGlobalLinkName(
+        RankInfo local_rank, uintptr_t local_ptr, RankInfo remote_rank, uintptr_t remote_ptr);
 
 
     void attachTool(AttachPoint* tool, const AttachPointMetaData& mdata);
@@ -407,7 +407,8 @@ private:
 class SelfLink : public Link
 {
 public:
-    SelfLink() : Link()
+    SelfLink() :
+        Link()
     {
         pair_link = this;
         latency   = 0;

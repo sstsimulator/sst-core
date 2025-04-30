@@ -59,7 +59,9 @@ TimeConverter*
 TimeLord::getTimeConverter(const UnitAlgebra& ts)
 {
     Output& abort = Output::getDefaultObject();
-    if ( !initialized ) { abort.fatal(CALL_INFO, 1, "Time Lord has not yet been initialized!"); }
+    if ( !initialized ) {
+        abort.fatal(CALL_INFO, 1, "Time Lord has not yet been initialized!");
+    }
     SimTime_t   simCycles;
     UnitAlgebra period = ts;
     UnitAlgebra uaFactor;
@@ -74,10 +76,9 @@ TimeLord::getTimeConverter(const UnitAlgebra& ts)
         uaFactor         = temp.invert() / period;
     }
     else {
-        throw std::invalid_argument(
-            "Error:  TimeConverter creation requires "
-            "a time unit (s or Hz), " +
-            ts.toStringBestSI() + " was passed to call");
+        throw std::invalid_argument("Error:  TimeConverter creation requires "
+                                    "a time unit (s or Hz), " +
+                                    ts.toStringBestSI() + " was passed to call");
         // abort.fatal(
         //     CALL_INFO, 1,
         //     "Error:  TimeConverter creation requires "
@@ -86,11 +87,10 @@ TimeLord::getTimeConverter(const UnitAlgebra& ts)
     }
     // Check to see if number is too big or too small
     if ( uaFactor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
-        throw std::overflow_error(
-            "Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
-            ") "
-            "which is too large for the timebase (" +
-            timeBase.toStringBestSI() + ")");
+        throw std::overflow_error("Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
+                                  ") "
+                                  "which is too large for the timebase (" +
+                                  timeBase.toStringBestSI() + ")");
         // abort.fatal(
         //     CALL_INFO, 1,
         //     "Error:  Attempting to get TimeConverter for a time (%s) "
@@ -99,11 +99,10 @@ TimeLord::getTimeConverter(const UnitAlgebra& ts)
     }
     // Check to see if period is too short (0 is special cased to not fail)
     if ( uaFactor.getValue() < 1 && uaFactor.getValue() != 0 ) {
-        throw std::underflow_error(
-            "Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
-            ") "
-            "which has too small of a period to be represented by the timebase (" +
-            timeBase.toStringBestSI() + ")");
+        throw std::underflow_error("Error:  Attempting to get TimeConverter for a time (" + ts.toStringBestSI() +
+                                   ") "
+                                   "which has too small of a period to be represented by the timebase (" +
+                                   timeBase.toStringBestSI() + ")");
         // abort.fatal(
         //     CALL_INFO, 1,
         //     "Error:  Attempting to get TimeConverter for a time (%s) "
@@ -216,7 +215,12 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-    explicit ObjectMapFundamental(TimeConverter** addr) : ObjectMap(), addr_(addr) { setReadOnly(true); }
+    explicit ObjectMapFundamental(TimeConverter** addr) :
+        ObjectMap(),
+        addr_(addr)
+    {
+        setReadOnly(true);
+    }
 
     std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
 };
@@ -252,7 +256,12 @@ public:
      */
     void* getAddr() override { return addr_; }
 
-    explicit ObjectMapFundamental(TimeConverter* addr) : ObjectMap(), addr_(addr) { setReadOnly(true); }
+    explicit ObjectMapFundamental(TimeConverter* addr) :
+        ObjectMap(),
+        addr_(addr)
+    {
+        setReadOnly(true);
+    }
 
     std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
 };
@@ -269,7 +278,9 @@ serialize_impl<TimeConverter>::operator()(TimeConverter& s, serializer& ser, ser
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter>(&s);
-        if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+        if ( options & SerOption::map_read_only ) {
+            ser.mapper().setNextObjectReadOnly();
+        }
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }
@@ -310,7 +321,9 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, s
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
-        if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+        if ( options & SerOption::map_read_only ) {
+            ser.mapper().setNextObjectReadOnly();
+        }
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }

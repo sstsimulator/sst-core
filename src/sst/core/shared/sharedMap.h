@@ -35,7 +35,11 @@ class SharedMap : public SharedObject
     class Data;
 
 public:
-    SharedMap() : SharedObject(), published(false), data(nullptr) {}
+    SharedMap() :
+        SharedObject(),
+        published(false),
+        data(nullptr)
+    {}
 
     ~SharedMap()
     {
@@ -247,6 +251,7 @@ public:
         };
     }
     ImplementSerializable(SST::Shared::SharedMap<keyT, valT>)
+
 private:
     bool  published;
     Data* data;
@@ -262,13 +267,19 @@ private:
         ChangeSet*           change_set;
         verify_type          verify;
 
-        Data() : SharedObjectData(), change_set(nullptr), verify(VERIFY_UNINITIALIZED) {}
+        Data() :
+            SharedObjectData(),
+            change_set(nullptr),
+            verify(VERIFY_UNINITIALIZED)
+        {}
         explicit Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
             verify(VERIFY_UNINITIALIZED)
         {
-            if ( Private::getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
+            if ( Private::getNumRanks().rank > 1 ) {
+                change_set = new ChangeSet(name);
+            }
         }
 
         ~Data()
@@ -356,8 +367,14 @@ private:
 
         public:
             // For serialization
-            ChangeSet() : SharedObjectChangeSet(), verify(VERIFY_UNINITIALIZED) {}
-            explicit ChangeSet(const std::string& name) : SharedObjectChangeSet(name), verify(VERIFY_UNINITIALIZED) {}
+            ChangeSet() :
+                SharedObjectChangeSet(),
+                verify(VERIFY_UNINITIALIZED)
+            {}
+            explicit ChangeSet(const std::string& name) :
+                SharedObjectChangeSet(name),
+                verify(VERIFY_UNINITIALIZED)
+            {}
 
             void addChange(const keyT& key, const valT& value) { changes[key] = value; }
 

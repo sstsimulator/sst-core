@@ -30,7 +30,9 @@ class StatisticProcessingEngine;
 class StatisticGroup
 {
 public:
-    StatisticGroup() : isDefault(true), name("default") {};
+    StatisticGroup() :
+        isDefault(true),
+        name("default") {};
     StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine);
 
     bool containsStatistic(const StatisticBase* stat) const;

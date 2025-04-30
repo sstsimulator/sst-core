@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <assert.h>
+// #include <assert.h>
 
 #include "sst_config.h"
 
@@ -38,7 +38,8 @@ coreTestDistribComponent::finish()
     }
 }
 
-coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     // tell the simulator not to end without us
     registerAsPrimaryComponent();
@@ -49,7 +50,9 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
 
     bins = new std::map<int64_t, uint64_t>();
 
-    if ( "1" == params.find<std::string>("binresults", "1") ) { bin_results = true; }
+    if ( "1" == params.find<std::string>("binresults", "1") ) {
+        bin_results = true;
+    }
     else {
         bin_results = false;
     }
@@ -78,7 +81,9 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
 
         printf("Will create discrete distribution with %" PRIu32 " probabilities.\n", prob_count);
 
-        if ( 1 == prob_count ) { probs[0] = 1.0; }
+        if ( 1 == prob_count ) {
+            probs[0] = 1.0;
+        }
         else {
             std::string prob_name;
 
@@ -106,7 +111,8 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
     registerClock("1GHz", new Clock::Handler2<coreTestDistribComponent, &coreTestDistribComponent::tick>(this));
 }
 
-coreTestDistribComponent::coreTestDistribComponent() : Component(-1)
+coreTestDistribComponent::coreTestDistribComponent() :
+    Component(-1)
 {
     // for serialization only
 }
@@ -117,7 +123,9 @@ coreTestDistribComponent::tick(Cycle_t UNUSED(cyc))
     double  next_result     = comp_distrib->getNextDouble();
     int64_t int_next_result = 0;
 
-    if ( "discrete" == dist_type ) { int_next_result = (int64_t)(next_result * 100.0); }
+    if ( "discrete" == dist_type ) {
+        int_next_result = (int64_t)(next_result * 100.0);
+    }
 
     if ( bins->find(int_next_result) == bins->end() ) {
         bins->insert(std::pair<int64_t, uint64_t>(int_next_result, 1));

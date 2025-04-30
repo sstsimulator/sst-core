@@ -63,7 +63,9 @@ public:
      * @param bufferSize How large each buffer should be
      * @param expectedChildren Number of child processes that will connect to this tunnel
      */
-    TunnelDef(size_t numBuffers, size_t bufferSize, uint32_t expectedChildren) : master(true), shmPtr(NULL)
+    TunnelDef(size_t numBuffers, size_t bufferSize, uint32_t expectedChildren) :
+        master(true),
+        shmPtr(NULL)
     {
         // Locally buffer info
         numBuffs = numBuffers;
@@ -76,7 +78,9 @@ public:
      * Child creates the TunnelDef, reads the shmSize, and then resizes its map accordingly
      * @param sPtr Location of shared memory region
      */
-    explicit TunnelDef(void* sPtr) : master(false), shmPtr(sPtr)
+    explicit TunnelDef(void* sPtr) :
+        master(false),
+        shmPtr(sPtr)
     {
         isd     = (InternalSharedData*)shmPtr;
         shmSize = isd->shmSegSize;

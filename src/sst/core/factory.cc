@@ -47,7 +47,9 @@ namespace SST {
 
 Factory* Factory::instance = nullptr;
 
-Factory::Factory(const std::string& searchPaths) : searchPaths(searchPaths), out(Output::getDefaultObject())
+Factory::Factory(const std::string& searchPaths) :
+    searchPaths(searchPaths),
+    out(Output::getDefaultObject())
 {
     if ( instance ) out.fatal(CALL_INFO, 1, "Already initialized a factory.\n");
     instance = this;
@@ -100,7 +102,9 @@ Factory::isPortNameValid(const std::string& type, const std::string& port_name)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
-    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) {
+        findLibrary(elemlib);
+    }
 
     const std::vector<std::string>* portNames = nullptr;
 
@@ -110,13 +114,17 @@ Factory::isPortNameValid(const std::string& type, const std::string& port_name)
     std::stringstream err;
     if ( lib ) {
         auto* compInfo = lib->getInfo(elem);
-        if ( compInfo ) { portNames = &compInfo->getPortnames(); }
+        if ( compInfo ) {
+            portNames = &compInfo->getPortnames();
+        }
     }
     if ( nullptr == portNames ) {
         auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
         if ( lib ) {
             auto* subcompInfo = lib->getInfo(elem);
-            if ( subcompInfo ) { portNames = &subcompInfo->getPortnames(); }
+            if ( subcompInfo ) {
+                portNames = &subcompInfo->getPortnames();
+            }
             else {
                 // this is going to fail
                 err << "Valid SubComponents: ";
@@ -155,7 +163,9 @@ Factory::getParamNames(const std::string& type)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
-    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) {
+        findLibrary(elemlib);
+    }
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
@@ -269,7 +279,9 @@ const std::vector<std::string>&
 Factory::GetValidStatistics(const std::string& compType)
 {
     std::string compTypeToLoad = compType;
-    if ( compType.empty() ) { compTypeToLoad = loadingComponentType; }
+    if ( compType.empty() ) {
+        compTypeToLoad = loadingComponentType;
+    }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
@@ -285,18 +297,21 @@ Factory::GetValidStatistics(const std::string& compType)
     auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
     if ( sublib ) {
         auto* info = sublib->getInfo(elem);
-        if ( info ) { return info->getStatnames(); }
+        if ( info ) {
+            return info->getStatnames();
+        }
     }
 
     auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     if ( complib ) {
         auto* info = complib->getInfo(elem);
-        if ( info ) { return info->getStatnames(); }
+        if ( info ) {
+            return info->getStatnames();
+        }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(
-        CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
+    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
         error_os.str().c_str());
     static std::vector<std::string> null_return;
     return null_return; // to avoid compiler warnings
@@ -307,7 +322,9 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const 
 {
     auto& my_list = GetValidStatistics(compType);
     for ( auto& item : my_list ) {
-        if ( statisticName == item ) { return true; }
+        if ( statisticName == item ) {
+            return true;
+        }
     }
     return false;
 }
@@ -316,7 +333,9 @@ uint8_t
 Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if ( true == type.empty() ) { compTypeToLoad = loadingComponentType; }
+    if ( true == type.empty() ) {
+        compTypeToLoad = loadingComponentType;
+    }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
@@ -334,7 +353,9 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
         auto* info = compLib->getInfo(elem);
         if ( info ) {
             for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) { return item.enableLevel; }
+                if ( statisticName == item.name ) {
+                    return item.enableLevel;
+                }
             }
         }
         return 0;
@@ -345,7 +366,9 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
         auto* info = subLib->getInfo(elem);
         if ( info ) {
             for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) { return item.enableLevel; }
+                if ( statisticName == item.name ) {
+                    return item.enableLevel;
+                }
             }
         }
         return 0;
@@ -360,21 +383,27 @@ std::string
 Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if ( true == type.empty() ) { compTypeToLoad = loadingComponentType; }
+    if ( true == type.empty() ) {
+        compTypeToLoad = loadingComponentType;
+    }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     std::stringstream error_os;
-    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib, error_os); }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) {
+        findLibrary(elemlib, error_os);
+    }
 
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     if ( compLib ) {
         auto* info = compLib->getInfo(elem);
         if ( info ) {
             for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) { return item.units; }
+                if ( statisticName == item.name ) {
+                    return item.units;
+                }
             }
         }
         return nullptr;
@@ -391,7 +420,9 @@ Factory::isProfilePointValid(const std::string& type, const std::string& point)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
-    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) {
+        findLibrary(elemlib);
+    }
 
     const std::vector<ElementInfoProfilePoint>* pointNames = nullptr;
 
@@ -401,22 +432,25 @@ Factory::isProfilePointValid(const std::string& type, const std::string& point)
     std::stringstream err;
     if ( lib ) {
         auto* compInfo = lib->getInfo(elem);
-        if ( compInfo ) { pointNames = &compInfo->getProfilePoints(); }
+        if ( compInfo ) {
+            pointNames = &compInfo->getProfilePoints();
+        }
     }
     if ( nullptr == pointNames ) {
         auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
         if ( lib ) {
             auto* subcompInfo = lib->getInfo(elem);
-            if ( subcompInfo ) { pointNames = &subcompInfo->getProfilePoints(); }
+            if ( subcompInfo ) {
+                pointNames = &subcompInfo->getProfilePoints();
+            }
         }
     }
 
     std::string tmp = elemlib + "." + elem;
 
     if ( pointNames == nullptr ) {
-        out.fatal(
-            CALL_INFO, 1, "can't find requested component or subcomponent '%s' when searching for profile point\n ",
-            tmp.c_str());
+        out.fatal(CALL_INFO, 1,
+            "can't find requested component or subcomponent '%s' when searching for profile point\n ", tmp.c_str());
         return false;
     }
 
@@ -479,14 +513,15 @@ Factory::CreatePartitioner(const std::string& name, RankInfo total_ranks, RankIn
             auto* builderLib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
             if ( builderLib ) {
                 auto* fact = builderLib->getBuilder(elem);
-                if ( fact ) { return fact->create(total_ranks, my_rank, verbosity); }
+                if ( fact ) {
+                    return fact->create(total_ranks, my_rank, verbosity);
+                }
             }
         }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(
-        CALL_INFO, 1,
+    out.fatal(CALL_INFO, 1,
         "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n%s\n",
         name.c_str(), error_os.str().c_str());
     return nullptr;
@@ -584,9 +619,8 @@ Factory::parseLoadName(const std::string& wholename)
     std::size_t found = wholename.find_first_of(".");
     if ( found == std::string::npos ) {
         if ( wholename.empty() ) {
-            out.output(
-                CALL_INFO, "Warning: got empty element library. "
-                           "You might have a missing parameter that causes a default empty string.");
+            out.output(CALL_INFO, "Warning: got empty element library. "
+                                  "You might have a missing parameter that causes a default empty string.");
         }
         return make_pair(wholename, wholename);
     }
@@ -600,8 +634,7 @@ Factory::parseLoadName(const std::string& wholename)
 void
 Factory::notFound(const std::string& baseName, const std::string& type, const std::string& error_msg)
 {
-    out.fatal(
-        CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n%s\n", baseName.c_str(),
+    out.fatal(CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n%s\n", baseName.c_str(),
         type.c_str(), error_msg.c_str());
 }
 
@@ -610,7 +643,9 @@ Factory::loadLibrary(const std::string& name, std::ostream& err_os)
 {
     loader->loadLibrary(name, err_os);
 
-    if ( !ELI::LoadedLibraries::isLoaded(name) ) { return false; }
+    if ( !ELI::LoadedLibraries::isLoaded(name) ) {
+        return false;
+    }
 
     // The library was loaded, put it in loadedlibraries
     loaded_libraries.insert(name);

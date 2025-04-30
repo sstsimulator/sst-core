@@ -32,8 +32,7 @@ Event::execute()
 Event*
 Event::clone()
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-        CALL_INFO, 1,
+    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
         "Called clone() on an Event that doesn't"
         " implement it.");
     return nullptr; // Never reached, but gets rid of compiler warning

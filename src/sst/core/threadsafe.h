@@ -26,7 +26,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-//#include <stdalign.h>
+// #include <stdalign.h>
 
 #include "sst/core/profile.h"
 
@@ -49,10 +49,20 @@ class CACHE_ALIGNED_T Barrier
     std::atomic<size_t> count, generation;
 
 public:
-    Barrier(size_t count) : origCount(count), enabled(true), count(count), generation(0) {}
+    Barrier(size_t count) :
+        origCount(count),
+        enabled(true),
+        count(count),
+        generation(0)
+    {}
 
     // Come g++ 4.7, this can become a delegating constructor
-    Barrier() : origCount(0), enabled(false), count(0), generation(0) {}
+    Barrier() :
+        origCount(0),
+        enabled(false),
+        count(0),
+        generation(0)
+    {}
 
     /** ONLY call this while nobody is in wait() */
     void resize(size_t newCount)
@@ -88,7 +98,9 @@ public:
                 uint32_t count = 0;
                 do {
                     count++;
-                    if ( count < 1024 ) { sst_pause(); }
+                    if ( count < 1024 ) {
+                        sst_pause();
+                    }
                     else if ( count < (1024 * 1024) ) {
                         std::this_thread::yield();
                     }
@@ -164,9 +176,15 @@ class BoundedQueue
 
 public:
     // BoundedQueue(size_t maxSize) : dsize(maxSize)
-    explicit BoundedQueue(size_t maxSize) : initialized(false) { initialize(maxSize); }
+    explicit BoundedQueue(size_t maxSize) :
+        initialized(false)
+    {
+        initialize(maxSize);
+    }
 
-    BoundedQueue() : initialized(false) {}
+    BoundedQueue() :
+        initialized(false)
+    {}
 
     void initialize(size_t maxSize)
     {
@@ -241,7 +259,9 @@ public:
     {
         while ( 1 ) {
             T res;
-            if ( try_remove(res) ) { return res; }
+            if ( try_remove(res) ) {
+                return res;
+            }
             sst_pause();
         }
     }
@@ -255,7 +275,9 @@ class UnboundedQueue
         std::atomic<Node*> next;
         T                  data;
 
-        Node() : next(nullptr) {}
+        Node() :
+            next(nullptr)
+        {}
     };
 
     CACHE_ALIGNED(Node*, first);
@@ -306,7 +328,9 @@ public:
     {
         while ( 1 ) {
             T res;
-            if ( try_remove(res) ) { return res; }
+            if ( try_remove(res) ) {
+                return res;
+            }
             sst_pause();
         }
     }

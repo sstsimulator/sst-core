@@ -48,7 +48,9 @@ ObjectMap::selectParent()
 {
     if ( nullptr == mdata_ ) return nullptr;
     ObjectMap* ret = mdata_->parent;
-    if ( nullptr == ret ) { return nullptr; }
+    if ( nullptr == ret ) {
+        return nullptr;
+    }
     deactivate();
     return ret;
 }

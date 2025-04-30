@@ -82,8 +82,8 @@ Exit::refDec(ComponentId_t id, uint32_t thread)
 {
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find(id) == m_idSet.end() ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().verbose(
-            CALL_INFO, 1, 1, "component (%s) multiple decrement\n",
+        Simulation_impl::getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "component (%s) multiple decrement\n",
             Simulation_impl::getSimulation()->getComponent(id)->getName().c_str());
         return true;
     }
@@ -144,7 +144,9 @@ Exit::computeEndTime()
         end_time = end_value;
     }
 #endif
-    if ( single_rank ) { endSimulation(end_time); }
+    if ( single_rank ) {
+        endSimulation(end_time);
+    }
     return end_time;
 }
 
@@ -155,7 +157,9 @@ Exit::check()
     int out;
 
 #ifdef SST_CONFIG_HAVE_MPI
-    if ( !single_rank ) { MPI_Allreduce(&value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD); }
+    if ( !single_rank ) {
+        MPI_Allreduce(&value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    }
     else {
         out = value;
     }
@@ -164,7 +168,9 @@ Exit::check()
 #endif
     global_count = out;
     // If out is 0, then it's time to end
-    if ( !out ) { computeEndTime(); }
+    if ( !out ) {
+        computeEndTime();
+    }
     // else {
     //     // Reinsert into TimeVortex.  We do this even when ending so that
     //     // it will get deleted with the TimeVortex on termination.  We do

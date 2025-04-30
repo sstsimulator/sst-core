@@ -28,10 +28,13 @@
 using namespace SST;
 using namespace SST::CoreTestCheckpoint;
 
-coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Component(id)
+coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
+    Component(id)
 {
     bool starter = params.find<bool>("starter", true);
-    if ( starter ) { counter = params.find<uint32_t>("counter", 1000); }
+    if ( starter ) {
+        counter = params.find<uint32_t>("counter", 1000);
+    }
     else {
         counter = 0;
     }
@@ -66,8 +69,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
         "clock_restart", clock_tc, new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::restartClock>(this));
 
     // Output
-    output = new Output(
-        params.find<std::string>("output_prefix", ""), params.find<uint32_t>("output_verbose", 0), 0,
+    output = new Output(params.find<std::string>("output_prefix", ""), params.find<uint32_t>("output_verbose", 0), 0,
         Output::output_location_t::STDOUT);
     output_frequency = params.find<int>("output_frequency", 1);
     if ( output_frequency < 1 ) output_frequency = 1;
@@ -92,9 +94,8 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) : Compo
     dist_expon = new RNG::ExponentialDistribution(
         params.find<double>("dist_exp_lambda", 1.0), new RNG::MersenneRNG(rng_seed + 3));
 
-    dist_gauss = new RNG::GaussianDistribution(
-        params.find<double>("dist_gauss_mean", 1.0), params.find<double>("dist_gauss_stddev", 0.2),
-        new RNG::MersenneRNG(rng_seed + 4));
+    dist_gauss = new RNG::GaussianDistribution(params.find<double>("dist_gauss_mean", 1.0),
+        params.find<double>("dist_gauss_stddev", 0.2), new RNG::MersenneRNG(rng_seed + 4));
 
     dist_poisson = new RNG::PoissonDistribution(
         params.find<double>("dist_poisson_lambda", 1.0), new RNG::MersenneRNG(rng_seed + 5));
@@ -144,8 +145,7 @@ coreTestCheckpoint::complete(unsigned UNUSED(phase))
 void
 coreTestCheckpoint::finish()
 {
-    output->output(
-        "%s finished. teststring=%s, output=('%s',%" PRIu32 ")\n", getName().c_str(), test_string.c_str(),
+    output->output("%s finished. teststring=%s, output=('%s',%" PRIu32 ")\n", getName().c_str(), test_string.c_str(),
         output->getPrefix().c_str(), output->getVerboseLevel());
 }
 
@@ -183,12 +183,10 @@ coreTestCheckpoint::handleClock(Cycle_t cycle)
     if ( (cycle % output_frequency) == 0 ) {
         output->verbose(CALL_INFO, 2, 0, "Clock cycle count = %" PRIu64 "\n", cycle);
 
-        output->verbose(
-            CALL_INFO, 1, 0, "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia_next, mersenne_next,
+        output->verbose(CALL_INFO, 1, 0, "RNG: %" PRIu32 ", %" PRIu32 ", %" PRIu32 "\n", marsaglia_next, mersenne_next,
             xorshift_next);
-        output->verbose(
-            CALL_INFO, 1, 0, "Distributions: %f, %f, %f, %f, %f, %f\n", const_next, discrete_next, expon_next,
-            gauss_next, poisson_next, uniform_next);
+        output->verbose(CALL_INFO, 1, 0, "Distributions: %f, %f, %f, %f, %f, %f\n", const_next, discrete_next,
+            expon_next, gauss_next, poisson_next, uniform_next);
     }
 
     stat_dist->addData(gauss_next);

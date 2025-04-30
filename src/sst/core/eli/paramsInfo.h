@@ -64,7 +64,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesParams(T* UNUSED(t)) : params_(GetParams<T>::get())
+    explicit ProvidesParams(T* UNUSED(t)) :
+        params_(GetParams<T>::get())
     {
         init();
     }
@@ -90,9 +91,6 @@ private:
     }
 // clang-format on
 
-#define SST_ELI_DELETE_PARAM(param) \
-    {                               \
-        param, nullptr, nullptr     \
-    }
+#define SST_ELI_DELETE_PARAM(param) { param, nullptr, nullptr }
 
 #endif // SST_CORE_ELI_PARAMS_INFO_H

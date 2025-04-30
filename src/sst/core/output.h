@@ -19,7 +19,7 @@
 
 // UNCOMMENT OUT THIS LINE TO ENABLE THE DEBUG METHOD -OR_
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
-//#define __SST_DEBUG_OUTPUT__
+// #define __SST_DEBUG_OUTPUT__
 
 // This must be defined before inclusion of intttypes.h
 #ifndef __STDC_FORMAT_MACROS
@@ -111,8 +111,7 @@ public:
                intended for special case debug purposes only.
     */
     // CONSTRUCTION / DESTRUCTION
-    Output(
-        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+    Output(const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
         const std::string& localoutputfilename = "");
 
     /** Default Constructor.  User must call init() to properly initialize obj.
@@ -122,7 +121,7 @@ public:
 
     ~Output();
 
-    Output(const Output&) = default;
+    Output(const Output&)            = default;
     Output& operator=(const Output&) = default;
 
     /** Initialize the object after construction
@@ -172,8 +171,7 @@ public:
                intended for special case debug purposes only.
     */
     // INITIALIZATION
-    void init(
-        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+    void init(const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
         const std::string& localoutputfilename = "");
 
     /** Output the message with formatting as specified by the format parameter.
@@ -227,8 +225,7 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void verbose(
-        uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
+    void verbose(uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
         const char* format, ...) const __attribute__((format(printf, 7, 8)))
     {
         va_list arg;
@@ -262,8 +259,7 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void verbosePrefix(
-        const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
+    void verbosePrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
         uint32_t output_bits, const char* format, ...) __attribute__((format(printf, 8, 9)))
     {
 
@@ -303,8 +299,7 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debugPrefix(
-        const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
+    void debugPrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
         uint32_t output_bits, const char* format, ...) __attribute__((format(printf, 8, 9)))
     {
 
@@ -357,8 +352,7 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debug(
-        uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
+    void debug(uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
         const char* format, ...) const __attribute__((format(printf, 7, 8)))
     {
 #ifdef __SST_DEBUG_OUTPUT__
@@ -397,8 +391,8 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    [[noreturn]] void
-    fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+    [[noreturn]]
+    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
     // GET / SET METHODS
@@ -496,9 +490,8 @@ private:
     uint32_t    getThreadRank() const;
     std::string buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const;
 
-    void
-    outputprintf(uint32_t line, const std::string& file, const std::string& func, const char* format, va_list arg) const
-        __attribute__((format(printf, 5, 0)));
+    void outputprintf(uint32_t line, const std::string& file, const std::string& func, const char* format,
+        va_list arg) const __attribute__((format(printf, 5, 0)));
 
     void outputprintf(const char* format, va_list arg) const __attribute__((format(printf, 2, 0)));
 
@@ -521,9 +514,8 @@ private:
     }
 
     friend int ::main(int argc, char** argv);
-    static Output& setDefaultObject(
-        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
-        const std::string& localoutputfilename = "")
+    static Output& setDefaultObject(const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask,
+        output_location_t location, const std::string& localoutputfilename = "")
     {
         m_defaultObject.init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
         return getDefaultObject();

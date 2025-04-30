@@ -79,8 +79,8 @@ public:
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
-    Partition::SSTPartitioner*
-    CreatePartitioner(const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
+    Partition::SSTPartitioner* CreatePartitioner(
+        const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
     /**
        Check to see if a given element type is loadable with a particular API
@@ -104,7 +104,9 @@ public:
                 auto* builderLib = Base::getBuilderLibrary(elemlib);
                 if ( builderLib ) {
                     auto* fact = builderLib->getBuilder(elem);
-                    if ( fact ) { return true; }
+                    if ( fact ) {
+                        return true;
+                    }
                 }
             }
         }
@@ -129,7 +131,9 @@ public:
                 // Need to cast this to a ProvidesSimpleInfo to get
                 // the templated data
                 auto* cast_info = dynamic_cast<ELI::ProvidesSimpleInfo<index, InfoType>*>(info);
-                if ( cast_info ) { return cast_info->getSimpleInfo(); }
+                if ( cast_info ) {
+                    return cast_info->getSimpleInfo();
+                }
             }
         }
         // notFound(Base::ELI_baseName(), type, err_os.str());
@@ -228,9 +232,8 @@ public:
      * @param fieldType - Type of data stored in statistic
      */
     template <class T, class... Args>
-    Statistics::Statistic<T>* CreateStatistic(
-        const std::string& type, BaseComponent* comp, const std::string& statName, const std::string& stat,
-        Params& params, Args... args)
+    Statistics::Statistic<T>* CreateStatistic(const std::string& type, BaseComponent* comp, const std::string& statName,
+        const std::string& stat, Params& params, Args... args)
     {
         std::string elemlib, elem;
         std::tie(elemlib, elem) = parseLoadName(type);
@@ -241,7 +244,9 @@ public:
         auto* lib = ELI::BuilderDatabase::getLibrary<Statistics::Statistic<T>, Args...>(elemlib);
         if ( lib ) {
             auto* fact = lib->getFactory(elem);
-            if ( fact ) { return fact->create(comp, statName, stat, params, std::forward<Args>(args)...); }
+            if ( fact ) {
+                return fact->create(comp, statName, stat, params, std::forward<Args>(args)...);
+            }
         }
         // If we make it to here, component not found
         out.fatal(CALL_INFO, -1, "can't find requested statistic %s.\n%s\n", type.c_str(), sstr.str().c_str());
@@ -312,12 +317,13 @@ public:
 private:
     friend int ::main(int argc, char** argv);
 
-    [[noreturn]] void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
+    [[noreturn]]
+    void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
 
     explicit Factory(const std::string& searchPaths);
     ~Factory();
 
-    Factory(const Factory&) = delete;            // Don't Implement
+    Factory(const Factory&)            = delete; // Don't Implement
     Factory& operator=(const Factory&) = delete; // Don't Implement
 
     static Factory* instance;

@@ -68,9 +68,13 @@ isDirectoryWritable(const std::string& path)
 {
 
     fs::path test_file_path = path;
-    if ( !test_file_path.is_absolute() ) { return false; }
+    if ( !test_file_path.is_absolute() ) {
+        return false;
+    }
 
-    if ( !fs::is_directory(path) ) { return false; }
+    if ( !fs::is_directory(path) ) {
+        return false;
+    }
 
     // Check to see if it's writable by opening a randomly named file
     std::string test_file_name = Filesystem::getRandomName(16) + ".tmp";
@@ -153,7 +157,9 @@ Filesystem::ensureDirectoryExists(std::filesystem::path p, bool strip_filename)
 
     fs::path path = absolute_path;
 
-    if ( fs::is_directory(path) ) { return isDirectoryWritable(absolute_path); }
+    if ( fs::is_directory(path) ) {
+        return isDirectoryWritable(absolute_path);
+    }
 
     return fs::create_directories(path);
 }
@@ -227,7 +233,9 @@ Filesystem::getAbsolutePath(const std::string& path, std::string base_path)
     if ( ap.string().find("~/") == 0 ) {
         // Expand the home directory
         const char* home = getenv("HOME");
-        if ( home ) { ap = fs::path(home) / ap.string().substr(2); }
+        if ( home ) {
+            ap = fs::path(home) / ap.string().substr(2);
+        }
         else {
             throw std::invalid_argument(
                 "path starting with ~/ passed to getAbsolutePath(), but home directory could not be determined");

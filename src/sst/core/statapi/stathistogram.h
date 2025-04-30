@@ -89,7 +89,9 @@ public:
 
     ~HistogramStatistic() {}
 
-    HistogramStatistic() : Statistic<BinDataType>() {} // For serialization ONLY
+    HistogramStatistic() :
+        Statistic<BinDataType>()
+    {} // For serialization ONLY
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 

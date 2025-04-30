@@ -47,7 +47,9 @@ class SharedObjectChangeSet : public SST::Core::Serialization::serializable
 
 public:
     SharedObjectChangeSet() {}
-    explicit SharedObjectChangeSet(const std::string& name) : name(name) {}
+    explicit SharedObjectChangeSet(const std::string& name) :
+        name(name)
+    {}
 
     /**
        Apply the changes to the name shared data.
@@ -223,7 +225,9 @@ class SharedObjectDataManager : public SST::Core::Serialization::serializable
     bool locked;
 
 public:
-    SharedObjectDataManager() : locked(false) {}
+    SharedObjectDataManager() :
+        locked(false)
+    {}
 
     ~SharedObjectDataManager()
     {

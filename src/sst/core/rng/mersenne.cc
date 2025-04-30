@@ -26,7 +26,8 @@ using namespace SST::RNG;
     Generate a new random number generator with a random selection for the
     seed.
 */
-MersenneRNG::MersenneRNG() : Random()
+MersenneRNG::MersenneRNG() :
+    Random()
 {
     numbers = (uint32_t*)malloc(sizeof(uint32_t) * 624);
 
@@ -45,7 +46,8 @@ MersenneRNG::MersenneRNG() : Random()
 /*
     Seed the Mersenne and then make a group of numbers
 */
-MersenneRNG::MersenneRNG(unsigned int startSeed) : Random()
+MersenneRNG::MersenneRNG(unsigned int startSeed) :
+    Random()
 {
     seed(startSeed);
 }
@@ -59,7 +61,9 @@ MersenneRNG::generateNextBatch()
 
         numbers[i] = numbers[(i + 397) % 624] ^ (temp >> 1);
 
-        if ( temp % 2 != 0 ) { numbers[i] = numbers[i] ^ 2567483615UL; }
+        if ( temp % 2 != 0 ) {
+            numbers[i] = numbers[i] ^ 2567483615UL;
+        }
     }
 }
 
@@ -83,7 +87,9 @@ MersenneRNG::nextUniform()
 uint32_t
 MersenneRNG::generateNextUInt32()
 {
-    if ( index == 0 ) { generateNextBatch(); }
+    if ( index == 0 ) {
+        generateNextBatch();
+    }
 
     uint32_t temp = numbers[index];
     temp          = temp ^ (temp >> 11);

@@ -74,7 +74,9 @@ public:
     /** Constant, default value for id_types */
     static const id_type NO_ID;
 
-    Event() : Activity(), delivery_info(0)
+    Event() :
+        Activity(),
+        delivery_info(0)
     {
         setPriority(EVENTPRIORITY);
 #if __SST_DEBUG_EVENT_TRACKING__
@@ -92,8 +94,7 @@ public:
 
     virtual void printTrackingInfo(const std::string& header, Output& out) const override
     {
-        out.output(
-            "%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
+        out.output("%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
             first_comp.c_str(), first_port.c_str(), first_type.c_str(), last_comp.c_str(), last_port.c_str(),
             last_type.c_str());
     }
@@ -221,7 +222,9 @@ private:
 class EmptyEvent : public Event
 {
 public:
-    EmptyEvent() : Event() {}
+    EmptyEvent() :
+        Event()
+    {}
     ~EmptyEvent() {}
 
 private:

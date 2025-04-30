@@ -118,6 +118,6 @@ class serialize_impl<T, std::enable_if_t<std::is_base_of_v<serializable, T>>>
 
 } // namespace SST::Core::Serialization
 
-//#include "sst/core/serialization/serialize_serializable.h"
+// #include "sst/core/serialization/serialize_serializable.h"
 
 #endif

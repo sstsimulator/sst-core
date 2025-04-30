@@ -24,7 +24,8 @@
 
 namespace SST::CoreTestLookupTableComponent {
 
-coreTestLookupTableComponent::coreTestLookupTableComponent(SST::ComponentId_t id, SST::Params& params) : Component(id)
+coreTestLookupTableComponent::coreTestLookupTableComponent(SST::ComponentId_t id, SST::Params& params) :
+    Component(id)
 {
     char buffer[128] = { 0 };
     snprintf(buffer, 128, "LookupTableComponent %3" PRIu64 "  [@t]  ", id);
@@ -80,7 +81,8 @@ void
 coreTestLookupTableComponent::finish()
 {}
 
-bool coreTestLookupTableComponent::tick(SST::Cycle_t)
+bool
+coreTestLookupTableComponent::tick(SST::Cycle_t)
 {
     bool                done    = false;
     static const size_t nPerRow = 8;

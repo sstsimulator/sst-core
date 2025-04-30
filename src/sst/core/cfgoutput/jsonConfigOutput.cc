@@ -27,7 +27,9 @@
 using namespace SST::Core;
 namespace json = ::nlohmann;
 
-JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
+JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
+    ConfigGraphOutput(path)
+{}
 
 namespace {
 struct CompWrapper
@@ -185,7 +187,9 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
 
     j["name"] = grp.name;
 
-    if ( grp.outputFrequency.getValue() != 0 ) { j["frequency"] = grp.outputFrequency.toStringBestSI(); }
+    if ( grp.outputFrequency.getValue() != 0 ) {
+        j["frequency"] = grp.outputFrequency.toStringBestSI();
+    }
 
     if ( grp.outputID != 0 ) {
         const SST::ConfigStatOutput& out = graph->getStatOutput(grp.outputID);
@@ -199,7 +203,9 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
     }
 
     for ( auto& i : grp.statMap ) {
-        if ( !i.second.empty() ) { j["statistics"].emplace_back(StatGroupParamPair { i.first, i.second }); }
+        if ( !i.second.empty() ) {
+            j["statistics"].emplace_back(StatGroupParamPair { i.first, i.second });
+        }
     }
 
     for ( SST::ComponentId_t id : grp.components ) {
@@ -212,7 +218,9 @@ to_json(json::ordered_json& j, StatGroupPair const& pair)
 void
 JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
-    if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
+    if ( nullptr == outputFile ) {
+        throw ConfigGraphOutputException("Output file is not open for writing");
+    }
 
     const auto& compMap = graph->getComponentMap();
     const auto& linkMap = graph->getLinkMap();
@@ -268,14 +276,18 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     }
 
     // no components exist in this rank
-    if ( const_cast<ConfigComponentMap_t&>(compMap).size() == 0 ) { outputJson["components"]; }
+    if ( const_cast<ConfigComponentMap_t&>(compMap).size() == 0 ) {
+        outputJson["components"];
+    }
 
     for ( const auto& compItr : compMap ) {
         outputJson["components"].emplace_back(CompWrapper { compItr, sharedStatMap, cfg->output_partition() });
     }
 
     // no links exist in this rank
-    if ( const_cast<ConfigLinkMap_t&>(linkMap).size() == 0 ) { outputJson["links"]; }
+    if ( const_cast<ConfigLinkMap_t&>(linkMap).size() == 0 ) {
+        outputJson["links"];
+    }
 
     for ( const auto& linkItr : linkMap ) {
         outputJson["links"].push_back(LinkConfPair { linkItr, graph });

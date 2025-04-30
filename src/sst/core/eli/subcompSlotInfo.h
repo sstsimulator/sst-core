@@ -59,7 +59,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesSubComponentSlots(T* UNUSED(t)) : slots_(InfoSubs<T>::get())
+    explicit ProvidesSubComponentSlots(T* UNUSED(t)) :
+        slots_(InfoSubs<T>::get())
     {}
 
 private:
@@ -79,9 +80,6 @@ private:
         return var;                                                                                            \
     }
 // clang-format on
-#define SST_ELI_DELETE_SUBCOMPONENT_SLOT(slot) \
-    {                                          \
-        slot, nullptr, nullptr                 \
-    }
+#define SST_ELI_DELETE_SUBCOMPONENT_SLOT(slot) { slot, nullptr, nullptr }
 
 #endif // SST_CORE_ELI_SUBCOMPSLOTINFO_H

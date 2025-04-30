@@ -113,16 +113,14 @@ class serialize_impl
     {};
 
     template <typename U>
-    struct has_serialize_order<
-        U, std::void_t<decltype(std::declval<U>().serialize_order(std::declval<serializer&>()))>> : std::true_type
+    struct has_serialize_order<U,
+        std::void_t<decltype(std::declval<U>().serialize_order(std::declval<serializer&>()))>> : std::true_type
     {};
 
-    static_assert(
-        std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>>,
+    static_assert(std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>>,
         "Trying to serialize an object that is not serializable.");
 
-    static_assert(
-        has_serialize_order<std::remove_pointer_t<T>>::value,
+    static_assert(has_serialize_order<std::remove_pointer_t<T>>::value,
         "Serializable class does not have serialize_order() method");
 
 public:
@@ -294,7 +292,9 @@ class serialize<T*>
 
             // If we haven't seen this yet, also need to serialize the
             // object
-            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser, options); }
+            if ( !ser.check_pointer_pack(ptr) ) {
+                serialize_impl<T*>()(t, ser, options);
+            }
             break;
         case serializer::PACK:
             // Always put the pointer in
@@ -303,7 +303,9 @@ class serialize<T*>
             // Nothing else to do if this is nullptr
             if ( 0 == ptr ) return;
 
-            if ( !ser.check_pointer_pack(ptr) ) { serialize_impl<T*>()(t, ser, options); }
+            if ( !ser.check_pointer_pack(ptr) ) {
+                serialize_impl<T*>()(t, ser, options);
+            }
             break;
         case serializer::UNPACK:
         {
@@ -359,7 +361,9 @@ public:
     {
         if ( ser.mode() == serializer::MAP ) {
             auto* obj_map = new ObjectMapFundamental<T>(&t);
-            if ( SerOption::is_set(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) {
+                ser.mapper().setNextObjectReadOnly();
+            }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
         }
         else {
@@ -395,7 +399,9 @@ class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enu
         case serializer::MAP:
         {
             auto* obj_map = new ObjectMapFundamental<T>(t);
-            if ( SerOption::is_set(options, SerOption::map_read_only) ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) {
+                ser.mapper().setNextObjectReadOnly();
+            }
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }
@@ -456,7 +462,8 @@ template <class T>
 [[deprecated(
     "The ser& format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER macro "
     "for serializing data. The macro "
-    "supports additional options to control the details of serialization.  See SerOption enum for details.")]] void
+    "supports additional options to control the details of serialization.  See SerOption enum for details.")]]
+void
 operator&(serializer& ser, T&& obj)
 {
     SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map);
@@ -466,7 +473,8 @@ template <class T>
 [[deprecated("The ser| format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER "
              "macro with the "
              "SerOption::as_ptr flag for serializing data. The macro supports additional options to control the "
-             "details of serialization.  See SerOption enum for details.")]] void
+             "details of serialization.  See SerOption enum for details.")]]
+void
 operator|(serializer& ser, T&& obj)
 {
     SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr);
@@ -483,7 +491,7 @@ operator|(serializer& ser, T&& obj)
         ser, (obj), SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__), name)
 
 
-//#define SST_SER_AS_PTR(obj) (ser | (obj));
+// #define SST_SER_AS_PTR(obj) (ser | (obj));
 
 namespace pvt {
 template <typename... Args>

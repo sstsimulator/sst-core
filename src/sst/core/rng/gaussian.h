@@ -33,7 +33,8 @@ public:
        deviation. \param mn The mean of the Gaussian distribution \param sd The standard deviation of the Gaussian
        distribution
     */
-    GaussianDistribution(double mn, double sd) : RandomDistribution()
+    GaussianDistribution(double mn, double sd) :
+        RandomDistribution()
     {
 
         mean   = mn;
@@ -50,7 +51,8 @@ public:
        deviation. \param mn The mean of the Gaussian distribution \param sd The standard deviation of the Gaussian
        distribution \param baseRNG The random number generator as the base of the distribution
     */
-    GaussianDistribution(double mn, double sd, Random* baseRNG) : RandomDistribution()
+    GaussianDistribution(double mn, double sd, Random* baseRNG) :
+        RandomDistribution()
     {
 
         mean   = mn;
@@ -67,7 +69,9 @@ public:
     */
     ~GaussianDistribution()
     {
-        if ( deleteDistrib ) { delete baseDistrib; }
+        if ( deleteDistrib ) {
+            delete baseDistrib;
+        }
     }
 
     /**
@@ -89,9 +93,13 @@ public:
                 sq_sum  = (gauss_u * gauss_u) + (gauss_v * gauss_v);
             } while ( sq_sum >= 1 || sq_sum == 0 );
 
-            if ( baseDistrib->nextUniform() < 0.5 ) { gauss_u *= -1.0; }
+            if ( baseDistrib->nextUniform() < 0.5 ) {
+                gauss_u *= -1.0;
+            }
 
-            if ( baseDistrib->nextUniform() < 0.5 ) { gauss_v *= -1.0; }
+            if ( baseDistrib->nextUniform() < 0.5 ) {
+                gauss_v *= -1.0;
+            }
 
             double multiplier = sqrt(-2.0 * log(sq_sum) / sq_sum);
             unusedPair        = mean + stddev * gauss_v * multiplier;
@@ -116,7 +124,9 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    GaussianDistribution() : RandomDistribution() {}
+    GaussianDistribution() :
+        RandomDistribution()
+    {}
 
     /**
         Serialization function for checkpoint

@@ -85,8 +85,8 @@ constexpr bool is_simple_map_v = false;
 
 template <template <typename...> class MAP, typename KEY, typename... REST>
 constexpr bool is_simple_map_v<MAP<KEY, REST...>> =
-    (is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>)&&(
-        std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>);
+    (is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>) &&
+    (std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>);
 
 // Whether it is a simple set (not a multiset and has integral, floating-point, enum, or convertible to string keys)
 template <typename>
@@ -94,8 +94,8 @@ constexpr bool is_simple_set_v = false;
 
 template <template <typename...> class SET, typename KEY, typename... REST>
 constexpr bool is_simple_set_v<SET<KEY, REST...>> =
-    (is_same_template_v<SET, std::set> || is_same_template_v<SET, std::unordered_set>)&&(
-        std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>);
+    (is_same_template_v<SET, std::set> || is_same_template_v<SET, std::unordered_set>) &&
+    (std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>);
 
 // Whether a type is an insertable container type
 //

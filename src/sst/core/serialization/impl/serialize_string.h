@@ -50,13 +50,15 @@ public:
         return "std::string";
     }
 
-    explicit ObjectMapString(std::string* addr) : addr_(addr) {}
+    explicit ObjectMapString(std::string* addr) :
+        addr_(addr)
+    {}
 
     /**
        Disallow copying and assignment
      */
 
-    ObjectMapString(const ObjectMapString&) = delete;
+    ObjectMapString(const ObjectMapString&)            = delete;
     ObjectMapString& operator=(const ObjectMapString&) = delete;
 
     ~ObjectMapString() override = default;
@@ -71,7 +73,9 @@ class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>
         const auto& sPtr = get_ptr(str);
         const auto  mode = ser.mode();
         if ( mode == serializer::MAP ) {
-            if ( options & SerOption::map_read_only ) { ser.mapper().setNextObjectReadOnly(); }
+            if ( options & SerOption::map_read_only ) {
+                ser.mapper().setNextObjectReadOnly();
+            }
             ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr));
         }
         else {
