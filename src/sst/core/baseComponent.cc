@@ -38,14 +38,13 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     SST::Core::Serialization::serializable_base(),
-    my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),
-    sim_(Simulation_impl::getSimulation()),
-    isExtension(false)
+    my_info_(Simulation_impl::getSimulation()->getComponentInfo(id)),
+    sim_(Simulation_impl::getSimulation())
 {
-    if ( my_info->component == nullptr ) {
+    if ( my_info_->component == nullptr ) {
         // If it's already set, then this is a ComponentExtension and
         // we shouldn't reset it.
-        my_info->component = this;
+        my_info_->component = this;
     }
 }
 
@@ -53,14 +52,14 @@ BaseComponent::~BaseComponent()
 {
     // Need to cleanup my ComponentInfo and delete all my children.
 
-    // If my_info is nullptr, then we are being deleted by our
+    // If my_info_ is nullptr, then we are being deleted by our
     // ComponentInfo object.  This happens at the end of execution
     // when the simulation destructor fires.
-    if ( !my_info ) return;
-    if ( isExtension ) return;
+    if ( !my_info_ ) return;
+    if ( isExtension() ) return;
 
     // Start by deleting children
-    std::map<ComponentId_t, ComponentInfo>& subcomps = my_info->getSubComponents();
+    std::map<ComponentId_t, ComponentInfo>& subcomps = my_info_->getSubComponents();
     for ( auto& ci : subcomps ) {
         // Delete the subcomponent
 
@@ -78,10 +77,10 @@ BaseComponent::~BaseComponent()
 
     // Now for the tricky part, I need to remove myself from my
     // parent's subcomponent map (if I have a parent).
-    my_info->component = nullptr;
-    if ( my_info->parent_info ) {
-        std::map<ComponentId_t, ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
-        size_t                                  deleted         = parent_subcomps.erase(my_info->id_);
+    my_info_->component = nullptr;
+    if ( my_info_->parent_info ) {
+        std::map<ComponentId_t, ComponentInfo>& parent_subcomps = my_info_->parent_info->getSubComponents();
+        size_t                                  deleted         = parent_subcomps.erase(my_info_->id_);
         if ( deleted != 1 ) {
             // Should never happen, but issue warning just in case
             sim_->getSimulationOutput().output(
@@ -91,7 +90,7 @@ BaseComponent::~BaseComponent()
 
     // Delete all clock handlers.  We need to delete here because
     // handlers are not always registered with the clock object.
-    for ( auto* handler : clock_handlers ) {
+    for ( auto* handler : clock_handlers_ ) {
         delete handler;
     }
 
@@ -104,7 +103,7 @@ BaseComponent::~BaseComponent()
 void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter tc)
 {
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
     if ( nullptr != myLinks ) {
         for ( std::pair<std::string, Link*> p : myLinks->getLinkMap() ) {
             if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
@@ -126,19 +125,19 @@ BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler
 
     // Need to see if I already know about this clock handler
     bool found = false;
-    for ( auto* x : clock_handlers ) {
+    for ( auto* x : clock_handlers_ ) {
         if ( handler == x ) {
             found = true;
             break;
         }
     }
-    if ( !found ) clock_handlers.push_back(handler);
+    if ( !found ) clock_handlers_.push_back(handler);
 
     // Check to see if there is a profile tool installed
     auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
 
     for ( auto* tool : tools ) {
-        ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
+        ClockHandlerMetaData mdata(my_info_->getID(), getName(), getType());
         // Add the receive profiler to the handler
         handler->attachTool(tool, mdata);
     }
@@ -147,7 +146,7 @@ BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler
     // for all the links
     if ( regAll ) {
         setDefaultTimeBaseForLinks(tc);
-        my_info->defaultTimeBase = tc;
+        my_info_->defaultTimeBase = tc;
     }
 }
 
@@ -223,7 +222,7 @@ BaseComponent::registerTimeBase(const std::string& base, bool regAll)
     // for all the links
     if ( regAll ) {
         setDefaultTimeBaseForLinks(tc);
-        my_info->defaultTimeBase = tc;
+        my_info_->defaultTimeBase = tc;
     }
     return tc;
 }
@@ -243,7 +242,7 @@ BaseComponent::getTimeConverter(const UnitAlgebra& base) const
 bool
 BaseComponent::isPortConnected(const std::string& name) const
 {
-    return (my_info->getLinkMap()->getLink(name) != nullptr);
+    return (my_info_->getLinkMap()->getLink(name) != nullptr);
 }
 
 // Looks at parents' shared ports and returns the link connected to
@@ -254,7 +253,7 @@ BaseComponent::isPortConnected(const std::string& name) const
 Link*
 BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules)
 {
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
 
     // See if the link is found, and if not see if my parent shared
     // their ports with me
@@ -269,13 +268,13 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
             if ( !tmp->isConfigured() ) {
                 myLinks->removeLink(port);
                 // Need to see if there are any associated PortModules
-                if ( my_info->portModules != nullptr ) {
-                    auto it = my_info->portModules->find(port);
-                    if ( it != my_info->portModules->end() ) {
+                if ( my_info_->portModules != nullptr ) {
+                    auto it = my_info_->portModules->find(port);
+                    if ( it != my_info_->portModules->end() ) {
                         // Found PortModules, swap them into
                         // port_modules and remove from my map
                         port_modules.swap(it->second);
-                        my_info->portModules->erase(it);
+                        my_info_->portModules->erase(it);
                     }
                 }
                 return tmp;
@@ -287,8 +286,8 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
     // parent shared with me and if so, call
     // getLinkFromParentSharedPort on them
 
-    if ( my_info->sharesPorts() ) {
-        return my_info->parent_info->component->getLinkFromParentSharedPort(port, port_modules);
+    if ( my_info_->sharesPorts() ) {
+        return my_info_->parent_info->component->getLinkFromParentSharedPort(port, port_modules);
     }
     else {
         return nullptr;
@@ -298,7 +297,7 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
 Link*
 BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler)
 {
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
 
     Link* tmp = nullptr;
 
@@ -310,31 +309,31 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
     // If tmp is nullptr, then I didn't have the port connected, check
     // with parents if sharing is turned on
     if ( nullptr == tmp ) {
-        if ( my_info->sharesPorts() ) {
+        if ( my_info_->sharesPorts() ) {
             std::vector<ConfigPortModule> port_modules;
-            tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name, port_modules);
+            tmp = my_info_->parent_info->component->getLinkFromParentSharedPort(name, port_modules);
             // If I got a link from my parent, I need to put it in my
             // link map
 
             if ( nullptr != tmp ) {
                 if ( nullptr == myLinks ) {
-                    myLinks           = new LinkMap();
-                    my_info->link_map = myLinks;
+                    myLinks            = new LinkMap();
+                    my_info_->link_map = myLinks;
                 }
                 myLinks->insertLink(name, tmp);
                 // Need to set the link's defaultTimeBase to uninitialized
                 tmp->resetDefaultTimeBase();
 
                 // Need to see if I got any port_modules, if so, need
-                // to add them to my_info->portModules
+                // to add them to my_info_->portModules
 
                 if ( port_modules.size() > 0 ) {
-                    if ( nullptr == my_info->portModules ) {
+                    if ( nullptr == my_info_->portModules ) {
                         // This memory is currently leaked as portModules is otherwise a pointer to ConfigComponent
                         // ConfigComponent does not exist for anonymous subcomponents
-                        my_info->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
+                        my_info_->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
                     }
-                    (*my_info->portModules)[name].swap(port_modules);
+                    (*my_info_->portModules)[name].swap(port_modules);
                 }
             }
         }
@@ -353,7 +352,7 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
             // Check to see if there is a profile tool installed
             auto tools = sim_->getProfileTool<Profile::EventHandlerProfileTool>("event");
             for ( auto& tool : tools ) {
-                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
+                EventHandlerMetaData mdata(my_info_->getID(), getName(), getType(), name);
 
                 // Add the receive profiler to the handler
                 if ( tool->profileReceives() ) handler->attachTool(tool, mdata);
@@ -366,10 +365,10 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
         // Check for PortModules
         // portModules pointer may be invalid after wire up
         // Only SelfLinks can be initialized after wire up and SelfLinks do not support PortModules
-        if ( !sim_->isWireUpFinished() && my_info->portModules != nullptr ) {
-            auto it = my_info->portModules->find(name);
-            if ( it != my_info->portModules->end() ) {
-                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), name);
+        if ( !sim_->isWireUpFinished() && my_info_->portModules != nullptr ) {
+            auto it = my_info_->portModules->find(name);
+            if ( it != my_info_->portModules->end() ) {
+                EventHandlerMetaData mdata(my_info_->getID(), getName(), getType(), name);
                 for ( auto& portModule : it->second ) {
                     auto* pm = Factory::getFactory()->CreateWithParams<PortModule>(
                         portModule.type, portModule.params, portModule.params);
@@ -388,7 +387,7 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
         }
         tmp->setDefaultTimeBase(time_base);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-        tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
+        tmp->setSendingComponentInfo(my_info_->getName(), my_info_->getType(), name);
 #endif
     }
     return tmp;
@@ -401,8 +400,8 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
     SimTime_t factor = 0;
     if ( nullptr != time_base )
         factor = time_base->getFactor();
-    else if ( my_info->defaultTimeBase.isInitialized() )
-        factor = my_info->defaultTimeBase.getFactor();
+    else if ( my_info_->defaultTimeBase.isInitialized() )
+        factor = my_info_->defaultTimeBase.getFactor();
 
     return configureLink_impl(name, factor, handler);
 }
@@ -430,14 +429,14 @@ BaseComponent::configureLink(const std::string& name, const UnitAlgebra& time_ba
 Link*
 BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
-    SimTime_t factor = my_info->defaultTimeBase ? my_info->defaultTimeBase.getFactor() : 0;
+    SimTime_t factor = my_info_->defaultTimeBase ? my_info_->defaultTimeBase.getFactor() : 0;
     return configureLink_impl(name, factor, handler);
 }
 
 void
 BaseComponent::addSelfLink(const std::string& name)
 {
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
     myLinks->addSelfPort(name);
     if ( myLinks->getLink(name) != nullptr ) {
         printf("Attempting to add self link with duplicate name: %s\n", name.c_str());
@@ -446,7 +445,7 @@ BaseComponent::addSelfLink(const std::string& name)
 
     Link* link = new SelfLink();
     // Set default time base to the component time base
-    link->setDefaultTimeBase(my_info->defaultTimeBase);
+    link->setDefaultTimeBase(my_info_->defaultTimeBase);
     myLinks->insertLink(name, link);
 }
 
@@ -664,7 +663,7 @@ BaseComponent::requireLibrary(const std::string& name)
 bool
 BaseComponent::doesComponentInfoStatisticExist(const std::string& statisticName) const
 {
-    const std::string& type = my_info->getType();
+    const std::string& type = my_info_->getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 
@@ -681,11 +680,11 @@ BaseComponent::vfatal(
     Output abort("Rank: @R,@I, time: @t - called in file: @f, line: @l, function: @p", 5, -1, Output::STDOUT);
 
     // Get info about the simulation
-    std::string    name      = my_info->getName();
-    std::string    type      = my_info->getType();
+    std::string    name      = my_info_->getName();
+    std::string    type      = my_info_->getType();
     // Build up the full list of types all the way to parent component
-    std::string    type_tree = my_info->getType();
-    ComponentInfo* parent    = my_info->parent_info;
+    std::string    type_tree = my_info_->getType();
+    ComponentInfo* parent    = my_info_->parent_info;
     while ( parent != nullptr ) {
         type_tree = parent->type + "." + type_tree;
         parent    = parent->parent_info;
@@ -738,14 +737,14 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
 TimeConverter*
 BaseComponent::getDefaultTimeBase()
 {
-    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info_->defaultTimeBase.getFactor());
 }
 
 
 const TimeConverter*
 BaseComponent::getDefaultTimeBase() const
 {
-    return Simulation_impl::getTimeLord()->getTimeConverter(my_info->defaultTimeBase.getFactor());
+    return Simulation_impl::getTimeLord()->getTimeConverter(my_info_->defaultTimeBase.getFactor());
 }
 
 bool
@@ -757,7 +756,7 @@ BaseComponent::doesSubComponentExist(const std::string& type)
 uint8_t
 BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statisticName) const
 {
-    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info->type, statisticName);
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info_->type, statisticName);
 }
 
 void
@@ -856,7 +855,7 @@ BaseComponent::createEnabledAllStatistic(
     }
 
     // a matching statistic was not found
-    auto* stat = createStatistic(params, my_info->all_stat_config_->params, name, statSubId, true, std::move(fxn));
+    auto* stat = createStatistic(params, my_info_->all_stat_config_->params, name, statSubId, true, std::move(fxn));
     if ( !stat->isNullStatistic() ) {
         m_enabled_all_stats_[name][statSubId] = stat;
     }
@@ -868,13 +867,13 @@ BaseComponent::createExplicitlyEnabledStatistic(
     Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId, StatCreateFunction fxn)
 {
     Output& out = Simulation_impl::getSimulationOutput();
-    if ( my_info->parent_info ) {
+    if ( my_info_->parent_info ) {
         out.fatal(CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
             name.c_str());
     }
 
-    auto piter = my_info->stat_configs_->find(id);
-    if ( piter == my_info->stat_configs_->end() ) {
+    auto piter = my_info_->stat_configs_->find(id);
+    if ( piter == my_info_->stat_configs_->end() ) {
         out.fatal(
             CALL_INFO, 1, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID", name.c_str());
     }
@@ -956,8 +955,8 @@ BaseComponent::initiateInteractive(const std::string& msg)
 void
 BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    SST_SER(my_info);
-    SST_SER(isExtension);
+    SST_SER(my_info_);
+    SST_SER(component_state_);
 
     switch ( ser.mode() ) {
     case SST::Core::Serialization::serializer::SIZER:
@@ -965,9 +964,9 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     {
         // Need to serialize each handler
         std::pair<Clock::HandlerBase*, SimTime_t> p;
-        size_t                                    num_handlers = clock_handlers.size();
+        size_t                                    num_handlers = clock_handlers_.size();
         SST_SER(num_handlers);
-        for ( auto* handler : clock_handlers ) {
+        for ( auto* handler : clock_handlers_ ) {
             p.first  = handler;
             // See if it's currently registered with a clock
             p.second = sim_->getClockForHandler(handler);
@@ -978,13 +977,21 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     case SST::Core::Serialization::serializer::UNPACK:
     {
         sim_ = Simulation_impl::getSimulation();
+
+        if ( isStateDoNotEndSim() ) {
+            // First set state to OKToEndSim to suppress warning in
+            // primaryComponentDoNotEndSim().
+            setStateOKToEndSim();
+            primaryComponentDoNotEndSim();
+        }
+
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers;
         SST_SER(num_handlers);
         for ( size_t i = 0; i < num_handlers; ++i ) {
             SST_SER(p);
             // Add handler to clock_handlers list
-            clock_handlers.push_back(p.first);
+            clock_handlers_.push_back(p.first);
             // If it was previously registered, register it now
             if ( p.second ) {
                 sim_->registerClock(p.second, p.first, CLOCKPRIORITY);
@@ -1005,7 +1012,7 @@ BaseComponent::addWatchPoint(WatchPoint* pt)
 {
     // Find parent component
 
-    ComponentInfo* curr = my_info;
+    ComponentInfo* curr = my_info_;
     while ( curr->parent_info != nullptr ) {
         curr = curr->parent_info;
     }
@@ -1018,20 +1025,20 @@ BaseComponent::addWatchPointRecursive(WatchPoint* pt)
     // Find all my handlers, then call all my children
 
     // Clock handlers
-    ClockHandlerMetaData mdata(my_info->getID(), getName(), getType());
-    for ( Clock::HandlerBase* x : clock_handlers ) {
+    ClockHandlerMetaData mdata(my_info_->getID(), getName(), getType());
+    for ( Clock::HandlerBase* x : clock_handlers_ ) {
         // Add the receive profiler to the handler
         x->attachTool(pt, mdata);
     }
 
     // Event Handlers
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
     if ( myLinks != nullptr ) {
         std::map<std::string, Link*>& linkmap = myLinks->getLinkMap();
         for ( auto& x : linkmap ) {
             if ( x.second != nullptr ) {
                 // Need to get the handler info from my pair link
-                EventHandlerMetaData mdata(my_info->getID(), getName(), getType(), x.first);
+                EventHandlerMetaData mdata(my_info_->getID(), getName(), getType(), x.first);
                 Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(x.second->pair_link->delivery_info);
                 // Check to make sure there is a handler. Links
                 // configured as polling links will not have a handler
@@ -1042,7 +1049,7 @@ BaseComponent::addWatchPointRecursive(WatchPoint* pt)
 
 
     // Call for my subcomponents
-    for ( auto it = my_info->subComponents.begin(); it != my_info->subComponents.end(); ++it ) {
+    for ( auto it = my_info_->subComponents.begin(); it != my_info_->subComponents.end(); ++it ) {
         it->second.component->addWatchPointRecursive(pt);
     }
 }
@@ -1052,7 +1059,7 @@ void
 BaseComponent::removeWatchPoint(WatchPoint* pt)
 {
     // Find parent component
-    ComponentInfo* curr = my_info;
+    ComponentInfo* curr = my_info_;
     while ( curr->parent_info != nullptr ) {
         curr = curr->parent_info;
     }
@@ -1065,12 +1072,12 @@ BaseComponent::removeWatchPointRecursive(WatchPoint* pt)
     // Find all my handlers, then call all my children
 
     // Clock handlers
-    for ( Clock::HandlerBase* x : clock_handlers ) {
+    for ( Clock::HandlerBase* x : clock_handlers_ ) {
         x->detachTool(pt);
     }
 
     // Event Handlers
-    LinkMap* myLinks = my_info->getLinkMap();
+    LinkMap* myLinks = my_info_->getLinkMap();
     if ( myLinks != nullptr ) {
         std::map<std::string, Link*>& linkmap = myLinks->getLinkMap();
         for ( auto& x : linkmap ) {
@@ -1085,8 +1092,70 @@ BaseComponent::removeWatchPointRecursive(WatchPoint* pt)
     }
 
     // Call for my subcomponents
-    for ( auto it = my_info->subComponents.begin(); it != my_info->subComponents.end(); ++it ) {
+    for ( auto it = my_info_->subComponents.begin(); it != my_info_->subComponents.end(); ++it ) {
         it->second.component->removeWatchPointRecursive(pt);
+    }
+}
+
+
+/**** Primary Component API ****/
+
+void
+BaseComponent::registerAsPrimaryComponent()
+{
+    // Set to be a primary component if not already set.  Not an error
+    // to call more than once.
+    if ( sim_->isWireUpFinished() ) {
+        // Error, called after construct phase
+        sim_->getSimulationOutput().fatal(
+            CALL_INFO, 1, "ERROR: registerAsPrimaryComponent() must be called during ComponentConstruction\n");
+    }
+    else if ( !isStatePrimary() ) {
+        setStateAsPrimary();
+    }
+    else {
+        sim_->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "WARNING: Component (%s) called registerAsPrimaryComponent() more than once\n", getName().c_str());
+    }
+}
+
+void
+BaseComponent::primaryComponentDoNotEndSim()
+{
+    if ( !isStatePrimary() ) {
+        sim_->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "WARNING: Component (%s) called primaryComponentDoNotEndSim() without first "
+            "calling registerAsPrimaryComponent(). Call had no effect.\n",
+            getName().c_str());
+    }
+    else if ( isStateDoNotEndSim() ) {
+        sim_->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "WARNING: Component (%s) had multiple calls to primaryComponentDoNotEndSim()\n", getName().c_str());
+    }
+    else {
+        setStateDoNotEndSim();
+        int thread = sim_->getRank().thread;
+        sim_->getExit()->refInc(thread);
+    }
+}
+
+void
+BaseComponent::primaryComponentOKToEndSim()
+{
+    if ( !isStatePrimary() ) {
+        sim_->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "WARNING: Component (%s) called primaryComponentOKToEndSim() without first "
+            "calling registerAsPrimaryComponent(). Call had no effect.\n",
+            getName().c_str());
+    }
+    else if ( isStateOKToEndSim() ) {
+        sim_->getSimulationOutput().verbose(CALL_INFO, 1, 1,
+            "WARNING: Component (%s) had multiple calls to primaryComponentOKToEndSim()\n", getName().c_str());
+    }
+    else {
+        setStateOKToEndSim();
+        int thread = sim_->getRank().thread;
+        sim_->getExit()->refDec(thread);
     }
 }
 
@@ -1145,7 +1214,7 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
     ser.mapper().map_hierarchy_start(name, obj_map);
 
     // Put in any subcomponents first
-    for ( auto it = comp->my_info->subComponents.begin(); it != comp->my_info->subComponents.end(); ++it ) {
+    for ( auto it = comp->my_info_->subComponents.begin(); it != comp->my_info_->subComponents.end(); ++it ) {
         std::string name_str = it->second.getShortName();
         if ( name_str == "" ) {
             // This is an anonymous subcomponent, create a name based
@@ -1158,11 +1227,11 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
 
     // Put in ComponentInfo data
     ObjectMap* my_info_dir = new ObjectMapHierarchyOnly();
-    ser.mapper().map_hierarchy_start("my_info", my_info_dir);
+    ser.mapper().map_hierarchy_start("my_info_", my_info_dir);
 
-    SST_SER_NAME(const_cast<ComponentId_t&>(comp->my_info->id_), "id", SerOption::map_read_only);
-    SST_SER_NAME(const_cast<std::string&>(comp->my_info->type), "type", SerOption::map_read_only);
-    SST_SER_NAME(comp->my_info->defaultTimeBase, "defaultTimeBase");
+    SST_SER_NAME(const_cast<ComponentId_t&>(comp->my_info_->id_), "id", SerOption::map_read_only);
+    SST_SER_NAME(const_cast<std::string&>(comp->my_info_->type), "type", SerOption::map_read_only);
+    SST_SER_NAME(comp->my_info_->defaultTimeBase, "defaultTimeBase");
 
     ser.mapper().map_hierarchy_end(); // for my_info_dir
 

@@ -12,7 +12,6 @@ import sst
 import sys
 
 # Define SST core options
-sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner","self")
 
 verbose = 0
@@ -58,16 +57,16 @@ sub1_1.enableAllStatistics()
 
 # Set up links
 link0_0 = sst.Link("myLink0_0")
-link0_0.connect((sub0_0, "slot_port0", "5ns"), (sub1_0, "slot_port0", "5ns"))
+link0_0.connect((sub0_0, "slot_port0", "1us"), (sub1_0, "slot_port0", "1us"))
 
 link0_1 = sst.Link("myLink0_1")
-link0_1.connect((sub0_1, "slot_port0", "5ns"), (sub1_1, "slot_port0", "5ns"))
+link0_1.connect((sub0_1, "slot_port0", "1us"), (sub1_1, "slot_port0", "1us"))
 
 link1_0 = sst.Link("myLink1_0")
-link1_0.connect((sub0_0, "slot_port1", "5ns"), (sub1_0, "slot_port1", "5ns"))
+link1_0.connect((sub0_0, "slot_port1", "1us"), (sub1_0, "slot_port1", "1us"))
 
 link1_1 = sst.Link("myLink1_1")
-link1_1.connect((sub0_1, "slot_port1", "5ns"), (sub1_1, "slot_port1", "5ns"))
+link1_1.connect((sub0_1, "slot_port1", "1us"), (sub1_1, "slot_port1", "1us"))
 
 
 # Do the paritioning

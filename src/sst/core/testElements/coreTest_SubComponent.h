@@ -34,6 +34,27 @@ namespace SST::CoreTestSubComponent {
   depending on the configuration.
  */
 
+class SubCompEvent : public SST::Event
+{
+public:
+    SubCompEvent(bool last) :
+        Event(),
+        last(last)
+    {}
+
+    SubCompEvent() = default; // For serialization
+
+    bool last = false;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        Event::serialize_order(ser);
+        SST_SER(last);
+    }
+
+    ImplementSerializable(SubCompEvent);
+};
+
 class SubCompInterface : public SST::SubComponent
 {
 public:
