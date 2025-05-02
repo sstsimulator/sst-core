@@ -21,7 +21,11 @@
 
 namespace SST {
 
-Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), period(period), scheduled(false)
+Clock::Clock(TimeConverter* period, int priority) :
+    Action(),
+    currentCycle(0),
+    period(period),
+    scheduled(false)
 {
     setPriority(priority);
 }
@@ -35,7 +39,9 @@ bool
 Clock::registerHandler(Clock::HandlerBase* handler)
 {
     staticHandlerMap.push_back(handler);
-    if ( !scheduled ) { schedule(); }
+    if ( !scheduled ) {
+        schedule();
+    }
     return 0;
 }
 
@@ -124,7 +130,9 @@ Clock::schedule()
     // However, if we are at time = 0, then we always go out to the
     // next cycle;
     if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 ) {
-        if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) { next = sim->getCurrentSimCycle(); }
+        if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) {
+            next = sim->getCurrentSimCycle();
+        }
     }
 
     // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " <<

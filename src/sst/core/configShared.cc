@@ -38,11 +38,9 @@ ConfigShared::addLibraryPathOptions()
 {
     using namespace std::placeholders;
     // Add the options
-    DEF_ARG(
-        "lib-path", 0, "LIBPATH", "Component library path (overwrites default)",
+    DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)",
         std::bind(&ConfigShared::setLibPath, this, _1), false);
-    DEF_ARG(
-        "add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)",
+    DEF_ARG("add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)",
         std::bind(&ConfigShared::setAddLibPath, this, _1), false);
 }
 
@@ -53,8 +51,7 @@ ConfigShared::addEnvironmentOptions()
     // Add the options
     DEF_FLAG(
         "print-env", 0, "Print environment variables SST will see", std::bind(&ConfigShared::enablePrintEnv, this, _1));
-    DEF_FLAG(
-        "no-env-config", 0, "Disable SST environment configuration",
+    DEF_FLAG("no-env-config", 0, "Disable SST environment configuration",
         std::bind(&ConfigShared::disableEnvConfig, this, _1));
 }
 
@@ -62,8 +59,7 @@ void
 ConfigShared::addVerboseOptions(bool sdl_avail)
 {
     using namespace std::placeholders;
-    DEF_ARG_OPTVAL(
-        "verbose", 'v', "level",
+    DEF_ARG_OPTVAL("verbose", 'v', "level",
         "Verbosity level to determine what information about core runtime is printed.  If no argument is specified, it "
         "will simply increment the verbosity level.",
         std::bind(&ConfigShared::setVerbosity, this, _1), sdl_avail);

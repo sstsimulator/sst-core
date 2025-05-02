@@ -58,7 +58,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesDefaultInfo(T* t) : ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
+    explicit ProvidesDefaultInfo(T* t) :
+        ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
     {}
 
 private:
@@ -82,28 +83,49 @@ private:
         static std::string date_time = date + " " + time; \
         return date_time;                                 \
     }                                                     \
-    static const std::string ELI_getCompileFile() { return __FILE__; }
-
-#define SST_ELI_DEFAULT_INFO(lib, name, version, desc)                                                              \
-    SST_ELI_INSERT_COMPILE_INFO()                                                                                   \
-    static constexpr unsigned      majorVersion() { return SST::SST_ELI_getMajorNumberFromVersion(version); }       \
-    static constexpr unsigned      minorVersion() { return SST::SST_ELI_getMinorNumberFromVersion(version); }       \
-    static constexpr unsigned      tertiaryVersion() { return SST::SST_ELI_getTertiaryNumberFromVersion(version); } \
-    static const std::vector<int>& ELI_getVersion()                                                                 \
-    {                                                                                                               \
-        static std::vector<int> var = version;                                                                      \
-        return var;                                                                                                 \
-    }                                                                                                               \
-    static const char* ELI_getLibrary() { return lib; }                                                             \
-    static const char* ELI_getName() { return name; }                                                               \
-    static const char* ELI_getDescription() { return desc; }
-
-#define SST_ELI_ELEMENT_VERSION(...) \
-    {                                \
-        __VA_ARGS__                  \
+    static const std::string ELI_getCompileFile()         \
+    {                                                     \
+        return __FILE__;                                  \
     }
 
+#define SST_ELI_DEFAULT_INFO(lib, name, version, desc)             \
+    SST_ELI_INSERT_COMPILE_INFO()                                  \
+    static constexpr unsigned majorVersion()                       \
+    {                                                              \
+        return SST::SST_ELI_getMajorNumberFromVersion(version);    \
+    }                                                              \
+    static constexpr unsigned minorVersion()                       \
+    {                                                              \
+        return SST::SST_ELI_getMinorNumberFromVersion(version);    \
+    }                                                              \
+    static constexpr unsigned tertiaryVersion()                    \
+    {                                                              \
+        return SST::SST_ELI_getTertiaryNumberFromVersion(version); \
+    }                                                              \
+    static const std::vector<int>& ELI_getVersion()                \
+    {                                                              \
+        static std::vector<int> var = version;                     \
+        return var;                                                \
+    }                                                              \
+    static const char* ELI_getLibrary()                            \
+    {                                                              \
+        return lib;                                                \
+    }                                                              \
+    static const char* ELI_getName()                               \
+    {                                                              \
+        return name;                                               \
+    }                                                              \
+    static const char* ELI_getDescription()                        \
+    {                                                              \
+        return desc;                                               \
+    }
+
+#define SST_ELI_ELEMENT_VERSION(...) { __VA_ARGS__ }
+
 #define SST_ELI_REGISTER_ALIAS(alias) \
-    static std::string ELI_getAlias() { return alias; }
+    static std::string ELI_getAlias() \
+    {                                 \
+        return alias;                 \
+    }
 
 #endif // SST_CORE_ELI_DEFAULTINFO_H

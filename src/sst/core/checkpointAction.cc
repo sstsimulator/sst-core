@@ -134,7 +134,9 @@ CheckpointAction::insertIntoTimeVortex(Simulation_impl* sim)
     // the time TimeVortex.  If it is parallel, then the
     // CheckpointAction is managed by the SyncManager.
     RankInfo num_ranks = sim->getNumRanks();
-    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) { sim->insertActivity(next_sim_time_, this); }
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
+        sim->insertActivity(next_sim_time_, this);
+    }
 }
 
 
@@ -259,7 +261,9 @@ CheckpointAction::check(SimTime_t current_time)
         generate_ = false;
         // Only add to the simulation-interval checkpoint time if it
         // was what triggered this
-        if ( current_time == next_sim_time_ ) { next_sim_time_ += period_->getFactor(); }
+        if ( current_time == next_sim_time_ ) {
+            next_sim_time_ += period_->getFactor();
+        }
     }
     return next_sim_time_;
 }

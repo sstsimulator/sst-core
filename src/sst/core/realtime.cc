@@ -178,7 +178,9 @@ RealTimeAction::initiateInteractive(const std::string& msg)
 
 /************ ExitCleanRealTimeAction ***********/
 
-ExitCleanRealTimeAction::ExitCleanRealTimeAction() : RealTimeAction() {}
+ExitCleanRealTimeAction::ExitCleanRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 ExitCleanRealTimeAction::execute()
@@ -196,18 +198,21 @@ void
 ExitCleanRealTimeAction::begin(time_t scheduled_time)
 {
     Output sim_output = getSimulationOutput();
-    if ( scheduled_time == 0 ) { return; }
+    if ( scheduled_time == 0 ) {
+        return;
+    }
 
     struct tm* end = localtime(&scheduled_time);
-    sim_output.verbose(
-        CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900), (end->tm_mon + 1),
-        end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
+    sim_output.verbose(CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
+        (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
 }
 
 
 /************ ExitEmergencyRealTimeAction ***********/
 
-ExitEmergencyRealTimeAction::ExitEmergencyRealTimeAction() : RealTimeAction() {}
+ExitEmergencyRealTimeAction::ExitEmergencyRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 ExitEmergencyRealTimeAction::execute()
@@ -223,7 +228,9 @@ ExitEmergencyRealTimeAction::execute()
 
 /************ CoreStatusRealTimeAction ***********/
 
-CoreStatusRealTimeAction::CoreStatusRealTimeAction() : RealTimeAction() {}
+CoreStatusRealTimeAction::CoreStatusRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 CoreStatusRealTimeAction::execute()
@@ -234,7 +241,9 @@ CoreStatusRealTimeAction::execute()
 
 /************ ComponentStatusRealTimeAction ***********/
 
-ComponentStatusRealTimeAction::ComponentStatusRealTimeAction() : RealTimeAction() {}
+ComponentStatusRealTimeAction::ComponentStatusRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 ComponentStatusRealTimeAction::execute()
@@ -245,7 +254,9 @@ ComponentStatusRealTimeAction::execute()
 
 /************ CheckpointRealTimeAction ***********/
 
-CheckpointRealTimeAction::CheckpointRealTimeAction() : RealTimeAction() {}
+CheckpointRealTimeAction::CheckpointRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 CheckpointRealTimeAction::execute()
@@ -253,9 +264,8 @@ CheckpointRealTimeAction::execute()
     Output   sim_output = getSimulationOutput();
     RankInfo rank       = getRank();
 
-    sim_output.output(
-        "Creating checkpoint at simulated time %s (rank=%u,thread=%u).\n", getElapsedSimTime().toStringBestSI().c_str(),
-        rank.rank, rank.thread);
+    sim_output.output("Creating checkpoint at simulated time %s (rank=%u,thread=%u).\n",
+        getElapsedSimTime().toStringBestSI().c_str(), rank.rank, rank.thread);
     simulationCheckpoint();
 }
 
@@ -265,19 +275,21 @@ CheckpointRealTimeAction::begin(time_t scheduled_time)
     Output sim_output = getSimulationOutput();
 
     struct tm* end = localtime(&scheduled_time);
-    sim_output.verbose(
-        CALL_INFO, 1, 0, "# First checkpoint will occur around: %04u/%02u/%02u at %02u:%02u:%02u\n",
+    sim_output.verbose(CALL_INFO, 1, 0, "# First checkpoint will occur around: %04u/%02u/%02u at %02u:%02u:%02u\n",
         (end->tm_year + 1900), (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
 }
 
 
 /************ HeartbeatRealTimeAction ***********/
 
-HeartbeatRealTimeAction::HeartbeatRealTimeAction() : RealTimeAction()
+HeartbeatRealTimeAction::HeartbeatRealTimeAction() :
+    RealTimeAction()
 {
     RankInfo rank = getRank();
     last_time_    = 0;
-    if ( getRank().thread == 0 ) { exchange_barrier_.resize(getNumRanks().thread); }
+    if ( getRank().thread == 0 ) {
+        exchange_barrier_.resize(getNumRanks().thread);
+    }
 }
 
 void
@@ -307,7 +319,9 @@ HeartbeatRealTimeAction::execute()
         exchange_barrier_.wait(); // ensure thr_max_tv_depth is initialized
 
         // Compute local max
-        if ( 0 != rank.thread ) { Core::ThreadSafe::atomic_fetch_max(thr_max_tv_depth_, getTimeVortexMaxDepth()); }
+        if ( 0 != rank.thread ) {
+            Core::ThreadSafe::atomic_fetch_max(thr_max_tv_depth_, getTimeVortexMaxDepth());
+        }
         exchange_barrier_.wait(); // ensure updates to thr_max_tv_depth are done
     }
 
@@ -383,7 +397,9 @@ Core::ThreadSafe::Barrier HeartbeatRealTimeAction::exchange_barrier_;
 
 
 /************ InteractiveRealTimeAction ***********/
-InteractiveRealTimeAction::InteractiveRealTimeAction() : RealTimeAction() {}
+InteractiveRealTimeAction::InteractiveRealTimeAction() :
+    RealTimeAction()
+{}
 
 void
 InteractiveRealTimeAction::execute()
@@ -430,13 +446,16 @@ RealTimeIntervalAction::execute(uint32_t elapsed)
 
 /************ AlrmSignalAction ***********/
 
-AlrmSignalAction::AlrmSignalAction() : RealTimeAction()
+AlrmSignalAction::AlrmSignalAction() :
+    RealTimeAction()
 {
     RankInfo num_ranks = getNumRanks();
     RankInfo rank      = getRank();
     alarm_manager_     = rank.rank == 0 && rank.thread == 0;
     rank_leader_       = (num_ranks.rank > 1) && (rank.thread == 0);
-    if ( rank.thread == 0 ) { exchange_barrier_.resize(num_ranks.thread); }
+    if ( rank.thread == 0 ) {
+        exchange_barrier_.resize(num_ranks.thread);
+    }
 }
 
 void
@@ -462,7 +481,9 @@ AlrmSignalAction::begin(time_t UNUSED(scheduled_time))
             for ( size_t i = 1; i < interval_actions_.size(); i++ ) {
                 interval_actions_[i].begin(last_time_);
                 uint32_t t = interval_actions_[i].getNextAlarmTime();
-                if ( t < next_alarm_time ) { next_alarm_time = t; }
+                if ( t < next_alarm_time ) {
+                    next_alarm_time = t;
+                }
             }
 
             alarm(next_alarm_time);
@@ -510,16 +531,22 @@ AlrmSignalAction::execute()
         interval_actions_[i].execute(elapsed_);
 
         if ( alarm_manager_ ) {
-            if ( i == 0 ) { next_alarm_time = interval_actions_[i].getNextAlarmTime(); }
+            if ( i == 0 ) {
+                next_alarm_time = interval_actions_[i].getNextAlarmTime();
+            }
             else {
                 uint32_t t = interval_actions_[i].getNextAlarmTime();
-                if ( t < next_alarm_time ) { next_alarm_time = t; }
+                if ( t < next_alarm_time ) {
+                    next_alarm_time = t;
+                }
             }
         }
     }
     last_time_ += elapsed_;
 
-    if ( alarm_manager_ && next_alarm_time != 0 ) { alarm(next_alarm_time); }
+    if ( alarm_manager_ && next_alarm_time != 0 ) {
+        alarm(next_alarm_time);
+    }
 }
 
 uint32_t                  AlrmSignalAction::elapsed_ = 0;
@@ -565,7 +592,9 @@ RealTimeManager::registerInterval(uint32_t interval, RealTimeAction* action)
 void
 RealTimeManager::begin()
 {
-    if ( signal_actions_.find(SIGALRM) != signal_actions_.end() ) { signal_actions_[SIGALRM]->begin(0); }
+    if ( signal_actions_.find(SIGALRM) != signal_actions_.end() ) {
+        signal_actions_[SIGALRM]->begin(0);
+    }
 }
 
 /* Races are possible if signals come in while this function is executing.
@@ -605,7 +634,9 @@ RealTimeManager::notifySignal()
 
     if ( sig_alrm_from_os_ ) {
         sig_alrm_from_os_ = 0;
-        if ( serial_exec_ ) { signal_actions_[SIGALRM]->execute(); }
+        if ( serial_exec_ ) {
+            signal_actions_[SIGALRM]->execute();
+        }
         else {
             sig_alrm_ = SIGALRM;
         }

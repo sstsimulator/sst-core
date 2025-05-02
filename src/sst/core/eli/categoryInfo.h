@@ -50,15 +50,19 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesCategory(T* UNUSED(t)) : cat_(T::ELI_getCategory())
+    explicit ProvidesCategory(T* UNUSED(t)) :
+        cat_(T::ELI_getCategory())
     {}
 
 private:
     uint32_t cat_;
 };
 
-#define SST_ELI_CATEGORY_INFO(cat) \
-    static uint32_t ELI_getCategory() { return cat; }
+#define SST_ELI_CATEGORY_INFO(cat)    \
+    static uint32_t ELI_getCategory() \
+    {                                 \
+        return cat;                   \
+    }
 
 } // namespace SST::ELI
 

@@ -31,7 +31,9 @@ CoreTestModuleExample::CoreTestModuleExample(SST::Params& params)
         const uint32_t m_w = (uint32_t)params.find<int64_t>("seed_w", 0);
         const uint32_t m_z = (uint32_t)params.find<int64_t>("seed_z", 0);
 
-        if ( m_w == 0 || m_z == 0 ) { rng = new MarsagliaRNG(); }
+        if ( m_w == 0 || m_z == 0 ) {
+            rng = new MarsagliaRNG();
+        }
         else {
             rng = new MarsagliaRNG(m_z, m_w);
         }
@@ -71,7 +73,8 @@ CoreTestModuleExample::serialize_order(SST::Core::Serialization::serializer& ser
 }
 
 
-coreTestModuleLoader::coreTestModuleLoader(SST::ComponentId_t id, SST::Params& params) : Component(id)
+coreTestModuleLoader::coreTestModuleLoader(SST::ComponentId_t id, SST::Params& params) :
+    Component(id)
 {
     rng_count     = 0;
     rng_max_count = params.find<int64_t>("count", 1000);
@@ -88,13 +91,11 @@ coreTestModuleLoader::coreTestModuleLoader(SST::ComponentId_t id, SST::Params& p
     moduleParams.insert("seed_z", params.find<std::string>("seed_z", "0"));
 
     if ( rngType == "mersenne" || rngType == "xorshift" ) {
-        output->verbose(
-            CALL_INFO, 1, 0, "Using %s Generator with seed: %s\n", rngType.c_str(),
+        output->verbose(CALL_INFO, 1, 0, "Using %s Generator with seed: %s\n", rngType.c_str(),
             moduleParams.find<std::string>("seed").c_str());
     }
     else if ( rngType == "marsaglia" ) {
-        output->verbose(
-            CALL_INFO, 1, 0, "Using Marsaglia Generator with seeds: Z=%s, W=%s\n",
+        output->verbose(CALL_INFO, 1, 0, "Using Marsaglia Generator with seeds: Z=%s, W=%s\n",
             moduleParams.find<std::string>("seed_w").c_str(), moduleParams.find<std::string>("seed_z").c_str());
     }
     else {
@@ -126,7 +127,8 @@ void
 coreTestModuleLoader::finish()
 {}
 
-bool coreTestModuleLoader::tick(SST::Cycle_t)
+bool
+coreTestModuleLoader::tick(SST::Cycle_t)
 {
     uint32_t next = rng_module->getNext();
     rng_count++;

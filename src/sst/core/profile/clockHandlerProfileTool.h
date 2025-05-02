@@ -92,7 +92,10 @@ class ClockHandlerProfileToolTime : public ClockHandlerProfileTool
         uint64_t time;
         uint64_t count;
 
-        clock_data_t() : time(0), count(0) {}
+        clock_data_t() :
+            time(0),
+            count(0)
+        {}
     };
 
 public:

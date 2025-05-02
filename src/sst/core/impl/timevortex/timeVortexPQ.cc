@@ -27,7 +27,11 @@ TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
 {}
 
 template <bool TS>
-TimeVortexPQBase<TS>::TimeVortexPQBase() : TimeVortex(), insertOrder(0), max_depth(0), current_depth(0)
+TimeVortexPQBase<TS>::TimeVortexPQBase() :
+    TimeVortex(),
+    insertOrder(0),
+    max_depth(0),
+    current_depth(0)
 {}
 
 template <bool TS>
@@ -69,7 +73,9 @@ TimeVortexPQBase<TS>::insert(Activity* activity)
     activity->setQueueOrder(insertOrder++);
     data.push(activity);
     current_depth++;
-    if ( current_depth > max_depth ) { max_depth = current_depth; }
+    if ( current_depth > max_depth ) {
+        max_depth = current_depth;
+    }
     if ( TS ) slock.unlock();
 }
 
@@ -149,8 +155,12 @@ public:
         "TimeVortex based on std::priority_queue.")
 
 
-    explicit TimeVortexPQ(Params& params) : TimeVortexPQBase<false>(params) {}
-    TimeVortexPQ() : TimeVortexPQBase<false>() {} // For serialization only
+    explicit TimeVortexPQ(Params& params) :
+        TimeVortexPQBase<false>(params)
+    {}
+    TimeVortexPQ() :
+        TimeVortexPQBase<false>()
+    {} // For serialization only
     ~TimeVortexPQ() {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -174,8 +184,12 @@ public:
         " specify sst.timevortex.priority_queue and this version will be selected when it is needed based on other"
         " parameters.")
 
-    explicit TimeVortexPQ_ts(Params& params) : TimeVortexPQBase<true>(params) {}
-    TimeVortexPQ_ts() : TimeVortexPQBase<true>() {} // For serialization only
+    explicit TimeVortexPQ_ts(Params& params) :
+        TimeVortexPQBase<true>(params)
+    {}
+    TimeVortexPQ_ts() :
+        TimeVortexPQBase<true>()
+    {} // For serialization only
     ~TimeVortexPQ_ts() {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override

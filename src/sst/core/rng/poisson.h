@@ -33,7 +33,9 @@ public:
         Creates an Poisson distribution with a specific lambda
         \param mn The lambda of the Poisson distribution
     */
-    explicit PoissonDistribution(const double mn) : RandomDistribution(), lambda(mn)
+    explicit PoissonDistribution(const double mn) :
+        RandomDistribution(),
+        lambda(mn)
     {
 
         baseDistrib   = new MersenneRNG();
@@ -45,7 +47,9 @@ public:
         \param lambda The lambda of the Poisson distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    PoissonDistribution(const double mn, Random* baseDist) : RandomDistribution(), lambda(mn)
+    PoissonDistribution(const double mn, Random* baseDist) :
+        RandomDistribution(),
+        lambda(mn)
     {
 
         baseDistrib   = baseDist;
@@ -57,7 +61,9 @@ public:
     */
     ~PoissonDistribution()
     {
-        if ( deleteDistrib ) { delete baseDistrib; }
+        if ( deleteDistrib ) {
+            delete baseDistrib;
+        }
     }
 
     /**
@@ -87,7 +93,10 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    PoissonDistribution() : RandomDistribution(), lambda(1.0) {}
+    PoissonDistribution() :
+        RandomDistribution(),
+        lambda(1.0)
+    {}
 
     /**
         Serialization function for checkpoint

@@ -140,7 +140,9 @@ sgSetOutput(PyObject* self, PyObject* args)
 static PyObject*
 sgSetFreq(PyObject* self, PyObject* args)
 {
-    if ( !PyUnicode_Check(args) ) { return nullptr; }
+    if ( !PyUnicode_Check(args) ) {
+        return nullptr;
+    }
     if ( !((StatGroupPy_t*)self)->ptr->setFrequency(SST_ConvertToCppString(args)) ) {
         PyErr_SetString(PyExc_RuntimeError, "Invalid frequency");
         return nullptr;
@@ -149,14 +151,12 @@ sgSetFreq(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(0);
 }
 
-static PyMethodDef sgMethods[] = {
-    { "addStatistic", sgAddStat, METH_VARARGS, "Add a new statistic to the group" },
+static PyMethodDef sgMethods[] = { { "addStatistic", sgAddStat, METH_VARARGS, "Add a new statistic to the group" },
     { "addComponent", sgAddComp, METH_O, "Add a component to the group" },
     { "setOutput", sgSetOutput, METH_O, "Configure how the stats should be written" },
     { "setFrequency", sgSetFreq, METH_O,
-      "Set the frequency or rate (ie: \"10ms\", \"25khz\") to write out the statistics" },
-    { nullptr, nullptr, 0, nullptr }
-};
+        "Set the frequency or rate (ie: \"10ms\", \"25khz\") to write out the statistics" },
+    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -235,7 +235,9 @@ soInit(StatOutputPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
     vec.emplace_back(type);
     self->ptr = &vec.back();
 
-    if ( params != nullptr ) { self->ptr->params = convertToParams(params); }
+    if ( params != nullptr ) {
+        self->ptr->params = convertToParams(params);
+    }
 
     gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Output %s\n", type);
 
@@ -271,7 +273,9 @@ soAddParams(PyObject* self, PyObject* args)
     ConfigStatOutput* so = ((StatOutputPy_t*)self)->ptr;
     if ( nullptr == so ) return nullptr;
 
-    if ( !PyDict_Check(args) ) { return nullptr; }
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
 
     Py_ssize_t pos = 0;
     PyObject * key, *val;
@@ -289,8 +293,7 @@ soAddParams(PyObject* self, PyObject* args)
 }
 
 static PyMethodDef soMethods[] = { { "addParam", soAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
-                                   { "addParams", soAddParams, METH_O, "Adds Multiple Parameters from a dict" },
-                                   { nullptr, nullptr, 0, nullptr } };
+    { "addParams", soAddParams, METH_O, "Adds Multiple Parameters from a dict" }, { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

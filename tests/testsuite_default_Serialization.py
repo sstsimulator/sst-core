@@ -36,6 +36,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_pod_ptr(self):
         self.serialization_test_template("pod_ptr")
 
+    def test_Serialization_array(self):
+        self.serialization_test_template("array")
+
     def test_Serialization_ordered_containers(self):
         self.serialization_test_template("ordered_containers")
 
@@ -82,4 +85,3 @@ class testcase_Serialization(SSTTestCase):
         filter1 = StartsWithFilter("WARNING: No components are")
         cmp_result = testing_compare_filtered_diff("serialization", outfile, reffile, True, [filter1])
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-

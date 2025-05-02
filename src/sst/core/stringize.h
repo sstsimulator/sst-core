@@ -40,9 +40,13 @@ inline void
 trim(std::string& s)
 {
     auto start = s.find_first_not_of(" \t\n\r\v\f");
-    if ( start != 0 ) { s.replace(s.begin(), s.begin() + (start), ""); }
+    if ( start != 0 ) {
+        s.replace(s.begin(), s.begin() + (start), "");
+    }
     auto end = s.find_last_not_of(" \t\n\r\v\f");
-    if ( end != s.size() - 1 ) { s.replace(s.begin() + end + 1, s.end(), ""); }
+    if ( end != s.size() - 1 ) {
+        s.replace(s.begin() + end + 1, s.end(), "");
+    }
 }
 
 inline void
@@ -69,7 +73,9 @@ struct char_delimiter
 {
     using iter = std::string::const_iterator;
     const std::string delim;
-    explicit char_delimiter(const std::string& delim = " \t\v\f\n\r") : delim(delim) {}
+    explicit char_delimiter(const std::string& delim = " \t\v\f\n\r") :
+        delim(delim)
+    {}
 
     /**
      * @return pair<iter, iter> = <tok_end, next_tok>
@@ -188,7 +194,11 @@ public:
     iter begin() { return iter(f, first, last); }
     iter end() { return iter(f, last, last); }
 
-    Tokenizer(const std::string& s, const TokenizerFunc& f = TokenizerFunc()) : first(s.begin()), last(s.end()), f(f) {}
+    Tokenizer(const std::string& s, const TokenizerFunc& f = TokenizerFunc()) :
+        first(s.begin()),
+        last(s.end()),
+        f(f)
+    {}
 
 private:
     std::string::const_iterator first, last;

@@ -130,8 +130,7 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
 
     auto bigBuff = std::unique_ptr<char[]>(new char[totalBuf]);
 
-    MPI_Allgatherv(
-        buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes.get(), displacements.get(), MPI_BYTE,
+    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes.get(), displacements.get(), MPI_BYTE,
         MPI_COMM_WORLD);
 
     out_data.resize(world);

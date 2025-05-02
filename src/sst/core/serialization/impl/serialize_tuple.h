@@ -26,10 +26,11 @@
 namespace SST::Core::Serialization {
 
 // Serialize tuples and pairs
-template <template <typename...> class T, typename... Ts>
-class serialize_impl<T<Ts...>, std::enable_if_t<is_same_template_v<T, std::tuple> || is_same_template_v<T, std::pair>>>
+template <typename T>
+class serialize_impl<T,
+    std::enable_if_t<is_same_type_template_v<T, std::tuple> || is_same_type_template_v<T, std::pair>>>
 {
-    void operator()(T<Ts...>& t, serializer& ser, ser_opt_t options)
+    void operator()(T& t, serializer& ser, ser_opt_t options)
     {
         // Serialize each element of tuple or pair
         ser_opt_t opt = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;

@@ -47,7 +47,9 @@ public:
 
     void execute() override
     {
-        if ( print_message ) { Output::getDefaultObject().output("%s\n", message.c_str()); }
+        if ( print_message ) {
+            Output::getDefaultObject().output("%s\n", message.c_str());
+        }
         endSimulation();
         delete this;
     }

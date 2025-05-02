@@ -19,13 +19,17 @@
 
 using namespace SST::Core;
 
-DotConfigGraphOutput::DotConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
+DotConfigGraphOutput::DotConfigGraphOutput(const char* path) :
+    ConfigGraphOutput(path)
+{}
 
 void
 DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
 
-    if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
+    if ( nullptr == outputFile ) {
+        throw ConfigGraphOutputException("Output file is not open for writing");
+    }
 
     fprintf(outputFile, "graph \"sst_simulation\" {\noverlap=scale;\nsplines=spline;\n");
     const auto compMap = graph->getComponentMap();
@@ -78,17 +82,20 @@ DotConfigGraphOutput::generateDot(
 }
 
 void
-DotConfigGraphOutput::generateDot(
-    const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity,
-    const ConfigComponent* parent) const
+DotConfigGraphOutput::generateDot(const ConfigComponent* comp, const ConfigLinkMap_t& linkMap,
+    const uint32_t dot_verbosity, const ConfigComponent* parent) const
 {
 
     // Display component type
-    if ( parent ) { fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> ", comp->id); }
+    if ( parent ) {
+        fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> ", comp->id);
+    }
     else {
         fprintf(outputFile, "%" PRIu64 " [label=\"{<main> ", comp->id);
     }
-    if ( dot_verbosity >= 2 ) { fprintf(outputFile, "%s\\n%s", comp->name.c_str(), comp->type.c_str()); }
+    if ( dot_verbosity >= 2 ) {
+        fprintf(outputFile, "%s\\n%s", comp->name.c_str(), comp->type.c_str());
+    }
     else {
         fprintf(outputFile, "%s", comp->name.c_str());
     }
@@ -96,12 +103,16 @@ DotConfigGraphOutput::generateDot(
     // Display ports
     if ( dot_verbosity >= 6 ) {
         int j = comp->links.size();
-        if ( j != 0 ) { fprintf(outputFile, " |\n"); }
+        if ( j != 0 ) {
+            fprintf(outputFile, " |\n");
+        }
         for ( LinkId_t i : comp->links ) {
             const ConfigLink* link = linkMap[i];
             const int         port = (link->component[0] == comp->id) ? 0 : 1;
             fprintf(outputFile, "<%s> Port: %s", link->port[port].c_str(), link->port[port].c_str());
-            if ( j > 1 ) { fprintf(outputFile, " |\n"); }
+            if ( j > 1 ) {
+                fprintf(outputFile, " |\n");
+            }
             j--;
         }
     }
@@ -125,16 +136,14 @@ DotConfigGraphOutput::generateDot(const ConfigLink* link, const uint32_t dot_ver
     int minLatIdx = (link->latency[0] <= link->latency[1]) ? 0 : 1;
     // Link name and latency displayed. Connected to specific port on component
     if ( dot_verbosity >= 8 ) {
-        fprintf(
-            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n", link->component[0],
+        fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n", link->component[0],
             link->port[0].c_str(), link->component[1], link->port[1].c_str(), link->name.c_str(),
             link->latency_str[minLatIdx].c_str());
 
         // No link name or latency. Connected to specific port on component
     }
     else if ( dot_verbosity >= 6 ) {
-        fprintf(
-            outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\"\n", link->component[0], link->port[0].c_str(),
+        fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\"\n", link->component[0], link->port[0].c_str(),
             link->component[1], link->port[1].c_str());
 
         // No link name or latency. Connected to component NOT port

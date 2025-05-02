@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <assert.h>
+// #include <assert.h>
 
 #include "sst_config.h"
 
@@ -19,7 +19,8 @@
 
 namespace SST::CoreTestParamComponent {
 
-coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     Output& out = getSimulationOutput();
     out.output("Component %s:\n", getName().c_str());
@@ -119,6 +120,8 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
 }
 
 
-coreTestParamComponent::coreTestParamComponent() : Component(-1) {}
+coreTestParamComponent::coreTestParamComponent() :
+    Component(-1)
+{}
 
 } // namespace SST::CoreTestParamComponent

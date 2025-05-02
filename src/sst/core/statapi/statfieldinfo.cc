@@ -61,7 +61,9 @@ fieldType_t
 StatisticFieldTypeBase::getField(const char* field_short_name)
 {
     for ( auto iter = fields_->begin(); iter != fields_->end(); iter++ ) {
-        if ( strcmp(iter->second->shortName(), field_short_name) ) { return iter->first; }
+        if ( strcmp(iter->second->shortName(), field_short_name) ) {
+            return iter->first;
+        }
     }
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "Look up field name: %s; No such field found", field_short_name);
@@ -71,7 +73,9 @@ StatisticFieldTypeBase::getField(const char* field_short_name)
 void
 StatisticFieldTypeBase::addField(fieldType_t id, StatisticFieldTypeBase* base)
 {
-    if ( !fields_ ) { fields_ = new std::map<fieldType_t, StatisticFieldTypeBase*>; }
+    if ( !fields_ ) {
+        fields_ = new std::map<fieldType_t, StatisticFieldTypeBase*>;
+    }
     (*fields_)[id] = base;
 }
 

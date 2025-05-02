@@ -33,7 +33,8 @@ public:
         Creates an exponential distribution with a specific lambda
         \param mn The lambda of the exponential distribution
     */
-    explicit ExponentialDistribution(const double mn) : RandomDistribution()
+    explicit ExponentialDistribution(const double mn) :
+        RandomDistribution()
     {
 
         lambda        = mn;
@@ -46,7 +47,8 @@ public:
         \param mn The lambda of the exponential distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    ExponentialDistribution(const double mn, Random* baseDist) : RandomDistribution()
+    ExponentialDistribution(const double mn, Random* baseDist) :
+        RandomDistribution()
     {
 
         lambda        = mn;
@@ -59,7 +61,9 @@ public:
     */
     ~ExponentialDistribution()
     {
-        if ( deleteDistrib ) { delete baseDistrib; }
+        if ( deleteDistrib ) {
+            delete baseDistrib;
+        }
     }
 
     /**
@@ -81,7 +85,9 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    ExponentialDistribution() : RandomDistribution() {}
+    ExponentialDistribution() :
+        RandomDistribution()
+    {}
 
     /**
         Serialization function for checkpoint

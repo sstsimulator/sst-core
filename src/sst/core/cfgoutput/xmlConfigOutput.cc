@@ -19,13 +19,17 @@
 
 using namespace SST::Core;
 
-XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
+XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) :
+    ConfigGraphOutput(path)
+{}
 
 void
 XMLConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
 {
 
-    if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
+    if ( nullptr == outputFile ) {
+        throw ConfigGraphOutputException("Output file is not open for writing");
+    }
 
     fprintf(outputFile, "<?xml version=\"1.0\" ?>\n");
     fprintf(outputFile, "<component id=\"root\" name=\"root\">\n");
@@ -51,8 +55,7 @@ XMLConfigGraphOutput::generateXML(
     const std::string& indent, const ConfigComponent* comp, const ConfigLinkMap_t& UNUSED(linkMap)) const
 {
 
-    fprintf(
-        outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n", indent.c_str(), comp->name.c_str(),
+    fprintf(outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n", indent.c_str(), comp->name.c_str(),
         comp->name.c_str(), comp->type.c_str());
 
     // for(auto paramsItr = comp->params.begin(); paramsItr != comp->params.end(); paramsItr++) {
@@ -61,8 +64,7 @@ XMLConfigGraphOutput::generateXML(
         std::string paramName  = *paramsItr;
         std::string paramValue = comp->params.find<std::string>(*paramsItr);
 
-        fprintf(
-            outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n", indent.c_str(), "   ", paramName.c_str(),
+        fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n", indent.c_str(), "   ", paramName.c_str(),
             paramValue.c_str());
     }
 
@@ -77,8 +79,7 @@ XMLConfigGraphOutput::generateXML(
     const ConfigComponent* link_left  = compMap[link->component[0]];
     const ConfigComponent* link_right = compMap[link->component[1]];
 
-    fprintf(
-        outputFile,
+    fprintf(outputFile,
         "%s<link id=\"%s\" name=\"%s\"\n%s%sleft=\"%s\" right=\"%s\"\n%s%sleftport=\"%s\" rightport=\"%s\"/>\n",
         indent.c_str(), link->name.c_str(), link->name.c_str(), indent.c_str(), "   ", link_left->name.c_str(),
         link_right->name.c_str(), indent.c_str(), "   ", link->port[0].c_str(), link->port[1].c_str());

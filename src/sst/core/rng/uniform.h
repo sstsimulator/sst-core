@@ -42,7 +42,9 @@ public:
         probPerBin(1)
     {
 
-        if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
+        if ( probCount > 0 ) {
+            probPerBin = 1.0 / static_cast<double>(probCount);
+        }
 
         baseDistrib = new MersenneRNG();
     }
@@ -60,7 +62,9 @@ public:
         probPerBin(1)
     {
 
-        if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
+        if ( probCount > 0 ) {
+            probPerBin = 1.0 / static_cast<double>(probCount);
+        }
 
         baseDistrib = baseDist;
     }
@@ -70,7 +74,9 @@ public:
     */
     ~UniformDistribution()
     {
-        if ( deleteDistrib ) { delete baseDistrib; }
+        if ( deleteDistrib ) {
+            delete baseDistrib;
+        }
     }
 
     /**
@@ -93,7 +99,11 @@ public:
     /**
         Default constructor. FOR SERIALIZATION ONLY.
      */
-    UniformDistribution() : RandomDistribution(), deleteDistrib(true), probCount(0) {}
+    UniformDistribution() :
+        RandomDistribution(),
+        deleteDistrib(true),
+        probCount(0)
+    {}
 
     /**
         Serialization function for checkpoint

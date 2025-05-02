@@ -37,9 +37,8 @@ namespace SST::Statistics {
 
 StatisticBase::StatisticInfo StatisticBase::null_info_;
 
-StatisticBase::StatisticBase(
-    BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
-    bool null_stat = false)
+StatisticBase::StatisticBase(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id,
+    Params& stat_params, bool null_stat = false)
 {
     component_ = comp;
 
@@ -58,32 +57,32 @@ StatisticBase::StatisticBase(
     try {
         UnitAlgebra startat = stat_params.find<UnitAlgebra>("startat", "0ns");
         if ( !startat.hasUnits("s") ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-                CALL_INFO, 1, "ERROR: Statistic %s - param 'startat' = '%s'; must be in units of seconds; exiting...\n",
+            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+                "ERROR: Statistic %s - param 'startat' = '%s'; must be in units of seconds; exiting...\n",
                 getFullStatName().c_str(), startat.toStringBestSI().c_str());
         }
         info_->start_at_time_ = startat;
     }
     catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1, "ERROR: Statistic %s - param 'startat' = '%s'; Exception occured. %s\n",
-            getFullStatName().c_str(), stat_params.find<std::string>("startat", "0ns").c_str(), exc.what());
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+            "ERROR: Statistic %s - param 'startat' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
+            stat_params.find<std::string>("startat", "0ns").c_str(), exc.what());
     }
 
     /* Parameter: stopat */
     try {
         UnitAlgebra stopat = stat_params.find<UnitAlgebra>("stopat", "0ns");
         if ( !stopat.hasUnits("s") ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-                CALL_INFO, 1, "ERROR: Statistic %s - param 'stopat' = '%s'; must be in units of seconds; exiting...\n",
+            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+                "ERROR: Statistic %s - param 'stopat' = '%s'; must be in units of seconds; exiting...\n",
                 getFullStatName().c_str(), stopat.toStringBestSI().c_str());
         }
         info_->stop_at_time_ = stopat;
     }
     catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1, "ERROR: Statistic %s - param 'stopat' = '%s'; Exception occured. %s\n",
-            getFullStatName().c_str(), stat_params.find<std::string>("stopat", "0ns").c_str(), exc.what());
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+            "ERROR: Statistic %s - param 'stopat' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
+            stat_params.find<std::string>("stopat", "0ns").c_str(), exc.what());
     }
 
     /* Parameter: rate */
@@ -93,9 +92,9 @@ StatisticBase::StatisticBase(
         info_->collection_rate_ = rate;
     }
     catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1, "ERROR: Statistic %s - param 'rate' = '%s'; Exception occured. %s\n",
-            getFullStatName().c_str(), stat_params.find<std::string>("rate", "0ns").c_str(), exc.what());
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+            "ERROR: Statistic %s - param 'rate' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
+            stat_params.find<std::string>("rate", "0ns").c_str(), exc.what());
     }
 
     /* Parameter: resetOnOutput */
@@ -118,17 +117,17 @@ StatisticBase::getCompName() const
 void
 Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag))
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-        CALL_INFO, 1, "void statistic %s, type %s for component %s does not support outputing fields",
-        getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
+    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+        "void statistic %s, type %s for component %s does not support outputing fields", getStatTypeName().c_str(),
+        getFullStatName().c_str(), getComponent()->getName().c_str());
 }
 
 void
 Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output))
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(
-        CALL_INFO, 1, "void statistic %s, type %s for component %s does not support outputing fields",
-        getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
+    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+        "void statistic %s, type %s for component %s does not support outputing fields", getStatTypeName().c_str(),
+        getFullStatName().c_str(), getComponent()->getName().c_str());
 }
 
 void
@@ -202,7 +201,9 @@ void
 StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     /* Only serialize info if stat is non-null */
-    if ( !isNullStatistic() ) { SST_SER(info_); }
+    if ( !isNullStatistic() ) {
+        SST_SER(info_);
+    }
 
     /* Store/restore data type */
     if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {

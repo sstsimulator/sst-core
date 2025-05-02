@@ -20,7 +20,8 @@ using namespace SST::CoreTestPortModule;
 
 /********* TestPortModule **********/
 
-TestPortModule::TestPortModule(Params& params) : PortModule()
+TestPortModule::TestPortModule(Params& params) :
+    PortModule()
 {
     modify_          = params.find<bool>("modify", "false");
     drop_            = params.find<bool>("drop", "false");
@@ -106,7 +107,8 @@ TestPortModule::interceptHandler(uintptr_t UNUSED(key), Event*& data, bool& canc
 
 /********* CoreTestPortModuleComponent **********/
 
-coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     // Get the parameters
     sendcount_             = params.find<int>("sendcount", "20");
@@ -169,7 +171,9 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
 bool
 coreTestPortModuleComponent::tick(Cycle_t UNUSED(cycle))
 {
-    if ( sendcount_ > 0 ) { right_->send(new PortModuleEvent()); }
+    if ( sendcount_ > 0 ) {
+        right_->send(new PortModuleEvent());
+    }
     else {
         PortModuleEvent* ev = new PortModuleEvent();
         ev->last            = true;
@@ -226,7 +230,8 @@ coreTestPortModuleComponent::handleEventLast(Event* ev)
 
 /********* PortSubComponent **********/
 
-PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id)
+PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) :
+    SubComponent(id)
 {
     // Need to connect to the right and left ports
     left_  = configureLink("left", new Event::Handler2<PortSubComponent, &PortSubComponent::dummy_handler>(this));

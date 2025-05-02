@@ -47,8 +47,7 @@ MemPoolTestComponent::MemPoolTestComponent(ComponentId_t id, Params& params) :
     while ( !done ) {
         std::string port_name("port");
         port_name += std::to_string(count);
-        Link* link = configureLink(
-            port_name,
+        Link* link = configureLink(port_name,
             new Event::Handler2<MemPoolTestComponent, &MemPoolTestComponent::eventHandler, int>(this, count));
         if ( nullptr == link ) {
             done = true;
@@ -58,7 +57,9 @@ MemPoolTestComponent::MemPoolTestComponent(ComponentId_t id, Params& params) :
         count++;
     }
 
-    if ( links.size() >= 4 ) { fatal(CALL_INFO, 1, "ERROR: MemPoolTestComponent only supports up to 4 components\n"); }
+    if ( links.size() >= 4 ) {
+        fatal(CALL_INFO, 1, "ERROR: MemPoolTestComponent only supports up to 4 components\n");
+    }
 
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
@@ -71,7 +72,9 @@ MemPoolTestComponent::eventHandler(Event* ev, int port)
     // will not delete some events, set by the undeleted_events
     // parameter.  This will allow us to check to see if the
     // undeleted_event detection works.
-    if ( undeleted_events > 0 ) { undeleted_events--; }
+    if ( undeleted_events > 0 ) {
+        undeleted_events--;
+    }
     else {
         delete ev;
     }
@@ -112,7 +115,9 @@ MemPoolTestComponent::complete(unsigned int phase)
         // (the one with size 1) will get messages.
         for ( auto* link : links ) {
             Event* ev = link->recvUntimedData();
-            if ( ev != nullptr ) { event_rate += (static_cast<MemPoolTestPerformanceEvent*>(ev))->rate; }
+            if ( ev != nullptr ) {
+                event_rate += (static_cast<MemPoolTestPerformanceEvent*>(ev))->rate;
+            }
             delete ev;
         }
 

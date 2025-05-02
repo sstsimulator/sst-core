@@ -65,7 +65,9 @@ public:
 
     ~AccumulatorStatistic() {}
 
-    AccumulatorStatistic() : Statistic<NumberBase>() {} // For serialization only
+    AccumulatorStatistic() :
+        Statistic<NumberBase>()
+    {} // For serialization only
 
     virtual const std::string& getStatTypeName() const override { return stat_type_; }
 

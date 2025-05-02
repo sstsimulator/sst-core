@@ -22,7 +22,8 @@
 
 namespace SST::Profile {
 
-ComponentProfileTool::ComponentProfileTool(const std::string& name, Params& params) : ProfileTool(name)
+ComponentProfileTool::ComponentProfileTool(const std::string& name, Params& params) :
+    ProfileTool(name)
 {
     std::string level = params.find<std::string>("level", "type");
     if ( level == "global" )
@@ -123,8 +124,7 @@ ComponentCodeSegmentProfileToolTime<T>::outputData(FILE* fp)
     fprintf(fp, "Name, count, time (s), avg time (ns)\n");
     for ( auto& x : times_ ) {
         fprintf(fp, "%s", x.first.c_str());
-        fprintf(
-            fp, ", %" PRIu64 ", %lf, %" PRIu64 "\n", x.second.count, ((double)x.second.time) / 1000000000.0,
+        fprintf(fp, ", %" PRIu64 ", %lf, %" PRIu64 "\n", x.second.count, ((double)x.second.time) / 1000000000.0,
             x.second.count == 0 ? 0 : x.second.time / x.second.count);
     }
 }

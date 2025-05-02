@@ -167,7 +167,9 @@ public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    explicit SSTLibraryInfo(const std::string& name) : m_name(name) {}
+    explicit SSTLibraryInfo(const std::string& name) :
+        m_name(name)
+    {}
 
     /** Return the Name of the Library. */
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }

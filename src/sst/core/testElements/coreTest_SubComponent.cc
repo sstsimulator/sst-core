@@ -28,12 +28,15 @@ using namespace SST::CoreTestSubComponent;
  *
  ***********************************************************************/
 
-SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) : Component(id)
+SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) :
+    Component(id)
 {
     bool        found = false;
     std::string freq  = params.find<std::string>("clock", "1GHz", found);
 
-    if ( found ) { registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this)); }
+    if ( found ) {
+        registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this));
+    }
 
     std::string unnamed_sub  = params.find<std::string>("unnamed_subcomponent", "");
     int         num_subcomps = params.find<int>("num_subcomps", 1);
@@ -76,7 +79,8 @@ SubComponentLoader::tick(Cycle_t cyc)
  *    SubCompSlot
  *
  ***********************************************************************/
-SubCompSlot::SubCompSlot(ComponentId_t id, Params& params) : SubCompSlotInterface(id)
+SubCompSlot::SubCompSlot(ComponentId_t id, Params& params) :
+    SubCompSlotInterface(id)
 {
     std::string unnamed_sub  = params.find<std::string>("unnamed_subcomponent", "");
     int         num_subcomps = params.find<int>("num_subcomps", 1);
@@ -114,11 +118,14 @@ SubCompSlot::clock(Cycle_t cyc)
  *    SubCompSender
  *
  ***********************************************************************/
-SubCompSender::SubCompSender(ComponentId_t id, Params& params) : SubCompSendRecvInterface(id)
+SubCompSender::SubCompSender(ComponentId_t id, Params& params) :
+    SubCompSendRecvInterface(id)
 {
     // Determine if I'm loading as a named or unmamed SubComponent
     std::string port_name;
-    if ( isUser() ) { port_name = "sendPort"; }
+    if ( isUser() ) {
+        port_name = "sendPort";
+    }
     else
         port_name = params.find<std::string>("port_name");
 
@@ -129,7 +136,9 @@ SubCompSender::SubCompSender(ComponentId_t id, Params& params) : SubCompSendRecv
     }
 
     nMsgSent = registerStatistic<uint32_t>("numSent", "");
-    if ( isStatisticShared("totalSent") ) { totalMsgSent = registerStatistic<uint32_t>("totalSent", ""); }
+    if ( isStatisticShared("totalSent") ) {
+        totalMsgSent = registerStatistic<uint32_t>("totalSent", "");
+    }
     else {
         totalMsgSent = NULL;
     }
@@ -156,7 +165,8 @@ SubCompSender::clock(Cycle_t cyc)
  *    SubCompReceiver
  *
  ***********************************************************************/
-SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) : SubCompSendRecvInterface(id)
+SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) :
+    SubCompSendRecvInterface(id)
 {
     // Determine if I'm loading as a named or unmamed SubComponent
     std::string port_name;
@@ -166,7 +176,9 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) : SubCompSend
         port_name = params.find<std::string>("port_name");
 
     link = configureLink(port_name, new Event::Handler2<SubCompReceiver, &SubCompReceiver::handleEvent>(this));
-    if ( !link ) { Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to configure port 'recvPort'\n"); }
+    if ( !link ) {
+        Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to configure port 'recvPort'\n");
+    }
     // registerTimeBase("1GHz", true);
     nMsgReceived = registerStatistic<uint32_t>("numRecv", "");
     out          = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);

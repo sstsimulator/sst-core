@@ -55,8 +55,7 @@ unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
         Py_XDECREF(vstr);
         return 0;
     }
-    PyErr_SetString(
-        PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
         "sst.UnitAlgebra can only be initialized with another sst.UnitAlgebra or with a formatted string");
     return -1;
 }
@@ -438,14 +437,14 @@ unitAlgebraPrecision(PyObject* self, PyObject* args)
 
 static PyMethodDef unitAlgebraMethods[] = {
     { "getRoundedValue", unitAlgebraGetRoundedValue, METH_NOARGS,
-      "Rounds value of UnitAlgebra to nearest whole number and returns a long" },
+        "Rounds value of UnitAlgebra to nearest whole number and returns a long" },
     { "getFloatValue", unitAlgebraGetFloatValue, METH_NOARGS, "Returns value portion of UnitAlgebra as a float" },
     { "isValueZero", unitAlgebraIsValueZero, METH_NOARGS, "Returns True if value is zero, false otherwise" },
     { "hasUnits", unitAlgebraHasUnits, METH_VARARGS, "Checks to see if the UnitAlgebra has the specified units" },
     { "invert", unitAlgebraInvert, METH_NOARGS, "Inverts the UnitAlgebra value and units" },
     { "bestSI", unitAlgebraBestSI, METH_VARARGS, "Returns a string representation of the UnitAlgebra using SI units" },
     { "precision", unitAlgebraPrecision, METH_VARARGS,
-      "Returns a string representation of the UnitAlgebra with the requested precision" },
+        "Returns a string representation of the UnitAlgebra with the requested precision" },
     { NULL, NULL, 0, NULL }
 };
 

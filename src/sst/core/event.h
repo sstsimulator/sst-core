@@ -58,7 +58,10 @@ public:
          new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Event*, classT, dataT>;
+    using Handler
+        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
+            SSTHandler<void, Event*, classT, dataT>;
+
 
     /**
        New style (checkpointable) SSTHandler
@@ -71,7 +74,9 @@ public:
     /** Constant, default value for id_types */
     static const id_type NO_ID;
 
-    Event() : Activity(), delivery_info(0)
+    Event() :
+        Activity(),
+        delivery_info(0)
     {
         setPriority(EVENTPRIORITY);
 #if __SST_DEBUG_EVENT_TRACKING__
@@ -89,8 +94,7 @@ public:
 
     virtual void printTrackingInfo(const std::string& header, Output& out) const override
     {
-        out.output(
-            "%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
+        out.output("%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
             first_comp.c_str(), first_port.c_str(), first_type.c_str(), last_comp.c_str(), last_port.c_str(),
             last_type.c_str());
     }
@@ -119,9 +123,9 @@ public:
 
 #endif
 
-    bool isEvent() final { return true; }
+    bool isEvent() override final { return true; }
 
-    void copyAllDeliveryInfo(const Activity* act) final
+    void copyAllDeliveryInfo(const Activity* act) override final
     {
         Activity::copyAllDeliveryInfo(act);
         const Event* ev = static_cast<const Event*>(act);
@@ -218,7 +222,9 @@ private:
 class EmptyEvent : public Event
 {
 public:
-    EmptyEvent() : Event() {}
+    EmptyEvent() :
+        Event()
+    {}
     ~EmptyEvent() {}
 
 private:

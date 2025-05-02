@@ -18,7 +18,8 @@
 using namespace SST;
 using namespace SST::CoreTestMessageGeneratorComponent;
 
-coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent(ComponentId_t id, Params& params) : Component(id)
+coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent(ComponentId_t id, Params& params) :
+    Component(id)
 {
     clock_frequency_str = params.find<std::string>("clock", "1GHz");
     std::cout << "Clock is configured for: " << clock_frequency_str << std::endl;
@@ -33,19 +34,18 @@ coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent(ComponentId
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 
-    remote_component = configureLink(
-        "remoteComponent",
+    remote_component = configureLink("remoteComponent",
         new Event::Handler2<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::handleEvent>(this));
 
     assert(remote_component);
 
     // set our clock
-    registerClock(
-        clock_frequency_str,
+    registerClock(clock_frequency_str,
         new Clock::Handler2<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::tick>(this));
 }
 
-coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent() : Component(-1)
+coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent() :
+    Component(-1)
 {
     // for serialization only
 }
@@ -62,13 +62,16 @@ coreTestMessageGeneratorComponent::handleEvent(Event* event)
 
     delete event;
 
-    if ( message_counter_recv == total_message_send_count ) { primaryComponentOKToEndSim(); }
+    if ( message_counter_recv == total_message_send_count ) {
+        primaryComponentOKToEndSim();
+    }
 }
 
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestMessageGeneratorComponent::tick(Cycle_t)
+bool
+coreTestMessageGeneratorComponent::tick(Cycle_t)
 {
     coreTestMessage* msg = new coreTestMessage();
     remote_component->send(msg);
@@ -81,7 +84,9 @@ bool coreTestMessageGeneratorComponent::tick(Cycle_t)
     message_counter_sent++;
 
     // return false so we keep going
-    if ( message_counter_sent == total_message_send_count ) { return true; }
+    if ( message_counter_sent == total_message_send_count ) {
+        return true;
+    }
     else {
         return false;
     }

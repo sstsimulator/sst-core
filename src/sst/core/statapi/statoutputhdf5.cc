@@ -33,7 +33,11 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
     setStatisticOutputName("StatisticOutputHDF5");
 }
 
-StatisticOutputHDF5::StatisticOutputHDF5() : StatisticFieldsOutput(), m_hFile(nullptr), m_currentDataSet(nullptr) {}
+StatisticOutputHDF5::StatisticOutputHDF5() :
+    StatisticFieldsOutput(),
+    m_hFile(nullptr),
+    m_currentDataSet(nullptr)
+{}
 
 bool
 StatisticOutputHDF5::checkOutputParameters()
@@ -45,7 +49,9 @@ StatisticOutputHDF5::checkOutputParameters()
 
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) { return false; }
+    if ( true == foundKey ) {
+        return false;
+    }
 
     // Get the parameters
     std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
@@ -80,7 +86,9 @@ void
 StatisticOutputHDF5::startRegisterFields(StatisticBase* stat)
 {
     StatisticFieldsOutput::startRegisterFields(stat);
-    if ( m_currentDataSet != nullptr ) { m_currentDataSet->setCurrentStatistic(stat); }
+    if ( m_currentDataSet != nullptr ) {
+        m_currentDataSet->setCurrentStatistic(stat);
+    }
     else {
         m_currentDataSet = initStatistic(stat);
     }
@@ -366,7 +374,9 @@ StatisticOutputHDF5::GroupInfo::setCurrentStatistic(StatisticBase* stat)
     /* Find and set in our m_components vector */
     ComponentId_t id = stat->getComponent()->getId();
     for ( size_t i = 0; i < m_statGroup->components.size(); i++ ) {
-        if ( m_statGroup->components.at(i) == id ) { m_components.at(i) = stat->getComponent(); }
+        if ( m_statGroup->components.at(i) == id ) {
+            m_components.at(i) = stat->getComponent();
+        }
     }
 }
 
@@ -539,7 +549,9 @@ StatisticOutputHDF5::GroupInfo::GroupStat::getStatName(StatisticBase* stat)
     return stat->getStatName() + "." + stat->getStatSubId();
 }
 
-StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, StatisticBase* stat) : gi(group), nEntries(0)
+StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, StatisticBase* stat) :
+    gi(group),
+    nEntries(0)
 {
 
     /* Create the file hierarchy */

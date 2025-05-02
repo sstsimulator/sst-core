@@ -19,14 +19,18 @@
 
 namespace SST::IMPL::Interactive {
 
-SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) : InteractiveConsole() {}
+SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) :
+    InteractiveConsole()
+{}
 
 void
 SimpleDebugger::execute(const std::string& msg)
 {
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
-    if ( nullptr == obj_ ) { obj_ = getComponentObjectMap(); }
+    if ( nullptr == obj_ ) {
+        obj_ = getComponentObjectMap();
+    }
     done = false;
 
     std::string line;
@@ -99,7 +103,9 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
         }
         // See if this is the top level component, and if so, set it
         // to nullptr
-        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) { base_comp_ = nullptr; }
+        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) {
+            base_comp_ = nullptr;
+        }
         obj_ = parent;
         return;
     }
@@ -119,8 +125,7 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
     }
 
     if ( loop_detected ) {
-        printf(
-            "Loop detected in cd.  New working directory will be set to level of looped object: %s\n",
+        printf("Loop detected in cd.  New working directory will be set to level of looped object: %s\n",
             new_obj->getFullName().c_str());
     }
     obj_ = new_obj;

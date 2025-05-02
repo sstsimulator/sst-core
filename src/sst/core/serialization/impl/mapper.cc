@@ -34,7 +34,9 @@ void
 ser_mapper::map_container(const std::string& name, ObjectMap* map)
 {
     obj_.back()->addVariable(name, map);
-    if ( next_item_read_only ) { next_item_read_only = false; }
+    if ( next_item_read_only ) {
+        next_item_read_only = false;
+    }
 }
 
 void
@@ -42,7 +44,9 @@ ser_mapper::map_existing_object(const std::string& name, ObjectMap* map)
 {
     map->incRefCount();
     obj_.back()->addVariable(name, map);
-    if ( next_item_read_only ) { next_item_read_only = false; }
+    if ( next_item_read_only ) {
+        next_item_read_only = false;
+    }
 }
 
 void
@@ -52,7 +56,9 @@ ser_mapper::map_hierarchy_start(const std::string& name, ObjectMap* map)
     obj_.push_back(map);
 
     indent++;
-    if ( next_item_read_only ) { next_item_read_only = false; }
+    if ( next_item_read_only ) {
+        next_item_read_only = false;
+    }
 }
 
 void

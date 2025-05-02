@@ -56,7 +56,9 @@ protected:
        Default constructor used for serialization.  At this point,
        my_rank is no longer needed, so just initialize to 0,0.
      */
-    ConfigShared() : ConfigBase() {}
+    ConfigShared() :
+        ConfigBase()
+    {}
 
     // Variables that will need to be serialized by child class since
     // this class does not serialize itself due to being used in the

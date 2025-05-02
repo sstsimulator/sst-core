@@ -30,7 +30,10 @@ public:
     /**
        Create a new InteractiveAction object for the simulation core to initiate interactive mode
     */
-    InteractiveAction(Simulation_impl* sim, const std::string& msg) : Action(), sim_(sim), msg_(msg)
+    InteractiveAction(Simulation_impl* sim, const std::string& msg) :
+        Action(),
+        sim_(sim),
+        msg_(msg)
     {
         setPriority(INTERACTIVEPRIOIRTY);
     }

@@ -22,7 +22,8 @@
 using namespace SST;
 using namespace SST::CoreTestComponent;
 
-coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) : coreTestComponentBase2(id)
+coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
+    coreTestComponentBase2(id)
 {
     bool found;
 
@@ -30,10 +31,14 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) : coreTes
 
     // get parameters
     workPerCycle = params.find<int64_t>("workPerCycle", 0, found);
-    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n"); }
+    if ( !found ) {
+        getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n");
+    }
 
     commFreq = params.find<int64_t>("commFreq", 0, found);
-    if ( !found ) { getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find communication frequency\n"); }
+    if ( !found ) {
+        getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find communication frequency\n");
+    }
 
     commSize = params.find<int64_t>("commSize", 16);
 
@@ -94,7 +99,8 @@ coreTestComponent::handleEvent(Event* ev)
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestComponent::clockTic(Cycle_t)
+bool
+coreTestComponent::clockTic(Cycle_t)
 {
     // do work
     // loop becomes:

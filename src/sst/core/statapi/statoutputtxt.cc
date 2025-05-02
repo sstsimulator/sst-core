@@ -17,7 +17,9 @@
 
 namespace SST::Statistics {
 
-StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) : StatisticFieldsOutput(outputParameters) {}
+StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) :
+    StatisticFieldsOutput(outputParameters)
+{}
 
 bool
 StatisticOutputTextBase::checkOutputParameters()
@@ -31,7 +33,9 @@ StatisticOutputTextBase::checkOutputParameters()
 
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) { return false; }
+    if ( true == foundKey ) {
+        return false;
+    }
     m_outputTopHeader    = params.find<bool>("outputtopheader", getOutputTopHeaderDefault());
     m_outputInlineHeader = params.find<bool>("outputinlineheader", getOutputInlineHeaderDefault());
     m_outputSimTime      = params.find<bool>("outputsimtime", getOutputSimTimeDefault());
@@ -48,7 +52,9 @@ StatisticOutputTextBase::checkOutputParameters()
             return false;
         }
 
-        if ( supportsCompression() ) { m_useCompression = params.find<bool>("compressed", false); }
+        if ( supportsCompression() ) {
+            m_useCompression = params.find<bool>("compressed", false);
+        }
     }
 
     return true;
@@ -142,7 +148,9 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
     m_outputBuffer += " : ";
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
-        if ( true == m_outputInlineHeader ) { buffer = format_string("SimTime = %" PRIu64, getCurrentSimCycle()); }
+        if ( true == m_outputInlineHeader ) {
+            buffer = format_string("SimTime = %" PRIu64, getCurrentSimCycle());
+        }
         else {
             buffer = format_string("%" PRIu64, getCurrentSimCycle());
         }
@@ -153,7 +161,9 @@ StatisticOutputTextBase::implStartOutputEntries(StatisticBase* statistic)
 
     if ( true == m_outputRank ) {
         // Add the Rank to the front
-        if ( true == m_outputInlineHeader ) { buffer = format_string("Rank = %d", getRank().rank); }
+        if ( true == m_outputInlineHeader ) {
+            buffer = format_string("Rank = %d", getRank().rank);
+        }
         else {
             buffer = format_string("%d", getRank().rank);
         }
@@ -330,9 +340,8 @@ StatisticOutputTextBase::openFile()
         if ( nullptr == m_gzFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();
-            out.fatal(
-                CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
-                strerror(errno));
+            out.fatal(CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n",
+                m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -344,8 +353,7 @@ StatisticOutputTextBase::openFile()
         if ( nullptr == m_hFile ) {
             // We got an error of some sort
             Output out = getSimulationOutput();
-            out.fatal(
-                CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
+            out.fatal(CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(),
                 strerror(errno));
             return false;
             ;
@@ -390,7 +398,9 @@ StatisticOutputTextBase::print(const char* fmt, ...)
             ssize_t n = vsnprintf(buf, bufSize, fmt, args);
             va_end(args);
 
-            if ( n < 0 ) { retry = false; }
+            if ( n < 0 ) {
+                retry = false;
+            }
             else if ( n < bufSize ) {
                 gzprintf(m_gzFile, "%s", buf);
                 /* Success */
@@ -426,7 +436,8 @@ StatisticOutputTextBase::serialize_order(SST::Core::Serialization::serializer& s
     SST_SER(m_FilePath);
 }
 
-StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
+StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) :
+    StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
     Output out = getSimulationOutput();
@@ -440,7 +451,8 @@ StatisticOutputTxt::serialize_order(SST::Core::Serialization::serializer& ser)
     StatisticOutputTextBase::serialize_order(ser);
 }
 
-StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) : StatisticOutputTextBase(outputParameters)
+StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) :
+    StatisticOutputTextBase(outputParameters)
 {
     // Announce this output object's name
     Output out = getSimulationOutput();

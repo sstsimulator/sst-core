@@ -42,7 +42,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     out.init(buffer, 0, 0, Output::STDOUT);
 
     std::string obj_type = params.find<std::string>("object_type", "array");
-    if ( obj_type == "array" ) { test_array = true; }
+    if ( obj_type == "array" ) {
+        test_array = true;
+    }
     else if ( obj_type == "bool_array" ) {
         test_bool_array = true;
     }
@@ -56,7 +58,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     checkpoint = params.find<bool>("checkpoint", false);
 
     myid = params.find<int>("myid", -1);
-    if ( myid == -1 ) { out.fatal(CALL_INFO, 1, "ERROR: myid is a required parameter\n"); }
+    if ( myid == -1 ) {
+        out.fatal(CALL_INFO, 1, "ERROR: myid is a required parameter\n");
+    }
 
     num_entities = params.find<int>("num_entities", 12);
 
@@ -111,7 +115,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
         if ( pub ) array.publish();
         if ( !full_initialization ) {
             int readval = array.mutex_read(myid);
-            if ( readval != myid ) { out.fatal(CALL_INFO, 100, "ERROR: SharedArray does not contain expected data\n"); }
+            if ( readval != myid ) {
+                out.fatal(CALL_INFO, 100, "ERROR: SharedArray does not contain expected data\n");
+            }
         }
     }
     else if ( test_bool_array && !late_initialize ) {
@@ -161,7 +167,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
         if ( pub ) map.publish();
         if ( !full_initialization ) {
             int readval = map.mutex_read(myid);
-            if ( readval != myid ) { out.fatal(CALL_INFO, 100, "ERROR: SharedMap does not contain expected data\n"); }
+            if ( readval != myid ) {
+                out.fatal(CALL_INFO, 100, "ERROR: SharedMap does not contain expected data\n");
+            }
         }
     }
     else if ( test_set && !late_initialize ) {
@@ -236,56 +244,88 @@ coreTestSharedObjectsComponent::init(unsigned int UNUSED(phase))
 void
 coreTestSharedObjectsComponent::setup()
 {
-    if ( late_initialize ) { array.initialize("this_should_fail"); }
+    if ( late_initialize ) {
+        array.initialize("this_should_fail");
+    }
 
     // In setup, we will test that foreach compile for the shared
     // objects and check for late writes
     if ( test_array ) {
-        if ( late_write ) { array.write(0, 10); }
+        if ( late_write ) {
+            array.write(0, 10);
+        }
         else {
             std::string arrstr;
             for ( auto x : array ) {
-                if ( x < 0 ) { out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n"); }
-                if ( checkpoint ) { arrstr += std::to_string(x) + " "; }
+                if ( x < 0 ) {
+                    out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n");
+                }
+                if ( checkpoint ) {
+                    arrstr += std::to_string(x) + " ";
+                }
             }
-            if ( checkpoint ) { out.output("@ Setup, Array = %s\n", arrstr.c_str()); }
+            if ( checkpoint ) {
+                out.output("@ Setup, Array = %s\n", arrstr.c_str());
+            }
         }
     }
     else if ( test_bool_array ) {
-        if ( late_write ) { bool_array.write(0, true); }
+        if ( late_write ) {
+            bool_array.write(0, true);
+        }
         else {
             int         count = 0;
             std::string arrstr;
             for ( auto x : bool_array ) {
                 if ( x ) count++;
-                if ( checkpoint ) { arrstr += (x ? "true " : "false "); }
+                if ( checkpoint ) {
+                    arrstr += (x ? "true " : "false ");
+                }
             }
             if ( count != (num_entities / 2) ) {
                 out.fatal(CALL_INFO, 100, "ERROR: SharedArray<bool> data is messed up\n");
             }
-            if ( checkpoint ) { out.output("@ Setup, Array<bool> = %s\n", arrstr.c_str()); }
+            if ( checkpoint ) {
+                out.output("@ Setup, Array<bool> = %s\n", arrstr.c_str());
+            }
         }
     }
     else if ( test_map ) {
-        if ( late_write ) { map.write(0, 10); }
+        if ( late_write ) {
+            map.write(0, 10);
+        }
         else {
             std::string mapstr;
             for ( auto x : map ) {
-                if ( x.second < 0 ) { out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n"); }
-                if ( checkpoint ) { mapstr += "(" + std::to_string(x.first) + "," + std::to_string(x.second) + ") "; }
+                if ( x.second < 0 ) {
+                    out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n");
+                }
+                if ( checkpoint ) {
+                    mapstr += "(" + std::to_string(x.first) + "," + std::to_string(x.second) + ") ";
+                }
             }
-            if ( checkpoint ) { out.output("@ Setup, Map = %s\n", mapstr.c_str()); }
+            if ( checkpoint ) {
+                out.output("@ Setup, Map = %s\n", mapstr.c_str());
+            }
         }
     }
     else if ( test_set ) {
-        if ( late_write ) { set.insert(setItem(0, 0)); }
+        if ( late_write ) {
+            set.insert(setItem(0, 0));
+        }
         else {
             std::string setstr;
             for ( auto x : set ) {
-                if ( x.key < 0 ) { out.fatal(CALL_INFO, 100, "ERROR: SharedSet data is messed up\n"); }
-                if ( checkpoint ) { setstr += std::to_string(x.key) + " "; }
+                if ( x.key < 0 ) {
+                    out.fatal(CALL_INFO, 100, "ERROR: SharedSet data is messed up\n");
+                }
+                if ( checkpoint ) {
+                    setstr += std::to_string(x.key) + " ";
+                }
             }
-            if ( checkpoint ) { out.output("@ Setup, Set = %s\n", setstr.c_str()); }
+            if ( checkpoint ) {
+                out.output("@ Setup, Set = %s\n", setstr.c_str());
+            }
         }
     }
 }
@@ -328,13 +368,16 @@ coreTestSharedObjectsComponent::finish()
     }
 }
 
-bool coreTestSharedObjectsComponent::tick(SST::Cycle_t)
+bool
+coreTestSharedObjectsComponent::tick(SST::Cycle_t)
 {
 
     if ( check ) {
         // Just check one entry per clock tick
         if ( test_array ) {
-            if ( array[count] != count ) { out.fatal(CALL_INFO, 101, "SharedArray does not have the correct data\n"); }
+            if ( array[count] != count ) {
+                out.fatal(CALL_INFO, 101, "SharedArray does not have the correct data\n");
+            }
         }
         else if ( test_bool_array ) {
             if ( checkpoint ) {
@@ -345,7 +388,9 @@ bool coreTestSharedObjectsComponent::tick(SST::Cycle_t)
             }
         }
         else if ( test_map ) {
-            if ( map[count] != count ) { out.fatal(CALL_INFO, 101, "SharedMap does not have the correct data\n"); }
+            if ( map[count] != count ) {
+                out.fatal(CALL_INFO, 101, "SharedMap does not have the correct data\n");
+            }
         }
     }
 

@@ -21,9 +21,13 @@
 
 namespace SST::Profile {
 
-SyncProfileTool::SyncProfileTool(const std::string& name, Params& UNUSED(params)) : ProfileTool(name) {}
+SyncProfileTool::SyncProfileTool(const std::string& name, Params& UNUSED(params)) :
+    ProfileTool(name)
+{}
 
-SyncProfileToolCount::SyncProfileToolCount(const std::string& name, Params& params) : SyncProfileTool(name, params) {}
+SyncProfileToolCount::SyncProfileToolCount(const std::string& name, Params& params) :
+    SyncProfileTool(name, params)
+{}
 
 void
 SyncProfileToolCount::syncManagerStart()
@@ -41,7 +45,8 @@ SyncProfileToolCount::outputData(FILE* fp)
 
 
 template <typename T>
-SyncProfileToolTime<T>::SyncProfileToolTime(const std::string& name, Params& params) : SyncProfileTool(name, params)
+SyncProfileToolTime<T>::SyncProfileToolTime(const std::string& name, Params& params) :
+    SyncProfileTool(name, params)
 {}
 
 template <typename T>
@@ -51,7 +56,9 @@ SyncProfileToolTime<T>::outputData(FILE* fp)
     fprintf(fp, "%s\n", name.c_str());
     fprintf(fp, "  SyncManager Count = %" PRIu64 "\n", syncmanager_count);
     fprintf(fp, "  Total SyncManager Time = %lfs\n", (float)syncmanager_time / 1000000000.0);
-    if ( syncmanager_count == 0 ) { fprintf(fp, "  Average SyncManager Time = N/A\n"); }
+    if ( syncmanager_count == 0 ) {
+        fprintf(fp, "  Average SyncManager Time = N/A\n");
+    }
     else {
         fprintf(fp, "  Average SyncManager Time = %" PRIu64 "ns\n", syncmanager_time / syncmanager_count);
     }

@@ -23,37 +23,37 @@
 #include <string>
 #include <vector>
 
-[[noreturn]] void
+[[noreturn]]
+void
 print_usage(FILE* output)
 {
-    fputs(
-        "sst-config\n"
-        "sst-config --<KEY>\n"
-        "sst-config <GROUP> <KEY>\n"
-        "\n"
-        "<GROUP>    Name of group to which the key belongs\n"
-        "           (e.g. DRAMSim group contains all DRAMSim\n"
-        "           KEY=VALUE settings).\n"
-        "<KEY>      Name of the setting key to find.\n"
-        "           If <GROUP> not specified this is found in\n"
-        "           the \'SSTCore\' default group.\n"
-        "\n"
-        "Example 1:\n"
-        "  sst-config --CXX\n"
-        "           Finds the CXX compiler specified by the core\n"
-        "Example 2:\n"
-        "  sst-config DRAMSim CPPFLAGS\n"
-        "           Finds CPPFLAGS associated with DRAMSim\n"
-        "Example 3:\n"
-        "  sst-config\n"
-        "           Dumps entire configuration found.\n"
-        "\n"
-        "The use of -- for the single <KEY> (Example 1) is\n"
-        "intentional to closely replicate behaviour of the\n"
-        "pkg-config tool used in Linux environments. This\n"
-        "should not be specified when using <GROUP> as well.\n"
-        "\n"
-        "Return: 0 is key found, 1 key/group not found\n",
+    fputs("sst-config\n"
+          "sst-config --<KEY>\n"
+          "sst-config <GROUP> <KEY>\n"
+          "\n"
+          "<GROUP>    Name of group to which the key belongs\n"
+          "           (e.g. DRAMSim group contains all DRAMSim\n"
+          "           KEY=VALUE settings).\n"
+          "<KEY>      Name of the setting key to find.\n"
+          "           If <GROUP> not specified this is found in\n"
+          "           the \'SSTCore\' default group.\n"
+          "\n"
+          "Example 1:\n"
+          "  sst-config --CXX\n"
+          "           Finds the CXX compiler specified by the core\n"
+          "Example 2:\n"
+          "  sst-config DRAMSim CPPFLAGS\n"
+          "           Finds CPPFLAGS associated with DRAMSim\n"
+          "Example 3:\n"
+          "  sst-config\n"
+          "           Dumps entire configuration found.\n"
+          "\n"
+          "The use of -- for the single <KEY> (Example 1) is\n"
+          "intentional to closely replicate behaviour of the\n"
+          "pkg-config tool used in Linux environments. This\n"
+          "should not be specified when using <GROUP> as well.\n"
+          "\n"
+          "Return: 0 is key found, 1 key/group not found\n",
         output);
     exit(1);
 }
@@ -73,11 +73,15 @@ main(int argc, char* argv[])
         }
     }
 
-    if ( found_help ) { print_usage(stdout); }
+    if ( found_help ) {
+        print_usage(stdout);
+    }
 
     bool dumpEnv = false;
 
-    if ( argc == 1 ) { dumpEnv = true; }
+    if ( argc == 1 ) {
+        dumpEnv = true;
+    }
     else if ( argc == 2 ) {
         groupName = static_cast<std::string>("SSTCore");
         std::string keyTemp(argv[1]);
@@ -89,7 +93,9 @@ main(int argc, char* argv[])
             exit(-1);
         }
 
-        if ( keyTemp.substr(0, 2) == "--" ) { key = keyTemp.substr(2); }
+        if ( keyTemp.substr(0, 2) == "--" ) {
+            key = keyTemp.substr(2);
+        }
         else {
             fprintf(
                 stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());

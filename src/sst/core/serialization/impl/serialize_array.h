@@ -44,12 +44,10 @@ struct raw_ptr_wrapper
 };
 
 // Functions for serializing arrays element by element
-void serialize_array(
-    serializer& ser, void* data, ser_opt_t opt, size_t size,
+void serialize_array(serializer& ser, void* data, ser_opt_t opt, size_t size,
     void serialize_array_element(serializer& ser, void* data, ser_opt_t opt, size_t index));
 
-void serialize_array_map(
-    serializer& ser, void* data, ser_opt_t opt, size_t size, ObjectMap* map,
+void serialize_array_map(serializer& ser, void* data, ser_opt_t opt, size_t size, ObjectMap* map,
     void serialize_array_map_element(serializer& ser, void* data, ser_opt_t opt, size_t index, const char* name));
 
 // Serialize an array element
@@ -89,18 +87,14 @@ struct serialize_impl_fixed_array
         const auto& aPtr     = get_ptr(ary); // reference to ary if it's a pointer; &ary otherwise
         switch ( ser.mode() ) {
         case serializer::MAP:
-            serialize_array_map(
-                ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapArray<ELEM_T>(&(*aPtr)[0], SIZE),
+            serialize_array_map(ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapArray<ELEM_T>(&(*aPtr)[0], SIZE),
                 serialize_array_map_element<ELEM_T>);
             break;
 
         case serializer::UNPACK:
             if constexpr ( std::is_pointer_v<OBJ_TYPE> ) {
                 // for pointers to fixed arrays, we allocate the storage
-                if constexpr ( std::is_same_v<OBJ_TYPE, ELEM_T(*)[SIZE]> )
-                    ary = new ELEM_T[SIZE];
-                else
-                    ary = new std::remove_pointer_t<OBJ_TYPE>;
+                ary = reinterpret_cast<OBJ_TYPE>(new std::remove_pointer_t<OBJ_TYPE>);
             }
             [[fallthrough]];
 
@@ -152,9 +146,8 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
             if constexpr ( !std::is_void_v<ELEM_T> ) {
-                pvt::serialize_array_map(
-                    ser, ary.ptr, elem_opt, ary.size, new ObjectMapArray<ELEM_T>(ary.ptr, ary.size),
-                    pvt::serialize_array_map_element<ELEM_T>);
+                pvt::serialize_array_map(ser, ary.ptr, elem_opt, ary.size,
+                    new ObjectMapArray<ELEM_T>(ary.ptr, ary.size), pvt::serialize_array_map_element<ELEM_T>);
             }
             break;
 

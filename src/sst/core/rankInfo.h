@@ -27,9 +27,14 @@ public:
     uint32_t              rank;
     uint32_t              thread;
 
-    RankInfo(uint32_t rank, uint32_t thread) : rank(rank), thread(thread) {}
+    RankInfo(uint32_t rank, uint32_t thread) :
+        rank(rank),
+        thread(thread)
+    {}
 
-    RankInfo() : rank(UNASSIGNED), thread(UNASSIGNED) {};
+    RankInfo() :
+        rank(UNASSIGNED),
+        thread(UNASSIGNED) {};
 
     bool isAssigned() const { return (rank != UNASSIGNED && thread != UNASSIGNED); }
 

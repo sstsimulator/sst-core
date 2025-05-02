@@ -62,7 +62,8 @@ public:
 
 protected:
     template <class T>
-    explicit ProvidesAttributes(T* UNUSED(t)) : attributes_(GetAttributes<T>::get())
+    explicit ProvidesAttributes(T* UNUSED(t)) :
+        attributes_(GetAttributes<T>::get())
     {}
 
 private:
@@ -83,9 +84,6 @@ private:
     }
 // clang-format on
 
-#define SST_ELI_DELETE_ATTRIBUTE(attribute) \
-    {                                       \
-        attribute, nullptr                  \
-    }
+#define SST_ELI_DELETE_ATTRIBUTE(attribute) { attribute, nullptr }
 
 #endif // SST_CORE_ELI_ATTRIBUTE_INFO_H

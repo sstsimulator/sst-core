@@ -74,14 +74,17 @@ SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 class EmptyRankSync : public RankSync
 {
 public:
-    explicit EmptyRankSync(const RankInfo& num_ranks) : RankSync(num_ranks) { nextSyncTime = MAX_SIMTIME_T; }
+    explicit EmptyRankSync(const RankInfo& num_ranks) :
+        RankSync(num_ranks)
+    {
+        nextSyncTime = MAX_SIMTIME_T;
+    }
     EmptyRankSync() {} // For serialization
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(
-        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), const std::string& UNUSED(name),
-        Link* UNUSED(link)) override
+    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank),
+        const std::string& UNUSED(name), Link* UNUSED(link)) override
     {
         return nullptr;
     }
@@ -94,7 +97,9 @@ public:
         // cycles so the shared memory regions initialization works.
 
 #ifdef SST_CONFIG_HAVE_MPI
-        if ( thread != 0 ) { return; }
+        if ( thread != 0 ) {
+            return;
+        }
 
         // Do an allreduce to see if there were any messages sent
         int input = msg_count;
@@ -134,7 +139,11 @@ public:
     Simulation_impl* sim;
 
 public:
-    explicit EmptyThreadSync(Simulation_impl* sim) : sim(sim) { nextSyncTime = MAX_SIMTIME_T; }
+    explicit EmptyThreadSync(Simulation_impl* sim) :
+        sim(sim)
+    {
+        nextSyncTime = MAX_SIMTIME_T;
+    }
     EmptyThreadSync() {} // For serialization
     ~EmptyThreadSync() {}
 
@@ -269,7 +278,9 @@ SyncManager::setupSyncObjects()
             b.resize(num_ranks_.thread);
         }
         if ( min_part_ != MAX_SIMTIME_T ) {
-            if ( num_ranks_.thread == 1 ) { rankSync_ = new RankSyncSerialSkip(num_ranks_); }
+            if ( num_ranks_.thread == 1 ) {
+                rankSync_ = new RankSyncSerialSkip(num_ranks_);
+            }
             else {
                 rankSync_ = new RankSyncParallelSkip(num_ranks_);
             }
@@ -296,8 +307,7 @@ SyncManager::setupSyncObjects()
     }
 }
 
-SyncManager::SyncManager(
-    const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
+SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
     const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
     Action(),
     rank_(rank),
@@ -423,7 +433,9 @@ SyncManager::execute()
 
         RankExecBarrier_[3].wait();
 
-        if ( exit_->getGlobalCount() == 0 ) { endSimulation(exit_->getEndTime()); }
+        if ( exit_->getGlobalCount() == 0 ) {
+            endSimulation(exit_->getEndTime());
+        }
 
         break;
     case THREAD:
@@ -446,7 +458,9 @@ SyncManager::execute()
         }
 
         if ( /*num_ranks_+.rank == 1*/ min_part_ == MAX_SIMTIME_T ) {
-            if ( exit_->getRefCount() == 0 ) { endSimulation(exit_->getEndTime()); }
+            if ( exit_->getRefCount() == 0 ) {
+                endSimulation(exit_->getEndTime());
+            }
         }
 
 
@@ -531,8 +545,7 @@ SyncManager::computeNextInsert(SimTime_t next_checkpoint_time)
 void
 SyncManager::print(const std::string& header, Output& out) const
 {
-    out.output(
-        "%s SyncManager to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
+    out.output("%s SyncManager to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
         getPriority());
 }
 

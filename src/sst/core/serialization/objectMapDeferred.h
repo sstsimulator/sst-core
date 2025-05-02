@@ -66,13 +66,18 @@ public:
         // representing. We will check it by making sure the name
         // matches what is passed in in the activate_callback()
         // function.
-        if ( name == "!proxy!" ) { obj_ = obj; }
+        if ( name == "!proxy!" ) {
+            obj_ = obj;
+        }
         else {
             printf("WARNING:: ObjectMapDeferred not built properly.  No mapping will be available\n");
         }
     }
 
-    ObjectMapDeferred(T* addr, const std::string& type) : ObjectMap(), addr_(addr), type_(demangle_name(type.c_str()))
+    ObjectMapDeferred(T* addr, const std::string& type) :
+        ObjectMap(),
+        addr_(addr),
+        type_(demangle_name(type.c_str()))
     {}
 
     ~ObjectMapDeferred() override { delete obj_; }

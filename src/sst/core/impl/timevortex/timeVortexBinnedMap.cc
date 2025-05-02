@@ -86,7 +86,9 @@ TimeVortexBinnedMapBase<TS>::insert(Activity* activity)
 
     // This is not really thread safe, but it's only used for stats,
     // so is okay if it misses something.
-    if ( UNLIKELY(current_depth > max_depth) ) { max_depth = current_depth; }
+    if ( UNLIKELY(current_depth > max_depth) ) {
+        max_depth = current_depth;
+    }
 
     // Check to see if this event is supposed to be delivered at the
     // current time.  This can only happen if it comes in on a
@@ -181,7 +183,9 @@ public:
         "[EXPERIMENTAL] TimeVortex based on std::map with events binned in time buckets.")
 
 
-    explicit TimeVortexBinnedMap(Params& params) : TimeVortexBinnedMapBase<false>(params) {}
+    explicit TimeVortexBinnedMap(Params& params) :
+        TimeVortexBinnedMapBase<false>(params)
+    {}
     SST_ELI_EXPORT(TimeVortexBinnedMap)
 };
 
@@ -198,7 +202,9 @@ public:
         "  Do not reference this element directly; just specify sst.timevortex.map.binned and this version will"
         " be selected when it is needed based on other parameters.")
 
-    explicit TimeVortexBinnedMap_ts(Params& params) : TimeVortexBinnedMapBase<true>(params) {}
+    explicit TimeVortexBinnedMap_ts(Params& params) :
+        TimeVortexBinnedMapBase<true>(params)
+    {}
     SST_ELI_EXPORT(TimeVortexBinnedMap_ts)
 };
 

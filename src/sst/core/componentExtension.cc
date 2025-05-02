@@ -15,7 +15,8 @@
 
 namespace SST {
 
-ComponentExtension::ComponentExtension(ComponentId_t id) : BaseComponent(id)
+ComponentExtension::ComponentExtension(ComponentId_t id) :
+    BaseComponent(id)
 {
     isExtension = true;
 }

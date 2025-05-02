@@ -21,7 +21,10 @@
 
 using namespace SST::Core;
 
-PythonConfigGraphOutput::PythonConfigGraphOutput(const char* path) : ConfigGraphOutput(path), graph_(nullptr) {}
+PythonConfigGraphOutput::PythonConfigGraphOutput(const char* path) :
+    ConfigGraphOutput(path),
+    graph_(nullptr)
+{}
 
 void
 PythonConfigGraphOutput::generateParams(const Params& params)
@@ -96,8 +99,7 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
                 char*       pyStatObjName = makePythonSafeWithPrefix(si->name, prefix);
                 char*       esStatObjName = makeEscapeSafe(si->name.c_str());
 
-                fprintf(
-                    outputFile, "%s = %s.createStatistic(\"%s\"", pyStatObjName, py_parent_name_.c_str(),
+                fprintf(outputFile, "%s = %s.createStatistic(\"%s\"", pyStatObjName, py_parent_name_.c_str(),
                     esStatObjName);
 
                 // Output the Statistic Parameters
@@ -139,7 +141,9 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
         fprintf(outputFile, "%s.enableAllStatistics(", objName);
 
         // Output the Statistic Parameters
-        if ( !comp->allStatConfig.params.empty() ) { generateParams(comp->allStatConfig.params); }
+        if ( !comp->allStatConfig.params.empty() ) {
+            generateParams(comp->allStatConfig.params);
+        }
         fprintf(outputFile, ")\n");
     }
 
@@ -154,8 +158,7 @@ PythonConfigGraphOutput::generateCommonComponent(const char* objName, const Conf
         char*             esPortName = makeEscapeSafe(link->port[idx].c_str());
 
         const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
-        fprintf(
-            outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n", objName, linkName.c_str(), esPortName,
+        fprintf(outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n", objName, linkName.c_str(), esPortName,
             tmp.toStringBestSI().c_str());
 
         free(esPortName);
@@ -175,9 +178,8 @@ PythonConfigGraphOutput::generateSubComponent(const char* owner, const ConfigCom
     char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
     char* esCompName = makeEscapeSafe(comp->name.c_str());
 
-    fprintf(
-        outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\", %d)\n", pyCompName, owner, esCompName, comp->type.c_str(),
-        comp->slot_num);
+    fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\", %d)\n", pyCompName, owner, esCompName,
+        comp->type.c_str(), comp->slot_num);
 
     generateCommonComponent(pyCompName, comp);
 
@@ -250,7 +252,9 @@ void
 PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
 
-    if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Input file is not open for output writing"); }
+    if ( nullptr == outputFile ) {
+        throw ConfigGraphOutputException("Input file is not open for output writing");
+    }
 
     this->graph_ = graph;
 
@@ -278,15 +282,13 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     fprintf(outputFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase().c_str());
     fprintf(outputFile, "sst.setProgramOption(\"partitioner\", \"%s\")\n", cfg->partitioner().c_str());
     fprintf(outputFile, "sst.setProgramOption(\"timeVortex\", \"%s\")\n", cfg->timeVortex().c_str());
-    fprintf(
-        outputFile, "sst.setProgramOption(\"interthread-links\", \"%s\")\n",
+    fprintf(outputFile, "sst.setProgramOption(\"interthread-links\", \"%s\")\n",
         cfg->interthread_links() ? "true" : "false");
     fprintf(outputFile, "sst.setProgramOption(\"output-prefix-core\", \"%s\")\n", cfg->output_core_prefix().c_str());
 
     fprintf(
         outputFile, "sst.setProgramOption(\"checkpoint-sim-period\", \"%s\")\n", cfg->checkpoint_sim_period().c_str());
-    fprintf(
-        outputFile, "sst.setProgramOption(\"checkpoint-wall-period\", \"%" PRIu32 "\")\n",
+    fprintf(outputFile, "sst.setProgramOption(\"checkpoint-wall-period\", \"%" PRIu32 "\")\n",
         cfg->checkpoint_wall_period());
 
     // Output the shared params

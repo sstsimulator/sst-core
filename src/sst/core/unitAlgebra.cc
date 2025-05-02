@@ -38,18 +38,14 @@ split(const std::string& input, const std::string& delims, std::vector<std::stri
     } while ( stop != std::string::npos );
 }
 
-static std::map<std::string, sst_big_num> si_unit_map = {
-    { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
-    { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") },
-    { "u", sst_big_num("1e-6") },  { "m", sst_big_num("1e-3") },
-    { "k", sst_big_num("1e3") },   { "K", sst_big_num("1e3") },
-    { "ki", sst_big_num(1024l) },  { "Ki", sst_big_num(1024l) },
-    { "M", sst_big_num("1e6") },   { "Mi", sst_big_num(1024l * 1024l) },
-    { "G", sst_big_num("1e9") },   { "Gi", sst_big_num(1024l * 1024l * 1024l) },
-    { "T", sst_big_num("1e12") },  { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) },
-    { "P", sst_big_num("1e15") },  { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) },
-    { "E", sst_big_num("1e18") },  { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) }
-};
+static std::map<std::string, sst_big_num> si_unit_map = { { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
+    { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") }, { "u", sst_big_num("1e-6") },
+    { "m", sst_big_num("1e-3") }, { "k", sst_big_num("1e3") }, { "K", sst_big_num("1e3") },
+    { "ki", sst_big_num(1024l) }, { "Ki", sst_big_num(1024l) }, { "M", sst_big_num("1e6") },
+    { "Mi", sst_big_num(1024l * 1024l) }, { "G", sst_big_num("1e9") }, { "Gi", sst_big_num(1024l * 1024l * 1024l) },
+    { "T", sst_big_num("1e12") }, { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) }, { "P", sst_big_num("1e15") },
+    { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) }, { "E", sst_big_num("1e18") },
+    { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) } };
 
 // Class Units
 
@@ -152,7 +148,9 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
     // Check to see if the unit is valid and get its ID
     std::string type = units.substr(si_length);
     if ( valid_base_units.find(type) != valid_base_units.end() ) {
-        if ( !invert ) { numerator.push_back(valid_base_units[type]); }
+        if ( !invert ) {
+            numerator.push_back(valid_base_units[type]);
+        }
         else {
             denominator.push_back(valid_base_units[type]);
         }
@@ -440,7 +438,9 @@ UnitAlgebra::operator/=(const UnitAlgebra& v)
 UnitAlgebra&
 UnitAlgebra::operator+=(const UnitAlgebra& v)
 {
-    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "add"); }
+    if ( unit != v.unit ) {
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "add");
+    }
     value += v.value;
     return *this;
 }
@@ -448,7 +448,9 @@ UnitAlgebra::operator+=(const UnitAlgebra& v)
 UnitAlgebra&
 UnitAlgebra::operator-=(const UnitAlgebra& v)
 {
-    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "subtract"); }
+    if ( unit != v.unit ) {
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "subtract");
+    }
     value -= v.value;
     return *this;
 }
@@ -456,7 +458,9 @@ UnitAlgebra::operator-=(const UnitAlgebra& v)
 bool
 UnitAlgebra::operator>(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
+    if ( unit != v.unit ) {
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare");
+    }
     return value > v.value;
 }
 
@@ -473,14 +477,18 @@ UnitAlgebra::operator>=(const UnitAlgebra& v) const
 bool
 UnitAlgebra::operator<(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
+    if ( unit != v.unit ) {
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare");
+    }
     return value < v.value;
 }
 
 bool
 UnitAlgebra::operator<=(const UnitAlgebra& v) const
 {
-    if ( unit != v.unit ) { throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare"); }
+    if ( unit != v.unit ) {
+        throw NonMatchingUnits(unit.toString(), v.unit.toString(), "compare");
+    }
     return value <= v.value;
 }
 
@@ -540,7 +548,9 @@ UnitAlgebra::isValueZero() const
     return value.isZero();
 }
 
-UnitAlgebra::UnitAlgebraException::UnitAlgebraException(const std::string& msg) : std::logic_error(msg) {}
+UnitAlgebra::UnitAlgebraException::UnitAlgebraException(const std::string& msg) :
+    std::logic_error(msg)
+{}
 
 UnitAlgebra::InvalidUnitType::InvalidUnitType(const std::string& type) :
     UnitAlgebra::UnitAlgebraException(std::string("Invalid unit type: ") + type)

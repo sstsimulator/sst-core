@@ -68,7 +68,9 @@ static PyObject*
 linkConnect(PyObject* self, PyObject* args)
 {
     PyObject *t0, *t1;
-    if ( !PyArg_ParseTuple(args, "O!O!", &PyTuple_Type, &t0, &PyTuple_Type, &t1) ) { return nullptr; }
+    if ( !PyArg_ParseTuple(args, "O!O!", &PyTuple_Type, &t0, &PyTuple_Type, &t1) ) {
+        return nullptr;
+    }
 
     PyObject *  c0, *c1;
     char *      port0, *port1;
@@ -79,7 +81,9 @@ linkConnect(PyObject* self, PyObject* args)
 
     if ( !PyArg_ParseTuple(t0, "O!s|O", &PyModel_ComponentType, &c0, &port0, &l0) ) {
         PyErr_Clear();
-        if ( !PyArg_ParseTuple(t0, "O!s|O", &PyModel_SubComponentType, &c0, &port0, &l0) ) { return nullptr; }
+        if ( !PyArg_ParseTuple(t0, "O!s|O", &PyModel_SubComponentType, &c0, &port0, &l0) ) {
+            return nullptr;
+        }
     }
 
     if ( nullptr != l0 ) {
@@ -92,7 +96,9 @@ linkConnect(PyObject* self, PyObject* args)
 
     if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_ComponentType, &c1, &port1, &l1) ) {
         PyErr_Clear();
-        if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_SubComponentType, &c1, &port1, &l1) ) { return nullptr; }
+        if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_SubComponentType, &c1, &port1, &l1) ) {
+            return nullptr;
+        }
     }
 
     if ( nullptr != l1 ) {
@@ -111,8 +117,8 @@ linkConnect(PyObject* self, PyObject* args)
     id0 = getComp(c0)->id;
     id1 = getComp(c1)->id;
 
-    gModel->getOutput()->verbose(
-        CALL_INFO, 3, 0, "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n", id0, id1,
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0,
+        "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n", id0, id1,
         ((LinkPy_t*)self)->name, lat0, lat1);
     gModel->addLink(id0, link->name, port0, lat0, link->no_cut);
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
@@ -134,9 +140,8 @@ linkSetNoCut(PyObject* self, PyObject* UNUSED(args))
 }
 
 static PyMethodDef linkMethods[] = { { "connect", linkConnect, METH_VARARGS, "Connects two components to a Link" },
-                                     { "setNoCut", linkSetNoCut, METH_NOARGS,
-                                       "Specifies that this link should not be partitioned across" },
-                                     { nullptr, nullptr, 0, nullptr } };
+    { "setNoCut", linkSetNoCut, METH_NOARGS, "Specifies that this link should not be partitioned across" },
+    { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

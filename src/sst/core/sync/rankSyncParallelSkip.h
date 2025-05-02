@@ -36,8 +36,8 @@ public:
     virtual ~RankSyncParallelSkip();
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue*
-         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) override;
+    ActivityQueue* registerLink(
+        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) override;
     void execute(int thread) override;
 
     /** Cause an exchange of Untimed Data to occur */

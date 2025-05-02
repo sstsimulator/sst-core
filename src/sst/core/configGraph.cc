@@ -44,8 +44,7 @@ checkForValidComponentName(const std::string& name)
         bad_comp_name_count++;
     }
     else if ( bad_comp_name_count == max_invalid_name_prints ) {
-        printf(
-            "WARNING: Number of invalid component names exceeds limit of %d, no more messages will be printed\n",
+        printf("WARNING: Number of invalid component names exceeds limit of %d, no more messages will be printed\n",
             max_invalid_name_prints);
         bad_comp_name_count++;
     }
@@ -60,8 +59,7 @@ checkForValidLinkName(const std::string& name)
         bad_link_name_count++;
     }
     else if ( bad_link_name_count == max_invalid_name_prints ) {
-        printf(
-            "WARNING: Number of invalid link names exceeds limit of %d, no more messages will be printed\n",
+        printf("WARNING: Number of invalid link names exceeds limit of %d, no more messages will be printed\n",
             max_invalid_name_prints);
         bad_link_name_count++;
     }
@@ -75,7 +73,9 @@ void
 ConfigLink::updateLatencies(TimeLord* timeLord)
 {
     // Need to clean up some elements before we can test for zero latency
-    if ( order >= 1 ) { latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__); }
+    if ( order >= 1 ) {
+        latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__);
+    }
     // if ( latency[0] == 0 ) {
     //     latency[0] = 1;
     //     if ( !zero_latency_warning ) {
@@ -85,7 +85,9 @@ ConfigLink::updateLatencies(TimeLord* timeLord)
     //         zero_latency_warning = true;
     //     }
     // }
-    if ( order >= 2 ) { latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__); }
+    if ( order >= 2 ) {
+        latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
+    }
     // if ( latency[1] == 0 ) {
     //     latency[1] = 1;
     //     if ( !zero_latency_warning ) {
@@ -108,7 +110,9 @@ ConfigStatistic::addParameter(const std::string& key, const std::string& value, 
 bool
 ConfigStatGroup::addComponent(ComponentId_t id)
 {
-    if ( std::find(components.begin(), components.end(), id) == components.end() ) { components.push_back(id); }
+    if ( std::find(components.begin(), components.end(), id) == components.end() ) {
+        components.push_back(id);
+    }
     return true;
 }
 
@@ -280,7 +284,9 @@ ConfigComponent::getNextStatisticID()
 ConfigComponent*
 ConfigComponent::getParent() const
 {
-    if ( id == COMPONENT_ID_MASK(id) ) { return nullptr; }
+    if ( id == COMPONENT_ID_MASK(id) ) {
+        return nullptr;
+    }
     return graph->findComponent((((ComponentId_t)nextSubID) << COMPONENT_ID_BITS) | COMPONENT_ID_MASK(id));
 }
 
@@ -341,7 +347,9 @@ ConfigComponent::createStatistic()
 
     auto*            parent = getParent();
     ConfigStatistic* cs     = nullptr;
-    if ( parent ) { cs = parent->insertStatistic(stat_id); }
+    if ( parent ) {
+        cs = parent->insertStatistic(stat_id);
+    }
     else {
         cs = &statistics_[stat_id];
     }
@@ -413,8 +421,8 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
     }
 
     if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName) ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, 1, "Failed to create statistic '%s' on '%s' of type '%s' - this is not a valid statistic\n",
+        Output::getDefaultObject().fatal(CALL_INFO, 1,
+            "Failed to create statistic '%s' on '%s' of type '%s' - this is not a valid statistic\n",
             statisticName.c_str(), name.c_str(), type.c_str());
         return false;
     }
@@ -444,7 +452,9 @@ ConfigComponent::addStatisticParameter(
     }
 
     ConfigStatistic* cs = nullptr;
-    if ( statisticName == STATALLFLAG ) { cs = &allStatConfig; }
+    if ( statisticName == STATALLFLAG ) {
+        cs = &allStatConfig;
+    }
     else {
         cs = findStatistic(statisticName);
     }
@@ -561,7 +571,9 @@ ConfigStatistic*
 ConfigComponent::insertStatistic(StatisticId_t sid)
 {
     ConfigComponent* parent = getParent();
-    if ( parent ) { return parent->insertStatistic(sid); }
+    if ( parent ) {
+        return parent->insertStatistic(sid);
+    }
     else {
         return &statistics_[sid];
     }
@@ -584,10 +596,14 @@ ConfigStatistic*
 ConfigComponent::findStatistic(StatisticId_t sid) const
 {
     auto* parent = getParent();
-    if ( parent ) { return parent->findStatistic(sid); }
+    if ( parent ) {
+        return parent->findStatistic(sid);
+    }
     else {
         auto iter = statistics_.find(sid);
-        if ( iter == statistics_.end() ) { return nullptr; }
+        if ( iter == statistics_.end() ) {
+            return nullptr;
+        }
         else {
             // I hate that I have to do this
             return const_cast<ConfigStatistic*>(&iter->second);
@@ -643,8 +659,7 @@ ConfigComponent::checkPorts() const
                 if ( !Factory::getFactory()->isPortNameValid(type, link->port[j]) ) {
                     // For now this is not a fatal error
                     // found_error = true;
-                    Output::getDefaultObject().fatal(
-                        CALL_INFO, 1,
+                    Output::getDefaultObject().fatal(CALL_INFO, 1,
                         "ERROR:  Attempting to connect to unknown port: %s, "
                         "in component %s of type %s.\n",
                         link->port[j].c_str(), name.c_str(), type.c_str());
@@ -656,9 +671,9 @@ ConfigComponent::checkPorts() const
                     // Check to see if this is a loopback link
                     if ( ret.first->second != link->name )
                         // Not a loopback link, fatal...
-                        Output::getDefaultObject().fatal(
-                            CALL_INFO, 1, "ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
-                            link->port[j].c_str(), name.c_str(), link->name.c_str(), ret.first->second.c_str());
+                        Output::getDefaultObject().fatal(CALL_INFO, 1,
+                            "ERROR: Port %s of Component %s connected to two links: %s, %s.\n", link->port[j].c_str(),
+                            name.c_str(), link->name.c_str(), ret.first->second.c_str());
                 }
             }
         }
@@ -753,14 +768,12 @@ ConfigGraph::checkForStructuralErrors()
         // This one should never happen since the slots are
         // initialized in order, but just in case...
         if ( clink->component[0] == ULONG_MAX ) {
-            output.output(
-                "WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
+            output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
                 clink->name.c_str(), comps_[clink->component[1]]->name.c_str());
             found_error = true;
         }
         if ( clink->component[1] == ULONG_MAX ) {
-            output.output(
-                "WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
+            output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
                 clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
             found_error = true;
         }
@@ -824,9 +837,8 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 }
 
 void
-ConfigGraph::addLink(
-    ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str,
-    bool no_cut)
+ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
+    const std::string& latency_str, bool no_cut)
 {
     checkForValidLinkName(link_name);
 
@@ -894,7 +906,9 @@ const ConfigComponent*
 ConfigGraph::findComponent(ComponentId_t id) const
 {
     /* Check to make sure we're part of the same component */
-    if ( COMPONENT_ID_MASK(id) == id ) { return comps_[id]; }
+    if ( COMPONENT_ID_MASK(id) == id ) {
+        return comps_[id];
+    }
 
     return comps_[COMPONENT_ID_MASK(id)]->findSubComponent(id);
 }
@@ -1005,9 +1019,8 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     return graph;
 }
 
-ConfigGraph::GraphFilter::GraphFilter(
-    ConfigGraph* original_graph, ConfigGraph* new_graph, const std::set<uint32_t>& original_rank_set,
-    const std::set<uint32_t>& new_rank_set) :
+ConfigGraph::GraphFilter::GraphFilter(ConfigGraph* original_graph, ConfigGraph* new_graph,
+    const std::set<uint32_t>& original_rank_set, const std::set<uint32_t>& new_rank_set) :
     ograph_(original_graph),
     ngraph_(new_graph),
     oset_(original_rank_set),
@@ -1103,7 +1116,9 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
         }
 
         // If we created a new ghost add it to the ngraph
-        if ( extra ) { ngraph_->comps_.insert(extra); }
+        if ( extra ) {
+            ngraph_->comps_.insert(extra);
+        }
 
         if ( !keep_original ) {
             // Remove from ograph and delete
@@ -1120,7 +1135,9 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     // in one graph and the other may get a ghost.
     ConfigGraph* other;
 
-    if ( oset_.count(comp->rank.rank) ) { other = ngraph_; }
+    if ( oset_.count(comp->rank.rank) ) {
+        other = ngraph_;
+    }
     else {
         // Need to move comp to ngraph
         comp->graph = ngraph_;
@@ -1152,7 +1169,9 @@ ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
     // Now need to sort out where the ghost cell goes
     if ( oset_.count(comp->rank.rank) ) {
         // Ghost goes in ngraph.  Comp stays in ograph
-        if ( ghost ) { ngraph_->comps_.insert(ghost); }
+        if ( ghost ) {
+            ngraph_->comps_.insert(ghost);
+        }
         return comp;
     }
     else {
@@ -1200,10 +1219,14 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         }
 
         // See if we need to copy into new graph
-        if ( copy ) { graph->stat_groups_.insert(std::make_pair(it->first, it->second)); }
+        if ( copy ) {
+            graph->stat_groups_.insert(std::make_pair(it->first, it->second));
+        }
 
         // See if we need to remove from the original graph.
-        if ( remove ) { it = this->stat_groups_.erase(it); }
+        if ( remove ) {
+            it = this->stat_groups_.erase(it);
+        }
         else {
             ++it;
         }
@@ -1374,7 +1397,9 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
             // the group set because they are both lookups into
             // associative structures, but the group will be much
             // smaller.
-            if ( group.find(id) == group.end() ) { getConnectedNoCutComps(id, group); }
+            if ( group.find(id) == group.end() ) {
+                getConnectedNoCutComps(id, group);
+            }
         }
     }
 }

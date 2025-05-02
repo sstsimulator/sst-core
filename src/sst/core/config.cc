@@ -110,7 +110,9 @@ public:
     // exit after
     static int setExitAfter(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { return 0; }
+        if ( arg == "" ) {
+            return 0;
+        }
         bool success     = false;
         cfg->exit_after_ = cfg->parseWallTimeToSeconds(arg, success, "--exit-after");
         if ( success ) return 0;
@@ -122,20 +124,23 @@ public:
     static int setPartitioner(Config* cfg, const std::string& arg)
     {
         cfg->partitioner_ = arg;
-        if ( cfg->partitioner_.find('.') == cfg->partitioner_.npos ) { cfg->partitioner_ = "sst." + cfg->partitioner_; }
+        if ( cfg->partitioner_.find('.') == cfg->partitioner_.npos ) {
+            cfg->partitioner_ = "sst." + cfg->partitioner_;
+        }
         return 0;
     }
 
     // heart beat
     static int setHeartbeatSimPeriod(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { return 0; }
+        if ( arg == "" ) {
+            return 0;
+        }
 
         try {
             UnitAlgebra check(arg);
             if ( !check.hasUnits("s") && !check.hasUnits("Hz") ) {
-                fprintf(
-                    stderr,
+                fprintf(stderr,
                     "Error parsing option: Units passed to --heartbeat-sim-period must be time (s or Hz, SI prefix "
                     "OK). Argument = "
                     "[%s]\n",
@@ -144,14 +149,12 @@ public:
             }
         }
         catch ( UnitAlgebra::InvalidUnitType const& ) {
-            fprintf(
-                stderr, "Error parsing option: Invalid units passed to --heartbeat-sim-period. Argument = [%s]\n",
+            fprintf(stderr, "Error parsing option: Invalid units passed to --heartbeat-sim-period. Argument = [%s]\n",
                 arg.c_str());
             return -1;
         }
         catch ( ... ) {
-            fprintf(
-                stderr,
+            fprintf(stderr,
                 "Error parsing option: Argument passed to --heartbeat-sim-period cannot be parsed. Argument = [%s]\n",
                 arg.c_str());
             return -1;
@@ -163,7 +166,9 @@ public:
 
     static int setHeartbeatWallPeriod(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { return 0; }
+        if ( arg == "" ) {
+            return 0;
+        }
 
         bool success                = false;
         cfg->heartbeat_wall_period_ = cfg->parseWallTimeToSeconds(arg, success, "--heartbeat-wall-period");
@@ -255,7 +260,9 @@ public:
     // output partition
     static int setWritePartitionFile(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { cfg->output_partition_ = true; }
+        if ( arg == "" ) {
+            cfg->output_partition_ = true;
+        }
         else {
             cfg->component_partition_file_ = arg;
         }
@@ -291,8 +298,8 @@ public:
         else if ( arg_lower == "multi" )
             cfg->parallel_load_mode_multi_ = true;
         else {
-            fprintf(
-                stderr, "Invalid option '%s' passed to --parallel-load.  Valid options are NONE, SINGLE and MULTI.\n",
+            fprintf(stderr,
+                "Invalid option '%s' passed to --parallel-load.  Valid options are NONE, SINGLE and MULTI.\n",
                 arg.c_str());
             return -1;
         }
@@ -309,8 +316,7 @@ public:
         try {
             UnitAlgebra check(arg);
             if ( !check.hasUnits("s") && !check.hasUnits("Hz") ) {
-                fprintf(
-                    stderr,
+                fprintf(stderr,
                     "Error parsing option: Units passed to --timebase must be time (s or Hz). Argument = [%s]\n",
                     arg.c_str());
                 return -1;
@@ -321,8 +327,7 @@ public:
             return -1;
         }
         catch ( ... ) {
-            fprintf(
-                stderr, "Error parsing option: Argument passed to --timebase cannot be parsed. Argument = [%s]\n",
+            fprintf(stderr, "Error parsing option: Argument passed to --timebase cannot be parsed. Argument = [%s]\n",
                 arg.c_str());
             return -1;
         }
@@ -383,7 +388,9 @@ public:
     // Advanced options - profiling
     static int enableProfiling(Config* cfg, const std::string& arg)
     {
-        if ( cfg->enabled_profiling_ != "" ) { cfg->enabled_profiling_ += ";"; }
+        if ( cfg->enabled_profiling_ != "" ) {
+            cfg->enabled_profiling_ += ";";
+        }
         cfg->enabled_profiling_ += arg;
         return 0;
     }
@@ -445,25 +452,25 @@ public:
 
     static std::string getProfilingExtHelp()
     {
-        std::string msg = "Profiling Points [EXPERIMENTAL]:\n\n";
+        std::string msg = "Profiling Points [API Not Yet Final]:\n\n";
         msg.append(
-            "NOTE: Profiling points are still in development and syntax for enabling profiling tools, as well as "
-            "available profiling points is subject to change.  However, it is intended that profiling points "
-            "will continue to be supported into the future.\n\n");
-        msg.append("  Profiling points are points in the code where a profiling tool can be instantiated.  The "
+            "NOTE: Profiling points are still in development and syntax for enabling profiling tools is subject to "
+            "change. Additional profiling points may also be added in the future.\n\n");
+        msg.append("Profiling points are points in the code where a profiling tool can be instantiated.  The "
                    "profiling tool allows you to collect various data about code segments.  There are currently three "
-                   "profiling points in SST core:\n");
-        msg.append("   - clock: profiles calls to user registered clock handlers\n");
-        msg.append("   - event: profiles calls to user registered event handlers set on Links\n");
-        msg.append("   - sync: profiles calls into the SyncManager (only valid for parallel simulations)\n");
+                   "profiling points in SST core:\n\n");
+        msg.append("\tclock: \t\vprofiles calls to user registered clock handlers\n");
+        msg.append("\tevent: \t\vprofiles calls to user registered event handlers set on Links\n");
+        msg.append("\tsync:  \t\vprofiles calls into the SyncManager (only valid for parallel simulations)\n");
         msg.append("\n");
-        msg.append("  The format for enabling profile point is a semicolon separated list where each item specifies "
-                   "details for a given profiling tool using the following format:\n");
-        msg.append("   name:type(params)[point]\n");
-        msg.append("     name: name of tool to be shown in output\n");
-        msg.append("     type: type of profiling tool in ELI format (lib.type)\n");
-        msg.append("     params: optional parameters to pass to profiling tool, format is key=value,key=value...\n");
-        msg.append("     point: profiling point to load the tool into\n");
+        msg.append("The format for enabling profile point is a semicolon separated list where each item specifies "
+                   "details for a given profiling tool using the following format:\n\n");
+        msg.append("\tname:type(params)[point], where\n");
+        msg.append("\t\tname   \t= \vname of tool to be shown in output\n");
+        msg.append("\t\ttype   \t= \vtype of profiling tool in ELI format (lib.type)\n");
+        msg.append(
+            "\t\tparams \t= \voptional parameters to pass to profiling tool, format is key=value,key=value...\n");
+        msg.append("\t\tpoint  \t= \vprofiling point to load the tool into\n");
         msg.append("\n");
         msg.append("Profiling tools can all be enabled in a single instance of --enable-profiling, or you can use "
                    "multiple instances of --enable-profiling to enable more than one profiling tool.  It "
@@ -532,7 +539,9 @@ public:
     // Set frequency of checkpoint generation
     static int setCheckpointWallPeriod(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { return 0; }
+        if ( arg == "" ) {
+            return 0;
+        }
         bool success                 = false;
         cfg->checkpoint_wall_period_ = cfg->parseWallTimeToSeconds(arg, success, "--checkpoint-wall-period");
         if ( success ) return 0;
@@ -541,7 +550,9 @@ public:
 
     static int setCheckpointSimPeriod(Config* cfg, const std::string& arg)
     {
-        if ( arg == "" ) { return 0; }
+        if ( arg == "" ) {
+            return 0;
+        }
 
         try {
             UnitAlgebra check(arg);
@@ -550,8 +561,7 @@ public:
                 return 0;
             }
             else {
-                fprintf(
-                    stderr,
+                fprintf(stderr,
                     "Error parsing option: --checkpoint-sim-period requires time units (s or Hz, SI prefix OK). "
                     "Argument = [%s]\n",
                     arg.c_str());
@@ -559,8 +569,7 @@ public:
             }
         }
         catch ( UnitAlgebra::InvalidUnitType& e ) {
-            fprintf(
-                stderr,
+            fprintf(stderr,
                 "Error parsing option: Argument passed to --checkpoint-sim-period has invalid units. Units must be "
                 "time (s "
                 "or Hz, SI prefix OK). Argument = [%s]\n",
@@ -570,8 +579,7 @@ public:
         catch ( ... ) { /* Fall through */
         }
 
-        fprintf(
-            stderr,
+        fprintf(stderr,
             "Error parsing option: Argument passed to --checkpoint-sim-period could not be parsed. Argument = [%s]\n",
             arg.c_str());
         return -1;
@@ -614,8 +622,7 @@ public:
         }
 
         if ( count > 1 ) {
-            fprintf(
-                stderr,
+            fprintf(stderr,
                 "Error parsing option: Argument passed to --checkpoint-name-format cannot "
                 "have more than one directory separator (/). Argument = [%s]\n",
                 arg.c_str());
@@ -640,8 +647,7 @@ public:
         // If percent_found is still true, then we ended with %, which
         // is also an error
         if ( !valid_format || percent_found ) {
-            fprintf(
-                stderr,
+            fprintf(stderr,
                 "Error parsing option: Argument passed to --checkpoint-name-format uses "
                 "invalid control sequence. Argument = [%s]\n",
                 arg.c_str());
@@ -763,7 +769,9 @@ public:
     // Set SIGALRM handler(s)
     static int setSigAlrm(Config* cfg, const std::string& arg)
     {
-        if ( cfg->sigalrm_ != "" ) { cfg->sigalrm_ += ";"; }
+        if ( cfg->sigalrm_ != "" ) {
+            cfg->sigalrm_ += ";";
+        }
         cfg->sigalrm_ += arg;
         return 0;
     }
@@ -771,7 +779,7 @@ public:
     // Extended help for SIGALRM
     static std::string getSignalExtHelp()
     {
-        std::string msg = "RealTime Actions [EXPERIMENTAL]:\n\n";
+        std::string msg = "RealTime Actions:\n\n";
         msg.append("  RealTimeActions are actions that execute in response to system signals SIGUSR1, SIGUSR2, and/or "
                    "SIGALRM. "
                    "The following actions are available from SST core or custom actions may also be defined.\n"
@@ -873,13 +881,12 @@ Config::print()
     std::cout << "no_env_config = " << no_env_config_ << std::endl;
 }
 
-static std::vector<AnnotationInfo> annotations = {
-    { 'S',
-      "Options annotated with 'S' can be set in the SDL file (input configuration file)\n  - Note: Options set on the "
-      "command line take precedence over options set in the SDL file\n" }
-};
+static std::vector<AnnotationInfo> annotations = { { 'S',
+    "Options annotated with 'S' can be set in the SDL file (input configuration file)\n  - Note: Options set on the "
+    "command line take precedence over options set in the SDL file\n" } };
 
-Config::Config(uint32_t num_ranks, bool first_rank) : ConfigShared(!first_rank, annotations)
+Config::Config(uint32_t num_ranks, bool first_rank) :
+    ConfigShared(!first_rank, annotations)
 {
     // Basic Options
     first_rank_ = first_rank;
@@ -999,78 +1006,62 @@ Config::insertOptions()
     /* Informational options */
     DEF_SECTION_HEADING("Informational Options");
     DEF_FLAG("usage", 'h', "Print usage information.", std::bind(&ConfigHelper::printUsage, this, _1));
-    DEF_ARG(
-        "help", 0, "option", "Print extended help information for requested option.",
+    DEF_ARG("help", 0, "option", "Print extended help information for requested option.",
         std::bind(&ConfigHelper::printHelp, this, _1), false);
     DEF_FLAG("version", 'V', "Print SST Release Version", std::bind(&ConfigHelper::printVersion, this, _1));
 
     /* Basic Options */
     DEF_SECTION_HEADING("Basic Options (most commonly used)");
     addVerboseOptions(true);
-    DEF_ARG(
-        "num-threads", 'n', "NUM", "Number of parallel threads to use per rank",
+    DEF_ARG("num-threads", 'n', "NUM", "Number of parallel threads to use per rank",
         std::bind(&ConfigHelper::setNumThreads, this, _1), true);
-    DEF_ARG(
-        "sdl-file", 0, "FILE",
+    DEF_ARG("sdl-file", 0, "FILE",
         "Specify SST Configuration file.  Note: this is most often done by just specifying the file without an option.",
         std::bind(&ConfigHelper::setConfigFile, this, _1), false);
-    DEF_ARG(
-        "model-options", 0, "STR",
+    DEF_ARG("model-options", 0, "STR",
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
         "will be appended to the model options (or used as the model options if --model-options was not specified).",
         std::bind(&ConfigHelper::setModelOptions, this, _1), false);
-    DEF_FLAG_OPTVAL(
-        "print-timing-info", 0, "Print SST timing information", std::bind(&ConfigHelper::setPrintTiming, this, _1),
-        true);
-    DEF_ARG(
-        "stop-at", 0, "TIME", "Set time at which simulation will end execution",
+    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information",
+        std::bind(&ConfigHelper::setPrintTiming, this, _1), true);
+    DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution",
         std::bind(&ConfigHelper::setStopAt, this, _1), true);
-    DEF_ARG(
-        "exit-after", 0, "TIME",
+    DEF_ARG("exit-after", 0, "TIME",
         "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
         "seconds, with the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the "
         "appropriate numbers for that value, lower case letters represent the units and are required for those "
         "formats).",
         std::bind(&ConfigHelper::setExitAfter, this, _1), true);
-    DEF_ARG(
-        "partitioner", 0, "PARTITIONER", "Select the partitioner to be used. <lib.partitionerName>",
+    DEF_ARG("partitioner", 0, "PARTITIONER", "Select the partitioner to be used. <lib.partitionerName>",
         std::bind(&ConfigHelper::setPartitioner, this, _1), true);
-    DEF_ARG(
-        "heartbeat-period", 0, "PERIOD",
+    DEF_ARG("heartbeat-period", 0, "PERIOD",
         "Set time for heartbeats to be published (these are approximate timings measured in simulation time, published "
         "by the core, to update on progress)",
         std::bind(&ConfigHelper::setHeartbeatSimPeriod, this, _1), true);
-    DEF_ARG(
-        "heartbeat-wall-period", 0, "PERIOD",
+    DEF_ARG("heartbeat-wall-period", 0, "PERIOD",
         "Set approximate frequency for heartbeats (SST-Core progress updates) to be published in terms of wall (real) "
         "time. PERIOD can be specified in hours, minutes, and seconds with "
         "the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the appropriate numbers for "
         "that value, lower case letters represent the units and are required for those formats.).",
         std::bind(&ConfigHelper::setHeartbeatWallPeriod, this, _1), true);
-    DEF_ARG(
-        "heartbeat-sim-period", 0, "PERIOD",
+    DEF_ARG("heartbeat-sim-period", 0, "PERIOD",
         "Set approximate frequency for heartbeats (SST-Core progress updates) to be published in terms of simulated "
         "time. PERIOD must include time units (s or Hz) and SI prefixes are accepted.",
         std::bind(&ConfigHelper::setHeartbeatSimPeriod, this, _1), true);
-    DEF_ARG(
-        "output-directory", 0, "DIR", "Directory into which all SST output files should reside",
+    DEF_ARG("output-directory", 0, "DIR", "Directory into which all SST output files should reside",
         std::bind(&ConfigHelper::setOutputDir, this, _1), true);
-    DEF_ARG(
-        "output-prefix-core", 0, "STR", "set the SST::Output prefix for the core",
+    DEF_ARG("output-prefix-core", 0, "STR", "set the SST::Output prefix for the core",
         std::bind(&ConfigHelper::setOutputPrefix, this, _1), true);
 
     /* Configuration Output */
     DEF_SECTION_HEADING(
         "Configuration Output Options (generates a file that can be used as input for reproducing a run)");
-    DEF_ARG(
-        "output-config", 0, "FILE", "File to write SST configuration (in Python format)",
+    DEF_ARG("output-config", 0, "FILE", "File to write SST configuration (in Python format)",
         std::bind(&ConfigHelper::setWriteConfig, this, _1), true);
-    DEF_ARG(
-        "output-json", 0, "FILE", "File to write SST configuration graph (in JSON format)",
+    DEF_ARG("output-json", 0, "FILE", "File to write SST configuration graph (in JSON format)",
         std::bind(&ConfigHelper::setWriteJSON, this, _1), true);
 #ifdef SST_CONFIG_HAVE_MPI
-    DEF_FLAG_OPTVAL(
-        "parallel-output", 0,
+    DEF_FLAG_OPTVAL("parallel-output", 0,
         "Enable parallel output of configuration information.  This option is ignored for single rank jobs.  Must also "
         "specify an output type (--output-config and/or --output-json).  Note: this will also cause partition info to "
         "be output if set to true.",
@@ -1079,26 +1070,21 @@ Config::insertOptions()
 
     /* Configuration Output */
     DEF_SECTION_HEADING("Graph Output Options (for outputting graph information for visualization or inspection)");
-    DEF_ARG(
-        "output-dot", 0, "FILE", "File to write SST configuration graph (in GraphViz format)",
+    DEF_ARG("output-dot", 0, "FILE", "File to write SST configuration graph (in GraphViz format)",
         std::bind(&ConfigHelper::setWriteDot, this, _1), true);
-    DEF_ARG(
-        "dot-verbosity", 0, "INT", "Amount of detail to include in the dot graph output",
+    DEF_ARG("dot-verbosity", 0, "INT", "Amount of detail to include in the dot graph output",
         std::bind(&ConfigHelper::setDotVerbosity, this, _1), true);
-    DEF_ARG_OPTVAL(
-        "output-partition", 0, "FILE",
+    DEF_ARG_OPTVAL("output-partition", 0, "FILE",
         "File to write SST component partitioning information.  When used without an argument and in conjuction with "
         "--output-json or --output-config options, will cause paritition information to be added to graph output.",
         std::bind(&ConfigHelper::setWritePartitionFile, this, _1), true);
 
     /* Advanced Features */
     DEF_SECTION_HEADING("Advanced Options");
-    DEF_ARG_EH(
-        "timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
+    DEF_ARG_EH("timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
         std::bind(&ConfigHelper::setTimebase, this, _1), std::bind(&ConfigHelper::getTimebaseExtHelp), true);
 #ifdef SST_CONFIG_HAVE_MPI
-    DEF_ARG_OPTVAL(
-        "parallel-load", 0, "MODE",
+    DEF_ARG_OPTVAL("parallel-load", 0, "MODE",
         "Enable parallel loading of configuration. This option is ignored for single rank jobs.  Optional mode "
         "parameters are NONE, SINGLE and MULTI (default).  If NONE is specified, parallel-load is turned off. If "
         "SINGLE is specified, the same file will be passed to all MPI ranks.  If MULTI is specified, each MPI rank is "
@@ -1106,25 +1092,20 @@ Config::insertOptions()
         "formats support both types of file loading.",
         std::bind(&ConfigHelper::enableParallelLoadMode, this, _1), false);
 #endif
-    DEF_ARG(
-        "timeVortex", 0, "MODULE", "Select TimeVortex implementation <lib.timevortex>",
+    DEF_ARG("timeVortex", 0, "MODULE", "Select TimeVortex implementation <lib.timevortex>",
         std::bind(&ConfigHelper::setTimeVortex, this, _1), true);
-    DEF_FLAG_OPTVAL(
-        "interthread-links", 0, "[EXPERIMENTAL] Set whether or not interthread links should be used",
+    DEF_FLAG_OPTVAL("interthread-links", 0, "[EXPERIMENTAL] Set whether or not interthread links should be used",
         std::bind(&ConfigHelper::setInterThreadLinks, this, _1), true);
 #ifdef USE_MEMPOOL
-    DEF_FLAG_OPTVAL(
-        "cache-align-mempools", 0, "[EXPERIMENTAL] Set whether mempool allocations are cache aligned",
+    DEF_FLAG_OPTVAL("cache-align-mempools", 0, "[EXPERIMENTAL] Set whether mempool allocations are cache aligned",
         std::bind(&ConfigHelper::setCacheAlignMempools, this, _1), true);
 #endif
-    DEF_ARG(
-        "debug-file", 0, "FILE", "File where debug output will go", std::bind(&ConfigHelper::setDebugFile, this, _1),
-        true);
+    DEF_ARG("debug-file", 0, "FILE", "File where debug output will go",
+        std::bind(&ConfigHelper::setDebugFile, this, _1), true);
     addLibraryPathOptions();
 
 #if PY_MINOR_VERSION >= 9
-    DEF_FLAG_EH(
-        "enable-python-coverage", 0,
+    DEF_FLAG_EH("enable-python-coverage", 0,
         "[EXPERIMENTAL] Causes the base Python interpreter to activate the coverage.Coverage object. This option can "
         "also be turned "
         "on by setting the environment variable SST_CONFIG_PYTHON_COVERAGE to true.",
@@ -1133,28 +1114,23 @@ Config::insertOptions()
 #endif
 
     /* Advanced Features - Profiling */
-    DEF_SECTION_HEADING("Advanced Options - Profiling (EXPERIMENTAL)");
-    DEF_ARG_EH(
-        "enable-profiling", 0, "POINTS",
+    DEF_SECTION_HEADING("Advanced Options - Profiling (API Not Yet Final)");
+    DEF_ARG_EH("enable-profiling", 0, "POINTS",
         "Enables default profiling for the specified points.  Argument is a semicolon separated list specifying the "
         "points to enable.",
         std::bind(&ConfigHelper::enableProfiling, this, _1), std::bind(&ConfigHelper::getProfilingExtHelp), true);
-    DEF_ARG(
-        "profiling-output", 0, "FILE", "Set output location for profiling data [stdout (default) or a filename]",
+    DEF_ARG("profiling-output", 0, "FILE", "Set output location for profiling data [stdout (default) or a filename]",
         std::bind(&ConfigHelper::setProfilingOutput, this, _1), true);
 
     /* Advanced Features - Debug */
     DEF_SECTION_HEADING("Advanced Options - Debug");
-    DEF_ARG(
-        "run-mode", 0, "MODE", "Set run mode [ init | run | both (default)]",
+    DEF_ARG("run-mode", 0, "MODE", "Set run mode [ init | run | both (default)]",
         std::bind(&ConfigHelper::setRunMode, this, _1), true);
-    DEF_ARG(
-        "interactive-console", 0, "ACTION",
+    DEF_ARG("interactive-console", 0, "ACTION",
         "[EXPERIMENTAL] Set console to use for interactive mode. NOTE: This currently only works for serial jobs and "
         "this option will be ignored for parallel runs.",
         std::bind(&ConfigHelper::setInteractiveConsole, this, _1), true);
-    DEF_ARG_OPTVAL(
-        "interactive-start", 0, "TIME",
+    DEF_ARG_OPTVAL("interactive-start", 0, "TIME",
         "[EXPERIMENTAL] Drop into interactive mode at specified simulated time.  If no time is specified, or the time "
         "is 0, then it will "
         "drop into interactive mode before any events are processed in the main run loop. This option is ignored if no "
@@ -1162,67 +1138,55 @@ Config::insertOptions()
         "for parallel runs.",
         std::bind(&ConfigHelper::setInteractiveStartTime, this, _1), true);
 #ifdef USE_MEMPOOL
-    DEF_ARG(
-        "output-undeleted-events", 0, "FILE",
+    DEF_ARG("output-undeleted-events", 0, "FILE",
         "file to write information about all undeleted events at the end of simulation (STDOUT and STDERR can be used "
         "to output to console)",
         std::bind(&ConfigHelper::setWriteUndeleted, this, _1), true);
 #endif
-    DEF_FLAG(
-        "force-rank-seq-startup", 0,
+    DEF_FLAG("force-rank-seq-startup", 0,
         "Force startup phases of simulation to execute one rank at a time for debug purposes",
         std::bind(&ConfigHelper::forceRankSeqStartup, this, _1));
 
     /* Advanced Features - Environment Setup/Reporting */
     DEF_SECTION_HEADING("Advanced Options - Environment Setup/Reporting");
     addEnvironmentOptions();
-    DEF_FLAG(
-        "disable-signal-handlers", 0, "Disable signal handlers",
+    DEF_FLAG("disable-signal-handlers", 0, "Disable signal handlers",
         std::bind(&ConfigHelper::disableSigHandlers, this, _1));
-    DEF_ARG_EH(
-        "sigusr1", 0, "MODULE", "Select handler for SIGUSR1 signal. See extended help for detail.",
+    DEF_ARG_EH("sigusr1", 0, "MODULE", "Select handler for SIGUSR1 signal. See extended help for detail.",
         std::bind(&ConfigHelper::setSigUsr1, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
-    DEF_ARG_EH(
-        "sigusr2", 0, "MODULE", "Select handler for SIGUSR2 signal. See extended help for detail.",
+    DEF_ARG_EH("sigusr2", 0, "MODULE", "Select handler for SIGUSR2 signal. See extended help for detail.",
         std::bind(&ConfigHelper::setSigUsr2, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
-    DEF_ARG_EH(
-        "sigalrm", 0, "MODULE",
+    DEF_ARG_EH("sigalrm", 0, "MODULE",
         "Select handler for SIGALRM signals.  Argument is a semicolon separated list specifying the "
         "handlers to register along with a time interval for each. See extended help for detail.",
         std::bind(&ConfigHelper::setSigAlrm, this, _1), std::bind(&ConfigHelper::getSignalExtHelp), true);
 
     /* Advanced Features - Checkpoint */
     DEF_SECTION_HEADING("Advanced Options - Checkpointing (EXPERIMENTAL)");
-    DEF_ARG(
-        "checkpoint-wall-period", 0, "PERIOD",
+    DEF_ARG("checkpoint-wall-period", 0, "PERIOD",
         "Set approximate frequency for checkpoints to be generated in terms of wall (real) time. PERIOD can be "
         "specified in hours, minutes, and seconds with "
         "the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (capital letters are the appropriate numbers for "
         "that value, lower case letters represent the units and are required for those formats.).",
         std::bind(&ConfigHelper::setCheckpointWallPeriod, this, _1), true);
-    DEF_ARG(
-        "checkpoint-period", 0, "PERIOD",
+    DEF_ARG("checkpoint-period", 0, "PERIOD",
         "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
         "time units (s or Hz) and SI prefixes are accepted. This flag will eventually be removed in favor of "
         "--checkpoint-sim-period",
         std::bind(&ConfigHelper::setCheckpointSimPeriod, this, _1), true);
-    DEF_ARG(
-        "checkpoint-sim-period", 0, "PERIOD",
+    DEF_ARG("checkpoint-sim-period", 0, "PERIOD",
         "Set approximate frequency for checkpoints to be generated in terms of simulated time. PERIOD must include "
         "time units (s or Hz) and SI prefixes are accepted.",
         std::bind(&ConfigHelper::setCheckpointSimPeriod, this, _1), true);
-    DEF_FLAG(
-        "load-checkpoint", 0,
+    DEF_FLAG("load-checkpoint", 0,
         "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",
         std::bind(&ConfigHelper::setLoadFromCheckpoint, this, _1), false);
-    DEF_ARG_EH(
-        "checkpoint-prefix", 0, "PREFIX",
+    DEF_ARG_EH("checkpoint-prefix", 0, "PREFIX",
         "Set prefix for checkpoint filenames. The checkpoint prefix defaults to checkpoint if this option is not set "
         "and checkpointing is enabled.",
         std::bind(&ConfigHelper::setCheckpointPrefix, this, _1), std::bind(&ConfigHelper::getCheckpointPrefixExtHelp),
         true);
-    DEF_ARG_EH(
-        "checkpoint-name-format", 0, "FORMAT",
+    DEF_ARG_EH("checkpoint-name-format", 0, "FORMAT",
         "Set the format for checkpoint filenames. See extended help for format options.  Default is "
         "\"%p_%n_%t/%p_%n_%t\"",
         std::bind(&ConfigHelper::setCheckpointNameFormat, this, _1),
@@ -1254,9 +1218,8 @@ Config::positionalCallback(int num, const std::string& arg)
     else {
         // If there are additional position arguments, this is an
         // error
-        fprintf(
-            stderr, "Error: sdl-file name is the only positional argument allowed.  See help for --model-options "
-                    "for more info on passing parameters to the input script.\n");
+        fprintf(stderr, "Error: sdl-file name is the only positional argument allowed.  See help for --model-options "
+                        "for more info on passing parameters to the input script.\n");
         return -1;
     }
     return 0;
@@ -1280,7 +1243,9 @@ bool
 Config::setOptionFromModel(const std::string& entryName, const std::string& value)
 {
     // Check to make sure option is settable in the SDL file
-    if ( getAnnotation(entryName, 'S') ) { return setOptionExternal(entryName, value); }
+    if ( getAnnotation(entryName, 'S') ) {
+        return setOptionExternal(entryName, value);
+    }
     fprintf(stderr, "ERROR: Option \"%s\" is not available to be set in the SDL file\n", entryName.c_str());
     exit(-1);
     return false;

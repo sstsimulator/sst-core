@@ -55,7 +55,9 @@ SST::Core::Environment::EnvironmentConfigGroup::setValue(const std::string& key,
 {
     auto paramsItr = params.find(key);
 
-    if ( paramsItr != params.end() ) { params.erase(paramsItr); }
+    if ( paramsItr != params.end() ) {
+        params.erase(paramsItr);
+    }
 
     params.insert(std::pair<std::string, std::string>(key, value));
 }
@@ -67,7 +69,9 @@ SST::Core::Environment::EnvironmentConfigGroup::print()
 
     int remainingLen = 70 - groupName.size();
 
-    if ( remainingLen < 0 ) { remainingLen = 0; }
+    if ( remainingLen < 0 ) {
+        remainingLen = 0;
+    }
 
     for ( ; remainingLen >= 0; remainingLen-- ) {
         printf("-");
@@ -121,7 +125,9 @@ SST::Core::Environment::EnvironmentConfiguration::removeGroup(const std::string&
 {
     auto theGroup = groups.find(groupName);
 
-    if ( theGroup != groups.end() ) { groups.erase(theGroup); }
+    if ( theGroup != groups.end() ) {
+        groups.erase(theGroup);
+    }
 }
 
 std::set<std::string>

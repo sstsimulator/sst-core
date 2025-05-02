@@ -45,8 +45,8 @@ public:
     ImplementSerializable(SST::SimulatorHeartbeat)
 
 private:
-    SimulatorHeartbeat()                          = default;
-    SimulatorHeartbeat(const SimulatorHeartbeat&) = delete;
+    SimulatorHeartbeat()                                     = default;
+    SimulatorHeartbeat(const SimulatorHeartbeat&)            = delete;
     SimulatorHeartbeat& operator=(const SimulatorHeartbeat&) = delete;
 
     void           execute() override;

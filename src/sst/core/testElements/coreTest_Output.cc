@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <assert.h>
+// #include <assert.h>
 
 #include "sst_config.h"
 
@@ -45,14 +45,17 @@ testTraceFunction(int level = 0)
     }
 }
 
-coreTestOutput::coreTestOutput(ComponentId_t id, Params& params) : Component(id)
+coreTestOutput::coreTestOutput(ComponentId_t id, Params& params) :
+    Component(id)
 {
     Output& out = getSimulationOutput();
 
     std::string test = params.find<std::string>("test");
     if ( test == "" ) out.fatal(CALL_INFO_LONG, 1, "ERROR: Must specify test type\n");
 
-    if ( test == "TraceFunction" ) { testTraceFunction(); }
+    if ( test == "TraceFunction" ) {
+        testTraceFunction();
+    }
 }
 
 } // namespace SST::CoreTestSerialization

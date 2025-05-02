@@ -70,7 +70,9 @@ private:
         filename(filename)
     {
         // If no filename for debug is given, just set it to the full name of the module
-        if ( filename == "" ) { filename = getFullModuleName(); }
+        if ( filename == "" ) {
+            filename = getFullModuleName();
+        }
     }
 
     //! load the code as a module into the interpreter

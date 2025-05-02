@@ -61,8 +61,8 @@ public:
 
     virtual uintptr_t registerProfilePoint(
         const std::string& point, ComponentId_t id, const std::string& name, const std::string& type) = 0;
-    std::string
-    getKeyForCodeSegment(const std::string& point, ComponentId_t id, const std::string& name, const std::string& type);
+    std::string getKeyForCodeSegment(
+        const std::string& point, ComponentId_t id, const std::string& name, const std::string& type);
 
 protected:
     Profile_Level profile_level_;
@@ -105,9 +105,8 @@ public:
             }
         }
 
-        void registerProfilePoint(
-            ComponentCodeSegmentProfileTool* tool, const std::string& point, ComponentId_t id, const std::string& name,
-            const std::string& type)
+        void registerProfilePoint(ComponentCodeSegmentProfileTool* tool, const std::string& point, ComponentId_t id,
+            const std::string& name, const std::string& type)
         {
             uintptr_t key = tool->registerProfilePoint(point, id, name, type);
             tools.push_back(std::make_pair(tool, key));
@@ -162,7 +161,10 @@ class ComponentCodeSegmentProfileToolTime : public ComponentCodeSegmentProfileTo
         uint64_t time;
         uint64_t count;
 
-        segment_data_t() : time(0), count(0) {}
+        segment_data_t() :
+            time(0),
+            count(0)
+        {}
     };
 
 public:

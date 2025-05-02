@@ -72,9 +72,8 @@ public:
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
     template <class T>
-    Statistic<T>* createStatistic(
-        BaseComponent* comp, const std::string& type, const std::string& statName, const std::string& statSubId,
-        Params& params)
+    Statistic<T>* createStatistic(BaseComponent* comp, const std::string& type, const std::string& statName,
+        const std::string& statSubId, Params& params)
     {
         return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
@@ -101,6 +100,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticProcessingEngine)
+
 private:
     friend class SST::Simulation_impl;
     friend int ::main(int argc, char** argv);
@@ -138,7 +138,8 @@ private:
 
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
 
-    [[noreturn]] void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
+    [[noreturn]]
+    void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
     using StatArray_t   = std::vector<StatisticBase*>;           /*!< Array of Statistics */

@@ -108,7 +108,9 @@ private:
 
         int dp = init.length();
         for ( size_t i = 0; i < init.length(); ++i ) {
-            if ( init[i] == '.' ) { dp = i; }
+            if ( init[i] == '.' ) {
+                dp = i;
+            }
         }
 
         // get rid of the decimal point
@@ -357,7 +359,9 @@ public:
 
         // Check to see if we need to round
         bool round = false;
-        if ( data[fraction_words - 1] > (storage_radix / 2) ) { round = true; }
+        if ( data[fraction_words - 1] > (storage_radix / 2) ) {
+            round = true;
+        }
         else if ( data[fraction_words - 1] == (storage_radix / 2) ) {
             for ( int i = fraction_words - 2; i >= 0; --i ) {
                 if ( data[i] != 0 ) {

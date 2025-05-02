@@ -6,3 +6,13 @@ f150d6f7db2d71f4a77720ee7e7a7385a57bf540
 
 # Add explicit to single-parameter constructors which should not perform implicit conversions
 03ebe85afb00f521ca6f8822e48a4a17711f96dd
+
+# Add override for virtual functions which are overriden
+89e4bf10e7e9c6a7789c66c80d57a6ead099f132
+
+# Add "explicit" to constructors with a single parameter which should not perform implicit conversions
+a2b3aa4e811e5f9a763f55e5da0287c773c669c9
+
+# Move to clang-format v20
+3e0a31a25c55b8c3d53e454f61de81358582c6c0
+

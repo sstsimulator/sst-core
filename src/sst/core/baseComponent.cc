@@ -304,7 +304,9 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
 
     // If I have a linkmap, check to see if a link was connected to
     // port "name"
-    if ( nullptr != myLinks ) { tmp = myLinks->getLink(name); }
+    if ( nullptr != myLinks ) {
+        tmp = myLinks->getLink(name);
+    }
     // If tmp is nullptr, then I didn't have the port connected, check
     // with parents if sharing is turned on
     if ( nullptr == tmp ) {
@@ -342,7 +344,9 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
     if ( nullptr != tmp ) {
 
         // If no functor, this is a polling link
-        if ( handler == nullptr ) { tmp->setPolling(); }
+        if ( handler == nullptr ) {
+            tmp->setPolling();
+        }
         else {
             tmp->setFunctor(handler);
 
@@ -457,7 +461,7 @@ Link*
 BaseComponent::configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     addSelfLink(name);
-    return configureLink(name, time_base, handler);
+    return configureLink(name, *time_base, handler);
 }
 
 Link*
@@ -559,9 +563,9 @@ BaseComponent::processCurrentTimeWithUnderflowedBase(const std::string& base) co
 
     auto value = result.getValue();
     if ( value > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
-        throw std::overflow_error(
-            "Error:  Current time (" + curr_time.toStringBestSI() +
-            ") is too large to fit into a 64-bit integer when using requested base (" + base + ")");
+        throw std::overflow_error("Error:  Current time (" + curr_time.toStringBestSI() +
+                                  ") is too large to fit into a 64-bit integer when using requested base (" + base +
+                                  ")");
     }
 
     return value.toUnsignedLong();
@@ -725,9 +729,8 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
         return nullptr;
     }
     if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
-        Simulation_impl::getSimulationOutput().fatal(
-            CALL_INFO, 1, "SubComponent slot %s requires a dense allocation of SubComponents and did not get one.\n",
-            name.c_str());
+        Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
+            "SubComponent slot %s requires a dense allocation of SubComponents and did not get one.\n", name.c_str());
     }
     return info;
 }
@@ -782,22 +785,20 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
     }
     else {
         // collectionRate is a unit type we dont recognize
-        out.fatal(
-            CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", name.c_str(),
+        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", name.c_str(),
             collectionRate.toString().c_str());
     }
 
     if ( !statistic->isStatModeSupported(statCollectionMode) ) {
         if ( StatisticBase::STAT_MODE_PERIODIC == statCollectionMode ) {
-            out.fatal(
-                CALL_INFO, 1,
+            out.fatal(CALL_INFO, 1,
                 " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
                 name.c_str(), collectionRate.toString().c_str());
         }
         else {
-            out.fatal(
-                CALL_INFO, 1, " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n",
-                name.c_str(), collectionRate.toString().c_str());
+            out.fatal(CALL_INFO, 1,
+                " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n", name.c_str(),
+                collectionRate.toString().c_str());
         }
     }
 
@@ -805,9 +806,8 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
 }
 
 Statistics::StatisticBase*
-BaseComponent::createStatistic(
-    Params& cpp_params, const Params& python_params, const std::string& name, const std::string& subId,
-    bool check_load_level, StatCreateFunction fxn)
+BaseComponent::createStatistic(Params& cpp_params, const Params& python_params, const std::string& name,
+    const std::string& subId, bool check_load_level, StatCreateFunction fxn)
 {
     auto* engine = getStatEngine();
 
@@ -816,8 +816,7 @@ BaseComponent::createStatistic(
         uint8_t stat_load_level =
             my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
         if ( stat_load_level == 0 ) {
-            Simulation_impl::getSimulationOutput().verbose(
-                CALL_INFO, 1, 0,
+            Simulation_impl::getSimulationOutput().verbose(CALL_INFO, 1, 0,
                 " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
                 name.c_str());
             return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
@@ -825,8 +824,7 @@ BaseComponent::createStatistic(
 
         uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
         if ( stat_enable_level > stat_load_level ) {
-            Simulation_impl::getSimulationOutput().verbose(
-                CALL_INFO, 1, 0,
+            Simulation_impl::getSimulationOutput().verbose(CALL_INFO, 1, 0,
                 " Warning: Load Level %d is too low to enable Statistic '%s' "
                 "with Enable Level %d, statistic will not be enabled...\n",
                 int(stat_load_level), name.c_str(), int(stat_enable_level));
@@ -852,12 +850,16 @@ BaseComponent::createEnabledAllStatistic(
     if ( iter != m_enabled_all_stats_.end() ) {
         auto& submap  = iter->second;
         auto  subiter = submap.find(statSubId);
-        if ( subiter != submap.end() ) { return subiter->second; }
+        if ( subiter != submap.end() ) {
+            return subiter->second;
+        }
     }
 
     // a matching statistic was not found
     auto* stat = createStatistic(params, my_info->all_stat_config_->params, name, statSubId, true, std::move(fxn));
-    if ( !stat->isNullStatistic() ) { m_enabled_all_stats_[name][statSubId] = stat; }
+    if ( !stat->isNullStatistic() ) {
+        m_enabled_all_stats_[name][statSubId] = stat;
+    }
     return stat;
 }
 
@@ -867,8 +869,7 @@ BaseComponent::createExplicitlyEnabledStatistic(
 {
     Output& out = Simulation_impl::getSimulationOutput();
     if ( my_info->parent_info ) {
-        out.fatal(
-            CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
+        out.fatal(CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
             name.c_str());
     }
 
@@ -880,7 +881,9 @@ BaseComponent::createExplicitlyEnabledStatistic(
     auto& cfg = piter->second;
     if ( cfg.shared ) {
         auto iter = m_explicitlyEnabledSharedStats.find(id);
-        if ( iter != m_explicitlyEnabledSharedStats.end() ) { return iter->second; }
+        if ( iter != m_explicitlyEnabledSharedStats.end() ) {
+            return iter->second;
+        }
         else {
             // no subid
             auto* stat = createStatistic(params, cfg.params, cfg.name, "", false, std::move(fxn));
@@ -896,7 +899,9 @@ BaseComponent::createExplicitlyEnabledStatistic(
             if ( subiter != map.end() ) {
                 auto& submap     = subiter->second;
                 auto  subsubiter = submap.find(statSubId);
-                if ( subsubiter != submap.end() ) { return subsubiter->second; }
+                if ( subsubiter != submap.end() ) {
+                    return subsubiter->second;
+                }
             }
         }
         // stat does not exist yet
@@ -981,7 +986,9 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
             // Add handler to clock_handlers list
             clock_handlers.push_back(p.first);
             // If it was previously registered, register it now
-            if ( p.second ) { sim_->registerClock(p.second, p.first, CLOCKPRIORITY); }
+            if ( p.second ) {
+                sim_->registerClock(p.second, p.first, CLOCKPRIORITY);
+            }
         }
         break;
     }
@@ -1093,7 +1100,9 @@ SerializeBaseComponentHelper::size_basecomponent(serializable_base* s, serialize
 {
     long dummy = 0;
     ser.size(dummy);
-    if ( s ) { s->serialize_order(ser); }
+    if ( s ) {
+        s->serialize_order(ser);
+    }
 }
 
 void
@@ -1115,7 +1124,9 @@ SerializeBaseComponentHelper::unpack_basecomponent(serializable_base*& s, serial
 {
     long cls_id;
     ser.unpack(cls_id);
-    if ( cls_id == null_ptr_id ) { s = nullptr; }
+    if ( cls_id == null_ptr_id ) {
+        s = nullptr;
+    }
     else {
         s = SST::Core::Serialization::serializable_factory::get_serializable(cls_id);
         ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));

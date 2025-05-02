@@ -68,7 +68,9 @@ SmartTextFormatter::setTabStops(const std::vector<int>& stops, int repeat)
     do {
         tab_stops_.push_back(position);
         index++;
-        if ( index == distances.size() ) { index = repeat_index; }
+        if ( index == distances.size() ) {
+            index = repeat_index;
+        }
         position = position + distances[index];
     } while ( position < terminal_width_ );
 }
@@ -222,7 +224,9 @@ int
 SmartTextFormatter::nextTabStop(int position)
 {
     for ( int tab : tab_stops_ ) {
-        if ( tab > position ) { return tab - position; }
+        if ( tab > position ) {
+            return tab - position;
+        }
     }
     // If no more tab stops, return -1
     return -1;
