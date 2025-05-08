@@ -111,4 +111,11 @@ InteractiveConsole::getComponentObjectMap()
     return Simulation_impl::getSimulation()->getComponentObjectMap();
 }
 
+void
+InteractiveConsole::simulationShutdown()
+{
+    Simulation_impl::getSimulation()->interactiveShutdown();
+}
+
+
 } // namespace SST

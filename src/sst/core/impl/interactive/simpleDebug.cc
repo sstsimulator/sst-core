@@ -58,6 +58,44 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
 }
 
 void
+SimpleDebugger::cmd_help(std::vector<std::string>& UNUSED(tokens))
+{
+    std::string help = "SimpleDebug Console Commands\n";
+    help.append("  Navigation: Navigate the current object map\n");
+    help.append("   - pwd: print the current working directory in the object map\n");
+    help.append("   - cd: change directory level in the object map\n");
+    help.append("   - ls: list the objects in the current level of the object map\n");
+
+    help.append("  Current State: Print information about the current simulation state\n");
+    help.append("   - time: print current simulation time in cycles\n");
+    help.append("   - print [-rN][<obj>]: print objects in the current level of the object map;\n");
+    help.append("                         if -rN is provided print recursive N levels (default N=4)\n");
+
+    help.append("  Modify State: Modify simulation variables\n");
+    help.append("   - set <obj> <value>: sets an object in the current scope to the provided value;\n");
+    help.append("                        object must be a \"fundamental type\" e.g. int \n");
+
+    help.append("  Watch Points: Manage watch points which break into interactive console when triggered\n");
+    help.append("   - watch: prints the current list of watch points and their associated indices\n");
+    help.append("     watch <var>: adds var to the watch list; triggered when value changes\n");
+    help.append("     watch <var> <comp> <val>: add var to watch list; triggered when comparison with val is true\n");
+    help.append("                 Valid <comp> operators: <, <=, >, >=, ==, !=\n");
+    help.append("   - unwatch <index>: removes the indexed watch point from the watch list;\n");
+    help.append("                 <index> is the associated index from the list of watch points\n");
+
+    help.append("  Execute: Execute the simulation for a specified duration\n");
+    help.append("   - run [TIME]: runs the simulation from the current point for TIME and then returns to\n");
+    help.append("                 interactive mode; if no time is given, the simulation runs to completion;\n");
+    help.append("                 TIME is of the format <Number><unit> e.g. 4us\n");
+
+    help.append("  Exit: Exit the interactive console\n");
+    help.append("   - exit or quit: exits the interactive console and resumes simulation execution\n");
+    help.append("   - shutdown: exits the interactive console and does a clean shutdown of the simulation\n");
+
+    printf("%s", help.c_str());
+}
+
+void
 SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 {
     // std::string path = obj_->getName();
@@ -379,6 +417,15 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
 }
 
 void
+SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
+{
+    simulationShutdown();
+    done = true;
+    printf("Exiting ObjectExplorer and shutting down simulation\n");
+    return;
+}
+
+void
 SimpleDebugger::dispatch_cmd(std::string cmd)
 {
     std::vector<std::string> tokens;
@@ -414,6 +461,12 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     }
     else if ( tokens[0] == "unwatch" ) {
         cmd_unwatch(tokens);
+    }
+    else if ( tokens[0] == "shutdown" ) {
+        cmd_shutdown(tokens);
+    }
+    else if ( tokens[0] == "help" ) {
+        cmd_help(tokens);
     }
     else {
         printf("Unknown command: %s\n", tokens[0].c_str());
