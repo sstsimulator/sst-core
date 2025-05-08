@@ -20,7 +20,6 @@ import sys
 ########################################################
 
 # Define SST core options
-sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner", "self")
 
 verbose = 0
@@ -63,10 +62,10 @@ sub1_1.setStatistic("numRecv", stat_recv)
 
 # Set up links
 link0 = sst.Link("myLink0")
-link0.connect((sub0_0, "sendPort", "5ns"), (sub1_0, "recvPort", "5ns"))
+link0.connect((sub0_0, "sendPort", "1us"), (sub1_0, "recvPort", "1us"))
 
 link1 = sst.Link("myLink1")
-link1.connect((sub0_1, "sendPort", "5ns"), (sub1_1, "recvPort", "5ns"))
+link1.connect((sub0_1, "sendPort", "1us"), (sub1_1, "recvPort", "1us"))
 
 # Do the paritioning
 num_ranks = sst.getMPIRankCount()

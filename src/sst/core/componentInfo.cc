@@ -28,7 +28,6 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     link_map(nullptr),
     component(nullptr),
     params(nullptr),
-    portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
     enabled_all_stats_(false),
@@ -49,7 +48,6 @@ ComponentInfo::ComponentInfo() :
     link_map(nullptr),
     component(nullptr),
     params(nullptr),
-    portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
     enabled_all_stats_(false),
@@ -89,7 +87,6 @@ ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const
     link_map(nullptr),
     component(nullptr),
     params(/*new Params()*/ nullptr),
-    portModules(nullptr),
     stat_configs_(nullptr),
     enabled_stat_names_(nullptr),
     enabled_all_stats_(false),
@@ -184,7 +181,7 @@ ComponentInfo::~ComponentInfo()
 {
     if ( link_map ) delete link_map;
     if ( component ) {
-        component->my_info = nullptr;
+        component->my_info_ = nullptr;
         delete component;
     }
 

@@ -1,8 +1,6 @@
-# Creating simulation checkpoint at simulated time period of 2500 ns.
+# Creating simulation checkpoint at simulated time period of 2.5us.
 Sent an event, 14 more to send
 Sent an event, 14 more to send
-Got an event
-Got an event
 Sent an event, 13 more to send
 Sent an event, 13 more to send
 Got an event
@@ -11,7 +9,7 @@ Sent an event, 12 more to send
 Sent an event, 12 more to send
 Got an event
 Got an event
-# Simulation Checkpoint: Simulated Time 2.5 us (Real CPU time since last checkpoint 0.00183 seconds)
+# Simulation Checkpoint: Simulated Time 2.5 us (Real CPU time since last checkpoint 0.00148 seconds)
 Sent an event, 11 more to send
 Sent an event, 11 more to send
 Got an event
@@ -28,7 +26,7 @@ Sent an event, 8 more to send
 Sent an event, 8 more to send
 Got an event
 Got an event
-# Simulation Checkpoint: Simulated Time 5 us (Real CPU time since last checkpoint 0.00609 seconds)
+# Simulation Checkpoint: Simulated Time 5 us (Real CPU time since last checkpoint 0.00405 seconds)
 Sent an event, 7 more to send
 Sent an event, 7 more to send
 Got an event
@@ -45,7 +43,7 @@ Sent an event, 4 more to send
 Sent an event, 4 more to send
 Got an event
 Got an event
-# Simulation Checkpoint: Simulated Time 7.5 us (Real CPU time since last checkpoint 0.01025 seconds)
+# Simulation Checkpoint: Simulated Time 7.5 us (Real CPU time since last checkpoint 0.00429 seconds)
 Sent an event, 3 more to send
 Sent an event, 3 more to send
 Got an event
@@ -62,9 +60,11 @@ Sent an event, 0 more to send
 Sent an event, 0 more to send
 Got an event
 Got an event
-# Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.00467 seconds)
+# Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.00373 seconds)
+Got an event
+Got an event
  Loader0:mySubComp[0].numSent : Accumulator : Sum.u32 = 15; SumSQ.u32 = 15; Count.u64 = 15; Min.u32 = 1; Max.u32 = 1; 
  Loader0.totalSent : Accumulator : Sum.u32 = 30; SumSQ.u32 = 30; Count.u64 = 30; Min.u32 = 1; Max.u32 = 1; 
  Loader0:mySubComp[1].numSent : Accumulator : Sum.u32 = 15; SumSQ.u32 = 15; Count.u64 = 15; Min.u32 = 1; Max.u32 = 1; 
  Loader1.totalRecv : Accumulator : Sum.u32 = 30; SumSQ.u32 = 30; Count.u64 = 30; Min.u32 = 1; Max.u32 = 1; 
-Simulation is complete, simulated time: 10 us
+Simulation is complete, simulated time: 10.6 us

@@ -12,7 +12,6 @@ import sst
 import sys
 
 # Define SST core options
-sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner","self")
 
 verbose = 0
@@ -44,7 +43,7 @@ sub1_0.enableAllStatistics()
 
 # Set up link
 link = sst.Link("myLink")
-link.connect((sub0_0, "sendPort", "5ns"), (sub1_0, "recvPort", "5ns"))
+link.connect((sub0_0, "sendPort", "1us"), (sub1_0, "recvPort", "1us"))
 
 
 # Do the paritioning

@@ -12,7 +12,6 @@ import sst
 import sys
 
 # Define SST core options
-sst.setProgramOption("stop-at", "10us")
 sst.setProgramOption("partitioner","self")
 
 verbose = 0
@@ -35,7 +34,7 @@ loader1.enableAllStatistics()
 
 # Set up link
 link = sst.Link("myLink")
-link.connect((loader0, "port0", "5ns"), (loader1, "port0", "5ns"))
+link.connect((loader0, "port0", "1us"), (loader1, "port0", "1us"))
 
 # Do the paritioning
 num_ranks = sst.getMPIRankCount()

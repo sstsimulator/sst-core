@@ -1725,9 +1725,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
-    if ( my_rank.thread == 0 ) {
-        SST_SER(m_exit);
-    }
+
+    // Exit created here in restart
+
     SST_SER(m_heartbeat);
 
     // Add statistics engine and associated state
@@ -1771,9 +1771,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
-    if ( my_rank.thread == 0 ) {
-        SST_SER(m_exit);
-    }
+
+    // Exit created here in restart
+
     SST_SER(m_heartbeat);
 
     // Add shared StatisticOutput vector
@@ -1899,9 +1899,12 @@ Simulation_impl::restart(Config* cfg)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
+
+    // Create the Exit object
     if ( my_rank.thread == 0 ) {
-        SST_SER(m_exit);
+        m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
     }
+
     initBarrier.wait();
 
     // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
