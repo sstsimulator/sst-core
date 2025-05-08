@@ -19,6 +19,8 @@
 #define sst_pause() __asm__ __volatile__("yield")
 #elif defined(__PPC64__)
 #define sst_pause() __asm__ __volatile__("or 27, 27, 27" ::: "memory");
+#else
+#define sst_pause() std::this_thread::yield()
 #endif
 
 #include <atomic>
