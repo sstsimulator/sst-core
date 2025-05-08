@@ -13,6 +13,8 @@
 
 #include "sst/core/serialization/serialize.h"
 
+#include <cstddef>
+
 namespace SST::Core::Serialization::pvt {
 
 void

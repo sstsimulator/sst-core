@@ -15,6 +15,7 @@
 #include "sst/core/component.h"
 #include "sst/core/rng/distrib.h"
 
+#include <cstdint>
 #include <map>
 #include <string>
 

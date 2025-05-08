@@ -22,6 +22,7 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>

@@ -16,6 +16,8 @@
 #include "sst/core/event.h"
 #include "sst/core/simulation_impl.h"
 
+#include <string>
+
 namespace SST {
 namespace TV::pvt {
 
