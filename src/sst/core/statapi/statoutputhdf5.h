@@ -21,6 +21,7 @@ DISABLE_WARN_MISSING_OVERRIDE
 REENABLE_WARNING
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>

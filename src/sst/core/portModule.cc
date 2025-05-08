@@ -16,6 +16,8 @@
 #include "sst/core/baseComponent.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
+
 namespace SST {
 
 SST_ELI_DEFINE_INFO_EXTERN(PortModule)
