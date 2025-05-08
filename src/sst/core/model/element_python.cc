@@ -36,6 +36,7 @@ SST_ELI_DEFINE_INFO_EXTERN(SSTElementPythonModule)
 
 // Utility function to parse the python exceptions from loading
 // modules and format and print them on abort.
+[[noreturn]]
 static void abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_code, const char* format, ...)
     __attribute__((format(printf, 5, 6)));
 

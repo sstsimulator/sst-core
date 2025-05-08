@@ -143,6 +143,7 @@ class serializable_type
 #define ImplementVirtualSerializable(obj)                                                                          \
                                                                                                                    \
 public:                                                                                                            \
+    [[noreturn]]                                                                                                   \
     static void throw_exc()                                                                                        \
     {                                                                                                              \
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
@@ -165,6 +166,7 @@ public:                                                                         
 #define NotSerializable(obj)                                                                                       \
                                                                                                                    \
 public:                                                                                                            \
+    [[noreturn]]                                                                                                   \
     static void throw_exc()                                                                                        \
     {                                                                                                              \
         ::SST::Core::Serialization::serializable_base::serializable_abort(__LINE__, __FILE__, __FUNCTION__, #obj); \
