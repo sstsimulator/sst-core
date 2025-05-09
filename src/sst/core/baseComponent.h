@@ -81,13 +81,13 @@ public:
     BaseComponent(const BaseComponent&)            = delete;
     BaseComponent& operator=(const BaseComponent&) = delete;
 
-    const std::string& getType() const { return my_info->getType(); }
+    const std::string& getType() const { return my_info_->getType(); }
 
     /** Returns unique component ID */
-    inline ComponentId_t getId() const { return my_info->id_; }
+    inline ComponentId_t getId() const { return my_info_->id_; }
 
     /** Returns Component Statistic load level */
-    inline uint8_t getStatisticLoadLevel() const { return my_info->statLoadLevel; }
+    inline uint8_t getStatisticLoadLevel() const { return my_info_->statLoadLevel; }
 
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
@@ -95,11 +95,11 @@ public:
     virtual void emergencyShutdown() {}
 
     /** Returns Component/SubComponent Name */
-    inline const std::string& getName() const { return my_info->getName(); }
+    inline const std::string& getName() const { return my_info_->getName(); }
 
     /** Returns the name of the parent Component, or, if called on a
      * Component, the name of that Component. */
-    inline const std::string& getParentComponentName() const { return my_info->getParentComponentName(); }
+    inline const std::string& getParentComponentName() const { return my_info_->getParentComponentName(); }
 
     /** Used during the init phase.  The method will be called each
      phase of initialization.  Initialization ends when no components
@@ -161,7 +161,7 @@ public:
        Return the simulated time since the simulation began in the
        default timebase
     */
-    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info->defaultTimeBase); }
+    inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info_->defaultTimeBase); }
 
     /**
        Return the simulated time since the simulation began in
@@ -419,8 +419,8 @@ protected:
                 return true;
             }
         }
-        if ( my_info->sharesStatistics() ) {
-            return my_info->parent_info->component->isStatisticShared(statName, true);
+        if ( my_info_->sharesStatistics() ) {
+            return my_info_->parent_info->component->isStatisticShared(statName, true);
         }
         else {
             return false;
@@ -487,16 +487,16 @@ private:
         SST::Params& params, const std::string& name, const std::string& statSubId = "")
     {
         auto* engine = getStatEngine();
-        return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
+        return engine->createStatistic<T>(my_info_->component, "sst.NullStatistic", name, statSubId, params);
     }
 
     template <typename T>
     Statistics::Statistic<T>* registerStatistic(
         SST::Params& params, const std::string& statName, const std::string& statSubId, bool inserting)
     {
-        if ( my_info->enabled_stat_names_ ) {
-            auto iter = my_info->enabled_stat_names_->find(statName);
-            if ( iter != my_info->enabled_stat_names_->end() ) {
+        if ( my_info_->enabled_stat_names_ ) {
+            auto iter = my_info_->enabled_stat_names_->find(statName);
+            if ( iter != my_info_->enabled_stat_names_->end() ) {
                 // valid, enabled statistic
                 // During initialization, the component should have assigned a mapping between
                 // the local name and globally unique stat ID
@@ -508,24 +508,24 @@ private:
         // if we got here, this is not a stat we explicitly enabled
         if ( inserting || doesComponentInfoStatisticExist(statName) ) {
             // this is a statistic that I registered
-            if ( my_info->enabled_all_stats_ ) {
+            if ( my_info_->enabled_all_stats_ ) {
                 return createStatistic<T>(params, STATALL_ID, statName, statSubId);
             }
-            else if ( my_info->parent_info && my_info->canInsertStatistics() ) {
+            else if ( my_info_->parent_info && my_info_->canInsertStatistics() ) {
                 // I did not explicitly enable nor enable all
                 // but I can insert statistics into my parent
                 // and my parent may have enabled all
-                return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId, true);
+                return my_info_->parent_info->component->registerStatistic<T>(params, statName, statSubId, true);
             }
             else {
                 // I did not enable, I cannot insert into parent - so send back null stat
-                return my_info->component->createNullStatistic<T>(params, statName, statSubId);
+                return my_info_->component->createNullStatistic<T>(params, statName, statSubId);
             }
         }
-        else if ( my_info->parent_info && my_info->sharesStatistics() ) {
+        else if ( my_info_->parent_info && my_info_->sharesStatistics() ) {
             // this is not a statistic that I registered
             // but my parent can share statistics, maybe they enabled
-            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId, false);
+            return my_info_->parent_info->component->registerStatistic<T>(params, statName, statSubId, false);
         }
         else {
             // not a valid stat and I won't be able to share my parent's statistic
@@ -648,7 +648,7 @@ protected:
     template <class T, class... ARGS>
     T* loadComponentExtension(ARGS... args)
     {
-        ComponentExtension* ret = new T(my_info->id_, args...);
+        ComponentExtension* ret = new T(my_info_->id_, args...);
         return static_cast<T*>(ret);
     }
 
@@ -678,8 +678,8 @@ protected:
     {
         // Get list of ComponentInfo objects and make sure that there is
         // only one SubComponent put into this slot
-        // const std::vector<ComponentInfo>& subcomps = my_info->getSubComponents();
-        const std::map<ComponentId_t, ComponentInfo>& subcomps  = my_info->getSubComponents();
+        // const std::vector<ComponentInfo>& subcomps = my_info_->getSubComponents();
+        const std::map<ComponentId_t, ComponentInfo>& subcomps  = my_info_->getSubComponents();
         int                                           sub_count = 0;
         int                                           index     = -1;
         for ( auto& ci : subcomps ) {
@@ -693,7 +693,7 @@ protected:
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
             outXX.fatal(CALL_INFO, 1,
                 "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
-                slot_name.c_str(), my_info->getType().c_str(), sub_count);
+                slot_name.c_str(), my_info_->getType().c_str(), sub_count);
         }
 
         return isUserSubComponentLoadableUsingAPIByIndex<T>(slot_name, index);
@@ -721,8 +721,8 @@ protected:
     {
 
         share_flags             = share_flags & ComponentInfo::USER_FLAGS;
-        ComponentId_t  cid      = my_info->addAnonymousSubComponent(my_info, type, slot_name, slot_num, share_flags);
-        ComponentInfo* sub_info = my_info->findSubComponent(cid);
+        ComponentId_t  cid      = my_info_->addAnonymousSubComponent(my_info_, type, slot_name, slot_num, share_flags);
+        ComponentInfo* sub_info = my_info_->findSubComponent(cid);
 
         // This shouldn't happen since we just put it in, but just in case
         if ( sub_info == nullptr ) return nullptr;
@@ -771,8 +771,8 @@ protected:
 
         // Get list of ComponentInfo objects and make sure that there is
         // only one SubComponent put into this slot
-        // const std::vector<ComponentInfo>& subcomps = my_info->getSubComponents();
-        const std::map<ComponentId_t, ComponentInfo>& subcomps  = my_info->getSubComponents();
+        // const std::vector<ComponentInfo>& subcomps = my_info_->getSubComponents();
+        const std::map<ComponentId_t, ComponentInfo>& subcomps  = my_info_->getSubComponents();
         int                                           sub_count = 0;
         int                                           index     = -1;
         for ( auto& ci : subcomps ) {
@@ -786,7 +786,7 @@ protected:
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
             outXX.fatal(CALL_INFO, 1,
                 "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
-                slot_name.c_str(), my_info->getType().c_str(), sub_count);
+                slot_name.c_str(), my_info_->getType().c_str(), sub_count);
         }
 
         return loadUserSubComponentByIndex<T, ARGS...>(slot_name, index, share_flags, args...);
@@ -886,10 +886,10 @@ private:
         share_flags = share_flags & ComponentInfo::USER_FLAGS;
 
         // Check to see if the slot exists
-        ComponentInfo* sub_info = my_info->findSubComponent(slot_name, slot_num);
+        ComponentInfo* sub_info = my_info_->findSubComponent(slot_name, slot_num);
         if ( sub_info == nullptr ) return nullptr;
         sub_info->share_flags = share_flags;
-        sub_info->parent_info = my_info;
+        sub_info->parent_info = my_info_;
 
         if ( isSubComponentLoadableUsingAPI<T>(sub_info->type) ) {
             auto ret = Factory::getFactory()->CreateWithParams<T>(
@@ -903,7 +903,7 @@ private:
     bool isUserSubComponentLoadableUsingAPIByIndex(const std::string& slot_name, int slot_num)
     {
         // Check to see if the slot exists
-        ComponentInfo* sub_info = my_info->findSubComponent(slot_name, slot_num);
+        ComponentInfo* sub_info = my_info_->findSubComponent(slot_name, slot_num);
         if ( sub_info == nullptr ) return false;
 
         return isSubComponentLoadableUsingAPI<T>(sub_info->type);
@@ -921,31 +921,31 @@ public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
 
     /** Retrieve the X,Y,Z coordinates of this component */
-    const std::vector<double>& getCoordinates() const { return my_info->coordinates; }
+    const std::vector<double>& getCoordinates() const { return my_info_->coordinates; }
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
     friend class SST::Statistics::StatisticBase;
 
-    bool isAnonymous() { return my_info->isAnonymous(); }
+    bool isAnonymous() { return my_info_->isAnonymous(); }
 
-    bool isUser() { return my_info->isUser(); }
+    bool isUser() { return my_info_->isUser(); }
 
     /** Manually set the default defaultTimeBase */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
                  "(i.e., no TimeConverter pointer) instead.")]]
     void setDefaultTimeBase(TimeConverter* tc)
     {
-        my_info->defaultTimeBase = tc;
+        my_info_->defaultTimeBase = tc;
     }
 
     /** Manually set the default defaultTimeBase */
-    void setDefaultTimeBase(TimeConverter tc) { my_info->defaultTimeBase = tc; }
+    void setDefaultTimeBase(TimeConverter tc) { my_info_->defaultTimeBase = tc; }
 
     // Can change this back to inline once we move completely away
     // from TimeConverter*
-    TimeConverter*       getDefaultTimeBase();       // { return my_info->defaultTimeBase; }
-    const TimeConverter* getDefaultTimeBase() const; // { return my_info->defaultTimeBase; }
+    TimeConverter*       getDefaultTimeBase();       // { return my_info_->defaultTimeBase; }
+    const TimeConverter* getDefaultTimeBase() const; // { return my_info_->defaultTimeBase; }
 
     bool doesSubComponentExist(const std::string& type);
 
@@ -958,17 +958,191 @@ protected:
 
     std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
+    /**** Primary Component API ****/
+
+    /**
+       Register as a primary component, which allows the component to
+       specify when it is and is not OK to end simulation.  The
+       simulator will not end simulation through use of the Exit
+       object while any primary component has specified
+       primaryComponentDoNotEndSim().  However, it is still possible
+       for Actions other than Exit to end simulation.  Once all
+       primary components have specified primaryComponentOKToEndSim(),
+       the Exit object will trigger and end simulation.
+
+       This must be called during simulation wireup (i.e during the
+       constructor for the component), or a fatal error will occur.
+
+       If no component registers as a primary component, then the Exit
+       object will not be used for that simulation and simulation
+       termination must be accomplished through some other mechanism
+       (e.g. --stopAt flag, or some other Action object).
+
+        @sa BaseComponent::primaryComponentDoNotEndSim()
+        @sa BaseComponent::primaryComponentOKToEndSim()
+    */
+    void registerAsPrimaryComponent();
+
+    /**
+       Tells the simulation that it should not exit.  The component
+       will remain in this state until a call to
+       primaryComponentOKToEndSim(). A component may reenter the DoNotEndSime state
+       by calling this function after calling
+       primaryComponentOKToEndSim(), in which case, another call to
+       primaryComponentOKToEndSim() will need to be called to end the
+       simulation.
+
+       Calls to this function when already in the DoNotEndSime state,
+       will be functionally ignored, but will generate a warning if
+       verbose is turned on.
+
+       Calls to this function on non-primary components will be
+       ignored and will generate a warning if verbose is turned on.
+
+       @sa BaseComponent::registerAsPrimaryComponent()
+       @sa BaseComponent::primaryComponentOKToEndSim()
+    */
+    void primaryComponentDoNotEndSim();
+
+    /**
+       Tells the simulation that it is now OK to end simulation.
+       Simulation will not end until all primary components that have
+       called primaryComponentDoNotEndSim() have called this function.
+
+       Calls to this function when already in the OKToEndSim state,
+       will be functionally ignored, but will generate a warning if
+       verbose is turned on.
+
+       Calls to this function on non-primary components will be
+       ignored and will generate a warning if verbose is turned on.
+
+       @sa BaseComponent::registerAsPrimaryComponent()
+       @sa BaseComponent::primaryComponentDoNotEndSim()
+    */
+    void primaryComponentOKToEndSim();
+
+
 private:
+    enum class ComponentState : uint8_t {
+        // Primary States
+        None        = 0,
+        Primary     = 1 << 0,
+        DoNotEndSim = 1 << 1,
+        OKToEndSim  = 1 << 2,
+
+        // Whether this is an extension
+        Extension = 1 << 3,
+    };
+
+    /**
+       Check for Primary state
+
+       @return true if component_state_ includes Primary, false otherwise
+     */
+    bool isStatePrimary()
+    {
+        return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::Primary);
+    }
+
+    /**
+       Check for DoNotEndSim state. This state is mutually exclusive with OKToEndSim
+
+       @return true if component_state_ includes DoNotEndSim, false otherwise
+     */
+    bool isStateDoNotEndSim()
+    {
+        return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::DoNotEndSim);
+    }
+
+    /**
+       Check for OKToEndSim state. This state is mutually exclusive with DoNotEndSim
+
+       @return true if component_state_ includes OKToEndSim
+     */
+    bool isStateOKToEndSim()
+    {
+        return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::OKToEndSim);
+    }
+
+    /**
+       Check for Extension state
+
+       @return true if component_state_ includes Extension, false otherwise
+     */
+    bool isExtension()
+    {
+        return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::Extension);
+    }
+
+
+    /**
+       Adds Primary to the component_state_
+
+       NOTE: This function does not check to see if the component is
+       in the proper stage of simulation, that check should be done
+       before calling this function.
+     */
+    void setStateAsPrimary()
+    {
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) | static_cast<uint8_t>(ComponentState::Primary));
+    }
+
+    /**
+       Adds DoNotEndSim and removes OKToEndSim to/from the
+       component_state_
+
+       NOTE: This function does not check to see if
+       registerAsPrimaryComponent() has been properly called, that
+       check should be done before calling this function.
+     */
+    void setStateDoNotEndSim()
+    {
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) | static_cast<uint8_t>(ComponentState::DoNotEndSim));
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) & ~static_cast<uint8_t>(ComponentState::OKToEndSim));
+    }
+
+    /**
+       Adds OKToEndSim and removes DoNotEndSim to/from the
+       component_state_
+
+       NOTE: This function does not check to see if
+       registerAsPrimaryComponent() has been properly called, that
+       check should be done before calling this function.
+     */
+    void setStateOKToEndSim()
+    {
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) | static_cast<uint8_t>(ComponentState::OKToEndSim));
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) & ~static_cast<uint8_t>(ComponentState::DoNotEndSim));
+    }
+
+    /**
+       Adds Extension to the component_state_
+     */
+    void setAsExtension()
+    {
+        component_state_ = static_cast<ComponentState>(
+            static_cast<uint8_t>(component_state_) | static_cast<uint8_t>(ComponentState::Extension));
+    }
+
+
     friend class Core::Serialization::pvt::SerializeBaseComponentHelper;
 
 
-    ComponentInfo*   my_info     = nullptr;
-    Simulation_impl* sim_        = nullptr;
-    bool             isExtension = false;
+    ComponentInfo*   my_info_ = nullptr;
+    Simulation_impl* sim_     = nullptr;
+
+    // component_state_ is intialized as NotPrimary and !Extension
+    ComponentState component_state_ = ComponentState::None;
+    // bool             isExtension = false;
 
     // Need to track clock handlers for checkpointing.  We need to
     // know what clock handlers we have registered with the core
-    std::vector<Clock::HandlerBase*> clock_handlers;
+    std::vector<Clock::HandlerBase*> clock_handlers_;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules);
@@ -982,7 +1156,7 @@ private:
 
     BaseComponent* getParentComponent()
     {
-        ComponentInfo* base_info = my_info;
+        ComponentInfo* base_info = my_info_;
         while ( base_info->parent_info ) {
             base_info = base_info->parent_info;
         }
@@ -1009,7 +1183,7 @@ public:
         comp(comp),
         slot_name(slot_name)
     {
-        const std::map<ComponentId_t, ComponentInfo>& subcomps = comp->my_info->getSubComponents();
+        const std::map<ComponentId_t, ComponentInfo>& subcomps = comp->my_info_->getSubComponents();
 
         // Look for all subcomponents with the right slot name
         max_slot_index = -1;
@@ -1027,14 +1201,14 @@ public:
     bool isPopulated(int slot_num) const
     {
         if ( slot_num > max_slot_index ) return false;
-        if ( comp->my_info->findSubComponent(slot_name, slot_num) == nullptr ) return false;
+        if ( comp->my_info_->findSubComponent(slot_name, slot_num) == nullptr ) return false;
         return true;
     }
 
     bool isAllPopulated() const
     {
         for ( int i = 0; i < max_slot_index; ++i ) {
-            if ( comp->my_info->findSubComponent(slot_name, i) == nullptr ) return false;
+            if ( comp->my_info_->findSubComponent(slot_name, i) == nullptr ) return false;
         }
         return true;
     }

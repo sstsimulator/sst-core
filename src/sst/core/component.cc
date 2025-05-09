@@ -31,26 +31,6 @@ Component::Component(ComponentId_t id) :
     // currentlyLoadingSubComponent = my_info;
 }
 
-void
-Component::registerAsPrimaryComponent()
-{
-    // Nop for now.  Will put in complete semantics later
-}
-
-void
-Component::primaryComponentDoNotEndSim()
-{
-    int thread = Simulation_impl::getSimulation()->getRank().thread;
-    Simulation_impl::getSimulation()->getExit()->refInc(getId(), thread);
-}
-
-void
-Component::primaryComponentOKToEndSim()
-{
-    int thread = Simulation_impl::getSimulation()->getRank().thread;
-    Simulation_impl::getSimulation()->getExit()->refDec(getId(), thread);
-}
-
 
 void
 Component::serialize_order(SST::Core::Serialization::serializer& ser)

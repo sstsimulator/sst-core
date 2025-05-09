@@ -22,100 +22,114 @@
 
 namespace SST {
 
-#define _EXIT_DBG(fmt, args...) __DBG(DBG_EXIT, Exit, fmt, ##args)
-
 class Simulation;
-class TimeConverter;
 
 /**
- * Exit Event Action
- *
- * Causes the simulation to halt
+   Exit Action
+
+   Tracks the number of components that have requested DoNotEndSim.
+   Once that count reaches 0, the Exit object will end the simulation.
  */
 class Exit : public Action
 {
 public:
     /**
-     * Create a new ExitEvent
-     * @param sim Simulation object
-     * @param single_rank True if there are no parallel ranks
-     *
-     *  Exit needs to register a handler during constructor time, which
-     * requires a simulation object.  But the simulation class creates
-     * an Exit object during it's construction, meaning that
-     * Simulation::getSimulation() won't work yet.  So Exit is the one
-     * exception to the "constructors shouldn't take simulation
-     * pointers" rule.  However, it still needs to follow the "classes
-     * shouldn't contain pointers back to Simulation" rule.
-     */
+       Create a new ExitEvent
+
+       @param num_threads number of threads on the rank
+       @param single_rank True if there are no other ranks
+    */
     Exit(int num_threads, bool single_rank);
+
     ~Exit();
 
-    /** Increment Reference Count for a given Component ID */
-    bool refInc(ComponentId_t, uint32_t thread);
-    /** Decrement Reference Count for a given Component ID */
-    bool refDec(ComponentId_t, uint32_t thread);
+    /**
+       Increment reference count on a given thread
 
+       @param thread number of Component making call
+    */
+    void refInc(uint32_t thread);
+
+    /**
+       Decrement reference count on a given thread
+
+       @param thread number of Component making call
+    */
+    void refDec(uint32_t thread);
+
+    /**
+       Get the current local reference count
+
+       @return current local reference count
+     */
     unsigned int getRefCount();
 
-    /** Gets the end time of the simulation
-     * @return Time when simulation ends
-     */
-    SimTime_t getEndTime() { return end_time; }
+    /**
+       Gets the end time of the simulation
 
-    /** Stores the time the simulation has ended
-     * @param time Current simulation time
-     * @return void
-     */
-    void setEndTime(SimTime_t time) { end_time = time; }
+       @return Time when simulation ends
+    */
+    SimTime_t getEndTime() { return end_time_; }
 
-    /** Computes the end time of the simulation
-     * @return End time of the simulation
-     */
+    /**
+       Stores the time the simulation has ended
+
+       @param time Current simulation time
+    */
+    void setEndTime(SimTime_t time) { end_time_ = time; }
+
+    /**
+       Computes the end time of the simulation.  This call
+       synchronizes across ranks.
+
+       @return End time of the simulation
+    */
     SimTime_t computeEndTime();
-    void      execute() override;
-    void      check();
 
     /**
-     * @param header String to preface the exit action log
-     * @param out SST Output logger object
-     * @return void
-     */
-    void print(const std::string& header, Output& out) const override
-    {
-        out.output("%s Exit Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(),
-            getDeliveryTime(), getPriority());
-    }
-
-
-    unsigned int getGlobalCount() { return global_count; }
+       Function called when Exit fires in the TimeVortex
+    */
+    void execute() override;
 
     /**
-     *
-     * TODO to enable different partitioning on restart, will need to associate m_thread_counts and
-     * m_idSet back to components so that a new Exit event can be generated on restart
-     */
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::Exit)
+       Function called by SyncManager to check to see if it's time to
+       exit.  This call synchronizes across ranks.
+    */
+    void check();
+
+    /**
+       Creates a string representation of the Exit object
+
+       @return string representation of Exit object
+    */
+    std::string toString() const override;
+
+    /**
+       Get the global ref_count.  This is only valid after check() is
+       called
+
+       @return global ref_count
+    */
+    unsigned int getGlobalCount() { return global_count_; }
+
+    // Exit should not be serialized. It will be created new on
+    // restart and Components store there primary component state and
+    // reregister with Exit on restart.
+    NotSerializable(SST::Exit)
 
 private:
-    Exit()                       = default; // for serialization only
-    Exit(const Exit&)            = delete;  // Don't implement
-    Exit& operator=(const Exit&) = delete;  // Don't implement
+    Exit()                       = delete;
+    Exit(const Exit&)            = delete;
+    Exit& operator=(const Exit&) = delete;
 
-    //     bool handler( Event* );
+    int           num_threads_   = 0;
+    unsigned int  ref_count_     = 0;
+    unsigned int* thread_counts_ = nullptr;
+    unsigned int  global_count_  = 0;
+    SimTime_t     end_time_      = 0;
+    bool          single_rank_   = true;
 
-    //     EventHandler< Exit, bool, Event* >* m_functor;
-    int                               num_threads;
-    unsigned int                      m_refCount;
-    unsigned int*                     m_thread_counts;
-    unsigned int                      global_count;
-    std::unordered_set<ComponentId_t> m_idSet;
-    SimTime_t                         end_time;
-
-    Core::ThreadSafe::Spinlock slock;
-
-    bool single_rank;
+    Core::ThreadSafe::Spinlock slock_;
 };
 
 } // namespace SST

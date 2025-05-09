@@ -59,9 +59,6 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) :
 
         info->createAll<SubCompInterface>(subComps, ComponentInfo::SHARE_STATS);
     }
-
-    registerAsPrimaryComponent();
-    primaryComponentDoNotEndSim();
 }
 
 bool
@@ -144,6 +141,9 @@ SubCompSender::SubCompSender(ComponentId_t id, Params& params) :
     }
     nToSend = params.find<uint32_t>("sendCount", 10);
     out     = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);
+
+    registerAsPrimaryComponent();
+    primaryComponentDoNotEndSim();
 }
 
 void
@@ -152,10 +152,11 @@ SubCompSender::clock(Cycle_t cyc)
     if ( nToSend == 0 ) return;
 
     if ( (cyc % 64) == 0 ) {
-        link->send(new CoreTestMessageGeneratorComponent::coreTestMessage());
+        nToSend--;
+        link->send(new SubCompEvent(nToSend == 0));
         if ( nMsgSent ) nMsgSent->addData(1);
         if ( totalMsgSent ) totalMsgSent->addData(1);
-        nToSend--;
+        if ( nToSend == 0 ) primaryComponentOKToEndSim();
         out->verbose(CALL_INFO, 1, 0, "Sent an event, %d more to send\n", nToSend);
     }
 }
@@ -182,6 +183,9 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) :
     // registerTimeBase("1GHz", true);
     nMsgReceived = registerStatistic<uint32_t>("numRecv", "");
     out          = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);
+
+    registerAsPrimaryComponent();
+    primaryComponentDoNotEndSim();
 }
 
 void
@@ -196,5 +200,6 @@ SubCompReceiver::handleEvent(Event* ev)
     out->verbose(CALL_INFO, 1, 0, "Got an event\n");
     numRecv++;
     if ( nMsgReceived ) nMsgReceived->addData(1);
+    if ( static_cast<SubCompEvent*>(ev)->last ) primaryComponentOKToEndSim();
     delete ev;
 }
