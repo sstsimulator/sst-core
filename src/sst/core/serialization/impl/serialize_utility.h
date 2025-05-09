@@ -24,53 +24,54 @@
 
 namespace SST::Core::Serialization {
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Whether two names are the same template. Similar to std::is_same_v.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+// Whether two names are the same template. Similar to std::is_same_v. //
+/////////////////////////////////////////////////////////////////////////
+
 template <template <typename...> class, template <typename...> class>
 constexpr bool is_same_template_v = false;
 
 template <template <typename...> class T>
 constexpr bool is_same_template_v<T, T> = true;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Whether a certain type is the same as a certain class template filled with arguments
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+// Whether a certain type is the same as a certain class template filled with arguments //
+//////////////////////////////////////////////////////////////////////////////////////////
 template <class, template <typename...> class>
 constexpr bool is_same_type_template_v = false;
 
 template <template <typename...> class T1, typename... T1ARGS, template <typename...> class T2>
 constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T1, T2>;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Compute the number of fields in an aggregate
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////
+// Compute the number of fields in an aggregate //
+//////////////////////////////////////////////////
 namespace pvt_nfields {
 
 // glob is convertible to any other type while initializing an aggregate
+// The conversion function is only used in decltype() so it does not need to be defined
 struct glob
 {
-    // The conversion function is only used in decltype() so it does not need to be defined
     template <class T>
     operator T() const;
 };
 
 // Whether N fields can be used to initialize an aggregate, i.e., number of aggregate fields >= N
-template <class C, class, class = C>
+template <class C, class, bool = std::is_aggregate_v<C>, class = C>
 constexpr bool nfields_ge_impl = false;
 
 // Try to initialize N fields in an aggregate, with glob() automatically converting to each field's
 // type. If initialization fails, it is not an error (SFINAE) and this specialization won't apply.
 template <class C, size_t... I>
-constexpr bool nfields_ge_impl<C, std::index_sequence<I...>, decltype(C { (I, glob())... })> = true;
+constexpr bool nfields_ge_impl<C, std::index_sequence<I...>, true, decltype(C { (I, glob())... })> = true;
 
 // Whether the number of fields in an aggregate is greater than or equal to N
 template <class C, size_t N>
 constexpr bool nfields_ge = nfields_ge_impl<C, std::make_index_sequence<N>>;
 
-// Binary search in [L,H) for number of fields in aggregate
-template <class C, size_t L, size_t H, size_t D = H - L, size_t M = L + D / 2, bool = std::is_aggregate_v<C>>
-constexpr size_t b_search = 0;
+// Binary search in [L,H) for number of fields in aggregate. Stops at L when M == L.
+template <class C, size_t L, size_t H, size_t M = L + (H - L) / 2, bool = M != L>
+constexpr size_t b_search = L;
 
 // Next search is in [L,M)
 template <class C, size_t L, size_t H, size_t M, bool>
@@ -81,12 +82,8 @@ template <class C, size_t L, size_t H, size_t M>
 constexpr size_t b_search_next<C, L, H, M, true> = b_search<C, M, H>;
 
 // Choose [L,M) or [M,H) depending on whether nfields >= M
-template <class C, size_t L, size_t H, size_t D, size_t M>
-constexpr size_t b_search<C, L, H, D, M, true> = b_search_next<C, L, H, M, nfields_ge<C, M>>;
-
-// Stop search, returning L when (D = H - L) == 1
 template <class C, size_t L, size_t H, size_t M>
-constexpr size_t b_search<C, L, H, 1, M, true> = L;
+constexpr size_t b_search<C, L, H, M, true> = b_search_next<C, L, H, M, nfields_ge<C, M>>;
 
 // Find an upper bound on the number of fields, doubling N as long as number of fields >= N
 template <class C, size_t N = 1, bool = true>
@@ -101,36 +98,35 @@ constexpr size_t nfields<C, N, false> = b_search<C, 0, N>;
 template <class C>
 constexpr size_t nfields = pvt_nfields::nfields<C>;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Template metaprogramming to determine if a type is trivially serializable - that it can be read and written as raw
-// data without any special handling.
-//
-// The criteria are:
-//
-// It is trivially copyable ( std::is_trivially_copyable )
-//
-// It is a standard layout type ( std::is_standard_layout )
-//
-// It is one of these types:
-// - arithmetic (integral, floating-point)
-// - enumeration (including std::byte)
-// - pointer-to-member (not pointer)
-// - std::complex<T>, C99 _Complex
-// - aggregate with trivially serializable members
-//
-// An aggregate is a C-style array, std::array, or a class/struct/union with all public non-static data members and
-// direct bases, no user-provided, inherited or explicit constructors (C++17), no user-declared or inherited
-// constructors (C++20), and no virtual functions or virtual bases.
-//
-// Pointers are not considered trivially serializable since they have specific addresses which are not portable
-// across runs, and may require special tracking and allocation. But pointers to members are typed offsets within a
-// class, and are portable across runs.
-//
-// Note: If an aggregate is a union, only the first member will be considered active, and thus cannot be a pointer.
-// Rather than ban unions entirely, pointers in unions are strongly discouraged and can cause unexpected results.
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Template metaprogramming to determine if a type is trivially serializable - that it can be read //
+// and written as raw data without any special handling.                                           //
+//                                                                                                 //
+// The criteria are:                                                                               //
+//                                                                                                 //
+// It is trivially copyable ( std::is_trivially_copyable )                                         //
+//                                                                                                 //
+// It is a standard layout type ( std::is_standard_layout )                                        //
+//                                                                                                 //
+// It is one of these types:                                                                       //
+// - arithmetic (integral, floating-point)                                                         //
+// - enumeration (including std::byte)                                                             //
+// - pointer-to-member (not pointer)                                                               //
+// - std::complex<T>, C99 _Complex                                                                 //
+// - aggregate with trivially serializable members                                                 //
+//                                                                                                 //
+// An aggregate is a C-style array, std::array, or a class/struct/union with all public non-static //
+// data members and direct bases, no user-provided, inherited or explicit constructors (C++17), no //
+// user-declared or inherited constructors (C++20), and no virtual functions or virtual bases.     //
+//                                                                                                 //
+// Pointers are not considered trivially serializable since they have specific addresses which are //
+// not portable across runs, and may require special tracking and allocation. But pointers to      //
+// members are typed offsets within a class, and are portable across runs.                         //
+//                                                                                                 //
+// Note: If an aggregate is a union, only the first member will be considered active, and thus     //
+// cannot be a pointer. Rather than ban unions entirely, pointers in unions are strongly           //
+// discouraged and can cause unexpected results.                                                   //
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace pvt_trivial {
 

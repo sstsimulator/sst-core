@@ -37,13 +37,13 @@ constexpr bool is_trivially_serializable_excluded_v = std::is_array_v<T>;
 template <typename T, size_t S>
 constexpr bool is_trivially_serializable_excluded_v<std::array<T, S>> = true;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Version of serialize that works for trivially serializable types which aren't excluded, and pointers thereof
-//
-// Note that the pointer tracking happens at a higher level, and only if it is turned on. If it is not turned on, then
-// this only copies the value pointed to into the buffer. If multiple objects point to the same location, they will each
-// have an independent copy after deserialization.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Version of serialize that works for trivially serializable types which aren't excluded, and pointers thereof //
+//                                                                                                              //
+// Note that the pointer tracking happens at a higher level, and only if it is turned on. If it is not turned   //
+// on, then this only copies the value pointed to into the buffer. If multiple objects point to the same        //
+// location, they will each have an independent copy after deserialization.                                     //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <class T>
 class serialize_impl<T, std::enable_if_t<is_trivially_serializable_v<std::remove_pointer_t<T>> &&
@@ -85,9 +85,9 @@ class serialize_impl<T, std::enable_if_t<is_trivially_serializable_v<std::remove
     SST_FRIEND_SERIALIZE();
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Compile-time unit tests
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////
+// Compile-time unit tests //
+/////////////////////////////
 
 namespace unittest {
 
