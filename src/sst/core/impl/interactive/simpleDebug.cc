@@ -395,8 +395,9 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
         index = SST::Core::from_string<int>(tokens[1]);
     }
     catch ( std::invalid_argument& e ) {
-        printf("Invalid index format specified.  The unwatch command requires that one of the index shown when "
-               "\"watch\" is run with no arguments be specified\n");
+        printf(
+            "Invalid index format specified.  The unwatch command requires that one of the index shown when "
+            "\"watch\" is run with no arguments be specified\n");
         return;
     }
 
