@@ -29,7 +29,6 @@ public:
     const std::string&      getName() const { return name_; }
     const std::vector<int>& getVersion() const { return version_; }
     const std::string&      getCompileFile() const { return file_; }
-    const std::string&      getCompileDate() const { return date_; }
     const std::vector<int>& getELICompiledVersion() const;
     const std::string&      getAlias() const { return alias_; }
 
@@ -52,7 +51,6 @@ public:
         desc_(T::ELI_getDescription()),
         version_(T::ELI_getVersion()),
         file_(T::ELI_getCompileFile()),
-        date_(T::ELI_getCompileDate()),
         alias_(GetAlias<T>::get())
     {}
 
@@ -68,24 +66,16 @@ private:
     std::string      desc_;
     std::vector<int> version_;
     std::string      file_;
-    std::string      date_;
     std::vector<int> compiled_;
     std::string      alias_;
 };
 
 } // namespace SST::ELI
 
-#define SST_ELI_INSERT_COMPILE_INFO()                     \
-    static const std::string& ELI_getCompileDate()        \
-    {                                                     \
-        static std::string time      = __TIME__;          \
-        static std::string date      = __DATE__;          \
-        static std::string date_time = date + " " + time; \
-        return date_time;                                 \
-    }                                                     \
-    static const std::string ELI_getCompileFile()         \
-    {                                                     \
-        return __FILE__;                                  \
+#define SST_ELI_INSERT_COMPILE_INFO()             \
+    static const std::string ELI_getCompileFile() \
+    {                                             \
+        return __FILE__;                          \
     }
 
 #define SST_ELI_DEFAULT_INFO(lib, name, version, desc)             \
