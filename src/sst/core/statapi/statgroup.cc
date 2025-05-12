@@ -95,6 +95,7 @@ StatisticGroup::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(outputId);
     SST_SER(components);
     SST_SER(statNames);
+    SST_SER(output);
 }
 
 } // namespace SST::Statistics

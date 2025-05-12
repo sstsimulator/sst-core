@@ -268,7 +268,9 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
         if ( !is_null ) SST_SER(*enabled_stat_names_);
     }
 
-    SST_SER(statLoadLevel); // Potentially needed for late stat registration
+    // Potentially needed for late stat registration
+    SST_SER(statLoadLevel);
+    SST_SER(enabled_all_stats_);
 
     // For SubComponents map, need to serialize map by hand since we
     // we will need to use the track non-pointer as pointer feature in

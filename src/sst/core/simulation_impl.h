@@ -17,7 +17,7 @@
 #include "sst/core/clock.h"
 #include "sst/core/componentInfo.h"
 #include "sst/core/exit.h"
-#include "sst/core/oneshot.h"
+#include "sst/core/impl/oneshotManager.h"
 #include "sst/core/output.h"
 #include "sst/core/profile/profiletool.h"
 #include "sst/core/rankInfo.h"
@@ -79,6 +79,38 @@ namespace Serialization {
 class ObjectMap;
 } // namespace Serialization
 
+
+namespace pvt {
+
+/**
+   Class to sort the contents of the TimeVortex in preparation for
+   checkpointing
+ */
+struct TimeVortexSort
+{
+    struct less
+    {
+        bool operator()(const Activity* lhs, const Activity* rhs) const;
+    };
+
+    std::vector<Activity*> data;
+
+    using iterator = std::vector<Activity*>::iterator;
+
+    // Iterator to start of actions after sort
+    iterator action_start;
+
+    TimeVortexSort() = default;
+
+    void sortData();
+
+    std::pair<iterator, iterator> getEventsForHandler(uintptr_t handler);
+
+    std::pair<iterator, iterator> getActions();
+};
+
+} // namespace pvt
+
 /**
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
@@ -137,8 +169,8 @@ public:
 
     /******** End Public API from Simulation ********/
 
-    using clockMap_t   = std::map<std::pair<SimTime_t, int>, Clock*>;   /*!< Map of times to clocks */
-    using oneShotMap_t = std::map<std::pair<SimTime_t, int>, OneShot*>; /*!< Map of times to OneShots */
+    using clockMap_t = std::map<std::pair<SimTime_t, int>, Clock*>; /*!< Map of times to clocks */
+    // using oneShotMap_t = std::map<int, OneShot*>; /*!< Map of priorities to OneShots */
 
     ~Simulation_impl();
 
@@ -223,9 +255,11 @@ public:
         Note: OneShot cannot be canceled, and will always callback after
               the timedelay.
     */
-    TimeConverter* registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority);
+    // TimeConverter* registerOneShot(const std::string& timeDelay, int priority, OneShot::HandlerBase* handler, bool
+    // absolute);
 
-    TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority);
+    // TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, int priority, OneShot::HandlerBase* handler, bool
+    // absolute);
 
     const std::vector<SimTime_t>& getInterThreadLatencies() const { return interThreadLatencies; }
 
@@ -301,6 +335,9 @@ public:
     /** Return the checkpoint event */
     CheckpointAction* getCheckpointAction() const { return checkpoint_action_; }
 
+
+    std::pair<pvt::TimeVortexSort::iterator, pvt::TimeVortexSort::iterator> getEventsForHandler(uintptr_t handler);
+
     /******** API provided through BaseComponent only ***********/
 
     /** Register a handler to be called on a set frequency */
@@ -313,6 +350,9 @@ public:
 
     // registerClock function used during checkpoint/restart
     void registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority);
+
+    // Reports that a clock should be present, but doesn't register anything with it
+    void reportClock(SimTime_t factor, int priority);
 
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
@@ -432,24 +472,23 @@ public:
 
     friend class SyncManager;
 
-    TimeVortex*             timeVortex;
+    TimeVortex*             timeVortex = nullptr;
     std::string             timeVortexType;  // Required for checkpoint
     TimeConverter           threadMinPartTC; // Unused...?
     Activity*               current_activity;
     static SimTime_t        minPart;
     static TimeConverter    minPartTC;
     std::vector<SimTime_t>  interThreadLatencies;
-    SimTime_t               interThreadMinLatency;
+    SimTime_t               interThreadMinLatency = MAX_SIMTIME_T;
     SyncManager*            syncManager;
     // ThreadSync*      threadSync;
     ComponentInfoMap        compInfoMap;
     clockMap_t              clockMap;
-    oneShotMap_t            oneShotMap;
     static Exit*            m_exit;
     SimulatorHeartbeat*     m_heartbeat = nullptr;
     CheckpointAction*       checkpoint_action_;
     static std::string      checkpoint_directory_;
-    bool                    endSim;
+    bool                    endSim = false;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;
     unsigned int            untimed_phase;
@@ -462,11 +501,17 @@ public:
     InteractiveConsole*     interactive_       = nullptr;
     bool                    enter_interactive_ = false;
     std::string             interactive_msg_;
+    SimTime_t               stop_at_ = 0;
+
+    // OneShotManager
+    Core::OneShotManager one_shot_manager_;
 
     /**
        vector to hold offsets of component blobs in checkpoint files
      */
     std::vector<std::pair<ComponentId_t, uint64_t>> component_blob_offsets_;
+
+    pvt::TimeVortexSort tv_sort_;
 
     /** TimeLord of the simulation */
     static TimeLord timeLord;
@@ -577,9 +622,9 @@ public:
     SimulationRunMode runMode;
 
     // Track current simulated time
-    SimTime_t currentSimCycle;
-    int       currentPriority;
-    SimTime_t endSimCycle;
+    SimTime_t currentSimCycle = 0;
+    int       currentPriority = 0;
+    SimTime_t endSimCycle     = 0;
 
     // Rank information
     RankInfo my_rank;

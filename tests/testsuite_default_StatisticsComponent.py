@@ -70,8 +70,8 @@ class testcase_StatisticComponent(SSTTestCase):
         # Need to skip header after the first file
         combine_per_rank_files(out_group_stat_file_csv)
 
-        filter1 = StartsWithFilter("WARNING: No components are")
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1])
+        filters = [ StartsWithFilter("WARNING: No components are"), StartsWithFilter("#") ]
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 
         filter2 = StartsWithFilter("ComponentName, StatisticName,")

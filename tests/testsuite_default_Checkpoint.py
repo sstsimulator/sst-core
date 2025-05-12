@@ -87,6 +87,9 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_SharedObject_set(self) -> None:
         self.checkpoint_test_template("SharedObject", 2, 2, modelparams="--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_set")
 
+    def test_Checkpoint_Statistics_basic(self) -> None:
+        self.checkpoint_test_template("StatisticsComponent_basic");
+
     @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
     @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_Module(self) -> None:

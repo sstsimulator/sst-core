@@ -27,14 +27,6 @@ TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
 {}
 
 template <bool TS>
-TimeVortexPQBase<TS>::TimeVortexPQBase() :
-    TimeVortex(),
-    insertOrder(0),
-    max_depth(0),
-    current_depth(0)
-{}
-
-template <bool TS>
 TimeVortexPQBase<TS>::~TimeVortexPQBase()
 {
     // Activities in TimeVortexPQ all need to be deleted
@@ -104,19 +96,12 @@ TimeVortexPQBase<TS>::front()
 
 template <bool TS>
 void
-TimeVortexPQBase<TS>::print(Output& out) const
-{
-    out.output("TimeVortex state: cannot iterate priority_queue\n");
-}
-
-template <bool TS>
-void
-TimeVortexPQBase<TS>::dbg_print(Output& out)
+TimeVortexPQBase<TS>::dbg_print(Output& out) const
 {
     out.output("TimeVortex state:\n");
 
     //  STL's priority_queue does not support iteration.
-    std::vector<Activity*>& act = getContainer(data);
+    const std::vector<Activity*>& act = getContainer(data);
     for ( auto it = act.begin(); it != act.end(); it++ ) {
         (*it)->print("  ", out);
     }
@@ -124,23 +109,9 @@ TimeVortexPQBase<TS>::dbg_print(Output& out)
 
 template <bool TS>
 void
-TimeVortexPQBase<TS>::serialize_order(SST::Core::Serialization::serializer& ser)
+TimeVortexPQBase<TS>::getContents(std::vector<Activity*>& activities) const
 {
-    TimeVortex::serialize_order(ser);
-    SST_SER(insertOrder);
-    SST_SER(max_depth);
-    SST_SER(current_depth);
-    SST_SER(data);
-}
-
-template <bool TS>
-void
-TimeVortexPQBase<TS>::fixup_handlers()
-{
-    std::vector<Activity*>& act = getContainer(data);
-    for ( auto it = act.begin(); it != act.end(); it++ ) {
-        fixup(*it);
-    }
+    activities = getContainer(data);
 }
 
 class TimeVortexPQ : public TimeVortexPQBase<false>
@@ -158,15 +129,8 @@ public:
     explicit TimeVortexPQ(Params& params) :
         TimeVortexPQBase<false>(params)
     {}
-    TimeVortexPQ() :
-        TimeVortexPQBase<false>()
-    {} // For serialization only
+    TimeVortexPQ() = delete;
     ~TimeVortexPQ() {}
-
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        TimeVortexPQBase<false>::serialize_order(ser);
-    }
 
     SST_ELI_EXPORT(TimeVortexPQ)
 };
@@ -187,15 +151,8 @@ public:
     explicit TimeVortexPQ_ts(Params& params) :
         TimeVortexPQBase<true>(params)
     {}
-    TimeVortexPQ_ts() :
-        TimeVortexPQBase<true>()
-    {} // For serialization only
+    TimeVortexPQ_ts() = delete;
     ~TimeVortexPQ_ts() {}
-
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        TimeVortexPQBase<true>::serialize_order(ser);
-    }
 
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };

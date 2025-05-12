@@ -43,6 +43,7 @@
 #include "sst/core/timeVortex.h"
 #include "sst/core/unitAlgebra.h"
 
+#include <algorithm>
 #include <cinttypes>
 #include <exception>
 #include <fstream>
@@ -57,6 +58,80 @@ using namespace SST::Statistics;
 using namespace SST::Shared;
 
 namespace SST {
+
+namespace pvt {
+
+bool
+TimeVortexSort::less::operator()(const Activity* lhs, const Activity* rhs) const
+{
+    if ( lhs->isEvent() && rhs->isEvent() ) {
+        return Event::less()(static_cast<const Event*>(lhs), static_cast<const Event*>(rhs));
+    }
+    if ( lhs->isAction() && rhs->isAction() ) {
+        return Activity::less<false, false, true>()(lhs, rhs);
+    }
+    // one is event, one is action, the event is "less than"
+    // the action
+    return lhs->isEvent();
+}
+
+void
+TimeVortexSort::sortData()
+{
+    // Sort the data.  This will sort events first, actions last.
+    // Within the events, it is sorted primarily on delivery_info
+    // (handler), then on delivery time and queue order to make
+    // sure the ordering is unique.  Actions are simply sorted on
+    // queue order.
+    std::sort(data.begin(), data.end(), less());
+
+    // Find the index of the first action.  This will be the end
+    // of the Event list. We can pass nullptr as the object to
+    // compare to because we don't ever actually compare to it;
+    // we're just looking for the first Activity to return true
+    // for isAction().
+    action_start = std::lower_bound(
+        data.begin(), data.end(), nullptr, [](Activity* activity, Activity*) { return !activity->isAction(); });
+}
+
+std::pair<TimeVortexSort::iterator, TimeVortexSort::iterator>
+TimeVortexSort::getEventsForHandler(uintptr_t handler)
+{
+
+    // This event gets created with the specified handler as its
+    // delivery_info and a 0 delivery_time.  Since no events will have
+    // a zero delivery time for a checkpoint, this will compare to be
+    // right before the first event with the same handler, if any
+    // events with that handler are in the vector. If no events with
+    // this handler exist, it will get the first event with the next
+    // higher delivery_info.  This case is handled below.
+    pvt::DeliveryInfoCompEvent* comp     = new pvt::DeliveryInfoCompEvent(handler);
+    iterator                    it_begin = std::lower_bound(data.begin(), action_start, comp, less());
+
+    iterator it_end = it_begin;
+
+    // Get the iterator one past the last Event with the specified
+    // handler.  If there are no events with the specified handler,
+    // then you will end up with it_begin = it_end.  This means any
+    // loop over the iterators won't do anything.  Just to be sure,
+    // we'll return data.end() for both.
+    while ( (it_end != action_start) &&
+            pvt::DeliveryInfoCompEvent::getDeliveryInfo(static_cast<Event*>(*it_end)) == handler )
+        ++it_end;
+
+    if ( it_begin == it_end ) return make_pair(data.end(), data.end());
+    return make_pair(it_begin, it_end);
+}
+
+std::pair<TimeVortexSort::iterator, TimeVortexSort::iterator>
+TimeVortexSort::getActions()
+{
+    return std::make_pair(action_start, data.end());
+}
+
+
+} // namespace pvt
+
 
 /**   Simulation functions **/
 
@@ -123,9 +198,6 @@ Simulation_impl::~Simulation_impl()
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     clockMap.clear();
 
-    // OneShots already got deleted by timeVortex, simply clear the onsShotMap
-    oneShotMap.clear();
-
     // Clear out Components
     compInfoMap.clear();
 
@@ -183,6 +255,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     signal_arrived_(0),
     shutdown_mode_(SHUTDOWN_CLEAN),
     wireUpFinished_(false),
+    one_shot_manager_(this),
     runMode(cfg->runMode()),
     currentSimCycle(0),
     currentPriority(0),
@@ -250,12 +323,17 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
 {
     // Sim time alarms
     if ( !restart ) {
+        // If not restarting, get the stop time from config options.
+        // Otherwise, the stop time is retrieved from the checkpoint
+        // (already done at this point).
         SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
-        if ( stopAt != 0 ) {
-            StopAction* sa = new StopAction();
-            sa->setDeliveryTime(stopAt);
-            timeVortex->insert(sa);
-        }
+        stop_at_         = stopAt;
+    }
+
+    if ( stop_at_ != 0 ) {
+        StopAction* sa = new StopAction();
+        sa->setDeliveryTime(stop_at_);
+        timeVortex->insert(sa);
     }
 
     // Signal handling - default
@@ -1178,6 +1256,16 @@ Simulation_impl::registerClock(SimTime_t factor, Clock::HandlerBase* handler, in
     clockMap[mapKey]->registerHandler(handler);
 }
 
+void
+Simulation_impl::reportClock(SimTime_t factor, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(factor, priority);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Clock* ce        = new Clock(timeLord.getTimeConverter(factor), priority);
+        clockMap[mapKey] = ce;
+    }
+}
+
 Cycle_t
 Simulation_impl::reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority)
 {
@@ -1258,31 +1346,6 @@ Simulation_impl::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler,
     }
 }
 
-TimeConverter*
-Simulation_impl::registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority)
-{
-    return registerOneShot(UnitAlgebra(timeDelay), handler, priority);
-}
-
-TimeConverter*
-Simulation_impl::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority)
-{
-    TimeConverter*       tcTimeDelay = timeLord.getTimeConverter(timeDelay);
-    clockMap_t::key_type mapKey      = std::make_pair(tcTimeDelay->getFactor(), priority);
-
-    // Search the oneShot map for a oneShot with the associated timeDelay factor
-    if ( oneShotMap.find(mapKey) == oneShotMap.end() ) {
-        // OneShot with the specific timeDelay not found,
-        // create a new one and add it to the map of OneShots
-        OneShot* ose       = new OneShot(tcTimeDelay, priority);
-        oneShotMap[mapKey] = ose;
-    }
-
-    // Add the handler to the OneShots list of handlers, Also the
-    // registerHandler will schedule the oneShot to fire in the future
-    oneShotMap[mapKey]->registerHandler(handler);
-    return tcTimeDelay;
-}
 
 void
 Simulation_impl::insertActivity(SimTime_t time, Activity* ev)
@@ -1346,6 +1409,13 @@ Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
     }
 }
 #endif // SST_SYNC_PROFILING
+
+
+std::pair<pvt::TimeVortexSort::iterator, pvt::TimeVortexSort::iterator>
+Simulation_impl::getEventsForHandler(uintptr_t handler)
+{
+    return tv_sort_.getEventsForHandler(handler);
+}
 
 
 // Function to allow for easy serialization of threads while debugging
@@ -1710,6 +1780,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(num_ranks);
     SST_SER(my_rank);
     SST_SER(currentSimCycle);
+    SST_SER(stop_at_);
     // SST_SER(threadMinPartTC);
     SST_SER(minPart);
     SST_SER(minPartTC);
@@ -1742,11 +1813,10 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         SST_SER(SharedObject::manager);
     }
 
-    // Serialize the clockmap
-    SST_SER(clockMap);
-
-    // Last, get the timevortex
-    SST_SER(timeVortex);
+    // First we need to get the TimeVortexContents and sort them
+    tv_sort_.data.clear();
+    timeVortex->getContents(tv_sort_.data);
+    tv_sort_.sortData();
 
     size = ser.size();
     buffer.resize(size);
@@ -1756,6 +1826,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(num_ranks);
     SST_SER(my_rank);
     SST_SER(currentSimCycle);
+    SST_SER(stop_at_);
     // SST_SER(threadMinPartTC);
     SST_SER(minPart);
     SST_SER(minPartTC);
@@ -1789,11 +1860,6 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         SST_SER(SharedObject::manager);
     }
 
-    SST_SER(clockMap);
-
-    // Last, get the timevortex
-    SST_SER(timeVortex);
-
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(&buffer[0], size);
@@ -1824,6 +1890,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     }
 
     fs.close();
+    tv_sort_.data.clear();
 
     /*
      * Still needs to be added to checkpoint:
@@ -1884,6 +1951,7 @@ Simulation_impl::restart(Config* cfg)
     SST_SER(num_ranks);
     SST_SER(my_rank);
     SST_SER(currentSimCycle);
+    SST_SER(stop_at_);
     // SST_SER(threadMinPartTC);
     SST_SER(minPart);
     SST_SER(minPartTC);
@@ -1922,6 +1990,7 @@ Simulation_impl::restart(Config* cfg)
     syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
     // Look at simulation.cc line 365 on setting up profile tools
 
+    // Heartbeat does not carry-over
     SST_SER(m_heartbeat);
 
     // Get statistics engine
@@ -1938,9 +2007,15 @@ Simulation_impl::restart(Config* cfg)
     if ( my_rank.thread == 0 ) {
         SST_SER(SharedObject::manager);
     }
-    SST_SER(clockMap);
-    // Last, get the timevortex
-    SST_SER(timeVortex);
+
+    // Need to create the TimeVortex
+    Params p;
+    timeVortex = Factory::getFactory()->Create<TimeVortex>(timeVortexType, p);
+
+    // Create the end of queue StopAction
+    StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
+    sa->setDeliveryTime(SST_SIMTIME_MAX);
+    timeVortex->insert(sa);
 
     checkpoint_action_->insertIntoTimeVortex(this);
 
@@ -1972,7 +2047,7 @@ Simulation_impl::restart(Config* cfg)
     }
 
     // Need to clean up the handlers in the TimeVortex
-    timeVortex->fixup_handlers();
+    // timeVortex->fixup_handlers();
 
     // Prepare stat engine for restart now that stats are registered
     stat_engine.finalizeInitialization();

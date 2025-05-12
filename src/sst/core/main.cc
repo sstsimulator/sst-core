@@ -848,7 +848,7 @@ main(int argc, char* argv[])
         Params::keyMap        = cpt_params_key_map;
         Params::keyMapReverse = cpt_params_key_map_reverse;
         Params::nextKeyID     = cpt_params_next_key_id;
-    }
+    } // if ( restart )
 
     // If we are doing a parallel load with a file per rank, add the
     // rank number to the file name before the extension

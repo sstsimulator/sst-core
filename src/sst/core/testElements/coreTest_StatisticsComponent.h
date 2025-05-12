@@ -62,11 +62,14 @@ public:
     )
 
     StatisticsComponentInt(ComponentId_t id, Params& params);
+    StatisticsComponentInt(); // For checkpointing only
     void setup() override {}
     void finish() override {}
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(StatisticsComponentInt);
+
 private:
-    StatisticsComponentInt();
     StatisticsComponentInt(const StatisticsComponentInt&)            = delete; // do not implement
     StatisticsComponentInt& operator=(const StatisticsComponentInt&) = delete; // do not implement
 
@@ -123,11 +126,14 @@ public:
     )
 
     StatisticsComponentFloat(ComponentId_t id, Params& params);
+    StatisticsComponentFloat(); // For serialization only
     void setup() override {}
     void finish() override {}
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(StatisticsComponentFloat);
+
 private:
-    StatisticsComponentFloat();
     StatisticsComponentFloat(const StatisticsComponentFloat&) = delete; // do not implement
     void operator=(const StatisticsComponentFloat&)           = delete; // do not implement
 

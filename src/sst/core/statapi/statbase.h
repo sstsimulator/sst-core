@@ -14,7 +14,6 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/factory.h"
-#include "sst/core/oneshot.h"
 #include "sst/core/params.h"
 #include "sst/core/serialization/serialize_impl_fwd.h"
 #include "sst/core/sst_types.h"
@@ -671,7 +670,8 @@ class serialize_impl<Statistics::Statistic<T>*>
             std::string    stat_eli_type;
             BaseComponent* comp;
             std::string    stat_name;
-            std::string    stat_id;
+
+            std::string stat_id;
             SST_SER(stat_eli_type);
             SST_SER(comp);
             SST_SER(stat_name);

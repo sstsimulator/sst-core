@@ -12,11 +12,13 @@
 #ifndef SST_CORE_TIMEVORTEX_H
 #define SST_CORE_TIMEVORTEX_H
 
+#include "sst/core/activity.h"
 #include "sst/core/activityQueue.h"
 #include "sst/core/module.h"
 #include "sst/core/serialization/serialize_impl_fwd.h"
 
 #include <cstdint>
+#include <vector>
 
 namespace SST {
 
@@ -44,22 +46,23 @@ public:
     virtual Activity* front() override                    = 0;
 
     /** Print the state of the TimeVortex */
-    virtual void     print(Output& out) const = 0;
+    virtual void     print(Output& out) const;
     virtual uint64_t getMaxDepth() const { return max_depth; }
     virtual uint64_t getCurrentDepth() const = 0;
-    virtual void     dbg_print(Output& out) { print(out); }
+    virtual void     dbg_print(Output& out) const { print(out); }
 
     // Functions for checkpointing
     virtual void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(max_depth); }
-    virtual void fixup_handlers() {}
+
+    /**
+       Get a copy of the contents of the TimeVortex
+
+       @return vector with a copy of the contents
+     */
+    virtual void getContents(std::vector<Activity*>& activities) const = 0;
 
 protected:
     uint64_t max_depth;
-
-    void fixup(Activity* act);
-
-private:
-    Simulation_impl* sim_ = nullptr;
 };
 
 namespace TV::pvt {
@@ -68,29 +71,6 @@ void pack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser);
 void unpack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser);
 
 } // namespace TV::pvt
-
-template <>
-class SST::Core::Serialization::serialize_impl<TimeVortex*>
-{
-    void operator()(TimeVortex*& s, SST::Core::Serialization::serializer& ser, ser_opt_t UNUSED(options))
-    {
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-        case serializer::PACK:
-            TV::pvt::pack_timevortex(s, ser);
-            break;
-        case serializer::UNPACK:
-            TV::pvt::unpack_timevortex(s, ser);
-            break;
-        case serializer::MAP:
-            // Add your code here
-            break;
-        }
-    }
-
-    SST_FRIEND_SERIALIZE();
-};
-
 } // namespace SST
 
 #endif // SST_CORE_TIMEVORTEX_H

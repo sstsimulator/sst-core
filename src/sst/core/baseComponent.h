@@ -17,7 +17,6 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/factory.h"
-#include "sst/core/oneshot.h"
 #include "sst/core/portModule.h"
 #include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/serialization/serializable_base.h"
@@ -1143,6 +1142,7 @@ private:
     // Need to track clock handlers for checkpointing.  We need to
     // know what clock handlers we have registered with the core
     std::vector<Clock::HandlerBase*> clock_handlers_;
+    std::set<SimTime_t>              registered_clocks_;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules);

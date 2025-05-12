@@ -159,8 +159,8 @@ public:
     /** Returns the queue order associated with this activity */
     inline uint64_t getQueueOrder() const { return queue_order; }
 
-    virtual bool isEvent() { return false; }
-    virtual bool isAction() { return false; }
+    virtual bool isEvent() const  = 0;
+    virtual bool isAction() const = 0;
 
     /** Get a string represenation of the event.  The default version
      * will just use the name of the class, retrieved through the
