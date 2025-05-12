@@ -62,7 +62,7 @@ esac
 
 SST_CHECK_PICKY
 AS_IF([test "x$use_picky" = "xyes"],
-      [WARNFLAGS="-Wall -Wextra -Wvla -Wnon-virtual-dtor -Wsuggest-override"],
+      [WARNFLAGS="-Wall -Wextra -Wvla -Wnon-virtual-dtor -Wsuggest-override -Wmissing-noreturn"],
       [WARNFLAGS=""])
 CFLAGS="$CFLAGS $WARNFLAGS"
 CXXFLAGS="$CXXFLAGS $WARNFLAGS"
