@@ -127,7 +127,7 @@ protected:
     void simulationShutdown();
 
 private:
-    InteractiveConsole(const InteractiveConsole&) = delete;
+    InteractiveConsole(const InteractiveConsole&)            = delete;
     InteractiveConsole& operator=(const InteractiveConsole&) = delete;
 };
 

@@ -212,7 +212,9 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
 
         if ( direct_interthread && num_ranks.thread > 1 ) timeVortexType = timeVortexType + ".ts";
         timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
-        if ( my_rank.thread == 0 ) { m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1); }
+        if ( my_rank.thread == 0 ) {
+            m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
+        }
 
         if ( cfg->heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
             sim_output.output(
@@ -395,7 +397,9 @@ Simulation_impl::getLocalMinimumNextActivityTime()
     SimTime_t ret = MAX_SIMTIME_T;
     for ( auto&& instance : instanceVec_ ) {
         SimTime_t next = instance->getNextActivityTime();
-        if ( next < ret ) { ret = next; }
+        if ( next < ret ) {
+            ret = next;
+        }
     }
     return ret;
 }
@@ -405,7 +409,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 {
     // Set minPartTC (only thread 0 will do this)
     Simulation_impl::minPart = min_part;
-    if ( my_rank.thread == 0 ) { minPartTC = minPartToTC(min_part); }
+    if ( my_rank.thread == 0 ) {
+        minPartTC = minPartToTC(min_part);
+    }
 
     // Get the minimum latencies for links between the various threads
     interThreadLatencies.resize(num_ranks.thread);
@@ -439,7 +445,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
             // rank, but on different threads.  Therefore, they
             // contribute to the interThreadMinLatency.
             num_cross_thread_links++;
-            if ( clink->getMinLatency() < interThreadMinLatency ) { interThreadMinLatency = clink->getMinLatency(); }
+            if ( clink->getMinLatency() < interThreadMinLatency ) {
+                interThreadMinLatency = clink->getMinLatency();
+            }
 
             // Now check only those latencies that directly impact this
             // thread.  Keep track of minimum latency for each other
@@ -473,7 +481,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
-    if ( min_part == MAX_SIMTIME_T && num_cross_thread_links == 0 ) { independent = true; }
+    if ( min_part == MAX_SIMTIME_T && num_cross_thread_links == 0 ) {
+        independent = true;
+    }
     else {
         independent = false;
     }
@@ -557,7 +567,9 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         // direct_interthread links
         else if ( (rank[0].rank == rank[1].rank) && direct_interthread ) {
             int local;
-            if ( rank[0] == myRank ) { local = 0; }
+            if ( rank[0] == myRank ) {
+                local = 0;
+            }
             else {
                 local = 1;
             }
@@ -585,7 +597,9 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 }
             }
             ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
-            if ( cinfo == nullptr ) { sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map."); }
+            if ( cinfo == nullptr ) {
+                sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
+            }
             cinfo->getLinkMap()->insertLink(clink->port[local], link);
         }
         // If the components are not in the same thread, then the
@@ -681,7 +695,9 @@ Simulation_impl::initialize()
     init_phase_start_time_ = sst_get_cpu_time();
     bool done              = false;
     initBarrier.wait();
-    if ( my_rank.thread == 0 ) { SharedObject::manager.updateState(false); }
+    if ( my_rank.thread == 0 ) {
+        SharedObject::manager.updateState(false);
+    }
 
     do {
         initBarrier.wait();
@@ -697,7 +713,9 @@ Simulation_impl::initialize()
         initBarrier.wait();
         // We're done if no new messages were sent
         if ( untimed_msg_count == 0 ) done = true;
-        if ( my_rank.thread == 0 ) { SharedObject::manager.updateState(false); }
+        if ( my_rank.thread == 0 ) {
+            SharedObject::manager.updateState(false);
+        }
         untimed_phase++;
     } while ( !done );
 
@@ -761,7 +779,9 @@ Simulation_impl::setup()
     setupBarrier.wait();
 
     /* Enforce finalization of SharedObjects */
-    if ( my_rank.thread == 0 ) { SharedObject::manager.updateState(true); }
+    if ( my_rank.thread == 0 ) {
+        SharedObject::manager.updateState(true);
+    }
 
     setupBarrier.wait();
 
@@ -827,7 +847,9 @@ Simulation_impl::run()
 
     // Setup interactive mode (only in serial jobs for now)
     if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
-        if ( interactive_type_ != "" ) { initialize_interactive_console(interactive_type_); }
+        if ( interactive_type_ != "" ) {
+            initialize_interactive_console(interactive_type_);
+        }
         if ( interactive_start_ != "" ) {
             if ( nullptr == interactive_ ) {
                 sim_output.fatal(
@@ -839,7 +861,9 @@ Simulation_impl::run()
                 UnitAlgebra time(interactive_start_);
                 printf("%s\n", time.toStringBestSI().c_str());
                 SimTime_t offset;
-                if ( time.isValueZero() ) { offset = 0; }
+                if ( time.isValueZero() ) {
+                    offset = 0;
+                }
                 else {
                     TimeConverter* tc = timeLord.getTimeConverter(time);
                     offset            = tc->getFactor();
@@ -978,7 +1002,9 @@ Simulation_impl::emergencyShutdown()
 void
 Simulation_impl::signalShutdown(bool abnormal)
 {
-    if ( abnormal ) { shutdown_mode_ = SHUTDOWN_SIGNAL; }
+    if ( abnormal ) {
+        shutdown_mode_ = SHUTDOWN_SIGNAL;
+    }
     else {
         shutdown_mode_ = SHUTDOWN_CLEAN;
     }
@@ -1080,7 +1106,9 @@ double
 Simulation_impl::getRunPhaseElapsedRealTime() const
 {
     if ( run_phase_start_time_ == 0.0 ) return 0.0; // Not in run phase yet
-    if ( run_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - run_phase_start_time_; }
+    if ( run_phase_total_time_ == 0.0 ) {
+        return sst_get_cpu_time() - run_phase_start_time_;
+    }
     else {
         return run_phase_total_time_;
     }
@@ -1090,7 +1118,9 @@ double
 Simulation_impl::getInitPhaseElapsedRealTime() const
 {
     if ( init_phase_start_time_ == 0.0 ) return 0.0; // Not in init phase yet
-    if ( init_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - init_phase_start_time_; }
+    if ( init_phase_total_time_ == 0.0 ) {
+        return sst_get_cpu_time() - init_phase_start_time_;
+    }
     else {
         return init_phase_total_time_;
     }
@@ -1100,7 +1130,9 @@ double
 Simulation_impl::getCompletePhaseElapsedRealTime() const
 {
     if ( complete_phase_start_time_ == 0.0 ) return 0.0; // Not in complete phase yet
-    if ( complete_phase_total_time_ == 0.0 ) { return sst_get_cpu_time() - complete_phase_start_time_; }
+    if ( complete_phase_total_time_ == 0.0 ) {
+        return sst_get_cpu_time() - complete_phase_start_time_;
+    }
     else {
         return complete_phase_total_time_;
     }
@@ -1216,7 +1248,9 @@ Simulation_impl::getClockForHandler(Clock::HandlerBase* handler)
 {
     // Have to search all the clocks
     for ( auto& x : clockMap ) {
-        if ( x.second->isHandlerRegistered(handler) ) { return x.first.first; }
+        if ( x.second->isHandlerRegistered(handler) ) {
+            return x.first.first;
+        }
     }
     return 0;
 }
@@ -1489,13 +1523,17 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             bool valid = false;
             if ( index == std::string::npos ) {
                 // No do, see if it's one of the built-in points
-                if ( p == "clock" || p == "event" || p == "sync" ) { valid = true; }
+                if ( p == "clock" || p == "event" || p == "sync" ) {
+                    valid = true;
+                }
             }
             else {
                 // Get the type and the point
                 std::string type  = p.substr(0, index);
                 std::string point = p.substr(index + 1);
-                if ( Factory::getFactory()->isProfilePointValid(type, point) ) { valid = true; }
+                if ( Factory::getFactory()->isProfilePointValid(type, point) ) {
+                    valid = true;
+                }
             }
 
             if ( !valid )
@@ -1544,7 +1582,9 @@ Simulation_impl::scheduleCheckpoint()
     checkpoint_action_->setCheckpoint();
 
     // Trigger checkpoint immediately in serial simulations
-    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) { checkpoint_action_->check(currentSimCycle); }
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
+        checkpoint_action_->check(currentSimCycle);
+    }
 }
 
 
@@ -1705,16 +1745,22 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
-    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(m_exit);
+    }
     SST_SER(m_heartbeat);
 
     // Add statistics engine and associated state
     // Individual statistics are checkpointing with component
-    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(StatisticProcessingEngine::m_statOutputs);
+    }
     SST_SER(stat_engine);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(SharedObject::manager);
+    }
 
     // Serialize the clockmap
     SST_SER(clockMap);
@@ -1745,17 +1791,23 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
-    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(m_exit);
+    }
     SST_SER(m_heartbeat);
 
     // Add shared StatisticOutput vector
 
     // Add statistic engine
-    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(StatisticProcessingEngine::m_statOutputs);
+    }
     SST_SER(stat_engine);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(SharedObject::manager);
+    }
 
     SST_SER(clockMap);
 
@@ -1867,7 +1919,9 @@ Simulation_impl::restart(Config* cfg)
     SST_SER(output_directory);
     // Actions that may also be in TV
     SST_SER(real_time_);
-    if ( my_rank.thread == 0 ) { SST_SER(m_exit); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(m_exit);
+    }
     initBarrier.wait();
 
     // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
@@ -1888,7 +1942,9 @@ Simulation_impl::restart(Config* cfg)
     SST_SER(m_heartbeat);
 
     // Get statistics engine
-    if ( my_rank.thread == 0 ) { SST_SER(StatisticProcessingEngine::m_statOutputs); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(StatisticProcessingEngine::m_statOutputs);
+    }
     completeBarrier.wait();
     SST_SER(stat_engine);
 
@@ -1896,7 +1952,9 @@ Simulation_impl::restart(Config* cfg)
     stat_engine.restart(this);
 
     // Add shared regions
-    if ( my_rank.thread == 0 ) { SST_SER(SharedObject::manager); }
+    if ( my_rank.thread == 0 ) {
+        SST_SER(SharedObject::manager);
+    }
     SST_SER(clockMap);
     // Last, get the timevortex
     SST_SER(timeVortex);
@@ -1935,7 +1993,9 @@ Simulation_impl::restart(Config* cfg)
 
     // Prepare stat engine for restart now that stats are registered
     stat_engine.finalizeInitialization();
-    if ( my_rank.thread == 0 ) { StatisticProcessingEngine::stat_outputs_simulation_start(); }
+    if ( my_rank.thread == 0 ) {
+        StatisticProcessingEngine::stat_outputs_simulation_start();
+    }
     stat_engine.startOfSimulation();
 
     // Resolve heartbeat -> overwrite with command line if present

@@ -235,7 +235,9 @@ public:
     LinkMap* getComponentLinkMap(ComponentId_t id) const
     {
         ComponentInfo* info = compInfoMap.getByID(id);
-        if ( nullptr == info ) { return nullptr; }
+        if ( nullptr == info ) {
+            return nullptr;
+        }
         else {
             return info->getLinkMap();
         }
@@ -249,7 +251,9 @@ public:
     {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) { return i->getComponent(); }
+        if ( nullptr != i ) {
+            return i->getComponent();
+        }
         else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             SST_Exit(1);
@@ -261,7 +265,9 @@ public:
     {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) { return i; }
+        if ( nullptr != i ) {
+            return i;
+        }
         else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             SST_Exit(1);
@@ -342,7 +348,7 @@ public:
     friend int ::main(int argc, char** argv);
 
     Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
-    Simulation_impl(const Simulation_impl&) = delete;            // Don't Implement
+    Simulation_impl(const Simulation_impl&)            = delete; // Don't Implement
     Simulation_impl& operator=(const Simulation_impl&) = delete; // Don't implement
 
     /** Get a handle to a TimeConverter

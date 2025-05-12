@@ -26,7 +26,9 @@ SimpleDebugger::execute(const std::string& msg)
 {
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
-    if ( nullptr == obj_ ) { obj_ = getComponentObjectMap(); }
+    if ( nullptr == obj_ ) {
+        obj_ = getComponentObjectMap();
+    }
     done = false;
 
     std::string line;
@@ -137,7 +139,9 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
         }
         // See if this is the top level component, and if so, set it
         // to nullptr
-        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) { base_comp_ = nullptr; }
+        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) {
+            base_comp_ = nullptr;
+        }
         obj_ = parent;
         return;
     }
@@ -390,8 +394,9 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
         index = SST::Core::from_string<int>(tokens[1]);
     }
     catch ( std::invalid_argument& e ) {
-        printf("Invalid index format specified.  The unwatch command requires that one of the index shown when "
-               "\"watch\" is run with no arguments be specified\n");
+        printf(
+            "Invalid index format specified.  The unwatch command requires that one of the index shown when "
+            "\"watch\" is run with no arguments be specified\n");
         return;
     }
 
