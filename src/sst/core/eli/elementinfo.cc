@@ -106,7 +106,7 @@ ProvidesDefaultInfo::toString(std::ostream& os) const
     if ( !getAlias().empty() ) os << "      " << getName() << " is aliased as: " << getAlias() << std::endl;
     os << "      Description: " << getDescription() << std::endl;
     os << "      ELI version: " << getELIVersionString() << std::endl;
-    os << "      Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
+    os << "      Compiled using file: " << getCompileFile() << std::endl;
 }
 
 void
