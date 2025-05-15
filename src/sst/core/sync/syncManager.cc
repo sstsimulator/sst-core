@@ -529,7 +529,7 @@ SyncManager::computeNextInsert(SimTime_t next_checkpoint_time)
 
     if ( next_checkpoint_time < next_sync_time ) {
         next_sync_time = next_checkpoint_time;
-        if ( next_rank_sync == MAX_SIMTIME_T ) {
+        if ( num_ranks_.rank == 1 ) {
             // Single rank job
             next_sync_type_ = THREAD;
         }

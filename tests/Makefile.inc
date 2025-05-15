@@ -42,6 +42,7 @@ EXTRA_DIST += \
     tests/test_Serialization.py \
     tests/test_SharedObject.py \
     tests/test_StatisticsComponent.py \
+    tests/test_StatisticsComponent_basic.py \
     tests/test_Links.py \
     tests/test_MessageGeneratorComponent.py \
     tests/test_MemPool_overflow.py \

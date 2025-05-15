@@ -12,6 +12,7 @@
 #ifndef SST_CORE_IMPL_TIMEVORTEX_TIMEVORTEXPQ_H
 #define SST_CORE_IMPL_TIMEVORTEX_TIMEVORTEXPQ_H
 
+#include "sst/core/activity.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/threadsafe.h"
 #include "sst/core/timeVortex.h"
@@ -39,7 +40,7 @@ class TimeVortexPQBase : public TimeVortex
 public:
     // TimeVortexPQ();
     explicit TimeVortexPQBase(Params& params);
-    TimeVortexPQBase(); // For serialization only
+    TimeVortexPQBase() = delete;
     ~TimeVortexPQBase();
 
     bool      empty() override;
@@ -48,27 +49,27 @@ public:
     Activity* pop() override;
     Activity* front() override;
 
-    /** Print the state of the TimeVortex */
-    void print(Output& out) const override;
-
     uint64_t getCurrentDepth() const override { return current_depth; }
     uint64_t getMaxDepth() const override { return max_depth; }
 
-    void dbg_print(Output& out) override;
+    void dbg_print(Output& out) const override;
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-
-    virtual void fixup_handlers() override;
+    void getContents(std::vector<Activity*>& activities) const override;
 
 private:
     using dataType_t = std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>>;
 
+
+    // Get a const reference to the underlying data
     template <class T, class S, class C>
-    S& getContainer(std::priority_queue<T, S, C>& q)
+    static const S& getContainer(const std::priority_queue<T, S, C>& q)
     {
         struct UnderlyingContainer : std::priority_queue<T, S, C>
         {
-            static S& getUnderlyingContainer(std::priority_queue<T, S, C>& q) { return q.*&UnderlyingContainer::c; }
+            static const S& getUnderlyingContainer(const std::priority_queue<T, S, C>& q)
+            {
+                return q.*&UnderlyingContainer::c;
+            }
         };
         return UnderlyingContainer::getUnderlyingContainer(q);
     }

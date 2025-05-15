@@ -27,12 +27,18 @@ class NullEvent;
 class RankSync;
 class ThreadSync;
 
+namespace pvt {
+class DeliveryInfoCompEvent;
+} // namespace pvt
+
 /**
  * Base class for Events - Items sent across links to communicate between
  * components.
  */
 class Event : public Activity
 {
+    friend class pvt::DeliveryInfoCompEvent;
+
 public:
     /**
        Base handler for event delivery.
@@ -68,6 +74,28 @@ public:
     */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
+
+    /**
+       Class used to sort events during checkpointing.  This is used
+       to sort events by delivery_info so we can use std::lower_bound
+       to easily find events targeting a specific handler.  For Events
+       targetting the same handler, it will sort according to
+       Activity::less.  This will ensure that things get inserted back
+       in correct order, though the only important thing is that
+       insertion order is maintained, so two events to be delivered at
+       the same time maintain their send order.
+
+     */
+    class less
+    {
+    public:
+        bool operator()(const Event* lhs, const Event* rhs) const
+        {
+            if ( lhs->delivery_info != rhs->delivery_info ) return lhs->delivery_info < rhs->delivery_info;
+            return Activity::less<true, true, true>()(lhs, rhs);
+        }
+    };
+
 
     /** Type definition of unique identifiers */
     using id_type = std::pair<uint64_t, int>;
@@ -123,7 +151,8 @@ public:
 
 #endif
 
-    bool isEvent() override final { return true; }
+    bool isEvent() const override final { return true; }
+    bool isAction() const override final { return false; }
 
     void copyAllDeliveryInfo(const Activity* act) override final
     {
@@ -183,6 +212,15 @@ private:
         setOrderTag(tag);
         this->delivery_info = delivery_info;
     }
+
+    /**
+       Update the delivery_info during a restart.  This will fixup the
+       handler pointer.
+
+       @param dinfo New handler pointer cast as a uintptr_t
+     */
+    void updateDeliveryInfo(uintptr_t dinfo) { delivery_info = dinfo; }
+
 
     /** Gets the link id used for delivery.  For use by SST Core only */
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
@@ -249,6 +287,22 @@ public:
 
     ~EventHandlerMetaData() {}
 };
+
+namespace pvt {
+
+/**
+   Class used with std::lower_bound to find the start of events in a
+   sorted list with the specified delivery_info.
+ */
+class DeliveryInfoCompEvent : public Event
+{
+public:
+    static uintptr_t getDeliveryInfo(Event* ev) { return ev->delivery_info; }
+
+    DeliveryInfoCompEvent(uintptr_t delivery_info) { setDeliveryInfo(0, delivery_info); }
+};
+
+} // namespace pvt
 
 } // namespace SST
 

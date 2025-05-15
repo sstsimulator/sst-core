@@ -68,10 +68,6 @@ private:
     TimeConverter*      tc;
     Clock::HandlerBase* Clock3Handler;
 
-    // Variables to store OneShot Callback Handlers
-    OneShot::HandlerBase* callback1Handler;
-    OneShot::HandlerBase* callback2Handler;
-
     std::string clock_frequency_str;
     int         clock_count;
 };

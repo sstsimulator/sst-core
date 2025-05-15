@@ -17,6 +17,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/factory.h"
+#include "sst/core/impl/oneshotManager.h"
 #include "sst/core/output.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statbase.h"
@@ -359,12 +360,9 @@ StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
     if ( (0 != startTime.getValue()) && (tcFactor > sim->getCurrentSimCycle()) ) {
         // See if the map contains an entry for this factor
         if ( m_StartTimeMap.find(tcFactor) == m_StartTimeMap.end() ) {
-            // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler2<StatisticProcessingEngine,
-                &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, SimTime_t>(this, tcFactor);
-
-            // Set the OneShot priority so that normal events will occur before this event.
-            sim->registerOneShot(startTime, OneShotHandler, STATISTICCLOCKPRIORITY);
+            sim->one_shot_manager_.registerAbsoluteHandler<StatisticProcessingEngine,
+                &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, SimTime_t>(
+                tcFactor, STATISTICCLOCKPRIORITY, this, tcFactor);
 
             // Also create a new Array of Statistics and relate it to the map
             statArray                = new std::vector<StatisticBase*>();
@@ -396,11 +394,9 @@ StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
         // See if the map contains an entry for this factor
         if ( m_StopTimeMap.find(tcFactor) == m_StopTimeMap.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler2<StatisticProcessingEngine,
-                &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, SimTime_t>(this, tcFactor);
-
-            // Set the OneShot priority so that normal events will occur before this event.
-            sim->registerOneShot(stopTime, OneShotHandler, STATISTICCLOCKPRIORITY);
+            sim->one_shot_manager_.registerAbsoluteHandler<StatisticProcessingEngine,
+                &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, SimTime_t>(
+                tcFactor, STATISTICCLOCKPRIORITY, this, tcFactor);
 
             // Also create a new Array of Statistics and relate it to the map
             statArray               = new std::vector<StatisticBase*>();

@@ -33,6 +33,36 @@
 namespace SST {
 
 void
+SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
+    serializer& ser, uintptr_t delivery_info, ActivityQueue* queue)
+{
+    if ( ser.mode() == serializer::SIZER || ser.mode() == serializer::PACK ) {
+        // Look up all the events for the specified handler
+        std::pair<::SST::pvt::TimeVortexSort::iterator, ::SST::pvt::TimeVortexSort::iterator> activites =
+            Simulation_impl::getSimulation()->getEventsForHandler(delivery_info);
+
+        size_t count = std::distance(activites.first, activites.second);
+        SST_SER(count);
+        for ( auto it = activites.first; it < activites.second; ++it ) {
+            SST_SER(*it);
+        }
+    }
+    else if ( ser.mode() == serializer::UNPACK ) {
+        size_t count;
+        SST_SER(count);
+
+        for ( size_t i = 0; i < count; ++i ) {
+            Event* ev;
+            SST_SER(ev);
+            // Insert into the specified ActivityQueue after updating
+            // delvery_info
+            Link::updateEventDeliveryInfo(ev, delivery_info);
+            queue->insert(ev);
+        }
+    }
+}
+
+void
 SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser, ser_opt_t UNUSED(options))
 {
     // Need to treat Links and SelfLinks differently
@@ -108,8 +138,12 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                     x.first->serializeEventAttachPointKey(ser, x.second);
                 }
             }
+
+            // Serialize all the events sent on/to this Link
+            serialize_events(ser, s->delivery_info);
+
             return;
-        }
+        } // if ( self_link )
 
         // Check to see if this is a SYNC link pair.  If so, we will
         // serialize all the info together so we can do the
@@ -229,6 +263,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                     x.first->serializeEventAttachPointKey(ser, x.second);
                 }
             }
+
+            // Serialize all the events sent on/to this Link
+            serialize_events(ser, s->pair_link->delivery_info);
         }
         else {
             // Regular link
@@ -312,6 +349,8 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                     x.first->serializeEventAttachPointKey(ser, x.second);
                 }
             }
+            // Serialize all the events sent on/to this Link
+            serialize_events(ser, s->pair_link->delivery_info);
         }
         break;
     case serializer::UNPACK:
@@ -370,6 +409,8 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             else {
                 s->attached_tools = nullptr;
             }
+
+            serialize_events(ser, s->delivery_info, s->send_queue);
         }
         else if ( type == 3 ) {
             // Sync link
@@ -464,6 +505,14 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             else {
                 s->attached_tools = nullptr;
             }
+
+            // We always have our pair link since we serialized it
+            // with us.  Need to send the events on the pair's
+            // send_queue, with the delivery_info stored there. If
+            // this happens to be a PollingLinkQueue, then nothing
+            // will actually get sent since no events would have been
+            // serialized at this point in Link serialization.
+            serialize_events(ser, pair_link->delivery_info, pair_link->send_queue);
         }
         else {
             // Regular link
@@ -558,6 +607,14 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             }
             else {
                 s->attached_tools = nullptr;
+            }
+            // If we have a pair_link, delivery_info and queue will be
+            // there.  If not, then this link is still holding them.
+            if ( pair_link ) {
+                serialize_events(ser, pair_link->delivery_info, pair_link->send_queue);
+            }
+            else {
+                serialize_events(ser, s->delivery_info, s->send_queue);
             }
         }
         break;

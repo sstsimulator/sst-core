@@ -198,7 +198,6 @@ sst_core_sources = \
 	mempool.cc \
 	mempoolAccessor.h \
 	namecheck.cc \
-	oneshot.cc \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \

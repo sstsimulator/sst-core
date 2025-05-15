@@ -29,7 +29,8 @@ public:
     Action() {}
     ~Action() {}
 
-    bool isAction() override final { return true; }
+    bool isEvent() const override final { return false; }
+    bool isAction() const override final { return true; }
 
 protected:
     /** Called to signal to the Simulation object to end the simulation */

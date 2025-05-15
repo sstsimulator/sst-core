@@ -122,6 +122,8 @@ BaseComponent::pushValidParams(Params& params, const std::string& type)
 void
 BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
 {
+    // Add this clock to our registered_clocks_ set
+    registered_clocks_.insert(tc->getFactor());
 
     // Need to see if I already know about this clock handler
     bool found = false;
@@ -962,6 +964,9 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     case SST::Core::Serialization::serializer::SIZER:
     case SST::Core::Serialization::serializer::PACK:
     {
+        // Serialize our registered_clocks_
+        SST_SER(registered_clocks_);
+
         // Need to serialize each handler
         std::pair<Clock::HandlerBase*, SimTime_t> p;
         size_t                                    num_handlers = clock_handlers_.size();
@@ -983,6 +988,11 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
             // primaryComponentDoNotEndSim().
             setStateOKToEndSim();
             primaryComponentDoNotEndSim();
+        }
+
+        SST_SER(registered_clocks_);
+        for ( auto x : registered_clocks_ ) {
+            sim_->reportClock(x, CLOCKPRIORITY);
         }
 
         std::pair<Clock::HandlerBase*, SimTime_t> p;

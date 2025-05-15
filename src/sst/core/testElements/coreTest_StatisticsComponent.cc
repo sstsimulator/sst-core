@@ -93,7 +93,7 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
 }
 
 StatisticsComponentInt::StatisticsComponentInt() :
-    Component(-1),
+    Component(),
     output(getSimulationOutput())
 {}
 
@@ -136,6 +136,26 @@ StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
         return false;
     }
 }
+
+void
+StatisticsComponentInt::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Component::serialize_order(ser);
+
+    SST_SER(rng);
+    SST_SER(rng_type);
+    SST_SER(rng_max_count);
+    SST_SER(rng_count);
+    SST_SER(dynamic_reg);
+
+    // Statistics
+    SST_SER(stat1_U32);
+    SST_SER(stat2_U64);
+    SST_SER(stat3_I32);
+    SST_SER(stat4_I64);
+    SST_SER(stat5_dyn);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -194,7 +214,7 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
 }
 
 StatisticsComponentFloat::StatisticsComponentFloat() :
-    Component(-1),
+    Component(),
     output(getSimulationOutput())
 {}
 
@@ -227,6 +247,25 @@ StatisticsComponentFloat::Clock1Tick(Cycle_t UNUSED(CycleNum))
         return false;
     }
 }
+
+void
+StatisticsComponentFloat::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    Component::serialize_order(ser);
+
+
+    // Statistics
+    SST_SER(rng);
+    SST_SER(rng_type);
+    SST_SER(rng_max_count);
+    SST_SER(rng_count);
+
+    // Statistics
+    SST_SER(stat1_F32);
+    SST_SER(stat2_F64);
+    SST_SER(stat3_F64);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

@@ -45,6 +45,8 @@ class SST::Core::Serialization::serialize_impl<Link*>
 {
     // Function implemented in link.cc
     void operator()(Link*& s, SST::Core::Serialization::serializer& ser, ser_opt_t options);
+    void serialize_events(
+        SST::Core::Serialization::serializer& ser, uintptr_t delivery_info, ActivityQueue* queue = nullptr);
 
     SST_FRIEND_SERIALIZE();
 };
@@ -301,6 +303,21 @@ protected:
      * @param event - the Event to send
      */
     void send_impl(SimTime_t delay, Event* event);
+
+    /**
+       Updates the delivery info in an event.  This is used during a
+       restart and is implemented here because Link is a friend of
+       event.
+
+       @param event - Event to update
+
+       @param delivery_info New delivery info (pointer to handler cast
+       as uintptr_t)
+     */
+    static void updateEventDeliveryInfo(Event* event, uintptr_t delivery_info)
+    {
+        event->updateDeliveryInfo(delivery_info);
+    }
 
     // Since Links are found in pairs, I will keep all the information
     // needed for me to send and deliver an event to the other side of

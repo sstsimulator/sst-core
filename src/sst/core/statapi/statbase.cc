@@ -202,7 +202,12 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     /* Only serialize info if stat is non-null */
     if ( !isNullStatistic() ) {
-        SST_SER(info_);
+        // Need to serialize info_ as a non-pointer because on UNPACK,
+        // it will have already been initiailized and serializing as a
+        // pointer causes it to overwrite what is already there
+        // (serializer assumes it is uninitialized and creates a new
+        // one before calling serialize_order)
+        SST_SER(*info_);
     }
 
     /* Store/restore data type */

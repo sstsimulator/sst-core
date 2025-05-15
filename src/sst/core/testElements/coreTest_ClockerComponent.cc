@@ -44,13 +44,6 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
     Clock3Handler =
         new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
     tc = registerClock("15 ns", Clock3Handler);
-
-    // Create the OneShot Callback Handlers
-    callback1Handler =
-        new OneShot::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Oneshot1Callback, uint32_t>(
-            this, 456);
-    callback2Handler =
-        new OneShot::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Oneshot2Callback>(this);
 }
 
 coreTestClockerComponent::coreTestClockerComponent() :
