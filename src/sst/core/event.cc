@@ -29,14 +29,15 @@ Event::execute()
     (*reinterpret_cast<HandlerBase*>(delivery_info))(this);
 }
 
+DISABLE_WARN_MISSING_NORETURN
 Event*
 Event::clone()
 {
     Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
         "Called clone() on an Event that doesn't"
         " implement it.");
-    return nullptr; // Never reached, but gets rid of compiler warning
 }
+REENABLE_WARNING
 
 Event::id_type
 Event::generateUniqueId()

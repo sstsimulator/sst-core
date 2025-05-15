@@ -13,6 +13,7 @@
 #define SST_CORE_OUTPUT_H
 
 #include "sst/core/serialization/serializer_fwd.h"
+#include "sst/core/warnmacros.h"
 
 #include <string>
 #include <vector>
@@ -299,8 +300,9 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debugPrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
-        uint32_t output_bits, const char* format, ...) __attribute__((format(printf, 8, 9)))
+    void debugPrefix(const char* UNUSED(tempPrefix), uint32_t UNUSED(line), const char* UNUSED(file),
+        const char* UNUSED(func), uint32_t UNUSED(output_level), uint32_t UNUSED(output_bits),
+        const char* UNUSED(format), ...) __attribute__((format(printf, 8, 9)))
     {
 
 #ifdef __SST_DEBUG_OUTPUT__
@@ -321,15 +323,6 @@ public:
 
             m_outputPrefix = normalPrefix;
         }
-#else
-        /* When debug is disabled, silence warnings of unused parameters */
-        (void)tempPrefix;
-        (void)line;
-        (void)file;
-        (void)func;
-        (void)output_level;
-        (void)output_bits;
-        (void)format;
 #endif
     }
 
@@ -352,8 +345,8 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debug(uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
-        const char* format, ...) const __attribute__((format(printf, 7, 8)))
+    void debug(uint32_t UNUSED(line), const char* UNUSED(file), const char* UNUSED(func), uint32_t UNUSED(output_level),
+        uint32_t UNUSED(output_bits), const char* UNUSED(format), ...) const __attribute__((format(printf, 7, 8)))
     {
 #ifdef __SST_DEBUG_OUTPUT__
         va_list arg;
@@ -367,14 +360,6 @@ public:
                 va_end(arg);
             }
         }
-#else
-        /* When debug is disabled, silence warnings of unused parameters */
-        (void)line;
-        (void)file;
-        (void)func;
-        (void)output_level;
-        (void)output_bits;
-        (void)format;
 #endif
     }
 
