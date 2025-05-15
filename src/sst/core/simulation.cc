@@ -2234,14 +2234,11 @@ SST_Exit(int exit_code)
 
 #ifdef SST_CONFIG_HAVE_MPI
     // If MPI exists, abort
-    static int exit_once = (MPI_Abort(MPI_COMM_WORLD, exit_code), 0);
+    static int UNUSED(exit_once) = (MPI_Abort(MPI_COMM_WORLD, exit_code), 0);
 #else
-    static int exit_once = (exit(exit_code), 0);
+    static int UNUSED(exit_once) = (exit(exit_code), 0);
 #endif
 
-    // Should never get here, but need to use exit_once to avoid
-    // compiler warning
-    printf("exit_once = %d\n", exit_once);
     std::terminate();
 }
 

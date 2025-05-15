@@ -477,7 +477,6 @@ private:
         else {
             fatal(__LINE__, __FILE__, "createStatistic", 1, "failed to cast created statistic '%s' to expected type",
                 name.c_str());
-            return nullptr; // avoid compiler warnings
         }
     }
 
@@ -530,7 +529,6 @@ private:
             // not a valid stat and I won't be able to share my parent's statistic
             fatal(__LINE__, __FILE__, "registerStatistic", 1, "attempting to register unknown statistic '%s'",
                 statName.c_str());
-            return nullptr; // get rid of warning
         }
     }
 
