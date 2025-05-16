@@ -24,6 +24,7 @@
 #include "sst/core/rng/xorshift.h"
 
 #include <assert.h>
+#include <cinttypes>
 
 using namespace SST;
 using namespace SST::CoreTestCheckpoint;

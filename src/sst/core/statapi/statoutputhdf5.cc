@@ -19,6 +19,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <algorithm>
+#include <cstring>
 
 namespace SST::Statistics {
 
