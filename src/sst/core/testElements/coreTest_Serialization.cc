@@ -25,8 +25,11 @@
 
 #include <deque>
 #include <forward_list>
+#include <iostream>
 #include <list>
 #include <map>
+#include <ostream>
+#include <queue>
 #include <set>
 #include <string>
 #include <tuple>
