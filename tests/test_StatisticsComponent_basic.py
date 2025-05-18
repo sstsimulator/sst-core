@@ -17,11 +17,13 @@ import sys
 
 # StatGlobal0 and StatGlobal1 components test the following:
 # - sst.enableAllStatisticsForAllComponents
+# - additionally, StatGlobal0 tests dynamic stats
 
 # StatBasic0 Component tests the following:
 # - Enabling stats directly on the component object with periodic
 #   writes
 #    - stopat, startat, rate (periodic), resetOnOutput
+# - Explicilty enable dynamic stats
 
 # StatBasic1 Component tests the following:
 # - Enabling stats directly on the component object with event-driven
@@ -172,7 +174,8 @@ StatBasic0.addParams({
       "rng" : "marsaglia",
       "count" : "101",
       "seed_w" : "1447",
-      "seed_z" : "1053"
+      "seed_z" : "1053",
+      "register_dynamic" : 30,
 })
 
 # Enable Individual Statistics for the Component with separate rates
@@ -197,6 +200,10 @@ StatBasic0.enableStatistics(["stat4_I64"], {
     "stopat" : "70 ns",
     "rate" : "12 ns",
     "resetOnOutput" : True})
+
+StatBasic0.enableStatistics(["stat5_dyn"], {
+    "type" : "sst.AccumulatorStatistic",
+    "rate" : "16 ns"})
 
 
 # Object 1

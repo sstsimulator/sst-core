@@ -14,7 +14,6 @@
 
 #include "sst/core/clock.h"
 #include "sst/core/factory.h"
-#include "sst/core/oneshot.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"

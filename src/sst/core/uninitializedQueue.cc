@@ -24,6 +24,7 @@ UninitializedQueue::UninitializedQueue(const std::string& message) :
     message(message)
 {}
 
+DISABLE_WARN_MISSING_NORETURN
 bool
 UninitializedQueue::empty()
 {
@@ -58,5 +59,6 @@ UninitializedQueue::front()
     std::cout << message << std::endl;
     abort();
 }
+REENABLE_WARNING
 
 } // namespace SST

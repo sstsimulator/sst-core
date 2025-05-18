@@ -313,8 +313,6 @@ Factory::GetValidStatistics(const std::string& compType)
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
         error_os.str().c_str());
-    static std::vector<std::string> null_return;
-    return null_return; // to avoid compiler warnings
 }
 
 bool

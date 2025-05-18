@@ -128,10 +128,12 @@ Clock::schedule()
     // simtime.  This happens if the clock would have fired at this
     // tick and if the current priority is less than my priority.
     // However, if we are at time = 0, then we always go out to the
-    // next cycle;
-    if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 ) {
+    // next cycle. Also, if the call happens during complete() or
+    // finish(), then we don't adjust either.
+    if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 && !sim->endSim ) {
         if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) {
             next = sim->getCurrentSimCycle();
+            currentCycle--; // First thing execute does in increment currentCycle
         }
     }
 

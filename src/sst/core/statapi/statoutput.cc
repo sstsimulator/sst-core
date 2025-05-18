@@ -146,6 +146,7 @@ StatisticFieldsOutput::getRegisteredField(fieldHandle_t fieldHandle)
     return nullptr;
 }
 
+DISABLE_WARN_MISSING_NORETURN
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
 {
@@ -187,6 +188,7 @@ StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t U
     Simulation_impl::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint64_t output", getStatisticOutputName().c_str());
 }
+REENABLE_WARNING
 
 void
 StatisticFieldsOutput::output(StatisticBase* statistic, bool endOfSimFlag)

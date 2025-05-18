@@ -17,7 +17,6 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/factory.h"
-#include "sst/core/oneshot.h"
 #include "sst/core/portModule.h"
 #include "sst/core/profile/componentProfileTool.h"
 #include "sst/core/serialization/serializable_base.h"
@@ -478,7 +477,6 @@ private:
         else {
             fatal(__LINE__, __FILE__, "createStatistic", 1, "failed to cast created statistic '%s' to expected type",
                 name.c_str());
-            return nullptr; // avoid compiler warnings
         }
     }
 
@@ -531,7 +529,6 @@ private:
             // not a valid stat and I won't be able to share my parent's statistic
             fatal(__LINE__, __FILE__, "registerStatistic", 1, "attempting to register unknown statistic '%s'",
                 statName.c_str());
-            return nullptr; // get rid of warning
         }
     }
 
@@ -1143,6 +1140,7 @@ private:
     // Need to track clock handlers for checkpointing.  We need to
     // know what clock handlers we have registered with the core
     std::vector<Clock::HandlerBase*> clock_handlers_;
+    std::set<SimTime_t>              registered_clocks_;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules);

@@ -14,10 +14,7 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/portModule.h"
-#include "sst/core/threadsafe.h"
-#include "sst/core/timeVortex.h"
-
-#include <sst/core/rng/marsaglia.h>
+#include "sst/core/rng/marsaglia.h"
 
 namespace SST::IMPL::PortModule {
 

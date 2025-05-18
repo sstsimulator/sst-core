@@ -1,3 +1,4 @@
+# Creating simulation checkpoint at simulated time period of 20ns.
 WARNING: Building component "StatGlobal0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1046, m_w = 1440
 REGISTER CLOCK #1 at 1 ns
@@ -142,6 +143,7 @@ REGISTER CLOCK #1 at 1 ns
  StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 19000; Sum.u64 = 207366; SumSQ.u64 = 2792580128; Count.u64 = 19; Min.u64 = 1212; Max.u64 = 17994; 
  StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 19000; Sum.u32 = 4266; SumSQ.u32 = 1211888; Count.u64 = 19; Min.u32 = 91; Max.u32 = 429; 
  StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 19000; Sum.u64 = 190191; SumSQ.u64 = 2409149651; Count.u64 = 19; Min.u64 = 1287; Max.u64 = 17624; 
+# Simulation Checkpoint: Simulated Time 20 ns (Real CPU time since last checkpoint 0.00340 seconds)
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 2848; SumSQ.u32 = 683816; Count.u64 = 20; Min.u32 = 22; Max.u32 = 399; 
  StatBasic2.stat3_I32.3 : Accumulator : SimTime = 20000; Sum.i32 = 86; SumSQ.i32 = 159900; Count.u64 = 20; Min.i32 = -147; Max.i32 = 208; 
  StatBasic6.stat1_U32.1 : Accumulator : SimTime = 20000; Sum.u32 = 3786; SumSQ.u32 = 886820; Count.u64 = 20; Min.u32 = 12; Max.u32 = 360; 
@@ -194,6 +196,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 32000; Sum.i64 = 16925; SumSQ.i64 = 229255021; Count.u64 = 7; Min.i64 = -5723; Max.i64 = 8382; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 50012; SumSQ.u64 = 503236394; Count.u64 = 7; Min.u64 = 1285; Max.u64 = 14583; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 32000; Sum.i64 = -2071; SumSQ.i64 = 125263489; Count.u64 = 7; Min.i64 = -5146; Max.i64 = 7628; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 32000; Sum.i64 = -2219; SumSQ.i64 = 50530993; Count.u64 = 2; Min.i64 = -6012; Max.i64 = 3793; 
  StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 32000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
  StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 32000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
  StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 32000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
@@ -229,6 +232,7 @@ REGISTER CLOCK #1 at 1 ns
  StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 195112; SumSQ.u64 = 2473277070; Count.u64 = 19; Min.u64 = 280; Max.u64 = 17138; 
  StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 38000; Sum.u32 = 8463; SumSQ.u32 = 2382347; Count.u64 = 38; Min.u32 = 44; Max.u32 = 429; 
  StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 38000; Sum.u64 = 191216; SumSQ.u64 = 2336711130; Count.u64 = 19; Min.u64 = 1109; Max.u64 = 16934; 
+# Simulation Checkpoint: Simulated Time 40 ns (Real CPU time since last checkpoint 0.00638 seconds)
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7233; SumSQ.u32 = 1849743; Count.u64 = 40; Min.u32 = 22; Max.u32 = 399; 
  StatBasic2.stat3_I32.3 : Accumulator : SimTime = 40000; Sum.i32 = 378; SumSQ.i32 = 420788; Count.u64 = 40; Min.i32 = -211; Max.i32 = 209; 
  StatBasic6.stat1_U32.1 : Accumulator : SimTime = 40000; Sum.u32 = 7897; SumSQ.u32 = 1984671; Count.u64 = 40; Min.u32 = 12; Max.u32 = 424; 
@@ -270,6 +274,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 3313; SumSQ.i64 = 615148795; Count.u64 = 16; Min.i64 = -9192; Max.i64 = 8684; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 48000; Sum.u64 = 196285; SumSQ.u64 = 2732226207; Count.u64 = 16; Min.u64 = 2275; Max.u64 = 17730; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = -19136; SumSQ.i64 = 536101308; Count.u64 = 16; Min.i64 = -7689; Max.i64 = 8517; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 48000; Sum.i64 = 4717; SumSQ.i64 = 294981799; Count.u64 = 18; Min.i64 = -6135; Max.i64 = 8133; 
  StatBasic0.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 22969; SumSQ.i64 = 165755379; Count.u64 = 12; Min.i64 = -3447; Max.i64 = 8133; 
  StatBasic4.stat4_I64.4 : Accumulator : SimTime = 48000; Sum.i64 = 27245; SumSQ.i64 = 385762573; Count.u64 = 12; Min.i64 = -7113; Max.i64 = 8843; 
  StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 48000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
@@ -327,6 +332,7 @@ REGISTER CLOCK #1 at 1 ns
  StatGroupObj1.stat2_U64.2 : Accumulator : SimTime = 57000; Sum.u64 = 197530; SumSQ.u64 = 2524066270; Count.u64 = 19; Min.u64 = 208; Max.u64 = 17997; 
  StatGroupObj2.stat1_U32.1 : Accumulator : SimTime = 57000; Sum.u32 = 12412; SumSQ.u32 = 3420672; Count.u64 = 57; Min.u32 = 16; Max.u32 = 429; 
  StatGroupObj2.stat2_U64.2 : Accumulator : SimTime = 57000; Sum.u64 = 154508; SumSQ.u64 = 1696302518; Count.u64 = 19; Min.u64 = 35; Max.u64 = 16226; 
+# Simulation Checkpoint: Simulated Time 60 ns (Real CPU time since last checkpoint 0.00678 seconds)
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13595; SumSQ.u32 = 4125183; Count.u64 = 60; Min.u32 = 3; Max.u32 = 426; 
  StatBasic5.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13196; SumSQ.u32 = 3841648; Count.u64 = 60; Min.u32 = 3; Max.u32 = 427; 
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 60000; Sum.u32 = 13171; SumSQ.u32 = 3850275; Count.u64 = 60; Min.u32 = 5; Max.u32 = 411; 
@@ -357,6 +363,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 64000; Sum.i64 = -9838; SumSQ.i64 = 365388098; Count.u64 = 12; Min.i64 = -6910; Max.i64 = 6915; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 123461; SumSQ.u64 = 1560118953; Count.u64 = 12; Min.u64 = 907; Max.u64 = 17536; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 64000; Sum.i64 = -13940; SumSQ.i64 = 492992052; Count.u64 = 12; Min.i64 = -8969; Max.i64 = 8710; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 64000; Sum.i64 = -21111; SumSQ.i64 = 648942165; Count.u64 = 34; Min.i64 = -7311; Max.i64 = 8133; 
  StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 64000; Sum.u32 = 3107; SumSQ.u32 = 992425; Count.u64 = 14; Min.u32 = 18; Max.u32 = 401; 
  StatGlobal0.stat2_U64.2 : Accumulator : SimTime = 64000; Sum.u64 = 157124; SumSQ.u64 = 2054102916; Count.u64 = 14; Min.u64 = 784; Max.u64 = 18422; 
  StatGlobal1.stat1_U32.1 : Accumulator : SimTime = 64000; Sum.u32 = 2873; SumSQ.u32 = 853567; Count.u64 = 14; Min.u32 = 18; Max.u32 = 415; 
@@ -412,6 +419,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic4.stat3_I32.3 : Accumulator : SimTime = 77000; Sum.i32 = 363; SumSQ.i32 = 567545; Count.u64 = 35; Min.i32 = -214; Max.i32 = 202; 
  StatBasic1.stat1_U32.1 : Accumulator : SimTime = 78000; Sum.u32 = 17141; SumSQ.u32 = 5074859; Count.u64 = 78; Min.u32 = 3; Max.u32 = 426; 
  StatBasic5.stat1_U32.1 : Accumulator : SimTime = 78000; Sum.u32 = 17902; SumSQ.u32 = 5287298; Count.u64 = 78; Min.u32 = 3; Max.u32 = 427; 
+# Simulation Checkpoint: Simulated Time 80 ns (Real CPU time since last checkpoint 0.01035 seconds)
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 16755; SumSQ.u32 = 4683977; Count.u64 = 80; Min.u32 = 5; Max.u32 = 411; 
  StatBasic2.stat3_I32.3 : Accumulator : SimTime = 80000; Sum.i32 = -227; SumSQ.i32 = 985783; Count.u64 = 80; Min.i32 = -211; Max.i32 = 209; 
  StatBasic6.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 18211; SumSQ.u32 = 5177315; Count.u64 = 80; Min.u32 = 12; Max.u32 = 429; 
@@ -426,6 +434,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 80000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 80000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 80000; Sum.i64 = 13702; SumSQ.i64 = 1050319108; Count.u64 = 50; Min.i64 = -7311; Max.i64 = 9002; 
  StatBasic0.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 111398; SumSQ.u64 = 1374246982; Count.u64 = 10; Min.u64 = 4257; Max.u64 = 15935; 
  StatBasic4.stat2_U64.2 : Accumulator : SimTime = 80000; Sum.u64 = 87704; SumSQ.u64 = 921998120; Count.u64 = 10; Min.u64 = 3579; Max.u64 = 18110; 
  StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 80000; Sum.u32 = 6404; SumSQ.u32 = 1854414; Count.u64 = 30; Min.u32 = 18; Max.u32 = 401; 
@@ -486,6 +495,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 96000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 96000; Sum.i64 = 34569; SumSQ.i64 = 1505962777; Count.u64 = 66; Min.i64 = -8125; Max.i64 = 9002; 
  StatBasic0.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
  StatBasic4.stat4_I64.4 : Accumulator : SimTime = 96000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
  StatGlobal0.stat1_U32.1 : Accumulator : SimTime = 96000; Sum.u32 = 10990; SumSQ.u32 = 3318472; Count.u64 = 46; Min.u32 = 18; Max.u32 = 429; 
@@ -503,6 +513,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic5.stat2_U64.2 : Accumulator : SimTime = 99000; Sum.u64 = 81241; SumSQ.u64 = 674376355; Count.u64 = 11; Min.u64 = 3469; Max.u64 = 11834; 
  StatBasic7.stat1_U32.1 : Accumulator : SimTime = 99000; Sum.u32 = 19703; SumSQ.u32 = 5364647; Count.u64 = 99; Min.u32 = 1; Max.u32 = 414; 
  StatBasic7.stat3_I32.3 : Accumulator : SimTime = 99000; Sum.i32 = -809; SumSQ.i32 = 1639265; Count.u64 = 99; Min.i32 = -211; Max.i32 = 207; 
+# Simulation Checkpoint: Simulated Time 100 ns (Real CPU time since last checkpoint 0.00490 seconds)
  StatBasic9.stat1_U32.1 : Accumulator : SimTime = 100000; Sum.u32 = 21197; SumSQ.u32 = 5947691; Count.u64 = 100; Min.u32 = 0; Max.u32 = 416; 
  StatBasic9.stat2_U64.2 : Accumulator : SimTime = 100000; Sum.u64 = 901300; SumSQ.u64 = 11285863456; Count.u64 = 100; Min.u64 = 368; Max.u64 = 18361; 
  StatBasic9.stat3_I32.3 : Accumulator : SimTime = 100000; Sum.i32 = 362; SumSQ.i32 = 1583018; Count.u64 = 100; Min.i32 = -213; Max.i32 = 209; 
@@ -557,6 +568,7 @@ REGISTER CLOCK #1 at 1 ns
  StatBasic2.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
  StatBasic6.stat2_U64.2 : Accumulator : SimTime = 101000; Sum.u64 = 0; SumSQ.u64 = 0; Count.u64 = 0; Min.u64 = 0; Max.u64 = 0; 
  StatBasic6.stat4_I64.4 : Accumulator : SimTime = 101000; Sum.i64 = 0; SumSQ.i64 = 0; Count.u64 = 0; Min.i64 = 0; Max.i64 = 0; 
+ StatBasic0.stat5_dyn : Accumulator : SimTime = 101000; Sum.i64 = 22318; SumSQ.i64 = 1619442038; Count.u64 = 71; Min.i64 = -9156; Max.i64 = 9002; 
  StatObjComp0.statobj0 : Accumulator : SimTime = 101000; Sum.f64 = 51439.852985; SumSQ.f64 = 34793837.071369; Count.u64 = 101; Min.f64 = 1.528175; Max.f64 = 994.775331; 
  StatObjComp1.statobj1 : Accumulator : SimTime = 101000; Sum.f64 = 100319.740555; SumSQ.f64 = 63746671.564526; Count.u64 = 202; Min.f64 = 7.004999; Max.f64 = 1002.258493; 
  StatBasic2.stat1_U32.1 : Accumulator : SimTime = 101000; Sum.u32 = 20919; SumSQ.u32 = 5859239; Count.u64 = 101; Min.u32 = 5; Max.u32 = 411; 

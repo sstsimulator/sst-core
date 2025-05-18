@@ -149,6 +149,10 @@ public:
     uint64_t getCurrentDepth() const override { return current_depth; }
     uint64_t getMaxDepth() const override { return max_depth; }
 
+    // TODO: Implement getContents(). For now, just return an empty
+    // vector.
+    void getContents(std::vector<Activity*>& UNUSED(activities)) const override {}
+
 private:
     // Should only ever be accessed by the "active" thread.  Not safe
     // for concurrent access.

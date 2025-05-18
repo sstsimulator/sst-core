@@ -47,22 +47,23 @@ TimeVortex::TimeVortex()
 }
 
 void
-TimeVortex::fixup(Activity* act)
+TimeVortex::print(Output& out) const
 {
-    if ( !sim_ ) sim_ = Simulation_impl::getSimulation();
+    // Default implementation for print.  Derived classes can override
+    // for a more efficient implementation
 
-    Event* ev = dynamic_cast<Event*>(act);
-    // Only need to fix up events
-    if ( !ev ) return;
+    // Get the contents of the timevortex and make a copy of it.  This
+    // may not be sorted.
+    std::vector<Activity*> contents;
+    getContents(contents);
 
-    int count = sim_->event_handler_restart_tracking.count(ev->delivery_info);
-    if ( !count ) {
-        Simulation_impl::getSimulation()->sim_output.fatal(CALL_INFO, 1, "ERROR: Handler tag not found\n");
-        // Need to abort here
-        return;
+    std::sort(contents.begin(), contents.end(), Activity::less<true, true, true>());
+
+    for ( auto it = contents.begin(); it != contents.end(); it++ ) {
+        (*it)->print("  ", out);
     }
-    ev->delivery_info = sim_->event_handler_restart_tracking[ev->delivery_info];
 }
+
 
 SST_ELI_DEFINE_CTOR_EXTERN(TimeVortex)
 SST_ELI_DEFINE_INFO_EXTERN(TimeVortex)

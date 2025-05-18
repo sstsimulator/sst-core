@@ -114,6 +114,7 @@ StatisticBase::getCompName() const
     return component_->getName();
 }
 
+DISABLE_WARN_MISSING_NORETURN
 void
 Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag))
 {
@@ -129,6 +130,7 @@ Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output)
         "void statistic %s, type %s for component %s does not support outputing fields", getStatTypeName().c_str(),
         getFullStatName().c_str(), getComponent()->getName().c_str());
 }
+REENABLE_WARNING
 
 void
 StatisticBase::incrementCollectionCount(uint64_t increment)
@@ -202,7 +204,12 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     /* Only serialize info if stat is non-null */
     if ( !isNullStatistic() ) {
-        SST_SER(info_);
+        // Need to serialize info_ as a non-pointer because on UNPACK,
+        // it will have already been initiailized and serializing as a
+        // pointer causes it to overwrite what is already there
+        // (serializer assumes it is uninitialized and creates a new
+        // one before calling serialize_order)
+        SST_SER(*info_);
     }
 
     /* Store/restore data type */
