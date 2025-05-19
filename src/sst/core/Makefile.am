@@ -75,6 +75,7 @@ nobase_dist_sst_HEADERS = \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
+	timingOutput.h \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
@@ -217,6 +218,7 @@ sst_core_sources = \
 	realtime.cc \
 	sstpart.cc \
 	timeVortex.cc \
+	timingOutput.cc \
 	serialization/objectMap.cc \
 	serialization/serializable_base.cc \
 	serialization/serializable.cc \
