@@ -515,6 +515,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"
+#include "sst/core/serialization/impl/serialize_variant.h"
 
 // Reenble warnings for including the above file independent of this
 // file.
