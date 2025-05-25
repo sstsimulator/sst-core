@@ -17,6 +17,7 @@
     "The header file sst/core/serialization/impl/serialize_array.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
@@ -68,12 +69,6 @@ serialize_array_map_element(serializer& ser, void* data, ser_opt_t opt, size_t i
     sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], opt, name);
 }
 
-// Whether the element type is copyable with memcpy()
-// TODO: Implement with std::is_trivially_copyable and std::is_aggregate, using reflection to check for troublesome
-// members like pointers
-template <typename T>
-constexpr bool is_trivial_element_v = std::is_arithmetic_v<T> || std::is_enum_v<T>;
-
 // Serialize fixed arrays
 // ELEM_T:   Array element type
 // SIZE:     Fixed array size
@@ -99,7 +94,9 @@ struct serialize_impl_fixed_array
             [[fallthrough]];
 
         default:
-            if constexpr ( is_trivial_element_v<ELEM_T> )
+            // TODO: How to handle array-of-array
+            // is_trivially_serializable_excluded_v<ELEM_T> can be added to exclude arrays-of-arrays from the fast path
+            if constexpr ( is_trivially_serializable_v<ELEM_T> )
                 ser.raw(&(*aPtr)[0], sizeof(ELEM_T) * SIZE);
             else
                 serialize_array(ser, &(*aPtr)[0], elem_opt, SIZE, serialize_array_element<ELEM_T>);
@@ -152,7 +149,9 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
             break;
 
         default:
-            if constexpr ( std::is_void_v<ELEM_T> || pvt::is_trivial_element_v<ELEM_T> )
+            // TODO: How to handle array-of-array
+            // is_trivially_serializable_excluded_v<ELEM_T> can be added to exclude arrays-of-arrays from the fast path
+            if constexpr ( std::is_void_v<ELEM_T> || is_trivially_serializable_v<ELEM_T> )
                 ser.binary(ary.ptr, ary.size);
             else {
                 ser.primitive(ary.size);

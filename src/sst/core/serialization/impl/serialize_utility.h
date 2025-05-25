@@ -17,23 +17,181 @@
     "The header file sst/core/serialization/impl/serialize_utility.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include <bitset>
+#include <complex>
+#include <cstddef>
 #include <type_traits>
+#include <utility>
 
 namespace SST::Core::Serialization {
 
-// Whether two names are the same template. Similar to std::is_same_v.
+/////////////////////////////////////////////////////////////////////////
+// Whether two names are the same template. Similar to std::is_same_v. //
+/////////////////////////////////////////////////////////////////////////
+
 template <template <typename...> class, template <typename...> class>
 constexpr bool is_same_template_v = false;
 
 template <template <typename...> class T>
 constexpr bool is_same_template_v<T, T> = true;
 
-// Whether a certain type is the same as a certain class template filled with arguments
+///////////////////////////////////////////////////////////////////////////////////////
+// Whether a type is the same as a certain class template filled with type arguments //
+///////////////////////////////////////////////////////////////////////////////////////
 template <class, template <typename...> class>
 constexpr bool is_same_type_template_v = false;
 
 template <template <typename...> class T1, typename... T1ARGS, template <typename...> class T2>
 constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T1, T2>;
+
+//////////////////////////////////////////////////
+// Compute the number of fields in an aggregate //
+//////////////////////////////////////////////////
+namespace pvt_nfields {
+
+// glob is convertible to any other type while initializing an aggregate
+// The conversion function is only used in decltype() so it does not need to be defined
+struct glob
+{
+    template <class T>
+    operator T() const;
+};
+
+// Whether N fields can be used to initialize an aggregate, i.e., number of aggregate fields >= N
+template <class C, class, bool = std::is_aggregate_v<C>, class = C>
+constexpr bool nfields_ge_impl = false;
+
+// Try to initialize N fields in an aggregate, with glob() automatically converting to each field's
+// type. If initialization fails, it is not an error (SFINAE) and this specialization won't apply.
+template <class C, size_t... I>
+constexpr bool nfields_ge_impl<C, std::index_sequence<I...>, true, decltype(C { (I, glob())... })> = true;
+
+// Whether the number of fields in an aggregate is greater than or equal to N
+template <class C, size_t N>
+constexpr bool nfields_ge = nfields_ge_impl<C, std::make_index_sequence<N>>;
+
+// Binary search in [L,H) for number of fields in aggregate. Stops at L when M == L.
+template <class C, size_t L, size_t H, size_t M = L + (H - L) / 2, bool = M != L>
+constexpr size_t b_search = L;
+
+// Next search is in [L,M)
+template <class C, size_t L, size_t H, size_t M, bool>
+constexpr size_t b_search_next = b_search<C, L, M>;
+
+// Next search is in [M,H)
+template <class C, size_t L, size_t H, size_t M>
+constexpr size_t b_search_next<C, L, H, M, true> = b_search<C, M, H>;
+
+// Choose [L,M) or [M,H) depending on whether nfields >= M
+template <class C, size_t L, size_t H, size_t M>
+constexpr size_t b_search<C, L, H, M, true> = b_search_next<C, L, H, M, nfields_ge<C, M>>;
+
+// Find an upper bound on the number of fields, doubling N as long as number of fields >= N
+template <class C, size_t N = 1, bool = true>
+constexpr size_t nfields = nfields<C, N * 2, nfields_ge<C, N * 2>>;
+
+// When the number of fields < N, perform binary search in [0,N)
+template <class C, size_t N>
+constexpr size_t nfields<C, N, false> = b_search<C, 0, N>;
+
+} // namespace pvt_nfields
+
+template <class C>
+constexpr size_t nfields = pvt_nfields::nfields<C>;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Template metaprogramming to determine if a type is trivially serializable - that it can be read //
+// and written as raw data without any special handling.                                           //
+//                                                                                                 //
+// It is one of these types:                                                                       //
+// - arithmetic (integral, floating-point)                                                         //
+// - enumeration (including std::byte)                                                             //
+// - member object pointer                                                                         //
+// - std::complex<T>, C99 _Complex                                                                 //
+// - std::bitset                                                                                   //
+// - trivially copyable, standard layout aggregate with trivially serializable members             //
+//                                                                                                 //
+// An aggregate is a C-style array, std::array, or a class/struct/union with all-public non-static //
+// data members and direct bases, no user-provided, inherited or explicit constructors (C++17), no //
+// user-declared or inherited constructors (C++20), and no virtual functions or virtual bases.     //
+//                                                                                                 //
+// Pointers are not considered trivially serializable since they have specific addresses which are //
+// not portable across runs, and may require special tracking and allocation. Pointers to member   //
+// functions may have ABI-specific pointers to data which are not portable across runs. But        //
+// pointers to member objects are typed offsets within a class, and are portable across runs.      //
+//                                                                                                 //
+// Note: If an aggregate is a union, only the first member will be considered active, and thus     //
+// cannot be a pointer. Rather than ban unions entirely, pointers in unions are strongly           //
+// discouraged and can cause unexpected results.                                                   //
+//                                                                                                 //
+// Note: is_trivially_serializable_v<T> should return true if T is trivially serializable, even if //
+// there exists a specialization for serialize_impl<T>. is_trivially_serialzable_v<T> is a trait   //
+// test for trivial serializability in general, not a serialize_impl specialization test condition.//
+// For example, it returns true for arrays of int, even if serialize_impl<int[N]> is specialized.  //
+//                                                                                                 //
+// Further reading on the meaning of "trivial":  https://isocpp.org/files/papers/P3279R0.html      //
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace pvt_trivial {
+
+// If it's not a trivially copyable, standard layout aggregate, it needs to be an integer, floating-point,
+// enum or member object pointer
+template <class C, bool = std::is_trivially_copyable_v<C> && std::is_standard_layout_v<C> && std::is_aggregate_v<C>>
+constexpr bool is_trivially_serializable_v =
+    std::is_arithmetic_v<C> || std::is_enum_v<C> || std::is_member_object_pointer_v<C>;
+
+// glob_ts is convertible to any trivially serializable type
+struct glob_ts
+{
+    // The type of the conversion must be trivially serializable or the conversion fails
+    template <class C, class = std::enable_if_t<is_trivially_serializable_v<C>>>
+    operator C() const;
+};
+
+// Whether all fields of an aggregate type are trivially serializable
+template <class C, class, class = C>
+constexpr bool has_ts_fields = false;
+
+// Try to initialize N fields in an aggregate, with glob_ts() automatically converting to each field's
+// type. If conversion fails, it is not an error (SFINAE) and this specialization won't apply.
+template <class C, size_t... I>
+constexpr bool has_ts_fields<C, std::index_sequence<I...>, decltype(C { (I, glob_ts())... })> = true;
+
+// If it's a trivially copyable, standard layout aggregate, then all of its fields must be trivially serializable
+template <class C>
+constexpr bool is_trivially_serializable_v<C, true> = has_ts_fields<C, std::make_index_sequence<nfields<C>>>;
+
+// std::bitset is trivially serializable
+template <size_t N>
+constexpr bool is_trivially_serializable_v<std::bitset<N>> = true;
+
+// Complex numbers are trivially serializable
+template <class C>
+constexpr bool is_trivially_serializable_v<std::complex<C>> = true;
+
+#ifndef __STDC_NO_COMPLEX__
+template <>
+inline constexpr bool is_trivially_serializable_v<float _Complex> = true;
+
+template <>
+inline constexpr bool is_trivially_serializable_v<double _Complex> = true;
+
+template <>
+inline constexpr bool is_trivially_serializable_v<long double _Complex> = true;
+#endif
+
+// Other floating-point types not covered by std::is_floating_point
+template <>
+inline constexpr bool is_trivially_serializable_v<_Float16> = true;
+
+template <>
+inline constexpr bool is_trivially_serializable_v<__float128> = true;
+
+} // namespace pvt_trivial
+
+// Whether a type is trivially serializable
+template <class C>
+constexpr bool is_trivially_serializable_v = pvt_trivial::is_trivially_serializable_v<C>;
 
 } // namespace SST::Core::Serialization
 
