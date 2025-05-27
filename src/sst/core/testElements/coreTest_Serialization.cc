@@ -27,6 +27,7 @@
 #include <forward_list>
 #include <list>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -178,6 +179,16 @@ struct checkSimpleSerializeDeserialize
     }
 };
 
+template <typename T>
+bool
+checkOptionalSerializeDeserialize(std::optional<T>& data)
+{
+    std::optional<T> result;
+    serializeDeserialize(data, result);
+    if ( data.has_value() != result.has_value() ) return false;
+    if ( !data.has_value() ) return true;
+    return *data == *result;
+}
 
 template <typename T>
 bool
@@ -660,6 +671,19 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             passed = checkArraySerializeDeserialize(array_in, size);
             if ( !passed ) out.output("ERROR: std::array<int32_t, %zu> did not serialize/deserialize properly\n", size);
             delete[] array_in;
+        }
+    }
+    else if ( test == "optional" ) {
+        std::optional<int32_t> optional_in;
+        for ( int tries = 0; tries < 10; ++tries ) {
+            if ( rng->generateNextUInt32() % 2 ) {
+                optional_in.emplace(rng->generateNextInt32());
+            }
+            else {
+                optional_in.reset();
+            }
+            passed = checkOptionalSerializeDeserialize(optional_in);
+            if ( !passed ) out.output("ERROR: std::optional<int32_t> did not serialize/deserialize properly\n");
         }
     }
     else if ( test == "ordered_containers" ) {

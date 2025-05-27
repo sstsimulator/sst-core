@@ -103,6 +103,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/serialize_atomic.h \
 	serialization/impl/ser_buffer_accessor.h \
 	serialization/impl/serialize_insertable.h \
+        serialization/impl/serialize_optional.h \
 	serialization/impl/serialize_tuple.h \
 	serialization/impl/serialize_utility.h \
 	serialization/impl/mapper.h \

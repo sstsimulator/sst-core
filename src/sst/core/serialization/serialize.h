@@ -513,6 +513,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
+#include "sst/core/serialization/impl/serialize_optional.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"
 
