@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
+#include <cstdint>
 #include <functional>
 #include <getopt.h>
 #include <iostream>
