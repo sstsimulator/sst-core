@@ -459,11 +459,6 @@ public:
      */
     void signalShutdown(bool abnormal);
 
-    /** Interactive Shutdown
-     * Called when an interactive console needs to terminate SST
-     */
-    void interactiveShutdown();
-
     /** Normal Shutdown
      */
     void endSimulation();

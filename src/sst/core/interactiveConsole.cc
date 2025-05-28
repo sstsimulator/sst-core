@@ -114,7 +114,7 @@ InteractiveConsole::getComponentObjectMap()
 void
 InteractiveConsole::simulationShutdown()
 {
-    Simulation_impl::getSimulation()->interactiveShutdown();
+    Simulation_impl::getSimulation()->endSimulation();
 }
 
 

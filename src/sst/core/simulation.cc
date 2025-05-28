@@ -1080,14 +1080,6 @@ Simulation_impl::signalShutdown(bool abnormal)
     endSim = true;
 }
 
-void
-Simulation_impl::interactiveShutdown()
-{
-    shutdown_mode_ = SHUTDOWN_CLEAN;
-    endSim         = true;
-}
-
-
 // If this version is called, we need to set the end time in the exit
 // object as well
 void
