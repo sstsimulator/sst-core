@@ -111,6 +111,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/packer.h \
 	serialization/impl/sizer.h \
 	serialization/impl/serialize_string.h \
+	serialization/impl/serialize_valarray.h \
 	serialization/impl/unpacker.h \
 	serialization/serializer.h \
 	serialization/serializer_fwd.h \
