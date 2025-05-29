@@ -99,6 +99,18 @@ public:
         return -1;
     }
 
+    // timing json
+    static int setTimingJSON(Config* cfg, const std::string& arg)
+    {
+        // Sanity check to make sure filename string is not omitted
+        if ( arg[0] == '-' ) {
+            fprintf(stderr, "Error parsing file for --timing-info-json. Argument = [%s]\n", arg.c_str());
+            return -1;
+        }
+        cfg->timing_json_ = arg;
+        return 0;
+    }
+
     // stop-at
     static int setStopAt(Config* cfg, const std::string& arg)
     {
@@ -819,6 +831,7 @@ Config::print()
     std::cout << "configFile = " << configFile_ << std::endl;
     std::cout << "model_options = " << model_options_ << std::endl;
     std::cout << "print_timing = " << print_timing_ << std::endl;
+    std::cout << "timing_json = " << timing_json_ << std::endl;
     std::cout << "stop_at = " << stop_at_ << std::endl;
     std::cout << "exit_after = " << exit_after_ << std::endl;
     std::cout << "partitioner = " << partitioner_ << std::endl;
@@ -896,6 +909,7 @@ Config::Config(uint32_t num_ranks, bool first_rank) :
     configFile_            = "NONE";
     model_options_         = "";
     print_timing_          = false;
+    timing_json_           = "";
     stop_at_               = "0 ns";
     exit_after_            = 0;
     partitioner_           = "sst.linear";
@@ -1024,6 +1038,8 @@ Config::insertOptions()
         std::bind(&ConfigHelper::setModelOptions, this, _1), false);
     DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information",
         std::bind(&ConfigHelper::setPrintTiming, this, _1), true);
+    DEF_ARG("timing-info-json", 0, "FILE", "Write SST timing information in JSON format",
+        std::bind(&ConfigHelper::setTimingJSON, this, _1), true);
     DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution",
         std::bind(&ConfigHelper::setStopAt, this, _1), true);
     DEF_ARG("exit-after", 0, "TIME",
@@ -1058,6 +1074,7 @@ Config::insertOptions()
         "Configuration Output Options (generates a file that can be used as input for reproducing a run)");
     DEF_ARG("output-config", 0, "FILE", "File to write SST configuration (in Python format)",
         std::bind(&ConfigHelper::setWriteConfig, this, _1), true);
+    // TODO Change to output-config-json to be consistent with timing-info-json option
     DEF_ARG("output-json", 0, "FILE", "File to write SST configuration graph (in JSON format)",
         std::bind(&ConfigHelper::setWriteJSON, this, _1), true);
 #ifdef SST_CONFIG_HAVE_MPI
