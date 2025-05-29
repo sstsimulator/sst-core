@@ -322,6 +322,23 @@ checkArraySerializeDeserialize(T* data, size_t dataSize)
     return true;
 };
 
+template <typename T>
+bool
+checkValArraySerializeDeserialize(std::valarray<T>& data)
+{
+    std::valarray<T> result;
+
+    serializeDeserialize(data, result);
+
+    if ( result.size() != data.size() ) return false;
+
+    for ( size_t i = 0; i < data.size(); ++i ) {
+        if ( data[i] != result[i] ) return false;
+    }
+
+    return true;
+};
+
 // For ordered but non-iterable contaienrs
 template <typename T>
 bool
@@ -707,6 +724,14 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             passed = checkArraySerializeDeserialize(array_in, size);
             if ( !passed ) out.output("ERROR: std::array<int32_t, %zu> did not serialize/deserialize properly\n", size);
             delete[] array_in;
+        }
+        {
+            size_t                size = 100;
+            std::valarray<double> array_in(size);
+            for ( size_t i = 0; i < size; ++i )
+                array_in[i] = rng->generateNextInt32();
+            passed = checkValArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: std::valarray<double> did not serialize/deserialize properly\n");
         }
     }
     else if ( test == "optional" ) {
