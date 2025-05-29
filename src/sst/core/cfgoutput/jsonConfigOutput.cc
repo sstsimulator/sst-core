@@ -21,8 +21,11 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cstdint>
+#include <iomanip>
 #include <map>
 #include <sstream>
+#include <vector>
 
 using namespace SST::Core;
 namespace json = ::nlohmann;
