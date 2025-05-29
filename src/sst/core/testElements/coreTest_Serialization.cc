@@ -24,6 +24,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <array>
+#include <bitset>
 #include <deque>
 #include <forward_list>
 #include <list>
@@ -642,6 +643,11 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<float>::check_all(rng->nextUniform() * 1000, out, "float");
         checkSimpleSerializeDeserialize<double>::check_all(rng->nextUniform() * 1000000, out, "double");
         checkSimpleSerializeDeserialize<std::string>::check_all("test_string", out, "std::string");
+
+        checkSimpleSerializeDeserialize<std::bitset<1>>::check_all(rng->generateNextUInt64(), out, "std::bitset<1>");
+        checkSimpleSerializeDeserialize<std::bitset<10>>::check_all(rng->generateNextUInt64(), out, "std::bitset<10>");
+        checkSimpleSerializeDeserialize<std::bitset<100>>::check_all(
+            rng->generateNextUInt64(), out, "std::bitset<100>");
 
         passed = checkSimpleSerializeDeserialize<std::tuple<int32_t, int32_t, int32_t>>::check(
             std::tuple<int32_t, int32_t, int32_t>(
