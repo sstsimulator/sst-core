@@ -18,10 +18,10 @@
 #endif
 
 #include "sst/core/serialization/impl/serialize_utility.h"
-#include "sst/core/serialization/serialize.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <tuple>
+#include <type_traits>
 
 namespace SST::Core::Serialization {
 
