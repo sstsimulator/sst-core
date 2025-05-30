@@ -101,14 +101,18 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/serialize_adapter.h \
 	serialization/impl/serialize_array.h \
 	serialization/impl/serialize_atomic.h \
+	serialization/impl/serialize_bitset.h \
 	serialization/impl/ser_buffer_accessor.h \
 	serialization/impl/serialize_insertable.h \
+        serialization/impl/serialize_optional.h \
 	serialization/impl/serialize_tuple.h \
 	serialization/impl/serialize_utility.h \
+	serialization/impl/serialize_variant.h \
 	serialization/impl/mapper.h \
 	serialization/impl/packer.h \
 	serialization/impl/sizer.h \
 	serialization/impl/serialize_string.h \
+	serialization/impl/serialize_valarray.h \
 	serialization/impl/unpacker.h \
 	serialization/serializer.h \
 	serialization/serializer_fwd.h \

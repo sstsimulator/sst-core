@@ -23,16 +23,21 @@
 #include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/warnmacros.h"
 
+#include <array>
+#include <bitset>
 #include <deque>
 #include <forward_list>
 #include <list>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace SST::CoreTestSerialization {
@@ -178,6 +183,16 @@ struct checkSimpleSerializeDeserialize
     }
 };
 
+template <typename T>
+bool
+checkOptionalSerializeDeserialize(std::optional<T>& data)
+{
+    std::optional<T> result;
+    serializeDeserialize(data, result);
+    if ( data.has_value() != result.has_value() ) return false;
+    if ( !data.has_value() ) return true;
+    return *data == *result;
+}
 
 template <typename T>
 bool
@@ -221,6 +236,39 @@ checkContainerSerializeDeserialize(T*& data)
         ++result_it;
     }
     return true;
+};
+
+// std::variant
+auto checkVariant = [](auto& data, auto& result) {
+    using T = std::decay_t<decltype(data)>;
+    using R = std::decay_t<decltype(result)>;
+
+    if constexpr ( !std::is_same_v<T, R> ) {
+        // ignore the cases where T != R at compile-time, since they are excluded by index() runtime equality test
+        return false;
+    }
+    else if constexpr ( std::is_same_v<T, std::string> || std::is_arithmetic_v<T> || std::is_enum_v<T> ) {
+        return data == result;
+    }
+    else if constexpr ( std::is_same_v<T, std::vector<int>> ) {
+        if ( data.size() != result.size() ) return false;
+        for ( size_t i = 0; i < data.size(); ++i )
+            if ( data[i] != result[i] ) return false;
+        return true;
+    }
+    else {
+        static_assert(sizeof(T) == 0, "Unsupported type in checkVariant()");
+    }
+};
+
+template <typename... Types>
+bool
+checkVariantSerializeDeserialize(std::variant<Types...>& data)
+{
+    std::variant<Types...> result;
+    serializeDeserialize(data, result);
+    if ( result.index() != data.index() ) return false;
+    return std::visit(checkVariant, data, result);
 };
 
 // Arrays
@@ -271,6 +319,23 @@ checkArraySerializeDeserialize(T* data, size_t dataSize)
     }
 
     delete[] result;
+
+    return true;
+};
+
+template <typename T>
+bool
+checkValArraySerializeDeserialize(std::valarray<T>& data)
+{
+    std::valarray<T> result;
+
+    serializeDeserialize(data, result);
+
+    if ( result.size() != data.size() ) return false;
+
+    for ( size_t i = 0; i < data.size(); ++i ) {
+        if ( data[i] != result[i] ) return false;
+    }
 
     return true;
 };
@@ -596,6 +661,11 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<double>::check_all(rng->nextUniform() * 1000000, out, "double");
         checkSimpleSerializeDeserialize<std::string>::check_all("test_string", out, "std::string");
 
+        checkSimpleSerializeDeserialize<std::bitset<1>>::check_all(rng->generateNextUInt64(), out, "std::bitset<1>");
+        checkSimpleSerializeDeserialize<std::bitset<10>>::check_all(rng->generateNextUInt64(), out, "std::bitset<10>");
+        checkSimpleSerializeDeserialize<std::bitset<100>>::check_all(
+            rng->generateNextUInt64(), out, "std::bitset<100>");
+
         passed = checkSimpleSerializeDeserialize<std::tuple<int32_t, int32_t, int32_t>>::check(
             std::tuple<int32_t, int32_t, int32_t>(
                 rng->generateNextInt32(), rng->generateNextInt32(), rng->generateNextInt32()));
@@ -660,6 +730,27 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             passed = checkArraySerializeDeserialize(array_in, size);
             if ( !passed ) out.output("ERROR: std::array<int32_t, %zu> did not serialize/deserialize properly\n", size);
             delete[] array_in;
+        }
+        {
+            size_t                size = 100;
+            std::valarray<double> array_in(size);
+            for ( size_t i = 0; i < size; ++i )
+                array_in[i] = rng->generateNextInt32();
+            passed = checkValArraySerializeDeserialize(array_in);
+            if ( !passed ) out.output("ERROR: std::valarray<double> did not serialize/deserialize properly\n");
+        }
+    }
+    else if ( test == "optional" ) {
+        std::optional<int32_t> optional_in;
+        for ( int tries = 0; tries < 10; ++tries ) {
+            if ( rng->generateNextUInt32() % 2 ) {
+                optional_in.emplace(rng->generateNextInt32());
+            }
+            else {
+                optional_in.reset();
+            }
+            passed = checkOptionalSerializeDeserialize(optional_in);
+            if ( !passed ) out.output("ERROR: std::optional<int32_t> did not serialize/deserialize properly\n");
         }
     }
     else if ( test == "ordered_containers" ) {
@@ -845,6 +936,40 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         passed = checkUContainerSerializeDeserialize(umultiset_in);
         if ( !passed ) out.output("ERROR: unordered_multiset<int32_t>* did not serialize/deserialize properly\n");
         delete umultiset_in;
+    }
+    else if ( test == "variant" ) {
+        std::variant<std::vector<int>, double, std::string> var;
+        for ( int ntry = 0; ntry < 5; ++ntry ) {
+            bool passed = false;
+
+            // Generate random variant each try
+            switch ( rng->generateNextUInt32() % std::variant_size_v<decltype(var)> ) {
+            case 0:
+            {
+                var = std::vector<int>(rng->generateNextUInt32() % 1000);
+                for ( auto& e : std::get<0>(var) )
+                    e = rng->generateNextInt32();
+                passed = checkVariantSerializeDeserialize(var);
+                break;
+            }
+            case 1:
+            {
+                var    = double(rng->generateNextInt32());
+                passed = checkVariantSerializeDeserialize(var);
+                break;
+            }
+            case 2:
+            {
+                std::string str;
+                size_t      len = rng->generateNextUInt32() % 100;
+                for ( size_t i = 0; i < len; ++i )
+                    str += "0123456789"[rng->generateNextUInt32() % 10];
+                var    = str;
+                passed = checkVariantSerializeDeserialize(var);
+            }
+            }
+            if ( !passed ) out.output("ERROR: std::variant<...> did not serialize/deserialize properly\n");
+        }
     }
     else if ( test == "map_to_vector" ) {
 

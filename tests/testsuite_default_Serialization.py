@@ -48,6 +48,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_map_to_vector(self):
         self.serialization_test_template("map_to_vector")
 
+    def test_Serialization_optional(self):
+        self.serialization_test_template("optional")
+
     def test_Serialization_pointer_tracking(self):
         self.serialization_test_template("pointer_tracking")
 
@@ -62,6 +65,9 @@ class testcase_Serialization(SSTTestCase):
 
     def test_Serialization_complexcontainer(self):
         self.serialization_test_template("complexcontainer")
+
+    def test_Serialization_variant(self):
+        self.serialization_test_template("variant")
 
 #####
     def serialization_test_template(self, testtype, default_reffile = True):

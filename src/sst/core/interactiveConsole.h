@@ -124,6 +124,8 @@ protected:
 
     SST::Core::Serialization::ObjectMap* getComponentObjectMap();
 
+    void simulationShutdown();
+
 private:
     InteractiveConsole(const InteractiveConsole&)            = delete;
     InteractiveConsole& operator=(const InteractiveConsole&) = delete;

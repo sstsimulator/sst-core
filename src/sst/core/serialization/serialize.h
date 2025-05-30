@@ -512,9 +512,13 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_adapter.h"
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
+#include "sst/core/serialization/impl/serialize_bitset.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
+#include "sst/core/serialization/impl/serialize_optional.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"
+#include "sst/core/serialization/impl/serialize_valarray.h"
+#include "sst/core/serialization/impl/serialize_variant.h"
 
 // Reenble warnings for including the above file independent of this
 // file.
