@@ -349,68 +349,6 @@ class serialize<T*>
 
 } // namespace pvt
 
-/**
-   Version of serialize that works for arithmetic and enum types.
- */
-
-template <class T>
-class serialize_impl<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
-{
-public:
-    void operator()(T& t, serializer& ser, ser_opt_t options)
-    {
-        if ( ser.mode() == serializer::MAP ) {
-            auto* obj_map = new ObjectMapFundamental<T>(&t);
-            if ( SerOption::is_set(options, SerOption::map_read_only) ) {
-                ser.mapper().setNextObjectReadOnly();
-            }
-            ser.mapper().map_primitive(ser.getMapName(), obj_map);
-        }
-        else {
-            ser.primitive(t);
-        }
-    }
-    SST_FRIEND_SERIALIZE();
-};
-
-/**
-   Version of serialize that works for pointers to arithmetic and enum types.
-   Note that the pointer tracking happens at a higher level, and only if it is
-   turned on. If it is not turned on, then this only copies the value pointed
-   to into the buffer. If multiple objects point to the same location, they
-   will each have an independent copy after deserialization.
- */
-template <class T>
-class serialize_impl<T*, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>>>
-{
-    void operator()(T*& t, serializer& ser, ser_opt_t UNUSED(options))
-    {
-        switch ( ser.mode() ) {
-        case serializer::SIZER:
-            ser.primitive(*t);
-            break;
-        case serializer::PACK:
-            ser.primitive(*t);
-            break;
-        case serializer::UNPACK:
-            t = new T();
-            ser.primitive(*t);
-            break;
-        case serializer::MAP:
-        {
-            auto* obj_map = new ObjectMapFundamental<T>(t);
-            if ( SerOption::is_set(options, SerOption::map_read_only) ) {
-                ser.mapper().setNextObjectReadOnly();
-            }
-            ser.mapper().map_primitive(ser.getMapName(), obj_map);
-            break;
-        }
-        }
-    }
-    SST_FRIEND_SERIALIZE();
-};
-
-
 // All serialization must go through this function to ensure
 // everything works correctly
 //
@@ -516,6 +454,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_optional.h"
 #include "sst/core/serialization/impl/serialize_string.h"
+#include "sst/core/serialization/impl/serialize_trivial.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"
 #include "sst/core/serialization/impl/serialize_valarray.h"
 #include "sst/core/serialization/impl/serialize_variant.h"
