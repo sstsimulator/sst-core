@@ -15,6 +15,8 @@
 
 #include "sst/core/event.h"
 
+#include <cstdint>
+
 using namespace SST;
 using namespace SST::CoreTestPortModule;
 

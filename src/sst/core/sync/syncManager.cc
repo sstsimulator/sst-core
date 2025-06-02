@@ -27,6 +27,8 @@
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
 
+#include <atomic>
+#include <cinttypes>
 #include <sys/time.h>
 
 namespace SST {
