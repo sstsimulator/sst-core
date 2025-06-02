@@ -15,6 +15,10 @@
 
 #include "sst/core/testElements/coreTest_ClockerComponent.h"
 
+#include <cstdint>
+#include <iostream>
+#include <ostream>
+
 namespace SST::CoreTestClockerComponent {
 
 coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& params) :
