@@ -35,6 +35,16 @@ constexpr bool is_same_type_template_v = false;
 template <template <typename...> class T1, typename... T1ARGS, template <typename...> class T2>
 constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T1, T2>;
 
+// Pre-C++20 is_unbounded_array trait implementation
+template <class>
+struct is_unbounded_array : std::false_type
+{};
+template <class T>
+struct is_unbounded_array<T[]> : std::true_type
+{};
+template <class T>
+constexpr bool is_unbounded_array_v = is_unbounded_array<T>::value;
+
 } // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_UTILITY_H
