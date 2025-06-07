@@ -22,15 +22,10 @@
 // Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZER_H
 
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
-#include <list>
-#include <map>
-#include <set>
-#include <stack>
-#include <stdexcept>
 #include <string>
-#include <utility>
+#include <variant>
 
 namespace SST::Core::Serialization {
 
@@ -46,108 +41,83 @@ class serializer
 public:
     enum SERIALIZE_MODE { SIZER, PACK, UNPACK, MAP };
 
-public:
-    serializer() :
-        mode_(SIZER) // just sizing by default
-    {}
-
-    pvt::ser_mapper& mapper() { return mapper_; }
-
-    pvt::ser_packer& packer() { return packer_; }
-
-    pvt::ser_unpacker& unpacker() { return unpacker_; }
-
-    pvt::ser_sizer& sizer() { return sizer_; }
+    pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
+    pvt::ser_packer&   packer() { return std::get<PACK>(ser_); }
+    pvt::ser_unpacker& unpacker() { return std::get<UNPACK>(ser_); }
+    pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
 
     template <class T>
     void size(T& t)
     {
-        sizer_.size<T>(t);
+        sizer().size(t);
     }
 
     template <class T>
     void pack(T& t)
     {
-        packer_.pack<T>(t);
+        packer().pack(t);
     }
 
     template <class T>
     void unpack(T& t)
     {
-        unpacker_.unpack<T>(t);
+        unpacker().unpack(t);
     }
 
-    virtual ~serializer() {}
+    virtual ~serializer() = default;
 
     SERIALIZE_MODE
-    mode() const { return mode_; }
+    mode() const { return static_cast<SERIALIZE_MODE>(ser_.index()); }
 
-    void set_mode(SERIALIZE_MODE mode) { mode_ = mode; }
+    [[deprecated("SST::Core::Serialization::serializer::set_mode() is deprecated and will be removed. start_sizing(), "
+                 "start_packing(), start_unpacking(), or start_mapping() should be used instead.")]]
+    void set_mode(SERIALIZE_MODE mode);
 
-    void reset()
-    {
-        sizer_.reset();
-        packer_.reset();
-        unpacker_.reset();
-    }
+    [[deprecated("SST::Core::Serialization::serializer::reset() is deprecated and will be removed.")]]
+    void reset();
 
     template <typename T>
     void primitive(T& t)
     {
-        switch ( mode_ ) {
+        switch ( mode() ) {
         case SIZER:
-            sizer_.size(t);
+            sizer().size(t);
             break;
         case PACK:
-            packer_.pack(t);
+            packer().pack(t);
             break;
         case UNPACK:
-            unpacker_.unpack(t);
+            unpacker().unpack(t);
             break;
         case MAP:
             break;
         }
     }
 
-    void raw(void* data, size_t size)
-    {
-        switch ( mode_ ) {
-        case SIZER:
-            sizer_.add(size);
-            break;
-        case PACK:
-            memcpy(packer_.next_str(size), data, size);
-            break;
-        case UNPACK:
-            memcpy(data, unpacker_.next_str(size), size);
-            break;
-        case MAP:
-            break;
-        }
-    }
+    void raw(void* data, size_t size);
 
     template <typename ELEM_T, typename SIZE_T>
     void binary(ELEM_T*& buffer, SIZE_T& size)
     {
-        switch ( mode_ ) {
+        switch ( mode() ) {
         case SIZER:
-            sizer_.add(sizeof(SIZE_T));
-            sizer_.add(size * sizeof(ELEM_T));
+            sizer().add(sizeof(SIZE_T));
+            sizer().add(size * sizeof(ELEM_T));
             break;
         case PACK:
             if ( buffer ) {
-                packer_.pack(size);
-                packer_.pack_buffer(buffer, size * sizeof(ELEM_T));
+                packer().pack(size);
+                packer().pack_buffer(buffer, size * sizeof(ELEM_T));
             }
             else {
                 SIZE_T nullsize = 0;
-                packer_.pack(nullsize);
+                packer().pack(nullsize);
             }
             break;
         case UNPACK:
-            unpacker_.unpack(size);
+            unpacker().unpack(size);
             buffer = nullptr;
-            if ( size ) unpacker_.unpack_buffer(&buffer, size * sizeof(ELEM_T));
+            if ( size ) unpacker().unpack_buffer(&buffer, size * sizeof(ELEM_T));
             break;
         case MAP:
             break;
@@ -162,110 +132,28 @@ public:
         binary(reinterpret_cast<char*&>(buffer), size);
     }
 
-    void string(std::string& str);
-
-    void start_packing(char* buffer, size_t size)
-    {
-        packer_.init(buffer, size);
-        mode_ = PACK;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_sizing()
-    {
-        sizer_.reset();
-        mode_ = SIZER;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_unpacking(char* buffer, size_t size)
-    {
-        unpacker_.init(buffer, size);
-        mode_ = UNPACK;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_mapping(ObjectMap* obj)
-    {
-        mapper_.init(obj);
-        mode_ = MAP;
-    }
-
-    size_t size() const
-    {
-        switch ( mode_ ) {
-        case SIZER:
-            return sizer_.size();
-        case PACK:
-            return packer_.size();
-        case UNPACK:
-            return unpacker_.size();
-        case MAP:
-            break;
-        }
-        return 0;
-    }
-
-    inline bool check_pointer_pack(uintptr_t ptr)
-    {
-        if ( ser_pointer_set.count(ptr) == 0 ) {
-            ser_pointer_set.insert(ptr);
-            return false;
-        }
-        return true;
-    }
-
-    inline uintptr_t check_pointer_unpack(uintptr_t ptr)
-    {
-        auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) {
-            return it->second;
-        }
-        // Keep a copy of the ptr in case we have a split report
-        split_key = ptr;
-        return 0;
-    }
-
-    ObjectMap* check_pointer_map(uintptr_t ptr)
-    {
-        auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) {
-            return reinterpret_cast<ObjectMap*>(it->second);
-        }
-        return nullptr;
-    }
-
-    inline void report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
-
-    inline void report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
-
-    void enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
-
-    inline bool is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
-
-    void report_object_map(ObjectMap* ptr);
-
-    // Get the map name
+    size_t     size();
+    void       string(std::string& str);
+    void       start_sizing() { ser_.emplace<SIZER>(); }
+    void       start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
+    void       start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
+    void       start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
+    bool       check_pointer_sizer(uintptr_t ptr) { return sizer().check_pointer_sizer(ptr); }
+    bool       check_pointer_pack(uintptr_t ptr) { return packer().check_pointer_pack(ptr); }
+    void       report_new_pointer(uintptr_t real_ptr) { unpacker().report_new_pointer(real_ptr); }
+    void       report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { unpacker().report_real_pointer(ptr, real_ptr); }
+    uintptr_t  check_pointer_unpack(uintptr_t ptr) { return unpacker().check_pointer_unpack(ptr); }
+    ObjectMap* check_pointer_map(uintptr_t ptr) { return mapper().check_pointer_map(ptr); }
+    void       report_object_map(ObjectMap* ptr) { mapper().report_object_map(ptr); }
+    void       enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
+    bool       is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
     const char* getMapName() const;
 
-protected:
-    // only one of these is going to be valid for this serializer
-    // not very good class design, but a little more convenient
-    pvt::ser_packer   packer_;
-    pvt::ser_unpacker unpacker_;
-    pvt::ser_sizer    sizer_;
-    pvt::ser_mapper   mapper_;
-    SERIALIZE_MODE    mode_;
-    bool              enable_ptr_tracking_ = false;
+private:
+    std::variant<pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper> ser_;
 
-    std::set<uintptr_t>            ser_pointer_set;
-    // Used for unpacking and mapping
-    std::map<uintptr_t, uintptr_t> ser_pointer_map;
-    uintptr_t                      split_key;
-    const ObjectMapContext*        mapContext = nullptr;
+    bool                    enable_ptr_tracking_ = false;
+    const ObjectMapContext* mapContext           = nullptr;
     friend class ObjectMapContext;
 }; // class serializer
 

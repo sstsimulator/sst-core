@@ -20,78 +20,43 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstring>
-#include <exception>
+#include <stdexcept>
 
 namespace SST::Core::Serialization::pvt {
 
-// class ser_buffer_overrun : public spkt_error {
-class ser_buffer_overrun : public std::exception
-{
-public:
-    explicit ser_buffer_overrun(int UNUSED(maxsize))
-    // ser_buffer_overrun(int maxsize) :
-    // spkt_error(sprockit::printf("serialization overrun buffer of size %d", maxsize))
-    {}
-};
-
 class ser_buffer_accessor
 {
-public:
-    template <class T>
-    T* next()
-    {
-        T* ser_buffer = reinterpret_cast<T*>(bufptr_);
-        bufptr_ += sizeof(T);
-        size_ += sizeof(T);
-        if ( size_ > max_size_ ) throw ser_buffer_overrun(max_size_);
-        return ser_buffer;
-    }
+    char*  bufstart_ = nullptr;
+    char*  bufptr_   = bufstart_;
+    size_t max_size_ = 0;
+    size_t size_     = 0;
 
-    char* next_str(size_t size)
+public:
+    // constructor for defaults above
+    ser_buffer_accessor() = default;
+
+    // constructor which is inherited by packer and unpacker
+    ser_buffer_accessor(void* buffer, size_t size) :
+        bufstart_(static_cast<char*>(buffer)),
+        max_size_(size)
+    {}
+
+    char* buf_next(size_t size)
     {
-        char* ser_buffer = reinterpret_cast<char*>(bufptr_);
-        bufptr_ += size;
         size_ += size;
-        if ( size_ > max_size_ ) throw ser_buffer_overrun(max_size_);
-        return ser_buffer;
+        if ( size_ > max_size_ ) throw std::out_of_range("serialization buffer overrun");
+        char* buf = bufptr_;
+        bufptr_ += size;
+        return buf;
     }
 
     size_t size() const { return size_; }
-
-    size_t max_size() const { return max_size_; }
-
-    void init(void* buffer, size_t size)
-    {
-        bufstart_ = reinterpret_cast<char*>(buffer);
-        max_size_ = size;
-        reset();
-    }
-
-    void clear()
-    {
-        bufstart_ = bufptr_ = nullptr;
-        max_size_ = size_ = 0;
-    }
 
     void reset()
     {
         bufptr_ = bufstart_;
         size_   = 0;
     }
-
-protected:
-    ser_buffer_accessor() :
-        bufstart_(nullptr),
-        bufptr_(nullptr),
-        size_(0),
-        max_size_(0)
-    {}
-
-protected:
-    char*  bufstart_;
-    char*  bufptr_;
-    size_t size_;
-    size_t max_size_;
 };
 
 } // namespace SST::Core::Serialization::pvt
