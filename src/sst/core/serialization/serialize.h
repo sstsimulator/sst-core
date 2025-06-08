@@ -185,8 +185,8 @@ class serialize
             // so, then we error since the non-pointer version of this
             // data needs to be serialized before any of the pointers
             // that point to it.
-            if ( ser.check_pointer_pack(ptr) ) {
-                // Error
+            if ( ser.check_pointer_sizer(ptr) ) {
+                // TODO Error
             }
 
             // Always put the pointer in
@@ -292,7 +292,7 @@ class serialize<T*>
 
             // If we haven't seen this yet, also need to serialize the
             // object
-            if ( !ser.check_pointer_pack(ptr) ) {
+            if ( !ser.check_pointer_sizer(ptr) ) {
                 serialize_impl<T*>()(t, ser, options);
             }
             break;

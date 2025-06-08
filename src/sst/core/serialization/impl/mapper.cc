@@ -69,21 +69,9 @@ ser_mapper::map_hierarchy_end()
 }
 
 void
-ser_mapper::init(ObjectMap* object)
+ser_mapper::report_object_map(ObjectMap* ptr)
 {
-    obj_.push_back(object);
-}
-
-void
-ser_mapper::reset()
-{
-    obj_.clear();
-}
-
-void
-ser_mapper::setNextObjectReadOnly()
-{
-    next_item_read_only = true;
+    pointer_map.insert_or_assign(reinterpret_cast<uintptr_t>(ptr->getAddr()), reinterpret_cast<uintptr_t>(ptr));
 }
 
 } // namespace SST::Core::Serialization::pvt
