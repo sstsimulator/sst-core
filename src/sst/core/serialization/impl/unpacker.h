@@ -42,15 +42,6 @@ public:
         memcpy(&t, buf_next(sizeof(t)), sizeof(t));
     }
 
-    /**
-     * @brief unpack_buffer
-     * @param buf   Must unpack to non-null buffer
-     * @param size  Must be non-zero
-     */
-    void unpack_buffer(void* buf, size_t size);
-
-    void unpack_string(std::string& str);
-
     uintptr_t check_pointer_unpack(uintptr_t ptr)
     {
         auto it = ser_pointer_map.find(ptr);
@@ -61,10 +52,10 @@ public:
         return 0;
     }
 
+    void unpack_buffer(void* buf, size_t size);
+    void unpack_string(std::string& str);
     void report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
-
     void report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
-
 }; // class ser_unpacker
 
 } // namespace SST::Core::Serialization::pvt

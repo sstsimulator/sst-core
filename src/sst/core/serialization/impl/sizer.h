@@ -38,16 +38,11 @@ public:
         size_ += sizeof(T);
     }
 
-    void size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
-
-    void add(size_t s) { size_ += s; }
-
+    void   size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
+    void   add(size_t s) { size_ += s; }
     size_t size() const { return size_; }
-
-    void reset() { size_ = 0; }
-
-    bool check_pointer_sizer(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
-
+    void   reset() { size_ = 0; }
+    bool   check_pointer_sizer(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
 }; // class ser_sizer
 
 } // namespace SST::Core::Serialization::pvt

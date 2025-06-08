@@ -14,7 +14,10 @@
 #include "sst/core/serialization/serializer.h"
 
 #include "sst/core/output.h"
-#include "sst/core/serialization/serializable.h"
+
+#include <cstring>
+#include <stdexcept>
+#include <string>
 
 #include <cstring>
 #include <stdexcept>
@@ -27,20 +30,16 @@ namespace pvt {
 void
 ser_unpacker::unpack_buffer(void* buf, size_t size)
 {
-    if ( size == 0 ) {
-        Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, __func__, 1, "trying to unpack buffer of size 0");
-    }
+    if ( size == 0 )
+        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1, "trying to unpack buffer of size 0");
     *static_cast<void**>(buf) = memcpy(new char[size], buf_next(size), size);
 }
 
 void
 ser_packer::pack_buffer(void* buf, size_t size)
 {
-    if ( buf == nullptr ) {
-        Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, __func__, 1, "trying to pack nullptr buffer");
-    }
+    if ( buf == nullptr )
+        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1, "trying to pack nullptr buffer");
     memcpy(buf_next(size), buf, size);
 }
 
