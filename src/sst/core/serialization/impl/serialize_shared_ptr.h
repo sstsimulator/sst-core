@@ -19,7 +19,6 @@
 
 #include "sst/core/output.h"
 #include "sst/core/serialization/impl/serialize_utility.h"
-#include "sst/core/serialization/serializer.h"
 
 #include <map>
 #include <memory>
