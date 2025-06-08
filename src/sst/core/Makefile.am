@@ -105,6 +105,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/ser_buffer_accessor.h \
 	serialization/impl/serialize_insertable.h \
         serialization/impl/serialize_optional.h \
+        serialization/impl/ser_shared_ptr_tracker.h \
+        serialization/impl/serialize_shared_ptr.h \
 	serialization/impl/serialize_tuple.h \
 	serialization/impl/serialize_utility.h \
 	serialization/impl/serialize_variant.h \

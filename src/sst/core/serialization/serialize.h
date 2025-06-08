@@ -185,8 +185,8 @@ class serialize
             // so, then we error since the non-pointer version of this
             // data needs to be serialized before any of the pointers
             // that point to it.
-            if ( ser.check_pointer_pack(ptr) ) {
-                // Error
+            if ( ser.check_pointer_sizer(ptr) ) {
+                // TODO Error
             }
 
             // Always put the pointer in
@@ -292,7 +292,7 @@ class serialize<T*>
 
             // If we haven't seen this yet, also need to serialize the
             // object
-            if ( !ser.check_pointer_pack(ptr) ) {
+            if ( !ser.check_pointer_sizer(ptr) ) {
                 serialize_impl<T*>()(t, ser, options);
             }
             break;
@@ -515,6 +515,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_bitset.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_optional.h"
+#include "sst/core/serialization/impl/serialize_shared_ptr.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"
 #include "sst/core/serialization/impl/serialize_valarray.h"

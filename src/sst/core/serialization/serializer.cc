@@ -16,6 +16,10 @@
 #include "sst/core/output.h"
 #include "sst/core/serialization/serializable.h"
 
+#include <cstring>
+#include <stdexcept>
+#include <string>
+
 namespace SST::Core::Serialization {
 namespace pvt {
 
@@ -26,11 +30,9 @@ ser_unpacker::unpack_buffer(void* buf, size_t size)
         Output& output = Output::getDefaultObject();
         output.fatal(__LINE__, __FILE__, "ser_unpacker::unpack_bufffer", 1, "trying to unpack buffer of size 0");
     }
-    // void* only for convenience... actually a void**
-    void** bufptr = (void**)buf;
+    void** bufptr = static_cast<void**>(buf);
     *bufptr       = new char[size];
-    char* charstr = next_str(size);
-    ::memcpy(*bufptr, charstr, size);
+    memcpy(*bufptr, buf_next(size), size);
 }
 
 void
@@ -40,67 +42,121 @@ ser_packer::pack_buffer(void* buf, size_t size)
         Output& output = Output::getDefaultObject();
         output.fatal(__LINE__, __FILE__, "ser_packer::pack_bufffer", 1, "trying to pack nullptr buffer");
     }
-    char* charstr = next_str(size);
-    ::memcpy(charstr, buf, size);
+    memcpy(buf_next(size), buf, size);
 }
 
 void
 ser_unpacker::unpack_string(std::string& str)
 {
-    int size;
+    size_t size;
     unpack(size);
-    char* charstr = next_str(size);
     str.resize(size);
-    str.assign(charstr, size);
+    memcpy(str.data(), buf_next(size), size);
 }
 
 void
 ser_packer::pack_string(std::string& str)
 {
-    int size = str.size();
+    size_t size = str.size();
     pack(size);
-    char* charstr = next_str(size);
-    ::memcpy(charstr, str.data(), size);
-}
-
-void
-ser_sizer::size_string(std::string& str)
-{
-    size_ += sizeof(int);
-    size_ += str.size();
+    memcpy(buf_next(size), str.data(), size);
 }
 
 } // namespace pvt
 
+void
+serializer::set_mode(SERIALIZE_MODE mode)
+{
+    switch ( mode ) {
+    case SIZER:
+        ser_.emplace<SIZER>();
+        break;
+    case PACK:
+        ser_.emplace<PACK>();
+        break;
+    case UNPACK:
+        ser_.emplace<UNPACK>();
+        break;
+    case MAP:
+        ser_.emplace<MAP>();
+        break;
+    }
+}
 
 void
-serializer::string(std::string& str)
+serializer::reset()
 {
-    switch ( mode_ ) {
+    switch ( mode() ) {
     case SIZER:
-    {
-        sizer_.size_string(str);
+        sizer().reset();
         break;
-    }
     case PACK:
-    {
-        packer_.pack_string(str);
+        packer().reset();
         break;
-    }
     case UNPACK:
-    {
-        unpacker_.unpack_string(str);
+        unpacker().reset();
         break;
-    }
     case MAP:
         break;
     }
 }
 
 void
-serializer::report_object_map(ObjectMap* ptr)
+serializer::raw(void* data, size_t size)
 {
-    ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
+    switch ( mode() ) {
+    case SIZER:
+        sizer().add(size);
+        break;
+    case PACK:
+        memcpy(packer().buf_next(size), data, size);
+        break;
+    case UNPACK:
+        memcpy(data, unpacker().buf_next(size), size);
+        break;
+    case MAP:
+        break;
+    }
+}
+
+size_t
+serializer::size()
+{
+    switch ( mode() ) {
+    case SIZER:
+        return sizer().size();
+    case PACK:
+        return packer().size();
+    case UNPACK:
+        return unpacker().size();
+    case MAP:
+        break;
+    }
+    return 0;
+}
+
+void
+serializer::string(std::string& str)
+{
+    switch ( mode() ) {
+    case SIZER:
+    {
+        sizer().size_string(str);
+        break;
+    }
+    case PACK:
+    {
+        packer().pack_string(str);
+        break;
+    }
+    case UNPACK:
+    {
+        unpacker().unpack_string(str);
+        break;
+    }
+    case MAP:
+        break;
+    }
 }
 
 const char*
