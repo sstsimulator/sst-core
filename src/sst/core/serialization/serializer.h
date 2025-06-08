@@ -132,12 +132,12 @@ public:
         binary(reinterpret_cast<char*&>(buffer), size);
     }
 
+    size_t     size();
     void       string(std::string& str);
     void       start_sizing() { ser_.emplace<SIZER>(); }
     void       start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
     void       start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
     void       start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
-    size_t     size();
     bool       check_pointer_sizer(uintptr_t ptr) { return sizer().check_pointer_sizer(ptr); }
     bool       check_pointer_pack(uintptr_t ptr) { return packer().check_pointer_pack(ptr); }
     void       report_new_pointer(uintptr_t real_ptr) { unpacker().report_new_pointer(real_ptr); }

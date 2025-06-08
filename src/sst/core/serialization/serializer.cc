@@ -21,6 +21,7 @@
 #include <string>
 
 namespace SST::Core::Serialization {
+
 namespace pvt {
 
 void
@@ -28,11 +29,9 @@ ser_unpacker::unpack_buffer(void* buf, size_t size)
 {
     if ( size == 0 ) {
         Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, "ser_unpacker::unpack_bufffer", 1, "trying to unpack buffer of size 0");
+        output.fatal(__LINE__, __FILE__, __func__, 1, "trying to unpack buffer of size 0");
     }
-    void** bufptr = static_cast<void**>(buf);
-    *bufptr       = new char[size];
-    memcpy(*bufptr, buf_next(size), size);
+    *static_cast<void**>(buf) = memcpy(new char[size], buf_next(size), size);
 }
 
 void
@@ -40,7 +39,7 @@ ser_packer::pack_buffer(void* buf, size_t size)
 {
     if ( buf == nullptr ) {
         Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, "ser_packer::pack_bufffer", 1, "trying to pack nullptr buffer");
+        output.fatal(__LINE__, __FILE__, __func__, 1, "trying to pack nullptr buffer");
     }
     memcpy(buf_next(size), buf, size);
 }
@@ -129,10 +128,9 @@ serializer::size()
         return packer().size();
     case UNPACK:
         return unpacker().size();
-    case MAP:
-        break;
+    default:
+        return 0;
     }
-    return 0;
 }
 
 void
@@ -140,20 +138,14 @@ serializer::string(std::string& str)
 {
     switch ( mode() ) {
     case SIZER:
-    {
         sizer().size_string(str);
         break;
-    }
     case PACK:
-    {
         packer().pack_string(str);
         break;
-    }
     case UNPACK:
-    {
         unpacker().unpack_string(str);
         break;
-    }
     case MAP:
         break;
     }
