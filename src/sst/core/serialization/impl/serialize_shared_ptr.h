@@ -336,8 +336,8 @@ shared_ptr(std::shared_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent)
 // SST_SER( SST::Core::Serialization::shared_ptr( std::shared_ptr&, size_t& size ) ) serializes a
 // std::shared_ptr managing the object when the pointer is to an unbounded array of size
 template <class PTR_TYPE>
-std::enable_if_t<is_unbounded_array_v<PTR_TYPE>, pvt::shared_ptr_wrapper_t<std::shared_ptr, PTR_TYPE>> shared_ptr(
-    std::shared_ptr<PTR_TYPE>& ptr, size_t& size)
+std::enable_if_t<is_unbounded_array_v<PTR_TYPE>, pvt::shared_ptr_wrapper_t<std::shared_ptr, PTR_TYPE>>
+shared_ptr(std::shared_ptr<PTR_TYPE>& ptr, size_t& size)
 {
     return { ptr, ptr, size };
 }

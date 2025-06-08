@@ -64,10 +64,9 @@ class ser_shared_ptr_unpacker
 protected:
     std::pair<std::shared_ptr<void>&, bool> get_shared_ptr_owner(size_t tag)
     {
-        if ( tag == 0 ) {
+        if ( tag == 0 )
             Output::getDefaultObject().fatal(
                 __LINE__, __FILE__, __func__, 1, "Deserialization Error: std::shared_ptr ownership tag must not be 0");
-        }
 
         size_t size = shared_ptr_owners.size();
 
@@ -75,10 +74,9 @@ protected:
         if ( tag <= size ) return { shared_ptr_owners[tag - 1], false };
 
         // The first time a tag is seen, it must be 1 higher than the maximum seen so far
-        if ( tag - size != 1 ) {
+        if ( tag - size != 1 )
             Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
                 "Deserialization Error: std::shared_ptr ownership tag is out of order");
-        }
 
         // Return a reference to a new std::shared_ptr<void> owner
         return { shared_ptr_owners.emplace_back(), true };
