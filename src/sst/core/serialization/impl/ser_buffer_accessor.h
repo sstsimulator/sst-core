@@ -17,8 +17,6 @@
     "The header file sst/core/serialization/impl/ser_buffer_accessor.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
-#include "sst/core/warnmacros.h"
-
 #include <cstring>
 #include <stdexcept>
 

@@ -22,8 +22,10 @@
 // Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZER_H
 
-#include <cstddef>
+#include "sst/core/warnmacros.h"
+
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <variant>
 
@@ -63,8 +65,6 @@ public:
     {
         unpacker().unpack(t);
     }
-
-    virtual ~serializer() = default;
 
     SERIALIZE_MODE
     mode() const { return static_cast<SERIALIZE_MODE>(ser_.index()); }
@@ -126,8 +126,8 @@ public:
 
     // For void*, we get sizeof(), which errors.
     // Create a wrapper that casts to char* and uses above
-    template <typename Int>
-    void binary(void*& buffer, Int& size)
+    template <typename SIZE_T>
+    void binary(void*& buffer, SIZE_T& size)
     {
         binary(reinterpret_cast<char*&>(buffer), size);
     }

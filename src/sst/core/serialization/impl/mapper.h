@@ -50,11 +50,7 @@ public:
     void       reset() { obj_.clear(); }
     void       setNextObjectReadOnly() { next_item_read_only = true; }
     void       report_object_map(ObjectMap* ptr);
-    ObjectMap* check_pointer_map(uintptr_t ptr)
-    {
-        auto it = pointer_map.find(ptr);
-        return it != pointer_map.end() ? reinterpret_cast<ObjectMap*>(it->second) : nullptr;
-    }
+    ObjectMap* check_pointer_map(uintptr_t ptr);
 };
 
 } // namespace pvt

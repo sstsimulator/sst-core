@@ -13,54 +13,9 @@
 
 #include "sst/core/serialization/serializer.h"
 
-#include "sst/core/output.h"
-
-#include <cstring>
 #include <stdexcept>
-#include <string>
-
-#include <cstring>
-#include <stdexcept>
-#include <string>
 
 namespace SST::Core::Serialization {
-
-namespace pvt {
-
-void
-ser_unpacker::unpack_buffer(void* buf, size_t size)
-{
-    if ( size == 0 )
-        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1, "trying to unpack buffer of size 0");
-    *static_cast<void**>(buf) = memcpy(new char[size], buf_next(size), size);
-}
-
-void
-ser_packer::pack_buffer(void* buf, size_t size)
-{
-    if ( buf == nullptr )
-        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1, "trying to pack nullptr buffer");
-    memcpy(buf_next(size), buf, size);
-}
-
-void
-ser_unpacker::unpack_string(std::string& str)
-{
-    size_t size;
-    unpack(size);
-    str.resize(size);
-    memcpy(str.data(), buf_next(size), size);
-}
-
-void
-ser_packer::pack_string(std::string& str)
-{
-    size_t size = str.size();
-    pack(size);
-    memcpy(buf_next(size), str.data(), size);
-}
-
-} // namespace pvt
 
 void
 serializer::set_mode(SERIALIZE_MODE mode)

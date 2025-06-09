@@ -74,4 +74,11 @@ ser_mapper::report_object_map(ObjectMap* ptr)
     pointer_map.insert_or_assign(reinterpret_cast<uintptr_t>(ptr->getAddr()), reinterpret_cast<uintptr_t>(ptr));
 }
 
+ObjectMap*
+ser_mapper::check_pointer_map(uintptr_t ptr)
+{
+    auto it = pointer_map.find(ptr);
+    return it != pointer_map.end() ? reinterpret_cast<ObjectMap*>(it->second) : nullptr;
+}
+
 } // namespace SST::Core::Serialization::pvt
