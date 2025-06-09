@@ -35,13 +35,19 @@ class ser_shared_ptr_packer
     // can be converted to it and its ownership can be compared with any other std::shared_ptr or std::weak_ptr.
     std::map<std::weak_ptr<const void>, size_t, std::owner_less<>> shared_ptr_map;
 
-    size_t tag = 0;
+    // Running tag which starts at 1
+    size_t tag = 1;
 
-protected:
+public:
     std::pair<size_t, bool> get_shared_ptr_tag(const std::weak_ptr<const void>& ptr)
     {
+        // Should never get here if a pointer is expired ( use_count() == 0 )
+        if ( ptr.expired() )
+            Output::getDefaultObject().fatal(
+                __LINE__, __FILE__, __func__, 1, "Error: Expired shared_ptr or weak_ptr cannot be assigned a tag");
+
         // Look for the owner of the control block in the map, creating a new entry if it doesn't exist
-        auto [it, is_new_tag] = shared_ptr_map.try_emplace(ptr, tag + 1);
+        auto [it, is_new_tag] = shared_ptr_map.try_emplace(ptr, tag);
 
         // If a new entry was added, increment the tag
         if ( is_new_tag ) ++tag;
@@ -50,7 +56,6 @@ protected:
         return { it->second, is_new_tag };
     }
 }; // class ser_shared_ptr_packer
-
 
 class ser_shared_ptr_unpacker
 {
@@ -61,13 +66,14 @@ class ser_shared_ptr_unpacker
     // deserialization of std::shared_ptr or std::weak_ptr with the same ownership tag.
     std::deque<std::shared_ptr<void>> shared_ptr_owners;
 
-protected:
+public:
     std::pair<std::shared_ptr<void>&, bool> get_shared_ptr_owner(size_t tag)
     {
         if ( tag == 0 )
             Output::getDefaultObject().fatal(
                 __LINE__, __FILE__, __func__, 1, "Deserialization Error: std::shared_ptr ownership tag must not be 0");
 
+        // Get the current largest tag
         size_t size = shared_ptr_owners.size();
 
         // If the tag has been seen before, return the owner associated with the tag
