@@ -31,24 +31,6 @@ namespace SST::Core::Serialization {
 
 namespace pvt {
 
-// Make sure that ptr and parent have the same owning control block or are both empty
-// ptr.owner_before(parent) is true if ptr's owner is before parent's owner in a partial ordering
-// parent.owner_before(ptr) is true if parent's owner is before ptr's owner in a partial ordering
-// If neither ptr.owner_before(parent) nor parent.owner_before(ptr) is true, they have the same owner
-// If one is empty and the other is non-empty, they will compare as having different owners
-// If they are both empty, they will compare as having the same owner
-template <class PTR, class PARENT_PTR>
-void assert_same_owner(const PTR& ptr, const PARENT_PTR& parent)
-{
-    if ( ptr.owner_before(parent) || parent.owner_before(ptr) ) {
-        const char* ptr_type = is_same_type_template_v<PTR, std::weak_ptr> ? "weak_ptr" : "shared_ptr";
-        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
-            "ERROR: Serialized std::%s does not have the same owner as parent as indicated by "
-            "SST::Core::Serialization::%s(std::%s<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent)\n",
-            ptr_type, ptr_type, ptr_type);
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Workaround for libstdc++ bug 120561 which prevents converting std::weak_ptr<array> to std::weak_ptr<const void>
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20250425
@@ -102,8 +84,20 @@ public:
         case serializer::SIZER:
         case serializer::PACK:
         {
-            // Make sure that ptr and parent have the same owning control block
-            assert_same_owner(ptr, parent);
+            // Make sure that ptr and parent have the same owning control block or are both empty
+            // ptr.owner_before(parent) is true if ptr's owner is before parent's owner in a partial ordering
+            // parent.owner_before(ptr) is true if parent's owner is before ptr's owner in a partial ordering
+            // If neither ptr.owner_before(parent) nor parent.owner_before(ptr) is true, they have the same owner
+            // If one is empty and the other is non-empty, they will compare as having different owners
+            // If they are both empty, they will compare as having the same owner
+            if ( ptr.owner_before(parent) || parent.owner_before(ptr) ) {
+                const char* ptr_type = is_same_template_v<PTR_TEMPLATE, std::weak_ptr> ? "weak_ptr" : "shared_ptr";
+                const char* size_str = is_unbounded_array_v<PARENT_TYPE> ? ", SIZE_T& size" : "";
+                Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
+                    "ERROR: Serialized std::%s does not have the same owner as parent as indicated by "
+                    "SST::Core::Serialization::%s(std::%s<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent%s)\n",
+                    ptr_type, ptr_type, ptr_type, size_str);
+            }
 
             // If the use_count() is 0, the std::shared_ptr or std::weak_ptr has no managed object and is empty, so
             // a tag of 0 is serialized
