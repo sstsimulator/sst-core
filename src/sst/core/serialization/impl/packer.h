@@ -19,32 +19,31 @@
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
-#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <set>
 #include <string>
 
 namespace SST::Core::Serialization::pvt {
 
 class ser_packer : public ser_buffer_accessor
 {
+    std::set<uintptr_t> pointer_set;
+
 public:
+    // inherit ser_buffer_accessor constructors
+    using ser_buffer_accessor::ser_buffer_accessor;
+
     template <class T>
     void pack(T& t)
     {
-        T* buf = ser_buffer_accessor::next<T>();
-        DISABLE_WARN_MAYBE_UNINITIALIZED
-        *buf = t;
-        REENABLE_WARNING
+        memcpy(buf_next(sizeof(t)), &t, sizeof(t));
     }
 
-    /**
-     * @brief pack_buffer
-     * @param buf  Must be non-null
-     * @param size Must be non-zero
-     */
     void pack_buffer(void* buf, size_t size);
-
     void pack_string(std::string& str);
-};
+    bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
+}; // class ser_packer
 
 } // namespace SST::Core::Serialization::pvt
 
