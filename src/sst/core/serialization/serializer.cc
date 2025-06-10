@@ -18,43 +18,6 @@
 namespace SST::Core::Serialization {
 
 void
-serializer::set_mode(SERIALIZE_MODE mode)
-{
-    switch ( mode ) {
-    case SIZER:
-        ser_.emplace<SIZER>();
-        break;
-    case PACK:
-        ser_.emplace<PACK>();
-        break;
-    case UNPACK:
-        ser_.emplace<UNPACK>();
-        break;
-    case MAP:
-        ser_.emplace<MAP>();
-        break;
-    }
-}
-
-void
-serializer::reset()
-{
-    switch ( mode() ) {
-    case SIZER:
-        sizer().reset();
-        break;
-    case PACK:
-        packer().reset();
-        break;
-    case UNPACK:
-        unpacker().reset();
-        break;
-    case MAP:
-        break;
-    }
-}
-
-void
 serializer::raw(void* data, size_t size)
 {
     switch ( mode() ) {
