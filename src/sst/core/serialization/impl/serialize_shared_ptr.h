@@ -62,7 +62,7 @@ constexpr char wrapper_string<std::shared_ptr, PARENT_TYPE, true>[] =
     "SIZE_T& size)";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get the tag for the owner of a std::ptr or std::weak_ptr and whether it is new (hasn't been seen before)
+// Get the tag for the owner of a std::shared_ptr or std::weak_ptr and whether it is new (hasn't been seen before)
 template <template <class> class PTR_TEMPLATE, typename PTR_TYPE>
 std::pair<size_t, bool> get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& ptr, serializer& ser)
 {
