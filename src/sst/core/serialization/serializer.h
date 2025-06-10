@@ -155,11 +155,6 @@ private:
     bool                    enable_ptr_tracking_ = false;
     const ObjectMapContext* mapContext           = nullptr;
     friend class ObjectMapContext;
-
-    size_t shared_ptr_tag = 0;  // Unique tag for each std::shared_ptr owner
-    std::map<std::weak_ptr<const void>, size_t, std::owner_less<>> shared_ptr_map;
-    std::map<size_t, std::shared_ptr<void>> shared_ptr_reverse_map;
-    friend class serialize_shared_ptr_impl;
 }; // class serializer
 
 /**

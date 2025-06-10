@@ -19,6 +19,7 @@
 
 #include "sst/core/output.h"
 
+#include <cstddef>
 #include <deque>
 #include <map>
 #include <memory>
@@ -39,54 +40,21 @@ class ser_shared_ptr_packer
     size_t tag = 1;
 
 public:
-    std::pair<size_t, bool> get_shared_ptr_tag(const std::weak_ptr<const void>& ptr)
-    {
-        // Should never get here if a pointer is expired ( use_count() == 0 )
-        if ( ptr.expired() )
-            Output::getDefaultObject().fatal(
-                __LINE__, __FILE__, __func__, 1, "Error: Expired shared_ptr or weak_ptr cannot be assigned a tag");
-
-        // Look for the owner of the control block in the map, creating a new entry if it doesn't exist
-        auto [it, is_new_tag] = shared_ptr_map.try_emplace(ptr, tag);
-
-        // If a new entry was added, increment the tag
-        if ( is_new_tag ) ++tag;
-
-        // Return the tag of the control block owner and whether it is new
-        return { it->second, is_new_tag };
-    }
+    // Get the tag associated with a shared pointer's owner
+    std::pair<size_t, bool> get_shared_ptr_tag(const std::weak_ptr<const void>& ptr);
 }; // class ser_shared_ptr_packer
 
 class ser_shared_ptr_unpacker
 {
-    // Deque of std::shared_ptr<void> owners indexed by a "restricted growth sequence" of tags. When
-    // std::shared_ptr or std::weak_ptr is deserialized, numeric tags are used to represent owners. A
-    // std::shared_ptr<PARENT_TYPE> is allocated and PARENT_TYPE is deserialized the first time a tag is seen.
-    // The deque keeps a std::shared_ptr<void> copy of std::shared_ptr<PARENT_TYPE> around for every
-    // deserialization of std::shared_ptr or std::weak_ptr with the same ownership tag.
+    // Array of std::shared_ptr owners indexed by tags. When std::shared_ptr or std::weak_ptr is deserialized, numeric
+    // tags represent owners. A std::shared_ptr<PARENT_TYPE> is allocated and PARENT_TYPE is deserialized the first time
+    // a tag is seen. The array keeps an owning copy of the std::shared_ptr around for every deserialization of
+    // std::shared_ptr or std::weak_ptr with the same ownership tag.
     std::deque<std::shared_ptr<void>> shared_ptr_owners;
 
 public:
-    std::pair<std::shared_ptr<void>&, bool> get_shared_ptr_owner(size_t tag)
-    {
-        if ( tag == 0 )
-            Output::getDefaultObject().fatal(
-                __LINE__, __FILE__, __func__, 1, "Deserialization Error: std::shared_ptr ownership tag must not be 0");
-
-        // Get the current largest tag
-        size_t size = shared_ptr_owners.size();
-
-        // If the tag has been seen before, return the owner associated with the tag
-        if ( tag <= size ) return { shared_ptr_owners[tag - 1], false };
-
-        // The first time a tag is seen, it must be 1 higher than the maximum seen so far
-        if ( tag - size != 1 )
-            Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
-                "Deserialization Error: std::shared_ptr ownership tag is out of order");
-
-        // Return a reference to a new std::shared_ptr<void> owner
-        return { shared_ptr_owners.emplace_back(), true };
-    }
+    // Get the std::shared_ptr associated with a tag
+    std::pair<std::shared_ptr<void>&, bool> get_shared_ptr_owner(size_t tag);
 }; // class ser_shared_ptr_unpacker
 
 } // namespace SST::Core::Serialization::pvt

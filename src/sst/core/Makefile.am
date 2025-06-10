@@ -229,6 +229,7 @@ sst_core_sources = \
 	serialization/serializer.cc \
 	serialization/impl/packer.cc \
 	serialization/impl/unpacker.cc \
+	serialization/impl/ser_shared_ptr_tracker.cc \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \
 	serialization/impl/serialize_array.cc \
