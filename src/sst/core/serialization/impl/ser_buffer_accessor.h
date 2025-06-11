@@ -24,21 +24,19 @@ namespace SST::Core::Serialization::pvt {
 
 class ser_buffer_accessor
 {
-    char*  bufstart_ = nullptr;
-    char*  bufptr_   = bufstart_;
-    size_t max_size_ = 0;
-    size_t size_     = 0;
+    char* const  bufstart_;
+    size_t const max_size_;
+    char*        bufptr_ = bufstart_;
+    size_t       size_   = 0;
 
 public:
-    // constructor for defaults above
-    ser_buffer_accessor() = default;
-
     // constructor which is inherited by packer and unpacker
     ser_buffer_accessor(void* buffer, size_t size) :
         bufstart_(static_cast<char*>(buffer)),
         max_size_(size)
     {}
 
+    // return a pointer to the buffer and then advance it size bytes
     char* buf_next(size_t size)
     {
         size_ += size;
@@ -49,12 +47,6 @@ public:
     }
 
     size_t size() const { return size_; }
-
-    void reset()
-    {
-        bufptr_ = bufstart_;
-        size_   = 0;
-    }
 };
 
 } // namespace SST::Core::Serialization::pvt

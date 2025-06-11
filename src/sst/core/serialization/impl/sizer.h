@@ -30,6 +30,8 @@ class ser_sizer
     std::set<uintptr_t> pointer_set;
 
 public:
+    explicit ser_sizer() = default;
+
     template <class T>
     void size(T&&)
     {
@@ -39,7 +41,6 @@ public:
     void   size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
     void   add(size_t s) { size_ += s; }
     size_t size() const { return size_; }
-    void   reset() { size_ = 0; }
     bool   check_pointer_sizer(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
 }; // class ser_sizer
 

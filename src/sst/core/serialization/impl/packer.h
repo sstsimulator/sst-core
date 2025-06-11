@@ -35,7 +35,7 @@ public:
     using ser_buffer_accessor::ser_buffer_accessor;
 
     template <class T>
-    void pack(T& t)
+    void pack(T&& t)
     {
         memcpy(buf_next(sizeof(t)), &t, sizeof(t));
     }

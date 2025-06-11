@@ -47,7 +47,6 @@ public:
     void       map_existing_object(const std::string& name, ObjectMap* map);
     void       map_hierarchy_start(const std::string& name, ObjectMap* map);
     void       map_hierarchy_end();
-    void       reset() { obj_.clear(); }
     void       setNextObjectReadOnly() { next_item_read_only = true; }
     void       report_object_map(ObjectMap* ptr);
     ObjectMap* check_pointer_map(uintptr_t ptr);
