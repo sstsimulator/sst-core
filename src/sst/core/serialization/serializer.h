@@ -41,19 +41,27 @@ class ObjectMapContext;
 class serializer
 {
 public:
-    enum SERIALIZE_MODE { SIZER = 1, PACK, UNPACK, MAP };
+    enum SERIALIZE_MODE : unsigned { SIZER = 1, PACK, UNPACK, MAP };
 
     // To avoid warnings about missing switch cases, EMPTY is defined outside of enum
-    // Any attempt to access sizer(), packer(), unpacker() or mapper() when the mode is EMPTY or wrong are flagged
-    static constexpr SERIALIZE_MODE EMPTY = static_cast<SERIALIZE_MODE>(0);
+    static constexpr SERIALIZE_MODE EMPTY { 0 };
 
+    // Current mode is the index of the ser_ variant
     SERIALIZE_MODE
     mode() const { return static_cast<SERIALIZE_MODE>(ser_.index()); }
 
+    // Any attempt to access sizer(), packer(), unpacker() or mapper() when the mode is EMPTY or wrong are flagged
     pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
     pvt::ser_packer&   packer() { return std::get<PACK>(ser_); }
     pvt::ser_unpacker& unpacker() { return std::get<UNPACK>(ser_); }
     pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
+
+    explicit serializer()                    = default;
+    serializer(const serializer&)            = delete;
+    serializer(serializer&&)                 = delete;
+    serializer& operator=(const serializer&) = delete;
+    serializer& operator=(serializer&&)      = delete;
+    ~serializer()                            = default;
 
     template <class T>
     void size(T& t)
