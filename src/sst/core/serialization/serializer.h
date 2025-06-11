@@ -41,7 +41,7 @@ class ObjectMapContext;
 class serializer
 {
 public:
-    enum SERIALIZE_MODE : unsigned { SIZER = 1, PACK, UNPACK, MAP };
+    enum SERIALIZE_MODE : size_t { SIZER = 1, PACK, UNPACK, MAP };
 
     // To avoid warnings about missing switch cases, EMPTY is defined outside of enum
     static constexpr SERIALIZE_MODE EMPTY { 0 };
