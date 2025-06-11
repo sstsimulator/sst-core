@@ -41,12 +41,27 @@ class ObjectMapContext;
 class serializer
 {
 public:
-    enum SERIALIZE_MODE { SIZER, PACK, UNPACK, MAP };
+    enum SERIALIZE_MODE : size_t { SIZER = 1, PACK, UNPACK, MAP };
 
-    pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
+    // To avoid warnings about missing switch cases, EMPTY is defined outside of enum
+    static constexpr SERIALIZE_MODE EMPTY { 0 };
+
+    // Current mode is the index of the ser_ variant
+    SERIALIZE_MODE
+    mode() const { return static_cast<SERIALIZE_MODE>(ser_.index()); }
+
+    // Any attempt to access sizer(), packer(), unpacker() or mapper() when the mode is EMPTY or wrong are flagged
+    pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
     pvt::ser_packer&   packer() { return std::get<PACK>(ser_); }
     pvt::ser_unpacker& unpacker() { return std::get<UNPACK>(ser_); }
-    pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
+    pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
+
+    explicit serializer()                    = default;
+    serializer(const serializer&)            = delete;
+    serializer(serializer&&)                 = delete;
+    serializer& operator=(const serializer&) = delete;
+    serializer& operator=(serializer&&)      = delete;
+    ~serializer()                            = default;
 
     template <class T>
     void size(T& t)
@@ -65,16 +80,6 @@ public:
     {
         unpacker().unpack(t);
     }
-
-    SERIALIZE_MODE
-    mode() const { return static_cast<SERIALIZE_MODE>(ser_.index()); }
-
-    [[deprecated("SST::Core::Serialization::serializer::set_mode() is deprecated and will be removed. start_sizing(), "
-                 "start_packing(), start_unpacking(), or start_mapping() should be used instead.")]]
-    void set_mode(SERIALIZE_MODE mode);
-
-    [[deprecated("SST::Core::Serialization::serializer::reset() is deprecated and will be removed.")]]
-    void reset();
 
     template <typename T>
     void primitive(T& t)
@@ -132,25 +137,27 @@ public:
         binary(reinterpret_cast<char*&>(buffer), size);
     }
 
-    size_t     size();
-    void       string(std::string& str);
-    void       start_sizing() { ser_.emplace<SIZER>(); }
-    void       start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
-    void       start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
-    void       start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
-    bool       check_pointer_sizer(uintptr_t ptr) { return sizer().check_pointer_sizer(ptr); }
-    bool       check_pointer_pack(uintptr_t ptr) { return packer().check_pointer_pack(ptr); }
-    void       report_new_pointer(uintptr_t real_ptr) { unpacker().report_new_pointer(real_ptr); }
-    void       report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { unpacker().report_real_pointer(ptr, real_ptr); }
-    uintptr_t  check_pointer_unpack(uintptr_t ptr) { return unpacker().check_pointer_unpack(ptr); }
-    ObjectMap* check_pointer_map(uintptr_t ptr) { return mapper().check_pointer_map(ptr); }
-    void       report_object_map(ObjectMap* ptr) { mapper().report_object_map(ptr); }
-    void       enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
-    bool       is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
+    ObjectMap*  check_pointer_map(uintptr_t ptr) { return mapper().check_pointer_map(ptr); }
+    bool        check_pointer_pack(uintptr_t ptr) { return packer().check_pointer_pack(ptr); }
+    bool        check_pointer_sizer(uintptr_t ptr) { return sizer().check_pointer_sizer(ptr); }
+    uintptr_t   check_pointer_unpack(uintptr_t ptr) { return unpacker().check_pointer_unpack(ptr); }
+    void        enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
+    void        finalize() { ser_.emplace<EMPTY>(); }
     const char* getMapName() const;
+    bool        is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
+    void        report_new_pointer(uintptr_t real_ptr) { unpacker().report_new_pointer(real_ptr); }
+    void        report_object_map(ObjectMap* ptr) { mapper().report_object_map(ptr); }
+    void   report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { unpacker().report_real_pointer(ptr, real_ptr); }
+    size_t size();
+    void   start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
+    void   start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
+    void   start_sizing() { ser_.emplace<SIZER>(); }
+    void   start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
+    void   string(std::string& str);
 
 private:
-    std::variant<pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper> ser_;
+    // default mode is EMPTY std::monostate
+    std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper> ser_;
 
     bool                    enable_ptr_tracking_ = false;
     const ObjectMapContext* mapContext           = nullptr;
