@@ -643,7 +643,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // are writing to console, in which case we will serialize the
     // output as well.
     FILE*       fp   = nullptr;
-    std::string file = info.config->profilingOutput();
+    std::string file = info.config->profiling_output();
     if ( file == "stdout" ) {
         // Output to the console, so we will force both rank and
         // thread output to be sequential
@@ -853,7 +853,7 @@ main(int argc, char* argv[])
     // If we are doing a parallel load with a file per rank, add the
     // rank number to the file name before the extension
     if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
-        addRankToFileName(cfg.configFile_, myRank.rank);
+        addRankToFileName(cfg.configFile_.value, myRank.rank);
     }
 
     // Check to see if the config file exists
