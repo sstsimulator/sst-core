@@ -68,7 +68,11 @@ private:
     Config() :
         ConfigShared(true, {}),
         first_rank_(false)
-    {}
+    {
+        // Need to insert the options because they control what gets
+        // serialized
+        insertOptions();
+    }
 
     //// Functions for use in main
 
