@@ -20,37 +20,40 @@
 
 namespace SST::Core::Serialization::pvt {
 
+// Get the tag associated with a shared pointer's owner, and whether it is new
 std::pair<size_t, bool>
-ser_shared_ptr_packer::get_shared_ptr_tag(const std::weak_ptr<const void>& ptr)
+ser_shared_ptr_packer::get_shared_ptr_owner_tag(const std::weak_ptr<const void>& ptr)
 {
-    // Should never get here if a pointer is expired ( use_count() == 0 )
-    if ( ptr.expired() )
-        throw std::invalid_argument("Serialization error: Expired shared_ptr or weak_ptr cannot be assigned a tag");
+    // If the std::shared_ptr or std::shared_ptr is empty, a tag of 0 is returned
+    if ( ptr.use_count() == 0 )
+        return {0, false};
 
-    // Look for the owner of the control block in the map, creating a new entry if it doesn't exist
-    auto [it, is_new_tag] = shared_ptr_map.try_emplace(ptr, tag);
+    // Look for the owner of the control block in the map, creating a new owner tag if it doesn't exist
+    auto [it, is_new_tag] = shared_ptr_map.try_emplace(ptr, owner_tag);
 
-    // If a new entry was added, increment the tag
-    if ( is_new_tag ) ++tag;
+    // If a new entry was added, increment the owner tag
+    if ( is_new_tag ) ++owner_tag;
 
-    // Return the tag of the control block owner and whether it is new
+    // Return the tag of the control block's owner and whether it is new
     return { it->second, is_new_tag };
 }
 
+// Get the std::shared_ptr associated with a tag, and whether it is new
 std::pair<std::shared_ptr<void>&, bool>
 ser_shared_ptr_unpacker::get_shared_ptr_owner(size_t tag)
 {
+    // Should never get here if the tag is 0
     if ( tag == 0 )
         throw std::invalid_argument("Deserialization error: std::shared_ptr ownership tag must not be 0");
 
     // Get the current largest tag
-    size_t size = shared_ptr_owners.size();
+    size_t num_owners = shared_ptr_owners.size();
 
     // If the tag has been seen before, return the owner associated with the tag
-    if ( tag <= size ) return { shared_ptr_owners[tag - 1], false };
+    if ( tag <= num_owners ) return { shared_ptr_owners[tag - 1], false };
 
     // The first time a tag is seen, it must be 1 higher than the maximum seen so far (restricted growth sequence)
-    if ( tag - size != 1 )
+    if ( tag - num_owners != 1 )
         throw std::invalid_argument("Deserialization error: std::shared_ptr ownership tag is out of order");
 
     // Return a reference to a new std::shared_ptr<void> owner for the tag

@@ -31,20 +31,14 @@ namespace pvt {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings for error messages based on the types of shared pointers
-template <template <class> class PTR_TEMPLATE>
-constexpr char ptr_string[] = "(bad type)";
-
-template <>
-inline constexpr char ptr_string<std::weak_ptr>[] = "std::weak_ptr";
+template <template <class> class>
+constexpr char ptr_string[] = "std::weak_ptr";
 
 template <>
 inline constexpr char ptr_string<std::shared_ptr>[] = "std::shared_ptr";
 
-template <template <class> class PTR_TEMPLATE, class PARENT_TYPE, bool = is_unbounded_array_v<PARENT_TYPE>>
-constexpr char wrapper_string[] = "(bad type)";
-
-template <class PARENT_TYPE>
-constexpr char wrapper_string<std::weak_ptr, PARENT_TYPE, false>[] =
+template <template <class> class, class PARENT_TYPE, bool = is_unbounded_array_v<PARENT_TYPE>>
+constexpr char wrapper_string[] =
     "SST::Core::Serialization::weak_ptr(std::weak_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent)";
 
 template <class PARENT_TYPE>
@@ -62,7 +56,7 @@ constexpr char wrapper_string<std::shared_ptr, PARENT_TYPE, true>[] =
     "SIZE_T& size)";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get the tag for the owner of a std::shared_ptr or std::weak_ptr and whether it is new (hasn't been seen before)
+// Get the tag for the owner of a std::shared_ptr or std::weak_ptr and whether it has been seen before
 template <template <class> class PTR_TEMPLATE, typename PTR_TYPE>
 std::pair<size_t, bool> get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& ptr, serializer& ser)
 {
@@ -70,38 +64,96 @@ std::pair<size_t, bool> get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& p
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20250425
     if constexpr ( is_same_template_v<PTR_TEMPLATE, std::weak_ptr> && std::is_array_v<PTR_TYPE> ) {
         if ( ser.mode() == serializer::SIZER )
-            return ser.sizer().get_shared_ptr_tag(ptr.lock());
+            return ser.sizer().get_shared_ptr_owner_tag(ptr.lock());
         else
-            return ser.packer().get_shared_ptr_tag(ptr.lock());
+            return ser.packer().get_shared_ptr_owner_tag(ptr.lock());
     }
     else
 #endif
+
     {
         if ( ser.mode() == serializer::SIZER )
-            return ser.sizer().get_shared_ptr_tag(ptr);
+            return ser.sizer().get_shared_ptr_owner_tag(ptr);
         else
-            return ser.packer().get_shared_ptr_tag(ptr);
+            return ser.packer().get_shared_ptr_owner_tag(ptr);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Find or create the owner of a shared pointer based on a tag
+// Pack the address stored in a shared pointer. Returns true if successful, false if address is out of range.
+template <class PTR>
+bool pack_shared_ptr_address(const PTR& ptr, const void* parent_addr, size_t parent_size, serializer& ser)
+{
+    // If ptr is a std::shared_ptr, it is returned by get()
+    // if ptr is a std::weak_ptr, we have to temporarily lock() it to get() the stored address
+    const void* addr;
+    if constexpr ( is_same_type_template_v<PTR, std::shared_ptr> )
+        addr = ptr.get();
+    else
+        addr = ptr.lock().get();
+
+    // Whether the stored address is not a nullptr
+    bool nonnull = addr != nullptr;
+    SST_SER(nonnull);
+
+    // If not null, serialize offset of the pointer's stored address to its parent's stored address
+    if ( nonnull ) {
+        // Offset of the shared pointer's stored address relative to the parent's address
+        ptrdiff_t offset = static_cast<const char*>(addr) - static_cast<const char*>(parent_addr);
+
+        // Make sure the address offset is inside the parent
+        if ( offset < 0 || static_cast<size_t>(offset) >= parent_size ) return false;
+
+        // Serialize the address offset
+        SST_SER(offset);
+    }
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Pack the parent of a shared pointer
 template <class PARENT_TYPE>
-std::shared_ptr<void>& get_shared_ptr_owner(
+void pack_shared_ptr_parent(const std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t opt)
+{
+    using parent_elem_t = std::remove_extent_t<PARENT_TYPE>;
+    if constexpr ( is_unbounded_array_v<PARENT_TYPE> ) {
+        // If the parent object is an unbounded array
+
+        // Serialize the size
+        SST_SER(*size);
+
+        // Serialize the array elements
+        if constexpr ( std::is_arithmetic_v<parent_elem_t> ||
+                       std::is_enum_v<parent_elem_t> /* is_trivially_serializable_v<parent_elem_t> */ )
+            ser.raw(parent.get(), *size * sizeof(parent_elem_t));
+        else
+            pvt::serialize_array(ser, parent.get(), opt, *size, pvt::serialize_array_element<parent_elem_t>);
+    }
+    else {
+        // If the parent object is not an unbounded array
+        // Cast is used in case PARENT_TYPE is a bounded array in which case PARENT_TYPE != parent_elem_t
+        SST_SER(*reinterpret_cast<PARENT_TYPE*>(parent.get()));
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Find or create a std::shared_ptr owner with a particular tag
+template <class PARENT_TYPE>
+const std::shared_ptr<void>& unpack_shared_ptr_owner(
     size_t tag, std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t opt)
 {
-    // Look for the shared pointer owner of the tag. auto&& acts like a universal reference for each member.
+    // Look for the std::shared_ptr owner of the tag, creating a new empty one if the tag has not been seen before.
+    // auto&& acts like a universal reference for each member.
     auto&& [owner, is_new_tag] = ser.unpacker().get_shared_ptr_owner(tag);
 
-    // Important: owner must be a lvalue reference so that the code below modifies the std::shared_ptr owner
-    // stored in a table indexed by tag for later use. The control block of the owner created here is used
-    // now and in all future std::shared_ptr or std::weak_ptr deserializations with the same ownership tag.
-    static_assert(std::is_lvalue_reference_v<decltype(owner)>);
+    // Important: owner must be a lvalue reference to a std::shared_ptr so that the code below modifies the
+    // std::shared_ptr owner stored in a table indexed by tag. The control block of the owner created here is
+    // used now and in all future std::shared_ptr or std::weak_ptr deserializations of the same ownership tag.
+    static_assert(std::is_same_v<decltype(owner), std::shared_ptr<void>&>);
 
-    // If this is the first use of the ownership tag, create and store a shared pointer owning the control
-    // block, and deserialize the parent object.
+    // If the tag has not been seen before, deserialize the parent object.
     if ( is_new_tag ) {
-        using parent_elem_t  = std::remove_extent_t<PARENT_TYPE>;
+        using parent_elem_t = std::remove_extent_t<PARENT_TYPE>;
         if constexpr ( is_unbounded_array_v<PARENT_TYPE> ) {
             // If the parent type is an unbounded array
 
@@ -138,82 +190,10 @@ std::shared_ptr<void>& get_shared_ptr_owner(
         // Sometimes &parent != &ptr and this just sets parent before ptr is set based on owner.
         parent = std::static_pointer_cast<PARENT_TYPE>(owner);
     }
-
     return owner;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Pack the parent of a shared pointer
-template<class PARENT_TYPE>
-void pack_shared_ptr_parent(const std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t opt)
-{
-    using parent_elem_t = std::remove_extent_t<PARENT_TYPE>;
-    if constexpr ( is_unbounded_array_v<PARENT_TYPE> ) {
-        // If the parent object is an unbounded array
-
-        // Serialize the size
-        SST_SER(*size);
-
-        // Serialize the array elements
-        if constexpr ( std::is_arithmetic_v<parent_elem_t> ||
-                       std::is_enum_v<parent_elem_t> /* is_trivially_serializable_v<parent_elem_t> */ )
-            ser.raw(parent.get(), *size * sizeof(parent_elem_t));
-        else
-            pvt::serialize_array(ser, parent.get(), opt, *size, pvt::serialize_array_element<parent_elem_t>);
-    }
-    else {
-        // If the parent object is not an unbounded array
-        // Cast is used in case PARENT_TYPE is a bounded array in which case PARENT_TYPE != parent_elem_t
-        SST_SER(*reinterpret_cast<PARENT_TYPE*>(parent.get()));
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get the address stored in a shared pointer
-template <class PTR>
-const void* get_shared_ptr_address(const PTR& ptr)
-{
-    // If ptr is a std::shared_ptr, it is returned by get()
-    // if ptr is a std::weak_ptr, we have to lock() it to get() the stored address
-    if constexpr ( is_same_type_template_v<PTR, std::shared_ptr> )
-        return ptr.get();
-    else
-        return ptr.lock().get();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Pack the address stored in a shared pointer
-template <class PARENT_TYPE>
-bool pack_shared_ptr_address(
-    const void* addr, const std::shared_ptr<PARENT_TYPE>& parent, const size_t* size, serializer& ser)
-{
-    // Whether the stored address is not a nullptr
-    bool nonnull = addr != nullptr;
-    SST_SER(nonnull);
-
-    // If not null, serialize offset of the pointer's stored address to its parent's stored address
-    if ( nonnull ) {
-        // Offset of the shared pointer's stored address relative to the parent's address
-        ptrdiff_t offset = static_cast<const char*>(addr) - reinterpret_cast<const char*>(parent.get());
-
-        // Compute the size of the parent
-        size_t parent_size;
-        if constexpr ( is_unbounded_array_v<PARENT_TYPE> )
-            parent_size = *size * sizeof(std::remove_extent_t<PARENT_TYPE>);
-        else
-            parent_size = sizeof(PARENT_TYPE);
-
-        // Make sure the address offset is inside the parent
-        if ( offset < 0 || static_cast<size_t>(offset) >= parent_size ) return false;
-
-        // Serialize the address offset
-        SST_SER(offset);
-    }
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 class serialize_shared_ptr_impl
 {
     // Pointer to unbounded array size
@@ -231,9 +211,7 @@ public:
     template <template <class> class PTR_TEMPLATE, class PTR_TYPE, class PARENT_TYPE>
     void operator()(PTR_TEMPLATE<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent, serializer& ser, ser_opt_t opt)
     {
-        const auto mode      = ser.mode();
-
-        switch ( mode ) {
+        switch ( ser.mode() ) {
         case serializer::SIZER:
         case serializer::PACK:
         {
@@ -243,24 +221,26 @@ public:
                     "ERROR: Serialized %s does not have the same owner as parent specified by %s.\n",
                     ptr_string<PTR_TEMPLATE>, wrapper_string<PTR_TEMPLATE, PARENT_TYPE>);
 
-            // If the use_count() is 0, the std::shared_ptr or std::weak_ptr has no managed object and is empty, so
-            // a tag of 0 is serialized
-            if ( !ptr.use_count() ) {
-                size_t tag = 0;
-                SST_SER(tag);
-            }
-            else {
-                // Get the ownership tag of this shared pointer
-                auto [tag, is_new_tag] = get_shared_ptr_owner_tag(ptr, ser);
+            // Get the tag of this shared pointer and whether it is new
+            auto [tag, is_new_tag] = get_shared_ptr_owner_tag(ptr, ser);
 
-                // Serialize the ownership tag of this shared pointer
-                SST_SER(tag);
+            // Serialize the ownership tag of this shared pointer
+            SST_SER(tag);
+
+            // A tag of 0 indicates an empty pointer
+            if ( tag != 0 ) {
+                // Size of the parent
+                size_t parent_size;
+                if constexpr ( is_unbounded_array_v<PARENT_TYPE> )
+                    parent_size = *size * sizeof(std::remove_extent_t<PARENT_TYPE>);
+                else
+                    parent_size = sizeof(PARENT_TYPE);
 
                 // Serialize the address stored in this shared pointer
-                if ( !pack_shared_ptr_address(get_shared_ptr_address(ptr), parent, size, ser) )
+                if ( !pack_shared_ptr_address(ptr, parent.get(), parent_size, ser) )
                     Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
-                        "ERROR: Serialized std::%s has a stored pointer outside of the bounds of the parent specified "
-                        "by %s.\n",
+                        "ERROR: Serialized %s has a stored pointer outside of the bounds of the parent specified by "
+                        "%s.\n",
                         ptr_string<PTR_TEMPLATE>, wrapper_string<PTR_TEMPLATE, PARENT_TYPE>);
 
                 // If this is the first use of the tag of the owning control block, serialize the parent object
@@ -289,18 +269,18 @@ public:
                 if ( nonnull ) SST_SER(offset);
 
                 // Find or create the owner of this pointer's control block based on tag
-                const std::shared_ptr<void>& owner = get_shared_ptr_owner(tag, parent, size, ser, opt);
+                const std::shared_ptr<void>& owner = unpack_shared_ptr_owner(tag, parent, size, ser, opt);
 
                 // At this point, "owner" references a std::shared_ptr<void> which owns the control block for "tag",
                 // whether it was newly allocated, or whether it was retrieved from the table holding it for the tag.
 
                 // The pointer stored inside of "ptr" is either nullptr, or an offset within the owner std::shared_ptr.
-                auto* addr = nonnull ? reinterpret_cast<std::remove_extent_t<PTR_TYPE>*>(
-                                           static_cast<char*>(owner.get()) + offset)
-                                     : nullptr;
+                std::remove_extent_t<PTR_TYPE>* addr = nullptr;
+                if ( nonnull )
+                    addr = reinterpret_cast<std::remove_extent_t<PTR_TYPE>*>(static_cast<char*>(owner.get()) + offset);
 
-                // Set the std::shared_ptr or std::weak_ptr to either nullptr, or to an offset within the owner.
-                // What is important, is that "ptr" must have the same control block as "owner".
+                // Set the std::shared_ptr or std::weak_ptr to either nullptr, or to an offset within the owner. What is
+                // important, is that "ptr" must have the same control block as "owner".
                 ptr = std::shared_ptr<PTR_TYPE>(owner, addr);
             }
             break;
@@ -403,14 +383,8 @@ class serialize_impl<pvt::shared_ptr_wrapper<PTR_TEMPLATE, PTR_TYPE, PARENT_TYPE
     void operator()(pvt::shared_ptr_wrapper<PTR_TEMPLATE, PTR_TYPE, PARENT_TYPE, SIZE_T, OWNER_TYPE>& ptr,
         serializer& ser, ser_opt_t opt)
     {
-        ser_opt_t  elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
-        const auto mode     = ser.mode();
-
-        // Serialize std::shared_ptr or std::weak_ptr pointer and its std::shared_ptr parent
-        if ( mode == serializer::MAP ) {
-            // TODO: handle mapping mode
-        }
-        else if constexpr ( !is_unbounded_array_v<PARENT_TYPE> ) {
+        ser_opt_t elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
+        if constexpr ( !is_unbounded_array_v<PARENT_TYPE> ) {
             // If PARENT_TYPE is not an unbounded array
             pvt::serialize_shared_ptr_impl()(ptr.ptr, ptr.parent, ser, elem_opt);
         }
@@ -420,7 +394,8 @@ class serialize_impl<pvt::shared_ptr_wrapper<PTR_TEMPLATE, PTR_TYPE, PARENT_TYPE
                 pvt::serialize_shared_ptr_impl (&ptr.size)(ptr.ptr, ptr.parent, ser, elem_opt);
             }
             else {
-                size_t size = 0;
+                const auto mode = ser.mode();
+                size_t     size = 0;
                 if ( mode == serializer::SIZER || mode == serializer::PACK ) {
                     if ( (ptr.size < 0) || (ptr.size > SIZE_MAX) )
                         Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
@@ -452,7 +427,7 @@ shared_ptr(std::shared_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent)
 }
 
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[], int>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int,   int>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int, int>>;
 
 // SST_SER( SST::Core::Serialization::shared_ptr( std::shared_ptr&, SIZE_T& size ) ) serializes a std::shared_ptr
 // managing the owned object when the pointer is to an unbounded array of size "size".
@@ -476,10 +451,10 @@ shared_ptr(std::shared_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent,
     return { ptr, parent, size };
 }
 
-template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int,   int[], size_t>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int, int[], size_t>>;
 
 // Identity operation for consistency -- SST_SER( SST::Core::Serialization::shared_ptr(ptr) ) is same as SST_SER(ptr).
-template<class PTR_TYPE>
+template <class PTR_TYPE>
 std::shared_ptr<PTR_TYPE>& shared_ptr(std::shared_ptr<PTR_TYPE>& ptr)
 {
     return ptr;
@@ -524,10 +499,10 @@ weak_ptr(std::weak_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent, SIZ
 }
 
 template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], size_t>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int,   int[], size_t>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[], size_t>>;
 
 // Identity operation for consistency -- SST_SER( SST::Core::Serialization::weak_ptr(ptr) ) is same as SST_SER(ptr).
-template<class PTR_TYPE>
+template <class PTR_TYPE>
 std::weak_ptr<PTR_TYPE>& weak_ptr(std::weak_ptr<PTR_TYPE>& ptr)
 {
     return ptr;
