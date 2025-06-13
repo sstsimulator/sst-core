@@ -59,19 +59,14 @@ public:
 private:
     using dataType_t = std::priority_queue<Activity*, std::vector<Activity*>, Activity::greater<true, true, true>>;
 
-
     // Get a const reference to the underlying data
-    template <class T, class S, class C>
-    static const S& getContainer(const std::priority_queue<T, S, C>& q)
+    const std::vector<Activity*>& getContainer() const
     {
-        struct UnderlyingContainer : std::priority_queue<T, S, C>
+        struct UnderlyingContainer : dataType_t
         {
-            static const S& getUnderlyingContainer(const std::priority_queue<T, S, C>& q)
-            {
-                return q.*&UnderlyingContainer::c;
-            }
+            using dataType_t::c; // access protected container
         };
-        return UnderlyingContainer::getUnderlyingContainer(q);
+        return static_cast<const UnderlyingContainer&>(data).c;
     }
 
     // Data
