@@ -18,31 +18,36 @@
 #endif
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
-#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <map>
 #include <string>
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_unpacker : public ser_buffer_accessor
+class ser_unpacker : public ser_buffer_accessor, public ser_shared_ptr_unpacker
 {
+    std::map<uintptr_t, uintptr_t> ser_pointer_map;
+    uintptr_t                      split_key = 0;
+
 public:
+    // inherit ser_buffer_accessor constructors
+    using ser_buffer_accessor::ser_buffer_accessor;
+
     template <class T>
     void unpack(T& t)
     {
-        T* bufptr = ser_buffer_accessor::next<T>();
-        t         = *bufptr;
+        memcpy(&t, buf_next(sizeof(t)), sizeof(t));
     }
 
-    /**
-     * @brief unpack_buffer
-     * @param buf   Must unpack to non-null buffer
-     * @param size  Must be non-zero
-     */
-    void unpack_buffer(void* buf, size_t size);
-
-    void unpack_string(std::string& str);
-};
+    uintptr_t check_pointer_unpack(uintptr_t ptr);
+    void      unpack_buffer(void* buf, size_t size);
+    void      unpack_string(std::string& str);
+    void      report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
+    void      report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
+}; // class ser_unpacker
 
 } // namespace SST::Core::Serialization::pvt
 

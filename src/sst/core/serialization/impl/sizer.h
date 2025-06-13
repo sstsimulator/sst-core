@@ -17,36 +17,34 @@
     "The header file sst/core/serialization/impl/sizer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
-#include "sst/core/warnmacros.h"
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <set>
+#include <string>
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_sizer
+class ser_sizer : public ser_shared_ptr_packer
 {
+    size_t              size_ = 0;
+    std::set<uintptr_t> pointer_set;
+
 public:
-    ser_sizer() :
-        size_(0)
-    {}
+    explicit ser_sizer() = default;
 
     template <class T>
-    void size(T& UNUSED(t))
+    void size(T&&)
     {
         size_ += sizeof(T);
     }
 
-    void size_string(std::string& str);
-
-    void add(size_t s) { size_ += s; }
-
+    void   size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
+    void   add(size_t s) { size_ += s; }
     size_t size() const { return size_; }
-
-    void reset() { size_ = 0; }
-
-protected:
-    size_t size_;
-};
+    bool   check_pointer_sizer(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
+}; // class ser_sizer
 
 } // namespace SST::Core::Serialization::pvt
 
