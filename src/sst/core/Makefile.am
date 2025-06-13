@@ -176,6 +176,7 @@ sst_core_sources = \
 	componentInfo.cc \
 	config.cc \
 	configBase.cc \
+	configBaseSer.cc \
 	configShared.cc \
 	configGraph.cc \
 	configGraphOutput.cc \
@@ -220,6 +221,7 @@ sst_core_sources = \
 	module.cc \
 	realtime.cc \
 	sstpart.cc \
+	sst_types.cc \
 	timeVortex.cc \
 	serialization/objectMap.cc \
 	serialization/serializable_base.cc \
@@ -264,6 +266,7 @@ sst_info_SOURCES = \
 	bootshared.h \
 	configBase.h \
 	configBase.cc \
+	configBaseSerEmpty.cc \
 	configShared.h \
 	configShared.cc \
 	env/envquery.h \
@@ -277,6 +280,7 @@ sst_SOURCES = \
 	bootshared.h \
 	configBase.h \
 	configBase.cc \
+	configBaseSerEmpty.cc \
 	configShared.h \
 	configShared.cc \
 	env/envquery.h \

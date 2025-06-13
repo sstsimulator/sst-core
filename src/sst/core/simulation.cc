@@ -234,7 +234,7 @@ Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
-    instance->initializeProfileTools(config->enabledProfiling());
+    instance->initializeProfileTools(config->enabled_profiling());
 
     return instance;
 }

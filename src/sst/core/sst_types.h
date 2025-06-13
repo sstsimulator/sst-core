@@ -13,6 +13,7 @@
 #define SST_CORE_SST_TYPES_H
 
 #include <cstdint>
+#include <iosfwd>
 #include <limits>
 
 namespace SST {
@@ -62,6 +63,9 @@ enum class SimulationRunMode {
     RUN,     /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
     BOTH     /*!< Default.  Both initialize and Run the simulation */
 };
+
+// Overload the << operator for SimulationRunMode
+std::ostream& operator<<(std::ostream& os, const SimulationRunMode& mode);
 
 /**
    Struct used as a base class for all AttachPoint metadata passed to
