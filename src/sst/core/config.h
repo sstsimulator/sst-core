@@ -122,6 +122,12 @@ public:
     bool print_timing() const { return print_timing_; }
 
     /**
+       File to output json formatted config graph to (empty string means no
+       output)
+    */
+    const std::string& timing_json() const { return timing_json_; }
+
+    /**
        Simulated cycle to stop the simulation at
     */
     const std::string& stop_at() const { return stop_at_; }
@@ -147,7 +153,7 @@ public:
     uint32_t heartbeat_wall_period() const { return heartbeat_wall_period_; }
 
     /**
-       The directory to be used for writting output files
+       The directory to be used for writing output files
     */
     const std::string& output_directory() const { return output_directory_; }
 
@@ -427,6 +433,7 @@ public:
         SST_SER(configFile_);
         SST_SER(model_options_);
         SST_SER(print_timing_);
+        SST_SER(timing_json_);
         SST_SER(stop_at_);
         SST_SER(exit_after_);
         SST_SER(partitioner_);
@@ -525,6 +532,7 @@ private:
     std::string configFile_;            /*!< Graph generation file */
     std::string model_options_;         /*!< Options to pass to Python Model generator */
     bool        print_timing_;          /*!< Print SST timing information */
+    std::string timing_json_;           /*!< File to save JSON formated SST timing information */
     std::string stop_at_;               /*!< When to stop the simulation */
     uint32_t    exit_after_;            /*!< When (wall-time) to stop the simulation */
     std::string partitioner_;           /*!< Partitioner to use */
