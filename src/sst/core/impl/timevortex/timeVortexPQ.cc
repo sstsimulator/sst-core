@@ -101,7 +101,7 @@ TimeVortexPQBase<TS>::dbg_print(Output& out) const
     out.output("TimeVortex state:\n");
 
     //  STL's priority_queue does not support iteration.
-    const std::vector<Activity*>& act = getContainer(data);
+    const std::vector<Activity*>& act = getContainer();
     for ( auto it = act.begin(); it != act.end(); it++ ) {
         (*it)->print("  ", out);
     }
@@ -111,7 +111,7 @@ template <bool TS>
 void
 TimeVortexPQBase<TS>::getContents(std::vector<Activity*>& activities) const
 {
-    activities = getContainer(data);
+    activities = getContainer();
 }
 
 class TimeVortexPQ : public TimeVortexPQBase<false>
