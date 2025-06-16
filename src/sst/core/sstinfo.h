@@ -64,17 +64,11 @@ public:
     /** @return Bit field of various command line options enabled. */
     unsigned int getOptionBits() { return m_optionBits; }
 
-    /** @return User defined path the XML File. */
-    std::string& getXMLFilePath() { return m_XMLFilePath; }
 
-    /** @return True if the debugging output is enabled, otherwise False */
-    bool debugEnabled() const { return m_debugEnabled; }
     /** @return True if the m_filter multimap is emtpy, otherwise False */
     bool processAllElements() const { return m_filters.empty(); }
     /** @return True if command line options are enabled and verbose configuration is valid, otherwise False */
     bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
-    /** @return True if interactive is enabled, otherwise False */
-    bool interactiveEnabled() const { return m_interactive; }
     void addFilter(const std::string& name);
 
 protected:
@@ -90,67 +84,74 @@ private:
     }
 
     // Functions to set options
-    int printHelp(const std::string& UNUSED(arg))
-    {
-        printUsage();
-        return 1;
-    }
+    int parseHelp(std::string UNUSED(arg)) { return printUsage(); }
 
-    int outputVersion(const std::string& UNUSED(arg))
+    SST_CONFIG_DECLARE_OPTION_NOVAR(help, std::bind(&SSTInfoConfig::parseHelp, this, std::placeholders::_1));
+
+
+    static int parseVersion(std::string UNUSED(arg))
     {
         fprintf(stderr, "SST Release Version %s\n", PACKAGE_VERSION);
-        return 1;
+        return 1; /* Should not continue, but clean exit */
     }
 
-    int setEnableDebug(const std::string& UNUSED(arg))
-    {
-        m_debugEnabled = true;
-        return 0;
-    }
+    SST_CONFIG_DECLARE_OPTION_NOVAR(version, std::bind(&SSTInfoConfig::parseVersion, std::placeholders::_1));
 
-    int setNoDisplay(const std::string& UNUSED(arg))
-    {
-        m_optionBits &= ~CFG_OUTPUTHUMAN;
-        return 0;
-    }
 
-    int setInteractive(const std::string& UNUSED(arg))
-    {
-        m_interactive = true;
-        return 0;
-    }
-
-    int setXML(const std::string& UNUSED(arg))
-    {
-        m_optionBits |= CFG_OUTPUTXML;
-        return 0;
-    }
-
-    int setXMLOutput(const std::string& arg)
-    {
-        m_XMLFilePath = arg;
-        return 0;
-    }
-
-    int setLibs(const std::string& arg)
-    {
-        addFilter(arg);
-        return 0;
-    }
-
-    int setQuiet(const std::string& UNUSED(arg))
+    // Display Options
+    int parseQuiet(const std::string& UNUSED(arg))
     {
         m_optionBits &= ~CFG_VERBOSE;
         return 0;
     }
 
+    SST_CONFIG_DECLARE_OPTION_NOVAR(quiet, std::bind(&SSTInfoConfig::parseQuiet, this, std::placeholders::_1));
+
+
+    SST_CONFIG_DECLARE_OPTION(bool, debugEnabled, false, &StandardConfigParsers::flag_set_true);
+
+
+    int parseNoDisplay(const std::string& UNUSED(arg))
+    {
+        m_optionBits &= ~CFG_OUTPUTHUMAN;
+        return 0;
+    }
+
+    SST_CONFIG_DECLARE_OPTION_NOVAR(no_display, std::bind(&SSTInfoConfig::parseNoDisplay, this, std::placeholders::_1));
+
+
+    SST_CONFIG_DECLARE_OPTION(bool, interactiveEnabled, false, &StandardConfigParsers::flag_set_true);
+
+
+    // XML Options
+
+    int parseXML(const std::string& UNUSED(arg))
+    {
+        m_optionBits |= CFG_OUTPUTXML;
+        return 0;
+    }
+
+    SST_CONFIG_DECLARE_OPTION_NOVAR(xml, std::bind(&SSTInfoConfig::parseXML, this, std::placeholders::_1));
+
+    SST_CONFIG_DECLARE_OPTION(
+        std::string, XMLFilePath, "./SSTInfo.xml", &StandardConfigParsers::from_string<std::string>);
+
+
+    // Library and path options
+
+    int parseLibs(const std::string& arg)
+    {
+        addFilter(arg);
+        return 0;
+    }
+
+    SST_CONFIG_DECLARE_OPTION_NOVAR(libs, std::bind(&SSTInfoConfig::parseLibs, this, std::placeholders::_1));
+
+
 private:
     char*                    m_AppName;
     std::vector<std::string> m_elementsToProcess;
     unsigned int             m_optionBits;
-    std::string              m_XMLFilePath;
-    bool                     m_debugEnabled;
-    bool                     m_interactive;
     FilterMap_t              m_filters;
 };
 
@@ -172,7 +173,6 @@ public:
     {}
 
     /** Return the Name of the Library. */
-    // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
     std::string getLibraryName() { return m_name; }
 
     // Contains info strings for each individual component, subcomponent, etc.
