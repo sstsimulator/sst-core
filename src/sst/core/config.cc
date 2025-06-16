@@ -49,7 +49,7 @@ check_unitalgebra_store_string(std::string valid_units, std::string& var, std::s
         }
 
         if ( !valid ) {
-            fprintf(stderr, "Error parsing option: Units passed to %s must be one: %s. Argument = [%s]\n",
+            fprintf(stderr, "Error parsing option: Units passed to %s must be one of: %s. Argument = [%s]\n",
                 ConfigBase::currently_parsing_option.c_str(), valid_units.c_str(), arg.c_str());
             return -1;
         }
@@ -137,7 +137,7 @@ Config::ext_help_enable_profiling()
     msg.append("\tevent: \t\vprofiles calls to user registered event handlers set on Links\n");
     msg.append("\tsync:  \t\vprofiles calls into the SyncManager (only valid for parallel simulations)\n");
     msg.append("\n");
-    msg.append("The format for enabling profile point is a semicolon separated list where each item specifies "
+    msg.append("The format for enabling a profile point is a semicolon separated list where each item specifies "
                "details for a given profiling tool using the following format:\n\n");
     msg.append("\tname:type(params)[point], where\n");
     msg.append("\t\tname   \t= \vname of tool to be shown in output\n");
