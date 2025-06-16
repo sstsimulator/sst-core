@@ -37,7 +37,6 @@ public:
         "Output to a JSON file")
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
         { "filepath", "Filepath for the output file", "./StatisticOutput.json"},
         { "outputsimtime", "Whether to print the simulation time in the output", "True" },
         { "outputrank", "Whether to print the rank in the output", "True" }
@@ -56,9 +55,6 @@ protected:
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.

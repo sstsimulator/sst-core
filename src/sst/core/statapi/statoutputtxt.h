@@ -36,15 +36,15 @@ public:
     virtual bool supportsDynamicRegistration() const override { return m_outputInlineHeader; }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
-ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase) protected :
+
+    ImplementVirtualSerializable(SST::Statistics::StatisticOutputTextBase);
+
+protected:
 
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.
@@ -118,11 +118,6 @@ private:
     virtual bool supportsCompression() = 0;
 
     /**
-       Function that gets the end of the first line of help message
-    */
-    virtual std::string getUsageInfo() = 0;
-
-    /**
        Returns a prefix that will start each new output entry
     */
     virtual std::string getStartOutputPrefix() = 0;
@@ -162,7 +157,6 @@ public:
    )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
         { "outputtopheader", "Whether to print a header at the top of the output", "False" },
         { "outputinlineheader", "Whether to print a field names inline with statistic output", "True" },
         { "outputsimtime", "Whether to print the simulation time in the output", "True" },
@@ -201,12 +195,6 @@ private:
         return false;
 #endif
     }
-
-    /**
-       Function that gets the end of the first line of help message
-    */
-    std::string getUsageInfo() override { return "a text file"; }
-
     /**
        Returns a prefix that will start each new output entry
     */
@@ -243,7 +231,6 @@ public:
    )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
         { "outputtopheader", "Whether to print a header at the top of the output", "False" },
         { "outputinlineheader", "Whether to print a field names inline with statistic output", "True" },
         { "outputsimtime", "Whether to print the simulation time in the output", "False" },
@@ -272,11 +259,6 @@ private:
        Only checked if the class also writes to a file
     */
     bool supportsCompression() override { return false; }
-
-    /**
-       Function that gets the end of the first line of help message
-    */
-    std::string getUsageInfo() override { return "the console"; }
 
     /**
        Returns a prefix that will start each new output entry

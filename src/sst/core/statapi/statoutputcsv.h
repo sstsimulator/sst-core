@@ -43,7 +43,6 @@ public:
    )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", "" },
         { "separator", "Field separator", ", "},
         { "filepath", "Filepath for the output file", "./StatisticOutput.csv"},
         { "outputtopheader", "Whether to print a header at the top of the CSV output", "True" },
@@ -64,9 +63,6 @@ protected:
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.

@@ -62,6 +62,13 @@ StatisticOutput::registerGroup(StatisticGroup* group)
     stopRegisterGroup();
 }
 
+void
+StatisticOutput::printUsage()
+{
+    Simulation_impl::getSimulationOutput().output(
+        "StatisticOutput does not provide usage message; use 'sst-info' instead");
+}
+
 Output&
 StatisticOutput::getSimulationOutput()
 {

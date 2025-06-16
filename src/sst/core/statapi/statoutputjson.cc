@@ -35,20 +35,6 @@ StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) :
 bool
 StatisticOutputJSON::checkOutputParameters()
 {
-    bool        foundKey;
-    std::string topHeaderFlag;
-    std::string simTimeFlag;
-    std::string rankFlag;
-
-    // Review the output parameters and make sure they are correct, and
-    // also setup internal variables
-
-    // Look for Help Param
-    getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) {
-        return false;
-    }
-
     // Get the parameters
     m_FilePath      = getOutputParameters().find<std::string>("filepath", "StatisticOutput.json");
     m_outputSimTime = getOutputParameters().find<bool>("outputsimtime", true);
@@ -60,19 +46,6 @@ StatisticOutputJSON::checkOutputParameters()
     }
 
     return true;
-}
-
-void
-StatisticOutputJSON::printUsage()
-{
-    // Display how to use this output object
-    Output out("", 0, 0, Output::STDOUT);
-    out.output(" : Usage - Sends all statistic output to a JSON File.\n");
-    out.output(" : Parameters:\n");
-    out.output(" : help = Force Statistic Output to display usage\n");
-    out.output(" : filepath = <Path to .csv file> - Default is ./StatisticOutput.csv\n");
-    out.output(" : outputsimtime = 0 | 1 - Output Simulation Time - Default is 1\n");
-    out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
 void

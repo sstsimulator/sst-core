@@ -44,7 +44,6 @@ public:
       "Output to an HDF5 file")
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
         { "filepath", "Filepath for the output file", "./StatisticOutput.h5"}
     )
 
@@ -64,9 +63,6 @@ private:
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     void startRegisterFields(StatisticBase* stat) override;
     void implRegisteredField(fieldHandle_t fieldHandle) override;
