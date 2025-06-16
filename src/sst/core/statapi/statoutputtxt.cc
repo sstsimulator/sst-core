@@ -24,18 +24,8 @@ StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) :
 bool
 StatisticOutputTextBase::checkOutputParameters()
 {
-    bool foundKey;
-
     const Params& params = getOutputParameters();
 
-    // Review the output parameters and make sure they are correct, and
-    // also setup internal variables
-
-    // Look for Help Param
-    getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) {
-        return false;
-    }
     m_outputTopHeader    = params.find<bool>("outputtopheader", getOutputTopHeaderDefault());
     m_outputInlineHeader = params.find<bool>("outputinlineheader", getOutputInlineHeaderDefault());
     m_outputSimTime      = params.find<bool>("outputsimtime", getOutputSimTimeDefault());
@@ -58,26 +48,6 @@ StatisticOutputTextBase::checkOutputParameters()
     }
 
     return true;
-}
-
-void
-StatisticOutputTextBase::printUsage()
-{
-    // Display how to use this output object
-    Output out("", 0, 0, Output::STDOUT);
-    out.output(" : Usage - Sends all statistic output to %s.\n", getUsageInfo().c_str());
-    out.output(" : Parameters:\n");
-    out.output(" : help = Force Statistic Output to display usage\n");
-    if ( outputsToFile() ) {
-        out.output(" : filePath = <Path to file> - Default is %s\n", getDefaultFileName().c_str());
-        if ( supportsCompression() ) {
-            out.output(" : compressed = <0|1> - Compresses output file when enabled - Default is 0\n");
-        }
-    }
-    out.output(" : outputtopheader = <0|1> - Output Header at Top - Default is 0\n");
-    out.output(" : outputinlineheader = <0|1>  - Output Header inline - Default is 1\n");
-    out.output(" : outputsimtime = 0 | 1 - Output Simulation Time - Default is 1\n");
-    out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
 void

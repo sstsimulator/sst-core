@@ -421,7 +421,7 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
 // SST_ELI_DECLARE_BASE or SST_ELI_DECLARE_NEW_BASE).  This class will
 // inherit the ELI information from it's parent ELI API classes (the
 // informatin in the parent APIs will be added to the ELI declared in
-// this class.  Sny local information will overwrite any inherited
+// this class.  Any local information will overwrite any inherited
 // information.  See comment for SST_ELI_DECLARE_BASE in elibase.h for
 // info on how __EliDerivedLevel is used.
 #define SST_ELI_REGISTER_DERIVED(base, cls, lib, name, version, desc)                                         \

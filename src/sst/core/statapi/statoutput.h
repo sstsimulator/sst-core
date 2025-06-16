@@ -100,10 +100,6 @@ protected:
      */
     virtual bool checkOutputParameters() = 0;
 
-    /** Have Statistic Object print out its usage and parameter info.
-     *  Called when checkOutputParameters() returns false */
-    virtual void printUsage() = 0;
-
     // Simulation Events
     /** Indicate to Statistic Output that simulation has started.
      * Allows object to perform any setup required. */
@@ -112,6 +108,10 @@ protected:
     /** Indicate to Statistic Output that simulation has ended.
      * Allows object to perform any shutdown required. */
     virtual void endOfSimulation() = 0;
+
+    /** Have Statistic Object print out its usage and parameter info.
+     *  Called when checkOutputParameters() returns false */
+    virtual void printUsage();
 
     /** Gets the Output object for the Simulation object associeted
      * with this StatOutput. */

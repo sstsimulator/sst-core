@@ -43,6 +43,10 @@ public:
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output to an HDF5 file")
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "filepath", "Filepath for the output file", "./StatisticOutput.h5"}
+    )
+
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */
@@ -59,9 +63,6 @@ private:
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     void startRegisterFields(StatisticBase* stat) override;
     void implRegisteredField(fieldHandle_t fieldHandle) override;

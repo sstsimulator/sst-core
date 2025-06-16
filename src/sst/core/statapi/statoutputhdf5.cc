@@ -42,17 +42,6 @@ StatisticOutputHDF5::StatisticOutputHDF5() :
 bool
 StatisticOutputHDF5::checkOutputParameters()
 {
-    bool foundKey;
-
-    // Review the output parameters and make sure they are correct, and
-    // also setup internal variables
-
-    // Look for Help Param
-    getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) {
-        return false;
-    }
-
     // Get the parameters
     std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
 
@@ -69,17 +58,6 @@ StatisticOutputHDF5::checkOutputParameters()
     m_hFile = new H5::H5File(filename, H5F_ACC_TRUNC);
 
     return true;
-}
-
-void
-StatisticOutputHDF5::printUsage()
-{
-    // Display how to use this output object
-    Output out("", 0, 0, Output::STDOUT);
-    out.output(" : Usage - Sends all statistic output to a HDF5 File.\n");
-    out.output(" : Parameters:\n");
-    out.output(" : help = Force Statistic Output to display usage\n");
-    out.output(" : filepath = <Path to .h5 file> - Default is ./StatisticOutput.h5\n");
 }
 
 void

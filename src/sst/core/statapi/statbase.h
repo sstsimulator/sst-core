@@ -371,7 +371,7 @@ template <typename T>
 class Statistic : public StatisticBase, public StatisticCollector<T>
 {
 public:
-    SST_ELI_DECLARE_BASE(Statistic)
+    SST_ELI_DECLARE_BASE(Statistic<T>)
     SST_ELI_DECLARE_INFO(
     ELI::ProvidesInterface,
     ELI::ProvidesParams)
@@ -454,7 +454,7 @@ template <>
 class Statistic<void> : public StatisticBase
 {
 public:
-    SST_ELI_DECLARE_BASE(Statistic)
+    SST_ELI_DECLARE_BASE(Statistic<void>)
     SST_ELI_DECLARE_INFO(
     ELI::ProvidesInterface,
     ELI::ProvidesParams)
@@ -524,6 +524,20 @@ private:
     virtual std::string getELIName() const override                                  \
     {                                                                                \
         return std::string(lib) + "." + name;                                        \
+    }
+
+#define SST_ELI_DECLARE_STATISTIC_TEMPLATE_DERIVED(cls, field, lib, name, version, desc, interface)          \
+    using SST::Statistics::Statistic<field>::__EliBaseLevel;                                                 \
+    using typename SST::Statistics::Statistic<field>::__LocalEliBase;                                        \
+    using typename SST::Statistics::Statistic<field>::__ParentEliBase;                                       \
+    [[maybe_unused]]                                                                                         \
+    static constexpr int __EliDerivedLevel =                                                                 \
+        std::is_same_v<SST::Statistics::Statistic<field>, cls<field>> ? __EliBaseLevel : __EliBaseLevel + 1; \
+    SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)                                       \
+    SST_ELI_INTERFACE_INFO(interface)                                                                                   \
+    virtual std::string getELIName() const override                                                          \
+    {                                                                                                        \
+        return std::string(lib) + "." + name;                                                                \
     }
 
 #define SST_ELI_REGISTER_CUSTOM_STATISTIC(cls, lib, name, version, desc) \
