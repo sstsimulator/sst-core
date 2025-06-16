@@ -113,7 +113,7 @@ struct OptionDefinition
 
 /**
    OptionDefinition representing options that don't require a
-   value. This is generally used for options that only ptint
+   value. This is generally used for options that only print
    infomation when specified (i.e. --help or --version), but can also
    be used if it is modifying a variable set directly in the
    containing class.
@@ -219,7 +219,7 @@ struct OptionDefinitionImpl : OptionDefinition
     // value
     operator T() const { return value; }
 
-    // Deleate the copy and move constructors
+    // Delete the copy and move constructors
     OptionDefinitionImpl(const OptionDefinitionImpl&) = delete;
     OptionDefinitionImpl(OptionDefinitionImpl&&)      = default;
 

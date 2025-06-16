@@ -340,11 +340,11 @@ ConfigBase::printUsage()
 
         // Print the annotations
         // First check for extended help
-        npos += fprintf(stderr, "%c", option.def->ext_help ? 'H' : ' ');
+        npos += fprintf(stderr, "%c", option.def->ext_help ? 'H' : '-');
 
         // Now do the rest of the annotations
         for ( size_t i = 0; i < annotations_.size(); ++i ) {
-            char c = ' ';
+            char c = '-';
             if ( option.annotations.size() >= (i + 1) && option.annotations[i] ) c = annotations_[i].annotation;
             npos += fprintf(stderr, "%c", c);
         }

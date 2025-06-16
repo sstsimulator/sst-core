@@ -89,7 +89,7 @@ Config::ext_help_timebase()
     msg.append("2) How much simulated time you need to support:\n");
     msg.append("  The default timebase of 1ps will support ~215.5 days (5124 hours) of simulated time.  If you are "
                "using SST to simulate longer term phenomena, you will need to make the core timebase longer.  A "
-               "consequence of increaing the timebase is that the minimum time period that can be represented will "
+               "consequence of increasing the timebase is that the minimum time period that can be represented will "
                "increase (conversely, the maximum frequency that can be represented will increase).");
     return msg;
 }
@@ -308,8 +308,8 @@ Config::merge_checkpoint_options(Config& other)
 {
     // Need to get the indices for R and X annotations (these can
     // change if more annotations are added or deleted)
-    int r_index = getAnnotationIndex('R');
-    int x_index = getAnnotationIndex('X');
+    size_t r_index = getAnnotationIndex('R');
+    size_t x_index = getAnnotationIndex('X');
 
     for ( size_t i = 0; i < options.size(); ++i ) {
         auto& option = options[i];
@@ -317,7 +317,7 @@ Config::merge_checkpoint_options(Config& other)
 
         // Check to see if the current option carries over through a
         // checkpoint/restart. If not continue to next option
-        if ( !option.annotations[r_index] ) continue;
+        if ( option.annotations.size() <= r_index || !option.annotations[r_index] ) continue;
 
         // Now see if we need to copy over the option.  We copy it if
         // it wasn't set on the command line, or it isne't allowed to
