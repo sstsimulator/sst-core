@@ -161,6 +161,16 @@ public:
       "Output to text file"
    )
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
+        { "outputtopheader", "Whether to print a header at the top of the output", "False" },
+        { "outputinlineheader", "Whether to print a field names inline with statistic output", "True" },
+        { "outputsimtime", "Whether to print the simulation time in the output", "True" },
+        { "outputrank", "Whether to print the rank in the output", "True" },
+        { "filepath", "Filepath for the output file", "./StatisticOutput.txt" },
+        { "compressed", "Whether to compress the output file", "False" }
+    )
+
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
@@ -231,6 +241,14 @@ public:
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output to console"
    )
+
+    SST_ELI_DOCUMENT_PARAMS(
+        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
+        { "outputtopheader", "Whether to print a header at the top of the output", "False" },
+        { "outputinlineheader", "Whether to print a field names inline with statistic output", "True" },
+        { "outputsimtime", "Whether to print the simulation time in the output", "False" },
+        { "outputrank", "Whether to print the rank in the output", "False" },
+    )
 
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output

@@ -42,6 +42,15 @@ public:
       "Output directly to console screen"
    )
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", "" },
+        { "separator", "Field separator", ", "},
+        { "filepath", "Filepath for the output file", "./StatisticOutput.csv"},
+        { "outputtopheader", "Whether to print a header at the top of the CSV output", "True" },
+        { "outputsimtime", "Whether to print the simulation time in the output", "True" },
+        { "outputrank", "Whether to print the rank in the output", "True" }
+    )
+
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */

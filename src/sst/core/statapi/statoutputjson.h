@@ -36,6 +36,13 @@ public:
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Output to a JSON file")
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
+        { "filepath", "Filepath for the output file", "./StatisticOutput.json"},
+        { "outputsimtime", "Whether to print the simulation time in the output", "True" },
+        { "outputrank", "Whether to print the rank in the output", "True" }
+    )
+
     /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */

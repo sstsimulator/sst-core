@@ -43,6 +43,11 @@ public:
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output to an HDF5 file")
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "help", "If this parameter is found, output object will print usage when SST starts and abort simulation", ""},
+        { "filepath", "Filepath for the output file", "./StatisticOutput.h5"}
+    )
+
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */

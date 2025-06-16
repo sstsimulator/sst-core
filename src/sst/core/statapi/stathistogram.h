@@ -40,23 +40,22 @@ template <class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType>
 {
 public:
-    SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+    SST_ELI_DECLARE_STATISTIC_TEMPLATE_DERIVED(
         HistogramStatistic,
+        BinDataType,
         "sst",
         "HistogramStatistic",
         SST_ELI_ELEMENT_VERSION(1, 0, 0),
         "Track distribution of statistic across bins",
         "SST::Statistic<T>")
 
-    /*
     SST_ELI_DOCUMENT_PARAMS(
-        {"minvalue", "The minimum data value to include in the historgram.", "0"},
+        {"minvalue", "The minimum data value to include in the histogram.", "0"},
         {"binwidth", "The size of each histogram bin.", "5000"},
         {"numbins",  "The number of histogram bins.", "100"},
         {"dumpbinsonoutput", "Whether to output the data range of each bin as well as its value.", "true"},
-        {"includeoutofbounds", "Whether to keep track of data that falls below or above the histogram bins in separate
-    out-of-bounds bins.", "true"})
-    */
+        {"includeoutofbounds", "Whether to keep track of data that falls below or above the histogram bins in separate out-of-bounds bins.", "true"})
+
 
     HistogramStatistic(
         BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
