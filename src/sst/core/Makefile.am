@@ -112,6 +112,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/packer.h \
 	serialization/impl/sizer.h \
 	serialization/impl/serialize_string.h \
+	serialization/impl/serialize_trivial.h \
 	serialization/impl/serialize_valarray.h \
 	serialization/impl/unpacker.h \
 	serialization/serializer.h \
@@ -230,6 +231,7 @@ sst_core_sources = \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \
 	serialization/impl/serialize_array.cc \
+	serialization/impl/serialize_trivial.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/stdMem.cc \
