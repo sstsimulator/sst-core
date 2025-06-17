@@ -19,6 +19,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
+#include <mutex>
+
 namespace SST {
 
 SimTime_t ThreadSyncSimpleSkip::localMinimumNextActivityTime = 0;
