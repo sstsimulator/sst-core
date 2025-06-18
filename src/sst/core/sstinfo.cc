@@ -732,9 +732,11 @@ OverallOutputter::outputXML()
 }
 
 SSTInfoConfig::SSTInfoConfig(bool suppress_print) :
-    ConfigShared(suppress_print, {})
+    ConfigShared()
 {
     using namespace std::placeholders;
+
+    if ( !suppress_print ) enable_printing();
 
     m_optionBits = CFG_OUTPUTHUMAN | CFG_VERBOSE; // Enable normal output by default
 

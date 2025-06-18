@@ -279,25 +279,67 @@ Params::getParamName(uint32_t id)
 void
 Params::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    SST_SER(my_data);
-    // Serialize shared params
-    std::vector<std::string> shared;
-    switch ( ser.mode() ) {
-    case SST::Core::Serialization::serializer::PACK:
-    case SST::Core::Serialization::serializer::SIZER:
-        for ( size_t i = 1; i < data.size(); ++i ) {
-            shared.push_back((*data[i])[0]);
+    // There are two ways to serialize.  The first is used for
+    // ConfigGraph distribution and will copy the raw data structures.
+    // The second, used for checkpointing, will just create a new map
+    // of key/value pairs and serialize/deserialize that. We
+    // differentiate by checking if pointer_tracking is on.
+    if ( !ser.is_pointer_tracking_enabled() ) {
+        // Distributing graph
+        SST_SER(my_data);
+        // Serialize shared params
+        std::vector<std::string> shared;
+        switch ( ser.mode() ) {
+        case SST::Core::Serialization::serializer::PACK:
+        case SST::Core::Serialization::serializer::SIZER:
+            for ( size_t i = 1; i < data.size(); ++i ) {
+                shared.push_back((*data[i])[0]);
+            }
+            SST_SER(shared);
+            break;
+        case SST::Core::Serialization::serializer::UNPACK:
+            SST_SER(shared);
+            for ( auto x : shared )
+                data.push_back(&shared_params[x]);
+            break;
+        case SST::Core::Serialization::serializer::MAP:
+            // This function not called in mapping mode
+            break;
         }
-        SST_SER(shared);
-        break;
-    case SST::Core::Serialization::serializer::UNPACK:
-        SST_SER(shared);
-        for ( auto x : shared )
-            data.push_back(&shared_params[x]);
-        break;
-    case SST::Core::Serialization::serializer::MAP:
-        // This function not called in mapping mode
-        break;
+    }
+    else {
+        // Used for checkpointing, where there shouldn't be many
+        // params objects being used.  We do it this way because the
+        // keyMap and associated data structures are guaranteed to be
+        // consistent across ranks, so we need something that will
+        // work in the case of parallel loads using repartitioned
+        // restart.
+        std::map<std::string, std::string> tmp_map;
+
+        switch ( ser.mode() ) {
+        case SST::Core::Serialization::serializer::PACK:
+        case SST::Core::Serialization::serializer::SIZER:
+            // Put all the key/value pairs into the map. The submaps
+            // are in order of precedence, highest to lowest, so we
+            // can just put them in in order and any key that already
+            // exists will be ignored.
+            for ( auto& map : data ) {
+                for ( auto& kvp : *map ) {
+                    tmp_map.insert(std::make_pair(getParamName(kvp.first), kvp.second));
+                }
+            }
+            SST_SER(tmp_map);
+            break;
+        case SST::Core::Serialization::serializer::UNPACK:
+            SST_SER(tmp_map);
+            for ( auto x : tmp_map ) {
+                insert(x.first, x.second, false);
+            }
+            break;
+        case SST::Core::Serialization::serializer::MAP:
+            // This function not called in mapping mode
+            break;
+        }
     }
 }
 

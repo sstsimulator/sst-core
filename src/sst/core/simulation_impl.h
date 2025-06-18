@@ -186,12 +186,12 @@ public:
     static Output& getSimulationOutput() { return sim_output; }
 
     /** Create new simulation
-     * @param config - Configuration of the simulation
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
      * @param restart - Whether this simulation is being restarted from a checkpoint (true) or not
      */
-    static Simulation_impl* createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
+    static Simulation_impl* createSimulation(
+        RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority);
 
     /**
      * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
@@ -220,7 +220,7 @@ public:
     void exchangeLinkInfo();
 
     /** Setup external control actions (forced stops, signal handling */
-    void setupSimActions(Config* cfg, bool restart = false);
+    void setupSimActions();
 
     /** Helper for signal string parsing */
     bool parseSignalString(std::string& arg, std::string& name, Params& params);
@@ -388,7 +388,7 @@ public:
     // To enable main to set up globals
     friend int ::main(int argc, char** argv);
 
-    Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart);
+    Simulation_impl(RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority);
     Simulation_impl(const Simulation_impl&)            = delete; // Don't Implement
     Simulation_impl& operator=(const Simulation_impl&) = delete; // Don't implement
 
@@ -416,7 +416,7 @@ public:
      */
     void checkpoint_write_globals(
         int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
-    void restart(Config* config);
+    void restart();
 
     void initialize_interactive_console(const std::string& type);
 
@@ -648,6 +648,9 @@ public:
     uint32_t                       checkpoint_id_       = 0;
     std::string                    checkpoint_prefix_   = "";
     std::string                    globalOutputFileName = "";
+
+    // Config object used by the simulation
+    static Config config;
 
     void printSimulationState();
 
