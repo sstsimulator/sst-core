@@ -310,8 +310,8 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
     else {
         // Used for checkpointing, where there shouldn't be many
         // params objects being used.  We do it this way because the
-        // keyMap and associated data structures are guaranteed to be
-        // consistent across ranks, so we need something that will
+        // keyMap and associated data structures are not guaranteed to
+        // be consistent across ranks, so we need something that will
         // work in the case of parallel loads using repartitioned
         // restart.
         std::map<std::string, std::string> tmp_map;
