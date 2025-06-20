@@ -69,6 +69,7 @@ struct OptionDefinition
 
     // Extended help function
     const std::function<std::string()> ext_help;
+    bool                               set_cmdline = false;
 
     virtual ~OptionDefinition() = default;
 
@@ -348,7 +349,8 @@ struct OptionDefinitionPair : OptionDefinition
         }
         out.push_back(s.str());
 
-        s.flush();
+        s.str("");
+        s.clear();
         if constexpr ( std::is_same_v<U, std::string> ) {
             s << name2 << "_ = " << "\"" << value2 << "\"";
         }
@@ -503,7 +505,6 @@ struct LongOption
     std::string       desc;        // Short description of the option
     bool              header;      // if true, desc is actually the header
     std::vector<bool> annotations; // annotations for the options
-    mutable bool      set_cmdline; // true if option was set on command line
     OptionDefinition* def;         // OptionDefinition object used for parsing, ext_help, etc
 
     LongOption(struct option opt, const char* argname, const char* desc, bool header, std::vector<bool> annotations,
@@ -513,7 +514,6 @@ struct LongOption
         desc(desc),
         header(header),
         annotations(annotations),
-        set_cmdline(false),
         def(def)
     {}
 };
@@ -575,13 +575,6 @@ public:
     static std::string currently_parsing_option;
 
 protected:
-    /**
-       ConfigBase constructor.  Meant to only be created by main
-       function
-     */
-    explicit ConfigBase(bool suppress_print) :
-        suppress_print_(suppress_print)
-    {}
 
     /**
        Default constructor used for serialization.  After
@@ -591,17 +584,8 @@ protected:
        to true. None of this class needs to be serialized because it
        it's state is only for parsing the arguments.
      */
-    ConfigBase() :
-        suppress_print_(true)
-    {
-        options.reserve(100);
-    }
+    ConfigBase() { options.reserve(100); }
 
-
-    ConfigBase(bool suppress_print, std::vector<AnnotationInfo> annotations) :
-        annotations_(annotations),
-        suppress_print_(suppress_print)
-    {}
 
     /**
        Called to print the help/usage message
@@ -613,6 +597,11 @@ protected:
        Called to print the extended help for an option
      */
     int printExtHelp(const std::string& option);
+
+    /**
+       Add an annotation available to the options
+     */
+    void addAnnotation(const AnnotationInfo& info);
 
     /**
        Add options to the Config object.  The options will be added in
@@ -710,6 +699,8 @@ public:
 protected:
     std::vector<LongOption> options;
 
+    void enable_printing() { suppress_print_ = false; }
+
 private:
     std::map<char, int>                          short_options;
     std::string                                  short_options_string;
@@ -725,7 +716,7 @@ private:
     std::vector<AnnotationInfo> annotations_;
 
     std::string run_name_;
-    bool        suppress_print_;
+    bool        suppress_print_    = true;
     bool        has_extended_help_ = false;
 };
 

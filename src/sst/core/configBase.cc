@@ -403,6 +403,12 @@ ConfigBase::printExtHelp(const std::string& option)
     return 1; /* Should not continue */
 }
 
+void
+ConfigBase::addAnnotation(const AnnotationInfo& info)
+{
+    annotations_.push_back(info);
+}
+
 
 int
 ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
@@ -489,7 +495,7 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
                 status = options[real_index].def->parse(optarg);
             else
                 status = options[real_index].def->parse("");
-            if ( !status ) options[real_index].set_cmdline = true;
+            if ( !status ) options[real_index].def->set_cmdline = true;
         }
         else {
             // Short option
@@ -499,7 +505,7 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
                 status = options[real_index].def->parse(optarg);
             else
                 status = options[real_index].def->parse("");
-            if ( !status ) options[real_index].set_cmdline = true;
+            if ( !status ) options[real_index].def->set_cmdline = true;
         }
     }
 
@@ -550,7 +556,7 @@ ConfigBase::setOptionExternal(const std::string& entryName, const std::string& v
     // NOTE: print outs in this function will not be suppressed
     for ( auto& option : options ) {
         if ( !entryName.compare(option.opt.name) ) {
-            if ( option.set_cmdline ) return false;
+            if ( option.def->set_cmdline ) return false;
             currently_parsing_option = option.opt.name;
             return option.def->parse(value.c_str());
         }
@@ -566,7 +572,7 @@ ConfigBase::wasOptionSetOnCmdLine(const std::string& name)
 {
     for ( auto& option : options ) {
         if ( !name.compare(option.opt.name) ) {
-            return option.set_cmdline;
+            return option.def->set_cmdline;
         }
     }
     return false;
