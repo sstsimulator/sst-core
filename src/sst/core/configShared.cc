@@ -20,28 +20,23 @@
 
 namespace SST {
 
-ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose) :
-    ConfigBase(suppress_print)
+ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose)
 {
+    if ( !suppress_print ) enable_printing();
     if ( include_libpath ) addLibraryPathOptions();
     if ( include_env ) addEnvironmentOptions();
     if ( include_verbose ) addVerboseOptions(false);
 }
 
 
-ConfigShared::ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations) :
-    ConfigBase(suppress_print, annotations)
-{}
-
 void
 ConfigShared::addLibraryPathOptions()
 {
     using namespace std::placeholders;
     // Add the options
-    DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)",
-        std::bind(&ConfigShared::setLibPath, this, _1), false);
-    DEF_ARG("add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)",
-        std::bind(&ConfigShared::setAddLibPath, this, _1), false);
+    DEF_ARG("lib-path", 0, "LIBPATH", "Component library path (overwrites default)", libpath_, false, true, false);
+    DEF_ARG(
+        "add-lib-path", 0, "LIBPATH", "Component library path (appends to main path)", addLibPath_, false, true, false);
 }
 
 void
@@ -49,10 +44,8 @@ ConfigShared::addEnvironmentOptions()
 {
     using namespace std::placeholders;
     // Add the options
-    DEF_FLAG(
-        "print-env", 0, "Print environment variables SST will see", std::bind(&ConfigShared::enablePrintEnv, this, _1));
-    DEF_FLAG("no-env-config", 0, "Disable SST environment configuration",
-        std::bind(&ConfigShared::disableEnvConfig, this, _1));
+    DEF_FLAG("print-env", 0, "Print environment variables SST will see", print_env_, false, false, false);
+    DEF_FLAG("no-env-config", 0, "Disable SST environment configuration", no_env_config_, false, false, false);
 }
 
 void
@@ -62,7 +55,7 @@ ConfigShared::addVerboseOptions(bool sdl_avail)
     DEF_ARG_OPTVAL("verbose", 'v', "level",
         "Verbosity level to determine what information about core runtime is printed.  If no argument is specified, it "
         "will simply increment the verbosity level.",
-        std::bind(&ConfigShared::setVerbosity, this, _1), sdl_avail);
+        verbose_, sdl_avail);
 }
 
 
@@ -91,7 +84,7 @@ ConfigShared::getLibPath() const
 
     // The --lib-path option overwrites everything that comes before
     // (SST_LIB_PATH env variable and paths in sstsimulator.conf).
-    if ( "" == libpath_ ) {
+    if ( libpath_.value.empty() ) {
 
         // If the SST_LIB_PATH variable is set, put it into the final
         // path
@@ -142,11 +135,11 @@ ConfigShared::getLibPath() const
     }
 
     // NOw see if we need to prepend any paths from --add-lib-path
-    if ( !addlibpath_.empty() ) {
+    if ( !addLibPath_.value.empty() ) {
         // fullLibPath.append(":");
         // fullLibPath.append(addlibpath_);
         fullLibPath.insert(0, ":");
-        fullLibPath.insert(0, addlibpath_);
+        fullLibPath.insert(0, addLibPath_.value);
     }
 
     // if ( verbose_ ) {

@@ -118,8 +118,9 @@ force_rank_sequential_stop(bool enable, const RankInfo& myRank, const RankInfo& 
 }
 
 static void
-dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo& size)
+dump_partition(ConfigGraph* graph, const RankInfo& size)
 {
+    Config& cfg = Simulation_impl::config;
 
     ///////////////////////////////////////////////////////////////////////
     // If the user asks us to dump the partitioned graph.
@@ -227,12 +228,13 @@ addRankToFileName(std::string& file_name, int rank)
 }
 
 static void
-doSerialOnlyGraphOutput(SST::Config* cfg, ConfigGraph* graph)
+doSerialOnlyGraphOutput(ConfigGraph* graph)
 {
+    Config& cfg = Simulation_impl::config;
     // See if user asked us to dump the config graph in dot graph format
-    if ( cfg->output_dot() != "" ) {
-        DotConfigGraphOutput out(cfg->output_dot().c_str());
-        out.generate(cfg, graph);
+    if ( cfg.output_dot() != "" ) {
+        DotConfigGraphOutput out(cfg.output_dot().c_str());
+        out.generate(&cfg, graph);
     }
 }
 
@@ -240,13 +242,14 @@ doSerialOnlyGraphOutput(SST::Config* cfg, ConfigGraph* graph)
 // graph broadcast depending on if parallel_load is turned on or not.
 // If on, call it after graph broadcast, if off, call it before.
 static void
-doParallelCapableGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
+doParallelCapableGraphOutput(ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
 {
+    Config& cfg = Simulation_impl::config;
     // User asked us to dump the config graph to a file in Python
-    if ( cfg->output_config_graph() != "" ) {
+    if ( cfg.output_config_graph() != "" ) {
         // See if we are doing parallel output
-        std::string file_name(cfg->output_config_graph());
-        if ( cfg->parallel_output() && world_size.rank != 1 ) {
+        std::string file_name(cfg.output_config_graph());
+        if ( cfg.parallel_output() && world_size.rank != 1 ) {
             // Append rank number to base filename
             std::string ext = addRankToFileName(file_name, myRank.rank);
             if ( ext != ".py" ) {
@@ -254,13 +257,13 @@ doParallelCapableGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInf
             }
         }
         PythonConfigGraphOutput out(file_name.c_str());
-        out.generate(cfg, graph);
+        out.generate(&cfg, graph);
     }
 
     // User asked us to dump the config graph in JSON format
-    if ( cfg->output_json() != "" ) {
-        std::string file_name(cfg->output_json());
-        if ( cfg->parallel_output() ) {
+    if ( cfg.output_json() != "" ) {
+        std::string file_name(cfg.output_json());
+        if ( cfg.parallel_output() ) {
             // Append rank number to base filename
             std::string ext = addRankToFileName(file_name, myRank.rank);
             if ( ext != ".json" ) {
@@ -268,14 +271,14 @@ doParallelCapableGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInf
             }
         }
         JSONConfigGraphOutput out(file_name.c_str());
-        out.generate(cfg, graph);
+        out.generate(&cfg, graph);
     }
 }
 
-static double
-start_graph_creation(
-    ConfigGraph*& graph, Config& cfg, Factory* factory, const RankInfo& world_size, const RankInfo& myRank)
+static void
+start_graph_creation(ConfigGraph*& graph, Factory* factory, const RankInfo& world_size, const RankInfo& myRank)
 {
+    Config&                  cfg    = Simulation_impl::config;
     // Get a list of all the available SSTModelDescriptions
     std::vector<std::string> models = ELI::InfoDatabase::getRegisteredElementNames<SSTModelDescription>();
 
@@ -304,14 +307,12 @@ start_graph_creation(
         }
         catch ( std::exception& e ) {
             std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
-            return -1;
         }
 
         // If doing parallel load, make sure this model is parallel capable
         if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
             std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
                       << std::endl;
-            return -1;
         }
 
         if ( myRank.rank == 0 || cfg.parallel_load() ) {
@@ -320,8 +321,6 @@ start_graph_creation(
         }
     }
 
-
-    double start_graph_gen = sst_get_cpu_time();
 
     // Only rank 0 will populate the graph, unless we are using
     // parallel load.  In this case, all ranks will load the graph
@@ -351,16 +350,14 @@ start_graph_creation(
         }
     }
 #endif
-
-    return start_graph_gen;
 }
 
 static double
-start_partitioning(
-    Config& cfg, const RankInfo& world_size, const RankInfo& myRank, Factory* factory, ConfigGraph* graph)
+start_partitioning(const RankInfo& world_size, const RankInfo& myRank, Factory* factory, ConfigGraph* graph)
 {
+    Config& cfg        = Simulation_impl::config;
     ////// Start Partitioning //////
-    double start_part = sst_get_cpu_time();
+    double  start_part = sst_get_cpu_time();
 
     if ( !cfg.parallel_load() ) {
         // Normal partitioning
@@ -413,7 +410,7 @@ struct SimThreadInfo_t
 {
     RankInfo     myRank;
     RankInfo     world_size;
-    Config*      config;
+    // Config*      config;
     ConfigGraph* graph;
     SimTime_t    min_part;
 
@@ -427,22 +424,21 @@ struct SimThreadInfo_t
 };
 
 static void
-start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier)
+start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier, SimTime_t currentSimCycle,
+    int currentPriority)
 {
+    Config& cfg = Simulation_impl::config;
+
     // Setup Mempools
     Core::MemPoolAccessor::initializeLocalData(tid);
     info.myRank.thread = tid;
 
-    bool restart = info.config->load_from_checkpoint();
+    bool restart = cfg.load_from_checkpoint();
 
     ////// Create Simulation Objects //////
-    SST::Simulation_impl* sim = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size, restart);
-    double                start_run = 0.0;
-
-    // Setup the real time actions (all of these have to be defined on
-    // the command-line or SDL file, they will not be checkpointed and
-    // restored
-    sim->setupSimActions(info.config);
+    SST::Simulation_impl* sim =
+        Simulation_impl::createSimulation(info.myRank, info.world_size, restart, currentSimCycle, currentPriority);
+    double start_run = 0.0;
 
     // Thread zero needs to initialize the checkpoint data structures
     // if any checkpointing options were turned on.  This will return
@@ -450,7 +446,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
     if ( tid == 0 ) {
         sim->checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
-            info.config, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
+            &cfg, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
 
         // if ( sim->checkpoint_directory_ != "" ) {
         //     // Write out any data structures needed for all checkpoints
@@ -458,6 +454,31 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     }
     // Wait for all checkpointing files to be initialzed
     barrier.wait();
+
+    if ( restart ) {
+        double start_build = sst_get_cpu_time();
+
+        // Finish parsing checkpoint for restart
+        sim->restart();
+
+        barrier.wait();
+
+        if ( info.myRank.thread == 0 ) {
+            sim->exchangeLinkInfo();
+        }
+
+        barrier.wait();
+
+        start_run       = sst_get_cpu_time();
+        info.build_time = start_run - start_build;
+    } // if ( restart )
+
+
+    // Setup the real time actions (all of these have to be defined on
+    // the command-line or SDL file, they will not be checkpointed and
+    // restored
+    sim->setupSimActions();
+
 
     if ( !restart ) {
         double start_build = sst_get_cpu_time();
@@ -468,7 +489,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
-        force_rank_sequential_start(info.config->rank_seq_startup(), info.myRank, info.world_size);
+        force_rank_sequential_start(cfg.rank_seq_startup(), info.myRank, info.world_size);
 
         barrier.wait();
 
@@ -511,7 +532,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             delete info.graph;
         }
 
-        force_rank_sequential_stop(info.config->rank_seq_startup(), info.myRank, info.world_size);
+        force_rank_sequential_stop(cfg.rank_seq_startup(), info.myRank, info.world_size);
 
         barrier.wait();
 
@@ -532,8 +553,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
-        if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
-            if ( info.config->verbose() && 0 == tid ) {
+        if ( cfg.runMode() == SimulationRunMode::RUN || cfg.runMode() == SimulationRunMode::BOTH ) {
+            if ( cfg.verbose() && 0 == tid ) {
                 g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
 
                 time_t     the_time = time(nullptr);
@@ -588,26 +609,9 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             sim->prepare_for_run();
         }
     } // end if !restart
-    else {
-        double start_build = sst_get_cpu_time();
-
-        // Finish parsing checkpoint for restart
-        sim->restart(info.config);
-
-        barrier.wait();
-
-        if ( info.myRank.thread == 0 ) {
-            sim->exchangeLinkInfo();
-        }
-
-        barrier.wait();
-
-        start_run       = sst_get_cpu_time();
-        info.build_time = start_run - start_build;
-    }
 
     /* Run Simulation */
-    if ( info.config->runMode() == SimulationRunMode::RUN || info.config->runMode() == SimulationRunMode::BOTH ) {
+    if ( cfg.runMode() == SimulationRunMode::RUN || cfg.runMode() == SimulationRunMode::BOTH ) {
         sim->run();
         barrier.wait();
 
@@ -643,7 +647,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // are writing to console, in which case we will serialize the
     // output as well.
     FILE*       fp   = nullptr;
-    std::string file = info.config->profilingOutput();
+    std::string file = cfg.profiling_output();
     if ( file == "stdout" ) {
         // Output to the console, so we will force both rank and
         // thread output to be sequential
@@ -708,7 +712,24 @@ main(int argc, char* argv[])
     RankInfo world_size(1, 1);
     RankInfo myRank(0, 0);
 #endif
-    Config cfg(world_size.rank, myrank == 0);
+
+    /************************************************************************************
+        Here are the major phases of simulation as represented in main():
+            1 - Config object intialization
+            2 - Graph creation
+            3 - Graph Partitioning
+            4 - Build simulation data structures and run
+    *************************************************************************************/
+
+    /******** Config Object Initialization ********/
+
+    Simulation_impl::config.initialize(world_size.rank, myrank == 0);
+    Config& cfg = Simulation_impl::config;
+
+    // Current simulation time.  Needed to properly intialize
+    // Simulation_impl object for restarts.
+    SimTime_t cpt_currentSimCycle = 0;
+    int       cpt_currentPriority = 0;
 
     // All ranks parse the command line
     auto ret_value = cfg.parseCmdLine(argc, argv);
@@ -721,22 +742,16 @@ main(int argc, char* argv[])
         return 0;
     }
 
-    // Set up the Filesystem object with the output directory
-    bool out_dir_okay = Simulation_impl::filesystem.setBasePath(cfg.output_directory());
-    if ( !out_dir_okay ) {
-        fprintf(stderr,
-            "ERROR: Directory specified with --output-directory (%s) is not valid.  Most likely causes are that the "
-            "user "
-            "does not have permissions to write to this path, or a file of the same name exists.\n",
-            cfg.output_directory().c_str());
-        return -1;
-    }
-
     // Check to see if we are doing a restart from a checkpoint
     bool restart = cfg.load_from_checkpoint();
 
-    // If restarting, update config from checkpoint
-    uint32_t cpt_num_threads, cpt_num_ranks;
+    // Need to get the number of ranks and threads in the original checkpoint run
+    RankInfo cpt_ranks;
+
+    // On a restart, get the Config options from the checkpoint run
+    // and merge them with the current Config option based on the
+    // annotations for what passes through a checkpoint to a restart
+    // and what doesn't
     if ( restart ) {
         // Need to open the registry file
         if ( cfg.checkConfigFile() == false ) {
@@ -799,77 +814,48 @@ main(int argc, char* argv[])
         buffer = new char[size];
         fs_globals.read(buffer, size);
 
-        std::string                     cpt_lib_path;
-        std::string                     cpt_timebase;
-        std::string                     cpt_output_directory;
-        std::string                     cpt_output_core_prefix;
-        std::string                     cpt_debug_file;
-        std::string                     cpt_prefix;
-        int                             cpt_output_verbose = 0;
-        std::map<std::string, uint32_t> cpt_params_key_map;
-        std::vector<std::string>        cpt_params_key_map_reverse;
-        uint32_t                        cpt_params_next_key_id;
+        Config cpt_config;
 
         ser.start_unpacking(buffer, size);
-        SST_SER(cpt_num_ranks);
-        SST_SER(cpt_num_threads);
-        SST_SER(cpt_lib_path);
-        SST_SER(cpt_timebase);
-        SST_SER(cpt_output_directory);
-        SST_SER(cpt_output_core_prefix);
-        SST_SER(cpt_output_verbose);
-        SST_SER(cpt_debug_file);
-        SST_SER(cpt_prefix);
-        SST_SER(cpt_params_key_map);
-        SST_SER(cpt_params_key_map_reverse);
-        SST_SER(cpt_params_next_key_id);
+
+        SST_SER(cpt_config);
+        cfg.merge_checkpoint_options(cpt_config);
+
+        SST_SER(cpt_ranks.rank);
+        SST_SER(cpt_ranks.thread);
+        SST_SER(cpt_currentSimCycle);
+        SST_SER(cpt_currentPriority);
 
         fs_globals.close();
         delete[] buffer;
 
-        // Error check that ranks & threads match after output is created
-        cfg.libpath_  = cpt_lib_path;
-        cfg.timeBase_ = cpt_timebase;
-        if ( !cfg.wasOptionSetOnCmdLine("output-directory") ) cfg.output_directory_ = cpt_output_directory;
-        if ( !cfg.wasOptionSetOnCmdLine("output-prefix-core") ) cfg.output_core_prefix_ = cpt_output_core_prefix;
-        if ( !cfg.wasOptionSetOnCmdLine("verbose") ) cfg.verbose_ = cpt_output_verbose;
-        if ( !cfg.wasOptionSetOnCmdLine("debug-file") ) cfg.debugFile_ = cpt_debug_file;
-        if ( !cfg.wasOptionSetOnCmdLine("checkpoint-prefix") ) cfg.checkpoint_prefix_ = cpt_prefix;
-
         ////// Initialize global data //////
+        if ( cfg.num_ranks() != cpt_ranks.rank || cfg.num_threads() != cpt_ranks.thread ) {
+            g_output.fatal(CALL_INFO, 1,
+                "Rank or thread counts do not match checkpoint. "
+                "Checkpoint requires %" PRIu32 " ranks and %" PRIu32 " threads\n",
+                cpt_ranks.rank, cpt_ranks.thread);
+        }
 
-        // These are initialized after graph creation in the non-restart path
-        world_size.thread = cfg.num_threads();
-        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
-        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
-        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
-        Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
-        Params::keyMap        = cpt_params_key_map;
-        Params::keyMapReverse = cpt_params_key_map_reverse;
-        Params::nextKeyID     = cpt_params_next_key_id;
     } // if ( restart )
+    else {
+        // If we are doing a parallel load with a file per rank, add the
+        // rank number to the file name before the extension
+        if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
+            addRankToFileName(cfg.configFile_.value, myRank.rank);
+        }
 
-    // If we are doing a parallel load with a file per rank, add the
-    // rank number to the file name before the extension
-    if ( cfg.parallel_load() && cfg.parallel_load_mode_multi() && world_size.rank != 1 ) {
-        addRankToFileName(cfg.configFile_, myRank.rank);
+        // Check to see if the config file exists
+        if ( cfg.checkConfigFile() == false ) {
+            return -1; /* checkConfigFile provides error message */
+        }
     }
 
-    // Check to see if the config file exists
-    if ( cfg.checkConfigFile() == false ) {
-        return -1; /* checkConfigFile provides error message */
-    }
+    /******** ConfigGraph Creation ********/
 
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
-
-    if ( restart && (cfg.num_ranks() != cpt_num_ranks || cfg.num_threads() != cpt_num_threads) ) {
-        g_output.fatal(CALL_INFO, 1,
-            "Rank or thread counts do not match checkpoint. "
-            "Checkpoint requires %" PRIu32 " ranks and %" PRIu32 " threads\n",
-            cpt_num_ranks, cpt_num_threads);
-    }
 
     ////// Start ConfigGraph Creation //////
 
@@ -877,29 +863,35 @@ main(int argc, char* argv[])
     ConfigGraph* graph    = nullptr;
     SimTime_t    min_part = 0xffffffffffffffffl;
 
+    // Get the memory before we create the graph
+    const uint64_t pre_graph_create_rss = maxGlobalMemSize();
+    uint64_t       comp_count           = 0;
+
+    // Variable for the start time for graph generation
+    double start_graph_gen = sst_get_cpu_time();
+
     // If we aren't restarting, need to create the graph
+    if ( !restart ) start_graph_creation(graph, factory, world_size, myRank);
+
+    //// Initialize global data that needed to wait until Config was
+    //// possibly updated by the SDL file
+
+    // Set the number of threads
+    world_size.thread = cfg.num_threads();
+
+    // Create global output object
+    Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
+    Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+
+    g_output.verbose(CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank,
+        myRank.thread, world_size.rank, world_size.thread);
+
+    // TimeLord must be initialized prior to postCreationCleanup() call
+    Simulation_impl::getTimeLord()->init(cfg.timeBase());
+
+    // For regular runs, need to check the ConfigGraph and finalize things
     if ( !restart ) {
-        // Get the memory before we create the graph
-        const uint64_t pre_graph_create_rss = maxGlobalMemSize();
-
-        double start_graph_gen = start_graph_creation(graph, cfg, factory, world_size, myRank);
-
-        ////// Initialize global data //////
-        // Config is updated from SDL, initialize globals
-
-        // Set the number of threads
-        world_size.thread = cfg.num_threads();
-
-        // Create global output object
-        Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
-        Output::setWorldSize(world_size.rank, world_size.thread, myrank);
-        g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
-
-        g_output.verbose(CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank,
-            myRank.thread, world_size.rank, world_size.thread);
-
-        // TimeLord must be initialized prior to postCreationCleanup() call
-        Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
         // Cleanup after graph creation
         if ( myRank.rank == 0 || cfg.parallel_load() ) {
@@ -911,13 +903,11 @@ main(int argc, char* argv[])
                 g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
             }
         }
-        double graph_gen_time = sst_get_cpu_time() - start_graph_gen;
 
         // If verbose level is high enough, compute the total number
         // components in the simulation.  NOTE: if parallel-load is
         // enabled, then the parittioning won't actually happen and all
         // ranks already have their parts of the graph.
-        uint64_t comp_count = 0;
         if ( cfg.verbose() >= 1 ) {
             if ( !cfg.parallel_load() && myRank.rank == 0 ) {
                 comp_count = graph->getNumComponents();
@@ -929,15 +919,34 @@ main(int argc, char* argv[])
             }
 #endif
         }
+    }
 
-        if ( myRank.rank == 0 ) {
-            g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-            g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", graph_gen_time);
-            g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
-        }
+    double graph_gen_time = sst_get_cpu_time() - start_graph_gen;
 
-        ////// End ConfigGraph Creation //////
+    if ( myRank.rank == 0 ) {
+        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
+        g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", graph_gen_time);
+        if ( !restart ) g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
+    }
 
+    ////// End ConfigGraph Creation //////
+
+    // Set up the Filesystem object with the output directory
+    bool out_dir_okay = Simulation_impl::filesystem.setBasePath(cfg.output_directory());
+    if ( !out_dir_okay ) {
+        fprintf(stderr,
+            "ERROR: Directory specified with --output-directory (%s) is not valid.  Most likely causes are that the "
+            "user does not have permissions to write to this path, or a file of the same name exists.\n",
+            cfg.output_directory().c_str());
+        return -1;
+    }
+
+    /******** Graph Partitioning ********/
+
+    double graph_partitioning_start = sst_get_cpu_time();
+
+    // For now, nothing to do in the restart path
+    if ( !restart ) {
 #ifdef SST_CONFIG_HAVE_MPI
         // If we did a parallel load, check to make sure that all the
         // ranks have the same thread count set (the python can change the
@@ -958,20 +967,8 @@ main(int argc, char* argv[])
         if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
 
         // Run the partitioner
-        double partitioning_time = start_partitioning(cfg, world_size, myRank, factory, graph);
+        start_partitioning(world_size, myRank, factory, graph);
 
-        const uint64_t post_graph_create_rss = maxGlobalMemSize();
-
-        if ( myRank.rank == 0 ) {
-            if ( !cfg.parallel_load() )
-                g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning took %lg seconds.\n", partitioning_time);
-            g_output.verbose(CALL_INFO, 1, 0, "# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
-                (post_graph_create_rss - pre_graph_create_rss));
-            g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-
-            // Output the partition information if user requests it
-            dump_partition(cfg, graph, world_size);
-        }
         ////// End Partitioning //////
 
         ////// Calculate Minimum Partitioning //////
@@ -1013,10 +1010,10 @@ main(int argc, char* argv[])
 
         ////// Write out the graph, if requested //////
         if ( myRank.rank == 0 ) {
-            doSerialOnlyGraphOutput(&cfg, graph);
+            doSerialOnlyGraphOutput(graph);
 
             if ( !cfg.parallel_output() ) {
-                doParallelCapableGraphOutput(&cfg, graph, myRank, world_size);
+                doParallelCapableGraphOutput(graph, myRank, world_size);
             }
         }
 
@@ -1086,10 +1083,37 @@ main(int argc, char* argv[])
 
         ////// End Broadcast Graph //////
         if ( cfg.parallel_output() ) {
-            doParallelCapableGraphOutput(&cfg, graph, myRank, world_size);
+            doParallelCapableGraphOutput(graph, myRank, world_size);
         }
     } // end if ( !restart )
+    else {
+        // Set up the Filesystem object with the output directory
+        bool out_dir_okay = Simulation_impl::filesystem.setBasePath(cfg.output_directory());
+        if ( !out_dir_okay ) {
+            fprintf(stderr,
+                "ERROR: Directory specified with --output-directory (%s) is not valid.  Most likely causes are that "
+                "the "
+                "user does not have permissions to write to this path, or a file of the same name exists.\n",
+                cfg.output_directory().c_str());
+            return -1;
+        }
+    }
 
+    double         partitioning_time     = sst_get_cpu_time() - graph_partitioning_start;
+    const uint64_t post_graph_create_rss = maxGlobalMemSize();
+
+    if ( myRank.rank == 0 ) {
+        g_output.verbose(CALL_INFO, 1, 0, "# Graph partitioning and output took %lg seconds.\n", partitioning_time);
+        g_output.verbose(CALL_INFO, 1, 0, "# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
+            (post_graph_create_rss - pre_graph_create_rss));
+        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
+
+        // Output the partition information if user requests it
+        dump_partition(graph, world_size);
+    }
+
+
+    /******** Create Simulation ********/
     if ( cfg.enable_sig_handling() ) {
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT, ALRM, and TERM\n");
         RealTimeManager::installSignalHandlers();
@@ -1100,7 +1124,6 @@ main(int argc, char* argv[])
     }
 
 
-    ////// Create Simulation //////
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
     Simulation_impl::factory    = factory;
@@ -1117,7 +1140,6 @@ main(int argc, char* argv[])
         threadInfo[i].myRank        = myRank;
         threadInfo[i].myRank.thread = i;
         threadInfo[i].world_size    = world_size;
-        threadInfo[i].config        = &cfg;
         threadInfo[i].graph         = graph;
         threadInfo[i].min_part      = min_part;
     }
@@ -1132,13 +1154,14 @@ main(int argc, char* argv[])
     try {
         Output::setThreadID(std::this_thread::get_id(), 0);
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
-            threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier));
+            threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier),
+                cpt_currentSimCycle, cpt_currentPriority);
             Output::setThreadID(threads[i].get_id(), i);
         }
 
         /* Unblock signals on thread 0 */
         pthread_sigmask(SIG_UNBLOCK, &maskset, NULL);
-        start_simulation(0, threadInfo[0], mainBarrier);
+        start_simulation(0, threadInfo[0], mainBarrier, cpt_currentSimCycle, cpt_currentPriority);
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
             threads[i].join();
         }

@@ -688,7 +688,7 @@ OverallOutputter::outputXML()
 
     sst_dprintf(stdout, "\n");
     sst_dprintf(stdout, "================================================================================\n");
-    sst_dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
+    sst_dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.XMLFilePath().c_str());
     sst_dprintf(stdout, "================================================================================\n");
     sst_dprintf(stdout, "\n");
     sst_dprintf(stdout, "\n");
@@ -728,41 +728,39 @@ OverallOutputter::outputXML()
     XMLDocument.LinkEndChild(XMLTopLevelElement);
 
     // Save the XML Document
-    XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
+    XMLDocument.SaveFile(g_configuration.XMLFilePath().c_str());
 }
 
 SSTInfoConfig::SSTInfoConfig(bool suppress_print) :
-    ConfigShared(suppress_print, {})
+    ConfigShared()
 {
     using namespace std::placeholders;
 
-    m_optionBits   = CFG_OUTPUTHUMAN | CFG_VERBOSE; // Enable normal output by default
-    m_XMLFilePath  = "./SSTInfo.xml";               // Default XML File Path
-    m_debugEnabled = false;
+    if ( !suppress_print ) enable_printing();
+
+    m_optionBits = CFG_OUTPUTHUMAN | CFG_VERBOSE; // Enable normal output by default
 
     // Add the options
     DEF_SECTION_HEADING("Informational Options");
-    DEF_FLAG("help", 'h', "Print help message", std::bind(&SSTInfoConfig::printHelp, this, _1));
-    DEF_FLAG("version", 'V', "Print SST release version", std::bind(&SSTInfoConfig::outputVersion, this, _1));
+    DEF_FLAG("help", 'h', "Print help message", help_);
+    DEF_FLAG("version", 'V', "Print SST release version", version_);
 
     DEF_SECTION_HEADING("Display Options");
     addVerboseOptions(false);
-    DEF_FLAG("quiet", 'q', "Quiet/print summary only", std::bind(&SSTInfoConfig::setQuiet, this, _1));
-    DEF_FLAG("debug", 'd', "Enable debugging messages", std::bind(&SSTInfoConfig::setEnableDebug, this, _1));
-    DEF_FLAG(
-        "nodisplay", 'n', "Do not display output [default: off]", std::bind(&SSTInfoConfig::setNoDisplay, this, _1));
-    DEF_FLAG("interactive", 'i', "(EXPERIMENTAL) Enable interactive command line mode",
-        std::bind(&SSTInfoConfig::setInteractive, this, _1));
+    DEF_FLAG("quiet", 'q', "Quiet/print summary only", quiet_);
+    DEF_FLAG("debug", 'd', "Enable debugging messages", debugEnabled_);
+    DEF_FLAG("nodisplay", 'n', "Do not display output [default: off]", no_display_);
+    DEF_FLAG("interactive", 'i', "(EXPERIMENTAL) Enable interactive command line mode", interactiveEnabled_);
+
     DEF_SECTION_HEADING("XML Options");
-    DEF_FLAG("xml", 'x', "Generate XML data [default:off]", std::bind(&SSTInfoConfig::setXML, this, _1));
-    DEF_ARG("outputxml", 'o', "FILE", "Filepath to XML file [default: SSTInfo.xml]",
-        std::bind(&SSTInfoConfig::setXMLOutput, this, _1), false);
+    DEF_FLAG("xml", 'x', "Generate XML data [default:off]", xml_);
+    DEF_ARG("outputxml", 'o', "FILE", "Filepath to XML file [default: SSTInfo.xml]", XMLFilePath_, false);
 
     DEF_SECTION_HEADING("Library and Path Options");
     DEF_ARG("libs", 'l', "LIBS",
         "Element libraries to process (all, <element>) [default: all]. <element> can be an element library, or it can "
         "be a single element within the library.",
-        std::bind(&SSTInfoConfig::setLibs, this, _1), false);
+        libs_, false);
     addLibraryPathOptions();
 
     DEF_SECTION_HEADING("Advanced Options - Environment");

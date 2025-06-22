@@ -14,6 +14,7 @@
 #include "sst/core/configBase.h"
 
 #include "sst/core/env/envquery.h"
+#include "sst/core/unitAlgebra.h"
 #include "sst/core/util/smartTextFormatter.h"
 #include "sst/core/warnmacros.h"
 
@@ -33,29 +34,110 @@
 
 namespace SST {
 
-bool
-ConfigBase::parseBoolean(const std::string& arg, bool& success, const std::string& option)
+std::string ConfigBase::currently_parsing_option = "";
+
+namespace StandardConfigParsers {
+
+int
+nonempty_string(std::string& var, std::string arg)
 {
-    success = true;
-
-    std::string arg_lower(arg);
-    std::locale loc;
-    for ( auto& ch : arg_lower )
-        ch = std::tolower(ch, loc);
-
-    if ( arg_lower == "true" || arg_lower == "yes" || arg_lower == "1" || arg_lower == "on" )
-        return true;
-    else if ( arg_lower == "false" || arg_lower == "no" || arg_lower == "0" || arg_lower == "off" )
-        return false;
-    else {
-        fprintf(stderr,
-            "ERROR: Failed to parse \"%s\" as a bool for option \"%s\", "
-            "please use true/false, yes/no or 1/0\n",
-            arg.c_str(), option.c_str());
-        exit(-1);
-        return false;
+    if ( var.empty() ) {
+        fprintf(stderr, "ERROR: Option %s must not be an empty string\n", ConfigBase::currently_parsing_option.c_str());
+        return -1;
     }
+    var = arg;
+    return 0;
 }
+
+int
+append_string(std::string pre, std::string post, std::string& var, std::string arg)
+{
+    if ( var.empty() ) {
+        var = arg;
+    }
+    else {
+        var += pre + arg + post;
+    }
+    return 0;
+}
+
+int
+flag_set_true(bool& var, std::string UNUSED(arg))
+{
+    var = true;
+    return 0;
+}
+
+int
+flag_set_false(bool& var, std::string UNUSED(arg))
+{
+    var = false;
+    return 0;
+}
+
+int
+flag_default_true(bool& var, std::string arg)
+{
+    if ( arg == "" ) {
+        var = true;
+    }
+    else {
+        try {
+            var = SST::Core::from_string<bool>(arg);
+        }
+        catch ( std::exception& e ) {
+            fprintf(stderr, "ERROR: For option \"%s\", failed to parse \"%s\" as a boolean\n",
+                ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int
+flag_default_false(bool& var, std::string arg)
+{
+    if ( arg == "" ) {
+        var = false;
+    }
+    else {
+        try {
+            var = SST::Core::from_string<bool>(arg);
+        }
+        catch ( std::exception& e ) {
+            fprintf(stderr, "ERROR: For option \"%s\", failed to parse \"%s\" as a boolean\n",
+                ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int
+wall_time_to_seconds(uint32_t& var, std::string arg)
+{
+    bool success = false;
+
+    var = ConfigBase::parseWallTimeToSeconds(arg, success, ConfigBase::currently_parsing_option);
+
+    if ( success ) return 0;
+    return -1;
+}
+
+int
+element_name(std::string& var, std::string arg)
+{
+    if ( arg.find('.') == arg.npos ) {
+        var = "sst." + arg;
+    }
+    else {
+        var = arg;
+    }
+
+    return 0;
+}
+} // namespace StandardConfigParsers
+
 
 uint32_t
 ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const std::string& option)
@@ -95,7 +177,8 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
             return seconds;
         }
     }
-    fprintf(stderr, "ERROR: Argument passed to \"%s\" could not be parsed. Argument = [%s]\nValid formats are:\n",
+    fprintf(stderr,
+        "ERROR: for option \"%s\", wall time argument could not be parsed. Argument = [%s]\nValid formats are:\n",
         option.c_str(), arg.c_str());
     for ( size_t i = 0; i < n_templ; i++ ) {
         fprintf(stderr, "\t%s\n", templates[i]);
@@ -106,22 +189,19 @@ ConfigBase::parseWallTimeToSeconds(const std::string& arg, bool& success, const 
 }
 
 void
-ConfigBase::addOption(struct option opt, const char* argname, const char* desc,
-    std::function<int(const char* arg)> callback, std::vector<bool> annotations, std::function<std::string()> ext_help)
+ConfigBase::addOption(
+    struct option opt, const char* argname, const char* desc, std::vector<bool> annotations, OptionDefinition* def)
 {
     // Put this into the options vector
-    options.emplace_back(opt, argname, desc, callback, false, annotations, ext_help, false);
+    options.emplace_back(opt, argname, desc, false, annotations, def);
 
     LongOption& new_option = options.back();
-
-    // If this is a header, we're done
-    if ( new_option.header ) return;
 
     // Increment the number of options
     num_options++;
 
     // See if there is extended help
-    if ( ext_help ) has_extended_help_ = true;
+    if ( def->ext_help ) has_extended_help_ = true;
 
     // See if this is the longest option
     size_t size = 0;
@@ -152,8 +232,8 @@ ConfigBase::addOption(struct option opt, const char* argname, const char* desc,
     }
 
     // Handle any extra help functions
-    if ( ext_help ) {
-        extra_help_map[opt.name] = ext_help;
+    if ( def->ext_help ) {
+        extra_help_map[opt.name] = def->ext_help;
     }
 }
 
@@ -162,8 +242,7 @@ ConfigBase::addHeading(const char* desc)
 {
     struct option     opt = { "", optional_argument, 0, 0 };
     std::vector<bool> vec;
-    options.emplace_back(
-        opt, "", desc, std::function<int(const char* arg)>(), true, vec, std::function<std::string()>(), false);
+    options.emplace_back(opt, "", desc, true, vec, nullptr);
 }
 
 std::string
@@ -261,11 +340,11 @@ ConfigBase::printUsage()
 
         // Print the annotations
         // First check for extended help
-        npos += fprintf(stderr, "%c", option.ext_help ? 'H' : ' ');
+        npos += fprintf(stderr, "%c", option.def->ext_help ? 'H' : '-');
 
         // Now do the rest of the annotations
         for ( size_t i = 0; i < annotations_.size(); ++i ) {
-            char c = ' ';
+            char c = '-';
             if ( option.annotations.size() >= (i + 1) && option.annotations[i] ) c = annotations_[i].annotation;
             npos += fprintf(stderr, "%c", c);
         }
@@ -322,6 +401,12 @@ ConfigBase::printExtHelp(const std::string& option)
     }
 
     return 1; /* Should not continue */
+}
+
+void
+ConfigBase::addAnnotation(const AnnotationInfo& info)
+{
+    annotations_.push_back(info);
 }
 
 
@@ -404,21 +489,23 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         }
         else if ( option_index != 0 ) {
             // Long options
-            int real_index = option_map[option_index];
+            int real_index           = option_map[option_index];
+            currently_parsing_option = options[real_index].opt.name;
             if ( optarg )
-                status = options[real_index].callback(optarg);
+                status = options[real_index].def->parse(optarg);
             else
-                status = options[real_index].callback("");
-            if ( !status ) options[real_index].set_cmdline = true;
+                status = options[real_index].def->parse("");
+            if ( !status ) options[real_index].def->set_cmdline = true;
         }
         else {
             // Short option
-            int real_index = short_options[c];
+            int real_index           = short_options[c];
+            currently_parsing_option = options[real_index].opt.val;
             if ( optarg )
-                status = options[real_index].callback(optarg);
+                status = options[real_index].def->parse(optarg);
             else
-                status = options[real_index].callback("");
-            if ( !status ) options[real_index].set_cmdline = true;
+                status = options[real_index].def->parse("");
+            if ( !status ) options[real_index].def->set_cmdline = true;
         }
     }
 
@@ -469,8 +556,9 @@ ConfigBase::setOptionExternal(const std::string& entryName, const std::string& v
     // NOTE: print outs in this function will not be suppressed
     for ( auto& option : options ) {
         if ( !entryName.compare(option.opt.name) ) {
-            if ( option.set_cmdline ) return false;
-            return option.callback(value.c_str());
+            if ( option.def->set_cmdline ) return false;
+            currently_parsing_option = option.opt.name;
+            return option.def->parse(value.c_str());
         }
     }
     fprintf(stderr, "ERROR: Unknown configuration entry \"%s\"\n", entryName.c_str());
@@ -484,7 +572,7 @@ ConfigBase::wasOptionSetOnCmdLine(const std::string& name)
 {
     for ( auto& option : options ) {
         if ( !name.compare(option.opt.name) ) {
-            return option.set_cmdline;
+            return option.def->set_cmdline;
         }
     }
     return false;
@@ -495,12 +583,7 @@ bool
 ConfigBase::getAnnotation(const std::string& entryName, char annotation)
 {
     // Need to look for the index of the annotation
-    size_t index = std::numeric_limits<size_t>::max();
-    for ( size_t i = 0; i < annotations_.size(); ++i ) {
-        if ( annotations_[i].annotation == annotation ) {
-            index = i;
-        }
-    }
+    size_t index = getAnnotationIndex(annotation);
 
     if ( index == std::numeric_limits<size_t>::max() ) {
         fprintf(stderr, "ERROR: Searching for unknown annotation: '%c'\n", annotation);
@@ -520,6 +603,19 @@ ConfigBase::getAnnotation(const std::string& entryName, char annotation)
     fprintf(stderr, "ERROR: Unknown configuration entry \"%s\"\n", entryName.c_str());
     exit(-1);
     return false;
+}
+
+size_t
+ConfigBase::getAnnotationIndex(char annotation)
+{
+    size_t index = std::numeric_limits<size_t>::max();
+    for ( size_t i = 0; i < annotations_.size(); ++i ) {
+        if ( annotations_[i].annotation == annotation ) {
+            index = i;
+        }
+    }
+
+    return index;
 }
 
 } // namespace SST

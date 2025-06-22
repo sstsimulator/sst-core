@@ -42,6 +42,14 @@ public:
       "Output directly to console screen"
    )
 
+    SST_ELI_DOCUMENT_PARAMS(
+        { "separator", "Field separator", ", "},
+        { "filepath", "Filepath for the output file", "./StatisticOutput.csv"},
+        { "outputtopheader", "Whether to print a header at the top of the CSV output", "True" },
+        { "outputsimtime", "Whether to print the simulation time in the output", "True" },
+        { "outputrank", "Whether to print the rank in the output", "True" }
+    )
+
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */
@@ -55,9 +63,6 @@ protected:
      * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-
-    /** Print out usage for this Statistic Output */
-    void printUsage() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.

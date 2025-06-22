@@ -30,17 +30,6 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) :
 bool
 StatisticOutputCSV::checkOutputParameters()
 {
-    bool foundKey;
-
-    // Review the output parameters and make sure they are correct, and
-    // also setup internal variables
-
-    // Look for Help Param
-    getOutputParameters().find<std::string>("help", "1", foundKey);
-    if ( true == foundKey ) {
-        return false;
-    }
-
     // Get the parameters
     m_Separator       = getOutputParameters().find<std::string>("separator", ", ");
     m_FilePath        = getOutputParameters().find<std::string>("filepath", "StatisticOutput.csv");
@@ -59,21 +48,6 @@ StatisticOutputCSV::checkOutputParameters()
     }
 
     return true;
-}
-
-void
-StatisticOutputCSV::printUsage()
-{
-    // Display how to use this output object
-    Output out("", 0, 0, Output::STDOUT);
-    out.output(" : Usage - Sends all statistic output to a CSV File.\n");
-    out.output(" : Parameters:\n");
-    out.output(" : help = Force Statistic Output to display usage\n");
-    out.output(" : filepath = <Path to .csv file> - Default is ./StatisticOutput.csv\n");
-    out.output(" : separator = <separator between fields> - Default is \", \"\n");
-    out.output(" : outputtopheader = 0 | 1 - Output Header at top - Default is 1\n");
-    out.output(" : outputsimtime = 0 | 1 - Output Simulation Time - Default is 1\n");
-    out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
 void
