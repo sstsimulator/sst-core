@@ -133,6 +133,8 @@ TimeVortexSort::getActions()
 } // namespace pvt
 
 
+Config Simulation_impl::config;
+
 /**   Simulation functions **/
 
 /** Non-static functions **/
@@ -225,16 +227,22 @@ Simulation_impl::~Simulation_impl()
 }
 
 Simulation_impl*
-Simulation_impl::createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks, bool restart)
+Simulation_impl::createSimulation(
+    RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority)
 {
+    if ( !restart ) {
+        currentSimCycle = 0;
+        currentPriority = 0;
+    }
+
     std::thread::id  tid      = std::this_thread::get_id();
-    Simulation_impl* instance = new Simulation_impl(config, my_rank, num_ranks, restart);
+    Simulation_impl* instance = new Simulation_impl(my_rank, num_ranks, restart, currentSimCycle, currentPriority);
 
     std::lock_guard<std::mutex> lock(simulationMutex);
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
-    instance->initializeProfileTools(config->enabled_profiling());
+    instance->initializeProfileTools(config.enabled_profiling());
 
     return instance;
 }
@@ -247,7 +255,8 @@ Simulation_impl::shutdown()
     delete Simulation_impl::m_exit;
 }
 
-Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ranks, bool restart) :
+Simulation_impl::Simulation_impl(
+    RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority) :
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
     endSim(false),
@@ -256,9 +265,9 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     shutdown_mode_(SHUTDOWN_CLEAN),
     wireUpFinished_(false),
     one_shot_manager_(this),
-    runMode(cfg->runMode()),
-    currentSimCycle(0),
-    currentPriority(0),
+    runMode(config.runMode()),
+    currentSimCycle(currentSimCycle),
+    currentPriority(currentPriority),
     endSimCycle(0),
     my_rank(my_rank),
     num_ranks(num_ranks),
@@ -269,66 +278,61 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     complete_phase_start_time_(0.0),
     complete_phase_total_time_(0.0),
     checkpoint_id_(0),
-    checkpoint_prefix_(cfg->checkpoint_prefix()),
-    globalOutputFileName(cfg->debugFile())
+    checkpoint_prefix_(config.checkpoint_prefix()),
+    globalOutputFileName(config.debugFile())
 {
+    sim_output.init(config.output_core_prefix(), config.verbose(), 0, Output::STDOUT);
+    output_directory = config.output_directory();
 
-    sim_output.init(cfg->output_core_prefix(), cfg->verbose(), 0, Output::STDOUT);
-    output_directory = cfg->output_directory();
-
-    // The state generated in this block is either not needed in the restart path
-    // or will be read from the checkpoint instead
+    // Get the type of TimeVortex and check to see if we have
+    // interthread links if we're not in the restart path
+    timeVortexType = config.timeVortex();
     if ( !restart ) {
-        Params p;
-        direct_interthread = cfg->interthread_links();
-        timeVortexType     = cfg->timeVortex();
-
+        direct_interthread = config.interthread_links();
         if ( direct_interthread && num_ranks.thread > 1 ) timeVortexType = timeVortexType + ".ts";
-        timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
-        if ( my_rank.thread == 0 ) {
-            m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
-        }
-
-        if ( cfg->heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
-            sim_output.output("# Creating simulation heartbeat at simulated time period of %s.\n",
-                cfg->heartbeat_sim_period().c_str());
-            m_heartbeat =
-                new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_sim_period()));
-        }
-
-        if ( cfg->checkpoint_sim_period() != "" ) {
-            sim_output.output("# Creating simulation checkpoint at simulated time period of %s.\n",
-                cfg->checkpoint_sim_period().c_str());
-            checkpoint_action_ =
-                new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
-            checkpoint_action_->insertIntoTimeVortex(this);
-        }
-        else {
-            checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
-            checkpoint_action_->insertIntoTimeVortex(this);
-        }
     }
     else {
         // Direct interthread links not yet supported with checkpointing
         direct_interthread = false;
     }
+
+    Params p;
+
+    timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
+    if ( my_rank.thread == 0 ) {
+        m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
+    }
+
+    if ( config.heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
+        sim_output.output(
+            "# Creating simulation heartbeat at simulated time period of %s.\n", config.heartbeat_sim_period().c_str());
+        m_heartbeat = new SimulatorHeartbeat(
+            &config, my_rank.rank, this, timeLord.getTimeConverter(config.heartbeat_sim_period()));
+    }
+    if ( config.checkpoint_sim_period() != "" ) {
+        sim_output.output("# Creating simulation checkpoint at simulated time period of %s.\n",
+            config.checkpoint_sim_period().c_str());
+        checkpoint_action_ =
+            new CheckpointAction(&config, my_rank, this, timeLord.getTimeConverter(config.checkpoint_sim_period()));
+        checkpoint_action_->insertIntoTimeVortex(this);
+    }
+    else {
+        checkpoint_action_ = new CheckpointAction(&config, my_rank, this, nullptr);
+        checkpoint_action_->insertIntoTimeVortex(this);
+    }
+
     real_time_ = new RealTimeManager(num_ranks);
 
-    interactive_type_  = cfg->interactive_console();
-    interactive_start_ = cfg->interactive_start_time();
+    interactive_type_  = config.interactive_console();
+    interactive_start_ = config.interactive_start_time();
 }
 
 void
-Simulation_impl::setupSimActions(Config* cfg, bool restart)
+Simulation_impl::setupSimActions()
 {
     // Sim time alarms
-    if ( !restart ) {
-        // If not restarting, get the stop time from config options.
-        // Otherwise, the stop time is retrieved from the checkpoint
-        // (already done at this point).
-        SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
-        stop_at_         = stopAt;
-    }
+    SimTime_t stopAt = timeLord.getSimCycles(config.stop_at(), "StopAction configure");
+    stop_at_         = stopAt;
 
     if ( stop_at_ != 0 ) {
         StopAction* sa = new StopAction();
@@ -337,28 +341,29 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
     }
 
     // Signal handling - default
-    if ( !cfg->enable_sig_handling() ) return;
+    if ( !config.enable_sig_handling() ) return;
 
     real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.exit.emergency"), SIGINT);
     real_time_->registerSignal(factory->Create<RealTimeAction>("sst.rt.exit.emergency"), SIGTERM);
-    real_time_->registerSignal(factory->Create<RealTimeAction>(cfg->sigusr1()), SIGUSR1);
-    real_time_->registerSignal(factory->Create<RealTimeAction>(cfg->sigusr2()), SIGUSR2);
+    real_time_->registerSignal(factory->Create<RealTimeAction>(config.sigusr1()), SIGUSR1);
+    real_time_->registerSignal(factory->Create<RealTimeAction>(config.sigusr2()), SIGUSR2);
 
-    if ( cfg->exit_after() != 0 ) {
-        real_time_->registerInterval(cfg->exit_after(), factory->Create<RealTimeAction>("sst.rt.exit.clean"));
+    if ( config.exit_after() != 0 ) {
+        real_time_->registerInterval(config.exit_after(), factory->Create<RealTimeAction>("sst.rt.exit.clean"));
     }
 
-    if ( cfg->checkpoint_wall_period() != 0 ) {
+    if ( config.checkpoint_wall_period() != 0 ) {
         real_time_->registerInterval(
-            cfg->checkpoint_wall_period(), factory->Create<RealTimeAction>("sst.rt.checkpoint"));
+            config.checkpoint_wall_period(), factory->Create<RealTimeAction>("sst.rt.checkpoint"));
     }
 
-    if ( cfg->heartbeat_wall_period() != 0 ) {
-        real_time_->registerInterval(cfg->heartbeat_wall_period(), factory->Create<RealTimeAction>("sst.rt.heartbeat"));
+    if ( config.heartbeat_wall_period() != 0 ) {
+        real_time_->registerInterval(
+            config.heartbeat_wall_period(), factory->Create<RealTimeAction>("sst.rt.heartbeat"));
     }
 
-    if ( cfg->sigalrm() != "" ) {
-        std::string alarmstr = cfg->sigalrm();
+    if ( config.sigalrm() != "" ) {
+        std::string alarmstr = config.sigalrm();
         while ( alarmstr != "" ) {
             Params      params;
             std::string action;
@@ -372,7 +377,7 @@ Simulation_impl::setupSimActions(Config* cfg, bool restart)
             }
 
             bool     success      = false;
-            uint32_t interval_sec = cfg->parseWallTimeToSeconds(interval, success, "--sigalrm");
+            uint32_t interval_sec = config.parseWallTimeToSeconds(interval, success, "--sigalrm");
 
             if ( !success ) {
                 sim_output.fatal(CALL_INFO_LONG, 1,
@@ -1649,48 +1654,54 @@ Simulation_impl::checkpoint_write_globals(
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
 
-    size_t size, buffer_size;
-    char*  buffer;
+    size_t            size;
+    std::vector<char> buffer;
 
     /* Section 1: Config options */
     ser.start_sizing();
+
+    SST_SER(config);
+
     SST_SER(num_ranks.rank);
     SST_SER(num_ranks.thread);
-    std::string libpath = factory->getSearchPaths();
-    SST_SER(libpath);
-    SST_SER(timeLord.timeBaseString);
-    SST_SER(output_directory);
-    std::string prefix = sim_output.getPrefix();
-    SST_SER(prefix);
-    uint32_t verbose = sim_output.getVerboseLevel();
-    SST_SER(verbose);
-    SST_SER(globalOutputFileName);
-    SST_SER(checkpoint_prefix_);
-    SST_SER(Params::keyMap);
-    SST_SER(Params::keyMapReverse);
-    SST_SER(Params::nextKeyID);
+    SST_SER(currentSimCycle);
+    SST_SER(currentPriority);
 
-    size        = ser.size();
-    buffer_size = size;
-    buffer      = new char[buffer_size];
+    size = ser.size();
+    buffer.resize(size);
 
-    ser.start_packing(buffer, size);
+    ser.start_packing(buffer.data(), size);
+
+    SST_SER(config);
+
     SST_SER(num_ranks.rank);
     SST_SER(num_ranks.thread);
-    SST_SER(libpath);
-    SST_SER(timeLord.timeBaseString);
-    SST_SER(output_directory);
-    SST_SER(prefix);
-    SST_SER(verbose);
-    SST_SER(globalOutputFileName);
-    SST_SER(checkpoint_prefix_);
-    SST_SER(Params::keyMap);
-    SST_SER(Params::keyMapReverse);
-    SST_SER(Params::nextKeyID);
+    SST_SER(currentSimCycle);
+    SST_SER(currentPriority);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    fs.write(buffer, size);
+    fs.write(buffer.data(), size);
+
+    /* Section 2: Common data for Simulation_impl */
+    ser.start_sizing();
+    SST_SER(num_ranks); // Yes it's in the file twice, but needed in
+                        // two different places
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
+    SST_SER(num_ranks);
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
     fs.close();
+
 
     std::ofstream fs_reg = filesystem.ofstream(registry_filename, std::ios::out);
 
@@ -1706,7 +1717,6 @@ Simulation_impl::checkpoint_write_globals(
 #define WR(var) fs_reg << #var << " = " << var << std::endl;
     WR(num_ranks.rank);
     WR(num_ranks.thread);
-    WR(libpath);
     WR(timeLord.timeBaseString);
     WR(output_directory);
     std::string output_prefix = sim_output.getPrefix();
@@ -1767,39 +1777,19 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     size = ser.size();
     std::vector<char> buffer(size);
 
-    ser.start_packing(&buffer[0], size);
+    ser.start_packing(buffer.data(), size);
     SST_SER(libnames);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    fs.write(&buffer[0], size);
+    fs.write(buffer.data(), size);
     offset += (sizeof(size) + size);
 
 
     /* Section 3: Simulation_impl */
     ser.start_sizing();
-    SST_SER(num_ranks);
-    SST_SER(my_rank);
-    SST_SER(currentSimCycle);
-    SST_SER(stop_at_);
-    // SST_SER(threadMinPartTC);
-    SST_SER(minPart);
-    SST_SER(minPartTC);
-    SST_SER(interThreadLatencies);
+
     SST_SER(interThreadMinLatency);
-    SST_SER(endSim);
     SST_SER(independent);
-    SST_SER(timeVortexType); // Used by TimeVortex serialization
-    // SST_SER(sim_output);
-    SST_SER(runMode);
-    SST_SER(currentPriority);
-    SST_SER(endSimCycle);
-    SST_SER(output_directory);
-    // Actions that may also be in TV
-    SST_SER(real_time_);
-
-    // Exit created here in restart
-
-    SST_SER(m_heartbeat);
 
     // Add statistics engine and associated state
     // Individual statistics are checkpointing with component
@@ -1823,31 +1813,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 
     // Pack buffer
     ser.start_packing(&buffer[0], size);
-    SST_SER(num_ranks);
-    SST_SER(my_rank);
-    SST_SER(currentSimCycle);
-    SST_SER(stop_at_);
-    // SST_SER(threadMinPartTC);
-    SST_SER(minPart);
-    SST_SER(minPartTC);
-    SST_SER(interThreadLatencies);
+
     SST_SER(interThreadMinLatency);
-    SST_SER(endSim);
     SST_SER(independent);
-    SST_SER(timeVortexType); // Used by TimeVortex serialization
-    // SST_SER(sim_output);
-    SST_SER(runMode);
-    SST_SER(currentPriority);
-    SST_SER(endSimCycle);
-    SST_SER(output_directory);
-    // Actions that may also be in TV
-    SST_SER(real_time_);
-
-    // Exit created here in restart
-
-    SST_SER(m_heartbeat);
-
-    // Add shared StatisticOutput vector
 
     // Add statistic engine
     if ( my_rank.thread == 0 ) {
@@ -1891,27 +1859,58 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 
     fs.close();
     tv_sort_.data.clear();
-
-    /*
-     * Still needs to be added to checkpoint:
-     *  - SST::Statistics::StatisticProcessingEngine stat_engine;
-     *  - oneShotMap_t oneShotMap;
-     *
-     * The rest will be recreated at restart or is not needed for checkpoint.
-     *
-     */
 }
 
 void
-Simulation_impl::restart(Config* cfg)
+Simulation_impl::restart()
 {
-    std::ifstream fs(cfg->configFile());
+    std::ifstream fs(config.configFile());
 
     std::string line;
 
+    std::string globals_filename;
+    std::string search_str("** (globals): ");
+    while ( std::getline(fs, line) ) {
+        size_t pos = line.find(search_str);
+        if ( pos == 0 ) {
+            // Get the file name
+            globals_filename = line.substr(search_str.length());
+            break;
+        }
+    }
+
+    // Open the globals file
+    std::ifstream     fs_globals(globals_filename, std::ios::binary);
+    size_t            size;
+    std::vector<char> buffer;
+
+    // Read how much data in Section 1, which we will skip over
+    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+    fs_globals.seekg(size, std::ios_base::cur);
+
+    // Now read the size of the common data blob
+    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+
+    buffer.resize(size);
+    fs_globals.read(buffer.data(), size);
+
+    SST::Core::Serialization::serializer ser;
+    ser.enable_pointer_tracking();
+    ser.start_unpacking(buffer.data(), size);
+
+    SST_SER(num_ranks);
+    SST_SER(minPart);
+    SST_SER(minPartTC);
+
+    fs_globals.close();
+
+    // Set the runmode and output directory
+    runMode          = config.runMode();
+    output_directory = config.output_directory();
+
     // Look for the line that has my rank's file info
     std::string blob_filename;
-    std::string search_str("** (");
+    search_str = "** (";
     search_str = search_str + std::to_string(my_rank.rank) + ":" + std::to_string(my_rank.thread) + "): ";
     while ( std::getline(fs, line) ) {
         size_t pos = line.find(search_str);
@@ -1923,17 +1922,15 @@ Simulation_impl::restart(Config* cfg)
     }
     fs.close();
 
-    size_t                               size;
-    SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
     std::ifstream fs_blob(blob_filename, std::ios::binary);
 
     /* Begin deserialization, libraries */
     fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
 
-    std::vector<char> buffer(size);
-    fs_blob.read(&buffer[0], size);
-    ser.start_unpacking(&buffer[0], size);
+    buffer.resize(size);
+    fs_blob.read(buffer.data(), size);
+    ser.start_unpacking(buffer.data(), size);
 
     std::set<std::string> libnames;
     SST_SER(libnames);
@@ -1948,50 +1945,14 @@ Simulation_impl::restart(Config* cfg)
 
     ser.start_unpacking(&buffer[0], size);
 
-    SST_SER(num_ranks);
-    SST_SER(my_rank);
-    SST_SER(currentSimCycle);
-    SST_SER(stop_at_);
-    // SST_SER(threadMinPartTC);
-    SST_SER(minPart);
-    SST_SER(minPartTC);
-    SST_SER(interThreadLatencies);
     SST_SER(interThreadMinLatency);
-    SST_SER(endSim);
     SST_SER(independent);
-    SST_SER(timeVortexType); // Used by TimeVortex serialization
-    // SST_SER(sim_output);
-    SST_SER(runMode);
-    SST_SER(currentPriority);
-    SST_SER(endSimCycle);
-    SST_SER(output_directory);
-    // Actions that may also be in TV
-    SST_SER(real_time_);
-
-    // Create the Exit object
-    if ( my_rank.thread == 0 ) {
-        m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
-    }
 
     initBarrier.wait();
-
-    // Create new checkpoint object.  Needs to be done before SyncManager is reinitialized
-    if ( cfg->checkpoint_sim_period() != "" ) {
-        sim_output.output(
-            "# Creating simulation checkpoint at simulated time period of %s.\n", cfg->checkpoint_sim_period().c_str());
-        checkpoint_action_ =
-            new CheckpointAction(cfg, my_rank, this, timeLord.getTimeConverter(cfg->checkpoint_sim_period()));
-    }
-    else {
-        checkpoint_action_ = new CheckpointAction(cfg, my_rank, this, nullptr);
-    }
 
     // Set up the syncManager
     syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
     // Look at simulation.cc line 365 on setting up profile tools
-
-    // Heartbeat does not carry-over
-    SST_SER(m_heartbeat);
 
     // Get statistics engine
     if ( my_rank.thread == 0 ) {
@@ -2007,17 +1968,6 @@ Simulation_impl::restart(Config* cfg)
     if ( my_rank.thread == 0 ) {
         SST_SER(SharedObject::manager);
     }
-
-    // Need to create the TimeVortex
-    Params p;
-    timeVortex = Factory::getFactory()->Create<TimeVortex>(timeVortexType, p);
-
-    // Create the end of queue StopAction
-    StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
-    sa->setDeliveryTime(SST_SIMTIME_MAX);
-    timeVortex->insert(sa);
-
-    checkpoint_action_->insertIntoTimeVortex(this);
 
     /* Extract components */
     size_t compCount;
@@ -2055,20 +2005,6 @@ Simulation_impl::restart(Config* cfg)
         StatisticProcessingEngine::stat_outputs_simulation_start();
     }
     stat_engine.startOfSimulation();
-
-    // Resolve heartbeat -> overwrite with command line if present
-    if ( cfg->heartbeat_sim_period() != "" && my_rank.thread == 0 ) {
-        if ( m_heartbeat ) delete m_heartbeat;
-        sim_output.output(
-            "# Creating simulation heartbeat at simulated time period of %s.\n", cfg->heartbeat_sim_period().c_str());
-        m_heartbeat =
-            new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeat_sim_period()));
-    }
-    else if ( m_heartbeat ) {
-        m_heartbeat->schedule();
-    }
-
-    setupSimActions(cfg, true);
 
     real_time_->begin();
 }

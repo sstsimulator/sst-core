@@ -20,18 +20,13 @@
 
 namespace SST {
 
-ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose) :
-    ConfigBase(suppress_print)
+ConfigShared::ConfigShared(bool suppress_print, bool include_libpath, bool include_env, bool include_verbose)
 {
+    if ( !suppress_print ) enable_printing();
     if ( include_libpath ) addLibraryPathOptions();
     if ( include_env ) addEnvironmentOptions();
     if ( include_verbose ) addVerboseOptions(false);
 }
-
-
-ConfigShared::ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations) :
-    ConfigBase(suppress_print, annotations)
-{}
 
 
 void
