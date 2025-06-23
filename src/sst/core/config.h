@@ -27,7 +27,6 @@ extern int main(int argc, char** argv);
 namespace SST {
 class Config;
 
-class ConfigHelper;
 class SSTModelDescription;
 class UnitAlgebra;
 
@@ -53,26 +52,18 @@ class Config : public ConfigShared, public SST::Core::Serialization::serializabl
 private:
     // Main creates the config object
     friend int ::main(int argc, char** argv);
-    friend class ConfigHelper;
     friend class SSTModelDescription;
+    friend class Simulation_impl;
 
     /**
-       Config constructor.  Meant to only be created by main function
+       Default constructor.
      */
-    Config(uint32_t num_ranks, bool first_rank);
+    Config();
 
     /**
-       Default constructor used for serialization.  At this point,
-       first_rank_ is no longer needed, so just initialize to false.
+       Initial Config object created with default constructor
      */
-    Config() :
-        ConfigShared(true, {}),
-        first_rank_(false)
-    {
-        // Need to insert the options because they control what gets
-        // serialized
-        insertOptions();
-    }
+    void initialize(uint32_t num_ranks, bool first_rank);
 
     //// Functions for use in main
 
@@ -158,6 +149,7 @@ public:
     SST_CONFIG_DECLARE_OPTION_NOVAR(version, std::bind(&Config::parseVersion, std::placeholders::_1));
 
 private:
+
     /**
        Number of ranks in the simulation
      */
@@ -248,7 +240,6 @@ private:
        If true, and a config graph output option is specified, write
        each ranks graph separately
     */
-#ifdef SST_CONFIG_HAVE_MPI
     int parse_parallel_output(bool& var, std::string arg)
     {
         if ( num_ranks_ == 1 ) return 0;
@@ -264,7 +255,6 @@ private:
 
     SST_CONFIG_DECLARE_OPTION(bool, parallel_output, false,
         std::bind(&Config::parse_parallel_output, this, std::placeholders::_1, std::placeholders::_2));
-#endif
 
 
     /**** Graph output ****/
@@ -336,7 +326,6 @@ private:
        parallel load is off), SINGLE or MULTI.
     */
 
-#ifdef SST_CONFIG_HAVE_MPI
     int parse_parallel_load(bool& parallel_load, bool& parallel_load_mode_multi, std::string arg)
     {
         // If this is only a one rank job, then we can ignore
@@ -371,7 +360,6 @@ private:
         }
         return 0;
     }
-#endif
 
 public:
     std::string parallel_load_str() const
@@ -638,7 +626,7 @@ private:
     //// Items private to Config
 
     std::string run_name;
-    bool        first_rank_;
+    bool        first_rank_ = false;
 
     // Inserts all the command line options into the underlying data
     // structures

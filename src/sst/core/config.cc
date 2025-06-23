@@ -322,29 +322,17 @@ Config::merge_checkpoint_options(Config& other)
         // Now see if we need to copy over the option.  We copy it if
         // it wasn't set on the command line, or it isne't allowed to
         // be set on the command line for a restart.
-        if ( !option.set_cmdline || option.annotations[x_index] ) {
+        if ( !option.def->set_cmdline || option.annotations[x_index] ) {
             option.def->transfer(other.options[i].def);
         }
     }
 }
 
-static std::vector<AnnotationInfo> annotations = {
-    { 'S', "Options annotated with 'S' can be set in the SDL file (input configuration file)\n"
-           "  - Note: Options set on the command line take precedence over options set in the SDL file" },
-    { 'R', "Options annotated with 'R' will be carried through a checkpoint to a restart run\n"
-           "  - These options can be overwritten on the command line of a restart run, unless annotated with 'X'" },
-    { 'X', "Options annotated with 'X' are ignored for restart runs" }
-};
 
-
-Config::Config(uint32_t num_ranks, bool first_rank) :
-    ConfigShared(!first_rank, annotations)
+Config::Config() :
+    ConfigShared()
 {
     // Basic Options
-    first_rank_ = first_rank;
-
-    num_ranks_   = num_ranks;
-    num_threads_ = 1;
 
     // Set output_directory_ to current working directory
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
@@ -356,7 +344,23 @@ Config::Config(uint32_t num_ranks, bool first_rank) :
         free(wd_buf);
     }
 
+    // Add annotations
+    addAnnotation(
+        { 'S', "Options annotated with 'S' can be set in the SDL file (input configuration file)\n"
+               "  - Note: Options set on the command line take precedence over options set in the SDL file" });
+    addAnnotation({ 'R',
+        "Options annotated with 'R' will be carried through a checkpoint to a restart run\n"
+        "  - These options can be overwritten on the command line of a restart run, unless annotated with 'X'" });
+    addAnnotation({ 'X', "Options annotated with 'X' are ignored for restart runs" });
+
     insertOptions();
+}
+
+void
+Config::initialize(uint32_t num_ranks, bool first_rank)
+{
+    num_ranks_ = num_ranks;
+    if ( first_rank ) enable_printing();
 }
 
 

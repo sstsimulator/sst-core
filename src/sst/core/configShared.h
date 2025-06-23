@@ -49,18 +49,8 @@ protected:
     void addEnvironmentOptions();
     void addVerboseOptions(bool sdl_avail);
 
-    /**
-       ConfigShared constructor for child classes
-     */
-    ConfigShared(bool suppress_print, std::vector<AnnotationInfo> annotations);
+    ConfigShared() = default;
 
-    /**
-       Default constructor used for serialization.  At this point,
-       my_rank is no longer needed, so just initialize to 0,0.
-     */
-    ConfigShared() :
-        ConfigBase()
-    {}
 
 private:
     //// Libpath options

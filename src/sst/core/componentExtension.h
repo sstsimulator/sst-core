@@ -33,7 +33,7 @@ public:
 
     virtual ~ComponentExtension() override = default;
 
-private:
+protected:
     ComponentExtension() = default; // For serialization only
 
     ImplementSerializable(SST::ComponentExtension)
