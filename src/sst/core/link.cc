@@ -365,7 +365,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
         if ( type == 2 ) {
             // Self link
             s = new SelfLink();
-            ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
+            ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
 
             // send_queue will be recreated after deserialization, no
             // need to serialize (polling links not supported)
@@ -417,7 +417,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
 
             // Need to create both links in the pair
             s = new Link();
-            ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
+            ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
 
             Link* pair_link      = new Link();
             s->pair_link         = pair_link;
@@ -525,7 +525,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             SST_SER(pair_tag);
 
             s = new Link();
-            ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
+            ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
             Link* pair_link = nullptr;
 
             // Need to check to see if my pair link has been unpacked

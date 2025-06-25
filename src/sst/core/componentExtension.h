@@ -20,8 +20,8 @@ namespace SST {
 /**
    ComponentExtension is a class that can be loaded using
    loadComponentExtension<T>(...).  All the calls to the BaseComponent
-   APIU will act like they are happening in the nearest SubConmponent
-   or Component parent.  Hierarchy will not be kept in the case were a
+   API will act like they are happening in the nearest SubComponent
+   or Component parent.  Hierarchy will not be kept in the case where a
    ComponentExtension is loaded into a ComponentExtension; they will
    both act like they are in the parent.
 */
@@ -36,8 +36,8 @@ public:
 protected:
     ComponentExtension() = default; // For serialization only
 
-    ImplementSerializable(SST::ComponentExtension)
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::ComponentExtension)
 };
 
 } // namespace SST

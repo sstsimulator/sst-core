@@ -228,6 +228,8 @@ sst_core_sources = \
 	serialization/serializable_base.cc \
 	serialization/serializable.cc \
 	serialization/serializer.cc \
+	serialization/impl/packer.cc \
+	serialization/impl/unpacker.cc \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \
 	serialization/impl/serialize_array.cc \
