@@ -25,7 +25,7 @@
 /**
    Macro used in serialize_impl<> template specializations to
    correctly friend the serialize<> template.  The operator() function
-   should be private in the serialize_impl<> implemenations.
+   should be private in the serialize_impl<> implementations.
 
    NOTE: requires a semicolon after the call
  */
@@ -37,11 +37,11 @@ namespace SST {
 
 /**
     Types for options passed to serialization.  Putting in a higher
-    namespace to ease use by shortneing the fully qualified names
+    namespace to ease use by shortening the fully qualified names
 **/
 
 /**
-   Type used to pass serilaization options
+   Type used to pass serialization options
 */
 using ser_opt_t = uint32_t;
 
@@ -152,7 +152,7 @@ namespace pvt {
 
 /**
    Serialization "gateway" object called by sst_ser_object().  All
-   serializations must come thorugh these template instances in order
+   serializations must come through these template instances in order
    for pointer tracking to be controlled at one point. The actual
    serialization will happen in serialize_impl classes.
  */
