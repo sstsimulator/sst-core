@@ -1208,7 +1208,7 @@ SerializeBaseComponentHelper::unpack_basecomponent(serializable_base*& s, serial
     }
     else {
         s = SST::Core::Serialization::serializable_factory::get_serializable(cls_id);
-        ser.report_new_pointer(reinterpret_cast<uintptr_t>(s));
+        ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
         s->serialize_order(ser);
     }
 }
@@ -1220,7 +1220,7 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
 
     BaseComponent*  comp    = static_cast<BaseComponent*>(s);
     ObjectMapClass* obj_map = new ObjectMapClass(s, s->cls_name());
-    ser.report_object_map(obj_map);
+    ser.mapper().report_object_map(obj_map);
     ser.mapper().map_hierarchy_start(name, obj_map);
 
     // Put in any subcomponents first

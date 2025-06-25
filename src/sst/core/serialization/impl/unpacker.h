@@ -19,30 +19,52 @@
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
-#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <map>
 #include <string>
+#include <type_traits>
 
 namespace SST::Core::Serialization::pvt {
 
 class ser_unpacker : public ser_buffer_accessor
 {
+    std::map<uintptr_t, uintptr_t> ser_pointer_map;
+    uintptr_t                      split_key = 0;
+
 public:
-    template <class T>
+    // inherit ser_buffer_accessor constructors
+    using ser_buffer_accessor::ser_buffer_accessor;
+
+    template <typename T>
     void unpack(T& t)
     {
-        T* bufptr = ser_buffer_accessor::next<T>();
-        t         = *bufptr;
+        memcpy(&t, buf_next(sizeof(t)), sizeof(t));
     }
 
-    /**
-     * @brief unpack_buffer
-     * @param buf   Must unpack to non-null buffer
-     * @param size  Must be non-zero
-     */
-    void unpack_buffer(void* buf, size_t size);
+    template <typename ELEM_T, typename SIZE_T>
+    void unpack_buffer(ELEM_T*& buffer, SIZE_T& size)
+    {
+        unpack(size);
+        if ( size == 0 ) {
+            buffer = nullptr;
+        }
+        else if constexpr ( std::is_void_v<ELEM_T> ) {
+            buffer = new char[size];
+            memcpy(buffer, buf_next(size), size);
+        }
+        else {
+            buffer = new ELEM_T[size];
+            memcpy(buffer, buf_next(size * sizeof(ELEM_T)), size * sizeof(ELEM_T));
+        }
+    }
 
-    void unpack_string(std::string& str);
-};
+    uintptr_t check_pointer_unpack(uintptr_t ptr);
+    void      unpack_string(std::string& str);
+    void      report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
+    void      report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
+
+}; // class ser_unpacker
 
 } // namespace SST::Core::Serialization::pvt
 

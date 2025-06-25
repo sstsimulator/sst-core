@@ -13,94 +13,59 @@
 
 #include "sst/core/serialization/serializer.h"
 
-#include "sst/core/output.h"
-#include "sst/core/serialization/serializable.h"
+#include <stdexcept>
 
 namespace SST::Core::Serialization {
-namespace pvt {
 
 void
-ser_unpacker::unpack_buffer(void* buf, size_t size)
+serializer::raw(void* data, size_t size)
 {
-    if ( size == 0 ) {
-        Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, "ser_unpacker::unpack_bufffer", 1, "trying to unpack buffer of size 0");
-    }
-    // void* only for convenience... actually a void**
-    void** bufptr = (void**)buf;
-    *bufptr       = new char[size];
-    char* charstr = next_str(size);
-    ::memcpy(*bufptr, charstr, size);
-}
-
-void
-ser_packer::pack_buffer(void* buf, size_t size)
-{
-    if ( buf == nullptr ) {
-        Output& output = Output::getDefaultObject();
-        output.fatal(__LINE__, __FILE__, "ser_packer::pack_bufffer", 1, "trying to pack nullptr buffer");
-    }
-    char* charstr = next_str(size);
-    ::memcpy(charstr, buf, size);
-}
-
-void
-ser_unpacker::unpack_string(std::string& str)
-{
-    int size;
-    unpack(size);
-    char* charstr = next_str(size);
-    str.resize(size);
-    str.assign(charstr, size);
-}
-
-void
-ser_packer::pack_string(std::string& str)
-{
-    int size = str.size();
-    pack(size);
-    char* charstr = next_str(size);
-    ::memcpy(charstr, str.data(), size);
-}
-
-void
-ser_sizer::size_string(std::string& str)
-{
-    size_ += sizeof(int);
-    size_ += str.size();
-}
-
-} // namespace pvt
-
-
-void
-serializer::string(std::string& str)
-{
-    switch ( mode_ ) {
+    switch ( mode() ) {
     case SIZER:
-    {
-        sizer_.size_string(str);
+        sizer().add(size);
         break;
-    }
     case PACK:
-    {
-        packer_.pack_string(str);
+        memcpy(packer().buf_next(size), data, size);
         break;
-    }
     case UNPACK:
-    {
-        unpacker_.unpack_string(str);
+        memcpy(data, unpacker().buf_next(size), size);
         break;
-    }
     case MAP:
         break;
     }
 }
 
-void
-serializer::report_object_map(ObjectMap* ptr)
+size_t
+serializer::size()
 {
-    ser_pointer_map[reinterpret_cast<uintptr_t>(ptr->getAddr())] = reinterpret_cast<uintptr_t>(ptr);
+    switch ( mode() ) {
+    case SIZER:
+        return sizer().size();
+    case PACK:
+        return packer().size();
+    case UNPACK:
+        return unpacker().size();
+    default:
+        return 0;
+    }
+}
+
+void
+serializer::string(std::string& str)
+{
+    switch ( mode() ) {
+    case SIZER:
+        sizer().size_string(str);
+        break;
+    case PACK:
+        packer().pack_string(str);
+        break;
+    case UNPACK:
+        unpacker().unpack_string(str);
+        break;
+    case MAP:
+        break;
+    }
 }
 
 const char*

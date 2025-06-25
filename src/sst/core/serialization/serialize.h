@@ -131,13 +131,13 @@ public:
         if ( mode == serializer::MAP ) {
             if ( !tPtr ) return; // No need to map a nullptr
             auto* map = new ObjectMapClass(tPtr, typeid(T).name());
-            ser.report_object_map(map);
+            ser.mapper().report_object_map(map);
             ser.mapper().map_hierarchy_start(ser.getMapName(), map);
         }
         else if constexpr ( std::is_pointer_v<T> ) {
             if ( mode == serializer::UNPACK ) {
                 t = new std::remove_pointer_t<T>();
-                ser.report_new_pointer(reinterpret_cast<uintptr_t>(t));
+                ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(t));
             }
         }
 
@@ -185,8 +185,8 @@ class serialize
             // so, then we error since the non-pointer version of this
             // data needs to be serialized before any of the pointers
             // that point to it.
-            if ( ser.check_pointer_pack(ptr) ) {
-                // Error
+            if ( ser.sizer().check_pointer_sizer(ptr) ) {
+                // TODO Error
             }
 
             // Always put the pointer in
@@ -197,7 +197,7 @@ class serialize
         case serializer::PACK:
             // Already checked serialization order during sizing, so
             // don't need to do it here
-            ser.check_pointer_pack(ptr);
+            ser.packer().check_pointer_pack(ptr);
             // Always put the pointer in
             ser.pack(ptr);
             // Serialize the data for the object
@@ -213,7 +213,7 @@ class serialize
             ser.unpack(ptr_stored);
 
             // Now add this to the tracking data
-            ser.report_real_pointer(ptr_stored, ptr);
+            ser.unpacker().report_real_pointer(ptr_stored, ptr);
 
             serialize_impl<T>()(t, ser, options);
             break;
@@ -292,7 +292,7 @@ class serialize<T*>
 
             // If we haven't seen this yet, also need to serialize the
             // object
-            if ( !ser.check_pointer_pack(ptr) ) {
+            if ( !ser.sizer().check_pointer_sizer(ptr) ) {
                 serialize_impl<T*>()(t, ser, options);
             }
             break;
@@ -303,7 +303,7 @@ class serialize<T*>
             // Nothing else to do if this is nullptr
             if ( 0 == ptr ) return;
 
-            if ( !ser.check_pointer_pack(ptr) ) {
+            if ( !ser.packer().check_pointer_pack(ptr) ) {
                 serialize_impl<T*>()(t, ser, options);
             }
             break;
@@ -319,20 +319,20 @@ class serialize<T*>
                 return;
             }
 
-            uintptr_t real_ptr = ser.check_pointer_unpack(ptr_stored);
+            uintptr_t real_ptr = ser.unpacker().check_pointer_unpack(ptr_stored);
             if ( real_ptr ) {
                 // Already deserialized, so just return pointer
                 t = reinterpret_cast<T*>(real_ptr);
             }
             else {
                 serialize_impl<T*>()(t, ser, options);
-                ser.report_real_pointer(ptr_stored, reinterpret_cast<uintptr_t>(t));
+                ser.unpacker().report_real_pointer(ptr_stored, reinterpret_cast<uintptr_t>(t));
             }
             break;
         }
         case serializer::MAP:
         {
-            ObjectMap* map = ser.check_pointer_map(reinterpret_cast<uintptr_t>(t));
+            ObjectMap* map = ser.mapper().check_pointer_map(reinterpret_cast<uintptr_t>(t));
             if ( map != nullptr ) {
                 // If we've already seen this object, just add the
                 // existing ObjectMap to the parent.
