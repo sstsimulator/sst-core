@@ -39,10 +39,10 @@ StatisticProcessingEngine::StatisticProcessingEngine() :
 
 
 void
-StatisticProcessingEngine::static_setup(ConfigGraph* graph)
+StatisticProcessingEngine::static_setup(StatsConfig* stats_config)
 {
     // Outputs are per MPI rank, so have to be static data
-    for ( auto& cfg : graph->getStatOutputs() ) {
+    for ( auto& cfg : stats_config->outputs ) {
         m_statOutputs.push_back(createStatisticOutput(cfg));
     }
 }
@@ -65,15 +65,15 @@ StatisticProcessingEngine::stat_outputs_simulation_end()
 
 
 void
-StatisticProcessingEngine::setup(Simulation_impl* sim, ConfigGraph* graph)
+StatisticProcessingEngine::setup(Simulation_impl* sim, StatsConfig* stats_config)
 {
     m_sim = sim;
 
     m_SimulationStarted = false;
-    m_statLoadLevel     = graph->getStatLoadLevel();
+    m_statLoadLevel     = stats_config->load_level;
 
     m_defaultGroup.output = m_statOutputs[0];
-    for ( auto& cfg : graph->getStatGroups() ) {
+    for ( auto& cfg : stats_config->groups ) {
         m_statGroups.emplace_back(cfg.second, this);
     }
 }

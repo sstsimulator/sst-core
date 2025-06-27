@@ -214,7 +214,7 @@ public:
      */
     void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
-    int  initializeStatisticEngine(ConfigGraph& graph);
+    int  initializeStatisticEngine(StatsConfig* stats_config);
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
@@ -285,7 +285,6 @@ public:
     BaseComponent* getComponent(const ComponentId_t& id) const
     {
         ComponentInfo* i = compInfoMap.getByID(id);
-        // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
         if ( nullptr != i ) {
             return i->getComponent();
         }
@@ -299,7 +298,6 @@ public:
     ComponentInfo* getComponentInfo(const ComponentId_t& id) const
     {
         ComponentInfo* i = compInfoMap.getByID(id);
-        // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
         if ( nullptr != i ) {
             return i;
         }
@@ -481,7 +479,6 @@ public:
     std::vector<SimTime_t>  interThreadLatencies;
     SimTime_t               interThreadMinLatency = MAX_SIMTIME_T;
     SyncManager*            syncManager;
-    // ThreadSync*      threadSync;
     ComponentInfoMap        compInfoMap;
     clockMap_t              clockMap;
     static Exit*            m_exit;
@@ -650,7 +647,8 @@ public:
     std::string                    globalOutputFileName = "";
 
     // Config object used by the simulation
-    static Config config;
+    static Config       config;
+    static StatsConfig* stats_config_;
 
     void printSimulationState();
 

@@ -38,6 +38,7 @@ REENABLE_WARNING
 #include "sst/core/objectComms.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/realtime.h"
+#include "sst/core/shared/sharedObject.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/statapi/statengine.h"
@@ -175,10 +176,10 @@ do_graph_wireup(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& m
 // stats engines.  Right now, the StatGroups are per MPI rank and
 // everything else in StatEngine is per partition.
 static void
-do_statengine_static_initialization(ConfigGraph* graph, const RankInfo& myRank)
+do_statengine_static_initialization(StatsConfig* stats_config, const RankInfo& myRank)
 {
     if ( myRank.thread != 0 ) return;
-    StatisticProcessingEngine::static_setup(graph);
+    StatisticProcessingEngine::static_setup(stats_config);
 }
 
 static void
@@ -196,10 +197,11 @@ do_statoutput_end_simulation(const RankInfo& myRank)
 }
 
 // Function to initialize the StatEngines in each partition (Simulation_impl object)
+// static void
 static void
-do_statengine_initialization(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& UNUSED(myRank))
+do_statengine_initialization(StatsConfig* stats_config, SST::Simulation_impl* sim, const RankInfo& UNUSED(myRank))
 {
-    sim->initializeStatisticEngine(*graph);
+    sim->initializeStatisticEngine(stats_config);
 }
 
 static void
@@ -455,8 +457,37 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // Wait for all checkpointing files to be initialzed
     barrier.wait();
 
+    double start_build = sst_get_cpu_time();
+
+    StatsConfig* stats_config = nullptr;
+
+    if ( !restart ) {
+        sim->processGraphInfo(*info.graph, info.myRank, info.min_part);
+
+        barrier.wait();
+        stats_config = info.graph->getStatsConfig();
+    }
+    else {
+        stats_config = Simulation_impl::stats_config_;
+    }
+
+    // Setup the stats engine
+    force_rank_sequential_start(cfg.rank_seq_startup(), info.myRank, info.world_size);
+
+    barrier.wait();
+
+    if ( tid == 0 ) {
+        do_statengine_static_initialization(stats_config, info.myRank);
+    }
+    barrier.wait();
+
+    do_statengine_initialization(stats_config, sim, info.myRank);
+    barrier.wait();
+
+    force_rank_sequential_stop(cfg.rank_seq_startup(), info.myRank, info.world_size);
+    barrier.wait();
+
     if ( restart ) {
-        double start_build = sst_get_cpu_time();
 
         // Finish parsing checkpoint for restart
         sim->restart();
@@ -469,8 +500,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
-        start_run       = sst_get_cpu_time();
-        info.build_time = start_run - start_build;
     } // if ( restart )
 
 
@@ -481,26 +510,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
 
     if ( !restart ) {
-        double start_build = sst_get_cpu_time();
-
-        barrier.wait();
-
-        sim->processGraphInfo(*info.graph, info.myRank, info.min_part);
-
-        barrier.wait();
-
-        force_rank_sequential_start(cfg.rank_seq_startup(), info.myRank, info.world_size);
-
-        barrier.wait();
-
-        // Perform the wireup.
-        if ( tid == 0 ) {
-            do_statengine_static_initialization(info.graph, info.myRank);
-        }
-        barrier.wait();
-
-        do_statengine_initialization(info.graph, sim, info.myRank);
-        barrier.wait();
 
         // Prepare the links, which creates the ComponentInfo objects and
         // Link and puts the links in the LinkMap for each ComponentInfo.
@@ -529,6 +538,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         barrier.wait();
 
         if ( tid == 0 ) {
+            // Store off the stats config for use with checkpoints
+            Simulation_impl::stats_config_ = info.graph->takeStatsConfig();
             delete info.graph;
         }
 
@@ -542,15 +553,18 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
-        start_run       = sst_get_cpu_time();
-        info.build_time = start_run - start_build;
+    } // if ( !restart)
+
+    start_run       = sst_get_cpu_time();
+    info.build_time = start_run - start_build;
 
 #ifdef SST_CONFIG_HAVE_MPI
-        if ( tid == 0 && info.world_size.rank > 1 ) {
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
+    if ( tid == 0 && info.world_size.rank > 1 ) {
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 #endif
 
+    if ( !restart ) {
         barrier.wait();
 
         if ( cfg.runMode() == SimulationRunMode::RUN || cfg.runMode() == SimulationRunMode::BOTH ) {
@@ -748,6 +762,12 @@ main(int argc, char* argv[])
     // Need to get the number of ranks and threads in the original checkpoint run
     RankInfo cpt_ranks;
 
+    // Variables used on restart. They are used across if statements,
+    // so need to be declared here.
+    SST::Core::Serialization::serializer ser;
+    ser.enable_pointer_tracking();
+    std::vector<char> restart_data_buffer;
+
     // On a restart, get the Config options from the checkpoint run
     // and merge them with the current Config option based on the
     // annotations for what passes through a checkpoint to a restart
@@ -805,18 +825,15 @@ main(int argc, char* argv[])
         }
 
         size_t size;
-        char*  buffer;
-
-        SST::Core::Serialization::serializer ser;
-        ser.enable_pointer_tracking();
 
         fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
-        buffer = new char[size];
-        fs_globals.read(buffer, size);
+        restart_data_buffer.resize(size);
+        fs_globals.read(restart_data_buffer.data(), size);
+        fs_globals.close();
 
         Config cpt_config;
 
-        ser.start_unpacking(buffer, size);
+        ser.start_unpacking(restart_data_buffer.data(), size);
 
         SST_SER(cpt_config);
         cfg.merge_checkpoint_options(cpt_config);
@@ -826,8 +843,7 @@ main(int argc, char* argv[])
         SST_SER(cpt_currentSimCycle);
         SST_SER(cpt_currentPriority);
 
-        fs_globals.close();
-        delete[] buffer;
+        // Deserialization continues after factory initialization below
 
         ////// Initialize global data //////
         if ( cfg.num_ranks() != cpt_ranks.rank || cfg.num_threads() != cpt_ranks.thread ) {
@@ -857,6 +873,7 @@ main(int argc, char* argv[])
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
 
+
     ////// Start ConfigGraph Creation //////
 
     double       start    = sst_get_cpu_time();
@@ -871,7 +888,28 @@ main(int argc, char* argv[])
     double start_graph_gen = sst_get_cpu_time();
 
     // If we aren't restarting, need to create the graph
-    if ( !restart ) start_graph_creation(graph, factory, world_size, myRank);
+    if ( !restart ) {
+        start_graph_creation(graph, factory, world_size, myRank);
+    }
+    else {
+        // On restart runs, need to reinitialize the loaded libraries
+        // and SharedObject::manager
+
+        // Get set of loaded libraries
+        std::set<std::string> libnames;
+        SST_SER(libnames);
+
+        factory->loadUnloadedLibraries(libnames);
+
+        // Initialize SharedObjectManager
+        SST_SER(SST::Shared::SharedObject::manager);
+
+        // Get thes stats config
+        SST_SER(Simulation_impl::stats_config_);
+
+        // Done with restart_data_buffer
+        restart_data_buffer.clear();
+    }
 
     //// Initialize global data that needed to wait until Config was
     //// possibly updated by the SDL file
