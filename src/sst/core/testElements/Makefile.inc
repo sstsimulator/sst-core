@@ -12,6 +12,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_Component.h \
 	testElements/coreTest_Component.cc \
 	testElements/coreTest_ComponentEvent.h \
+	testElements/coreTest_ComponentExtension.h \
+	testElements/coreTest_ComponentExtension.cc \
 	testElements/coreTest_ClockerComponent.h \
 	testElements/coreTest_ClockerComponent.cc \
 	testElements/coreTest_DistribComponent.h \

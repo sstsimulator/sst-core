@@ -90,10 +90,10 @@ public:
     ~TimeConverter() {}
 
     /**
-       Function to check to see if the TimeConverter is intialized
+       Function to check to see if the TimeConverter is initialized
        (non-zero factor)
 
-       @return true if TimeConverter is intialized (factor is
+       @return true if TimeConverter is initialized (factor is
        non-zero), false otherwise
      */
     bool isInitialized() const { return factor != 0; }

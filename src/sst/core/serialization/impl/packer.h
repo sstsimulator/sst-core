@@ -19,32 +19,42 @@
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
-#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <set>
 #include <string>
+#include <type_traits>
 
 namespace SST::Core::Serialization::pvt {
 
 class ser_packer : public ser_buffer_accessor
 {
+    std::set<uintptr_t> pointer_set;
+
 public:
-    template <class T>
-    void pack(T& t)
+    // inherit ser_buffer_accessor constructors
+    using ser_buffer_accessor::ser_buffer_accessor;
+
+    template <typename T>
+    void pack(T&& t)
     {
-        T* buf = ser_buffer_accessor::next<T>();
-        DISABLE_WARN_MAYBE_UNINITIALIZED
-        *buf = t;
-        REENABLE_WARNING
+        memcpy(buf_next(sizeof(t)), &t, sizeof(t));
     }
 
-    /**
-     * @brief pack_buffer
-     * @param buf  Must be non-null
-     * @param size Must be non-zero
-     */
-    void pack_buffer(void* buf, size_t size);
+    template <typename ELEM_T, typename SIZE_T>
+    void pack_buffer(ELEM_T* buffer, SIZE_T size)
+    {
+        if ( buffer == nullptr ) size = 0;
+        pack(size);
+        if constexpr ( std::is_void_v<ELEM_T> )
+            memcpy(buf_next(size), buffer, size);
+        else
+            memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
+    }
 
     void pack_string(std::string& str);
-};
+    bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
+}; // class ser_packer
 
 } // namespace SST::Core::Serialization::pvt
 

@@ -22,15 +22,12 @@
 // Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZER_H
 
+#include "sst/core/warnmacros.h"
+
 #include <cstdint>
 #include <cstring>
-#include <list>
-#include <map>
-#include <set>
-#include <stack>
-#include <stdexcept>
 #include <string>
-#include <utility>
+#include <variant>
 
 namespace SST::Core::Serialization {
 
@@ -44,82 +41,68 @@ class ObjectMapContext;
 class serializer
 {
 public:
-    enum SERIALIZE_MODE { SIZER, PACK, UNPACK, MAP };
+    enum SERIALIZE_MODE : size_t { SIZER = 1, PACK, UNPACK, MAP };
+    static constexpr SERIALIZE_MODE UNSTARTED { 0 }; // Defined outside of enum to avoid warnings about switch cases
 
-public:
-    serializer() :
-        mode_(SIZER) // just sizing by default
-    {}
+    // Current mode is the index of the ser_ variant
+    SERIALIZE_MODE
+    mode() const { return SERIALIZE_MODE(ser_.index()); }
 
-    pvt::ser_mapper& mapper() { return mapper_; }
+    // Calling sizer(), packer(), unpacker() or mapper() when the corresponding mode is not active is flagged with a
+    // std::bad_variant_access exception.
+    pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
+    pvt::ser_packer&   packer() { return std::get<PACK>(ser_); }
+    pvt::ser_unpacker& unpacker() { return std::get<UNPACK>(ser_); }
+    pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
 
-    pvt::ser_packer& packer() { return packer_; }
+    // Starting a new mode destroys the tracking object of the current mode and constructs a new tracking object
+    void start_sizing() { ser_.emplace<SIZER>(); }
+    void start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
+    void start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
+    void start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
 
-    pvt::ser_unpacker& unpacker() { return unpacker_; }
+    // finalize() destroys the tracking object of the current mode and switches to UNSTARTED mode. Functionally,
+    // finalize() indicates the end of a serialization sequence, not just the end of the current mode. You do not
+    // need to call finalize() if you are simply changing modes. finalize() can perform any final steps at the end
+    // of a serialization sequence, such as destroying any std::shared_ptr tracking objects or generating a report.
+    void finalize() { ser_.emplace<UNSTARTED>(); }
 
-    pvt::ser_sizer& sizer() { return sizer_; }
+    // Standard operators are defaulted or deleted
+    serializer()                             = default;
+    serializer(const serializer&)            = delete;
+    serializer& operator=(const serializer&) = delete;
+    ~serializer()                            = default;
 
-    template <class T>
+    template <typename T>
     void size(T& t)
     {
-        sizer_.size<T>(t);
+        sizer().size(t);
     }
 
-    template <class T>
+    template <typename T>
     void pack(T& t)
     {
-        packer_.pack<T>(t);
+        packer().pack(t);
     }
 
-    template <class T>
+    template <typename T>
     void unpack(T& t)
     {
-        unpacker_.unpack<T>(t);
-    }
-
-    virtual ~serializer() {}
-
-    SERIALIZE_MODE
-    mode() const { return mode_; }
-
-    void set_mode(SERIALIZE_MODE mode) { mode_ = mode; }
-
-    void reset()
-    {
-        sizer_.reset();
-        packer_.reset();
-        unpacker_.reset();
+        unpacker().unpack(t);
     }
 
     template <typename T>
     void primitive(T& t)
     {
-        switch ( mode_ ) {
+        switch ( mode() ) {
         case SIZER:
-            sizer_.size(t);
+            sizer().size(t);
             break;
         case PACK:
-            packer_.pack(t);
+            packer().pack(t);
             break;
         case UNPACK:
-            unpacker_.unpack(t);
-            break;
-        case MAP:
-            break;
-        }
-    }
-
-    void raw(void* data, size_t size)
-    {
-        switch ( mode_ ) {
-        case SIZER:
-            sizer_.add(size);
-            break;
-        case PACK:
-            memcpy(packer_.next_str(size), data, size);
-            break;
-        case UNPACK:
-            memcpy(data, unpacker_.next_str(size), size);
+            unpacker().unpack(t);
             break;
         case MAP:
             break;
@@ -129,143 +112,37 @@ public:
     template <typename ELEM_T, typename SIZE_T>
     void binary(ELEM_T*& buffer, SIZE_T& size)
     {
-        switch ( mode_ ) {
+        switch ( mode() ) {
         case SIZER:
-            sizer_.add(sizeof(SIZE_T));
-            sizer_.add(size * sizeof(ELEM_T));
+            sizer().size_buffer(buffer, size);
             break;
         case PACK:
-            if ( buffer ) {
-                packer_.pack(size);
-                packer_.pack_buffer(buffer, size * sizeof(ELEM_T));
-            }
-            else {
-                SIZE_T nullsize = 0;
-                packer_.pack(nullsize);
-            }
+            packer().pack_buffer(buffer, size);
             break;
         case UNPACK:
-            unpacker_.unpack(size);
-            buffer = nullptr;
-            if ( size ) unpacker_.unpack_buffer(&buffer, size * sizeof(ELEM_T));
+            unpacker().unpack_buffer(buffer, size);
             break;
         case MAP:
             break;
         }
     }
 
-    // For void*, we get sizeof(), which errors.
-    // Create a wrapper that casts to char* and uses above
-    template <typename Int>
-    void binary(void*& buffer, Int& size)
-    {
-        binary(reinterpret_cast<char*&>(buffer), size);
-    }
+    void   raw(void* data, size_t size);
+    size_t size();
+    void   string(std::string& str);
 
-    void string(std::string& str);
-
-    void start_packing(char* buffer, size_t size)
-    {
-        packer_.init(buffer, size);
-        mode_ = PACK;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_sizing()
-    {
-        sizer_.reset();
-        mode_ = SIZER;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_unpacking(char* buffer, size_t size)
-    {
-        unpacker_.init(buffer, size);
-        mode_ = UNPACK;
-        ser_pointer_set.clear();
-        ser_pointer_map.clear();
-    }
-
-    void start_mapping(ObjectMap* obj)
-    {
-        mapper_.init(obj);
-        mode_ = MAP;
-    }
-
-    size_t size() const
-    {
-        switch ( mode_ ) {
-        case SIZER:
-            return sizer_.size();
-        case PACK:
-            return packer_.size();
-        case UNPACK:
-            return unpacker_.size();
-        case MAP:
-            break;
-        }
-        return 0;
-    }
-
-    inline bool check_pointer_pack(uintptr_t ptr)
-    {
-        if ( ser_pointer_set.count(ptr) == 0 ) {
-            ser_pointer_set.insert(ptr);
-            return false;
-        }
-        return true;
-    }
-
-    inline uintptr_t check_pointer_unpack(uintptr_t ptr)
-    {
-        auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) {
-            return it->second;
-        }
-        // Keep a copy of the ptr in case we have a split report
-        split_key = ptr;
-        return 0;
-    }
-
-    ObjectMap* check_pointer_map(uintptr_t ptr)
-    {
-        auto it = ser_pointer_map.find(ptr);
-        if ( it != ser_pointer_map.end() ) {
-            return reinterpret_cast<ObjectMap*>(it->second);
-        }
-        return nullptr;
-    }
-
-    inline void report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
-
-    inline void report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
-
-    void enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
-
-    inline bool is_pointer_tracking_enabled() { return enable_ptr_tracking_; }
-
-    void report_object_map(ObjectMap* ptr);
-
-    // Get the map name
+    void        enable_pointer_tracking(bool value = true) { enable_ptr_tracking_ = value; }
+    bool        is_pointer_tracking_enabled() const { return enable_ptr_tracking_; }
     const char* getMapName() const;
 
-protected:
-    // only one of these is going to be valid for this serializer
-    // not very good class design, but a little more convenient
-    pvt::ser_packer   packer_;
-    pvt::ser_unpacker unpacker_;
-    pvt::ser_sizer    sizer_;
-    pvt::ser_mapper   mapper_;
-    SERIALIZE_MODE    mode_;
-    bool              enable_ptr_tracking_ = false;
+private:
+    // Default mode is UNSTARTED=0 with an empty std::monostate class. SIZER=1, PACK=2, UNPACK=3 and MAP=4 modes have
+    // an associated tracking object which is constructed when starting the new mode. finalize() destroys the current
+    // mode's tracking object and goes back to UNSTARTED mode.
+    std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper> ser_;
 
-    std::set<uintptr_t>            ser_pointer_set;
-    // Used for unpacking and mapping
-    std::map<uintptr_t, uintptr_t> ser_pointer_map;
-    uintptr_t                      split_key;
-    const ObjectMapContext*        mapContext = nullptr;
+    bool                    enable_ptr_tracking_ = false;
+    const ObjectMapContext* mapContext           = nullptr;
     friend class ObjectMapContext;
 }; // class serializer
 
