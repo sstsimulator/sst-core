@@ -416,6 +416,14 @@ public:
         int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
     void restart();
 
+    /**
+       Function used to get the rank for a link on restart.  A rank of
+       -1 on the return means that the paritioning stayed the same
+       between checkpoint and restart and the original rank info
+       stored in the checkpoint should be used.
+     */
+    RankInfo getRankForLinkOnRestart(int UNUSED(rank), uintptr_t UNUSED(tag)) { return RankInfo(); }
+
     void initialize_interactive_console(const std::string& type);
 
     /** Factory used to generate the simulation components */
@@ -640,11 +648,11 @@ public:
     static std::vector<Simulation_impl*>                         instanceVec_;
 
     /******** Checkpoint/restart tracking data structures ***********/
-    std::map<uintptr_t, Link*>     link_restart_tracking;
-    std::map<uintptr_t, uintptr_t> event_handler_restart_tracking;
-    uint32_t                       checkpoint_id_       = 0;
-    std::string                    checkpoint_prefix_   = "";
-    std::string                    globalOutputFileName = "";
+    std::map<std::pair<int, uintptr_t>, Link*> link_restart_tracking;
+    std::map<uintptr_t, uintptr_t>             event_handler_restart_tracking;
+    uint32_t                                   checkpoint_id_       = 0;
+    std::string                                checkpoint_prefix_   = "";
+    std::string                                globalOutputFileName = "";
 
     // Config object used by the simulation
     static Config       config;
