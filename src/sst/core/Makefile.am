@@ -99,6 +99,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/objectMap.h \
 	serialization/objectMapDeferred.h \
 	serialization/impl/serialize_adapter.h \
+	serialization/impl/serialize_aggregate.h \
 	serialization/impl/serialize_array.h \
 	serialization/impl/serialize_atomic.h \
 	serialization/impl/serialize_bitset.h \
