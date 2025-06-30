@@ -18,6 +18,7 @@
 #endif
 
 #include <bitset>
+#include <cfloat>
 #include <complex>
 #include <cstddef>
 #include <type_traits>
@@ -48,6 +49,19 @@ constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T
 
 template <class T, template <class...> class TT>
 using is_same_type_template = std::bool_constant<is_same_type_template_v<T, TT>>;
+
+///////////////////////////////////////////////////
+// Whether a type has a serialize_order() method //
+///////////////////////////////////////////////////
+template <class, class = void>
+constexpr bool has_serialize_order_v = false;
+
+template <class T>
+constexpr bool
+    has_serialize_order_v<T, decltype(std::declval<T>().serialize_order(std::declval<class serializer&>()))> = true;
+
+template <class T>
+using has_serialize_order = std::bool_constant<has_serialize_order_v<T>>;
 
 //////////////////////////////////////////////////
 // Compute the number of fields in an aggregate //
@@ -142,21 +156,11 @@ constexpr size_t nfields = pvt_nfields::nfields<C>;
 
 namespace pvt_trivial {
 
-// Whether a type has no serialize_order() method
-template <class, class = void>
-struct has_no_serialize_order : std::true_type
-{};
-
-template <class T>
-struct has_no_serialize_order<T,
-    std::void_t<decltype(std::declval<T>().serialize_order(std::declval<class serializer&>()))>> : std::false_type
-{};
-
 // If it's not a trivially copyable, standard layout aggregate without a serialize_order() method, it needs to
 // be an integer, floating-point, enum or member object pointer, or one of the specializations listed later.
 // std::conjunction_v and std::disjunction_v are used to short-circuit and speed up instead of using && and ||.
 template <class C, bool = std::conjunction_v<std::is_aggregate<C>, std::is_trivially_copyable<C>,
-                       std::is_standard_layout<C>, has_no_serialize_order<C>>>
+                       std::is_standard_layout<C>, std::negation<has_serialize_order<C>>>>
 constexpr bool is_trivially_serializable_v =
     std::disjunction_v<std::is_arithmetic<C>, std::is_enum<C>, std::is_member_object_pointer<C>>;
 
