@@ -443,6 +443,20 @@ using VariableMap_t            = std::map<std::string, std::string>;
 
 class PartitionGraph;
 
+struct StatsConfig
+{
+    std::map<std::string, ConfigStatGroup> groups;
+    std::vector<ConfigStatOutput>          outputs; // [0] is default group
+    uint8_t                                load_level;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
+    {
+        SST_SER(groups);
+        SST_SER(outputs);
+        SST_SER(load_level);
+    }
+};
+
 /** A Configuration Graph
  *  A graph representing Components and Links
  */
@@ -464,8 +478,9 @@ public:
         links_.clear();
         comps_.clear();
         // Init the statistic output settings
-        stat_load_level_ = STATISTICSDEFAULTLOADLEVEL;
-        stat_outputs_.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
+        stats_config_             = new StatsConfig();
+        stats_config_->load_level = STATISTICSDEFAULTLOADLEVEL;
+        stats_config_->outputs.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
         // Output is only used for warnings or fatal that should go to stderr
         Output& o = Output::getDefaultObject();
         output.init(o.getPrefix(), o.getVerboseLevel(), o.getVerboseMask(), Output::STDERR);
@@ -476,6 +491,8 @@ public:
         for ( auto comp : comps_ ) {
             delete comp;
         }
+
+        if ( stats_config_ ) delete stats_config_;
     }
 
     size_t getNumComponents() { return comps_.data.size(); }
@@ -511,11 +528,11 @@ public:
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
 
-    std::vector<ConfigStatOutput>& getStatOutputs() { return stat_outputs_; }
+    std::vector<ConfigStatOutput>& getStatOutputs() { return stats_config_->outputs; }
 
-    const ConfigStatOutput& getStatOutput(size_t index = 0) const { return stat_outputs_[index]; }
+    const ConfigStatOutput& getStatOutput(size_t index = 0) const { return stats_config_->outputs[index]; }
 
-    long getStatLoadLevel() const { return stat_load_level_; }
+    long getStatLoadLevel() const { return stats_config_->load_level; }
 
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
@@ -534,13 +551,13 @@ public:
     /** Return the map of components */
     ConfigComponentMap_t& getComponentMap() { return comps_; }
 
-    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return stat_groups_; }
+    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return stats_config_->groups; }
     ConfigStatGroup*                              getStatGroup(const std::string& name)
     {
-        auto found = stat_groups_.find(name);
-        if ( found == stat_groups_.end() ) {
+        auto found = stats_config_->groups.find(name);
+        if ( found == stats_config_->groups.end() ) {
             bool ok;
-            std::tie(found, ok) = stat_groups_.emplace(name, name);
+            std::tie(found, ok) = stats_config_->groups.emplace(name, name);
         }
         return &(found->second);
     }
@@ -565,15 +582,20 @@ public:
     PartitionGraph* getCollapsedPartitionGraph();
     void            annotateRanks(PartitionGraph* graph);
     void            getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>& group);
+    StatsConfig*    getStatsConfig() { return stats_config_; }
+    StatsConfig*    takeStatsConfig()
+    {
+        auto* ret     = stats_config_;
+        stats_config_ = nullptr;
+        return ret;
+    }
 
     void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST_SER(links_);
         SST_SER(comps_);
-        SST_SER(stat_outputs_);
-        SST_SER(stat_load_level_);
-        SST_SER(stat_groups_);
+        SST_SER(stats_config_);
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             // Need to reintialize the ConfigGraph ptrs in the
             // ConfigComponents
@@ -589,15 +611,13 @@ private:
 
     ComponentId_t nextComponentId;
 
-    ConfigLinkMap_t                        links_;         // SparseVectorMap
-    ConfigComponentMap_t                   comps_;         // SparseVectorMap
-    ConfigComponentNameMap_t               comps_by_name_; // std::map
-    std::map<std::string, ConfigStatGroup> stat_groups_;
+    ConfigLinkMap_t          links_;         // SparseVectorMap
+    ConfigComponentMap_t     comps_;         // SparseVectorMap
+    ConfigComponentNameMap_t comps_by_name_; // std::map
 
     std::map<std::string, LinkId_t> link_names_;
 
-    std::vector<ConfigStatOutput> stat_outputs_; // [0] is default
-    uint8_t                       stat_load_level_;
+    StatsConfig* stats_config_;
 
     ImplementSerializable(SST::ConfigGraph)
 

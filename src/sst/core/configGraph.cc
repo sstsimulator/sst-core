@@ -815,25 +815,25 @@ ConfigGraph::addSharedParam(const std::string& shared_set, const std::string& ke
 void
 ConfigGraph::setStatisticOutput(const std::string& name)
 {
-    stat_outputs_[0].type = name;
+    stats_config_->outputs[0].type = name;
 }
 
 void
 ConfigGraph::setStatisticOutputParams(const Params& p)
 {
-    stat_outputs_[0].params = p;
+    stats_config_->outputs[0].params = p;
 }
 
 void
 ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    stat_outputs_[0].params.insert(param, value);
+    stats_config_->outputs[0].params.insert(param, value);
 }
 
 void
 ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 {
-    stat_load_level_ = loadLevel;
+    stats_config_->load_level = loadLevel;
 }
 
 void
@@ -1004,12 +1004,12 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     }
 
     // Copy the statistic configuration to the sub-graph
-    graph->stat_outputs_ = this->stat_outputs_;
+    graph->stats_config_->outputs = this->stats_config_->outputs;
     /* Only need to copy StatGroups which are referenced in this subgraph */
-    for ( auto& kv : this->stat_groups_ ) {
+    for ( auto& kv : this->stats_config_->groups ) {
         for ( auto& id : kv.second.components ) {
             if ( graph->containsComponent(id) ) {
-                graph->stat_groups_.insert(std::make_pair(kv.first, kv.second));
+                graph->stats_config_->groups.insert(std::make_pair(kv.first, kv.second));
                 break;
             }
         }
@@ -1193,12 +1193,13 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
     comps_.filter(filter);
 
     // Copy the statistic configuration to the sub-graph
-    graph->stat_outputs_ = this->stat_outputs_;
+    graph->stats_config_->outputs = this->stats_config_->outputs;
 
     // Need to copy statgroups contained in new graph and remove
     // statgroups that are no longer needed in original graph
     // for ( auto& kv : this->statGroups ) {
-    for ( auto it = this->stat_groups_.begin(); it != this->stat_groups_.end(); /* increment in loop body */ ) {
+    for ( auto it = this->stats_config_->groups.begin(); it != this->stats_config_->groups.end();
+        /* increment in loop body */ ) {
         bool copy   = false;
         bool remove = true;
         for ( auto& id : it->second.components ) {
@@ -1220,12 +1221,12 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
 
         // See if we need to copy into new graph
         if ( copy ) {
-            graph->stat_groups_.insert(std::make_pair(it->first, it->second));
+            graph->stats_config_->groups.insert(std::make_pair(it->first, it->second));
         }
 
         // See if we need to remove from the original graph.
         if ( remove ) {
-            it = this->stat_groups_.erase(it);
+            it = this->stats_config_->groups.erase(it);
         }
         else {
             ++it;

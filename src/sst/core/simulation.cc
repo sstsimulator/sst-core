@@ -133,7 +133,8 @@ TimeVortexSort::getActions()
 } // namespace pvt
 
 
-Config Simulation_impl::config;
+Config       Simulation_impl::config;
+StatsConfig* Simulation_impl::stats_config_ = nullptr;
 
 /**   Simulation functions **/
 
@@ -566,9 +567,9 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 }
 
 int
-Simulation_impl::initializeStatisticEngine(ConfigGraph& graph)
+Simulation_impl::initializeStatisticEngine(StatsConfig* stats_config)
 {
-    stat_engine.setup(this, &graph);
+    stat_engine.setup(this, stats_config);
     return 0;
 }
 
@@ -1667,6 +1668,17 @@ Simulation_impl::checkpoint_write_globals(
     SST_SER(currentSimCycle);
     SST_SER(currentPriority);
 
+    // Add list of loaded libraries
+    std::set<std::string> libnames;
+    factory->getLoadedLibraryNames(libnames);
+    SST_SER(libnames);
+
+    // Add shared regions
+    SST_SER(SharedObject::manager);
+
+    // Store the stats config
+    SST_SER(stats_config_);
+
     size = ser.size();
     buffer.resize(size);
 
@@ -1679,13 +1691,20 @@ Simulation_impl::checkpoint_write_globals(
     SST_SER(currentSimCycle);
     SST_SER(currentPriority);
 
+    // Add list of loaded libraries
+    SST_SER(libnames);
+
+    // Add shared regions
+    SST_SER(SharedObject::manager);
+
+    // Store the stats config
+    SST_SER(stats_config_);
+
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer.data(), size);
 
     /* Section 2: Common data for Simulation_impl */
     ser.start_sizing();
-    SST_SER(num_ranks); // Yes it's in the file twice, but needed in
-                        // two different places
     SST_SER(minPart);
     SST_SER(minPartTC);
 
@@ -1693,9 +1712,9 @@ Simulation_impl::checkpoint_write_globals(
     buffer.resize(size);
 
     ser.start_packing(buffer.data(), size);
-    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
+
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer.data(), size);
@@ -1766,67 +1785,25 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
 
-    size_t size;
-
-    /* Section 2: Loaded libraries */
-    ser.start_sizing();
-    std::set<std::string> libnames;
-    factory->getLoadedLibraryNames(libnames);
-    SST_SER(libnames);
-
-    size = ser.size();
-    std::vector<char> buffer(size);
-
-    ser.start_packing(buffer.data(), size);
-    SST_SER(libnames);
-
-    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    fs.write(buffer.data(), size);
-    offset += (sizeof(size) + size);
-
-
     /* Section 3: Simulation_impl */
     ser.start_sizing();
 
     SST_SER(interThreadMinLatency);
     SST_SER(independent);
 
-    // Add statistics engine and associated state
-    // Individual statistics are checkpointing with component
-    if ( my_rank.thread == 0 ) {
-        SST_SER(StatisticProcessingEngine::m_statOutputs);
-    }
-    SST_SER(stat_engine);
-
-    // Add shared regions
-    if ( my_rank.thread == 0 ) {
-        SST_SER(SharedObject::manager);
-    }
-
     // First we need to get the TimeVortexContents and sort them
     tv_sort_.data.clear();
     timeVortex->getContents(tv_sort_.data);
     tv_sort_.sortData();
 
-    size = ser.size();
-    buffer.resize(size);
+    size_t            size = ser.size();
+    std::vector<char> buffer(size);
 
     // Pack buffer
     ser.start_packing(&buffer[0], size);
 
     SST_SER(interThreadMinLatency);
     SST_SER(independent);
-
-    // Add statistic engine
-    if ( my_rank.thread == 0 ) {
-        SST_SER(StatisticProcessingEngine::m_statOutputs);
-    }
-    SST_SER(stat_engine);
-
-    // Add shared regions
-    if ( my_rank.thread == 0 ) {
-        SST_SER(SharedObject::manager);
-    }
 
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1898,7 +1875,6 @@ Simulation_impl::restart()
     ser.enable_pointer_tracking();
     ser.start_unpacking(buffer.data(), size);
 
-    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
 
@@ -1925,25 +1901,12 @@ Simulation_impl::restart()
     ser.enable_pointer_tracking();
     std::ifstream fs_blob(blob_filename, std::ios::binary);
 
-    /* Begin deserialization, libraries */
-    fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
-
-    buffer.resize(size);
-    fs_blob.read(buffer.data(), size);
-    ser.start_unpacking(buffer.data(), size);
-
-    std::set<std::string> libnames;
-    SST_SER(libnames);
-
-    /* Load libraries before anything else */
-    factory->loadUnloadedLibraries(libnames);
-
     /* Now get the global blob */
     fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
     buffer.resize(size);
-    fs_blob.read(&buffer[0], size);
+    fs_blob.read(buffer.data(), size);
 
-    ser.start_unpacking(&buffer[0], size);
+    ser.start_unpacking(buffer.data(), size);
 
     SST_SER(interThreadMinLatency);
     SST_SER(independent);
@@ -1954,20 +1917,11 @@ Simulation_impl::restart()
     syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
     // Look at simulation.cc line 365 on setting up profile tools
 
-    // Get statistics engine
-    if ( my_rank.thread == 0 ) {
-        SST_SER(StatisticProcessingEngine::m_statOutputs);
-    }
     completeBarrier.wait();
-    SST_SER(stat_engine);
 
     /* Initial fix up of stat engine, the rest is after components re-register statistics */
     stat_engine.restart(this);
 
-    // Add shared regions
-    if ( my_rank.thread == 0 ) {
-        SST_SER(SharedObject::manager);
-    }
 
     /* Extract components */
     size_t compCount;

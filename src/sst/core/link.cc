@@ -16,6 +16,7 @@
 #include "sst/core/event.h"
 #include "sst/core/factory.h"
 #include "sst/core/initQueue.h"
+#include "sst/core/linkPair.h"
 #include "sst/core/pollingLinkQueue.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/simulation_impl.h"
@@ -65,8 +66,6 @@ SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
 void
 SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer& ser, ser_opt_t UNUSED(options))
 {
-    // Need to treat Links and SelfLinks differently
-    bool    self_link;
     // Type of link (Link is not polymorphic, so we can't use
     // dynamic_cast to see which type it is):
     // 0 - nullptr
@@ -74,10 +73,25 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
     // 2 - SelfLink
     // 3 - Sync Link Pair
     int16_t type;
+    int16_t REG  = 1;
+    int16_t SELF = 2;
+    int16_t SYNC = 3;
+
+    // Need a pointer to my simulation object
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+
+    // In order to uniquely identify links on restart, we need to
+    // track the rank of the link and its pair link.  For regular
+    // links, they are the same, but for sync link pairs, the pair
+    // link will be on a different rank.  For self links, this
+    // information isn't needed
+    RankInfo my_rank   = sim->getRank();
+    RankInfo pair_rank = my_rank;
 
     switch ( ser.mode() ) {
     case serializer::SIZER:
     case serializer::PACK:
+    {
         // If s is nullptr, just put in a 0
         if ( nullptr == s ) {
             type = 0;
@@ -85,276 +99,154 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             return;
         }
 
-        self_link = (s == s->pair_link);
-        if ( self_link ) {
-            type = 2;
-            SST_SER(type);
-            // send_queue will be recreated after deserialization, no
-            // need to serialize (polling links not supported)
+        // Figure out what type of link this is
+        if ( s == s->pair_link )
+            type = SELF;
+        else if ( s->pair_link->type == Link::SYNC )
+            type = SYNC;
+        else
+            type = REG;
 
-            Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(s->delivery_info);
+        SST_SER(type);
 
-            // Need to serialize both the uintptr_t (delivery_info)
-            // and the pointer because we'll need the numerical value
-            // of the pointer as a tag when restarting.
-            SST_SER(s->delivery_info);
-            SST_SER(handler);
+        /*
+          Unique Identifiers
 
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-            // s->pair_link not needed for SelfLinks
-            // s->current_time is automatically set on construction so
-            // no need to serialize
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
-            // Need to serialize anything in the AttachPoint. Not all
-            // tool types will be serializable, so will need to check
-            // by using dynamic_cast<serializable*>.  Just create a
-            // new vector with only the serializable elements and
-            // serialize that.  On restart, those will be the only
-            // ones that get attached, unless there is another
-            // specified on the command line.
+          For non-selflinks, we need to be able to create a unique
+          identifier so we can connect the pairs on restart.  The
+          unique identifiers are created using the MPI rank and point
+          of the link cast as a uintptr_t.
 
-            // Determine how many serializable tools there are
-            Link::ToolList tools;
-            if ( s->attached_tools ) {
-                for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
-                        tools.push_back(x);
-                    }
-                }
-            }
-            size_t tool_count = tools.size();
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
-                for ( auto x : tools ) {
-                    SST::Core::Serialization::serializable* obj =
-                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    SST_SER(obj);
-                    x.first->serializeEventAttachPointKey(ser, x.second);
-                }
-            }
+          For regular links, we only store the rank once since both
+          links in the pair are on the same rank.
 
-            // Serialize all the events sent on/to this Link
-            serialize_events(ser, s->delivery_info);
+          For SYNC links, the local link only knows the remote link by
+          it's pair link, so we will use that pointer for the unique
+          ID.
 
-            return;
-        } // if ( self_link )
+          For self links, no rank info is stored since we don't need
+          to create a unique ID
+        */
+        if ( type == SYNC || type == REG ) {
+            SST_SER(my_rank);
 
-        // Check to see if this is a SYNC link pair.  If so, we will
-        // serialize all the info together so we can do the
-        // registerLink() calls on deserialization.  The serialization
-        // call will always be on the non-sync link of the pair.
-        if ( s->pair_link->type == Link::SYNC ) {
-            type = 3;
-            SST_SER(type);
+            uintptr_t ptr;
+            if ( type == SYNC )
+                ptr = reinterpret_cast<uintptr_t>(s->pair_link);
+            else
+                ptr = reinterpret_cast<uintptr_t>(s);
 
-            // MULTI-PARELLEL RESTART: When supporting different
-            // restart parallelism, will also need to store the rank
-            // of the links in order to have unique identifies for
-            // each link.  For pair links on another rank, we will use
-            // the delivery_info field as the pointer part of the tag
-            // (this is the uintptr_t representation of the link
-            // pointer on the remote rank).  This will also require
-            // that the remote rank be stored somewhere in the link
-            // object.  The most likely place is in the tag, since
-            // this field is essentially unused when the link is
-            // connected to a sync object (No ordering in the
-            // SyncQueue and the real tag will be added on the remote
-            // side).
-
-            // No need to keep pointers as tags since we'll have all
-            // the data in the serialization stream
-
-            // Store info for the non-sync link
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
-
-            if ( s->type == Link::POLL ) {
-                // If I'm a polling link, I need to serialize my
-                // pair's send_queue.  For HANDLER and SYNC links, the
-                // send_queue will be reinitialized after restart.
-                PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
-                // PollingLinkQueues don't work with the serialization
-                // functions.  Call things directly.
-                queue->serialize_order(ser);
-            }
-
-            // Now serialize the handler
-            Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(s->pair_link->delivery_info);
-
-            // Need to serialize both the uintptr_t
-            // (delivery_info) and the pointer because we'll need
-            // the numerical value of the pointer as a tag when
-            // restarting.
-            SST_SER(s->pair_link->delivery_info);
-            SST_SER(handler);
-
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-
-            // Store data for sync link
-
-            // We'll need the pointer of the synclink in order to
-            // generate a globally unique name for
-            // SyncManager::registerLink().
-            uintptr_t ptr = reinterpret_cast<uintptr_t>(s->pair_link);
             SST_SER(ptr);
 
-            SST_SER(s->pair_link->type);
-            SST_SER(s->pair_link->mode);
-            SST_SER(s->pair_link->tag);
-
-            // No need to store queue info, it will be reintialized by
-            // the registerLink() call on restart
-
-            // Just put in the delivery_info directly, this is the
-            // pointer to the link on the other parition
-            SST_SER(s->delivery_info);
-
-            // Need to store my rank info and the rank info for
-            // the other partition.  This information will be used
-            // to create a unique name for connecting things on
-            // restart
-            RankInfo ri = Simulation_impl::getSimulation()->getRank();
-            SST_SER(ri);
-
-            // Get the remote rank from my pairs send queue (which
-            // is a sync queue)
-            SyncQueue* q = dynamic_cast<SyncQueue*>(s->send_queue);
-            ri           = q->getToRank();
-            SST_SER(ri);
-
-            SST_SER(s->pair_link->defaultTimeBase);
-            SST_SER(s->pair_link->latency);
-
-            // Need to serialize anything in the AttachPoint. Not all
-            // tool types will be serializable, so will need to check
-            // by using dynamic_cast<serializable*>.  Just create a
-            // new vector with only the serializable elements and
-            // serialize that.  On restart, those will be the only
-            // ones that get attached, unless there is another
-            // specified on the command line.
-
-            // // Determine how many serializable tools there are
-            Link::ToolList tools;
-            if ( s->attached_tools ) {
-                for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
-                        tools.push_back(x);
-                    }
-                }
+            if ( type == SYNC ) {
+                // The unique ID for the remote links is constructed from
+                // the rank of the remote pair link and its pointer on
+                // that rank.  The remote pointer is stored in
+                // delivery_info and we can get the remote rank from the
+                // sync queue.
+                SyncQueue* q = dynamic_cast<SyncQueue*>(s->send_queue);
+                pair_rank    = q->getToRank();
+                SST_SER(pair_rank);
+                SST_SER(s->delivery_info);
             }
-            size_t tool_count = tools.size();
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
-                for ( auto x : tools ) {
-                    SST::Core::Serialization::serializable* obj =
-                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    SST_SER(obj);
-                    x.first->serializeEventAttachPointKey(ser, x.second);
-                }
+            else {
+                // Unique ID for my pair link is my rank and pair_link
+                // pointer.  Rank is already stored, just store pair
+                // pointer
+                uintptr_t pair_ptr = reinterpret_cast<uintptr_t>(s->pair_link);
+                SST_SER(pair_ptr);
             }
+        } // if ( type == SYNC || type == REG )
 
-            // Serialize all the events sent on/to this Link
-            serialize_events(ser, s->pair_link->delivery_info);
+        /*
+          Store the metadata for this link
+        */
+        SST_SER(s->type);
+        SST_SER(s->mode);
+        SST_SER(s->tag);
+
+        /*
+          Store handler for handler links, or store the contents
+          of the PollingLinkQueue for polling links
+        */
+        if ( s->type == Link::POLL ) {
+            // If I'm a polling link, I need to serialize my pair's
+            // send_queue (which is really my receive queue).  For
+            // HANDLER and SYNC links, the send_queue will be
+            // reinitialized after restart.
+            PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
+            // PollingLinkQueues don't work with the serialization
+            // functions.  Call things directly.
+            queue->serialize_order(ser);
         }
         else {
-            // Regular link
-            type = 1;
-            SST_SER(type);
+            // Store the handler for this link.
 
-            // Need to put a uintptr_t in for my pointer and my pair's
-            // pointer.  This will be used to identify link
-            // connections on restart
-
-            uintptr_t ptr = reinterpret_cast<uintptr_t>(s);
-            SST_SER(ptr);
-            ptr = reinterpret_cast<uintptr_t>(s->pair_link);
-            SST_SER(ptr);
-
-            // Store some of the data we'll need to make decisions
-            // during unpacking
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
-
-            if ( s->type == Link::POLL ) {
-                // If I'm a polling link, I need to serialize my
-                // pair's send_queue.  For HANDLER and SYNC links, the
-                // send_queue will be reinitialized after restart
-                PollingLinkQueue* queue = dynamic_cast<PollingLinkQueue*>(s->pair_link->send_queue);
-                // PollingLinkQueues don't work with the serialization
-                // functions.  Call things directly.
-                queue->serialize_order(ser);
-            }
-
-            // My handler is stored in pair_link->delivery_info
-
-            // First serialize the pointer tag so we can fix
-            // things up after restart
-
-            // Now serialize the handler
+            // Need to serialize both the uintptr_t stored in
+            // pair_link->delivery_info and the pointer because we'll
+            // need the numerical value of the pointer as a tag when
+            // restarting.
             Event::HandlerBase* handler = reinterpret_cast<Event::HandlerBase*>(s->pair_link->delivery_info);
 
-            // Need to serialize both the uintptr_t
-            // (delivery_info) and the pointer because we'll need
-            // the numerical value of the pointer as a tag when
-            // restarting.
+            // Tag for handler
             SST_SER(s->pair_link->delivery_info);
+            // Actual handler
             SST_SER(handler);
-
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-
-            // s->pair_link - tag stored above
-            // s->current_time is automatically set on construction so
-            // no need to serialize
-
-            // Need to serialize anything in the AttachPoint. Not all
-            // tool types will be serializable, so will need to check
-            // by using dynamic_cast<serializable*>.  Just create a
-            // new vector with only the serializable elements and
-            // serialize that.  On restart, those will be the only
-            // ones that get attached, unless there is another
-            // specified on the command line.
-
-            // Determine how many serializable tools there are
-            Link::ToolList tools;
-            if ( s->attached_tools ) {
-                for ( auto x : *s->attached_tools ) {
-                    if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
-                        tools.push_back(x);
-                    }
-                }
-            }
-            size_t tool_count = tools.size();
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
-                for ( auto x : tools ) {
-                    SST::Core::Serialization::serializable* obj =
-                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                    SST_SER(obj);
-                    x.first->serializeEventAttachPointKey(ser, x.second);
-                }
-            }
-            // Serialize all the events sent on/to this Link
-            serialize_events(ser, s->pair_link->delivery_info);
         }
-        break;
+
+        /*
+          Store timing info for link
+        */
+        SST_SER(s->defaultTimeBase);
+        SST_SER(s->latency);
+        // If part of a sync pair, need to save the pair_link's
+        // latency in case Link::addRecvLatency() was called.
+        // This will be added to the new pair_link on restart.
+        if ( type == SYNC ) SST_SER(s->pair_link->latency);
+
+        /*
+          Serialize any serializable attached tools
+
+          Need to serialize anything in the AttachPoint. Not all tool
+          types will be serializable, so will need to check by using
+          dynamic_cast<serializable*>.  Just create a new vector with
+          only the serializable elements and serialize that.  On
+          restart, those will be the only ones that get attached,
+          unless there is another specified on the command line.
+        */
+
+        // Determine how many serializable tools there are
+        Link::ToolList tools;
+        if ( s->attached_tools ) {
+            for ( auto x : *s->attached_tools ) {
+                if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
+                    tools.push_back(x);
+                }
+            }
+        }
+        size_t tool_count = tools.size();
+        SST_SER(tool_count);
+        if ( tool_count > 0 ) {
+            // Serialize each tool, then call
+            // serializeEventAttachPointKey() to serialize any data
+            // associated with the key
+            for ( auto x : tools ) {
+                SST::Core::Serialization::serializable* obj =
+                    dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                SST_SER(obj);
+                x.first->serializeEventAttachPointKey(ser, x.second);
+            }
+        }
+
+        /*
+          Serialize all the events targeting this Link
+        */
+        serialize_events(ser, s->pair_link->delivery_info);
+    } break;
     case serializer::UNPACK:
+    {
         SST_SER(type);
+
 
         // If we put in a nullptr, return a nullptr
         if ( type == 0 ) {
@@ -362,262 +254,201 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             return;
         }
 
-        if ( type == 2 ) {
-            // Self link
+        /*
+          If this isn't a self link, then we need to determine if this
+          is a sync link or a regular link with the potentially new
+          repartioning on restart.
+
+          We do this by querying the Simulation_impl object to see if
+          the pair link is on the same partition or not.  If it is, it
+          is a regular link, otherwise it is part of a sync link pair.
+        */
+        bool is_orig_sync = (type == 3);
+
+        /*
+          Unique identifiers
+
+          Get the ranks and tags for this link and its pair link
+        */
+        RankInfo my_restart_rank   = sim->getRank();
+        RankInfo pair_restart_rank = my_restart_rank;
+
+        uintptr_t my_tag;
+        uintptr_t pair_tag;
+
+        if ( type == SYNC || type == REG ) {
+            SST_SER(my_rank);
+            SST_SER(my_tag);
+
+            if ( type == SYNC )
+                SST_SER(pair_rank);
+            else
+                pair_rank = my_rank;
+
+            SST_SER(pair_tag);
+        }
+
+
+        /*
+          Determine current sync state
+        */
+        if ( type != SELF ) {
+            pair_restart_rank = sim->getRankForLinkOnRestart(pair_rank.rank, pair_tag);
+
+            // If pair_restart_rank.rank == UNASSIGNED, then we have
+            // the same paritioning as the checkpoint and the ranks
+            // for both links are the same
+            if ( pair_restart_rank.rank == RankInfo::UNASSIGNED ) pair_restart_rank = pair_rank;
+        }
+
+        bool is_restart_sync = (my_restart_rank != pair_restart_rank);
+
+        /*
+          Create or get link from tracker
+
+          See if the link has already been created by its pair. If
+          not, create a LinkPair.  This link will be the left link
+          of the pair.
+        */
+        if ( type == SELF ) {
             s = new SelfLink();
             ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
-
-            // send_queue will be recreated after deserialization, no
-            // need to serialize (polling links not supported)
-
-            uintptr_t delivery_info;
-            SST_SER(delivery_info);
-
-            Event::HandlerBase* handler;
-            SST_SER(handler);
-            s->delivery_info = reinterpret_cast<uintptr_t>(handler);
-
-            Simulation_impl::getSimulation()->event_handler_restart_tracking[delivery_info] = s->delivery_info;
-
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-            // s->pair_link not needed for SelfLinks
-            // s->current_time is automatically set on construction so
-            // no need to serialize
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
-            // Profile tools not yet supported
-            // SST_SER(s->profile_tools);
-
-            s->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
-
-            // Need to restore any Tool in the AttachPoint.
-            size_t tool_count;
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                s->attached_tools = new Link::ToolList();
-                for ( size_t i = 0; i < tool_count; ++i ) {
-                    SST::Core::Serialization::serializable* tool;
-                    uintptr_t                               key;
-                    SST_SER(tool);
-                    Link::AttachPoint* ap = dynamic_cast<Link::AttachPoint*>(tool);
-                    ap->serializeEventAttachPointKey(ser, key);
-                    s->attached_tools->emplace_back(ap, key);
-                }
-            }
-            else {
-                s->attached_tools = nullptr;
-            }
-
-            serialize_events(ser, s->delivery_info, s->send_queue);
-        }
-        else if ( type == 3 ) {
-            // Sync link
-
-            // Need to create both links in the pair
-            s = new Link();
-            ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
-
-            Link* pair_link      = new Link();
-            s->pair_link         = pair_link;
-            pair_link->pair_link = s;
-
-            // Get data for non-sync link
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
-
-            // Get the send_queue.  It goes in my pair_link
-            if ( s->type == Link::POLL ) {
-                // If I'm a polling link, need to deserialize my
-                // pair's send_queue. For now, I will store it in my
-                // own send_queue variable and swap once we have both
-                // links.
-                PollingLinkQueue* queue;
-                // PollingLinkQueues don't work with the serialization
-                // functions.  Call things directly.
-                // SST_SER(queue);
-                queue = new PollingLinkQueue();
-                queue->serialize_order(ser);
-                pair_link->send_queue = queue;
-            }
-            else {
-                pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
-            }
-
-            // Get delivery_info (handler). It goes in my pair link
-            uintptr_t delivery_info;
-            SST_SER(delivery_info);
-
-            Event::HandlerBase* handler;
-            SST_SER(handler);
-            pair_link->delivery_info = reinterpret_cast<uintptr_t>(handler);
-
-            Simulation_impl::getSimulation()->event_handler_restart_tracking[delivery_info] = pair_link->delivery_info;
-
-            // Get defaultTimeBase and latency
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-
-            // Now get data from the sync side of the link
-            uintptr_t my_tag;
-            SST_SER(my_tag);
-
-            SST_SER(pair_link->type);
-            SST_SER(pair_link->mode);
-            SST_SER(pair_link->tag);
-
-            // Get the delivery info for the sync.  This is the
-            // pointer to the link on the remote partition
-            SST_SER(delivery_info);
-
-
-            RankInfo local_rank;
-            RankInfo remote_rank;
-            SST_SER(local_rank);
-            SST_SER(remote_rank);
-
-            // Need to reregister with the SyncManager, but first need to create a unique name
-            std::string    uname = s->createUniqueGlobalLinkName(local_rank, my_tag, remote_rank, delivery_info);
-            ActivityQueue* sync_q =
-                Simulation_impl::getSimulation()->syncManager->registerLink(remote_rank, local_rank, uname, pair_link);
-            // SyncQueue goes in the non-sync link
-            s->send_queue = sync_q;
-
-            SST_SER(pair_link->defaultTimeBase);
-            SST_SER(pair_link->latency);
-
-            // Need to restore any Tool in the AttachPoint.
-            size_t tool_count;
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                s->attached_tools = new Link::ToolList();
-                for ( size_t i = 0; i < tool_count; ++i ) {
-                    SST::Core::Serialization::serializable* tool;
-                    uintptr_t                               key;
-                    SST_SER(tool);
-                    Link::AttachPoint* ap = dynamic_cast<Link::AttachPoint*>(tool);
-                    ap->serializeEventAttachPointKey(ser, key);
-                    s->attached_tools->emplace_back(ap, key);
-                }
-            }
-            else {
-                s->attached_tools = nullptr;
-            }
-
-            // We always have our pair link since we serialized it
-            // with us.  Need to send the events on the pair's
-            // send_queue, with the delivery_info stored there. If
-            // this happens to be a PollingLinkQueue, then nothing
-            // will actually get sent since no events would have been
-            // serialized at this point in Link serialization.
-            serialize_events(ser, pair_link->delivery_info, pair_link->send_queue);
         }
         else {
-            // Regular link
+            auto&                     link_tracker   = sim->link_restart_tracking;
+            std::pair<int, uintptr_t> my_unique_id   = std::make_pair(my_rank.rank, my_tag);
+            std::pair<int, uintptr_t> pair_unique_id = std::make_pair(pair_rank.rank, pair_tag);
 
-            // Pull out the tags for the two links
-            uintptr_t my_tag;
-            uintptr_t pair_tag;
-
-            SST_SER(my_tag);
-            SST_SER(pair_tag);
-
-            s = new Link();
-            ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
-            Link* pair_link = nullptr;
-
-            // Need to check to see if my pair link has been unpacked
-            auto& link_tracker = Simulation_impl::getSimulation()->link_restart_tracking;
-            if ( link_tracker.count(pair_tag) ) {
-                pair_link = link_tracker[pair_tag];
-                link_tracker.erase(pair_tag);
-
-                // Set pair link
-                s->pair_link = pair_link;
-
-                // Set my neighbor's pair link
-                pair_link->pair_link = s;
+            if ( !is_restart_sync && link_tracker.count(my_unique_id) ) {
+                // Get my link and erase it from the map
+                s = link_tracker[my_unique_id];
+                link_tracker.erase(my_unique_id);
             }
             else {
-                link_tracker[my_tag] = s;
+                // Create a link pair and set s to the left link
+                LinkPair links;
+                s = links.getLeft();
+
+                // Set latency to zero (it defaults to 1) so that the
+                // addition below works properly
+                s->setLatency(0);
+                s->pair_link->setLatency(0);
+
+                // Put my pair link in the tracking map
+                link_tracker[pair_unique_id] = s->pair_link;
             }
+        }
 
+        /*
+          Get the metadata for the link
+        */
+        SST_SER(s->type);
+        SST_SER(s->mode);
+        SST_SER(s->tag);
 
-            SST_SER(s->type);
-            SST_SER(s->mode);
-            SST_SER(s->tag);
+        /*
+          Get handler for handler links, or restore the contents
+          of the PollingLinkQueue for polling links
+        */
+        if ( s->type == Link::POLL ) {
+            // If I'm a polling link, I need to serialize my
+            // pair's send_queue (which is really my receive
+            // queue).  For HANDLER and SYNC links, the send_queue
+            // will be reinitialized after restart.
+            PollingLinkQueue* queue;
+            // PollingLinkQueues don't work with the serialization
+            // functions.  Call things directly.
+            queue = new PollingLinkQueue();
+            queue->serialize_order(ser);
+            s->pair_link->send_queue = queue;
+        }
+        else {
+            // Set the send_queue to the TimeVortex
+            s->pair_link->send_queue = sim->getTimeVortex();
 
-            if ( s->type == Link::POLL ) {
-                // If I'm a polling link, need to deserialize my
-                // pair's send_queue. For now, I will store it in my
-                // own send_queue variable and swap once we have both
-                // links.
-                PollingLinkQueue* queue;
-                // PollingLinkQueues don't work with the serialization
-                // functions.  Call things directly.
-                queue = new PollingLinkQueue();
-                queue->serialize_order(ser);
-                s->send_queue = queue;
-            }
-            else {
-                s->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
-            }
-
+            // Restore the handler for this link.
             uintptr_t delivery_info;
             SST_SER(delivery_info);
 
             Event::HandlerBase* handler;
             SST_SER(handler);
-            s->delivery_info = reinterpret_cast<uintptr_t>(handler);
+            s->pair_link->delivery_info = reinterpret_cast<uintptr_t>(handler);
 
-            Simulation_impl::getSimulation()->event_handler_restart_tracking[delivery_info] = s->delivery_info;
+            // Report the handler for tracking
+            sim->event_handler_restart_tracking[delivery_info] = s->pair_link->delivery_info;
+        }
 
+        /*
+          Get the timing info
+        */
+        SST_SER(s->defaultTimeBase);
 
-            // If we have a pair link already, swap delivery_info and
-            // send_queue
-            if ( pair_link ) {
-                uintptr_t temp              = s->delivery_info;
-                s->delivery_info            = s->pair_link->delivery_info;
-                s->pair_link->delivery_info = temp;
+        // Get the latency. We need to add it to what's already
+        // there, because our pair_link deserialization may have
+        // added latency in the case of a sync link where
+        // Link::addRecvLatency() was called.
+        SimTime_t latency;
+        SST_SER(latency);
+        s->latency += latency;
 
-                // Swap the queues
-                ActivityQueue* queue     = s->send_queue;
-                s->send_queue            = s->pair_link->send_queue;
-                s->pair_link->send_queue = queue;
-            }
+        // If originally part of a sync pair, need to restore the
+        // pair_link's latency in case Link::addRecvLatency() was
+        // called. We will add this latency to the pair_link
+        // latency because this link pair may no longer be a sync
+        // pair and may already have non-zero latency.
+        if ( is_orig_sync ) {
+            SST_SER(latency);
+            s->pair_link->latency += latency;
+        }
 
-            SST_SER(s->defaultTimeBase);
-            SST_SER(s->latency);
-
-            // Need to restore any Tool in the AttachPoint.
-            size_t tool_count;
-            SST_SER(tool_count);
-            if ( tool_count > 0 ) {
-                s->attached_tools = new Link::ToolList();
-                for ( size_t i = 0; i < tool_count; ++i ) {
-                    SST::Core::Serialization::serializable* tool;
-                    uintptr_t                               key;
-                    SST_SER(tool);
-                    Link::AttachPoint* ap = dynamic_cast<Link::AttachPoint*>(tool);
-                    ap->serializeEventAttachPointKey(ser, key);
-                    s->attached_tools->emplace_back(ap, key);
-                }
-            }
-            else {
-                s->attached_tools = nullptr;
-            }
-            // If we have a pair_link, delivery_info and queue will be
-            // there.  If not, then this link is still holding them.
-            if ( pair_link ) {
-                serialize_events(ser, pair_link->delivery_info, pair_link->send_queue);
-            }
-            else {
-                serialize_events(ser, s->delivery_info, s->send_queue);
+        /*
+          Restore attached tools
+        */
+        size_t tool_count;
+        SST_SER(tool_count);
+        if ( tool_count > 0 ) {
+            s->attached_tools = new Link::ToolList();
+            for ( size_t i = 0; i < tool_count; ++i ) {
+                SST::Core::Serialization::serializable* tool;
+                uintptr_t                               key;
+                SST_SER(tool);
+                Link::AttachPoint* ap = dynamic_cast<Link::AttachPoint*>(tool);
+                ap->serializeEventAttachPointKey(ser, key);
+                s->attached_tools->emplace_back(ap, key);
             }
         }
-        break;
+        else {
+            s->attached_tools = nullptr;
+        }
+
+        /*
+          Deserialize the events targetting this link
+        */
+
+        // Need to send the events on the pair's send_queue, with
+        // the delivery_info stored there. If this happens to be a
+        // PollingLinkQueue, then nothing will actually get sent
+        // since no events would have been serialized at this
+        // point in Link serialization.
+        serialize_events(ser, s->pair_link->delivery_info, s->pair_link->send_queue);
+
+        // Need to finish initializing the links if this is now a
+        // sync link.
+        if ( is_restart_sync ) {
+            s->pair_link->type = Link::SYNC;
+            s->pair_link->mode = s->mode;
+            s->pair_link->tag  = s->tag;
+
+            s->pair_link->defaultTimeBase = 1;
+
+            // Need to register with the SyncManager, but first
+            // need to create a unique name
+            std::string    uname = s->createUniqueGlobalLinkName(my_rank, my_tag, pair_rank, pair_tag);
+            ActivityQueue* sync_q =
+                sim->syncManager->registerLink(pair_restart_rank, my_restart_rank, uname, s->pair_link);
+            s->send_queue = sync_q;
+        }
+    } break;
     case serializer::MAP:
         // TODO: Implement Link mapping mode
         break;

@@ -39,6 +39,7 @@ class ConfigGraph;
 class ConfigStatGroup;
 class ConfigStatOutput;
 class Params;
+struct StatsConfig;
 
 namespace Statistics {
 
@@ -87,7 +88,7 @@ public:
     /** Called to setup the StatOutputs, which are shared across all
        the StatEngines on the same MPI rank.
      */
-    static void static_setup(ConfigGraph* graph);
+    static void static_setup(StatsConfig* stats_config);
 
     /** Called to notify StatOutputs that simulation has started
      */
@@ -106,7 +107,7 @@ private:
     friend void ::finalize_statEngineConfig();
 
     StatisticProcessingEngine();
-    void setup(Simulation_impl* sim, ConfigGraph* graph);
+    void setup(Simulation_impl* sim, StatsConfig* stats_config);
     void restart(Simulation_impl* sim);
     ~StatisticProcessingEngine();
 
