@@ -130,14 +130,6 @@ protected:
     BuilderInfoImpl& operator=(const BuilderInfoImpl&) = delete;
 };
 
-template <class Base, class T>
-struct InstantiateBuilderInfo
-{
-    static bool isLoaded() { return loaded; }
-
-    static const bool loaded;
-};
-
 template <class Base>
 class InfoLibrary
 {
@@ -287,7 +279,12 @@ struct ElementsInfo
 };
 
 template <class Base, class T>
-const bool InstantiateBuilderInfo<Base, T>::loaded = ElementsInfo<Base>::template add<T>();
+struct InstantiateBuilderInfo
+{
+    static bool isLoaded() { return loaded; }
+
+    static inline const bool loaded = ElementsInfo<Base>::template add<T>();
+};
 
 struct InfoDatabase
 {
