@@ -18,6 +18,7 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <map>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <vector>
