@@ -17,7 +17,6 @@
     "The header file sst/core/serialization/impl/serialize_array.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
-#include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
