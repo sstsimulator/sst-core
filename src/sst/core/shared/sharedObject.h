@@ -21,6 +21,9 @@
 #include <mutex>
 #include <string>
 
+/* Forward declare for Friendship */
+extern int main(int argc, char** argv);
+
 namespace SST {
 
 class Simulation_impl;
@@ -213,7 +216,7 @@ protected:
     ImplementVirtualSerializable(SharedObjectData);
 };
 
-class SharedObjectDataManager : public SST::Core::Serialization::serializable
+class SharedObjectDataManager //: public SST::Core::Serialization::serializable
 {
 
     std::map<std::string, SharedObjectData*> shared_data;
@@ -267,8 +270,7 @@ public:
 
     void updateState(bool finalize);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(shared_data); }
-    ImplementSerializable(SST::Shared::SharedObjectDataManager)
+    void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(shared_data); }
 };
 
 class SharedObject : public SST::Core::Serialization::serializable
@@ -288,6 +290,10 @@ public:
 
 protected:
     friend class SST::Simulation_impl;
+
+    // To enable main to initialize manager on restart
+    friend int ::main(int argc, char** argv);
+
     static SharedObjectDataManager manager;
 
     void incPublishCount(SharedObjectData* data) { data->incPublishCount(); }

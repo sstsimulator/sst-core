@@ -36,6 +36,19 @@ public:
         right->pair_link = left;
     }
 
+    /** Create a new LinkPair.  This is used on restart.
+     * @param order Value used to enforce the link order.
+     */
+    LinkPair() :
+        left(new Link()),
+        right(new Link())
+    {
+        my_id = -1;
+
+        left->pair_link  = right;
+        right->pair_link = left;
+    }
+
     /** Create a new LinkPair.  This is used when the endpoints are in different partitions.
      * @param order Value used to enforce the link order.
      * @param remote_tag Used to look up the correct link on the other side.
