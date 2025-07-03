@@ -17,6 +17,10 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
 
+#define SST_INCLUDING_SERIALIZE_H
+#include "sst/core/serialization/impl/serialize_utility.h"
+#undef SST_INCLUDING_SERIALIZE_H
+
 #include <atomic>
 #include <iostream>
 #include <type_traits>
@@ -108,20 +112,19 @@ get_ptr(T& t)
 template <typename T, typename = void>
 class serialize_impl
 {
-    template <typename, typename = void>
-    struct has_serialize_order : std::false_type
-    {};
+    static_assert(std::is_class_v<std::remove_pointer_t<T>>,
+        "Trying to serialize a non-class type (or a pointer to one) with the default serialize_impl.");
 
-    template <typename U>
-    struct has_serialize_order<U,
-        std::void_t<decltype(std::declval<U>().serialize_order(std::declval<serializer&>()))>> : std::true_type
-    {};
+    static_assert(std::is_final_v<std::remove_pointer_t<T>> || !std::is_polymorphic_v<std::remove_pointer_t<T>>,
+        "The type or the pointed-to-type is polymorphic and non-final, so serialize_impl cannot know the runtime type "
+        "of the object being serialized. Polymorphic classes need to inherit from the serializable class and call the "
+        "ImplementSerializable() macro. For classes marked final, this is not necessary.");
 
-    static_assert(std::is_class_v<std::remove_pointer_t<T>> && !std::is_polymorphic_v<std::remove_pointer_t<T>>,
-        "Trying to serialize an object that is not serializable.");
-
-    static_assert(has_serialize_order<std::remove_pointer_t<T>>::value,
-        "Serializable class does not have serialize_order() method");
+    static_assert(has_serialize_order_v<std::remove_pointer_t<T>>,
+        "The type or the pointed-to-type does not have a serialize_impl specialization, nor a public "
+        "serialize_order() method. This means that there is not a serialize_impl class specialization for "
+        "the type or a pointer to the type, and so the default serialize_impl is used which requires a "
+        "public serialize_order() method to be defined inside of the class type.");
 
 public:
     void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
@@ -130,7 +133,7 @@ public:
         const auto  mode = ser.mode();
         if ( mode == serializer::MAP ) {
             if ( !tPtr ) return; // No need to map a nullptr
-            auto* map = new ObjectMapClass(tPtr, typeid(T).name());
+            ObjectMap* map = new ObjectMapClass(tPtr, typeid(T).name());
             ser.mapper().report_object_map(map);
             ser.mapper().map_hierarchy_start(ser.getMapName(), map);
         }
@@ -233,48 +236,22 @@ class serialize<T*>
     {
         // We are a pointer, need to see if tracking is turned on
         if ( !ser.is_pointer_tracking_enabled() ) {
-            // Handle nullptr
-            char null_char = (nullptr == t ? 0 : 1);
             switch ( ser.mode() ) {
-            case serializer::SIZER:
-                // We will always put in a char to tell whether or not
-                // this is nullptr.
-                ser.size(null_char);
-
-                // If this is a nullptr, then we are done
-                if ( null_char == 0 ) return;
-
-                // Not nullptr, so we need to serialize the object
-                serialize_impl<T*>()(t, ser, options);
-                break;
-            case serializer::PACK:
-                // We will always put in a char to tell whether or not
-                // this is nullptr.
-                ser.pack(null_char);
-
-                // If this is a nullptr, then we are done
-                if ( null_char == 0 ) return;
-
-                // Not nullptr, so we need to serialize the object
-                serialize_impl<T*>()(t, ser, options);
-                break;
             case serializer::UNPACK:
+                t = nullptr; // Nullify the pointer in case it was null
+                [[fallthrough]];
+            default:
             {
-                // Get the ptr and check to see if we've already deserialized
-                ser.unpack(null_char);
+                // We will always get/put a bool to tell whether or not this is nullptr.
+                bool nonnull = t != nullptr;
+                ser.primitive(nonnull);
 
-                // Check to see if this was a nullptr
-                if ( 0 == null_char ) {
-                    t = nullptr;
-                    return;
-                }
-                // Not nullptr, so deserialize
-                serialize_impl<T*>()(t, ser, options);
+                // If not nullptr, serialize the object
+                if ( nonnull ) serialize_impl<T*>()(t, ser, options);
+                break;
             }
             case serializer::MAP:
-                // If this version of serialize gets called in mapping
-                // mode, there is nothing to do
-                break;
+                break; // If this version of serialize gets called in mapping mode, there is nothing to do
             }
             return;
         }
@@ -355,17 +332,18 @@ class serialize<T*>
 // A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
 // SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
 // matches serialization functions which only take lvalue references.
-template <class T>
+template <class TREF>
 void
-sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name)
+sst_ser_object(serializer& ser, TREF&& obj, ser_opt_t options, const char* name)
 {
-    // We will check for the "fast" path (i.e. event serialization for
-    // synchronizations).  We can detect this by see if pointer
-    // tracking is turned off, because it is turned on for both
-    // checkpointing and mapping mode.
+    // TREF is an lvalue reference when obj argument is an lvalue reference, so we remove the reference
+    using T = std::remove_reference_t<TREF>;
+
+    // We will check for the "fast" path (i.e. event serialization for synchronizations).  We can detect this by
+    // seeing if pointer tracking is turned off, because it is turned on for both checkpointing and mapping mode.
     if ( !ser.is_pointer_tracking_enabled() ) {
         // Options are wiped out since none apply in this case
-        return pvt::serialize<std::remove_reference_t<T>>()(obj, ser, 0);
+        return pvt::serialize<T>()(obj, ser, SerOption::none);
     }
 
     // Mapping mode
@@ -374,22 +352,22 @@ sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name)
         // Check to see if we are NOMAP
         if ( SerOption::is_set(options, SerOption::no_map) ) return;
 
-        pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
+        pvt::serialize<T>()(obj, ser, options);
         return;
     }
 
-    if constexpr ( !std::is_pointer_v<std::remove_reference_t<T>> ) {
+    if constexpr ( !std::is_pointer_v<T> ) {
         // as_ptr is only valid for non-pointers
         if ( SerOption::is_set(options, SerOption::as_ptr) ) {
-            pvt::serialize<std::remove_reference_t<T>>().serialize_and_track_pointer(obj, ser, options);
+            pvt::serialize<T>().serialize_and_track_pointer(obj, ser, options);
         }
         else {
-            pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
+            pvt::serialize<T>()(obj, ser, options);
         }
     }
     else {
         // For pointer types, just call serialize
-        pvt::serialize<std::remove_reference_t<T>>()(obj, ser, options);
+        pvt::serialize<T>()(obj, ser, options);
     }
 }
 
@@ -397,10 +375,9 @@ sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name)
 // SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
 // matches serialization functions which only take lvalue references.
 template <class T>
-[[deprecated(
-    "The ser& format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER macro "
-    "for serializing data. The macro "
-    "supports additional options to control the details of serialization.  See SerOption enum for details.")]]
+[[deprecated("The ser& syntax for serialization has been deprecated and will be removed in SST 16.  Please use the "
+             "SST_SER macro for serializing data. The macro supports additional options to control the details of "
+             "serialization.  See the SerOption enum for details.")]]
 void
 operator&(serializer& ser, T&& obj)
 {
@@ -408,10 +385,9 @@ operator&(serializer& ser, T&& obj)
 }
 
 template <class T>
-[[deprecated("The ser| format for serialization has been deprecated and will be removed in SST 16.  Please use SST_SER "
-             "macro with the "
-             "SerOption::as_ptr flag for serializing data. The macro supports additional options to control the "
-             "details of serialization.  See SerOption enum for details.")]]
+[[deprecated("The ser| syntax for serialization has been deprecated and will be removed in SST 16.  Please use the "
+             "SST_SER macro with the SerOption::as_ptr flag for serializing data. The macro supports additional "
+             "options to control the details of serialization.  See the SerOption enum for details.")]]
 void
 operator|(serializer& ser, T&& obj)
 {
@@ -443,9 +419,8 @@ sst_ser_or_helper(Args... args)
 } // namespace Core::Serialization
 } // namespace SST
 
-// These includes have guards to print warnings if they are included
-// independent of this file.  Set the #define that will disable the
-// warnings.
+// These includes have guards to print warnings if they are included independent of this file.
+// Set the #define that will disable the warnings.
 #define SST_INCLUDING_SERIALIZE_H
 #include "sst/core/serialization/impl/serialize_adapter.h"
 #include "sst/core/serialization/impl/serialize_array.h"
@@ -459,8 +434,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_valarray.h"
 #include "sst/core/serialization/impl/serialize_variant.h"
 
-// Reenble warnings for including the above file independent of this
-// file.
+// Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZE_H
 
 #endif // SST_CORE_SERIALIZATION_SERIALIZE_H
