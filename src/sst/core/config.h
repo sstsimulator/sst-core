@@ -168,7 +168,7 @@ private:
     SST_CONFIG_DECLARE_OPTION(uint32_t, num_threads, 1, &StandardConfigParsers::from_string<uint32_t>);
 
     /**
-       Name of the SDL file to use to genearte the simulation
+       Name of the SDL file to use to generate the simulation
     */
     SST_CONFIG_DECLARE_OPTION(std::string, configFile, "NONE", &StandardConfigParsers::from_string<std::string>);
 
@@ -182,6 +182,11 @@ private:
        Print SST timing information after the run
     */
     SST_CONFIG_DECLARE_OPTION(bool, print_timing, false, &StandardConfigParsers::flag_default_true);
+
+    /**
+        Print SST timing information to JSON file
+    */
+    SST_CONFIG_DECLARE_OPTION(std::string, timing_json, "NONE", &StandardConfigParsers::from_string<std::string>);
 
     /**
        Simulated cycle to stop the simulation at
@@ -211,7 +216,7 @@ private:
             std::placeholders::_2));
 
     /**
-       The directory to be used for writting output files
+       The directory to be used for writing output files
     */
     SST_CONFIG_DECLARE_OPTION(std::string, output_directory, "", &StandardConfigParsers::from_string<std::string>);
 

@@ -76,6 +76,7 @@ add_library(
   module.cc
   sstpart.cc
   timeVortex.cc
+  timingOutput.cc
   profile/clockHandlerProfileTool.cc
   profile/componentProfileTool.cc
   profile/eventHandlerProfileTool.cc
