@@ -186,7 +186,7 @@ private:
     /**
         Print SST timing information to JSON file
     */
-    SST_CONFIG_DECLARE_OPTION(std::string, timing_json, "NONE", &StandardConfigParsers::from_string<std::string>);
+    SST_CONFIG_DECLARE_OPTION(std::string, timing_json, "", &StandardConfigParsers::from_string<std::string>);
 
     /**
        Simulated cycle to stop the simulation at
