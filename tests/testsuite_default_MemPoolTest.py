@@ -53,4 +53,7 @@ class testcase_StatisticComponent(SSTTestCase):
         filter1 = StartsWithFilter("WARNING: No components are")
         filter2 = StartsWithFilter("#")
         cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2])
+        if not cmp_result:
+            diffdata = testing_get_diff_data(testtype)
+            log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
