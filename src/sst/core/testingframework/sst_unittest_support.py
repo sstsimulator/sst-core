@@ -31,6 +31,7 @@ import threading
 import time
 import traceback
 import unittest
+from shutil import which
 from typing import (Any, Callable, List, Mapping, Optional, Sequence, Tuple,
                     Type, TypeVar, Union)
 from warnings import warn
@@ -2122,6 +2123,11 @@ def os_wget(
 
     wget_success = False
 
+    wget_loc = which("wget")
+    if wget_loc is None:
+        log_error("wget is not installed")
+        return False
+
     # Make sure target dir exists, and cd into it
     if not os.path.isdir(targetdir):
         log_error("Download directory {0} does not exist".format(targetdir))
@@ -2130,8 +2136,8 @@ def os_wget(
     wgetoutfile = "{0}/wget.out".format(test_output_get_tmp_dir())
 
     log_debug("Downloading file via wget: {0}".format(fileurl))
-    cmd = "wget {0} --no-check-certificate -P {1} {2} > {3} 2>&1".\
-       format(fileurl, targetdir, wgetparams, wgetoutfile)
+    cmd = "{0} {1} --no-check-certificate -P {2} {3} > {4} 2>&1".\
+       format(wget_loc, fileurl, targetdir, wgetparams, wgetoutfile)
     attemptnum = 1
     while attemptnum <= num_tries:
         log_debug("wget Attempt#{0}; cmd={1}".format(attemptnum, cmd))
