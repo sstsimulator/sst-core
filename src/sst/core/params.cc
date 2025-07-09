@@ -102,7 +102,8 @@ Params::count(const key_type& k) const
 void
 Params::print_all_params(std::ostream& os, const std::string& prefix) const
 {
-    int level = 0;
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    int                                   level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) os << "Local params:" << std::endl;
@@ -122,7 +123,8 @@ Params::print_all_params(std::ostream& os, const std::string& prefix) const
 void
 Params::print_all_params(Output& out, const std::string& prefix) const
 {
-    int level = 0;
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    int                                   level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) out.output("%sLocal params:\n", prefix.c_str());
@@ -142,8 +144,9 @@ Params::print_all_params(Output& out, const std::string& prefix) const
 std::string
 Params::toString(const std::string& prefix) const
 {
-    std::stringstream str;
-    int               level = 0;
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    std::stringstream                     str;
+    int                                   level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) str << "Local params:" << std::endl;
@@ -190,7 +193,8 @@ Params::insert(const Params& params)
 std::set<std::string>
 Params::getKeys() const
 {
-    std::set<std::string> ret;
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    std::set<std::string>                 ret;
     for ( auto map : data ) {
         for ( auto value : *map ) {
             ret.insert(keyMapReverse[value.first]);
@@ -274,6 +278,7 @@ Params::verifyParam(const key_type& k) const
 const std::string&
 Params::getParamName(uint32_t id)
 {
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
     return keyMapReverse[id];
 }
 
