@@ -202,7 +202,8 @@ Params::getKeys() const
 Params
 Params::get_scoped_params(const std::string& scope) const
 {
-    Params ret;
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    Params                                ret;
     ret.enableVerify(false);
 
     std::string prefix = scope + ".";
@@ -346,8 +347,8 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
 uint32_t
 Params::getKey(const std::string& str)
 {
-    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
-    auto                                             i = keyMap.find(str);
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    auto                                  i = keyMap.find(str);
     if ( i == keyMap.end() ) {
         uint32_t id = nextKeyID++;
         keyMap.insert(std::make_pair(str, id));
@@ -593,7 +594,7 @@ std::map<std::string, uint32_t> Params::keyMap;
 // Index 0 in params is used for set name
 std::vector<std::string>        Params::keyMapReverse({ "<set_name>" });
 uint32_t                        Params::nextKeyID = 1;
-Core::ThreadSafe::Spinlock      Params::keyLock;
+std::recursive_mutex            Params::keyLock;
 Core::ThreadSafe::Spinlock      Params::sharedLock;
 // ID 0 is reserved for holding metadata
 bool                            Params::g_verify_enabled = false;
