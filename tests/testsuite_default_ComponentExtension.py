@@ -57,5 +57,8 @@ class testcase_ComponentExtension(SSTTestCase):
             testfile = errfile
 
         cmp_result = testing_compare_filtered_diff(testtype, testfile, reffile, sort=True, filters=[filter1,filter2])
+        if not cmp_result:
+            diffdata = testing_get_diff_data(testtype)
+            log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 
