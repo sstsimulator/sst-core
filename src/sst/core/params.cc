@@ -168,6 +168,7 @@ Params::toString(const std::string& prefix) const
 void
 Params::insert(const std::string& key, const std::string& value, bool overwrite)
 {
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
     if ( overwrite ) {
         my_data[getKey(key)] = value;
     }
@@ -180,6 +181,7 @@ Params::insert(const std::string& key, const std::string& value, bool overwrite)
 void
 Params::insert(const Params& params)
 {
+    std::lock_guard<std::recursive_mutex> lock(keyLock);
     my_data.insert(params.my_data.begin(), params.my_data.end());
     for ( size_t i = 1; i < params.data.size(); ++i ) {
         bool already_there = false;
