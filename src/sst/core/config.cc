@@ -415,7 +415,7 @@ Config::insertOptions()
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
         "will be appended to the model options (or used as the model options if --model-options was not specified).",
         model_options_, false, false, true);
-    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information", print_timing_, true);
+    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information", print_timing_, true, true, false);
     DEF_ARG(
         "timing-info-json", 0, "FILE", "Write SST timing information in JSON format", timing_json_, true, true, false);
     DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution", stop_at_, true, true, false);

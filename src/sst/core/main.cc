@@ -1275,30 +1275,29 @@ main(int argc, char* argv[])
     const uint64_t global_max_io_out = maxOutputOperations();
 
     if ( myRank.rank == 0 && (cfg.verbose() || cfg.print_timing() || cfg.timing_json() != "") ) {
-        std::unique_ptr<TimingOutput> timingOutput =
-            std::make_unique<TimingOutput>(g_output, cfg.verbose() || cfg.print_timing());
-        if ( cfg.timing_json() != "" ) timingOutput->setJSON(cfg.timing_json());
+        TimingOutput timingOutput(g_output, cfg.verbose() || cfg.print_timing());
+        if ( cfg.timing_json() != "" ) timingOutput.setJSON(cfg.timing_json());
 
-        timingOutput->set(TimingOutput::Key::LOCAL_MAX_RSS, local_max_rss);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MAX_RSS, global_max_rss);
-        timingOutput->set(TimingOutput::Key::LOCAL_MAX_PF, local_max_pf);
-        timingOutput->set(TimingOutput::Key::GLOBAL_PF, global_pf);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MAX_IO_IN, global_max_io_in);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MAX_IO_OUT, global_max_io_out);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MAX_SYNC_DATA_SIZE, global_max_sync_data_size);
-        timingOutput->set(TimingOutput::Key::GLOBAL_SYNC_DATA_SIZE, global_sync_data_size);
-        timingOutput->set(TimingOutput::Key::MAX_MEMPOOL_SIZE, (uint64_t)max_mempool_size);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MEMPOOL_SIZE, (uint64_t)global_mempool_size);
-        timingOutput->set(TimingOutput::Key::MAX_BUILD_TIME, max_build_time);
-        timingOutput->set(TimingOutput::Key::MAX_RUN_TIME, max_run_time);
-        timingOutput->set(TimingOutput::Key::MAX_TOTAL_TIME, max_total_time);
-        timingOutput->set(TimingOutput::Key::SIMULATED_TIME_UA, threadInfo[0].simulated_time);
-        timingOutput->set(TimingOutput::Key::GLOBAL_ACTIVE_ACTIVITIES, (uint64_t)global_active_activities);
-        timingOutput->set(TimingOutput::Key::GLOBAL_CURRENT_TV_DEPTH, global_current_tv_depth);
-        timingOutput->set(TimingOutput::Key::GLOBAL_MAX_TV_DEPTH, global_max_tv_depth);
-        timingOutput->set(TimingOutput::Key::RANKS, (uint64_t)world_size.rank);
-        timingOutput->set(TimingOutput::Key::THREADS, (uint64_t)world_size.thread);
-        timingOutput->generate();
+        timingOutput.set(TimingOutput::Key::LOCAL_MAX_RSS, local_max_rss);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MAX_RSS, global_max_rss);
+        timingOutput.set(TimingOutput::Key::LOCAL_MAX_PF, local_max_pf);
+        timingOutput.set(TimingOutput::Key::GLOBAL_PF, global_pf);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MAX_IO_IN, global_max_io_in);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MAX_IO_OUT, global_max_io_out);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MAX_SYNC_DATA_SIZE, global_max_sync_data_size);
+        timingOutput.set(TimingOutput::Key::GLOBAL_SYNC_DATA_SIZE, global_sync_data_size);
+        timingOutput.set(TimingOutput::Key::MAX_MEMPOOL_SIZE, (uint64_t)max_mempool_size);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MEMPOOL_SIZE, (uint64_t)global_mempool_size);
+        timingOutput.set(TimingOutput::Key::MAX_BUILD_TIME, max_build_time);
+        timingOutput.set(TimingOutput::Key::MAX_RUN_TIME, max_run_time);
+        timingOutput.set(TimingOutput::Key::MAX_TOTAL_TIME, max_total_time);
+        timingOutput.set(TimingOutput::Key::SIMULATED_TIME_UA, threadInfo[0].simulated_time);
+        timingOutput.set(TimingOutput::Key::GLOBAL_ACTIVE_ACTIVITIES, (uint64_t)global_active_activities);
+        timingOutput.set(TimingOutput::Key::GLOBAL_CURRENT_TV_DEPTH, global_current_tv_depth);
+        timingOutput.set(TimingOutput::Key::GLOBAL_MAX_TV_DEPTH, global_max_tv_depth);
+        timingOutput.set(TimingOutput::Key::RANKS, (uint64_t)world_size.rank);
+        timingOutput.set(TimingOutput::Key::THREADS, (uint64_t)world_size.thread);
+        timingOutput.generate();
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
