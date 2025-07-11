@@ -1,0 +1,84 @@
+---
+name: Build/test on macOS 15
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  macos-15:
+    runs-on: macos-15
+    steps:
+
+      - name: Clone core
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          path: sst-core
+          persist-credentials: false
+
+      - name: Clone elements
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          path: sst-elements
+          persist-credentials: false
+          ref: devel
+          repository: sstsimulator-at2/sst-elements
+
+      - name: Install system-level dependencies
+        run: |
+          sst-core/.github/scripts/install_os_level_dependencies.sh
+
+      - name: Install and configure ccache
+        uses: hendrikmuhs/ccache-action@63069e3931dedbf3b63792097479563182fe70d1  # v1.2
+        with:
+          append-timestamp: false
+          create-symlink: true
+          key: >-
+            ccache-${{ github.job }}
+          max-size: "2GB"
+          verbose: 2
+
+      - name: Set environment variables
+        run: |
+          MAKEFLAGS="-j$(nproc)"
+          echo "MAKEFLAGS=${MAKEFLAGS}" >> "${GITHUB_ENV}"
+          echo "TERM=dumb" >> "${GITHUB_ENV}"
+
+      - name: Compile core
+        run: |
+          # TODO the argument does nothing as long as Spack is unavailable
+          sst-core/.github/scripts/core_autotools_noflags_nodeps.sh gcc
+
+      - name: Test core
+        run: |
+          install_autotools_noflags_nodeps_gcc/bin/sst-test-core
+
+      - name: Save sst_test_outputs after core tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: sst_test_outputs_core_free-macos-14
+          path: sst_test_outputs
+          compression-level: 9
+          if-no-files-found: error
+          retention-days: 5
+        if: ${{ !cancelled() }}
+
+      - name: Compile elements
+        run: |
+          # TODO the argument does nothing as long as Spack is unavailable
+          sst-core/.github/scripts/elements_autotools_noflags_nodeps.sh gcc
+
+      - name: Test elements
+        run: |
+          install_autotools_noflags_nodeps_gcc/bin/sst-test-elements
+
+      - name: Save sst_test_outputs after elements tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: sst_test_outputs_elements_free-macos-14
+          path: sst_test_outputs
+          compression-level: 9
+          if-no-files-found: error
+          retention-days: 5
+        if: ${{ !cancelled() }}
