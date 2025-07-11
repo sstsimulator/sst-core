@@ -1,5 +1,5 @@
-/* src/sst/core/sst_config.h.in.  Generated from cmake. 
- * Tries hard to mirror the file created by by autoheader.  
+/* src/sst/core/sst_config.h.in.  Generated from cmake.
+ * Tries hard to mirror the file created by by autoheader.
  */
 
 /* Define to 1 if you have the `argz_add' function. */

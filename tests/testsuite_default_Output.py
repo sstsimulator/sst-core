@@ -31,7 +31,7 @@ class testcase_Output(SSTTestCase):
 #####
 
     def test_Output_TraceFunction(self):
-        os.unsetenv("SST_TRACEFUNCTION_INDENT_MARKER");    
+        os.unsetenv("SST_TRACEFUNCTION_INDENT_MARKER");
         self.tracefunction_test_template("TraceFunction")
 
     def test_Output_TraceFunction_IndentMarker(self):
@@ -89,8 +89,8 @@ class testcase_Output(SSTTestCase):
                 diffdata = testing_get_diff_data(testtype)
                 log_failure(diffdata)
             self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-            
-                    
+
+
 class TraceFunctionFilter(LineFilter):
     def __init__(self, prefix):
         super().__init__()
