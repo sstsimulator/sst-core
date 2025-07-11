@@ -17,14 +17,17 @@
     "The header file sst/core/serialization/impl/sizer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
+#include <type_traits>
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_sizer
+class ser_sizer : public ser_shared_ptr_packer
 {
     size_t              size_ = 0;
     std::set<uintptr_t> pointer_set;

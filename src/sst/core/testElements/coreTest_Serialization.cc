@@ -29,6 +29,7 @@
 #include <forward_list>
 #include <list>
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
@@ -49,7 +50,6 @@ void
 serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
 {
     // Set up serializer and buffers
-    char*                                buffer;
     SST::Core::Serialization::serializer ser;
     ser_opt_t                            options = 0;
     if ( with_tracking ) {
@@ -60,19 +60,39 @@ serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
     ser.start_sizing();
     SST_SER(input, options);
 
-    size_t size = ser.size();
+    size_t size   = ser.size();
+    auto   buffer = std::make_unique<char[]>(size);
 
-    buffer = new char[size];
-
-    ser.start_packing(buffer, size);
+    ser.start_packing(buffer.get(), size);
     SST_SER(input, options);
 
-    ser.start_unpacking(buffer, size);
+    ser.start_unpacking(buffer.get(), size);
     SST_SER(output, options);
 
-    delete[] buffer;
+    ser.finalize();
 }
 
+// serialize and deserialize a tuple of variables
+template <class... T>
+void
+serializeDeserialize(std::tuple<T&&...> in, std::tuple<T&&...> out)
+{
+    SST::Core::Serialization::serializer ser;
+
+    ser.start_sizing();
+    std::apply([&](auto&... x) { (SST_SER(x), ...); }, in);
+
+    size_t size   = ser.size();
+    auto   buffer = std::make_unique<char[]>(size);
+
+    ser.start_packing(buffer.get(), size);
+    std::apply([&](auto&... x) { (SST_SER(x), ...); }, in);
+
+    ser.start_unpacking(buffer.get(), size);
+    std::apply([&](auto&... x) { (SST_SER(x), ...); }, out);
+
+    ser.finalize();
+}
 
 template <typename T>
 struct checkSimpleSerializeDeserialize
@@ -620,6 +640,236 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
     ImplementSerializable(RecursiveSerializationTest)
 };
 
+template <class>
+constexpr bool is_unbounded_array_v = false;
+
+template <class T>
+constexpr bool is_unbounded_array_v<T[]> = true;
+
+template <typename, typename = void>
+constexpr bool is_tuple_v = false;
+
+template <typename T>
+constexpr bool is_tuple_v<T, std::void_t<decltype(std::tuple_size<T>::value)>> = true;
+
+template <typename T>
+std::enable_if_t<std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T>, bool>
+objectEqual(const T& a, const T& b)
+{
+    return !memcmp(&a, &b, sizeof(a));
+}
+
+template <typename T>
+bool
+objectEqual(const T (&a)[], const T (&b)[], size_t size)
+{
+    for ( size_t i = 0; i < size; ++i )
+        if ( !objectEqual(a[i], b[i]) ) return false;
+    return true;
+}
+
+template <typename T, size_t N>
+bool
+objectEqual(const T (&a)[N], const T (&b)[N])
+{
+    return objectEqual(reinterpret_cast<T(&)[]>(a), reinterpret_cast<T(&)[]>(b), N);
+}
+
+template <template <typename> class TEMP, typename T>
+decltype(std::declval<TEMP<T>>().size(), std::declval<TEMP<T>>()[0], true)
+objectEqual(const TEMP<T>& v1, const TEMP<T>& v2)
+{
+    if ( v1.size() != v2.size() ) return false;
+    for ( size_t i = 0; i < v1.size(); ++i )
+        if ( !objectEqual(v1[i], v2[i]) ) return false;
+    return true;
+}
+
+template <typename T1, typename T2>
+bool
+checkSameOwner(const T1& t1, const T2& t2)
+{
+    return !(t1.owner_before(t2) || t2.owner_before(t1));
+}
+
+// Compare two std::shared_ptr
+template <typename T>
+bool
+checkSharedPtr(
+    const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
+{
+    // Make sure that the reference counts are the same
+    if ( p1.use_count() != p2.use_count() ) {
+        std::cerr << "use count\n";
+        return false;
+    }
+
+    // If the pointer is empty, return true
+    if ( p1.use_count() == 0 ) return true;
+
+    // Make sure they're both nullptr or not
+    if ( bool(p1) != bool(p2) ) {
+        std::cerr << "nonnull\n";
+        return false;
+    }
+
+    // For null pointer, return true
+    if ( !p1 ) return true;
+
+    // Compare pointed-to objects
+    if constexpr ( is_unbounded_array_v<T> ) {
+        if ( *p1_size != *p2_size ) return false;
+        return objectEqual(*reinterpret_cast<T*>(p1.get()), *reinterpret_cast<T*>(p2.get()), *p1_size);
+    }
+    else {
+        if ( !objectEqual(*reinterpret_cast<T*>(p1.get()), *reinterpret_cast<T*>(p2.get())) ) {
+            std::cerr << "contents\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+// Compare two std::shared_ptr with sizes
+template <typename T>
+bool
+checkSharedPtr(const std::tuple<std::shared_ptr<T>&, size_t*> p1, const std::tuple<std::shared_ptr<T>&, size_t*> p2)
+{
+    return checkSharedPtr(std::get<0>(p1), std::get<0>(p2), std::get<1>(p1), std::get<1>(p2));
+}
+
+// Compare two std::weak_ptr
+template <typename T>
+bool
+checkSharedPtr(
+    const std::weak_ptr<T>& p1, const std::weak_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
+{
+    return checkSharedPtr(p1.lock(), p2.lock(), p1_size, p2_size);
+}
+
+// Compare two std::weak_ptr with sizes
+template <typename T>
+bool
+checkSharedPtr(const std::tuple<std::weak_ptr<T>&, size_t*> p1, const std::tuple<std::weak_ptr<T>&, size_t*> p2)
+{
+    return checkSharedPtr(std::get<0>(p1), std::get<0>(p2), std::get<1>(p1), std::get<1>(p2));
+}
+
+// Compare two tuples of std::shared_ptr or std::weak_ptr
+template <typename... T>
+bool
+checkSharedPtr(const std::tuple<T...>& p1, const std::tuple<T...>& p2)
+{
+    return std::apply(
+        [&](auto&&... p1s) { return std::apply([&](auto&&... p2s) { return (checkSharedPtr(p1s, p2s) && ...); }, p2); },
+        p1);
+}
+
+// Test std::shared_ptr and std::weak_ptr
+void
+checkSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
+{
+    auto test = [&](auto value, auto rand) {
+        using T = decltype(value);
+
+        // a single std::shared_ptr
+        {
+            std::shared_ptr<T> in = std::make_shared<T>(rand());
+            std::shared_ptr<T> out;
+
+            serializeDeserialize(std::tie(in), std::tie(out));
+            if ( !checkSharedPtr(in, out) ) {
+                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 1)\n");
+            }
+        }
+
+        // a duplicated std::shared_ptr
+        {
+            std::shared_ptr<T> in1 = std::make_shared<T>(rand()), in2 = in1;
+            std::shared_ptr<T> out1, out2                             = std::make_shared<T>(rand());
+
+            serializeDeserialize(std::tie(in1, in2), std::tie(out1, out2));
+            if ( !checkSameOwner(out1, out2) || !checkSharedPtr(std::tie(in1, in2), std::tie(out1, out2)) ) {
+                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 2)\n");
+            }
+        }
+
+        // a duplicated std::shared_ptr with a std::weak_ptr
+        {
+            std::shared_ptr<T> in1 = std::make_shared<T>(rand()), in2 = in1;
+            std::weak_ptr<T>   in3  = in2;
+            std::shared_ptr<T> out1 = std::make_shared<T>(rand()), out2 = std::make_shared<T>(rand());
+            std::weak_ptr<T>   out3;
+
+            serializeDeserialize(std::tie(in1, in2, in3), std::tie(out1, out2, out3));
+            if ( !checkSameOwner(out1, out2) || !checkSameOwner(out2, out3) ||
+                 !checkSharedPtr(std::tie(in1, in2, in3), std::tie(out1, out2, out3)) ) {
+                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 3)\n");
+            }
+        }
+
+        // an expired std::weak_ptr
+        {
+            std::weak_ptr<T> in = std::make_shared<T>(rand());
+            std::weak_ptr<T> out;
+
+            serializeDeserialize(std::tie(in), std::tie(out));
+            if ( !checkSharedPtr(in, out) ) {
+                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 4)\n");
+            }
+        }
+        // an aliasing std::shared_ptr
+        {
+            struct S
+            {
+                double d;
+                T      t;
+                void   serialize_order(SST::Core::Serialization::serializer& ser)
+                {
+                    SST_SER(d);
+                    SST_SER(t);
+                }
+            };
+            std::shared_ptr<S> in1(new S { rng->nextUniform(), rand() });
+            //            std::shared_ptr<T> in2 { in1, &in1->t };
+            std::shared_ptr<S> out1(new S { rng->nextUniform(), rand() });
+            std::shared_ptr<T> out2 = std::make_shared<T>(rand());
+
+            SST::Core::Serialization::serializer ser;
+
+            serializeDeserialize(std::tie(in1), std::tie(out1));
+
+            //            serializeDeserialize(std::forward_as_tuple(in1, SST::Core::Serialization::shared_ptr(in2, in1)
+            //            ),
+            //                                 std::forward_as_tuple(out1, SST::Core::Serialization::shared_ptr(out2,
+            //                                 out1) ));
+
+            //            if ( !checkSameOwner(out1, out2) || !checkSharedPtr(std::tie(in1), std::tie(out1)) )
+            //                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 5)\n");
+            if ( !checkSharedPtr(std::tie(in1), std::tie(out1)) )
+                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 5)\n");
+        }
+    };
+
+    // test uint32_t pointees
+    test(uint32_t {}, [&] { return rng->generateNextUInt32(); });
+
+#if 0
+
+    // test double pointeees
+    test(double {}, [&] { return rng->nextUniform() * 1000.0; });
+
+    // test std::vector<uint32_t> pointees
+    test(std::vector<uint32_t> {}, [&] {
+        size_t                n = rng->generateNextUInt32() % 1000;
+        std::vector<uint32_t> v(n);
+        for ( size_t i = 0; i < n; ++i )
+            v[i] = rng->generateNextUInt32();
+        return v;
+    });
+#endif
+}
+
 coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     Component(id)
 {
@@ -690,6 +940,9 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<float*>::check_all(rng->nextUniform() * 1000, out, "float*");
         checkSimpleSerializeDeserialize<double*>::check_all(rng->nextUniform() * 1000000, out, "double*");
         checkSimpleSerializeDeserialize<std::string*>::check_all("test_string", out, "std::string*");
+    }
+    else if ( test == "shared_ptr" ) {
+        checkSharedPtr(out, rng);
     }
     else if ( test == "array" ) {
         {
