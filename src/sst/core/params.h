@@ -21,6 +21,7 @@
 #include <inttypes.h>
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <set>
 #include <sstream>
 #include <stack>
@@ -963,7 +964,7 @@ private:
 
     static std::map<std::string, uint32_t> keyMap;
     static std::vector<std::string>        keyMapReverse;
-    static SST::Core::ThreadSafe::Spinlock keyLock;
+    static std::recursive_mutex            keyLock;
     static SST::Core::ThreadSafe::Spinlock sharedLock;
     static uint32_t                        nextKeyID;
 
