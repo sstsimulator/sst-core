@@ -1648,6 +1648,24 @@ void
 Simulation_impl::checkpoint_write_globals(
     int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename)
 {
+    uint64_t local_event_id;
+    uint64_t max_event_id;
+
+    // Gather data needed for checkpoint
+    if ( my_rank.thread == 0 ) {
+        // Save max event_id to ensure unique IDs on restart
+        local_event_id = Event::id_counter.load();
+        max_event_id   = local_event_id;
+#ifdef SST_CONFIG_HAVE_MPI
+        MPI_Allreduce(&local_event_id, &max_event_id, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD);
+#endif
+    }
+
+    // Only rank 0/thread 0 writes the globals file
+    if ( my_rank.rank != 0 || my_rank.thread != 0 ) {
+        return;
+    }
+
     std::ofstream fs = filesystem.ofstream(globals_filename, std::ios::out | std::ios::binary);
 
     // TODO: Add error checking for file open
@@ -1707,6 +1725,7 @@ Simulation_impl::checkpoint_write_globals(
     ser.start_sizing();
     SST_SER(minPart);
     SST_SER(minPartTC);
+    SST_SER(max_event_id);
 
     size = ser.size();
     buffer.resize(size);
@@ -1714,6 +1733,7 @@ Simulation_impl::checkpoint_write_globals(
     ser.start_packing(buffer.data(), size);
     SST_SER(minPart);
     SST_SER(minPartTC);
+    SST_SER(max_event_id);
 
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1730,7 +1750,7 @@ Simulation_impl::checkpoint_write_globals(
            << std::endl;
 
     /* Section 2: Config options */
-    fs_reg << "## Configuaration Options" << std::endl;
+    fs_reg << "## Configuration Options" << std::endl;
     fs_reg << "## Note: Values in this section are for information only, editing values will not affect restart"
            << std::endl;
 #define WR(var) fs_reg << #var << " = " << var << std::endl;
@@ -1860,6 +1880,7 @@ Simulation_impl::restart()
     std::ifstream     fs_globals(globals_filename, std::ios::binary);
     size_t            size;
     std::vector<char> buffer;
+    uint64_t          max_event_id;
 
     // Read how much data in Section 1, which we will skip over
     fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
@@ -1877,12 +1898,18 @@ Simulation_impl::restart()
 
     SST_SER(minPart);
     SST_SER(minPartTC);
+    SST_SER(max_event_id);
 
     fs_globals.close();
 
     // Set the runmode and output directory
     runMode          = config.runMode();
     output_directory = config.output_directory();
+
+    // Set the event ID counter
+    if ( my_rank.thread == 0 ) {
+        Event::id_counter.store(max_event_id);
+    }
 
     // Look for the line that has my rank's file info
     std::string blob_filename;
@@ -1942,7 +1969,7 @@ Simulation_impl::restart()
 
     // If we are a parallel job, need to call
     // finalizeLinkConfigurations() in order to finish setting up all
-    // the sync datastrctures. This will also cause the SyncManager to
+    // the sync data structures. This will also cause the SyncManager to
     // compute its next fire time.
     if ( num_ranks.rank > 1 || num_ranks.thread > 1 ) {
         syncManager->setRestartTime(currentSimCycle);

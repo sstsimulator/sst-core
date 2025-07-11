@@ -33,6 +33,7 @@ public:
     explicit PortInterface(ComponentId_t id) :
         SubComponent(id)
     {}
+    PortInterface() {}
     virtual ~PortInterface() {}
 
     /**
@@ -84,25 +85,40 @@ public:
     template <typename classT, auto funcT, typename dataT = void>
     using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
 
-    virtual void setNotifyOnReceive(HandlerBase* functor) { rFunctor = functor; }
+    virtual void setNotifyOnReceive(HandlerBase* functor) { functor_ = functor; }
 
-    virtual void send(MessageEvent* ev) = 0;
+    virtual void send(MessageEvent* ev, size_t index) = 0;
+
+    virtual size_t getPortCount() = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SubComponent::serialize_order(ser);
+        SST_SER(functor_);
+    }
+    ImplementVirtualSerializable(SST::CoreTest::MessageMesh::PortInterface);
 
 protected:
-    HandlerBase* rFunctor;
+    HandlerBase* functor_ = nullptr;
 };
 
 class RouteInterface : public SST::SubComponent
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::RouteInterface, const std::vector<PortInterface*>&, int)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTest::MessageMesh::RouteInterface, std::vector<PortInterface*>&, int)
 
     explicit RouteInterface(ComponentId_t id) :
         SubComponent(id)
     {}
+    RouteInterface() {}
     virtual ~RouteInterface() {}
 
     virtual void send(MessageEvent* ev, int incoming_port) = 0;
+
+    virtual void sendInitialEvents(int mod) = 0;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { SubComponent::serialize_order(ser); }
+    ImplementVirtualSerializable(SST::CoreTest::MessageMesh::RouteInterface);
 };
 
 class EnclosingComponent : public SST::Component
@@ -119,7 +135,9 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        {"id", "Id for this componentd", ""},
+        {"id", "Id for this component", ""},
+        {"mod", "Port modulus to restrict number of initial events", "1"},
+        {"verbose", "Print message count at end of simulation", "True"}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
@@ -130,22 +148,29 @@ public:
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
         {"ports", "Slot that the ports objects go in", "SST::CoreTest::MessageMesh::PortInterface" },
-        {"route", "Slot that the ports objects go in", "SST::CoreTest::MessageMesh::RouteInterface" }
+        {"route", "Slot that the route object goes in", "SST::CoreTest::MessageMesh::RouteInterface" }
     )
 
     EnclosingComponent(ComponentId_t id, Params& params);
+    EnclosingComponent() {}
+    ~EnclosingComponent() {}
 
     void setup() override;
     void finish() override;
 
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::CoreTest::MessageMesh::EnclosingComponent);
+
 private:
     void handleEvent(SST::Event* ev, int port);
 
-    std::vector<PortInterface*> ports;
-    RouteInterface*             route;
+    std::vector<PortInterface*> ports_;
+    RouteInterface*             route_;
 
-    int my_id;
-    int message_count;
+    int  my_id_;
+    int  message_count_ = 0;
+    int  mod_           = 1;
+    bool verbose_       = true;
 };
 
 // SubComponents
@@ -177,13 +202,18 @@ public:
     )
 
     PortSlot(ComponentId_t id, Params& params);
+    PortSlot() {}
     ~PortSlot() {}
 
-    void send(MessageEvent* ev) override { port->send(ev); }
-    void setNotifyOnReceive(HandlerBase* functor) override { port->setNotifyOnReceive(functor); }
+    void   send(MessageEvent* ev, size_t index) override { port_->send(ev, index); }
+    void   setNotifyOnReceive(HandlerBase* functor) override { port_->setNotifyOnReceive(functor); }
+    size_t getPortCount() override { return port_->getPortCount(); }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::CoreTest::MessageMesh::PortSlot);
 
 private:
-    PortInterface* port;
+    PortInterface* port_;
 };
 
 
@@ -207,20 +237,25 @@ public:
     )
 
     SST_ELI_DOCUMENT_PORTS(
-        {"port", "Port to send or receive on", { "" } },
+        {"port%d", "Port to send or receive on", { "" } },
     )
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
     MessagePort(ComponentId_t id, Params& params);
+    MessagePort() {}
     ~MessagePort() {}
 
-    void send(MessageEvent* ev) override;
-    void handleEvent(Event* ev);
+    void   send(MessageEvent* ev, size_t index) override;
+    void   handleEvent(Event* ev);
+    size_t getPortCount() override { return links_.size(); }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::CoreTest::MessageMesh::MessagePort);
 
 private:
-    Link* link;
+    std::vector<Link*> links_;
 };
 
 class RouteMessage : public RouteInterface
@@ -249,17 +284,24 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
-    RouteMessage(ComponentId_t id, Params& params, const std::vector<PortInterface*>& ports, int my_id);
+    RouteMessage(ComponentId_t id, Params& params, std::vector<PortInterface*>& ports, int my_id);
+    RouteMessage() {}
     ~RouteMessage() {}
 
     void send(MessageEvent* ev, int incoming_port) override;
 
-private:
-    const std::vector<PortInterface*> ports;
-    int                               my_id;
-    SST::RNG::Random*                 rng;
+    void sendInitialEvents(int mod) override;
 
-    Statistic<uint64_t>* mcnt;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::CoreTest::MessageMesh::RouteMessage);
+
+private:
+    std::vector<PortInterface*> ports_;
+    std::vector<size_t>         counts_;
+    int                         my_id_;
+    SST::RNG::Random*           rng_;
+
+    Statistic<uint64_t>* mcnt_;
 };
 
 } // namespace SST::CoreTest::MessageMesh

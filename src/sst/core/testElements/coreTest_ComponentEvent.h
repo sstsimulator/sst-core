@@ -23,12 +23,16 @@ public:
     coreTestComponentEvent() :
         SST::Event()
     {}
-    dataVec payload;
+    dataVec        payload;
+    Event::id_type id = Event::NO_ID;
+
+    void setId() { id = generateUniqueId(); }
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         Event::serialize_order(ser);
         SST_SER(payload);
+        SST_SER(id);
     }
 
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentEvent);

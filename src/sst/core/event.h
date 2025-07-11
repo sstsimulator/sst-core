@@ -189,6 +189,7 @@ private:
     friend class RankSync;
     friend class ThreadSync;
     friend class TimeVortex;
+    friend class Simulation_impl;
 
 
     /** Cause this event to fire */

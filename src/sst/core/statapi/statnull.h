@@ -103,12 +103,13 @@ class NullStatistic : public NullStatisticBase<T>
 {
 public:
     SST_ELI_DECLARE_STATISTIC_TEMPLATE(
-      NullStatistic,
-      "sst",
-      "NullStatistic",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Null object that ignores all collections",
-      "SST::Statistic<T>")
+        NullStatistic,
+        "sst",
+        "NullStatistic",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Null object that ignores all collections",
+        "SST::Statistic<T>"
+    )
 
     NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParam) :
         NullStatisticBase<T>(comp, statName, statSubId, statParam)
@@ -146,13 +147,13 @@ class NullStatistic<void> : public Statistic<void>
 {
 public:
     SST_ELI_REGISTER_DERIVED(
-    Statistic<void>,
-    NullStatistic<void>,
-    "sst",
-    "NullStatistic",
-    SST_ELI_ELEMENT_VERSION(1,0,0),
-    "Null statistic for custom (void) stats"
-  )
+        Statistic<void>,
+        NullStatistic<void>,
+        "sst",
+        "NullStatistic",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Null statistic for custom (void) stats"
+    )
 
     SST_ELI_INTERFACE_INFO("Statistic<void>")
 

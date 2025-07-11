@@ -71,6 +71,8 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
 
     // set our clock
     registerClock(clockFrequency, new Clock::Handler2<coreTestComponent, &coreTestComponent::clockTic>(this));
+
+    last_event_id = SST::Event::NO_ID;
 }
 
 coreTestComponent::~coreTestComponent()
@@ -124,6 +126,16 @@ coreTestComponent::clockTic(Cycle_t)
         // yes, communicate
         // create event
         coreTestComponentEvent* e = new coreTestComponentEvent();
+
+        // assign a unique ID to the event
+        e->setId();
+        if ( last_event_id != SST::Event::NO_ID ) {
+            sst_assert(e->id.first > last_event_id.first, CALL_INFO_LONG, EXIT_FAILURE,
+                "Assigned a non-monotonically increasing event ID. id=%" PRIu64 ", last id=%" PRIu64 "\n", e->id.first,
+                last_event_id.first);
+        }
+        last_event_id = e->id;
+
         // fill payload with commSize bytes
         for ( int i = 0; i < (commSize); ++i ) {
             e->payload.push_back(1);
@@ -131,6 +143,7 @@ coreTestComponent::clockTic(Cycle_t)
         // find target
         neighbor = neighbor + 1;
         neighbor = neighbor % 4;
+
         // send
         switch ( neighbor ) {
         case 0:
