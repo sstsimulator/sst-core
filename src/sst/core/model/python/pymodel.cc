@@ -331,6 +331,8 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyDict_SetItem(dict, SST_ConvertToPythonString("num-threads"), SST_ConvertToPythonLong(cfg->num_threads()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("sdl-file"), SST_ConvertToPythonString(cfg->configFile().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("print-timing-info"), SST_ConvertToPythonBool(cfg->print_timing()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("timing-info-json"), SST_ConvertToPythonString(cfg->timing_json().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stop_at().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("exit-after"), SST_ConvertToPythonLong(cfg->exit_after()));
     PyDict_SetItem(
