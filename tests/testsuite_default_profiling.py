@@ -71,4 +71,4 @@ class testcase_Profiling(SSTTestCase):
 
         # Perform the test
         cmp_result = testing_compare_sorted_diff(testtype, checkfile, reffile)
-        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(checkfile, reffile))

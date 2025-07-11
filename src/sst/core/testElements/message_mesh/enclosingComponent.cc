@@ -70,9 +70,8 @@ EnclosingComponent::setup()
     for ( size_t i = 0; i < ports_.size(); ++i ) {
         ports_[i]->setNotifyOnReceive(
             new PortInterface::Handler2<EnclosingComponent, &EnclosingComponent::handleEvent, int>(this, i));
-
-        route_->sendInitialEvents(mod_);
     }
+    route_->sendInitialEvents(mod_);
 }
 
 void
