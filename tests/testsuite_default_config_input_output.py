@@ -80,7 +80,7 @@ class testcase_Config_input_output(SSTTestCase):
             options_ref = "{0}={1} --parallel-output --model-options=\"{2}\" {3}".format(out_flag,output_config_option,model_options,output_dir_option);
         else:
             options_ref = "{0}={1} --output-partition --model-options=\"{2}\" {3}".format(out_flag,output_config_option,model_options,output_dir_option);
-        
+
         if have_mpi:
             options_check = "--parallel-load={0}".format(load_mode)
         else:

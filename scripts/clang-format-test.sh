@@ -11,7 +11,7 @@ CLANG_FORMAT_EXE="clang-format"
 CLANG_FORMAT_ARG="--dry-run"
 
 while :; do
-  case $1 in 
+  case $1 in
     -h | --help)
       echo "Run as scripts/clang-format-test.sh [--format-exe <path_to_clang-format>]"
       exit

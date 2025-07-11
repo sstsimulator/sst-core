@@ -35,7 +35,7 @@ class testcase_sstinfo(SSTTestCase):
     @unittest.skipIf(not have_curses, "Curses library not loaded, skipping interactive test")
     def test_sstinfo_interactive(self):
         self.sstinfo_test_template("interactive", "-i")
-        
+
 #####
 
     def sstinfo_test_template(self, testtype, flags):
