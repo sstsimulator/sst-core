@@ -16,6 +16,9 @@
 #include "sst/core/portModule.h"
 #include "sst/core/rng/marsaglia.h"
 
+#include <cstdint>
+#include <string>
+
 namespace SST::IMPL::PortModule {
 
 class RandomDrop : public SST::PortModule

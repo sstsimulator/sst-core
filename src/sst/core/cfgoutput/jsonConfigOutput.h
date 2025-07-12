@@ -16,6 +16,9 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <map>
+#include <string>
+
 namespace SST::Core {
 
 class JSONConfigGraphOutput : public ConfigGraphOutput
