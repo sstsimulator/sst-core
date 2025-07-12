@@ -63,5 +63,8 @@ class testcase_Links(SSTTestCase):
             cmpfile = errfile
             filters.append(RemoveRegexFromLineFilter(r"FATAL: (\[[0-9]+:[0-9]+\])* "))
             cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), errfile, reffile, rc == 0, filters)
+        if not cmp_result:
+            diffdata = testing_get_diff_data(testtype)
+            log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(cmpfile, reffile))
 

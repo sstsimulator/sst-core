@@ -53,5 +53,8 @@ class testcase_Module(SSTTestCase):
             # Appears in multi-thread/rank runs since we just have one component, filter it out
             StartsWithFilter("WARNING: No components are") ]
         cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
+        if not cmp_result:
+            diffdata = testing_get_diff_data(testtype)
+            log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 

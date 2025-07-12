@@ -208,6 +208,9 @@ class testcase_PortModule(SSTTestCase):
             filter1 = StartsWithFilter("#")
                 
             cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filter1)
+            if not cmp_result:
+                diffdata = testing_get_diff_data(testtype)
+                log_failure(diffdata)
             self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
         else:
             # Need to rerun from the checkpoint, then compare this output against the reffile
@@ -221,4 +224,7 @@ class testcase_PortModule(SSTTestCase):
             filter1.apply_to_out_file = False
                 
             cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filter1)
+            if not cmp_result:
+                diffdata = testing_get_diff_data(testtype)
+                log_failure(diffdata)
             self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))

@@ -414,7 +414,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 't':
-                snprintf(tempBuf, 256, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
+                snprintf(tempBuf, 256, "%" PRI_SIMTIME, Simulation_impl::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
