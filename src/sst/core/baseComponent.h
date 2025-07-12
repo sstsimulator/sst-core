@@ -26,8 +26,10 @@
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
