@@ -224,6 +224,8 @@ sst_core_sources = \
 	sstpart.cc \
 	sst_types.cc \
 	timeVortex.cc \
+	timingOutput.h \
+	timingOutput.cc \
 	serialization/objectMap.cc \
 	serialization/serializable_base.cc \
 	serialization/serializable.cc \

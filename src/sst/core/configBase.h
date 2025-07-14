@@ -188,7 +188,7 @@ struct OptionDefinitionImpl : OptionDefinition
 
        @param val Initialization value of the underlying value
 
-       @param paraser Function used to parse the value of the option
+       @param parser Function used to parse the value of the option
 
        @param ext_help Function called to print extended help for the
        option
@@ -495,7 +495,7 @@ private:                                           \
 
 /**
    Struct that holds all the getopt_long options along with the
-   docuementation for the option
+   documentation for the option
 */
 
 struct LongOption
@@ -533,7 +533,7 @@ struct AnnotationInfo
 
   FLAG - value is either true or false.  FLAG defaults to no arguments allowed
   ARG - value is a string.  ARG defaults to required argument
-  OPTVAL - Takes an optional paramater
+  OPTVAL - Takes an optional parameter
 
   longName - multicharacter name referenced using --
   shortName - single character name referenced using -
