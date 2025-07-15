@@ -64,6 +64,10 @@ tokenize(std::vector<std::string>& output, const std::string& input, const std::
         end   = input.find(delim, start);
     }
 
+    if ( input.empty() ) {
+        return;
+    }
+
     token = input.substr(start, end);
     if ( trim_ws ) trim(token);
     output.push_back(token);
