@@ -26,7 +26,7 @@ sst.setProgramOption("partitioner", "self")
 verbose = 0
 if len(sys.argv) > 1:
     verbose = int(sys.argv[1])
-    
+
 # Set up senders using slots and user subcomponents
 loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
 loader0.addParam("clock", "0.1GHz")
