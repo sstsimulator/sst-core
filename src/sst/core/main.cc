@@ -310,12 +310,14 @@ start_graph_creation(ConfigGraph*& graph, Factory* factory, const RankInfo& worl
         }
         catch ( std::exception& e ) {
             std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
+            SST_Exit(EXIT_FAILURE);
         }
 
         // If doing parallel load, make sure this model is parallel capable
         if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
             std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
                       << std::endl;
+            SST_Exit(EXIT_FAILURE);
         }
 
         if ( myRank.rank == 0 || cfg.parallel_load() ) {

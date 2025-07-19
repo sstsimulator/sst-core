@@ -140,10 +140,11 @@ private:
     void         handleEvent(SST::Event* ev);
     virtual bool clockTic(SST::Cycle_t);
 
-    int workPerCycle;
-    int commFreq;
-    int commSize;
-    int neighbor;
+    int                 workPerCycle;
+    int                 commFreq;
+    int                 commSize;
+    int                 neighbor;
+    SST::Event::id_type last_event_id;
 
     SST::RNG::MarsagliaRNG*          rng;
     SST::Link*                       N;
