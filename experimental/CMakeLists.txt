@@ -47,7 +47,7 @@ unset(_REQUIRED_CXX_STANDARD)
 # Don't change this path to SST_TOP_SRC_DIR cmake lives in experimental for now.
 list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 
-find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development)
 find_package(Threads)
 
 option(SST_DISABLE_ZLIB "Use zlib compression library" OFF)
