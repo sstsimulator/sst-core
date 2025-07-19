@@ -54,7 +54,7 @@ serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
     ser_opt_t                            options = 0;
     if ( with_tracking ) {
         ser.enable_pointer_tracking();
-        if ( !std::is_pointer_v<T> ) options = SerOption::as_ptr;
+        if ( !std::is_pointer_v<std::remove_reference_t<T>> ) options = SerOption::as_ptr;
     }
 
     ser.start_sizing();
