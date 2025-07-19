@@ -5,17 +5,33 @@ name: ci
 on:
   push:
   pull_request:
+    types:
+      - opened
+      - synchronize
 
 concurrency:
   group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
   cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   prechecks:
     uses: ./.github/workflows/pre-commit.yml
   all-prechecks:
     needs: [prechecks]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Success
+        run: "true"
+  tests:
+    needs: [all-prechecks]
+    uses: ./.github/workflows/build_and_test.yml
+    permissions:
+      actions: write
+  all-tests:
+    needs: [tests]
+    runs-on: ubuntu-24.04
     steps:
       - name: Success
         run: "true"
