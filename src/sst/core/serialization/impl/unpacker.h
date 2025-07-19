@@ -18,6 +18,7 @@
 #endif
 
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
 #include <cstdint>
 #include <cstring>
@@ -27,7 +28,7 @@
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_unpacker : public ser_buffer_accessor
+class ser_unpacker : public ser_buffer_accessor, public ser_shared_ptr_unpacker
 {
     std::map<uintptr_t, uintptr_t> ser_pointer_map;
     uintptr_t                      split_key = 0;
