@@ -18,6 +18,8 @@
 #include "sst/core/serialization/serialize.h"
 #include "sst/core/serialization/serializer.h"
 
+#include <cinttypes>
+
 namespace SST {
 
 ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :

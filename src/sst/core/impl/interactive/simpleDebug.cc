@@ -17,6 +17,9 @@
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
+#include <iostream>
+#include <stdexcept>
+
 namespace SST::IMPL::Interactive {
 
 SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) :
