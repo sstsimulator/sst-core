@@ -18,8 +18,10 @@
 #endif
 
 #include <bitset>
+#include <cfloat>
 #include <complex>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 #include <utility>
 
@@ -48,6 +50,40 @@ constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T
 
 template <class T, template <class...> class TT>
 using is_same_type_template = std::bool_constant<is_same_type_template_v<T, TT>>;
+
+///////////////////////////////////////////////////////
+// Pre-C++20 is_unbounded_array trait implementation //
+///////////////////////////////////////////////////////
+#if __cplusplus < 202002l
+
+template <class T>
+constexpr bool is_unbounded_array_v = false;
+
+template <class T>
+constexpr bool is_unbounded_array_v<T[]> = true;
+
+template <class T>
+using is_unbounded_array = std::bool_constant<is_unbounded_array_v<T>>;
+
+#else
+
+using std::is_unbounded_array;
+using std::is_unbounded_array_v;
+
+#endif
+
+///////////////////////////////////////////////////
+// Whether a type has a serialize_order() method //
+///////////////////////////////////////////////////
+template <class, class = void>
+constexpr bool has_serialize_order_v = false;
+
+template <class T>
+constexpr bool
+    has_serialize_order_v<T, decltype(std::declval<T>().serialize_order(std::declval<class serializer&>()))> = true;
+
+template <class T>
+using has_serialize_order = std::bool_constant<has_serialize_order_v<T>>;
 
 //////////////////////////////////////////////////
 // Compute the number of fields in an aggregate //
@@ -204,6 +240,15 @@ inline constexpr bool is_trivially_serializable_v<long double _Complex, false> =
 #ifdef FLT16_MIN
 template <>
 inline constexpr bool is_trivially_serializable_v<_Float16, false> = true;
+#endif
+
+// 128-bit integers
+#ifdef __SIZEOF_INT128__
+template <>
+inline constexpr bool is_trivially_serializable_v<__int128, false> = true;
+
+template <>
+inline constexpr bool is_trivially_serializable_v<unsigned __int128, false> = true;
 #endif
 
 } // namespace pvt_trivial
