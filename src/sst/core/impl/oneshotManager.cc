@@ -16,6 +16,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeVortex.h"
 
+#include <ctime>
+
 namespace SST::Core {
 
 void
