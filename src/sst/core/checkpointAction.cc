@@ -200,14 +200,13 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 
     std::string registry_name = directory + "/" + basename + ".sstcpt";
 
-    if ( rank_.rank == 0 && rank_.thread == 0 ) {
-        // Need to write out the globals
-        std::string globals_name = directory + "/" + basename + "_globals.bin";
-        sim->checkpoint_write_globals(checkpoint_id - 1, registry_name, globals_name);
-    }
+    // Need to write out the globals
+    // Only rank0/thread0 writes, but all may need to participate in global data gather
+    std::string globals_name = directory + "/" + basename + "_globals.bin";
+    sim->checkpoint_write_globals(checkpoint_id - 1, registry_name, globals_name);
+
     // No need to barrier here since rank 0 thread 0 will be the first
     // to execute in the loop below and everything else will wait
-
     for ( uint32_t r = 0; r < num_ranks.rank; ++r ) {
         if ( r == rank_.rank ) {
             // If this is my rank go ahead
