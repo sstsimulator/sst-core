@@ -1,22 +1,22 @@
-
 -----------------------------
 Rank = 0, thread = 0:
 
 events
 Name, recv count
-component0, 40185
-component1, 39952
-component10, 40013
-component11, 39780
-component12, 40349
-component13, 40293
-component14, 39778
-component15, 39587
-component2, 39561
-component3, 39372
-component4, 40600
-component5, 40182
-component6, 39834
-component7, 39715
-component8, 40432
-component9, 40303
+component0, 39695
+component1, 39527
+component10, 40375
+component11, 40275
+component12, 40211
+component13, 40224
+component14, 40208
+component15, 39952
+component2, 39642
+component3, 39517
+component4, 40220
+component5, 39797
+component6, 39886
+component7, 40031
+component8, 40252
+component9, 40124
+
