@@ -18,8 +18,14 @@ sst.setProgramOption("stop-at", "10us")
 x_size = int(sys.argv[1])
 y_size = int(sys.argv[2])
 
-sst.setStatisticOutput("sst.statOutputCSV")
-sst.enableAllStatisticsForAllComponents()
+mod = 1
+if len(sys.argv) > 3:
+    mod = int(sys.argv[3])
+
+verbose = True
+if len(sys.argv) > 4:
+    verbose = int(sys.argv[4])
+
 
 # Calculate number of routers and endpoints
 num_routers = x_size * y_size
@@ -39,7 +45,9 @@ for i in range(num_routers):
 
     comp = sst.Component("component%d"%i, "coreTestElement.message_mesh.enclosing_component")
     comp.addParam("id",i)
-    
+    comp.addParam("mod",mod)
+    comp.addParam("verbose",verbose)
+
     # Setup up all the ports.  X ports will use MessagePort directly, Y ports, will use the SlotPort
     port_x_pos = comp.setSubComponent("ports","coreTestElement.message_mesh.message_port",0);
     port_x_neg = comp.setSubComponent("ports","coreTestElement.message_mesh.message_port",1);
@@ -61,7 +69,7 @@ for i in range(num_routers):
     their_x = my_x + 1
     if their_x == x_size:
         their_x = 0
-    port_x_pos.addLink(getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(their_x,my_y)), "port", "1ns")
+    port_x_pos.addLink(getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(their_x,my_y)), "port0", "1ns")
     # Set the nocut attribute on positive x-link on every other router
     if ( i % 2 == 0):
         getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(their_x,my_y)).setNoCut()
@@ -70,7 +78,7 @@ for i in range(num_routers):
     their_x = my_x - 1
     if their_x == -1:
         their_x = x_size - 1
-    port_x_neg.addLink(getLink("x%dy%d"%(their_x,my_y), "x%dy%d"%(my_x,my_y)), "port", "1ns")
+    port_x_neg.addLink(getLink("x%dy%d"%(their_x,my_y), "x%dy%d"%(my_x,my_y)), "port0", "1ns")
 
 
     # Y-dim
@@ -78,10 +86,15 @@ for i in range(num_routers):
     their_y = my_y + 1
     if their_y == y_size:
         their_y = 0
-    port_y_pos.addLink(getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(my_x,their_y)), "port", "1ns")
+    port_y_pos.addLink(getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(my_x,their_y)), "port0", "1ns")
 
     # Negative
     their_y = my_y - 1
     if their_y == -1:
         their_y = y_size - 1
-    port_y_neg.addLink(getLink("x%dy%d"%(my_x,their_y), "x%dy%d"%(my_x,my_y)), "port", "1ns")
+    port_y_neg.addLink(getLink("x%dy%d"%(my_x,their_y), "x%dy%d"%(my_x,my_y)), "port0", "1ns")
+
+
+sst.setStatisticOutput("sst.statOutputCSV")
+sst.enableAllStatisticsForAllComponents()
+sst.setStatisticLoadLevel(2)

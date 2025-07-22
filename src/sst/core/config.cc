@@ -320,7 +320,7 @@ Config::merge_checkpoint_options(Config& other)
         if ( option.annotations.size() <= r_index || !option.annotations[r_index] ) continue;
 
         // Now see if we need to copy over the option.  We copy it if
-        // it wasn't set on the command line, or it isne't allowed to
+        // it wasn't set on the command line, or it isn't allowed to
         // be set on the command line for a restart.
         if ( !option.def->set_cmdline || option.annotations[x_index] ) {
             option.def->transfer(other.options[i].def);
@@ -415,7 +415,9 @@ Config::insertOptions()
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
         "will be appended to the model options (or used as the model options if --model-options was not specified).",
         model_options_, false, false, true);
-    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information", print_timing_, true);
+    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information", print_timing_, true, true, false);
+    DEF_ARG(
+        "timing-info-json", 0, "FILE", "Write SST timing information in JSON format", timing_json_, true, true, false);
     DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution", stop_at_, true, true, false);
     DEF_ARG("exit-after", 0, "TIME",
         "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
