@@ -22,30 +22,117 @@ using testtunnel = SST::Core::Interprocess::TunnelDef<int, int>;
 template class SST::Core::Interprocess::MMAPParent<testtunnel>;
 
 namespace SST::Core::Interprocess {
-   int SST_MPI_Comm_spawn_multiple (int count,
-         char *array_of_commands[],
-         char **array_of_argv[],
-         const int array_of_maxprocs[]) {
+   int SST_MPI_Comm_spawn_multiple (
+         char** pin_command,
+         const int ranks,
+         const int tracerank) {
 
-      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
-      for (int i = 0; i < count; i++) {
-         //TODO Check error
-         MPI_Info_create(&array_of_info[i]);
-      }
+
+      //TODO
+      //assert(tracerank < ranks);
 
       int root = 0;
       MPI_Comm comm = MPI_COMM_SELF;
       MPI_Comm intercomm; // TODO: Store somewhere
 
-      // Each command may spawn multiple ranks
-      // Each rank returns a separate error code
-      // We need to allocate space for each
-      int sum_max_procs = 0;
-      for (int i = 0; i < count; i++) {
-         sum_max_procs += array_of_maxprocs[i];
+      // We have one command for ranks before the tracerank, one
+      // for the ranks after it, and one for the trace rank itself
+      // That is 3 total, unless there are no ranks before or
+      // after the tracerank in which case there are 1 or 2 commands..
+      int count = 1;
+      if (ranks > 1) {
+         if((tracerank == 0) || (tracerank == ranks-1)){
+            count = 2;
+         } else {
+            count = 3;
+         }
       }
-      int *array_of_errcodes = (int*)malloc(sizeof(int) * sum_max_procs);
 
+      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
+
+      for (int i = 0; i < count; i++) {
+         //TODO Check error
+         MPI_Info_create(&array_of_info[i]);
+      }
+
+      int *array_of_maxprocs = (int*)malloc(sizeof(int) * count);
+      if (count == 1) {
+         array_of_maxprocs[0] = 1;
+      } else if (count == 2) {
+         if (tracerank == 0) {
+            array_of_maxprocs[0] = 1;
+            array_of_maxprocs[1] = ranks-1;
+         } else {
+            array_of_maxprocs[0] = ranks-1;;
+            array_of_maxprocs[1] = 1;
+         }
+      } else if (count == 3) {
+         array_of_maxprocs[0] = tracerank;
+         array_of_maxprocs[1] = 1;
+         array_of_maxprocs[2] = ranks - tracerank - 1;
+      }
+
+      // Find where the PIN arguments end
+      int app_idx = -1;
+      for (int i = 0; pin_command[i] != NULL; i++) {
+        if (strcmp(pin_command[i], "--") == 0) {
+            app_idx = i+1;
+            break;
+        }
+      }
+      if (app_idx == -1) {
+        // TODO: Error not found
+      }
+
+      char **array_of_commands = (char**)malloc(sizeof(char*) * count);
+      if(count == 1) {
+         array_of_commands[0] = pin_command[0];
+      } else if (count == 2) {
+         if (tracerank == 0) {
+            array_of_commands[0] = pin_command[0];
+            array_of_commands[1] = pin_command[app_idx];
+         } else {
+            array_of_commands[0] = pin_command[app_idx];
+            array_of_commands[1] = pin_command[0];
+         }
+
+      } else if (count == 3) {
+         array_of_commands[0] = pin_command[app_idx];
+         array_of_commands[1] = pin_command[0];
+         array_of_commands[2] = pin_command[app_idx];
+      }
+
+      char ***array_of_argv = (char***)malloc(sizeof(char**) * count);
+      if(count == 1) {
+         array_of_argv[0] = pin_command+1;
+      } else if (count == 2) {
+         if (tracerank == 0) {
+            array_of_argv[0] = pin_command+1;
+            array_of_argv[1] = pin_command+app_idx+1;
+         } else {
+            array_of_argv[0] = pin_command+app_idx+1;
+            array_of_argv[1] = pin_command+1;
+         }
+
+      } else if (count == 3) {
+         array_of_argv[0] = pin_command+app_idx+1;
+         array_of_argv[1] = pin_command+1;
+         array_of_argv[2] = pin_command+app_idx+1;
+      }
+
+      printf("[SST CORE] Count is %d\n", count);
+      for(int i = 0; i < count; i++) {
+         printf("[SST CORE] Command %d: \n", i);
+         printf("  maxprocs: %d\n", array_of_maxprocs[i]);
+         printf("  command: %s\n", array_of_commands[i]);
+         printf("  argv:\n");
+         for(int j = 0; array_of_argv[i][j]!=NULL; j++) {
+            printf("    %s ", array_of_argv[i][j]);
+         }
+         printf("\n");
+      }
+
+      int *array_of_errcodes = (int*)malloc(sizeof(int) * ranks);
       int result = MPI_Comm_spawn_multiple(count,
              array_of_commands,
              array_of_argv,
@@ -72,7 +159,7 @@ namespace SST::Core::Interprocess {
       }
 
       int errors = 0;
-      for (int i = 0; i < sum_max_procs; i++) {
+      for (int i = 0; i < ranks; i++) {
          if (array_of_errcodes[i] != MPI_SUCCESS) {
              fprintf(stderr, "Error in MPI_Comm_spawn_multiple: process %d failed to start\n", i);
              errors++;
