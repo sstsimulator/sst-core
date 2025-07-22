@@ -28,7 +28,8 @@ namespace SST::Core::Interprocess {
     int SST_MPI_Comm_spawn_multiple (
         char **pin_command,
         const int ranks,
-        const int tracerank);
+        const int tracerank,
+        const char* env);
 
     /*
     int SST_MPI_Comm_spawn(int count, char **array_of_commands,

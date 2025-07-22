@@ -25,54 +25,20 @@ namespace SST::Core::Interprocess {
    int SST_MPI_Comm_spawn_multiple (
          char** pin_command,
          const int ranks,
-         const int tracerank) {
-
-
-      //TODO
-      //assert(tracerank < ranks);
-
-      int root = 0;
-      MPI_Comm comm = MPI_COMM_SELF;
-      MPI_Comm intercomm; // TODO: Store somewhere
+         const int tracerank,
+         const char* env) {
 
       // We have one command for ranks before the tracerank, one
       // for the ranks after it, and one for the trace rank itself
-      // That is 3 total, unless there are no ranks before or
-      // after the tracerank in which case there are 1 or 2 commands..
       int count = 1;
-      if (ranks > 1) {
-         if((tracerank == 0) || (tracerank == ranks-1)){
-            count = 2;
-         } else {
-            count = 3;
-         }
+      if (tracerank > 0) {
+         count++;
+      }
+      if (tracerank < (ranks-1)) {
+         count++;
       }
 
-      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
-
-      for (int i = 0; i < count; i++) {
-         //TODO Check error
-         MPI_Info_create(&array_of_info[i]);
-      }
-
-      int *array_of_maxprocs = (int*)malloc(sizeof(int) * count);
-      if (count == 1) {
-         array_of_maxprocs[0] = 1;
-      } else if (count == 2) {
-         if (tracerank == 0) {
-            array_of_maxprocs[0] = 1;
-            array_of_maxprocs[1] = ranks-1;
-         } else {
-            array_of_maxprocs[0] = ranks-1;;
-            array_of_maxprocs[1] = 1;
-         }
-      } else if (count == 3) {
-         array_of_maxprocs[0] = tracerank;
-         array_of_maxprocs[1] = 1;
-         array_of_maxprocs[2] = ranks - tracerank - 1;
-      }
-
-      // Find where the PIN arguments end
+      // Find where the PIN arguments end and the app starts
       int app_idx = -1;
       for (int i = 0; pin_command[i] != NULL; i++) {
         if (strcmp(pin_command[i], "--") == 0) {
@@ -80,46 +46,73 @@ namespace SST::Core::Interprocess {
             break;
         }
       }
+
       if (app_idx == -1) {
-        // TODO: Error not found
+         return 1;
       }
 
-      char **array_of_commands = (char**)malloc(sizeof(char*) * count);
-      if(count == 1) {
+      // Currently unused.
+      // Documentation of options: https://docs.open-mpi.org/en/main/man-openmpi/man3/MPI_Comm_spawn_multiple.3.html#info-arguments
+      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
+      for (int i = 0; i < count; i++) {
+         MPI_Info_create(&array_of_info[i]);
+         //MPI_Info_set(array_of_info[i], "env", env); // TODO Why does this crash?
+      }
+
+      // Get the processor name so we can make the traced process
+      // run on the same rank the process calling this function.
+      char processor_name[MPI_MAX_PROCESSOR_NAME];
+      int name_len;
+      MPI_Get_processor_name(processor_name, &name_len);
+
+      int    *array_of_maxprocs = (int*)   malloc(sizeof(int) * count);
+      char  **array_of_commands = (char**) malloc(sizeof(char*) * count);
+      char ***array_of_argv     = (char***)malloc(sizeof(char**) * count);
+
+      if (count == 1) {
+         MPI_Info_set(array_of_info[0], "host", processor_name);
+         array_of_maxprocs[0] = 1;
          array_of_commands[0] = pin_command[0];
-      } else if (count == 2) {
-         if (tracerank == 0) {
-            array_of_commands[0] = pin_command[0];
-            array_of_commands[1] = pin_command[app_idx];
-         } else {
-            array_of_commands[0] = pin_command[app_idx];
-            array_of_commands[1] = pin_command[0];
-         }
-
-      } else if (count == 3) {
-         array_of_commands[0] = pin_command[app_idx];
-         array_of_commands[1] = pin_command[0];
-         array_of_commands[2] = pin_command[app_idx];
-      }
-
-      char ***array_of_argv = (char***)malloc(sizeof(char**) * count);
-      if(count == 1) {
          array_of_argv[0] = pin_command+1;
       } else if (count == 2) {
          if (tracerank == 0) {
+            MPI_Info_set(array_of_info[0], "host", processor_name);
+            array_of_maxprocs[0] = 1;
+            array_of_maxprocs[1] = ranks-1;
+
+            array_of_commands[0] = pin_command[0];
+            array_of_commands[1] = pin_command[app_idx];
+
             array_of_argv[0] = pin_command+1;
             array_of_argv[1] = pin_command+app_idx+1;
          } else {
+            MPI_Info_set(array_of_info[1], "host", processor_name);
+            array_of_maxprocs[0] = ranks-1;
+            array_of_maxprocs[1] = 1;
+
+            array_of_commands[0] = pin_command[app_idx];
+            array_of_commands[1] = pin_command[0];
+
             array_of_argv[0] = pin_command+app_idx+1;
             array_of_argv[1] = pin_command+1;
          }
-
       } else if (count == 3) {
+         MPI_Info_set(array_of_info[1], "host", processor_name);
+         array_of_maxprocs[0] = tracerank;
+         array_of_maxprocs[1] = 1;
+         array_of_maxprocs[2] = ranks - tracerank - 1;
+
+         array_of_commands[0] = pin_command[app_idx];
+         array_of_commands[1] = pin_command[0];
+         array_of_commands[2] = pin_command[app_idx];
+
          array_of_argv[0] = pin_command+app_idx+1;
          array_of_argv[1] = pin_command+1;
          array_of_argv[2] = pin_command+app_idx+1;
       }
 
+
+      /*
       printf("[SST CORE] Count is %d\n", count);
       for(int i = 0; i < count; i++) {
          printf("[SST CORE] Command %d: \n", i);
@@ -131,47 +124,46 @@ namespace SST::Core::Interprocess {
          }
          printf("\n");
       }
+      */
 
+      MPI_Comm intercomm;
       int *array_of_errcodes = (int*)malloc(sizeof(int) * ranks);
       int result = MPI_Comm_spawn_multiple(count,
              array_of_commands,
              array_of_argv,
              array_of_maxprocs,
              array_of_info,
-             root,
-             comm,
+             0,             //root
+             MPI_COMM_SELF, //comm
              &intercomm,
              array_of_errcodes);
 
+      int errors = 0;
       if (result != MPI_SUCCESS) {
          char error_string[MPI_MAX_ERROR_STRING];
          int length_of_error_string;
          MPI_Error_string(result, error_string, &length_of_error_string);
-
-         // Print a meaningful error message
          fprintf(stderr, "Error in MPI_Comm_spawn_multiple: %s\n", error_string);
-
-         // Optionally, you could handle the error further (e.g., abort the program)
-         //MPI_Abort(comm, result);
-         free(array_of_info);
-         free(array_of_errcodes);
-         return 1;
-      }
-
-      int errors = 0;
-      for (int i = 0; i < ranks; i++) {
-         if (array_of_errcodes[i] != MPI_SUCCESS) {
-             fprintf(stderr, "Error in MPI_Comm_spawn_multiple: process %d failed to start\n", i);
-             errors++;
+         errors++;
+      } else {
+         for (int i = 0; i < ranks; i++) {
+            if (array_of_errcodes[i] != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Comm_spawn_multiple: process %d failed to start\n", i);
+                errors++;
+            }
          }
       }
 
+      free(array_of_maxprocs);
+      free(array_of_commands);
+      free(array_of_argv);
       free(array_of_info);
       free(array_of_errcodes);
 
       if (errors > 0) {
          return 1;
       }
+
       return 0;
    }
 }
