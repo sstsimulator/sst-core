@@ -156,7 +156,7 @@ class testcase_Checkpoint(SSTTestCase):
 
 
         prefix_cpt = teststr + "_cpt"
-        
+
         options_checkpoint_cpt = (
             "--checkpoint-sim-period='{0}' --checkpoint-prefix={1} "
             "--checkpoint-name-format='%p_%n' --output-directory=testsuite_checkpoint "
