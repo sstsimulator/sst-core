@@ -34,4 +34,10 @@ WatchPoint::setInteractiveMsg(const std::string& msg)
     Simulation_impl::getSimulation()->interactive_msg_ = msg;
 }
 
+SimTime_t
+WatchPoint::getCurrentSimCycle()
+{
+    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+}
+
 } // namespace SST
