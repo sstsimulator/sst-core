@@ -170,7 +170,7 @@ coreTestComponentExt::clockTic(Cycle_t)
     */
     volatile int v = 0;
     for ( int i = 0; i < work_per_cycle_; ++i ) {
-        v++;
+        v += 1;
     }
 
     // communicate?
