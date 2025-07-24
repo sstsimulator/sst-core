@@ -29,7 +29,7 @@ class testcase_UnitAlgebra(SSTTestCase):
 
     def test_UnitAlgebra(self):
         self.unitalgebra_test_template("UnitAlgebra")
-    
+
     def test_PythonUnitAlgebra(self):
         self.unitalgebra_test_template("PythonUnitAlgebra")
 

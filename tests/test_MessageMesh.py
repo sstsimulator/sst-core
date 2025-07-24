@@ -29,7 +29,7 @@ if len(sys.argv) > 4:
 
 # Calculate number of routers and endpoints
 num_routers = x_size * y_size
-        
+
 # Set up a map of links with accessor
 links = dict()
 def getLink(leftName: str, rightName: str) -> sst.Link:
@@ -37,7 +37,7 @@ def getLink(leftName: str, rightName: str) -> sst.Link:
     if name not in links:
         links[name] = sst.Link(name)
     return links[name]
-        
+
 for i in range(num_routers):
     my_x = i % x_size
     my_y = i // x_size
@@ -54,10 +54,10 @@ for i in range(num_routers):
 
     tmp = comp.setSubComponent("ports","coreTestElement.message_mesh.port_slot",2);
     port_y_pos = tmp.setSubComponent("port","coreTestElement.message_mesh.message_port");
-    
+
     tmp = comp.setSubComponent("ports","coreTestElement.message_mesh.port_slot",3);
     port_y_neg = tmp.setSubComponent("port","coreTestElement.message_mesh.message_port");
-    
+
     # Setup the route subcomponent
     route = comp.setSubComponent("route","coreTestElement.message_mesh.route_message")
 
@@ -73,7 +73,7 @@ for i in range(num_routers):
     # Set the nocut attribute on positive x-link on every other router
     if ( i % 2 == 0):
         getLink("x%dy%d"%(my_x,my_y), "x%dy%d"%(their_x,my_y)).setNoCut()
-    
+
     # Negative
     their_x = my_x - 1
     if their_x == -1:

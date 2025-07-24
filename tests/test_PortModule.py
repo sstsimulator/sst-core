@@ -42,10 +42,10 @@ def main() -> None:
         sys.exit()
 
     num_comps = 12
-    
+
     params = { "use_subcomponent" : args.subcomp,
                "repeat_last" : args.randomdrop }
-    
+
     comp = sst.Component("comp0", "coreTestElement.coreTestPortModuleComponent")
     comp.addParams(params)
     for x in range(num_comps - 2):
@@ -59,7 +59,7 @@ def main() -> None:
     comp2.addParams(params)
     link = sst.Link("link_{0}".format(num_comps-1))
     link.connect((comp,"right","1ns"),(comp2,"left","1ns"))
-    
+
     # Add the PortModule
     if args.randomdrop:
         if args.recv:

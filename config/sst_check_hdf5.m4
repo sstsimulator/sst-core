@@ -37,7 +37,7 @@ AC_DEFUN([SST_CHECK_HDF5],
 
   CPPFLAGS="${CPPFLAGS} ${HDF5_CFLAGS}"
   LDFLAGS="${LDFLAGS} ${HDF5_LDFLAGS} -lhdf5 -lhdf5_cpp"
-  
+
   AC_LANG_PUSH([C++])
   AC_CHECK_HEADER([H5Cpp.h], [], [sst_check_hdf5_happy="no"])
   AC_CHECK_LIB([hdf5], [H5F_open],
