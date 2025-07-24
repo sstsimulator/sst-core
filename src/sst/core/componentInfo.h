@@ -17,6 +17,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <string>

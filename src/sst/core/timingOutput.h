@@ -16,7 +16,10 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/util/filesystem.h"
 
+#include <cstdint>
+#include <cstdio>
 #include <map>
+#include <string>
 
 namespace SST::Core {
 
