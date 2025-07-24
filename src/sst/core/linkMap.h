@@ -27,14 +27,11 @@ namespace SST {
  */
 class LinkMap
 {
-
-private:
     std::map<std::string, Link*> linkMap;
     // const std::vector<std::string> * allowedPorts;
     std::vector<std::string>     selfPorts;
 
-    friend class SST::Core::Serialization::serialize_impl<LinkMap*>;
-
+public:
     void serialize_order(SST::Core::Serialization::serializer& ser)
     {
         SST_SER(linkMap);
@@ -130,16 +127,13 @@ private:
     //     return found;
     // }
 
-public:
     LinkMap() /*: allowedPorts(nullptr)*/ {}
 
     ~LinkMap()
     {
         // Delete all the links in the map
-        for ( std::map<std::string, Link*>::iterator it = linkMap.begin(); it != linkMap.end(); ++it ) {
-            delete it->second;
-        }
-        linkMap.clear();
+        for ( auto& [name, link] : linkMap )
+            delete link;
     }
 
     // /**
