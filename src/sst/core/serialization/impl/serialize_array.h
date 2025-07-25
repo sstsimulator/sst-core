@@ -17,6 +17,7 @@
     "The header file sst/core/serialization/impl/serialize_array.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include "sst/core/serialization/impl/serialize_utility.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
@@ -138,27 +139,28 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
 {
     void operator()(pvt::array_wrapper<ELEM_T, SIZE_T>& ary, serializer& ser, ser_opt_t opt)
     {
-        ser_opt_t elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
-        switch ( const auto mode = ser.mode() ) {
-        case serializer::MAP:
-            if constexpr ( !std::is_void_v<ELEM_T> ) {
-                pvt::serialize_array_map(ser, ary.ptr, elem_opt, ary.size,
-                    new ObjectMapArray<ELEM_T>(ary.ptr, ary.size), pvt::serialize_array_map_element<ELEM_T>);
-            }
-            break;
+        ser_opt_t  elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
+        const auto mode     = ser.mode();
+        size_t     size     = mode == serializer::UNPACK ? 0 : get_array_size(ary.size, "array");
 
-        default:
-            // TODO: How to handle array-of-array
-            // is_trivially_serializable_excluded_v<ELEM_T> can be added to exclude arrays-of-arrays from the fast path
-            if constexpr ( std::is_void_v<ELEM_T> || is_trivially_serializable_v<ELEM_T> )
-                ser.binary(ary.ptr, ary.size);
-            else {
-                ser.primitive(ary.size);
-                if ( mode == serializer::UNPACK ) ary.ptr = new ELEM_T[ary.size];
-                pvt::serialize_array(ser, ary.ptr, elem_opt, ary.size, pvt::serialize_array_element<ELEM_T>);
+        if ( mode == serializer::MAP ) {
+            if constexpr ( !std::is_void_v<ELEM_T> ) {
+                pvt::serialize_array_map(ser, ary.ptr, elem_opt, size, new ObjectMapArray<ELEM_T>(ary.ptr, size),
+                    pvt::serialize_array_map_element<ELEM_T>);
             }
-            break;
+            return;
         }
+
+        // TODO: How to handle array-of-array
+        // is_trivially_serializable_excluded_v<ELEM_T> can be added to exclude arrays-of-arrays from the fast path
+        if constexpr ( std::is_void_v<ELEM_T> || is_trivially_serializable_v<ELEM_T> )
+            ser.binary(ary.ptr, size);
+        else {
+            ser.primitive(size);
+            if ( mode == serializer::UNPACK ) ary.ptr = new ELEM_T[size];
+        }
+        pvt::serialize_array(ser, ary.ptr, elem_opt, size, pvt::serialize_array_element<ELEM_T>);
+        if ( mode == serializer::UNPACK ) ary.size = static_cast<SIZE_T>(size);
     }
 
     SST_FRIEND_SERIALIZE();

@@ -116,7 +116,7 @@ get_array_size(SIZE_T size, const char* msg)
     bool range_error;
     if constexpr ( std::is_unsigned_v<SIZE_T> )
         range_error = size > SIZE_MAX;
-    else if constexpr ( sizeof(SIZE_T) > sizeof(SIZE_MAX) )
+    else if constexpr ( sizeof(SIZE_T) > sizeof(size_t) )
         range_error = size < 0 || size > static_cast<SIZE_T>(SIZE_MAX);
     else
         range_error = size < 0;
