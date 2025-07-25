@@ -17,10 +17,13 @@
     "The header file sst/core/serialization/impl/serialize_utility.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include "sst/core/output.h"
+
 #include <bitset>
 #include <cfloat>
 #include <complex>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 #include <utility>
 
@@ -49,6 +52,27 @@ constexpr bool is_same_type_template_v<T1<T1ARGS...>, T2> = is_same_template_v<T
 
 template <class T, template <class...> class TT>
 using is_same_type_template = std::bool_constant<is_same_type_template_v<T, TT>>;
+
+///////////////////////////////////////////////////////
+// Pre-C++20 is_unbounded_array trait implementation //
+///////////////////////////////////////////////////////
+#if __cplusplus < 202002l
+
+template <class T>
+constexpr bool is_unbounded_array_v = false;
+
+template <class T>
+constexpr bool is_unbounded_array_v<T[]> = true;
+
+template <class T>
+using is_unbounded_array = std::bool_constant<is_unbounded_array_v<T>>;
+
+#else
+
+using std::is_unbounded_array;
+using std::is_unbounded_array_v;
+
+#endif
 
 ///////////////////////////////////////////////////
 // Whether a type has a serialize_order() method //
@@ -81,6 +105,30 @@ using has_serialize_order = has_serialize_order_impl<T>;
 
 template <class T>
 constexpr bool has_serialize_order_v = has_serialize_order<T>::value;
+
+///////////////////////////////////////////////////
+// Convert array size to size_t, flagging errors //
+///////////////////////////////////////////////////
+template <class SIZE_T>
+std::enable_if_t<std::is_integral_v<SIZE_T>, size_t>
+get_array_size(SIZE_T size, const char* msg)
+{
+    bool range_error;
+    if constexpr ( std::is_unsigned_v<SIZE_T> )
+        range_error = size > SIZE_MAX;
+    else if constexpr ( sizeof(SIZE_T) > sizeof(size_t) )
+        range_error = size < 0 || size > static_cast<SIZE_T>(SIZE_MAX);
+    else
+        range_error = size < 0;
+
+    if ( range_error )
+        Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
+            "Serialization Error: Array size in SST::Core::Serialization::%s() cannot fit inside size_t. "
+            "size_t should be used for array sizes.\n",
+            msg);
+
+    return static_cast<size_t>(size);
+}
 
 //////////////////////////////////////////////////
 // Compute the number of fields in an aggregate //
@@ -227,6 +275,15 @@ inline constexpr bool is_trivially_serializable_v<long double _Complex, false> =
 #ifdef FLT16_MIN
 template <>
 inline constexpr bool is_trivially_serializable_v<_Float16, false> = true;
+#endif
+
+// 128-bit integers
+#ifdef __SIZEOF_INT128__
+template <>
+inline constexpr bool is_trivially_serializable_v<__int128, false> = true;
+
+template <>
+inline constexpr bool is_trivially_serializable_v<unsigned __int128, false> = true;
 #endif
 
 } // namespace pvt_trivial
