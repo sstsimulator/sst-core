@@ -36,23 +36,21 @@ public:
     using ser_buffer_accessor::ser_buffer_accessor;
 
     template <typename T>
-    void pack(T&& t)
+    void pack(const T& t)
     {
         memcpy(buf_next(sizeof(t)), &t, sizeof(t));
     }
 
-    template <typename ELEM_T, typename SIZE_T>
-    void pack_buffer(ELEM_T* buffer, SIZE_T size)
+    template <typename T, typename SIZE_T>
+    void pack_buffer(const T* buffer, SIZE_T size)
     {
         if ( buffer == nullptr ) size = 0;
         pack(size);
-        if constexpr ( std::is_void_v<ELEM_T> )
-            memcpy(buf_next(size), buffer, size);
-        else
-            memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
+        using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+        memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
     }
 
-    void pack_string(std::string& str);
+    void pack_string(const std::string& str) { pack_buffer(str.data(), str.size()); }
     bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
 }; // class ser_packer
 
