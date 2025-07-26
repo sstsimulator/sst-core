@@ -19,6 +19,8 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <array>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
@@ -47,7 +49,7 @@ class serialize_impl<std::variant<Types...>>
 
             // Set the active variant to index. The variant must be default-constructible.
             // We cannot portably restore valueless_by_exception but we do nothing in that case.
-            if ( index != std::variant_npos ) set_index<std::index_sequence_for<Types...>>[index](obj);
+            if ( index != std::variant_npos ) set_index<std::index_sequence_for<Types...>>.at(index)(obj);
             break;
 
         case serializer::MAP:
@@ -64,16 +66,13 @@ class serialize_impl<std::variant<Types...>>
         if ( index != std::variant_npos ) std::visit([&](auto& x) { SST_SER(x); }, obj);
     }
 
-    // Table of functions to set the active variant
-    // Primary definition is std::nullptr_t to cause a compilation error if no template specialization matches
-    template <typename>
-    static constexpr std::nullptr_t set_index {};
+    // Table of functions to set the active variant, which must be specialized or it will cause an error
+    template <typename T>
+    static constexpr auto set_index = [] { static_assert(!std::is_same_v<T, T>, "Unhandled type in set_index<T>"); };
 
     SST_FRIEND_SERIALIZE();
 };
 
-// clang-format off
-//
 // Table of functions to set the active variant
 //
 // This defines a partial specialization of the serialize_impl<std::variant<Types...>>::set_index static member variable
@@ -87,7 +86,7 @@ class serialize_impl<std::variant<Types...>>
 // active variant happens before the new variant is deserialized in-place.
 //
 // Although std::visit can invoke a function with the currently active std::variant, it relies on knowing the currently
-// active variant as returned by index(). To CHANGE the currently active variant requires an assignment to the
+// active variant as returned by index(). To CHANGE the currently active variant requires an assignment / swap of the
 // std::variant object or a call to the emplace() method.
 //
 // Changing the currently active variant to INDEX by calling emplace<INDEX>() requires that INDEX be a compile-time
@@ -101,14 +100,10 @@ class serialize_impl<std::variant<Types...>>
 
 template <typename... Types>
 template <size_t... INDEX>
-constexpr void (*
-                     serialize_impl<std::variant<Types...>>::set_index<std::index_sequence<INDEX...>>[]
-                )( std::variant<Types...>& )
-          = {
-                [](std::variant<Types...>& obj) { obj.template emplace<INDEX>(); }...
-            };
-// clang-format on
-
+constexpr std::array<void (*)(std::variant<Types...>& obj), sizeof...(INDEX)>
+    serialize_impl<std::variant<Types...>>::set_index<std::index_sequence<INDEX...>> = {
+        [](std::variant<Types...>& obj) { obj.template emplace<INDEX>(); }...
+    };
 } // namespace SST::Core::Serialization
 
 #endif // SST_CORE_SERIALIZATION_IMPL_SERIALIZE_VARIANT_H
