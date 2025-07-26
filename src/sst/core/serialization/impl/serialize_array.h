@@ -158,8 +158,8 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
         else {
             ser.primitive(size);
             if ( mode == serializer::UNPACK ) ary.ptr = new ELEM_T[size];
+            pvt::serialize_array(ser, ary.ptr, elem_opt, size, pvt::serialize_array_element<ELEM_T>);
         }
-        pvt::serialize_array(ser, ary.ptr, elem_opt, size, pvt::serialize_array_element<ELEM_T>);
         if ( mode == serializer::UNPACK ) ary.size = static_cast<SIZE_T>(size);
     }
 
