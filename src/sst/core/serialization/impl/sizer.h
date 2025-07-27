@@ -33,21 +33,17 @@ public:
     explicit ser_sizer() = default;
 
     template <typename T>
-    void size(T&&)
+    void size(const T&)
     {
         size_ += sizeof(T);
     }
 
-    template <typename ELEM_T, typename SIZE_T>
-    void size_buffer(ELEM_T* buffer, SIZE_T size)
+    template <typename T, typename SIZE_T>
+    void size_buffer(const T* buffer, SIZE_T size)
     {
-        size_ += sizeof(size);
-        if ( buffer != nullptr ) {
-            if constexpr ( std::is_void_v<ELEM_T> )
-                size_ += size;
-            else
-                size_ += size * sizeof(ELEM_T);
-        }
+        if ( buffer == nullptr || size < 0 ) size = 0;
+        using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+        size_ += sizeof(size) + size * sizeof(ELEM_T);
     }
 
     void   size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
