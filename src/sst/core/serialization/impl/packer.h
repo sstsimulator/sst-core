@@ -45,9 +45,9 @@ public:
     template <typename T, typename SIZE_T>
     void pack_buffer(const T* buffer, SIZE_T size)
     {
-        if ( buffer == nullptr ) size = 0;
-        pack(size);
+        if ( buffer == nullptr || size < 0 ) size = 0;
         using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+        pack(size);
         memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
     }
 
