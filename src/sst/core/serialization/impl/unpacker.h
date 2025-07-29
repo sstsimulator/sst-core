@@ -42,28 +42,24 @@ public:
         memcpy(&t, buf_next(sizeof(t)), sizeof(t));
     }
 
-    template <typename ELEM_T, typename SIZE_T>
-    void unpack_buffer(ELEM_T*& buffer, SIZE_T& size)
+    template <typename T, typename SIZE_T>
+    void unpack_buffer(T*& buffer, SIZE_T& size)
     {
+        size = 0;
         unpack(size);
-        if ( size == 0 ) {
-            buffer = nullptr;
-        }
-        else if constexpr ( std::is_void_v<ELEM_T> ) {
-            buffer = new char[size];
-            memcpy(buffer, buf_next(size), size);
-        }
-        else {
-            buffer = new ELEM_T[size];
+        if ( size != 0 ) {
+            using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+            buffer       = new ELEM_T[size];
             memcpy(buffer, buf_next(size * sizeof(ELEM_T)), size * sizeof(ELEM_T));
         }
+        else
+            buffer = nullptr;
     }
 
     uintptr_t check_pointer_unpack(uintptr_t ptr);
     void      unpack_string(std::string& str);
     void      report_new_pointer(uintptr_t real_ptr) { ser_pointer_map[split_key] = real_ptr; }
     void      report_real_pointer(uintptr_t ptr, uintptr_t real_ptr) { ser_pointer_map[ptr] = real_ptr; }
-
 }; // class ser_unpacker
 
 } // namespace SST::Core::Serialization::pvt
