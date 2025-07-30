@@ -40,4 +40,23 @@ WatchPoint::getCurrentSimCycle()
     return Simulation_impl::getSimulation()->getCurrentSimCycle();
 }
 
+void
+WatchPoint::setCheckpoint()
+{
+    Simulation_impl::getSimulation()->scheduleCheckpoint();
+}
+
+void
+WatchPoint::printStatus()
+{
+    Simulation_impl::getSimulation()->printStatus(true);
+}
+
+void
+WatchPoint::heartbeat()
+{
+    // do nothing for now, need to add all the functions similar to RTAction
+    // Could it just use RTAction?
+}
+
 } // namespace SST

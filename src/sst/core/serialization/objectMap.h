@@ -16,12 +16,12 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstdint>
+#include <iostream>
 #include <map>
 #include <string>
 #include <typeinfo>
 #include <utility>
 #include <vector>
-#include <iostream>
 
 namespace SST::Core::Serialization {
 
@@ -30,7 +30,7 @@ class TraceBuffer;
 class ObjectBuffer;
 
 
-//class ObjectMapComparison_impl<T>;
+// class ObjectMapComparison_impl<T>;
 /**
    Metadata object that each ObjectMap has a pointer to in order to
    track the hierarchy information while traversing the data
@@ -98,24 +98,27 @@ public:
     {}
 
     ObjectMapComparison(const std::string& name, ObjectMap* obj) :
-        name_(name), obj_(obj)
+        name_(name),
+        obj_(obj)
     {}
 
     virtual ~ObjectMapComparison() = default;
 
     virtual bool        compare()         = 0;
     virtual std::string getCurrentValue() = 0;
+    virtual void        print()           = 0;
     std::string         getName() { return name_; }
+
 #if 0
     void *              getVar() { 
         if ( obj_ != nullptr && obj_->isFundamental() ) 
             return nullptr; //obj_->getAddr(); }
 #endif
-    virtual void * getVar() = 0; 
+    virtual void* getVar() = 0;
 
 protected:
     std::string name_ = "";
-    ObjectMap* obj_ = nullptr;
+    ObjectMap*  obj_  = nullptr;
 };
 
 /**
@@ -298,16 +301,13 @@ public:
     {
         return nullptr;
     }
-    
+
     virtual TraceBuffer* getTraceBuffer(ObjectMap* UNUSED(obj), size_t UNUSED(sz), size_t UNUSED(pdelay)) // Add name
     {
         return nullptr;
     }
 
-    virtual ObjectBuffer* getObjectBuffer(const std::string& UNUSED(name), size_t UNUSED(sz))
-    {
-      return nullptr;
-    }
+    virtual ObjectBuffer* getObjectBuffer(const std::string& UNUSED(name), size_t UNUSED(sz)) { return nullptr; }
 
     /************ Functions for walking the Object Hierarchy ************/
 
@@ -760,6 +760,8 @@ public:
 
     void* getVar() override { return var_; }
 
+    void print() override { std::cout << name_ << " : "; }
+
 private:
     T* var_        = nullptr;
     T  comp_value_ = T();
@@ -771,53 +773,41 @@ private:
 class ObjectBuffer
 {
 public:
-  ObjectBuffer(const std::string& name, size_t sz) :
-    name_(name),
-    bufSize_(sz)
-  {
-    //cycleBuffer_.resize(bufSize_);
-  }
+    ObjectBuffer(const std::string& name, size_t sz) :
+        name_(name),
+        bufSize_(sz)
+    {}
 
-  virtual ~ObjectBuffer() = default;
+    virtual ~ObjectBuffer() = default;
 
-  virtual void sample(size_t index) = 0;
-  virtual std::string get(size_t index) = 0;
+    virtual void        sample(size_t index) = 0;
+    virtual std::string get(size_t index)    = 0;
 
-  std::string getName()
-  {
-    return name_;
-  }
+    std::string getName() { return name_; }
+
 private:
-  std::string name_;
-  size_t bufSize_;
-
-
+    std::string name_;
+    size_t      bufSize_;
 };
 
 template <typename T>
 class ObjectBuffer_impl : public ObjectBuffer
 {
 public:
-  ObjectBuffer_impl(const std::string& name, T* varPtr, size_t sz) :
-    ObjectBuffer(name, sz),
-    varPtr_(varPtr)
-  {
-    objectBuffer_.resize(sz);
-  }
+    ObjectBuffer_impl(const std::string& name, T* varPtr, size_t sz) :
+        ObjectBuffer(name, sz),
+        varPtr_(varPtr)
+    {
+        objectBuffer_.resize(sz);
+    }
 
-  void sample(size_t index) override
-  {
-    objectBuffer_[index] = *varPtr_;
-  }
+    void sample(size_t index) override { objectBuffer_[index] = *varPtr_; }
 
-  std::string get(size_t index) override
-  {
-    return SST::Core::to_string(objectBuffer_.at(index));
-  }
+    std::string get(size_t index) override { return SST::Core::to_string(objectBuffer_.at(index)); }
+
 private:
-  T* varPtr_ = nullptr;
-  std::vector<T> objectBuffer_;
-
+    T*             varPtr_ = nullptr;
+    std::vector<T> objectBuffer_;
 };
 
 
@@ -830,131 +820,143 @@ public:
         bufSize_(sz),
         postDelay_(pdelay)
     {
-      tagBuffer_.resize(bufSize_);
-      //cycleBuffer_.resize(bufSize_);
+        tagBuffer_.resize(bufSize_);
+        cycleBuffer_.resize(bufSize_);
     }
 
     virtual ~TraceBuffer() = default;
 
-    void resetTraceBuffer() 
+    void resetTraceBuffer()
     {
         postCount_ = 0;
-        cur_ = 0;
-        first_ = 0;
+        cur_       = 0;
+        first_     = 0;
     }
+
+    size_t getBufferSize() { return bufSize_; }
 
     void addObjectBuffer(ObjectBuffer* vb)
     {
-      objBuffers_.push_back(vb);
-      numObjects++;
+        objBuffers_.push_back(vb);
+        numObjects++;
     }
 
 
-    //SimTime_t getCurrentSimCycleT();
+    // SimTime_t getCurrentSimCycleT();
 
     enum BufferState {
-      CLEAR,        // 0 Pre Trigger
-      TRIGGER,      // 1 Trigger
-      POSTTRIGGER,  // 2 Post Trigger
-      OVERRUN       // 3 Overrun
+        CLEAR,       // 0 Pre Trigger
+        TRIGGER,     // 1 Trigger
+        POSTTRIGGER, // 2 Post Trigger
+        OVERRUN      // 3 Overrun
     };
 
-    bool sampleT(bool trigger)
+    bool sampleT(bool trigger, uint64_t cycle)
     {
 
-      size_t start_state = state_;
-      bool invokeAction = false;
+        size_t start_state  = state_;
+        bool   invokeAction = false;
 
-      // Trigger == TRUE
-      if (trigger) {
-        if (start_state == CLEAR) {   // Not previously triggered
-          state_ = TRIGGER;  // State becomes trigger recordi
+        // Trigger == TRUE
+        if ( trigger ) {
+            if ( start_state == CLEAR ) { // Not previously triggered
+                state_ = TRIGGER;         // State becomes trigger recordi
+            }
+            // Record trigger. For now, it is just the variable. Later versions will be multiple data
+            printf("    Sample: trigger\n");
+
+        } // if trigger
+
+        if ( start_state == TRIGGER || start_state == POSTTRIGGER ) { // trigger record or post trigger
+            state_ = POSTTRIGGER;                                     // State becomes post trigger
+            printf("    Sample: post trigger\n");
+            if ( postCount_ > postDelay_ ) { // Post Delay sampling is complete
+                first_     = 0;
+                cur_       = 0;
+                postCount_ = 0;
+                printf("    Sample: reset\n");
+            }
         }
-        // Record trigger. For now, it is just the variable. Later versions will be multiple data
-        printf("    Sample: trigger\n");
-
-      }  // if trigger
-
-      if (start_state == TRIGGER || start_state == POSTTRIGGER) { // trigger record or post trigger
-        state_ = POSTTRIGGER; // State becomes post trigger
-        printf("    Sample: post trigger\n");
-        if (postCount_ > postDelay_) {  // Post Delay sampling is complete
-          first_ = 0;
-          cur_ = 0;
-          postCount_ = 0;
-          printf("    Sample: reset\n");
+        if ( start_state == OVERRUN ) { // overrun - not handled yet
+            printf("    Sample: overrun\n");
         }
-      }
-      if (start_state == OVERRUN) { // overrun - not handled yet
-        printf("    Sample: overrun\n");
-      }
 
 
-      //printf("In sample: cur = %ld\n", cur_);
-      std::cout << "In sample: cur = " << cur_ << " state = " << state_ << std::endl;
-      if (cur_ >= bufSize_) {
-        //printf("Error: buffer overrun\n");
-        std::cout << "Error: buffer overrrun\n";
-        state_ = 3;
-        cur_ = 0;
-      }
+        // printf("In sample: cur = %ld\n", cur_);
+        std::cout << "In sample: cur = " << cur_ << " state = " << state_ << std::endl;
+        if ( cur_ >= bufSize_ ) {
+            // printf("Error: buffer overrun\n");
+            std::cout << "Error: buffer overrrun\n";
+            state_ = 3;
+            cur_   = 0;
+        }
 
-      // Sample all the trace object buffers
-      ObjectBuffer* varBuffer_;
-      for (size_t obj = 0; obj < numObjects; obj++) {
-        varBuffer_ = objBuffers_[obj];
-        varBuffer_->sample(cur_);
-      }
-      
-      //cycleBuffer_[cur_] = getCurrentSimCycleT();
-      tagBuffer_[cur_] = state_;
-      cur_++;
-      if (state_ == POSTTRIGGER)
-        postCount_++;
+        // Sample all the trace object buffers
+        ObjectBuffer* varBuffer_;
+        for ( size_t obj = 0; obj < numObjects; obj++ ) {
+            varBuffer_ = objBuffers_[obj];
+            varBuffer_->sample(cur_);
+        }
 
-      if (postCount_ >= postDelay_) {
-        invokeAction = true;
-        state_ = CLEAR;
-        printf("    Sample: invoke\n");
-      }
+        cycleBuffer_[cur_] = cycle;
+        tagBuffer_[cur_]   = state_;
+        cur_++;
+        if ( state_ == POSTTRIGGER ) postCount_++;
 
-      return invokeAction;
+        if ( postCount_ >= postDelay_ ) {
+            invokeAction = true;
+            state_       = CLEAR;
+            postCount_   = 0;
+            printf("    Sample: invoke\n");
+        }
 
+        return invokeAction;
     }
 
-    void dumpTraceBufferT() 
+    void dumpTraceBufferT()
     {
-      for (size_t i = 0; i < cur_ && i < bufSize_; i++) {
-        
-        std::cout << "traceBuffer[" << i << "]: "
-          << "(" << tagBuffer_.at(i) << ") ";
+        for ( size_t i = 0; i < cur_ && i < bufSize_; i++ ) {
 
-        for (size_t obj = 0; obj < numObjects; obj++) {
-          ObjectBuffer* varBuffer_ = objBuffers_[obj];
-          std::cout << SST::Core::to_string(varBuffer_->getName())
-            << "=" << varBuffer_->get(i) << " ";
+            std::cout << "buf[" << i << "]:@" << cycleBuffer_.at(i) << ": (" << tagBuffer_.at(i) << ") ";
+
+            for ( size_t obj = 0; obj < numObjects; obj++ ) {
+                ObjectBuffer* varBuffer_ = objBuffers_[obj];
+                std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->get(i) << " ";
+            }
+            std::cout << std::endl;
         }
+    }
+
+    void printVars()
+    {
+        for ( size_t obj = 0; obj < numObjects; obj++ ) {
+            ObjectBuffer* varBuffer_ = objBuffers_[obj];
+            std::cout << SST::Core::to_string(varBuffer_->getName()) << " ";
+        }
+    }
+    void printConfig()
+    {
+        std::cout << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
+        printVars();
         std::cout << std::endl;
-
-      }
     }
-//private:
-    Core::Serialization::ObjectMap* varObj_ = nullptr;
-    size_t bufSize_ = 64;
-    size_t postDelay_ = 8;
-    size_t postCount_ = 0;
-    size_t cur_ = 0;
-    size_t first_ = 0;
-    int state_ = 0;
-    
+    // private:
+    Core::Serialization::ObjectMap* varObj_    = nullptr;
+    size_t                          bufSize_   = 64;
+    size_t                          postDelay_ = 8;
+    size_t                          postCount_ = 0;
+    size_t                          cur_       = 0;
+    size_t                          first_     = 0;
+    int                             state_     = 0;
+
     size_t numObjects = 0;
 
 
-    std::vector<int> tagBuffer_;
+    std::vector<int>           tagBuffer_;
     std::vector<ObjectBuffer*> objBuffers_;
-    //std::vector<SimTime_t> cycleBuffer_;
+    std::vector<uint64_t>      cycleBuffer_;
 
-};  // class TraceBuffer
+}; // class TraceBuffer
 
 
 #endif
@@ -1046,7 +1048,7 @@ public:
 #else
     TraceBuffer* getTraceBuffer(ObjectMap* obj, size_t sz, size_t pdelay) override // Add name
     {
-        //return new TraceBuffer_impl<T>(obj, addr_, sz, pdelay);
+        // return new TraceBuffer_impl<T>(obj, addr_, sz, pdelay);
         return new TraceBuffer(obj, sz, pdelay);
     }
 #endif
@@ -1054,9 +1056,8 @@ public:
 
     ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
     {
-      return new ObjectBuffer_impl<T>(name, addr_, sz);
+        return new ObjectBuffer_impl<T>(name, addr_, sz);
     }
-
 };
 
 /**
@@ -1099,7 +1100,6 @@ public:
     {}
     ~ObjectMapArray() override = default;
 };
-
 
 
 } // namespace SST::Core::Serialization

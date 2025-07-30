@@ -43,12 +43,8 @@ public:
         Event::HandlerBase::AttachPoint(),
         obj_(obj),
         name_(name)
-    { 
-      printf("Constructor: checkType = %d\n", checkType);
-      //traceBuffer.resize(bufSize);
-      //cycleBuffer.resize(bufSize);
-      //bufferTags.resize(bufSize);
-
+    {
+        printf("Constructor: checkType = %d\n", checkType);
     }
 
     ~WatchPoint() { delete obj_; }
@@ -58,49 +54,80 @@ public:
     uintptr_t registerHandler(const AttachPointMetaData& UNUSED(mdata)) override { return 0; }
 
     // Functions inherited from Event::HandlerBase::AttachPoint
-    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(ev)) override 
-    { 
-    }
+    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(ev)) override {}
 
-    void afterHandler(uintptr_t UNUSED(key)) override 
+    void afterHandler(uintptr_t UNUSED(key)) override
     {
         printf("  In after Event Handler\n");
         check();
-        if (tb_) {
-            bool invoke = tb_->sampleT(trigger);
-            trigger = false;
-            if (invoke) {
+        if ( tb_ ) {
+            SimTime_t cycle  = getCurrentSimCycle();
+            bool      invoke = tb_->sampleT(trigger, cycle);
+            trigger          = false;
+            if ( invoke ) {
                 invokeAction();
-                tb_->resetTraceBuffer();
             }
-        } else {
+        }
+        else {
             printf("    no trace buffer\n");
             invokeAction();
-            tb_->resetTraceBuffer();
         }
-
     }
 
     // Functions inherited from Clock::HandlerBase::AttachPoint
     void beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle)) override {}
 
-    void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret)) override 
-    { 
-    }
+    void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret)) override {}
 
     std::string getName() { return name_; }
+    size_t      getBufferSize() { return tb_->getBufferSize(); }
+    void        printTrace()
+    {
+        printf("PrintTrace tb_ = %p\n", tb_);
+        if ( tb_ != nullptr ) {
+            tb_->dumpTraceBufferT();
+        }
+    }
+    void printWatchpoint()
+    {
+        obj_->print();
+        printf("PrintWatchpoint tb_ = %p\n", tb_);
+        if ( tb_ != nullptr ) tb_->printConfig();
+    }
+
+    void resetTraceBuffer()
+    {
+        printf("Reset buffer\n");
+        tb_->resetTraceBuffer();
+    }
+
+    enum WPACTION : unsigned { // Watchpoint Action
+        INTERACTIVE  = 0,
+        PRINT_TRACE  = 1,
+        CHECKPOINT   = 2,
+        PRINT_STATUS = 3,
+        HEARTBEAT    = 4,
+        INVALID      = 5
+    };
+
+    void setAction(WPACTION actionType) { wpAction = actionType; }
 
 protected:
-    void setEnterInteractive();
-    void setInteractiveMsg(const std::string& msg);
+    void      setEnterInteractive();
+    void      setInteractiveMsg(const std::string& msg);
     SimTime_t getCurrentSimCycle();
+    void      setCheckpoint();
+    void      printStatus();
+    void      heartbeat();
 
 private:
     Core::Serialization::ObjectMapComparison* obj_;
     std::string                               name_;
 
 #if 0
-    enum CHECK_HANDLER : unsigned { //Could expand tddo before/after also
+    enum CHECK_HANDLER : unsigned { 
+      // Do we want to be able to specify clock/event?
+      // Could expand to choose before/after also
         CLOCK = 0, // check in CLOCK handler ONLY
         EVENT = 1, // check in EVENT hanlder ONLY
         BOTH  = 2,  // check in BOTH CLOCK and EVENT handlers
@@ -108,16 +135,35 @@ private:
     CHECK_HANDLER checkType = EVENT;
 #endif
 
-    bool trigger = false;
-    int checkType = 0; // clock only
+    bool trigger   = false;
+    int  checkType = 0; // clock only
 
-    void invokeAction() {
 
-        tb_->dumpTraceBufferT();
-        setEnterInteractive();  // Trigger action
-        setInteractiveMsg(format_string("Watch point %s buffer", name_.c_str()));
+    WPACTION wpAction = INTERACTIVE;
 
-        // Reset trace buffer?
+
+    void invokeAction()
+    {
+        switch ( wpAction ) {
+        case INTERACTIVE:
+            setEnterInteractive(); // Trigger action
+            setInteractiveMsg(format_string("Watch point %s buffer", name_.c_str()));
+            break;
+        case PRINT_TRACE:
+            tb_->dumpTraceBufferT();
+            break;
+        case CHECKPOINT:
+            setCheckpoint();
+            break;
+        case PRINT_STATUS:
+            printStatus();
+            break;
+        case HEARTBEAT:
+            heartbeat();
+            break;
+        default:
+            printf("ERROR: invalid watchpoint action\n");
+        }
     }
 
     void check()
@@ -127,21 +173,15 @@ private:
             printf("Watch point %s triggered\n", name_.c_str());
             trigger = true;
         }
-
     }
 
     // More generic TraceBuffer handling
     Core::Serialization::TraceBuffer* tb_ = nullptr;
+
 public:
-    void addTraceBuffer(Core::Serialization::TraceBuffer* tb) {
-        tb_ = tb;
-    }
+    void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
 
-    void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) {
-        tb_->addObjectBuffer(ob);
-    }
-
-
+    void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) { tb_->addObjectBuffer(ob); }
 };
 
 
