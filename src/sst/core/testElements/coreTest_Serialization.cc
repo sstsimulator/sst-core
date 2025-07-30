@@ -183,6 +183,45 @@ struct checkSimpleSerializeDeserialize
     }
 };
 
+template <typename T, typename DELETER>
+bool checkUniquePtrSerializeDeserialize(std::unique_ptr<T, DELETER>& in)
+{
+    std::unique_ptr<T, DELETER> out;
+    serializeDeserialize(in, out);
+    if ( !in )
+        return !out;
+    else if ( !out )
+        return false;
+    else if constexpr ( std::is_array_v<T> ) {
+        for ( size_t i = 0; i < std::extent_v<T>; ++i )
+            if ( !((*in.get())[i] == (*out.get())[i]) ) return false;
+        return true;
+    }
+    else {
+        return *in == *out;
+    }
+}
+
+template <typename T, typename DELETER>
+bool checkUniquePtrSerializeDeserialize(std::unique_ptr<T, DELETER>& in, size_t& in_size)
+{
+    std::unique_ptr<T, DELETER> out;
+    size_t                      out_size;
+    serializeDeserialize(
+        SST::Core::Serialization::unique_ptr(in, in_size), SST::Core::Serialization::unique_ptr(out, out_size));
+    if ( !in )
+        return !out;
+    else if ( !out )
+        return false;
+    else if ( in_size != out_size )
+        return false;
+    else {
+        for ( size_t i = 0; i < out_size; ++i )
+            if ( !(in[i] == out[i]) ) return false;
+        return true;
+    }
+}
+
 template <typename T>
 bool
 checkOptionalSerializeDeserialize(std::optional<T>& data)
@@ -880,6 +919,38 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         passed = checkNonIterableContainerSerializeDeserialize(stack_in);
         if ( !passed ) out.output("ERROR: stack<int32_t>* did not serialize/deserialize properly\n");
         delete stack_in;
+    }
+    else if ( test == "unique_ptr" ) {
+        // std::unique_ptr
+        {
+            // Plain scalar
+            auto p = std::make_unique<int32_t>(rng->generateNextInt32());
+            checkUniquePtrSerializeDeserialize(p);
+        }
+        {
+            // Bounded array
+            constexpr size_t n = 1000;
+            auto             p = std::unique_ptr<int32_t[n]>(reinterpret_cast<int32_t(*)[n]>(new int32_t[n]));
+            for ( size_t i = 0; i < n; ++i )
+                (*p.get())[i] = rng->generateNextInt32();
+            checkUniquePtrSerializeDeserialize(p);
+        }
+        {
+            // Unbounded array with runtime size
+            size_t n = 100;
+            auto   p = std::make_unique<int32_t[]>(n);
+            for ( size_t i = 0; i < n; ++i )
+                p[i] = rng->generateNextInt32();
+            checkUniquePtrSerializeDeserialize(p, n);
+        }
+        {
+            // std::vector
+            size_t n = 10;
+            auto   p = std::make_unique<std::vector<int32_t>>();
+            for ( size_t i = 0; i < n; ++i )
+                p->push_back(rng->generateNextInt32());
+            checkUniquePtrSerializeDeserialize(p);
+        }
     }
     else if ( test == "unordered_containers" ) {
         // Unordered Containers
