@@ -108,7 +108,7 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
 
     ############################################################################
     # Test read access of the sstsimulator configuration file
-    # Note: We can only test the sstsimulator_conf_get_value() with type=str; 
+    # Note: We can only test the sstsimulator_conf_get_value() with type=str;
     #       as we have no generic entries for _int, _float, _bool
     ############################################################################
 

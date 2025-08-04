@@ -16,7 +16,7 @@ import sys
 ########################################################
 # Loading user-subcomponents into components
 # Implicitly shared statistics between subcomponents
-# Explicitly shared statistics between subcomponents 
+# Explicitly shared statistics between subcomponents
 ########################################################
 
 # Define SST core options

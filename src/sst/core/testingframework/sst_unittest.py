@@ -257,7 +257,7 @@ class SSTTestCase(unittest.TestCase):
                 err_file (str): The FilePath to the finalized error file.
                                 Default = same file as the output file.
                 mpi_out_files (str): The FilePath to the mpi run output files.
-                                     These will be merged into the out_file 
+                                     These will be merged into the out_file
                                      at the end of a multi-rank run.
                 other_args (str): Any other arguments used in the SST cmd
                                    that the caller wishes to use.

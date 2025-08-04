@@ -21,7 +21,7 @@ AC_DEFUN([SST_CHECK_FPIC],
   AC_SUBST([SST_ELEMENT_FPIC_FLAGS])
 
   AC_MSG_CHECKING([for position-independent code flags])
-  AS_IF([test "x$sst_check_fpic_happy" = "xyes" ], 
+  AS_IF([test "x$sst_check_fpic_happy" = "xyes" ],
 	[AC_MSG_RESULT(["$SST_ELEMENT_FPIC_FLAGS"])],
 	["not found"])
 

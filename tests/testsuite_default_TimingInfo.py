@@ -44,7 +44,7 @@ class testcase_TimingInfo(SSTTestCase):
         jsonfile = "{0}/test_TimingInfo.json".format(outdir)
 
         self.run_sst(sdlfile, outfile, other_args=f"--timing-info-json={jsonfile}")
-        
+
         # Perform the test of the standard simulation output
         cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
@@ -80,7 +80,7 @@ class testcase_TimingInfo(SSTTestCase):
             "ranks",
             "threads",
         ]
-        
+
         # Check keys exists
         for k in timing_keys:
             self.assertTrue(k in timingInfo, f"JSON data is missing key: {k}")

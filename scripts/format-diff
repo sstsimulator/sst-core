@@ -66,7 +66,7 @@ def format_diff(commit: str, path: str) -> None:
   getoutput(cmd)
 
 #we are not given an explicit list of paths
-if not paths: 
+if not paths:
     paths = getoutput(["git", "diff", "--name-only", "HEAD", commit]).splitlines()
 for path in paths:
     if path.endswith(".h") or path.endswith(".cc"):
