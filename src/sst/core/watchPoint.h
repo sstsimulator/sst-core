@@ -43,9 +43,7 @@ public:
         Event::HandlerBase::AttachPoint(),
         obj_(obj),
         name_(name)
-    {
-        printf("Constructor: checkType = %d\n", checkType);
-    }
+    {}
 
     ~WatchPoint() { delete obj_; }
 
@@ -66,11 +64,13 @@ public:
             trigger          = false;
             if ( invoke ) {
                 invokeAction();
+                setBufferReset();
             }
         }
         else {
             printf("    no trace buffer\n");
             invokeAction();
+            setBufferReset();
         }
     }
 
@@ -83,23 +83,32 @@ public:
     size_t      getBufferSize() { return tb_->getBufferSize(); }
     void        printTrace()
     {
-        printf("PrintTrace tb_ = %p\n", tb_);
         if ( tb_ != nullptr ) {
+            tb_->dumpTriggerRecord();
             tb_->dumpTraceBufferT();
         }
     }
+
     void printWatchpoint()
     {
-        obj_->print();
-        printf("PrintWatchpoint tb_ = %p\n", tb_);
-        if ( tb_ != nullptr ) tb_->printConfig();
+        obj_->print();          // print trigger info
+        if ( tb_ != nullptr ) { // print trace buffer config
+            tb_->printConfig();
+        }
+    }
+
+    void setBufferReset()
+    {
+        printf("Set Buffer Reset\n");
+        tb_->setBufferReset();
     }
 
     void resetTraceBuffer()
     {
-        printf("Reset buffer\n");
+        printf("Reset Trace Buffer\n");
         tb_->resetTraceBuffer();
     }
+
 
     enum WPACTION : unsigned { // Watchpoint Action
         INTERACTIVE  = 0,
@@ -112,6 +121,10 @@ public:
 
     void setAction(WPACTION actionType) { wpAction = actionType; }
 
+    void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
+
+    void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) { tb_->addObjectBuffer(ob); }
+
 protected:
     void      setEnterInteractive();
     void      setInteractiveMsg(const std::string& msg);
@@ -123,7 +136,7 @@ protected:
 private:
     Core::Serialization::ObjectMapComparison* obj_;
     std::string                               name_;
-
+    Core::Serialization::TraceBuffer*         tb_ = nullptr;
 #if 0
     enum CHECK_HANDLER : unsigned { 
       // Do we want to be able to specify clock/event?
@@ -134,11 +147,9 @@ private:
     };
     CHECK_HANDLER checkType = EVENT;
 #endif
+    int checkType = 0; // clock only - Not currently used. I just hard-coded in event
 
-    bool trigger   = false;
-    int  checkType = 0; // clock only
-
-
+    bool     trigger  = false;
     WPACTION wpAction = INTERACTIVE;
 
 
@@ -174,14 +185,6 @@ private:
             trigger = true;
         }
     }
-
-    // More generic TraceBuffer handling
-    Core::Serialization::TraceBuffer* tb_ = nullptr;
-
-public:
-    void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
-
-    void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) { tb_->addObjectBuffer(ob); }
 };
 
 
