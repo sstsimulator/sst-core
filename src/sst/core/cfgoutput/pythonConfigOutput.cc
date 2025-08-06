@@ -67,44 +67,46 @@ PythonConfigGraphOutput::getLinkObject(LinkId_t id, const std::string& name, boo
     return link_map_[id];
 }
 
-char *
+char*
 PythonConfigGraphOutput::generateCompName(const ConfigComponent* comp)
 {
-  char *buffer  = nullptr;
+    char* buffer = nullptr;
 
-  if( auto firstParent = comp->getParent() ){
-      if( auto secondParent = firstParent->getParent() ){
-          char *p1 = makePythonSafeWithPrefix(secondParent->name.c_str(), "comp_");
-          char *p2 = makePythonSafeWithPrefix(firstParent->name.c_str(), "_subcomp_");
-          char *p3 = makePythonSafeWithPrefix(comp->name.c_str(), "_subcomp_");
+    if ( auto firstParent = comp->getParent() ) {
+        if ( auto secondParent = firstParent->getParent() ) {
+            char* p1 = makePythonSafeWithPrefix(secondParent->name.c_str(), "comp_");
+            char* p2 = makePythonSafeWithPrefix(firstParent->name.c_str(), "_subcomp_");
+            char* p3 = makePythonSafeWithPrefix(comp->name.c_str(), "_subcomp_");
 
-          size_t slen = strlen(p1) + strlen(p2) + strlen(p3) + 3;
-          buffer = (char *)calloc(1, slen);
+            size_t slen = strlen(p1) + strlen(p2) + strlen(p3) + 3;
+            buffer      = (char*)calloc(1, slen);
 
-          snprintf(buffer, slen, "%s%s%d%s%d", p1, p2, firstParent->slot_num, p3, comp->slot_num);
+            snprintf(buffer, slen, "%s%s%d%s%d", p1, p2, firstParent->slot_num, p3, comp->slot_num);
 
-          free(p1);
-          free(p2);
-          free(p3);
-      }else{
-          char *owner = makePythonSafeWithPrefix(firstParent->name.c_str(), "comp_");
-          size_t slen = strlen(owner) + strlen("_subcomp_") + 1;
-          char *combName = (char*)calloc(1, slen);
-          snprintf(combName, slen, "%s%s", owner, "_subcomp_");
-          char *tmpName   = makePythonSafeWithPrefix(comp->name.c_str(), combName);
-          size_t flen     = strlen(tmpName) + 2;
-          buffer = (char*)calloc(1, flen);
-          snprintf(buffer, flen, "%s%d", tmpName, comp->slot_num);
+            free(p1);
+            free(p2);
+            free(p3);
+        }
+        else {
+            char*  owner    = makePythonSafeWithPrefix(firstParent->name.c_str(), "comp_");
+            size_t slen     = strlen(owner) + strlen("_subcomp_") + 1;
+            char*  combName = (char*)calloc(1, slen);
+            snprintf(combName, slen, "%s%s", owner, "_subcomp_");
+            char*  tmpName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
+            size_t flen    = strlen(tmpName) + 2;
+            buffer         = (char*)calloc(1, flen);
+            snprintf(buffer, flen, "%s%d", tmpName, comp->slot_num);
 
-          free(combName);
-          free(owner);
-          free(tmpName);
-      }
-  }else{
-      buffer = makePythonSafeWithPrefix(comp->name.c_str(), "comp_");
-  }
+            free(combName);
+            free(owner);
+            free(tmpName);
+        }
+    }
+    else {
+        buffer = makePythonSafeWithPrefix(comp->name.c_str(), "comp_");
+    }
 
-  return buffer;
+    return buffer;
 }
 
 void
@@ -113,33 +115,31 @@ PythonConfigGraphOutput::generateCommonLink(const char* objName, const ConfigCom
     UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
 
     for ( auto linkID : comp->links ) {
-        const ConfigLink* link       = getGraph()->getLinkMap()[linkID];
+        const ConfigLink* link = getGraph()->getLinkMap()[linkID];
 
         // only create the link if the component is the LHS of the port connection
-        if( link->component[0] == comp->id ){
-          int               srcIdx     = 0;
-          int               destIdx    = 1;
-          SimTime_t         latency    = link->latency[srcIdx];
-          auto              tmp        = tb * latency;
-          std::string       latencyStr = link->latency_str[srcIdx];
-          char*             esPortName = makeEscapeSafe(link->port[srcIdx].c_str());
-          char*             edPortName = makeEscapeSafe(link->port[destIdx].c_str());
-          char*             destName   = nullptr;
+        if ( link->component[0] == comp->id ) {
+            int         srcIdx     = 0;
+            int         destIdx    = 1;
+            SimTime_t   latency    = link->latency[srcIdx];
+            auto        tmp        = tb * latency;
+            std::string latencyStr = link->latency_str[srcIdx];
+            char*       esPortName = makeEscapeSafe(link->port[srcIdx].c_str());
+            char*       edPortName = makeEscapeSafe(link->port[destIdx].c_str());
+            char*       destName   = nullptr;
 
-          auto destComp = getGraph()->findComponent(link->component[1]);
-          destName = generateCompName(destComp);
+            auto destComp = getGraph()->findComponent(link->component[1]);
+            destName      = generateCompName(destComp);
 
-          const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
+            const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
 
-          fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n",
-                  linkName.c_str(),
-                  objName, esPortName, tmp.toStringBestSI().c_str(),
-                  destName, edPortName, tmp.toStringBestSI().c_str());
-          fprintf(outputFile, "\n");
+            fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n", linkName.c_str(), objName,
+                esPortName, tmp.toStringBestSI().c_str(), destName, edPortName, tmp.toStringBestSI().c_str());
+            fprintf(outputFile, "\n");
 
-          free(esPortName);
-          free(edPortName);
-          free(destName);
+            free(esPortName);
+            free(edPortName);
+            free(destName);
         }
     }
 }
@@ -235,9 +235,9 @@ PythonConfigGraphOutput::generateSubComponentLinks(const char* owner, const Conf
     size_t slen     = strlen(owner) + strlen("_subcomp_") + 1;
     char*  combName = (char*)calloc(1, slen);
     snprintf(combName, slen, "%s%s", owner, "_subcomp_");
-    char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
-    size_t slotlen   = strlen(pyCompName) + 2;
-    char *slotName   = (char *)calloc(1, slotlen);
+    char*  pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
+    size_t slotlen    = strlen(pyCompName) + 2;
+    char*  slotName   = (char*)calloc(1, slotlen);
     snprintf(slotName, slotlen, "%s%d", pyCompName, comp->slot_num);
 
     generateCommonLink(slotName, comp);
@@ -257,10 +257,10 @@ PythonConfigGraphOutput::generateSubComponent(const char* owner, const ConfigCom
     size_t slen     = strlen(owner) + strlen("_subcomp_") + 1;
     char*  combName = (char*)calloc(1, slen);
     snprintf(combName, slen, "%s%s", owner, "_subcomp_");
-    char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
-    char* esCompName = makeEscapeSafe(comp->name.c_str());
-    size_t slotlen   = strlen(pyCompName) + 2;
-    char *slotName   = (char *)calloc(1, slotlen);
+    char*  pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), combName);
+    char*  esCompName = makeEscapeSafe(comp->name.c_str());
+    size_t slotlen    = strlen(pyCompName) + 2;
+    char*  slotName   = (char*)calloc(1, slotlen);
     snprintf(slotName, slotlen, "%s%d", pyCompName, comp->slot_num);
 
     fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\", %d)\n", slotName, owner, esCompName,

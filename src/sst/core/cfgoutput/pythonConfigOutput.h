@@ -42,7 +42,7 @@ protected:
 
     const std::string& getLinkObject(LinkId_t id, const std::string& name, bool no_cut);
 
-    char *generateCompName(const ConfigComponent* comp);
+    char* generateCompName(const ConfigComponent* comp);
     char* makePythonSafeWithPrefix(const std::string& name, const std::string& prefix) const;
     void  makeBufferPythonSafe(char* buffer) const;
     char* makeEscapeSafe(const std::string& input) const;
