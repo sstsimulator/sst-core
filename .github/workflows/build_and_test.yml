@@ -1,0 +1,38 @@
+---
+name: sst-core build/install/test
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+
+concurrency:
+  group: build-and-test-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  # Jobs depend on the output of pre-checks to run.
+  # Cancels new workflows if prior runs were successful (same tree hash)
+  pre-checks:
+    runs-on: ubuntu-24.04
+    # actions: write needed by skip-duplicate-actions
+    permissions:
+      actions: write
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@f75f66ce1886f00957d99748a42c724f4330bdcf # v5.3.1
+        with:
+          skip_after_successful_duplicate: 'true'
+  macos-14:
+    needs: pre-checks
+    if: ${{ needs.pre-checks.outputs.should_skip != 'true' }}
+    uses:
+      ./.github/workflows/free-macos-14.yml
+  macos-15:
+    needs: pre-checks
+    if: ${{ needs.pre-checks.outputs.should_skip != 'true' }}
+    uses:
+      ./.github/workflows/free-macos-15.yml
