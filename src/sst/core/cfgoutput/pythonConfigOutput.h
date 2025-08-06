@@ -36,9 +36,13 @@ protected:
     void         generateSubComponent(const char* owner, const ConfigComponent* comp);
     void         generateComponent(const ConfigComponent* comp, bool output_parition_info);
     void         generateStatGroup(const ConfigGraph* graph, const ConfigStatGroup& grp);
+    void         generateCommonLink(const char* objName, const ConfigComponent* comp);
+    void         generateSubComponentLinks(const char* objName, const ConfigComponent* comp);
+    void         generateComponentLinks(const ConfigComponent* comp);
 
     const std::string& getLinkObject(LinkId_t id, const std::string& name, bool no_cut);
 
+    char *generateCompName(const ConfigComponent* comp);
     char* makePythonSafeWithPrefix(const std::string& name, const std::string& prefix) const;
     void  makeBufferPythonSafe(char* buffer) const;
     char* makeEscapeSafe(const std::string& input) const;
