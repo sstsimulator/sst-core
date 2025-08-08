@@ -209,14 +209,12 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                         is_same_type_template_v<OBJ, std::unordered_multiset> ) {
                         typename OBJ::key_type key {};
                         // TODO: Figure out how to make as_ptr_elem work with sets
-                        opts = SerOption::none;
-                        SST_SER(key, opts);
+                        SST_SER(key, SerOption::none);
                         obj.emplace(std::move(key));
                     }
                     else if constexpr ( is_vector_bool_v<OBJ> ) {
                         bool value {};
-                        opts = SerOption::none;
-                        SST_SER(value, opts);
+                        SST_SER(value, SerOption::none);
                         obj.push_back(value);
                     }
                     else { // std::vector, std::deque, std::list
@@ -271,10 +269,11 @@ template<typename OBJ>
 class serialize_impl<OBJ*, std::enable_if_t<is_insertable_v<OBJ>>>{
     void operator()(OBJ*& obj, serializer& ser, ser_opt_t options)
     {
-        if ( ser.mode() == serializer::UNPACK ) { obj = new OBJ; }
+        if ( ser.mode() == serializer::UNPACK ) obj = new OBJ;
         SST_SER(*obj, options);
-        // serialize_impl<T>()(*obj, ser, options);
-    }SST_FRIEND_SERIALIZE();
+    }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization
