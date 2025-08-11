@@ -49,9 +49,6 @@ private:
     static std::map<std::string, std::pair<Units, sst_big_num>> valid_compound_units;
     static std::map<unit_id_t, std::string>                     unit_strings;
     static unit_id_t                                            count;
-    static bool                                                 initialized;
-
-    static bool initialize();
 
     // Non-static data members and functions
     std::vector<unit_id_t> numerator;
@@ -114,7 +111,7 @@ private:
 public:
     void init(const std::string& val);
 
-    UnitAlgebra() {}
+    UnitAlgebra() = default;
     /**
      Create a new UnitAlgebra instance, and pre-populate with a parsed value.
 

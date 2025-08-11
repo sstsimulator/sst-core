@@ -38,43 +38,26 @@ split(const std::string& input, const std::string& delims, std::vector<std::stri
     } while ( stop != std::string::npos );
 }
 
-static std::map<std::string, sst_big_num> si_unit_map = { { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
-    { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") }, { "u", sst_big_num("1e-6") },
-    { "m", sst_big_num("1e-3") }, { "k", sst_big_num("1e3") }, { "K", sst_big_num("1e3") },
-    { "ki", sst_big_num(1024l) }, { "Ki", sst_big_num(1024l) }, { "M", sst_big_num("1e6") },
-    { "Mi", sst_big_num(1024l * 1024l) }, { "G", sst_big_num("1e9") }, { "Gi", sst_big_num(1024l * 1024l * 1024l) },
-    { "T", sst_big_num("1e12") }, { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) }, { "P", sst_big_num("1e15") },
-    { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) }, { "E", sst_big_num("1e18") },
-    { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) } };
-
+static std::map<std::string, sst_big_num>&
+si_unit_map()
+{
+    static std::map<std::string, sst_big_num> units = { { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
+        { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") }, { "u", sst_big_num("1e-6") },
+        { "m", sst_big_num("1e-3") }, { "k", sst_big_num("1e3") }, { "K", sst_big_num("1e3") },
+        { "ki", sst_big_num(1024l) }, { "Ki", sst_big_num(1024l) }, { "M", sst_big_num("1e6") },
+        { "Mi", sst_big_num(1024l * 1024l) }, { "G", sst_big_num("1e9") }, { "Gi", sst_big_num(1024l * 1024l * 1024l) },
+        { "T", sst_big_num("1e12") }, { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) },
+        { "P", sst_big_num("1e15") }, { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) },
+        { "E", sst_big_num("1e18") }, { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) } };
+    return units;
+}
 // Class Units
 
 std::recursive_mutex                                 Units::unit_lock;
 std::map<std::string, Units::unit_id_t>              Units::valid_base_units;
 std::map<std::string, std::pair<Units, sst_big_num>> Units::valid_compound_units;
 std::map<Units::unit_id_t, std::string>              Units::unit_strings;
-Units::unit_id_t                                     Units::count;
-bool                                                 Units::initialized = Units::initialize();
-
-bool
-Units::initialize()
-{
-    count = 1;
-    registerBaseUnit("s");
-    registerBaseUnit("B");
-    registerBaseUnit("b");
-    registerBaseUnit("events");
-
-    registerCompoundUnit("Hz", "1/s");
-    // Yes, I know it's wrong, but other people don't always realize
-    // that.
-    registerCompoundUnit("hz", "1/s");
-    registerCompoundUnit("Bps", "B/s");
-    registerCompoundUnit("bps", "b/s");
-    registerCompoundUnit("event", "events");
-
-    return true;
-}
+Units::unit_id_t                                     Units::count = 1;
 
 void
 Units::reduce()
@@ -142,7 +125,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
 
     if ( si_length > 0 ) {
         std::string si_unit = units.substr(0, si_length);
-        multiplier *= si_unit_map[si_unit];
+        multiplier *= si_unit_map()[si_unit];
     }
 
     // Check to see if the unit is valid and get its ID
@@ -397,14 +380,16 @@ UnitAlgebra::toStringBestSI(int32_t precision) const
     sst_big_num       temp;
     std::string       si;
     bool              found = false;
-    for ( auto it = si_unit_map.begin(); it != si_unit_map.end(); ++it ) {
+
+    auto& si_units = si_unit_map();
+    for ( auto it : si_units ) {
         // Divide by the value, if it's between 1 and 1000, we have
         // the most natural SI unit
-        if ( it->first.length() == 2 ) continue; // Don't do power of 2 units
-        temp = value / it->second;
+        if ( it.first.length() == 2 ) continue; // Don't do power of 2 units
+        temp = value / it.second;
         if ( temp >= 1 && temp < 1000 ) {
             found = true;
-            si    = it->first;
+            si    = it.first;
             break;
         }
     }
