@@ -47,6 +47,7 @@ REENABLE_WARNING
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/timingOutput.h"
+#include "sst/core/unitAlgebra.h"
 
 #include <cinttypes>
 #include <exception>
@@ -117,6 +118,22 @@ force_rank_sequential_stop(bool enable, const RankInfo& myRank, const RankInfo& 
     }
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
+}
+
+static void
+initialize_unitalgebra()
+{
+    Units::registerBaseUnit("s");
+    Units::registerBaseUnit("B");
+    Units::registerBaseUnit("b");
+    Units::registerBaseUnit("events");
+
+    Units::registerCompoundUnit("Hz", "1/s");
+    // Yes, I know it's wrong, but other people don't always realize that
+    Units::registerCompoundUnit("hz", "1/s");
+    Units::registerCompoundUnit("Bps", "B/s");
+    Units::registerCompoundUnit("bps", "b/s");
+    Units::registerCompoundUnit("event", "events");
 }
 
 static void
@@ -742,6 +759,8 @@ main(int argc, char* argv[])
 
     Simulation_impl::config.initialize(world_size.rank, myrank == 0);
     Config& cfg = Simulation_impl::config;
+
+    initialize_unitalgebra();
 
     // Current simulation time.  Needed to properly intialize
     // Simulation_impl object for restarts.
