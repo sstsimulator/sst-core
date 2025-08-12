@@ -17,6 +17,8 @@
     "The header file sst/core/serialization/impl/sizer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
+#include "sst/core/serialization/impl/get_array_size.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <set>
@@ -33,21 +35,21 @@ public:
     explicit ser_sizer() = default;
 
     template <typename T>
-    void size(T&&)
+    void size(const T&)
     {
         size_ += sizeof(T);
     }
 
-    template <typename ELEM_T, typename SIZE_T>
-    void size_buffer(ELEM_T* buffer, SIZE_T size)
+    template <typename T, typename SIZE_T>
+    void size_buffer(const T* buffer, SIZE_T size)
     {
-        size_ += sizeof(size);
-        if ( buffer != nullptr ) {
-            if constexpr ( std::is_void_v<ELEM_T> )
-                size_ += size;
-            else
-                size_ += size * sizeof(ELEM_T);
-        }
+        if ( buffer != nullptr )
+            get_array_size(size, "Serialization Error: Size in SST::Core::Serialization:pvt::size_buffer() cannot fit "
+                                 "inside size_t. size_t should be used for sizes.\n");
+        else
+            size = 0;
+        using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+        size_ += sizeof(size) + size * sizeof(ELEM_T);
     }
 
     void   size_string(std::string& str) { size_ += sizeof(size_t) + str.size(); }
