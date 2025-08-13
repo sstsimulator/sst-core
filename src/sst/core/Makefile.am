@@ -101,6 +101,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/serialize_adapter.h \
 	serialization/impl/serialize_aggregate.h \
 	serialization/impl/serialize_array.h \
+	serialization/impl/get_array_size.h \
 	serialization/impl/serialize_atomic.h \
 	serialization/impl/serialize_bitset.h \
 	serialization/impl/ser_buffer_accessor.h \
@@ -231,7 +232,6 @@ sst_core_sources = \
 	serialization/serializable_base.cc \
 	serialization/serializable.cc \
 	serialization/serializer.cc \
-	serialization/impl/packer.cc \
 	serialization/impl/unpacker.cc \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \

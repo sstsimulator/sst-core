@@ -243,9 +243,12 @@ StatisticBase::StatisticInfo::StatisticInfo()
     saved_stat_enabled_    = true;
     saved_output_enabled_  = true;
 
-    start_at_time_   = UnitAlgebra("0ns");
-    stop_at_time_    = UnitAlgebra("0ns");
-    collection_rate_ = UnitAlgebra("0ns");
+    // Since there is an instance of this class that is statically
+    // initialized, we can't use any units as they aren't initialized
+    // until main()
+    start_at_time_   = UnitAlgebra("0");
+    stop_at_time_    = UnitAlgebra("0");
+    collection_rate_ = UnitAlgebra("0");
 
     current_collection_count_   = 0;
     output_collection_count_    = 0;
