@@ -23,6 +23,7 @@ EXTRA_DIST = \
 	autogen.sh \
 	CONTRIBUTING.md \
 	scripts/clang-format-test.sh \
+	scripts/test-includes.pl \
 	INSTALL.md \
 	ISSUES.md \
 	LICENSE.md \

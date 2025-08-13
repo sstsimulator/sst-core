@@ -17,6 +17,7 @@
 #include "sst/core/output.h"
 #include "sst/core/threadsafe.h"
 
+#include <cstdint>
 #include <list>
 #include <sstream>
 #include <sys/mman.h>

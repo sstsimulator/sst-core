@@ -15,6 +15,9 @@
 
 #include "sst/core/serialization/serialize.h"
 
+#include <cstdint>
+#include <string>
+
 
 #define INSTANTIATE_SERIALIZE_DATA(type)                                             \
     template <>                                                                      \
