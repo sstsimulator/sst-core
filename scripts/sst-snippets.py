@@ -17,20 +17,20 @@ for tag in config["snippets"]:
 
   # python or c++?
   language = "c++"
-  try: 
+  try:
     if snip["language"] == "python":
       language = "python"
   except: pass
 
   # a unique tag
   scoped_tag = "SSTSnippet::" + tag
-  
+
   # read the input file
   infile = open( os.path.join(srcpath, snip["file"]), 'r')
-  lines = infile.readlines() 
-  
+  lines = infile.readlines()
+
   # open the output file
-  outfile = open( "snippets/" + snip["file"].replace("/","-") + '-' + tag, 'w') 
+  outfile = open( "snippets/" + snip["file"].replace("/","-") + '-' + tag, 'w')
 
   snippeting = False
   for line in lines:
@@ -52,13 +52,13 @@ for tag in config["snippets"]:
         elif line.find("highlight-stop") != -1:
           outfile.write("highlight-stop")
         else:
-          outfile.write("highlight-next-line\n")   
+          outfile.write("highlight-next-line\n")
     elif snippeting and line.find("SSTSnippet::") == -1:
       outfile.write(line)
 
   infile.close()
   outfile.close()
-      
+
 configFile.close()
-      
-    
+
+

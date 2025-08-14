@@ -202,7 +202,7 @@ AC_LANG_CASE([C], [CC="$acx_mpi_save_CC"],
 
 AC_SUBST(MPILIBS)
 
-# try to figure out include directory.  We only need the C API, so only do it once.     
+# try to figure out include directory.  We only need the C API, so only do it once.
 if test "$MPI_CPPFLAGS" = "" ; then
     MPI_CPPFLAGS=
 
@@ -210,7 +210,7 @@ if test "$MPI_CPPFLAGS" = "" ; then
     incdir=`${MPICC} -showme:incdirs 2>/dev/null`
     if test $? -eq 0 ; then
         for flag in $incdir ; do
-            MPI_CPPFLAGS="$MPI_CPPFLAGS -I${flag}"    
+            MPI_CPPFLAGS="$MPI_CPPFLAGS -I${flag}"
         done
     else
         # MPICH2

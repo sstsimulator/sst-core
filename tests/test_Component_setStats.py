@@ -37,7 +37,7 @@ def connect(src_port, dst_port, comps, row, col, shift_x=0, shift_y=0, latency="
     src = comps[row][col]
     dst = comps[nbr_row][nbr_col]
     link.connect((src, src_port, latency), (dst, dst_port, latency))
-    
+
 
 for row in range(size):
   for col in range(size):
@@ -47,7 +47,7 @@ for row in range(size):
     comp = comps[row][col]
     comp.addParams(params)
     counts = comp.createStatistic("counts", None) #no subid
-    
+
     stats = [comp.enableStatistic(name) for name in ("N", "S", "E", "W")]
     for stat in stats:
       stat.addParams({"type" : "sst.AccumulatorStatistic"})
