@@ -17,6 +17,8 @@
 #include "sst/core/config.h"
 #include "sst/core/configGraphOutput.h"
 
+#include <cinttypes>
+
 using namespace SST::Core;
 
 DotConfigGraphOutput::DotConfigGraphOutput(const char* path) :

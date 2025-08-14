@@ -19,6 +19,11 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 
+#include <cinttypes>
+#include <cstdint>
+#include <cstring>
+#include <vector>
+
 using namespace SST::Core;
 
 PythonConfigGraphOutput::PythonConfigGraphOutput(const char* path) :
