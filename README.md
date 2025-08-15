@@ -27,19 +27,19 @@ mkdir build && cd build
   MPICC=/usr/lib64/openmpi/bin/mpicc \
   MPICXX=/usr/lib64/openmpi/bin/mpic++ \
   --prefix=$PWD/../sst-core-install
-make install 
+make install
 ```
 
 ##### Ubuntu 20.04
 
 ```sh
-DEBIAN_FRONTEND=noninteractive sudo apt install openmpi-bin openmpi-common libtool libtool-bin autoconf python3 python3-dev automake build-essential git 
+DEBIAN_FRONTEND=noninteractive sudo apt install openmpi-bin openmpi-common libtool libtool-bin autoconf python3 python3-dev automake build-essential git
 mkdir sst-core && cd sst-core
 git clone https://github.com/sstsimulator/sst-core.git sst-core-src
 (cd sst-core-src && ./autogen.sh)
 mkdir build && cd build
 ../sst-core-src/configure --prefix=$PWD/../sst-core-install
-make install 
+make install
 ```
 
 #### Testing Your Install

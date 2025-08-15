@@ -42,12 +42,12 @@ class testcase_Signals(SSTTestCase):
         super(type(self), self).tearDown()
 
 #####
-    
+
     # Test default SIGUSR1 action
     def test_RealTime_SIGUSR1_default(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR1_default.out".format(outdir)
@@ -62,8 +62,8 @@ class testcase_Signals(SSTTestCase):
                     sig_found = True
                 elif "EXIT-AFTER TIME REACHED" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
@@ -72,12 +72,12 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be at least {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
-    
+
     # Test default SIGUSR2 action
     def test_RealTime_SIGUSR2_default(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR2_default.out".format(outdir)
@@ -92,8 +92,8 @@ class testcase_Signals(SSTTestCase):
                     sig_found = True
                 elif "EXIT-AFTER TIME REACHED" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
@@ -101,13 +101,13 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(sig_found, "Output file is missing SIGUSR2 triggered output message")
         self.assertTrue(exit_count >= num_para, "Exit message count incorrect, should be at least {0}, found {1} in {2}".format(exit_count,num_para,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be at least {0}, found {1} in {2}".format(num_lines,line_count,outfile))
-    
+
     # Test SIGINT
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGINT(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGINT.out".format(outdir)
@@ -122,22 +122,22 @@ class testcase_Signals(SSTTestCase):
                     sig_found = True
                 elif "EMERGENCY SHUTDOWN Complete (" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGINT triggered output message")
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
-        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))        
+        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
     # Test SIGTERM
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGTERM(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGTERM.out".format(outdir)
@@ -152,21 +152,21 @@ class testcase_Signals(SSTTestCase):
                     sig_found = True
                 elif "EMERGENCY SHUTDOWN Complete (" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
         num_lines = 101 + (threads * ranks) * 3
         self.assertTrue(sig_found, "Output file is missing SIGTERM triggered output message")
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
-        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))  
-    
+        self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
+
     # Test SIGALRM + heartbeat action via heartbeat option
     def test_RealTime_heartbeat(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_heartbeat.out".format(outdir)
@@ -185,8 +185,8 @@ class testcase_Signals(SSTTestCase):
                     hb_count += 1
                 elif "EXIT-AFTER TIME REACHED" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
@@ -196,12 +196,12 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
-    
+
     # Test SIGALRM + checkpoint action via checkpoint option
     def test_RealTime_checkpoint(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_checkpoint.out".format(outdir)
@@ -214,12 +214,12 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(len(cptdir_list) > 0, "Checkpoint directory '{0}' is empty, expected at least one checkpoint.".format(cptdir))
         cptfile = cptdir + cptdir_list[0] + "/" + cptdir_list[0] + ".sstcpt"
         self.assertTrue(os.path.exists(cptfile), "Checkpoint file does not exist, file='{0}'".format(cptfile))
-    
+
     # Test SIGUSR1 + heartbeat action via --sigusr1=
     def test_RealTime_SIGUSR1_heartbeat(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR1_heartbeat.out".format(outdir)
@@ -236,8 +236,8 @@ class testcase_Signals(SSTTestCase):
                     hb_count += 1
                 elif "EXIT-AFTER TIME REACHED" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
@@ -249,7 +249,7 @@ class testcase_Signals(SSTTestCase):
     def test_RealTime_SIGUSR2_heartbeat(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGUSR2_heartbeat.out".format(outdir)
@@ -266,8 +266,8 @@ class testcase_Signals(SSTTestCase):
                     hb_count += 1
                 elif "EXIT-AFTER TIME REACHED" in line:
                     exit_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
@@ -278,7 +278,7 @@ class testcase_Signals(SSTTestCase):
     def test_RealTime_SIGALRM_multiaction(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
-        
+
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGALRM_multiaction.out".format(outdir)
@@ -299,8 +299,8 @@ class testcase_Signals(SSTTestCase):
                     exit_count += 1
                 elif "CurrentSimCycle" in line:
                     status_count += 1
-                line_count += 1 
-        
+                line_count += 1
+
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks

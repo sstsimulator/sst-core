@@ -47,7 +47,7 @@ class testcase_Partitioners(SSTTestCase):
         outdir = test_output_get_run_dir()
 
         options = "--model-options=\"{0}\" --partitioner={1}".format(model_options, partitioner);
-        
+
         # Set the various file paths
         sdlfile = "{0}/test_MessageMesh.py".format(testsuitedir)
         outfile_ref = "{0}/test_partitioner_ref_{1}.out".format(outdir, testtype)
