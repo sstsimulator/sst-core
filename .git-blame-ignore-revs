@@ -5,7 +5,7 @@ f150d6f7db2d71f4a77720ee7e7a7385a57bf540
 1c149870b806f5412c34c918cea96caa14720f3c
 
 # Add explicit to single-parameter constructors which should not perform implicit conversions
-03ebe85afb00f521ca6f8822e48a4a17711f96dd
+a2b3aa4e811e5f9a763f55e5da0287c773c669c9
 
 # Add override for virtual functions which are overriden
 89e4bf10e7e9c6a7789c66c80d57a6ead099f132
