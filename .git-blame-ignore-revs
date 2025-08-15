@@ -1,6 +1,3 @@
-# Enable warnings for non-virtual destructors and missing overrides; add override and virtual destructors to remove warnings
-f150d6f7db2d71f4a77720ee7e7a7385a57bf540
-
 # Apply cmake-format fixes
 1c149870b806f5412c34c918cea96caa14720f3c
 
