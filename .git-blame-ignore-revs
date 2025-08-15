@@ -1,7 +1,7 @@
 # Enable warnings for non-virtual destructors and missing overrides; add override and virtual destructors to remove warnings
 f150d6f7db2d71f4a77720ee7e7a7385a57bf540
 
-# Initial cmake-format fixes
+# Apply cmake-format fixes
 1c149870b806f5412c34c918cea96caa14720f3c
 
 # Add explicit to single-parameter constructors which should not perform implicit conversions
@@ -13,7 +13,7 @@ a2b3aa4e811e5f9a763f55e5da0287c773c669c9
 # Add "explicit" to constructors with a single parameter which should not perform implicit conversions
 a2b3aa4e811e5f9a763f55e5da0287c773c669c9
 
-# Move to clang-format v20
+# Update to clang-format v20.
 3e0a31a25c55b8c3d53e454f61de81358582c6c0
 
 # Remove existing and prevent future trailing whitespace
