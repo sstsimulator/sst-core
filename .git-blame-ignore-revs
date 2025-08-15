@@ -16,3 +16,5 @@ a2b3aa4e811e5f9a763f55e5da0287c773c669c9
 # Move to clang-format v20
 3e0a31a25c55b8c3d53e454f61de81358582c6c0
 
+# Remove existing and prevent future trailing whitespace
+17224c90014c96a245146569a27b86fb2c6d1e6b
