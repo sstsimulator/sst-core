@@ -215,6 +215,12 @@ BaseComponent::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler)
     sim_->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
+void
+BaseComponent::unregisterClock(TimeConverter tc, Clock::HandlerBase* handler)
+{
+    sim_->unregisterClock(tc, handler, CLOCKPRIORITY);
+}
+
 TimeConverter*
 BaseComponent::registerTimeBase(const std::string& base, bool regAll)
 {
