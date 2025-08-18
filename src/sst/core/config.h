@@ -60,6 +60,7 @@ public:
      */
     Config();
 
+private:
     /**
        Initial Config object created with default constructor
      */
