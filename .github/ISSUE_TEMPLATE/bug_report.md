@@ -14,7 +14,7 @@ NOTE: If you are reporting an issue for a specific element library, please submi
 
 2 - Describe how to reproduce the issue
 
-3 - What Operating system(s) and versions 
+3 - What Operating system(s) and versions
 
 4 - What versions of external libraries (MPI, etc.)
 
