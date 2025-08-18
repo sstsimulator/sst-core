@@ -18,6 +18,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/model/element_python.h"
+#include "sst/core/model/sstmodel.h"
 #include "sst/core/params.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/subcomponent.h"
@@ -46,14 +47,22 @@ using namespace SST::Statistics;
 namespace SST {
 
 Factory* Factory::instance = nullptr;
+Output   Factory::out;
 
-Factory::Factory(const std::string& searchPaths) :
-    searchPaths(searchPaths),
-    out(Output::getDefaultObject())
+Factory*
+Factory::createFactory(const std::string& searchPaths)
 {
     if ( instance ) out.fatal(CALL_INFO, 1, "Already initialized a factory.\n");
-    instance = this;
-    loader   = new ElemLoader(searchPaths);
+    instance = new Factory(searchPaths);
+    out      = Output::getDefaultObject();
+
+    return instance;
+}
+
+Factory::Factory(const std::string& searchPaths) :
+    searchPaths(searchPaths)
+{
+    loader = new ElemLoader(searchPaths);
     loaded_libraries.insert("sst");
 }
 
@@ -649,5 +658,36 @@ Factory::loadLibrary(const std::string& name, std::ostream& err_os)
     loaded_libraries.insert(name);
     return true;
 }
+
+SSTModelDescription*
+Factory::createModelDescription(
+    const std::string& type, const std::string& input_file, int verbose, Config& cfg, double start_time)
+{
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(type);
+
+    // Model definitions have to be in the built-in sst library (which
+    // is why this function can be static)
+    if ( elemlib != "sst" ) return nullptr;
+
+    std::stringstream err_os;
+
+    auto* lib = ELI::InfoDatabase::getLibrary<SSTModelDescription>(elemlib);
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) {
+            auto* builderLib = SSTModelDescription::getBuilderLibrary(elemlib);
+            if ( builderLib ) {
+                auto* fact = builderLib->getBuilder(elem);
+                if ( fact ) {
+                    SSTModelDescription* ret = fact->create(input_file, verbose, &cfg, start_time);
+                    return ret;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 
 } // namespace SST

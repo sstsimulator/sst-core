@@ -49,7 +49,7 @@ int check_unitalgebra_store_string(std::string valid_units, std::string& var, st
 class Config : public ConfigShared, public SST::Core::Serialization::serializable
 {
 
-private:
+public:
     // Main creates the config object
     friend int ::main(int argc, char** argv);
     friend class SSTModelDescription;
@@ -181,7 +181,8 @@ private:
     /**
        Print SST timing information after the run
     */
-    SST_CONFIG_DECLARE_OPTION(bool, print_timing, false, &StandardConfigParsers::flag_default_true);
+    SST_CONFIG_DECLARE_OPTION(int, print_timing, 0,
+        std::bind(&StandardConfigParsers::from_string_default<int>, std::placeholders::_1, std::placeholders::_2, 2));
 
     /**
         Print SST timing information to JSON file
@@ -617,10 +618,11 @@ public:
     /** Print to stdout the current configuration */
     void print();
 
+    void merge_checkpoint_options(Config& other);
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Config);
 
-    void merge_checkpoint_options(Config& other);
 
 protected:
     std::string getUsagePrelude() override;
