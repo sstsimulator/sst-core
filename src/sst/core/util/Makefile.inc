@@ -6,6 +6,8 @@
 
 
 sst_core_sources += \
+	util/basicPerf.cc \
+	util/basicPerf.h \
 	util/smartTextFormatter.cc \
 	util/filesystem.cc
 
