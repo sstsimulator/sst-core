@@ -24,6 +24,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/util/basicPerf.h"
 #include "sst/core/util/filesystem.h"
 
 #include <atomic>
@@ -201,13 +202,15 @@ public:
     /** Sets an internal flag for signaling the simulation. Used by signal handler & thread 0. */
     static void notifySignal();
 
+    static void serializeSharedObjectManager(SST::Core::Serialization::serializer& ser);
+
+    /******** Core only API *************/
+
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
 
     /** Return the exit event */
     Exit* getExit() const { return m_exit; }
-
-    /******** Core only API *************/
 
     /** Processes the ConfigGraph to pull out any need information
      * about relationships among the threads
@@ -443,6 +446,8 @@ public:
     static Core::ThreadSafe::Barrier exitBarrier;
     static Core::ThreadSafe::Barrier finishBarrier;
     static std::mutex                simulationMutex;
+
+    static Util::BasicPerfTracker basicPerf;
 
     // Support for crossthread links
     static Core::ThreadSafe::Spinlock cross_thread_lock;
