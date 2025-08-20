@@ -83,7 +83,7 @@ public:
         m_itemsBinnedCount = 0;
         this->setCollectionCount(0);
 
-        for( std::size_t i = 0; i < m_numBins; ++i ) {
+        for ( std::size_t i = 0; i < m_numBins; ++i ) {
             m_binsMap.insert(std::pair<BinDataType, CountType>(i, static_cast<CountType>(0)));
         }
     }
