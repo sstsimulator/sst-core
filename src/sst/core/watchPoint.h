@@ -41,9 +41,11 @@ public:
     WatchPoint(const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
         Clock::HandlerBase::AttachPoint(),
         Event::HandlerBase::AttachPoint(),
-        obj_(obj),
+        //obj_(obj),
         name_(name)
-    {}
+    {
+        addComparison(obj);
+    }
 
     ~WatchPoint() { delete obj_; }
 
@@ -56,7 +58,7 @@ public:
 
     void afterHandler(uintptr_t UNUSED(key)) override
     {
-        printf("  In after Event Handler\n");
+        printf("  After Event Handler\n");
         check();
         if ( tb_ ) {
             SimTime_t cycle  = getCurrentSimCycle();
@@ -68,7 +70,7 @@ public:
             }
         }
         else {
-            printf("    no trace buffer\n");
+            printf("    No trace buffer\n");
             invokeAction();
             setBufferReset();
         }
@@ -80,33 +82,59 @@ public:
     void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret)) override {}
 
     std::string getName() { return name_; }
-    size_t      getBufferSize() { return tb_->getBufferSize(); }
+
+    size_t      getBufferSize() 
+    {
+        if (tb_ != nullptr) {
+            return tb_->getBufferSize();
+        }
+        else {
+            return 0;
+        }
+    }
+
     void        printTrace()
     {
         if ( tb_ != nullptr ) {
             tb_->dumpTriggerRecord();
             tb_->dumpTraceBufferT();
         }
+        else {
+            printf("  No tracing enabled\n");
+        }
     }
 
     void printWatchpoint()
     {
-        obj_->print();          // print trigger info
+        // TODO: print the logic values
+        for (size_t i = 0; i < numCmpObj_; i++) { // Print trigger tests
+            cmpObjects_[i]->print();
+        }
+        std::cout << " : ";
+        
         if ( tb_ != nullptr ) { // print trace buffer config
             tb_->printConfig();
+            std::cout << " : ";
         }
+        printAction();
+        std::cout << std::endl;
+        
     }
 
     void setBufferReset()
     {
-        printf("Set Buffer Reset\n");
-        tb_->setBufferReset();
+        if (tb_ != nullptr) {
+            printf("    Set Buffer Reset\n");
+            tb_->setBufferReset();
+        }
     }
 
     void resetTraceBuffer()
     {
-        printf("Reset Trace Buffer\n");
-        tb_->resetTraceBuffer();
+        if (tb_ != nullptr) {
+            printf("    Reset Trace Buffer\n");
+            tb_->resetTraceBuffer();
+        }
     }
 
 
@@ -118,12 +146,50 @@ public:
         HEARTBEAT    = 4,
         INVALID      = 5
     };
+    enum LogicOp : unsigned { // Logical Op for trigger tests
+        AND = 0,
+        OR = 1,
+        UNDEFINED = 2
+    };
 
     void setAction(WPACTION actionType) { wpAction = actionType; }
+
+    std::string actionToString(WPACTION wpa) {
+
+        switch (wpa) {
+        case INTERACTIVE:
+            return "interactive";
+        case PRINT_TRACE:
+            return "printTrace";
+        case CHECKPOINT:
+            return "checkpoint";
+        case HEARTBEAT:
+            return "heartbeat";
+        case INVALID:
+            return "invalid action";
+        default:
+            return "undefined action";
+        }
+    }
+
+    void printAction()
+    {
+        std::cout << actionToString(wpAction);
+    }
 
     void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
 
     void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) { tb_->addObjectBuffer(ob); }
+
+    void addComparison(Core::Serialization::ObjectMapComparison* cmp) {
+        cmpObjects_.push_back(cmp);
+        numCmpObj_++;
+    }
+
+    void addLogicOp(LogicOp op) {
+        logicOps_.push_back(op);
+     }
+
 
 protected:
     void      setEnterInteractive();
@@ -135,6 +201,9 @@ protected:
 
 private:
     Core::Serialization::ObjectMapComparison* obj_;
+    size_t numCmpObj_ = 0;
+    std::vector<Core::Serialization::ObjectMapComparison*> cmpObjects_;
+    std::vector<LogicOp> logicOps_;
     std::string                               name_;
     Core::Serialization::TraceBuffer*         tb_ = nullptr;
 #if 0
@@ -178,12 +247,42 @@ private:
     }
 
     void check()
-    {
-
-        if ( obj_->compare() ) {
-            printf("Watch point %s triggered\n", name_.c_str());
-            trigger = true;
+    {   
+        bool result = false;
+        
+        if (cmpObjects_[0]->compare()) {
+            result = true;
         }
+        std::cout << std::boolalpha;
+        std::cout << "    WatchPoint " << name_.c_str() << " tests:\n";
+        std::cout << "      "; 
+        cmpObjects_[0]->print(); 
+        std::cout << " -> " << result << std::endl;
+
+        for (size_t i = 1; i < numCmpObj_; i++) {
+            bool result2 = false;
+            if (cmpObjects_[i]->compare()) {
+                result2 = true;
+            }
+            std::cout << "      ";
+            cmpObjects_[i]->print();
+            std::cout << " -> " << result2 << std::endl;
+            //printf("      comparison%ld = %d\n", i, result2);
+
+            if (logicOps_[i-1] == LogicOp::AND) {
+                result = result & result2;
+                std::cout << "        AND -> " << result << std::endl;
+            }
+            else if (logicOps_[i-1] == LogicOp::OR) {
+                result = result | result2; 
+                std::cout << "        OR -> " << result << std::endl;
+            }
+            else {
+                std::cout << "    ERROR: invalid LogicOp\n";
+                // Should trigger some error?
+            }
+        }
+        if (result == true) trigger = true;
     }
 };
 

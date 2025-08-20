@@ -88,7 +88,33 @@ public:
         if ( op == ">=" ) return Op::GTE;
         if ( op == "==" ) return Op::EQ;
         if ( op == "!=" ) return Op::NEQ;
+        if ( op == "changed" ) return Op::CHANGED;  // Could also use <>
         return Op::INVALID;
+    }
+
+    static std::string getStringFromOp(Op op)
+    {
+        switch (op) {
+        case Op::LT:
+            return "<";
+        case Op::LTE:
+            return "<+";
+        case Op::GT:
+            return ">";
+        case Op::GTE:
+            return ">=";
+        case Op::EQ:
+            return "==";
+        case Op::NEQ:
+            return "!=";
+        case Op::CHANGED:
+            return "CHANGED";
+        case Op::INVALID:
+            return "INVALID";
+        default:
+            return "Invalid Op";
+        }
+
     }
 
     ObjectMapComparison() = default;
@@ -760,7 +786,14 @@ public:
 
     void* getVar() override { return var_; }
 
-    void print() override { std::cout << name_ << " : "; }
+    void print() override { 
+        std::cout << name_ << " " 
+            << getStringFromOp(op_);
+        if (op_ == Op::CHANGED)
+            std::cout << " ";
+        else
+            std::cout << " " << SST::Core::to_string(comp_value_) << " ";
+    }
 
 private:
     T* var_        = nullptr;
@@ -840,7 +873,7 @@ public:
 
     void resetTraceBuffer()
     {
-        printf("Reset Trace Buffer\n");
+        printf("    Reset Trace Buffer\n");
         postCount_   = 0;
         cur_         = 0;
         first_       = 0;
@@ -848,6 +881,7 @@ public:
         samplesLost_ = 0;
         isOverrun_   = false;
         reset_       = false;
+        state_ = CLEAR;
     }
 
     size_t getBufferSize() { return bufSize_; }
@@ -858,42 +892,44 @@ public:
         numObjects++;
     }
 
-
-    enum BufferState {
+    enum BufferState : int {
         CLEAR,       // 0 Pre Trigger
         TRIGGER,     // 1 Trigger
         POSTTRIGGER, // 2 Post Trigger
         OVERRUN      // 3 Overrun
     };
 
+    const std::map<BufferState, char> state2char {
+        {CLEAR, '-'}, {TRIGGER, '!'}, {POSTTRIGGER, '+'}, {OVERRUN, 'o'}
+    };
+
     bool sampleT(bool trigger, uint64_t cycle)
-    {
-
-        size_t start_state  = state_;
-        bool   invokeAction = false;
-
+    {   
         if ( reset_ ) {
             resetTraceBuffer();
         }
+
+        size_t start_state = state_;
+        bool   invokeAction = false;
 
         // if Trigger == TRUE
         if ( trigger ) {
             if ( start_state == CLEAR ) { // Not previously triggered
                 state_ = TRIGGER;         // State becomes trigger record
             }
-            printf("    Sample: trigger\n");
+            //printf("    Sample: trigger\n");
 
         } // if trigger
 
         if ( start_state == TRIGGER || start_state == POSTTRIGGER ) { // trigger record or post trigger
             state_ = POSTTRIGGER;                                     // State becomes post trigger
-            printf("    Sample: post trigger\n");
+            //printf("    Sample: post trigger\n");
         }
 
         // Circular buffer
-        std::cout << "In sample: numRecs = " << numRecs_ << " first = " << first_ << " cur = " << cur_
-                  << " state = " << state_ << " prev = " << tagBuffer_[cur_] << " isOverrun= " << isOverrun_
-                  << " samplesLost = " << samplesLost_ << std::endl;
+        std::cout << "    Sample: numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
+                  << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
+                  << " samplesLost:" << samplesLost_ << std::endl;
         cycleBuffer_[cur_] = cycle;
         if ( trigger ) {
             triggerCycle = cycle;
@@ -906,23 +942,22 @@ public:
             varBuffer_->sample(cur_, trigger);
         }
 
-
         if ( numRecs_ < bufSize_ ) {
             tagBuffer_[cur_] = state_;
             numRecs_++;
             cur_ = (cur_ + 1) % bufSize_;
-            if ( cur_ == 0 ) first_ = 1;
+            if (cur_ == 0) first_ = 0; // 1;
         }
         else { // Buffer full
             // Check to see if we are overwriting trigger
             if ( tagBuffer_[cur_] == TRIGGER ) {
-                printf("Sample: overrun\n");
+                //printf("    Sample Overrun\n");
                 isOverrun_ = true;
             }
             tagBuffer_[cur_] = state_;
             numRecs_++;
-            cur_   = first_;
-            first_ = (first_ + 1) % bufSize_;
+            cur_ = (cur_ + 1) % bufSize_;
+            first_ = cur_;
         }
 
         if ( isOverrun_ ) {
@@ -935,10 +970,7 @@ public:
 
         if ( postCount_ >= postDelay_ ) {
             invokeAction = true;
-            state_       = CLEAR;
-            postCount_   = 0;
-            numRecs_     = 0;
-            printf("    Sample: invoke\n");
+            printf("    Invoke Action\n");
         }
 
         return invokeAction;
@@ -946,41 +978,52 @@ public:
 
     void dumpTraceBufferT()
     {
+        if (numRecs_ == 0)
+            return;
+
         size_t start;
-        // Circular buffer - start at first -1
-        if ( first_ == 0 )
-            start = bufSize_ - 1;
-        else
-            start = first_ - 1;
-
         size_t end;
-        if ( cur_ == 0 )
+     
+        start = first_;
+        if (cur_ == 0) {
             end = bufSize_ - 1;
-        else
-            end = cur_ - 1;
-
-        for ( int j = start;; j++ ) {
+        }
+        else {
+            end = cur_ - 1; 
+        }
+        //std::cout << "start=" << start << " end=" << end << std::endl;
+     
+        for ( int j = start; ; j++ ) {
             size_t i = j % bufSize_;
 
-            std::cout << "buf[" << i << "]:@" << cycleBuffer_.at(i) << ": (" << tagBuffer_.at(i) << ") ";
+            std::cout << "buf[" << i << "] @" << cycleBuffer_.at(i) << " (" << state2char.at(tagBuffer_.at(i)) << ") ";
 
             for ( size_t obj = 0; obj < numObjects; obj++ ) {
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
                 std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->get(i) << " ";
             }
             std::cout << std::endl;
-            if ( i == end ) break;
+            
+            if (i == end ) {
+                break;
+            }
         }
     }
 
     void dumpTriggerRecord()
     {
-        std::cout << "TriggerRecord:@cycle" << triggerCycle << ": samples lost = " << samplesLost_ << ": ";
-        for ( size_t obj = 0; obj < numObjects; obj++ ) {
-            ObjectBuffer* varBuffer_ = objBuffers_[obj];
-            std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
+        if (numRecs_ == 0) {
+            std::cout << "No trace samples in current buffer" << std::endl; 
+            return;
         }
-        std::cout << std::endl;
+        if (state_ != CLEAR ) {
+            std::cout << "TriggerRecord:@cycle" << triggerCycle << ": samples lost = " << samplesLost_ << ": ";
+            for (size_t obj = 0; obj < numObjects; obj++) {
+                ObjectBuffer* varBuffer_ = objBuffers_[obj];
+                std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
+            }
+            std::cout << std::endl;
+        }
     }
 
     void printVars()
@@ -995,7 +1038,6 @@ public:
     {
         std::cout << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
         printVars();
-        std::cout << std::endl;
     }
 
     // private:
@@ -1009,10 +1051,10 @@ public:
     bool                            isOverrun_   = false;
     size_t                          samplesLost_ = 0;
     bool                            reset_       = false;
-    int                             state_       = 0;
+    BufferState                             state_       = CLEAR;
 
     size_t                     numObjects = 0;
-    std::vector<int>           tagBuffer_;
+    std::vector<BufferState>           tagBuffer_;
     std::vector<ObjectBuffer*> objBuffers_;
     std::vector<uint64_t>      cycleBuffer_;
     uint64_t                   triggerCycle;
