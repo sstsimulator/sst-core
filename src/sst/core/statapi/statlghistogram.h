@@ -83,7 +83,7 @@ public:
         m_itemsBinnedCount = 0;
         this->setCollectionCount(0);
 
-        for(std::size_t i = 0; i < m_numBins; ++i) {
+        for( std::size_t i = 0; i < m_numBins; ++i ) {
             m_binsMap.insert(std::pair<BinDataType, CountType>(i, static_cast<CountType>(0)));
         }
     }
@@ -142,8 +142,8 @@ protected:
         // To support signed and unsigned values along with floating point types,
         // the calculation to find the bin_start value must be done in floating point
         // then converted to BinDataType
-        double const log2_value = std::log2(static_cast<double>(value));
-        double const bin_floor_value = std::floor(log2_value); // Find the floor of the value
+        double const      log2_value = std::log2(static_cast<double>(value));
+        double const      bin_floor_value = std::floor(log2_value); // Find the floor of the value
         BinDataType const bin_start = static_cast<BinDataType>(bin_floor_value);
         //      printf("DEBUG: value = %d, junk1 = %f, calc2 = %f, calc3 = %f : bin_start = %d, item count = %ld, \n",
         //      value, calc1, calc2, calc3, bin_start, getStatCollectionCount());
@@ -179,8 +179,8 @@ private:
     */
     CountType getBinCountByBinStart(BinDataType const binStartValue)
     {
-        double const log2_value = std::log2(static_cast<double>(binStartValue));
-        double const bin_floor_value = std::floor(log2_value); // Find the floor of the value
+        double const      log2_value = std::log2(static_cast<double>(binStartValue));
+        double const      bin_floor_value = std::floor(log2_value); // Find the floor of the value
         BinDataType const bin_start = static_cast<BinDataType>(bin_floor_value);
 
         // Find the Bin Start Value in the Bin Map
@@ -211,7 +211,7 @@ private:
         // Compute the max value; the histogram is indexed by the log2 floor of the bin
         // return pow2 of 1 + the number of total bins
         // 
-        return static_cast<BinDataType>(std::pow(2, m_numBins+1)); // (m_binWidth * m_numBins) + m_minValue - 1;
+        return static_cast<BinDataType>(std::pow(2, m_numBins+1));
     }
 
     /**
