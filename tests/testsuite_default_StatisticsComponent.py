@@ -92,7 +92,7 @@ class testcase_StatisticComponent(SSTTestCase):
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(out_group_stat_file_txt, ref_group_stat_file_txt))
 
         # Generate raw H5 output
-        if have_h5:
+        if test_h5:
             try:
                 subprocess.run(["h5diff",ref_group_stat_file_h5,out_group_stat_file_h5],check=True)
             except subprocess.CalledProcessError as h5exc:
