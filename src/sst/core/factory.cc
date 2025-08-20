@@ -39,6 +39,7 @@
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/stathistogram.h"
+#include "sst/core/statapi/statlghistogram.h"
 #include "sst/core/statapi/statnull.h"
 #include "sst/core/statapi/statuniquecount.h"
 

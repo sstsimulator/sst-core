@@ -21,6 +21,7 @@ set(SSTStatAPIHeaders
     statfieldinfo.h
     statgroup.h
     stathistogram.h
+    statlghistogram.h
     statnull.h
     statoutputcsv.h
     statoutput.h

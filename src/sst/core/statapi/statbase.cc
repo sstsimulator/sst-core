@@ -17,6 +17,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/stathistogram.h"
+#include "sst/core/statapi/statlghistogram.h"
 #include "sst/core/statapi/statnull.h"
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/statapi/statoutputjson.h"
@@ -294,6 +295,13 @@ SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int64_t);
 SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint64_t);
 SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, float);
 SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, double);
+
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(LogBinHistogramStatistic, double);
 
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int32_t);
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint32_t);
