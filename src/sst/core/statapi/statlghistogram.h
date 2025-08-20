@@ -210,7 +210,7 @@ private:
     {
         // Compute the max value; the histogram is indexed by the log2 floor of the bin
         // return pow2 of 1 + the number of total bins
-        // 
+
         return static_cast<BinDataType>(std::pow(2, m_numBins + 1));
     }
 
