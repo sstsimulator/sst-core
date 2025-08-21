@@ -263,7 +263,7 @@ private:
 
             std::vector<std::stringstream>::iterator sitr = streams.begin();
 
-            for( NumBinsType i = 0; i < nbt; ++i ) {
+            for ( NumBinsType i = 0; i < nbt; ++i ) {
                 // Figure out the upper and lower values for this bin
                 binLL = i << 2; 
                 binUL = ((i + 1) << 2) - 1;
