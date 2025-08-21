@@ -41,7 +41,7 @@ public:
     WatchPoint(const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
         Clock::HandlerBase::AttachPoint(),
         Event::HandlerBase::AttachPoint(),
-        //obj_(obj),
+        // obj_(obj),
         name_(name)
     {
         addComparison(obj);
@@ -71,8 +71,10 @@ public:
         }
         else {
             printf("    No trace buffer\n");
-            invokeAction();
-            setBufferReset();
+            if ( trigger ) {
+                invokeAction();
+                setBufferReset();
+            }
         }
     }
 
@@ -83,9 +85,9 @@ public:
 
     std::string getName() { return name_; }
 
-    size_t      getBufferSize() 
+    size_t getBufferSize()
     {
-        if (tb_ != nullptr) {
+        if ( tb_ != nullptr ) {
             return tb_->getBufferSize();
         }
         else {
@@ -93,7 +95,7 @@ public:
         }
     }
 
-    void        printTrace()
+    void printTrace()
     {
         if ( tb_ != nullptr ) {
             tb_->dumpTriggerRecord();
@@ -107,23 +109,22 @@ public:
     void printWatchpoint()
     {
         // TODO: print the logic values
-        for (size_t i = 0; i < numCmpObj_; i++) { // Print trigger tests
+        for ( size_t i = 0; i < numCmpObj_; i++ ) { // Print trigger tests
             cmpObjects_[i]->print();
         }
         std::cout << " : ";
-        
+
         if ( tb_ != nullptr ) { // print trace buffer config
             tb_->printConfig();
             std::cout << " : ";
         }
         printAction();
         std::cout << std::endl;
-        
     }
 
     void setBufferReset()
     {
-        if (tb_ != nullptr) {
+        if ( tb_ != nullptr ) {
             printf("    Set Buffer Reset\n");
             tb_->setBufferReset();
         }
@@ -131,7 +132,7 @@ public:
 
     void resetTraceBuffer()
     {
-        if (tb_ != nullptr) {
+        if ( tb_ != nullptr ) {
             printf("    Reset Trace Buffer\n");
             tb_->resetTraceBuffer();
         }
@@ -147,16 +148,17 @@ public:
         INVALID      = 5
     };
     enum LogicOp : unsigned { // Logical Op for trigger tests
-        AND = 0,
-        OR = 1,
+        AND       = 0,
+        OR        = 1,
         UNDEFINED = 2
     };
 
     void setAction(WPACTION actionType) { wpAction = actionType; }
 
-    std::string actionToString(WPACTION wpa) {
+    std::string actionToString(WPACTION wpa)
+    {
 
-        switch (wpa) {
+        switch ( wpa ) {
         case INTERACTIVE:
             return "interactive";
         case PRINT_TRACE:
@@ -172,23 +174,19 @@ public:
         }
     }
 
-    void printAction()
-    {
-        std::cout << actionToString(wpAction);
-    }
+    void printAction() { std::cout << actionToString(wpAction); }
 
     void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
 
     void addObjectBuffer(Core::Serialization::ObjectBuffer* ob) { tb_->addObjectBuffer(ob); }
 
-    void addComparison(Core::Serialization::ObjectMapComparison* cmp) {
+    void addComparison(Core::Serialization::ObjectMapComparison* cmp)
+    {
         cmpObjects_.push_back(cmp);
         numCmpObj_++;
     }
 
-    void addLogicOp(LogicOp op) {
-        logicOps_.push_back(op);
-     }
+    void addLogicOp(LogicOp op) { logicOps_.push_back(op); }
 
 
 protected:
@@ -200,12 +198,12 @@ protected:
     void      heartbeat();
 
 private:
-    Core::Serialization::ObjectMapComparison* obj_;
-    size_t numCmpObj_ = 0;
+    Core::Serialization::ObjectMapComparison*              obj_;
+    size_t                                                 numCmpObj_ = 0;
     std::vector<Core::Serialization::ObjectMapComparison*> cmpObjects_;
-    std::vector<LogicOp> logicOps_;
-    std::string                               name_;
-    Core::Serialization::TraceBuffer*         tb_ = nullptr;
+    std::vector<LogicOp>                                   logicOps_;
+    std::string                                            name_;
+    Core::Serialization::TraceBuffer*                      tb_ = nullptr;
 #if 0
     enum CHECK_HANDLER : unsigned { 
       // Do we want to be able to specify clock/event?
@@ -247,34 +245,34 @@ private:
     }
 
     void check()
-    {   
+    {
         bool result = false;
-        
-        if (cmpObjects_[0]->compare()) {
+
+        if ( cmpObjects_[0]->compare() ) {
             result = true;
         }
         std::cout << std::boolalpha;
         std::cout << "    WatchPoint " << name_.c_str() << " tests:\n";
-        std::cout << "      "; 
-        cmpObjects_[0]->print(); 
+        std::cout << "      ";
+        cmpObjects_[0]->print();
         std::cout << " -> " << result << std::endl;
 
-        for (size_t i = 1; i < numCmpObj_; i++) {
+        for ( size_t i = 1; i < numCmpObj_; i++ ) {
             bool result2 = false;
-            if (cmpObjects_[i]->compare()) {
+            if ( cmpObjects_[i]->compare() ) {
                 result2 = true;
             }
             std::cout << "      ";
             cmpObjects_[i]->print();
             std::cout << " -> " << result2 << std::endl;
-            //printf("      comparison%ld = %d\n", i, result2);
+            // printf("      comparison%ld = %d\n", i, result2);
 
-            if (logicOps_[i-1] == LogicOp::AND) {
-                result = result & result2;
+            if ( logicOps_[i - 1] == LogicOp::AND ) {
+                result = result && result2;
                 std::cout << "        AND -> " << result << std::endl;
             }
-            else if (logicOps_[i-1] == LogicOp::OR) {
-                result = result | result2; 
+            else if ( logicOps_[i - 1] == LogicOp::OR ) {
+                result = result || result2;
                 std::cout << "        OR -> " << result << std::endl;
             }
             else {
@@ -282,7 +280,7 @@ private:
                 // Should trigger some error?
             }
         }
-        if (result == true) trigger = true;
+        if ( result == true ) trigger = true;
     }
 };
 
