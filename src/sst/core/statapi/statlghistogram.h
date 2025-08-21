@@ -253,8 +253,8 @@ private:
 
         // Do we also need to dump the bin counts on output
         if ( true == m_dumpBinsOnOutput ) {
-            BinDataType binLL;
-            BinDataType binUL;
+            NumBinsType binLL;
+            NumBinsType binUL;
 
             NumBinsType const nbt = getNumBins();
 
