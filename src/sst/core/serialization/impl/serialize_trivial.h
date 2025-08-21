@@ -20,6 +20,7 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
+#include <bitset>
 #include <type_traits>
 #include <utility>
 

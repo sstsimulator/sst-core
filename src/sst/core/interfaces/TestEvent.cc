@@ -13,6 +13,8 @@
 
 #include "TestEvent.h"
 
+#include <cstdio>
+
 using namespace SST;
 using namespace SST::Interfaces;
 
