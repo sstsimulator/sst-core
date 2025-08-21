@@ -19,22 +19,13 @@
 
 namespace SST::Statistics {
 
-// NOTE: When calling base class members in classes derived from
-//       a templated base class.  The user must use "this->" in
-//       order to call base class members (to avoid a compiler
-//       error) because they are "nondependant named" and the
-//       templated base class is a "dependant named".  The
-//       compiler will not look in dependant named base classes
-//       when looking up independent names.
-// See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
-
 /**
     \class HistogramStatistic
     Holder of data grouped into pre-determined width bins.
     \tparam BinDataType is the type of the data held in each bin (i.e. what data type described the width of the bin)
 */
-#define CountType   uint64_t
-#define NumBinsType uint32_t
+using CountType   = uint64_t;
+using NumBinsType = uint32_t;
 
 template <class BinDataType>
 class LogBinHistogramStatistic : public Statistic<BinDataType>
@@ -62,11 +53,7 @@ public:
         Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
-        std::vector<std::string> allowedKeySet;
-        allowedKeySet.push_back("minvalue");
-        allowedKeySet.push_back("numbins");
-        allowedKeySet.push_back("dumpbinsonoutput");
-        allowedKeySet.push_back("includeoutofbounds");
+        std::vector<std::string> allowedKeySet = { "minvalue", "numbins", "dumpbinsonoutput", "includeoutofbounds" };
         statParams.pushAllowedKeys(allowedKeySet);
 
         // Process the Parameters
@@ -145,33 +132,21 @@ protected:
         double const      log2_value      = std::log2(static_cast<double>(value));
         double const      bin_floor_value = std::floor(log2_value); // Find the floor of the value
         BinDataType const bin_start       = static_cast<BinDataType>(bin_floor_value);
-        //      printf("DEBUG: value = %d, junk1 = %f, calc2 = %f, calc3 = %f : bin_start = %d, item count = %ld, \n",
-        //      value, calc1, calc2, calc3, bin_start, getStatCollectionCount());
 
-        HistoMapItr_t bin_itr = m_binsMap.find(bin_start);
-
-        // Was the bin found?
-        if ( bin_itr == m_binsMap.end() ) {
-            // No, Create the bin and set a value of 1 to it
-            m_binsMap.insert(std::pair<BinDataType, CountType>(bin_start, static_cast<CountType>(N)));
-        }
-        else {
-            // Yes, Increment the specific bin's count
-            bin_itr->second += static_cast<CountType>(N);
-        }
+        m_binsMap[bin_start] += static_cast<CountType>(N);
     }
 
     void addData_impl(BinDataType const value) override { addData_impl_Ntimes(1, value); }
 
 private:
     /** Count how many bins are active in this histogram */
-    NumBinsType getActiveBinCount() { return m_binsMap.size(); }
+    NumBinsType getActiveBinCount() const { return m_binsMap.size(); }
 
     /** Count how many bins are available */
-    NumBinsType getNumBins() { return m_numBins; }
+    NumBinsType getNumBins() const { return m_numBins; }
 
     /** Get the width of a bin in this histogram */
-    NumBinsType getBinWidth() { return m_binWidth; }
+    NumBinsType getBinWidth() const { return m_binWidth; }
 
     /**
         Get the count of items in the bin by the start value (e.g. give me the count of items in the bin which begins at
@@ -211,7 +186,12 @@ private:
         // Compute the max value; the histogram is indexed by the log2 floor of the bin
         // return pow2 of 1 + the number of total bins
 
-        return static_cast<BinDataType>(std::pow(2, m_numBins + 1));
+        if constexpr (std::is_floating_point<BinDataType>::value) {
+            return ldexp(2.0, m_numBins + 1);
+        }
+        else {
+            return BinDataType{2} << (m_numBins + 1);
+        }
     }
 
     /**
@@ -228,23 +208,19 @@ private:
         Get the total number of items contained in all bins
         \return The number of items contained in all bins
     */
-    CountType getItemsBinnedCount()
-    {
-        // Get the number of items added to this statistic that were binned.
-        return m_itemsBinnedCount;
-    }
+    CountType getItemsBinnedCount() const { return m_itemsBinnedCount; }
 
     /**
         Sum up every item presented for storage in the histogram
         \return The sum of all values added into the histogram
     */
-    BinDataType getValuesSummed() { return m_totalSummed; }
+    BinDataType getValuesSummed() const { return m_totalSummed; }
 
     /**
     Sum up every squared value entered into the Histogram.
     \return The sum of all values added after squaring into the Histogram
     */
-    BinDataType getValuesSquaredSummed() { return m_totalSummedSqr; }
+    BinDataType getValuesSquaredSummed() const { return m_totalSummedSqr; }
 
     void clearStatisticData() override
     {
@@ -280,14 +256,21 @@ private:
             BinDataType binLL;
             BinDataType binUL;
 
-            for ( uint32_t y = 0; y < getNumBins(); y++ ) {
+            NumBinsType const nbt = getNumBins();
+
+            std::vector<std::stringstream> streams;
+            streams.reserve(nbt);
+
+            std::vector<std::stringstream>::iterator sitr =
+                streams.begin();
+
+            for( NumBinsType i = 0; i < nbt; ++i) {
                 // Figure out the upper and lower values for this bin
-                binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
-                binUL = binLL + getBinWidth() - 1;
+                binLL = i << 2; 
+                binUL = ((i + 1) << 2) - 1;
                 // Build the string name for this bin and add it as a field
-                std::stringstream ss;
-                ss << "Bin" << y << ":" << binLL << "-" << binUL;
-                m_Fields.push_back(statOutput->registerField<CountType>(ss.str().c_str()));
+                (*sitr) << "Bin" << i << ":" << binLL << "-" << binUL;
+                m_Fields.push_back(statOutput->registerField<CountType>(sitr->str().c_str()));
             }
         }
     }
