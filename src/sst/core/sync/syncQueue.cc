@@ -17,6 +17,8 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
 
+#include <mutex>
+
 #if SST_EVENT_PROFILING
 #define SST_EVENT_PROFILE_SIZE(events, bytes)                    \
     do {                                                         \

@@ -15,6 +15,8 @@
 
 #include "sst/core/event.h"
 
+#include <string>
+
 using namespace SST;
 using namespace SST::CoreTestComponent;
 

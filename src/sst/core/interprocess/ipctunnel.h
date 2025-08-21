@@ -14,6 +14,7 @@
 
 #include "sst/core/interprocess/circularBuffer.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <errno.h>

@@ -25,6 +25,7 @@
 #include <cinttypes>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 #include <string>
 
 // System Headers

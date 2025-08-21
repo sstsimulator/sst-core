@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
+#include <ostream>
 #include <vector>
 
 #ifdef HAVE_DLFCN_H

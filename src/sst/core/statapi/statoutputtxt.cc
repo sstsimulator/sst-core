@@ -15,6 +15,8 @@
 
 #include "sst/core/stringize.h"
 
+#include <cstdint>
+
 namespace SST::Statistics {
 
 StatisticOutputTextBase::StatisticOutputTextBase(Params& outputParameters) :

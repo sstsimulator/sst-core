@@ -18,6 +18,7 @@
 #include "sst/core/rng/marsaglia.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 
 namespace SST::CoreTestComponent {
