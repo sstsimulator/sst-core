@@ -17,6 +17,9 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cinttypes>
+#include <iomanip>
+#include <ostream>
 #include <sys/ioctl.h>
 
 namespace json = ::nlohmann;

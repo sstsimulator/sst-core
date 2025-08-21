@@ -12,6 +12,7 @@
 #ifndef SST_CORE_UTIL_BASIC_PERF_H
 #define SST_CORE_UTIL_BASIC_PERF_H
 
+#include <cstdint>
 #include <map>
 #include <stack>
 #include <string>

@@ -21,6 +21,7 @@ from sst_unittest_support import *
 
 have_h5 = sst_core_config_include_file_get_value(define="HAVE_HDF5", type=int, default=0, disable_warning=True) == 1
 
+test_h5 = have_h5 and testing_check_get_num_ranks() == 1 and testing_check_get_num_threads() == 1
 
 class testcase_StatisticComponent(SSTTestCase):
 
@@ -56,7 +57,7 @@ class testcase_StatisticComponent(SSTTestCase):
 
         # Enable HDF5 test if available
         options = ""
-        if have_h5:
+        if test_h5:
             options = "--model-options=\"hdf5\""
             ref_group_stat_file_h5 = "{0}/refFiles/test_StatisticsComponent_{1}_group_stats.h5".format(testsuitedir, testtype)
             out_group_stat_file_h5 = "{0}/test_StatisticsComponent_{1}_group_stats.h5".format(outdir, testtype)
@@ -91,7 +92,7 @@ class testcase_StatisticComponent(SSTTestCase):
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(out_group_stat_file_txt, ref_group_stat_file_txt))
 
         # Generate raw H5 output
-        if have_h5:
+        if test_h5:
             try:
                 subprocess.run(["h5diff",ref_group_stat_file_h5,out_group_stat_file_h5],check=True)
             except subprocess.CalledProcessError as h5exc:

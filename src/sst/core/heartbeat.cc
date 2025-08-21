@@ -20,6 +20,10 @@
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
+#include <cinttypes>
+#include <cstdint>
+#include <string>
+
 namespace SST {
 
 SimulatorHeartbeat::SimulatorHeartbeat(

@@ -16,6 +16,8 @@
 #include "sst/core/serialization/serialize.h"
 #include "sst/core/warnmacros.h"
 
+#include <string>
+
 #define INSTANTIATE_SERIALIZE_DATA(type)                                                             \
     template <>                                                                                      \
     void option_serialize_data(SST::Core::Serialization::serializer& UNUSED(ser), type& UNUSED(val)) \
