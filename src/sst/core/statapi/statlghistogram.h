@@ -186,11 +186,11 @@ private:
         // Compute the max value; the histogram is indexed by the log2 floor of the bin
         // return pow2 of 1 + the number of total bins
 
-        if constexpr (std::is_floating_point<BinDataType>::value) {
+        if constexpr ( std::is_floating_point<BinDataType>::value ) {
             return ldexp(2.0, m_numBins + 1);
         }
         else {
-            return BinDataType{2} << (m_numBins + 1);
+            return BinDataType { 2 } << (m_numBins + 1);
         }
     }
 
@@ -261,10 +261,9 @@ private:
             std::vector<std::stringstream> streams;
             streams.reserve(nbt);
 
-            std::vector<std::stringstream>::iterator sitr =
-                streams.begin();
+            std::vector<std::stringstream>::iterator sitr = streams.begin();
 
-            for( NumBinsType i = 0; i < nbt; ++i) {
+            for( NumBinsType i = 0; i < nbt; ++i ) {
                 // Figure out the upper and lower values for this bin
                 binLL = i << 2; 
                 binUL = ((i + 1) << 2) - 1;
