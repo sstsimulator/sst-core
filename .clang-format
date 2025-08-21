@@ -150,12 +150,12 @@ ForEachMacros:
   - BOOST_FOREACH
 IfMacros:
   - KJ_IF_MAYBE
-#updated to force the re-sort as specified below in IncludeCategories 
+#updated to force the re-sort as specified below in IncludeCategories
 IncludeBlocks: Regroup
 #sst_config.h always first, so set to negative priority to be above 'main' include (priority 0)
 #main header included after - main include assumed to have no suffix
 #prioritize all headers in "sst/core" next
-#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name 
+#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name
 #finally include all system headers - characterized as headers wrapped with '< >'
 IncludeCategories:
   - Regex:           '(<.*>)'

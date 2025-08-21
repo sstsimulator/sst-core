@@ -21,7 +21,7 @@ AC_DEFUN([SST_CHECK_LIBZ],
       [LIBZ_CPPFLAGS=
        LIBZ_LDFLAGS=
        LIBZ_LIBS=])])
-  
+
   AC_LANG_PUSH([C++])
   AC_CHECK_HEADER([zlib.h], [], [sst_check_libz_happy="no"])
   AC_LANG_POP([C++])

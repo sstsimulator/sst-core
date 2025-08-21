@@ -80,7 +80,7 @@ Config::ext_help_timebase()
     msg.append("Time in SST core is represented by a 64-bit unsigned integer.  By default, each count of that "
                "value represents 1ps of time.  The timebase option allows you to set that atomic core timebase to "
                "a different value.\n ");
-    msg.append("There are two things to balance when determing a timebase to use:\n\n");
+    msg.append("There are two things to balance when determining a timebase to use:\n\n");
     msg.append("1) The shortest time period or fastest clock frequency you want to represent:\n");
     msg.append("  It is recommended that the core timebase be set to ~1000x smaller than the shortest time period "
                "(fastest frequency) in your simulation.  For the default 1ps timebase, clocks in the 1-10GHz range "
@@ -415,7 +415,12 @@ Config::insertOptions()
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
         "will be appended to the model options (or used as the model options if --model-options was not specified).",
         model_options_, false, false, true);
-    DEF_FLAG_OPTVAL("print-timing-info", 0, "Print SST timing information", print_timing_, true, true, false);
+    DEF_ARG_OPTVAL("print-timing-info", 0, "LEVEL",
+        "Print SST timing information.  Can supply an optional level to control the granularity of timing information. "
+        "Level = 0 turns all timing info off, level = 1 will print total runtime, as well as other performance data. "
+        "Level >= 2 will print increasing granularity of performance data. If specified with no level, then the level "
+        "will be set to 2.",
+        print_timing_, true, true, false);
     DEF_ARG(
         "timing-info-json", 0, "FILE", "Write SST timing information in JSON format", timing_json_, true, true, false);
     DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution", stop_at_, true, true, false);
@@ -468,8 +473,8 @@ Config::insertOptions()
     DEF_ARG("dot-verbosity", 0, "INT", "Amount of detail to include in the dot graph output", dot_verbosity_, true,
         false, true);
     DEF_ARG_OPTVAL("output-partition", 0, "FILE",
-        "File to write SST component partitioning information.  When used without an argument and in conjuction with "
-        "--output-json or --output-config options, will cause paritition information to be added to graph output.",
+        "File to write SST component partitioning information.  When used without an argument and in conjunction with "
+        "--output-json or --output-config options, will cause partition information to be added to graph output.",
         output_partition_, true, false, false);
 
     /* Advanced Features */

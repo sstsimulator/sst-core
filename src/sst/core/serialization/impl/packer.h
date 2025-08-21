@@ -17,6 +17,7 @@
     "The header file sst/core/serialization/impl/packer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
+#include "sst/core/serialization/impl/get_array_size.h"
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 
 #include <cstdint>
@@ -36,23 +37,25 @@ public:
     using ser_buffer_accessor::ser_buffer_accessor;
 
     template <typename T>
-    void pack(T&& t)
+    void pack(const T& t)
     {
         memcpy(buf_next(sizeof(t)), &t, sizeof(t));
     }
 
-    template <typename ELEM_T, typename SIZE_T>
-    void pack_buffer(ELEM_T* buffer, SIZE_T size)
+    template <typename T, typename SIZE_T>
+    void pack_buffer(const T* buffer, SIZE_T size)
     {
-        if ( buffer == nullptr ) size = 0;
-        pack(size);
-        if constexpr ( std::is_void_v<ELEM_T> )
-            memcpy(buf_next(size), buffer, size);
+        if ( buffer != nullptr )
+            get_array_size(size, "Serialization Error: Size in SST::Core::Serialization:pvt::pack_buffer() cannot fit "
+                                 "inside size_t. size_t should be used for sizes.\n");
         else
-            memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
+            size = 0;
+        using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
+        pack(size);
+        memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
     }
 
-    void pack_string(std::string& str);
+    void pack_string(const std::string& str) { pack_buffer(str.data(), str.size()); }
     bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
 }; // class ser_packer
 

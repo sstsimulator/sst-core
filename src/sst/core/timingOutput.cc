@@ -24,9 +24,9 @@ namespace json = ::nlohmann;
 namespace SST {
 namespace Core {
 
-TimingOutput::TimingOutput(const SST::Output& output, bool printEnable) :
+TimingOutput::TimingOutput(const SST::Output& output, int print_verbosity) :
     output_(output),
-    printEnable_(printEnable),
+    print_verbosity_(print_verbosity),
     jsonEnable_(false)
 {}
 
@@ -71,7 +71,7 @@ TimingOutput::~TimingOutput()
 void
 TimingOutput::generate()
 {
-    if ( printEnable_ ) renderText();
+    if ( print_verbosity_ ) renderText();
     if ( jsonEnable_ ) renderJSON();
 }
 
@@ -100,10 +100,8 @@ TimingOutput::renderText()
     output_.output("\n");
     output_.output("\n");
     output_.output("------------------------------------------------------------\n");
-    output_.output("Simulation Timing Information (Wall Clock Times):\n");
-    output_.output("  Build time:                      %f seconds\n", dmap_.at(MAX_BUILD_TIME));
-    output_.output("  Run loop time:                   %f seconds\n", dmap_.at(MAX_RUN_TIME));
-    output_.output("  Total time:                      %f seconds\n", dmap_.at(MAX_TOTAL_TIME));
+    output_.output("Simulation Resource Utilization for Code Regions:\n");
+    Simulation_impl::basicPerf.outputRegionData(output_, print_verbosity_);
     output_.output("\n");
     output_.output("Simulated time:                    %s\n", uamap_.at(SIMULATED_TIME_UA).toStringBestSI().c_str());
     output_.output("\n");

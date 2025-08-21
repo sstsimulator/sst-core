@@ -33,12 +33,14 @@ class StatisticOutput;
 class StatisticBase;
 } // namespace Statistics
 
+class Config;
 class Module;
 class Component;
 class BaseComponent;
 class SubComponent;
 class ElemLoader;
 class SSTElementPythonModule;
+class SSTModelDescription;
 
 /**
  * Class for instantiating Components, Links and the like out
@@ -48,6 +50,8 @@ class Factory
 {
 public:
     static Factory* getFactory() { return instance; }
+
+    static Factory* createFactory(const std::string& searchPaths);
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format
@@ -314,13 +318,17 @@ public:
      */
     bool isProfilePointValid(const std::string& type, const std::string& point);
 
+    static SSTModelDescription* createModelDescription(
+        const std::string& type, const std::string& input_file, int verbose, Config& cfg, double start_time);
+
+    explicit Factory(const std::string& searchPaths);
+
 private:
     friend int ::main(int argc, char** argv);
 
     [[noreturn]]
     void notFound(const std::string& baseName, const std::string& type, const std::string& errorMsg);
 
-    explicit Factory(const std::string& searchPaths);
     ~Factory();
 
     Factory(const Factory&)            = delete; // Don't Implement
@@ -340,12 +348,12 @@ private:
     ElemLoader* loader;
     std::string loadingComponentType;
 
-    std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
+    static std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
 
     std::recursive_mutex factoryMutex;
 
 protected:
-    Output& out;
+    static Output out;
 };
 
 } // namespace SST

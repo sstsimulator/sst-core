@@ -14,7 +14,7 @@
 #### **Guiding Principle for Code Development**
 
 Code accepted into the SST core codebase is deemed supported unless otherwise denoted to be experimental (e.g., by putting code in a directory named “experimental”, using the Experimental namespace, etc.).  Supported code is regularly tested for proper functionality and stability.  Please follow these guidelines:
- 
+
 * When a feature branch falls behind the sstsimulator/devel branch, it is preferred that the feature branch be rebased to the latest devel before being pushed to github and a PR is submitted (rebasing is preferred to merging).
    * Please ensure that there is no remerging old commits or merge commits between a forked branch and the sstsimulator:sst-core branches
 * PRs will be subject to review by the SST team to ensure they adhere to the core design principles, to help reduce the invasiveness of the changes and/or to make stylistic adjustments to keep the code base as consistent as possible. Changes may be requested prior to PR acceptance.
@@ -32,7 +32,7 @@ Code accepted into the SST core codebase is deemed supported unless otherwise de
 * Any changes to the SST Core public API should be discussed with the core SST team ahead of time and are subject to approval by the core SST team.  Changes should be minimized and APIs should be concise. Any API that is part of an official release will be subject to the requirement of providing backward compatibility for one major release cycle after deprecation.
 * Any publicly visible APIs must be documented in the header file using doxygen formatting.  The description should be sufficient for an end user to understand the purpose and functionality of the code.
 * Code should endeavor to check and handle expected error conditions and provide a reasonable error/warning message to help the end user track down the error.
- 
+
 
 
 ---
@@ -154,7 +154,7 @@ git fetch --all --prune
 
 #### **New Feature**
 SST is an open source project and we encourage contribution of new features. For new features, please open a “Feature Request” in the GitHub issues tracker and describe both the use-case and the proposed functionality in sufficient detail that the community can understand how the feature will generally integrate into the existing code base.  Once the code is ready, a GitHub pull request (PR) should be opened as described in this document.  If the feature can be implemented using one of the existing “plug-in” APIs in the core, then it is preferred that the development use these APIs.  Features implemented through plug-ins can be made available externally and do not necessarily need to be merged into the main code repository, though that option is available if there is a compelling reason.
- 
+
 To support community involvement, major new features require a two week public discussion period. "Feature requests" GitHub issues must be opened at least two weeks prior to a pull request submission, and are encouraged to be opened early in the feature planning and development process. Once development of the feature starts, the "In Process" label can be applied to the issue.  This will allow the community to provide input on planning how the feature will be architected into the code base and allow other developers an opportunity to understand any potential conflicts with other feature development. This can also help prevent duplicated effort if multiple groups are developing similar functionality and can help catch potential issues early and avoid long iteration cycles on the resulting pull request before being able to merge the feature.  While we strive to include all new features developers feel they need, it is possible that the community may determine that a particular feature is not a good fit for SST, that it breaks certain fundamental assumptions of the code architecture, or that the intended implementation is not a good match for the code base.  In these cases, having early feedback can save development that will not be able to be merged.
 
 To create a pull reqeust for the feature, use the following procedure.

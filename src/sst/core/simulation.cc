@@ -1155,6 +1155,12 @@ Simulation_impl::notifySignal()
 }
 
 void
+Simulation_impl::serializeSharedObjectManager(SST::Core::Serialization::serializer& ser)
+{
+    SST_SER(SST::Shared::SharedObject::manager);
+}
+
+void
 Simulation_impl::printStatus(bool fullStatus)
 {
     Output out("SimStatus: @R:@t:", 0, 0, Output::STDERR);
@@ -2176,6 +2182,8 @@ Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
 TimeConverter              Simulation_impl::minPartTC;
 SimTime_t                  Simulation_impl::minPart;
 std::string                Simulation_impl::checkpoint_directory_ = "";
+
+Util::BasicPerfTracker Simulation_impl::basicPerf;
 
 
 /* Define statics (Simulation) */
