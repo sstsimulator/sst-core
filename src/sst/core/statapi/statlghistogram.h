@@ -265,7 +265,7 @@ private:
 
             for ( NumBinsType i = 0; i < nbt; ++i ) {
                 // Figure out the upper and lower values for this bin
-                binLL = i << 2; 
+                binLL = i << 2;
                 binUL = ((i + 1) << 2) - 1;
                 // Build the string name for this bin and add it as a field
                 (*sitr) << "Bin" << i << ":" << binLL << "-" << binUL;
