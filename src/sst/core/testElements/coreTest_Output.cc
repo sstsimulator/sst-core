@@ -15,6 +15,8 @@
 
 #include "sst/core/testElements/coreTest_Output.h"
 
+#include <string>
+
 namespace SST::CoreTestSerialization {
 
 void

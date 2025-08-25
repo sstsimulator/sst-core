@@ -44,12 +44,19 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cinttypes>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <mutex>
+#include <set>
 #include <string>
+#include <thread>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 
 #define SST_SIMTIME_MAX 0xffffffffffffffff

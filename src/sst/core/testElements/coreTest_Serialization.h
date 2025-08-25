@@ -16,6 +16,7 @@
 #include "sst/core/rng/rng.h"
 
 #include <cstddef>
+#include <memory>
 
 namespace SST::CoreTestSerialization {
 

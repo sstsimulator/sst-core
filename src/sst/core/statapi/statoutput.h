@@ -22,6 +22,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <mutex>
+#include <string>
 #include <unordered_map>
 #include <vector>
 

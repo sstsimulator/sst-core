@@ -21,6 +21,9 @@
 #include "sst/core/rng/poisson.h"
 #include "sst/core/stringize.h"
 
+#include <iostream>
+#include <ostream>
+
 using namespace SST;
 using namespace SST::RNG;
 using namespace SST::CoreTestDistribComponent;
