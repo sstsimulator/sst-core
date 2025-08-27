@@ -22,6 +22,12 @@
 
 namespace SST {
 
+bool
+WatchPoint::getInteractive()
+{
+    return Simulation_impl::getSimulation()->enter_interactive_;
+}
+
 void
 WatchPoint::setEnterInteractive()
 {

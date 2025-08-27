@@ -50,38 +50,124 @@ public:
     ~WatchPoint() { delete obj_; }
 
     // Inherited from both Event and Clock handler AttachPoints.
-    // WatchPoint doesn't use the key, so just return 0.
+    // WatchPoint doesn't use the key, so just return 0
     uintptr_t registerHandler(const AttachPointMetaData& UNUSED(mdata)) override { return 0; }
 
     // Functions inherited from Event::HandlerBase::AttachPoint
-    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(ev)) override {}
+    void beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(ev)) override
+    {
+        if ( handler & BEFORE_EVENT ) {
+            printf("  Before Event Handler\n");
+            check();
+            if ( tb_ ) {
+
+                if ( reset_ && !getInteractive() ) {
+                    tb_->resetTraceBuffer();
+                    reset_ = false;
+                }
+
+                SimTime_t cycle  = getCurrentSimCycle();
+                bool      invoke = tb_->sampleT(trigger, cycle, "BE");
+                trigger          = false;
+                if ( invoke ) {
+                    setBufferReset();
+                    invokeAction();
+                }
+            }
+            else {
+                printf("    No trace buffer\n");
+                if ( trigger ) {
+                    invokeAction();
+                }
+            }
+        } // if AFTER_EVENT
+    }
 
     void afterHandler(uintptr_t UNUSED(key)) override
     {
-        printf("  After Event Handler\n");
-        check();
-        if ( tb_ ) {
-            SimTime_t cycle  = getCurrentSimCycle();
-            bool      invoke = tb_->sampleT(trigger, cycle);
-            trigger          = false;
-            if ( invoke ) {
-                invokeAction();
-                setBufferReset();
+        if ( handler & AFTER_EVENT ) {
+            printf("  After Event Handler\n");
+            check();
+            if ( tb_ ) {
+
+                if ( reset_ && !getInteractive() ) {
+                    tb_->resetTraceBuffer();
+                    reset_ = false;
+                }
+
+                SimTime_t cycle  = getCurrentSimCycle();
+                bool      invoke = tb_->sampleT(trigger, cycle, "AE");
+                trigger          = false;
+                if ( invoke ) {
+                    setBufferReset();
+                    invokeAction();
+                }
             }
-        }
-        else {
-            printf("    No trace buffer\n");
-            if ( trigger ) {
-                invokeAction();
-                setBufferReset();
+            else {
+                printf("    No trace buffer\n");
+                if ( trigger ) {
+                    invokeAction();
+                }
             }
-        }
+        } // if AFTER_EVENT
     }
 
     // Functions inherited from Clock::HandlerBase::AttachPoint
-    void beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle)) override {}
+    void beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle)) override
+    {
+        if ( handler & BEFORE_CLOCK ) {
+            printf("  Before Clock Handler\n");
+            check();
+            if ( tb_ ) {
+                if ( reset_ && !getInteractive() ) {
+                    tb_->resetTraceBuffer();
+                    reset_ = false;
+                }
 
-    void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret)) override {}
+                SimTime_t cycle  = getCurrentSimCycle();
+                bool      invoke = tb_->sampleT(trigger, cycle, "BC");
+                trigger          = false;
+                if ( invoke ) {
+                    setBufferReset();
+                    invokeAction();
+                }
+            }
+            else {
+                printf("    No trace buffer\n");
+                if ( trigger ) {
+                    invokeAction();
+                }
+            }
+        } // if AFTER_CLOCK
+    }
+
+    void afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret)) override
+    {
+        if ( handler & AFTER_CLOCK ) {
+            printf("  After Clock Handler\n");
+            check();
+            if ( tb_ ) {
+                if ( reset_ && !getInteractive() ) {
+                    tb_->resetTraceBuffer();
+                    reset_ = false;
+                }
+
+                SimTime_t cycle  = getCurrentSimCycle();
+                bool      invoke = tb_->sampleT(trigger, cycle, "AC");
+                trigger          = false;
+                if ( invoke ) {
+                    setBufferReset();
+                    invokeAction();
+                }
+            }
+            else {
+                printf("    No trace buffer\n");
+                if ( trigger ) {
+                    invokeAction();
+                }
+            }
+        } // if AFTER_CLOCK
+    }
 
     std::string getName() { return name_; }
 
@@ -106,8 +192,34 @@ public:
         }
     }
 
+    enum HANDLER : unsigned {
+        // Select which handlers do check and sample
+        BEFORE_CLOCK = 1,
+        AFTER_CLOCK  = 2,
+        BEFORE_EVENT = 4,
+        AFTER_EVENT  = 8,
+        ALL          = 15
+    };
+
+    void setHandler(unsigned handlerType) { handler = handlerType; }
+
+    void printHandler()
+    {
+        if ( handler == ALL ) {
+            std::cout << "ALL ";
+        }
+        else {
+            if ( handler & BEFORE_CLOCK ) std::cout << "BC ";
+            if ( handler & AFTER_CLOCK ) std::cout << "AC ";
+            if ( handler & BEFORE_EVENT ) std::cout << "BE ";
+            if ( handler & AFTER_EVENT ) std::cout << "AE ";
+        }
+        std::cout << ": ";
+    }
+
     void printWatchpoint()
     {
+        printHandler();
         // TODO: print the logic values
         for ( size_t i = 0; i < numCmpObj_; i++ ) { // Print trigger tests
             cmpObjects_[i]->print();
@@ -122,18 +234,9 @@ public:
         std::cout << std::endl;
     }
 
-    void setBufferReset()
-    {
-        if ( tb_ != nullptr ) {
-            printf("    Set Buffer Reset\n");
-            tb_->setBufferReset();
-        }
-    }
-
     void resetTraceBuffer()
     {
         if ( tb_ != nullptr ) {
-            printf("    Reset Trace Buffer\n");
             tb_->resetTraceBuffer();
         }
     }
@@ -147,13 +250,6 @@ public:
         HEARTBEAT    = 4,
         INVALID      = 5
     };
-    enum LogicOp : unsigned { // Logical Op for trigger tests
-        AND       = 0,
-        OR        = 1,
-        UNDEFINED = 2
-    };
-
-    void setAction(WPACTION actionType) { wpAction = actionType; }
 
     std::string actionToString(WPACTION wpa)
     {
@@ -174,6 +270,8 @@ public:
         }
     }
 
+    void setAction(WPACTION actionType) { wpAction = actionType; }
+
     void printAction() { std::cout << actionToString(wpAction); }
 
     void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
@@ -186,10 +284,17 @@ public:
         numCmpObj_++;
     }
 
+    enum LogicOp : unsigned { // Logical Op for trigger tests
+        AND       = 0,
+        OR        = 1,
+        UNDEFINED = 2
+    };
+
     void addLogicOp(LogicOp op) { logicOps_.push_back(op); }
 
 
 protected:
+    bool      getInteractive();
     void      setEnterInteractive();
     void      setInteractiveMsg(const std::string& msg);
     SimTime_t getCurrentSimCycle();
@@ -204,40 +309,47 @@ private:
     std::vector<LogicOp>                                   logicOps_;
     std::string                                            name_;
     Core::Serialization::TraceBuffer*                      tb_ = nullptr;
-#if 0
-    enum CHECK_HANDLER : unsigned { 
-      // Do we want to be able to specify clock/event?
-      // Could expand to choose before/after also
-        CLOCK = 0, // check in CLOCK handler ONLY
-        EVENT = 1, // check in EVENT hanlder ONLY
-        BOTH  = 2,  // check in BOTH CLOCK and EVENT handlers
-    };
-    CHECK_HANDLER checkType = EVENT;
-#endif
-    int checkType = 0; // clock only - Not currently used. I just hard-coded in event
 
+    unsigned handler  = ALL;
     bool     trigger  = false;
+    bool     reset_   = false;
     WPACTION wpAction = INTERACTIVE;
 
+    void setBufferReset()
+    {
+        if ( tb_ != nullptr ) {
+            printf("    Set Buffer Reset\n");
+            tb_->setBufferReset();
+            reset_ = true;
+        }
+    }
 
     void invokeAction()
     {
         switch ( wpAction ) {
         case INTERACTIVE:
+            printf("    SetInteractive\n");
             setEnterInteractive(); // Trigger action
             setInteractiveMsg(format_string("Watch point %s buffer", name_.c_str()));
+            // Note that the interactive action is delayed and
+            // we want to be able to print the Trace Buffer there.
+            // So, resetTraceBuffer for this case is in handlers
             break;
         case PRINT_TRACE:
             tb_->dumpTraceBufferT();
+            if ( reset_ ) resetTraceBuffer();
             break;
         case CHECKPOINT:
             setCheckpoint();
+            if ( reset_ ) resetTraceBuffer();
             break;
         case PRINT_STATUS:
             printStatus();
+            if ( reset_ ) resetTraceBuffer();
             break;
         case HEARTBEAT:
             heartbeat();
+            if ( reset_ ) resetTraceBuffer();
             break;
         default:
             printf("ERROR: invalid watchpoint action\n");

@@ -865,6 +865,7 @@ public:
     {
         tagBuffer_.resize(bufSize_);
         cycleBuffer_.resize(bufSize_);
+        handlerBuffer_.resize(bufSize_);
     }
 
     virtual ~TraceBuffer() = default;
@@ -902,12 +903,9 @@ public:
     const std::map<BufferState, char> state2char { { CLEAR, '-' }, { TRIGGER, '!' }, { POSTTRIGGER, '+' },
         { OVERRUN, 'o' } };
 
-    bool sampleT(bool trigger, uint64_t cycle)
-    {
-        if ( reset_ ) {
-            resetTraceBuffer();
-        }
 
+    bool sampleT(bool trigger, uint64_t cycle, const std::string& handler)
+    {
         size_t start_state  = state_;
         bool   invokeAction = false;
 
@@ -926,10 +924,11 @@ public:
         }
 
         // Circular buffer
-        std::cout << "    Sample: numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
+        std::cout << "    Sample:" << handler << ": numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
                   << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
                   << " samplesLost:" << samplesLost_ << std::endl;
-        cycleBuffer_[cur_] = cycle;
+        cycleBuffer_[cur_]   = cycle;
+        handlerBuffer_[cur_] = handler;
         if ( trigger ) {
             triggerCycle = cycle;
         }
@@ -994,7 +993,8 @@ public:
         for ( int j = start;; j++ ) {
             size_t i = j % bufSize_;
 
-            std::cout << "buf[" << i << "] @" << cycleBuffer_.at(i) << " (" << state2char.at(tagBuffer_.at(i)) << ") ";
+            std::cout << "buf[" << i << "] " << handlerBuffer_.at(i) << " @" << cycleBuffer_.at(i) << " ("
+                      << state2char.at(tagBuffer_.at(i)) << ") ";
 
             for ( size_t obj = 0; obj < numObjects; obj++ ) {
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
@@ -1053,6 +1053,7 @@ public:
 
     size_t                     numObjects = 0;
     std::vector<BufferState>   tagBuffer_;
+    std::vector<std::string>   handlerBuffer_;
     std::vector<ObjectBuffer*> objBuffers_;
     std::vector<uint64_t>      cycleBuffer_;
     uint64_t                   triggerCycle;
