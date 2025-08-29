@@ -56,7 +56,7 @@ namespace SST::Core::Interprocess {
       MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
       for (int i = 0; i < count; i++) {
          MPI_Info_create(&array_of_info[i]);
-         //MPI_Info_set(array_of_info[i], "env", env); // TODO Why does this crash?
+         MPI_Info_set(array_of_info[i], "env", env); // TODO Why does this crash?
       }
 
       // Get the processor name so we can make the traced process
