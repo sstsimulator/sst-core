@@ -25,17 +25,13 @@
 
 namespace SST::Core::Interprocess {
 
-    int SST_MPI_Comm_spawn_multiple (
-        char **pin_command,
-        const int ranks,
-        const int tracerank,
-        const char* env);
+int SST_MPI_Comm_spawn_multiple(char** pin_command, const int ranks, const int tracerank, const char* env);
 
-    /*
-    int SST_MPI_Comm_spawn(int count, char **array_of_commands,
-     char ***array_of_argv, const int *array_of_maxprocs, int root,
-     int *array_of_errcodes);
-     */
+/*
+int SST_MPI_Comm_spawn(int count, char **array_of_commands,
+ char ***array_of_argv, const int *array_of_maxprocs, int root,
+ int *array_of_errcodes);
+ */
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file.
  * This class creates the tunnel for the parent/master process
