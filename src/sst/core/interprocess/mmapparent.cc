@@ -74,7 +74,7 @@ namespace SST::Core::Interprocess {
          MPI_Info_set(array_of_info[0], "host", processor_name);
 
          // Do not set the child environment if env is empty, which seems to crash.
-         if (strcmp("", env) {
+         if (strcmp("", env)) {
             MPI_Info_set(array_of_info[i], "env", env);
          }
       }
