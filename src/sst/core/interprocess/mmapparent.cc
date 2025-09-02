@@ -22,23 +22,30 @@ using testtunnel = SST::Core::Interprocess::TunnelDef<int, int>;
 template class SST::Core::Interprocess::MMAPParent<testtunnel>;
 
 namespace SST::Core::Interprocess {
+
+   /* [EXPERIMENTAL] Launch an MPI process
+    *
+    *
+    */
    int SST_MPI_Comm_spawn_multiple (
          char** pin_command,
          const int ranks,
          const int tracerank,
          const char* env) {
 
-      // We have one command for ranks before the tracerank, one
-      // for the ranks after it, and one for the trace rank itself
-      int count = 1;
+      // We have one command for ranks before the traced rank, one
+      // for the ranks after it, and one for the traced rank itself
+      int cmd_count = 1;
       if (tracerank > 0) {
-         count++;
+         cmd_count++;
       }
       if (tracerank < (ranks-1)) {
-         count++;
+         cmd_count++;
       }
 
-      // Find where the PIN arguments end and the app starts
+      // Ariel has already formed the entire string to launch PIN + the app.
+      // Find where the PIN arguments end and the app starts. The traced rank will
+      // launch with pin and the other ranks will launch normally.
       int app_idx = -1;
       for (int i = 0; pin_command[i] != NULL; i++) {
         if (strcmp(pin_command[i], "--") == 0) {
@@ -51,32 +58,37 @@ namespace SST::Core::Interprocess {
          return 1;
       }
 
-      // Currently unused.
-      // Documentation of options: https://docs.open-mpi.org/en/main/man-openmpi/man3/MPI_Comm_spawn_multiple.3.html#info-arguments
-      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * count);
-      for (int i = 0; i < count; i++) {
-         MPI_Info_create(&array_of_info[i]);
-         MPI_Info_set(array_of_info[i], "env", env); // TODO Why does this crash?
-      }
+      // Users may specify environment variables in the Ariel parameters. We pass
+      // them to the child using MPI_Info. Also set the processor name so all ranks
+      // run on the same node as the parent SST process. We may relax this requirement in
+      // the future so that only the traced rank runs alongside SST.
+      // Documentation for MPI_Info options: https://docs.open-mpi.org/en/main/man-openmpi/man3/MPI_Comm_spawn_multiple.3.html#info-arguments
+      MPI_Info *array_of_info = (MPI_Info*)malloc(sizeof(MPI_Info) * cmd_count);
 
-      // Get the processor name so we can make the traced process
-      // run on the same rank the process calling this function.
       char processor_name[MPI_MAX_PROCESSOR_NAME];
       int name_len;
       MPI_Get_processor_name(processor_name, &name_len);
 
-      int    *array_of_maxprocs = (int*)   malloc(sizeof(int) * count);
-      char  **array_of_commands = (char**) malloc(sizeof(char*) * count);
-      char ***array_of_argv     = (char***)malloc(sizeof(char**) * count);
-
-      if (count == 1) {
+      for (int i = 0; i < cmd_count; i++) {
+         MPI_Info_create(&array_of_info[i]);
          MPI_Info_set(array_of_info[0], "host", processor_name);
+
+         // Do not set the child environment if env is empty, which seems to crash.
+         if (strcmp("", env) {
+            MPI_Info_set(array_of_info[i], "env", env);
+         }
+      }
+
+      int    *array_of_maxprocs = (int*)   malloc(sizeof(int) * cmd_count);
+      char  **array_of_commands = (char**) malloc(sizeof(char*) * cmd_count);
+      char ***array_of_argv     = (char***)malloc(sizeof(char**) * cmd_count);
+
+      if (cmd_count == 1) {
          array_of_maxprocs[0] = 1;
          array_of_commands[0] = pin_command[0];
          array_of_argv[0] = pin_command+1;
-      } else if (count == 2) {
+      } else if (cmd_count == 2) {
          if (tracerank == 0) {
-            MPI_Info_set(array_of_info[0], "host", processor_name);
             array_of_maxprocs[0] = 1;
             array_of_maxprocs[1] = ranks-1;
 
@@ -86,7 +98,6 @@ namespace SST::Core::Interprocess {
             array_of_argv[0] = pin_command+1;
             array_of_argv[1] = pin_command+app_idx+1;
          } else {
-            MPI_Info_set(array_of_info[1], "host", processor_name);
             array_of_maxprocs[0] = ranks-1;
             array_of_maxprocs[1] = 1;
 
@@ -96,8 +107,7 @@ namespace SST::Core::Interprocess {
             array_of_argv[0] = pin_command+app_idx+1;
             array_of_argv[1] = pin_command+1;
          }
-      } else if (count == 3) {
-         MPI_Info_set(array_of_info[1], "host", processor_name);
+      } else if (cmd_count == 3) {
          array_of_maxprocs[0] = tracerank;
          array_of_maxprocs[1] = 1;
          array_of_maxprocs[2] = ranks - tracerank - 1;
@@ -113,8 +123,8 @@ namespace SST::Core::Interprocess {
 
 
       /*
-      printf("[SST CORE] Count is %d\n", count);
-      for(int i = 0; i < count; i++) {
+      printf("[SST CORE] Count is %d\n", cmd_count);
+      for(int i = 0; i < cmd_count; i++) {
          printf("[SST CORE] Command %d: \n", i);
          printf("  maxprocs: %d\n", array_of_maxprocs[i]);
          printf("  command: %s\n", array_of_commands[i]);
@@ -128,7 +138,7 @@ namespace SST::Core::Interprocess {
 
       MPI_Comm intercomm;
       int *array_of_errcodes = (int*)malloc(sizeof(int) * ranks);
-      int result = MPI_Comm_spawn_multiple(count,
+      int result = MPI_Comm_spawn_multiple(cmd_count,
              array_of_commands,
              array_of_argv,
              array_of_maxprocs,
