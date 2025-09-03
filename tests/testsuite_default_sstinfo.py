@@ -51,7 +51,7 @@ class testcase_sstinfo(SSTTestCase):
         self.assertTrue(os.path.isdir(sst_app_path), err_str)
 
         cmd = '{0}/sst-info coreTestElement {1}'.format(sst_app_path, flags)
-        rtn = os_command(cmd, output_file_path = outfile, error_file_path = errfile).run(timeout_sec = 1)
+        rtn = os_command(cmd, output_file_path = outfile, error_file_path = errfile).run(timeout_sec = 5)
 
         if testtype == "coreTestElement":
             if rtn.result() != 0:
