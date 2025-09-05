@@ -32,8 +32,11 @@
 #include <ctime>
 #include <dirent.h>
 #include <dlfcn.h>
+#include <functional>
 #include <getopt.h>
+#include <iostream>
 #include <list>
+#include <ostream>
 #include <string>
 #include <sys/stat.h>
 

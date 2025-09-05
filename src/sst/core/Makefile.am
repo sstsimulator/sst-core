@@ -223,6 +223,7 @@ sst_core_sources = \
 	module.cc \
 	realtime.cc \
 	sstpart.cc \
+	sst_mpi.cc \
 	sst_types.cc \
 	timeVortex.cc \
 	timingOutput.h \

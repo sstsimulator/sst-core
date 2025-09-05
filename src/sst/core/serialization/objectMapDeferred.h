@@ -14,6 +14,7 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <map>
 #include <string>
 #include <vector>
 

@@ -16,7 +16,10 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/util/filesystem.h"
 
+#include <cstdint>
+#include <cstdio>
 #include <map>
+#include <string>
 
 namespace SST::Core {
 
@@ -72,7 +75,7 @@ public:
         { THREADS, "threads" },
     };
 
-    TimingOutput(const SST::Output& output, bool printEnable);
+    TimingOutput(const SST::Output& output, int print_verbosity);
     virtual ~TimingOutput();
     void setJSON(const std::string& path);
     void generate();
@@ -85,7 +88,7 @@ public:
 
 private:
     SST::Output output_;
-    bool        printEnable_;
+    int         print_verbosity_;
     bool        jsonEnable_;
 
     std::map<Key, uint64_t>    u64map_    = {};

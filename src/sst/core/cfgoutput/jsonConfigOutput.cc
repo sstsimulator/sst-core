@@ -21,8 +21,11 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cstdint>
+#include <iomanip>
 #include <map>
 #include <sstream>
+#include <vector>
 
 using namespace SST::Core;
 namespace json = ::nlohmann;
@@ -230,7 +233,7 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     // Put in the program options
     outputJson["program_options"]["verbose"]                = std::to_string(cfg->verbose());
     outputJson["program_options"]["stop-at"]                = cfg->stop_at();
-    outputJson["program_options"]["print-timing-info"]      = cfg->print_timing() ? "true" : "false";
+    outputJson["program_options"]["print-timing-info"]      = std::to_string(cfg->print_timing());
     outputJson["program_options"]["timing-info-json"]       = cfg->timing_json();
     // Ignore stopAfter for now
     // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec();
