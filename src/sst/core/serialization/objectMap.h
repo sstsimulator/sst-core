@@ -134,11 +134,6 @@ public:
     virtual void        print()           = 0;
     std::string         getName() { return name_; }
 
-#if 0
-    void *              getVar() { 
-        if ( obj_ != nullptr && obj_->isFundamental() ) 
-            return nullptr; //obj_->getAddr(); }
-#endif
     virtual void* getVar() = 0;
 
 protected:
@@ -206,7 +201,7 @@ protected:
        Function that will get called when this object is deactivated
        (i.e selectParent() is called)
      */
-    virtual void deactivate_callback() {}
+    virtual void deactivate_callback() {} 
 
 private:
     /**
@@ -241,6 +236,13 @@ public:
        @param state Read-only state to set this ObjectMap to.  Defaults to true.
      */
     void setReadOnly(bool state = true) { read_only_ = state; }
+
+    /**
+     Check if value string is valid for this type
+
+     @param value Value to set the object to expressed as a string
+   */
+    virtual bool checkValue(const std::string& UNUSED(value)) { return false; }
 
 
     /**
@@ -326,12 +328,6 @@ public:
     {
         return nullptr;
     }
-#if 0
-    virtual TraceBuffer* getTraceBuffer(ObjectMap* UNUSED(obj), size_t UNUSED(sz), size_t UNUSED(pdelay)) // Add name
-    {
-        return nullptr;
-    }
-#endif
 
     virtual ObjectBuffer* getObjectBuffer(const std::string& UNUSED(name), size_t UNUSED(sz)) { return nullptr; }
 
@@ -1089,6 +1085,24 @@ public:
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
+    virtual bool checkValue(const std::string& value) override {
+        bool ret = false;
+        try {
+            T v = SST::Core::from_string<T>(value);
+            ret = static_cast<bool>(v);
+        }
+        catch (const std::invalid_argument& e) {
+            std::cerr << "Error: Invalid value: " << value << std::endl;
+            return false;
+        }
+        catch (const std::out_of_range& e) {
+            std::cerr << "Error: Value is out of range: " << value << std::endl;
+            return false;
+        }
+        ret = true;
+        return ret;
+    }
+
     /**
        Get the value of the object as a string
      */
@@ -1141,13 +1155,6 @@ public:
     {
         return new ObjectMapComparison_impl<T>(name, addr_, op, value);
     }
-#if 0
-    TraceBuffer* getTraceBuffer(ObjectMap* obj, size_t sz, size_t pdelay) override // Add name
-    {
-
-        return new TraceBuffer(obj, sz, pdelay);
-    }
-#endif
 
     ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
     {
