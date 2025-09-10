@@ -25,14 +25,19 @@
 
 namespace SST::Core::Interprocess {
 
-int SST_MPI_Comm_spawn_multiple(char** pin_command, const int ranks, const int tracerank, const char* env);
-int SST_MPI_Comm_spawn_multiple_new(char** pin_command, const int ranks, const int tracerank, const char* env);
-
-/*
-int SST_MPI_Comm_spawn(int count, char **array_of_commands,
- char ***array_of_argv, const int *array_of_maxprocs, int root,
- int *array_of_errcodes);
+/** EXPERIMENTAL: Launch an MPI application. This is a wrapper around MPI_Comm_spawn_multiple
+ * that hides all MPI information from the calling process. This is intended to be used
+ * by elements that need to launch other processes, such as Ariel. Even if the launched
+ * application does not use MPI, this function should be used as fork() should not be used
+ * by MPI applications.
+ *
+ * @param count Number of commands
+ * @param array_of_commands Commands to run
+ * @param array_of_argv Argv for each command
+ * @param array_of_maxprocs The maximum number of procs for each command
+ * @param array_of_env A newline-delimited list of environment variables for each command
  */
+int SST_MPI_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], const int array_of_maxprocs[], const char *array_of_env[]);
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file.
  * This class creates the tunnel for the parent/master process
