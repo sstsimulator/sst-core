@@ -24,14 +24,13 @@ template class SST::Core::Interprocess::MMAPParent<testtunnel>;
 namespace SST::Core::Interprocess {
 
 int
-SST_MPI_Comm_spawn_multiple(int count, char *array_of_commands[],
-                          char **array_of_argv[], const int array_of_maxprocs[],
-                          const char *array_of_env[])
+SST_MPI_Comm_spawn_multiple(int count, char* array_of_commands[], char** array_of_argv[], const int array_of_maxprocs[],
+    const char* array_of_env[])
 {
 
     // Count the maximum number of ranks that may be launched
     int ranks = 0;
-    for (int i = 0; i < count; i++) {
+    for ( int i = 0; i < count; i++ ) {
         ranks += array_of_maxprocs[i];
     }
 
@@ -57,10 +56,11 @@ SST_MPI_Comm_spawn_multiple(int count, char *array_of_commands[],
 
     MPI_Comm intercomm;
 
-    int result = MPI_Comm_spawn_multiple(count, array_of_commands, array_of_argv, array_of_maxprocs, array_of_info, 0, MPI_COMM_SELF, &intercomm, array_of_errcodes);
+    int result = MPI_Comm_spawn_multiple(count, array_of_commands, array_of_argv, array_of_maxprocs, array_of_info, 0,
+        MPI_COMM_SELF, &intercomm, array_of_errcodes);
 
     // Handle errors here as doing so requires MPI macros and functions
-	int errors = 0;
+    int errors = 0;
     if ( result != MPI_SUCCESS ) {
         char error_string[MPI_MAX_ERROR_STRING];
         int  length_of_error_string;

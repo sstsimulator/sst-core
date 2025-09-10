@@ -37,7 +37,8 @@ namespace SST::Core::Interprocess {
  * @param array_of_maxprocs The maximum number of procs for each command
  * @param array_of_env A newline-delimited list of environment variables for each command
  */
-int SST_MPI_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], const int array_of_maxprocs[], const char *array_of_env[]);
+int SST_MPI_Comm_spawn_multiple(int count, char* array_of_commands[], char** array_of_argv[],
+    const int array_of_maxprocs[], const char* array_of_env[]);
 
 /** Class supports an IPC tunnel between two or more processes, via an mmap'd file.
  * This class creates the tunnel for the parent/master process
