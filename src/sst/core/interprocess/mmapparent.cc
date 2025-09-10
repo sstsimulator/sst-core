@@ -28,6 +28,7 @@ SST_MPI_Comm_spawn_multiple(int count, char* array_of_commands[], char** array_o
     const char* array_of_env[])
 {
 
+#ifdef SST_CONFIG_HAVE_MPI
     // Count the maximum number of ranks that may be launched
     int ranks = 0;
     for ( int i = 0; i < count; i++ ) {
@@ -81,5 +82,9 @@ SST_MPI_Comm_spawn_multiple(int count, char* array_of_commands[], char** array_o
     free(array_of_errcodes);
 
     return errors;
+#else
+    fprintf(stderr, "SST_MPI_Comm_spawn_multiple called but SST-Core was compiled without MPI\n");
+    return 1;
+#endif
 }
 } // namespace SST::Core::Interprocess
