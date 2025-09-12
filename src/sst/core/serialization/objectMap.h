@@ -135,8 +135,8 @@ public:
     std::string         getName() { return name_; }
 
 #if 0
-    void *              getVar() { 
-        if ( obj_ != nullptr && obj_->isFundamental() ) 
+    void *              getVar() {
+        if ( obj_ != nullptr && obj_->isFundamental() )
             return nullptr; //obj_->getAddr(); }
 #endif
     virtual void* getVar() = 0;
