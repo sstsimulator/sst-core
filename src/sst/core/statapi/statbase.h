@@ -48,12 +48,6 @@ class StatisticGroup;
 class StatisticBase
 {
 public:
-    /** Statistic collection mode
-     * STAT_MODE_UNDEFINED - unknown mode
-     * STAT_MODE_COUNT - generating statistic output when the statistic has been added to a certain number of times
-     * STAT_MODE_PERIODIC - generating statistic output on a periodic time basis
-     */
-
     // Enable/Disable of Statistic
     /** Enable Statistic for collections */
     void enable() { stat_enabled_ = true; }
@@ -120,7 +114,7 @@ public:
     virtual std::string getELIName() const = 0;
 
     /** Return the Statistic type name */
-    virtual const std::string& getStatTypeName() const = 0; //{ return stat_type_name_; }
+    virtual const std::string& getStatTypeName() const { return stat_type_name_; }
 
     /** Return the Statistic data type */
     inline const StatisticFieldInfo::fieldType_t& getStatDataType() const { return stat_data_type_; }

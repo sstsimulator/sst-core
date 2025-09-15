@@ -70,7 +70,7 @@ class BaseComponent : public SST::Core::Serialization::serializable_base
 
 protected:
     using StatCreateFunction = std::function<Statistics::StatisticBase*(BaseComponent*,
-        Statistics::StatisticProcessingEngine*, const std::string& /*name*/, const std::string& /*subId*/, Params&)>;
+        Statistics::StatisticProcessingEngine*, const std::string& /*name*/, const std::string& /*sub_id*/, Params&)>;
 
     BaseComponent() = default; // For serialization only
 
@@ -463,13 +463,13 @@ private:
          * doing it this way. At some point in the future, we would need to clean up
          * the rule around enabling all statistics to make this better
          *
-         * Even if we moved the lgoic around, we'd still have to dyncast anything coming out of
+         * Even if we moved the logic around, we'd still have to dyncast anything coming out of
          * the stat data structures.
          */
         StatCreateFunction create = [=](BaseComponent* comp, Statistics::StatisticProcessingEngine* engine,
-                                        const std::string& name, const std::string& subId,
+                                        const std::string& name, const std::string& sub_id,
                                         SST::Params& params) -> Statistics::StatisticBase* {
-            return engine->createStatistic<T>(comp, name, subId, params);
+            return engine->createStatistic<T>(comp, name, sub_id, params);
         };
 
         // We follow two distinct paths depending on if it is enable all, versus explicitly enabled
@@ -943,13 +943,8 @@ protected:
 
     bool doesSubComponentExist(const std::string& type);
 
-    // Does the statisticName exist in the ElementInfoStatistic
-    // bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
+    // Does the statisticName exist in the ElementInfoStatistic and if so, what is its enable level
     uint8_t getStatisticValidityAndLevel(const std::string& statisticName) const;
-
-
-    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    // uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
 
     std::vector<Profile::ComponentProfileTool*> getComponentProfileTools(const std::string& point);
 
@@ -1148,11 +1143,11 @@ private:
     std::vector<PortModule*> portModules;
     std::map<StatisticId_t, Statistics::StatisticBase*>
         explicitly_enabled_shared_stats_; // Lookup structure to determine if an explicitly enabled shared stat has
-                                          // already been registered In this context, a shared stat is one that has been
-                                          // piped to a different user-defined name in the config
+                                          // already been registered. In this context, a shared stat is one that has
+                                          // been piped to a different user-defined name in the config.
     std::map<StatisticId_t, StatNameMap>
         explicitly_enabled_unique_stats_; // Lookup structure to determine if an explicitly enabled non-shared stat has
-                                          // been registered
+                                          // been registered.
     StatNameMap enabled_all_stats_;
 
     BaseComponent* getParentComponent()
