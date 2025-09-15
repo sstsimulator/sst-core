@@ -157,7 +157,7 @@ ConfigStatGroup::verifyStatsAndComponents(const ConfigGraph* graph)
         }
         for ( auto& statKV : statMap ) {
 
-            bool ok = Factory::getFactory()->DoesComponentInfoStatisticNameExist(comp->type, statKV.first);
+            bool ok = Factory::getFactory()->GetStatisticValidityAndEnableLevel(comp->type, statKV.first) != 255;
 
             if ( !ok ) {
                 std::stringstream ss;

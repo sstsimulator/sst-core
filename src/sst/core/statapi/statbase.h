@@ -52,16 +52,14 @@ public:
      * STAT_MODE_UNDEFINED - unknown mode
      * STAT_MODE_COUNT - generating statistic output when the statistic has been added to a certain number of times
      * STAT_MODE_PERIODIC - generating statistic output on a periodic time basis
-     * STAT_MODE_DUMP_AT_END - generating statistic output only at end of simulation
      */
-    enum StatMode_t { STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC, STAT_MODE_DUMP_AT_END };
 
     // Enable/Disable of Statistic
     /** Enable Statistic for collections */
-    void enable() { info_->stat_enabled_ = true; }
+    void enable() { stat_enabled_ = true; }
 
     /** Disable Statistic for collections */
-    void disable() { info_->stat_enabled_ = false; }
+    void disable() { stat_enabled_ = false; }
 
     // Handling of Collection Counts and Data
     /** Inform the Statistic to clear its data */
@@ -83,7 +81,7 @@ public:
     /** Set the Reset Count On Output flag.
      *  If Set, the collection count will be reset when statistic is output.
      */
-    void setFlagResetCountOnOutput(bool flag) { info_->reset_count_on_output_ = flag; }
+    void setFlagResetCountOnOutput(bool flag) { reset_count_on_output_ = flag; }
 
     static const std::vector<ElementInfoParam>& ELI_getParams();
 
@@ -91,28 +89,30 @@ public:
      *  If Set, the data in the statistic will be cleared by calling
      *  clearStatisticData().
      */
-    void setFlagClearDataOnOutput(bool flag) { info_->clear_data_on_output_ = flag; }
+    void setFlagClearDataOnOutput(bool flag) { clear_data_on_output_ = flag; }
 
     /** Set the Output At End Of Sim flag.
      *  If Set, the statistic will perform an output at the end of simulation.
      */
-    void setFlagOutputAtEndOfSim(bool flag) { info_->output_at_end_of_sim_ = flag; }
+    void setFlagOutputAtEndOfSim(bool flag) { output_at_end_of_sim_ = flag; }
 
     // Get Data & Information on Statistic
     /** Return the Component Name */
     const std::string& getCompName() const;
 
     /** Return the Statistic Name */
-    inline const std::string& getStatName() const { return info_->stat_name_; }
+    inline const std::string& getStatName() const { return stat_name_; }
 
     /** Return the Statistic SubId */
-    inline const std::string& getStatSubId() const { return info_->stat_sub_id_; }
+    inline const std::string& getStatSubId() const { return stat_sub_id_; }
 
     /** Return the full Statistic name of component.stat_name.sub_id */
-    inline const std::string& getFullStatName() const
+    inline const std::string getFullStatName() const
     {
-        return info_->stat_full_name_;
-    } // Return comp_name.stat_name.sub_id
+        std::string stat_full_name_rtn = getCompName() + "." + stat_name_;
+        if ( stat_sub_id_ != "" ) stat_full_name_rtn += "." + stat_sub_id_;
+        return stat_full_name_rtn;
+    } // Return comp_name.stat_name.sub_id or comp_name.stat_name
 
     /** Return the ELI type of the statistic
      *  The ELI registration macro creates this function automatically for child classes.
@@ -120,7 +120,7 @@ public:
     virtual std::string getELIName() const = 0;
 
     /** Return the Statistic type name */
-    virtual const std::string& getStatTypeName() const { return info_->stat_type_name_; }
+    virtual const std::string& getStatTypeName() const = 0; //{ return stat_type_name_; }
 
     /** Return the Statistic data type */
     inline const StatisticFieldInfo::fieldType_t& getStatDataType() const { return stat_data_type_; }
@@ -141,37 +141,48 @@ public:
     BaseComponent* getComponent() const { return component_; }
 
     /** Return the enable status of the Statistic */
-    bool isEnabled() const { return info_->stat_enabled_; }
-
-    /** Return the enable status of the Statistic's ability to output data */
-    bool isOutputEnabled() const { return info_->output_enabled_; }
+    bool isEnabled() const { return stat_enabled_; }
 
     /** Return the rate at which the statistic should be output */
-    UnitAlgebra& getCollectionRate() const { return info_->collection_rate_; }
 
-    /** Return the time at which the statistic should be enabled */
-    UnitAlgebra& getStartAtTime() const { return info_->start_at_time_; }
+    /** Manage StartAt flag */
+    bool getStartAtFlag() { return (flags_ & Flag::StartAt); }
+    void setStartAtFlag() { flags_ |= Flag::StartAt; }
+    void unsetStartAtFlag() { flags_ &= (~Flag::StartAt); }
 
-    /** Return the time at which the statistic should be disabled */
-    UnitAlgebra& getStopAtTime() const { return info_->stop_at_time_; }
+    /** Manage StopAt flag */
+    bool getStopAtFlag() { return (flags_ & Flag::StopAt); }
+    void setStopAtFlag() { flags_ |= Flag::StopAt; }
+    void unsetStopAtFlag() { flags_ &= (~Flag::StopAt); }
+
+    /** Manage OutputRate flag */
+    bool getOutputRateFlag() { return (flags_ & Flag::OutputRate); }
+    void setOutputRateFlag() { flags_ |= Flag::OutputRate; }
+    void unsetOutputRateFlag() { flags_ &= (~Flag::OutputRate); }
+
+    /* Query stat engine for statistic data needed for checkpoint. */
+    SimTime_t getStartAtFactor();
+    SimTime_t getStopAtFactor();
+    SimTime_t getOutputRateFactor();
 
     /** Return the collection count limit */
-    uint64_t getCollectionCountLimit() const { return info_->collection_count_limit_; }
+    uint64_t getCollectionCountLimit() const { return collection_count_limit_; }
 
     /** Return the current collection count */
-    uint64_t getCollectionCount() const { return info_->current_collection_count_; }
+    uint64_t getCollectionCount() const { return current_collection_count_; }
 
     /** Return the ResetCountOnOutput flag value */
-    bool getFlagResetCountOnOutput() const { return info_->reset_count_on_output_; }
+    bool getFlagResetCountOnOutput() const { return reset_count_on_output_; }
 
     /** Return the ClearDataOnOutput flag value */
-    bool getFlagClearDataOnOutput() const { return info_->clear_data_on_output_; }
+    bool getFlagClearDataOnOutput() const { return clear_data_on_output_; }
 
     /** Return the OutputAtEndOfSim flag value */
-    bool getFlagOutputAtEndOfSim() const { return info_->output_at_end_of_sim_; }
+    bool getFlagOutputAtEndOfSim() const { return output_at_end_of_sim_; }
 
     /** Return the collection mode that is registered */
-    StatMode_t getRegisteredCollectionMode() const { return info_->registered_collection_mode_; }
+    bool isOutputPeriodic() const { return registered_collection_mode_; }
+    bool isOutputEventBased() const { return !registered_collection_mode_; }
 
     // Status of Statistic
     /** Indicate that the Statistic is Ready to be used */
@@ -195,11 +206,10 @@ protected:
      * match the name in the ElementInfoStatistic.
      * @param stat_sub_id - Additional name of the statistic
      * @param stat_params - The parameters for this statistic
-     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
     // Constructors:
-    StatisticBase(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id,
-        Params& stat_params, bool null_stat);
+    StatisticBase(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -209,13 +219,13 @@ protected:
     void setStatisticDataType(const StatisticFieldInfo::fieldType_t data_type) { stat_data_type_ = data_type; }
 
     /** Set an optional Statistic Type Name (for output) */
-    void setStatisticTypeName(const char* type_name) { info_->stat_type_name_ = type_name; }
+    void setStatisticTypeName(const char* type_name) { stat_type_name_ = type_name; }
 
 private:
     friend class SST::BaseComponent;
 
     /** Set the Registered Collection Mode */
-    void setRegisteredCollectionMode(StatMode_t mode) { info_->registered_collection_mode_ = mode; }
+    void setRegisteredCollectionMode(bool is_periodic) { registered_collection_mode_ = is_periodic; }
 
     /** Construct a full name of the statistic */
     static std::string buildStatisticFullName(const char* comp_name, const char* stat_name, const char* stat_sub_id);
@@ -241,64 +251,46 @@ private:
      * by default, both modes are supported.
      * @param mode - Mode to test
      */
-    virtual bool isStatModeSupported(StatMode_t UNUSED(mode)) const { return true; } // Default is to accept all modes
+    virtual bool isStatModeSupported(bool UNUSED(periodic)) const { return true; } // Default is to accept all modes
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& check_stat);
 
     void checkEventForOutput();
 
-    const StatisticGroup* getGroup() const { return info_->group_; }
-    void                  setGroup(const StatisticGroup* group) { info_->group_ = group; }
+    const StatisticGroup* getGroup() const { return group_; }
+    void                  setGroup(const StatisticGroup* group) { group_ = group; }
+
 
 protected:
     StatisticBase(); // For serialization only
 
 private:
-    /* Class to hold information about a statistic
-     * This limits the size of StatisticBase for NullStatistic
-     */
-    class StatisticInfo
-    {
-    public:
-        StatisticInfo();
-
-        void serialize_order(SST::Core::Serialization::serializer& ser);
-
-        std::string stat_name_;      // Name of stat, matches ELI
-        std::string stat_sub_id_;    // Sub ID for this instance of the stat (default="")
-        std::string stat_type_name_; // DEPRECATED - override 'getStatTypeName()' instead
-
-        std::string stat_full_name_; // Fully-qualified name of the stat
-        bool        stat_enabled_;   // Whether stat is currently collecting data
-        StatMode_t  registered_collection_mode_;
-        uint64_t    current_collection_count_;
-        uint64_t    output_collection_count_;
-        uint64_t    collection_count_limit_;
-
-        const StatisticGroup* group_; // Group that stat belongs to
-
-        SST::UnitAlgebra start_at_time_;
-        SST::UnitAlgebra stop_at_time_;
-        SST::UnitAlgebra collection_rate_;
-
-        bool output_enabled_;
-        bool reset_count_on_output_;
-        bool clear_data_on_output_;
-        bool output_at_end_of_sim_;
-        bool output_delayed_;
-        bool collection_delayed_;
-        bool saved_stat_enabled_;
-        bool saved_output_enabled_;
+    enum Flag : uint8_t {
+        StartAt    = 1, // bit 0
+        StopAt     = 2, // bit 1
+        OutputRate = 4, // bit 2
     };
+
+    std::string stat_name_      = ""; // Name of stat, matches ELI
+    std::string stat_sub_id_    = ""; // Sub ID for this instance of the stat (default="")
+    std::string stat_type_name_ = ""; // DEPRECATED (remove SST 16.0) - override 'getStatTypeName()' instead
+
+    uint8_t  flags_                      = 0;    // Flags for checkpoint output
+    bool     stat_enabled_               = true; // Whether stat is currently collecting data
+    bool     registered_collection_mode_ = true; // True if periodic, false if event-based
+    uint64_t current_collection_count_   = 0;
+    uint64_t output_collection_count_    = 0; // Relevant for STAT_MODE_COUNT
+    uint64_t collection_count_limit_     = 0; // Relevant for STAT_MODE_COUNT
+
+    const StatisticGroup* group_ = nullptr; // Group that stat belongs to
+
+    bool reset_count_on_output_ = false; // Whether to clear current_collection_count_ on output
+    bool clear_data_on_output_  = false; // Whether to reset data on output
+    bool output_at_end_of_sim_  = true;  // Whether to output stat at end of sim
 
     BaseComponent*                  component_;
     StatisticFieldInfo::fieldType_t stat_data_type_;
-
-    StatisticInfo* info_;
-
-    // Instance of StatisticInfo for null stats
-    static StatisticInfo null_info_;
 };
 
 /**
@@ -431,12 +423,10 @@ protected:
      * match the name in the ElementInfoStatistic.
      * @param stat_sub_id - Additional name of the statistic
      * @param stat_params - The parameters for this statistic
-     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
 
-    Statistic(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
-        bool null_stat = false) :
-        StatisticBase(comp, stat_name, stat_sub_id, stat_params, null_stat)
+    Statistic(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        StatisticBase(comp, stat_name, stat_sub_id, stat_params)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
     }
@@ -474,12 +464,10 @@ protected:
      * match the name in the ElementInfoStatistic.
      * @param stat_sub_id - Additional name of the statistic
      * @param stat_params - The parameters for this statistic
-     * @param null_stat - True if the statistic is null (not enabled). Defaults to False.
      */
 
-    Statistic(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params,
-        bool null_stat = false) :
-        StatisticBase(comp, stat_name, stat_sub_id, stat_params, null_stat)
+    Statistic(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        StatisticBase(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     virtual ~Statistic() {}
@@ -652,7 +640,8 @@ private:
 namespace Stat::pvt {
 
 /** Helper function for re-registering statistics during simulation restart */
-void registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s);
+void registerStatWithEngineOnRestart(
+    SST::Statistics::StatisticBase* stat, SimTime_t start_factor, SimTime_t stop_factor, SimTime_t output_factor);
 
 } // namespace Stat::pvt
 
@@ -669,35 +658,75 @@ class serialize_impl<Statistics::Statistic<T>*>
         case serializer::SIZER:
         case serializer::PACK:
         {
-            std::string    stat_eli_type = s->getELIName();
-            std::string    stat_name     = s->getStatName();
-            std::string    stat_id       = s->getStatSubId();
-            BaseComponent* comp          = s->getComponent();
+            std::string stat_eli_type = s->getELIName();
             SST_SER(stat_eli_type);
-            SST_SER(comp);
-            SST_SER(stat_name);
-            SST_SER(stat_id);
-            s->serialize_order(ser);
+
+            if ( !s->isNullStatistic() ) {
+                std::string    stat_name = s->getStatName();
+                std::string    stat_id   = s->getStatSubId();
+                BaseComponent* comp      = s->getComponent();
+                SimTime_t      factor    = s->getOutputRateFactor();
+                SST_SER(comp);
+                SST_SER(stat_name);
+                SST_SER(stat_id);
+                SST_SER(factor);
+                s->serialize_order(ser);
+
+                // Get state stored at stat engine if needed, must be after stat serialization
+                // because we need to read flags first to determine if these fields exist
+                if ( s->getStartAtFlag() ) {
+                    factor = s->getStartAtFactor();
+                    SST_SER(factor);
+                }
+                if ( s->getStopAtFlag() ) {
+                    factor = s->getStopAtFactor();
+                    SST_SER(factor);
+                }
+            }
             break;
         }
         case serializer::UNPACK:
         {
-            std::string    stat_eli_type;
-            BaseComponent* comp;
-            std::string    stat_name;
-
-            std::string stat_id;
-            SST_SER(stat_eli_type);
-            SST_SER(comp);
-            SST_SER(stat_name);
-            SST_SER(stat_id);
-            Params params;
+            std::string stat_eli_type;
+            Params      params;
             params.insert("type", stat_eli_type);
-            s = Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
-                stat_eli_type, params, comp, stat_name, stat_id, params);
-            s->serialize_order(ser);
-            if ( stat_eli_type != "sst.NullStatistic" ) {
-                SST::Stat::pvt::registerStatWithEngineOnRestart(s);
+
+            SST_SER(stat_eli_type);
+
+            if ( stat_eli_type == "sst.NullStatistic" ) {
+                static Statistics::Statistic<T>* nullstat =
+                    Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
+                        stat_eli_type, params, nullptr, "", "", params);
+                s = nullstat;
+            }
+            else {
+
+                BaseComponent* comp;
+                std::string    stat_name;
+                std::string    stat_id;
+                SimTime_t      output_rate_factor;
+
+                SimTime_t start_at_factor = 0;
+                SimTime_t stop_at_factor  = 0;
+
+                SST_SER(comp);
+                SST_SER(stat_name);
+                SST_SER(stat_id);
+                SST_SER(output_rate_factor);
+
+                s = Factory::getFactory()->CreateWithParams<Statistics::Statistic<T>>(
+                    stat_eli_type, params, comp, stat_name, stat_id, params);
+
+                s->serialize_order(ser);
+
+                // Need to reconstruct time parameters for engine
+                if ( s->getStartAtFlag() ) {
+                    SST_SER(start_at_factor);
+                }
+                if ( s->getStopAtFlag() ) {
+                    SST_SER(stop_at_factor);
+                }
+                SST::Stat::pvt::registerStatWithEngineOnRestart(s, start_at_factor, stop_at_factor, output_rate_factor);
             }
             break;
         }

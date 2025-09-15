@@ -43,8 +43,6 @@ struct StatsConfig;
 
 namespace Statistics {
 
-// template<typename T> class Statistic;
-// class StatisticBase;
 class StatisticOutput;
 
 /**
@@ -53,37 +51,74 @@ class StatisticOutput;
     An SST core component that handles timing and event processing informing
     all registered Statistics to generate their outputs at desired rates.
 */
-
 class StatisticProcessingEngine : public SST::Core::Serialization::serializable
 {
 
 public:
+
+    /** Called to create an enabled (non-null) statistic of the requested type
+     *  This function also registers the statistic with the engine
+     *  @param comp The statistic owner
+     *  @param stat_name The name of the statistic
+     *  @param stat_sub_id An optional id to differentiate multiple instances of the same statistic, "" if none
+     *  @param params The parameters that should be used to configure the statistic
+     */
+    template <class T>
+    Statistic<T>* createStatistic(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& params)
+    {
+        // Create a new statistic
+        std::string   type = params.find<std::string>("type", "sst.AccumulatorStatistic");
+        Statistic<T>* stat =
+            Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, stat_name, stat_sub_id, params);
+
+        // Register with engine
+        registerStatisticWithEngine(stat, params);
+        return stat;
+    }
+
+    /** Called to create a disabled (null) statistic of the requested type
+     * @param comp The statistic owner
+     */
+    template <class T>
+    Statistic<T>* createDisabledStatistic()
+    {
+        SST::Params          empty {};
+        static Statistic<T>* stat =
+            Factory::getFactory()->CreateWithParams<Statistic<T>>("sst.NullStatistic", empty, nullptr, "", "", empty);
+        return stat;
+        // No need to register anything
+    }
+
+    /** Re-registers a statistic with the engine during a restart run.
+     * Newly created statistics (not read from a checkpoint) use 'registerStatisticWithEngine' instead.
+     * @param stat The statistic to re-register
+     * @param start_at_time If the statistic should be enabled after some time, the time (in core cycles) else 0
+     * @param stop_at_time If the statistic should be disabled after some time, the time (in core cycles) else 0
+     * @param output_factor If the statistic should be output at a regular time interval, the interval (in core cycles)
+     * else 0
+     */
+    bool reregisterStatisticWithEngine(
+        StatisticBase* stat, SimTime_t start_at_time, SimTime_t stop_at_time, SimTime_t output_factor);
+
     /** Called by the Components and Subcomponent to perform a statistic Output.
      * @param stat - Pointer to the statistic.
-     * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     * @param end_of_sim_flag - Indicates that the output is occurring at the end of simulation.
      */
-    void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
+    void performStatisticOutput(StatisticBase* stat, bool end_of_sim_flag = false);
 
     /** Called by the Components and Subcomponent to perform a global statistic Output.
      * This routine will force ALL Components and Subcomponents to output their statistic information.
      * This may lead to unexpected results if the statistic counts or data is reset on output.
-     * @param endOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     * @param end_of_sim_flag - Indicates that the output is occurring at the end of simulation.
      */
-    void performGlobalStatisticOutput(bool endOfSimFlag = false);
+    void performGlobalStatisticOutput(bool end_of_sim_flag = false);
 
-    template <class T>
-    Statistic<T>* createStatistic(BaseComponent* comp, const std::string& type, const std::string& statName,
-        const std::string& statSubId, Params& params)
-    {
-        return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
-    }
+    /** Return global statistic load level */
+    uint8_t getStatLoadLevel() const { return stat_load_level_; }
 
-    bool registerStatisticWithEngine(StatisticBase* stat) { return registerStatisticCore(stat); }
-
-    uint8_t statLoadLevel() const { return m_statLoadLevel; }
-
-    // Outputs are per MPI rank, so have to be static data
-    static const std::vector<StatisticOutput*>& getStatOutputs() { return m_statOutputs; }
+    /** Return the statistic output objects - static as they are per-MPI rank */
+    static const std::vector<StatisticOutput*>& getStatOutputs() { return stat_outputs_; }
 
     /** Called to setup the StatOutputs, which are shared across all
        the StatEngines on the same MPI rank.
@@ -98,6 +133,19 @@ public:
      */
     static void stat_outputs_simulation_end();
 
+    /** Get the start time factor belonging to 'stat'.
+     * Used during checkpoint. Linear search - could be slow.
+     * @param stat The statistic to lookup
+     */
+    SimTime_t getStatisticStartTimeFactor(StatisticBase* stat);
+
+    /** Get the stop time factor belonging to 'stat'.
+     * Used during checkpoint. Linear search - could be slow.
+     * @param stat The statistic to lookup
+     */
+    SimTime_t getStatisticStopTimeFactor(StatisticBase* stat);
+
+    /** Serialization support for the engine. */
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Statistics::StatisticProcessingEngine)
 
@@ -106,61 +154,69 @@ private:
     friend int ::main(int argc, char** argv);
     friend void ::finalize_statEngineConfig();
 
+    /** Constructor */
     StatisticProcessingEngine();
-    void setup(Simulation_impl* sim, StatsConfig* stats_config);
-    void restart(Simulation_impl* sim);
+
+    /** Destructor */
     ~StatisticProcessingEngine();
+
+    void setup(StatsConfig* stats_config);
+    void restart();
 
     static StatisticOutput* createStatisticOutput(const ConfigStatOutput& cfg);
 
-    bool registerStatisticCore(StatisticBase* stat);
+    /** Registers a newly-created statistic with the engine
+     * Statistics created during a restart run should use reregisterStatisticWithEngine instead.
+     */
+    bool registerStatisticWithEngine(StatisticBase* stat, Params& params);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase* stat) const;
     StatisticGroup&  getGroupForStatistic(const StatisticBase* stat) const;
-    bool             addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
-    bool             addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
-    bool             addEndOfSimStatistic(StatisticBase* Stat);
-    UnitAlgebra      getParamTime(StatisticBase* stat, const std::string& pName) const;
-    void             setStatisticStartTime(StatisticBase* Stat);
-    void             setStatisticStopTime(StatisticBase* Stat);
+    bool             addPeriodicBasedStatistic(SimTime_t factor, StatisticBase* stat);
+    void             addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* stat);
+    void             setStatisticStartTime(StatisticBase* stat, SimTime_t factor);
+    void             setStatisticStopTime(StatisticBase* stat, SimTime_t factor);
 
     void finalizeInitialization(); /* Called when performWireUp() finished */
     void startOfSimulation();
     void endOfSimulation();
 
-    void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
-    void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
+    void performStatisticOutputImpl(StatisticBase* stat, bool end_of_sim_flag);
+    void performStatisticGroupOutputImpl(StatisticGroup& group, bool end_of_sim_flag);
 
-    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
-    bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
-    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
-    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
-
-    void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
+    bool handleStatisticEngineClockEvent(Cycle_t cycle_num, SimTime_t time_factor);
+    bool handleGroupClockEvent(Cycle_t cycle_num, StatisticGroup* group);
+    void handleStatisticEngineStartTimeEvent(SimTime_t time_factor);
+    void handleStatisticEngineStopTimeEvent(SimTime_t time_factor);
 
     [[noreturn]]
-    void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
+    void castError(const std::string& type, const std::string& stat_name, const std::string& field_name);
 
-private:
-    using StatArray_t   = std::vector<StatisticBase*>;           /*!< Array of Statistics */
-    using StatMap_t     = std::map<SimTime_t, StatArray_t*>;     /*!< Map of simtimes to Statistic Arrays */
-    using CompStatMap_t = std::map<ComponentId_t, StatArray_t*>; /*!< Map of ComponentId's to StatInfo Arrays */
+    using StatArray_t = std::vector<StatisticBase*>;       /*!< Array of Statistics */
+    using StatMap_t   = std::map<SimTime_t, StatArray_t*>; /*!< Map of simtimes to Statistic Arrays */
 
-    StatArray_t   m_EventStatisticArray;  /*!< Array of Event Based Statistics */
-    StatMap_t     m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
-    StatMap_t     m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
-    StatMap_t     m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
-    CompStatMap_t m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
-    bool          m_SimulationStarted;    /*!< Flag showing if Simulation has started */
+    /* All non-null statistics are stored in *one* (only one) of the following data structures:
+     * - stat_groups_
+     * - stat_default_groups_
+     *
+     * Any stats with a start time are also stored in start_time_map_ until their start time occurs
+     * Any stats with a stop time are also stored in stop_time_map_ until their stop time occurs
+     *
+     * The stat engine creates a single instance of each null stat type which is shared across all null stats on the
+     * rank. These stats are not stored by the engine.
+     */
+    StatMap_t start_time_map_;     /*!< Map of Array's of Statistics that are started at a sim time */
+    StatMap_t stop_time_map_;      /*!< Map of Array's of Statistics that are stopped at a sim time */
+    bool      simulation_started_; /*!< Flag showing if Simulation has started */
 
-    Simulation_impl*            m_sim;
-    Output&                     m_output;
-    uint8_t                     m_statLoadLevel;
-    StatisticGroup              m_defaultGroup;
-    std::vector<StatisticGroup> m_statGroups;
+    Output& output_;
+    uint8_t stat_load_level_; /*!< The global statistic load level */
+    std::map<SimTime_t, StatisticGroup>
+        stat_default_groups_; /*!< Statistic groups for statistics that are not explicitly assigned to one */
+    std::vector<StatisticGroup> stat_groups_; /*!< A list of all statistic group objects */
 
-    // Outputs are per MPI rank, so have to be static data
-    static std::vector<StatisticOutput*> m_statOutputs;
+    static std::vector<StatisticOutput*>
+        stat_outputs_; /*!< The statistic output objects that exist on this engine's rank */
 };
 
 } // namespace Statistics

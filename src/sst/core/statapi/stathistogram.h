@@ -315,19 +315,6 @@ private:
         }
     }
 
-    bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
-    {
-        switch ( mode ) {
-        case StatisticBase::STAT_MODE_COUNT:
-        case StatisticBase::STAT_MODE_PERIODIC:
-        case StatisticBase::STAT_MODE_DUMP_AT_END:
-            return true;
-        default:
-            return false;
-        }
-        return false;
-    }
-
 private:
     // Bin Map Definition
     using HistoMap_t = std::map<BinDataType, CountType>;

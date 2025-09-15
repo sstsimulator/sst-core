@@ -47,6 +47,16 @@ StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
     startOutputGroup(group);
     for ( auto& stat : group->stats ) {
         output(stat, endOfSimFlag);
+
+        // Check to see if the Statistic Count needs to be reset
+        if ( !endOfSimFlag && true == stat->getFlagResetCountOnOutput() ) {
+            stat->resetCollectionCount();
+        }
+
+        // Check to see if the Statistic Data needs to be cleared
+        if ( !endOfSimFlag && true == stat->getFlagClearDataOnOutput() ) {
+            stat->clearStatisticData();
+        }
     }
     stopOutputGroup();
     this->unlock();

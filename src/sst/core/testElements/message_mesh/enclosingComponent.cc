@@ -58,6 +58,12 @@ EnclosingComponent::EnclosingComponent(ComponentId_t id, Params& params) :
             "Must specify The RouteInterface SubComponent to use for slot 'route' in EnclosingComponent\n");
     }
 
+    for ( int i = 0; i < params.find<int>("stats", 0); i++ ) {
+        std::string          subid = std::to_string(i);
+        Statistic<uint64_t>* stat  = registerStatistic<uint64_t>("stat", subid);
+        stats_.push_back(stat);
+    }
+
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 }
@@ -101,6 +107,7 @@ EnclosingComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(message_count_);
     SST_SER(ports_);
     SST_SER(route_);
+    SST_SER(stats_);
     // Don't need mod_ since it is only used during init
 }
 

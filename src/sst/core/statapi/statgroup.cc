@@ -16,41 +16,54 @@
 #include "sst/core/baseComponent.h"
 #include "sst/core/configGraph.h"
 #include "sst/core/output.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/statapi/statoutput.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/timeLord.h"
 
 #include <algorithm>
 
 namespace SST::Statistics {
 
 StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine) :
-    isDefault(false),
+    is_default(false),
     name(csg.name),
     output(const_cast<StatisticOutput*>(engine->getStatOutputs()[csg.outputID])),
-    outputFreq(csg.outputFrequency),
-    outputId(csg.outputID)
+    output_id(csg.outputID)
 {
+    if ( csg.outputFrequency.getValue() != 0 ) { // outputfreq = 0 by default
+        output_freq =
+            Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(csg.outputFrequency)->getFactor();
+    }
 
     if ( !output->acceptsGroups() ) {
         Output::getDefaultObject().fatal(CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
             output->getStatisticOutputName().c_str());
     }
 
-    // Need to keep track of components & stats associated with this group if not default
-    if ( !isDefault ) {
+    // Need to keep track of components & stats that match with this group if not default
+    if ( !is_default ) {
         components = csg.components;
         for ( auto& kv : csg.statMap ) {
-            statNames.push_back(kv.first);
+            stat_names.push_back(kv.first);
         }
+    }
+}
+
+StatisticGroup::~StatisticGroup()
+{
+    for ( auto& stat : stats ) {
+        delete stat;
     }
 }
 
 void
 StatisticGroup::restartGroup(StatisticProcessingEngine* engine)
 {
-    output = const_cast<StatisticOutput*>(engine->getStatOutputs()[outputId]);
+    output = const_cast<StatisticOutput*>(engine->getStatOutputs()[output_id]);
     if ( !output->acceptsGroups() ) {
         Output::getDefaultObject().fatal(CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
             output->getStatisticOutputName().c_str());
@@ -61,15 +74,14 @@ StatisticGroup::restartGroup(StatisticProcessingEngine* engine)
 bool
 StatisticGroup::containsStatistic(const StatisticBase* stat) const
 {
-    if ( isDefault ) return true;
     return std::find(stats.begin(), stats.end(), stat) != stats.end();
 }
 
 bool
 StatisticGroup::claimsStatistic(const StatisticBase* stat) const
 {
-    if ( isDefault ) return true;
-    if ( std::find(statNames.begin(), statNames.end(), stat->getStatName()) != statNames.end() ) {
+    if ( is_default ) return true;
+    if ( std::find(stat_names.begin(), stat_names.end(), stat->getStatName()) != stat_names.end() ) {
         if ( std::find(components.begin(), components.end(), stat->getComponent()->getId()) != components.end() )
             return true;
     }
@@ -80,22 +92,21 @@ StatisticGroup::claimsStatistic(const StatisticBase* stat) const
 void
 StatisticGroup::addStatistic(StatisticBase* stat)
 {
-    if ( !isDefault ) { // Structure unused (search is always true) if default group
-        stats.push_back(stat);
-    }
+    stats.push_back(stat);
     stat->setGroup(this);
 }
 
 void
 StatisticGroup::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    SST_SER(isDefault);
+    SST_SER(is_default);
     SST_SER(name);
-    SST_SER(outputFreq);
-    SST_SER(outputId);
+    SST_SER(output_freq);
+    SST_SER(output_id);
     SST_SER(components);
-    SST_SER(statNames);
+    SST_SER(stat_names);
     SST_SER(output);
+    // stats vector is reconstructed on restart
 }
 
 } // namespace SST::Statistics

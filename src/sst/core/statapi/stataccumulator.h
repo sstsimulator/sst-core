@@ -194,19 +194,6 @@ public:
         }
     }
 
-    bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
-    {
-        switch ( mode ) {
-        case StatisticBase::STAT_MODE_COUNT:
-        case StatisticBase::STAT_MODE_PERIODIC:
-        case StatisticBase::STAT_MODE_DUMP_AT_END:
-            return true;
-        default:
-            return false;
-        }
-        return false;
-    }
-
 private:
     NumberBase m_sum;
     NumberBase m_sum_sq;
