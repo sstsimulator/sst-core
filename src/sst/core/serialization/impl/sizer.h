@@ -18,15 +18,17 @@
 #endif
 
 #include "sst/core/serialization/impl/get_array_size.h"
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
+#include <type_traits>
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_sizer
+class ser_sizer : public ser_shared_ptr_packer
 {
     size_t              size_ = 0;
     std::set<uintptr_t> pointer_set;
