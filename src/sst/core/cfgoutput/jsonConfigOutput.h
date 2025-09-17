@@ -15,6 +15,7 @@
 
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
+#include "sst/core/util/filesystem.h"
 
 #include <map>
 #include <string>
@@ -30,6 +31,15 @@ public:
 
 private:
     std::map<SST::StatisticId_t, std::string> sharedStatMap;
+
+    std::string pathStr;
+
+    void outputProgramOptions(const Config* cfg, std::ofstream& ofs);
+    void outputSharedParams(std::ofstream& ofs);
+    void outputStatisticsOptions(ConfigGraph* graph, std::ofstream& ofs);
+    void outputStatisticsGroups(ConfigGraph* graph, std::ofstream& ofs);
+    void outputComponents(const Config* cfg, ConfigGraph* graph, std::ofstream& ofs);
+    void outputLinks(ConfigGraph* graph, std::ofstream& ofs);
 };
 
 } // namespace SST::Core
