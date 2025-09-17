@@ -431,6 +431,9 @@ SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
 void
 SimpleDebugger::dispatch_cmd(std::string cmd)
 {
+    // empty command
+    if (cmd.size()==0) return;
+    
     std::vector<std::string> tokens;
     tokenize(tokens, cmd);
 
