@@ -895,7 +895,6 @@ restart_graph_gen(SimTime_t& cpt_currentSimCycle, int& cpt_currentPriority)
     restart_data_buffer.clear();
 }
 
-// #include "sst/core/configGraph.h"
 int
 main(int argc, char* argv[])
 {
