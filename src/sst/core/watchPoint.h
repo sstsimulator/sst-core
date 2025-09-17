@@ -181,6 +181,13 @@ public:
         }
     }
 
+    void printTriggerRecord()
+    {
+        if ( tb_ != nullptr ) {
+            tb_->dumpTriggerRecord();
+        }
+    }
+
     void printTrace()
     {
         if ( tb_ != nullptr ) {
@@ -249,18 +256,20 @@ public:
         WPAction() {}
         virtual ~WPAction() = default;
 
-        virtual std::string actionToString() = 0;
-        virtual void invokeAction(WatchPoint* wp) = 0;
+        virtual std::string actionToString()             = 0;
+        virtual void        invokeAction(WatchPoint* wp) = 0;
     };
 
-    class InteractiveWPAction : public WPAction {
+    class InteractiveWPAction : public WPAction
+    {
     public:
         InteractiveWPAction() {}
         virtual ~InteractiveWPAction() = default;
 
         std::string actionToString() override { return "interactive"; }
 
-        void invokeAction(WatchPoint* wp) override {
+        void invokeAction(WatchPoint* wp) override
+        {
             printf("    SetInteractive\n");
             wp->setEnterInteractive(); // Trigger action
             wp->setInteractiveMsg(format_string("Watch point %s buffer", wp->name_.c_str()));
@@ -270,76 +279,88 @@ public:
         }
     };
 
-    class PrintTraceWPAction : public WPAction {
+    class PrintTraceWPAction : public WPAction
+    {
     public:
         PrintTraceWPAction() {}
         virtual ~PrintTraceWPAction() = default;
 
         std::string actionToString() override { return "printTrace"; }
 
-        void invokeAction(WatchPoint* wp) override {
+        void invokeAction(WatchPoint* wp) override
+        {
             wp->printTrace();
-            if (wp->checkReset()) wp->resetTraceBuffer();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
         }
     };
 
-    class CheckpointWPAction : public WPAction {
+    class CheckpointWPAction : public WPAction
+    {
     public:
         CheckpointWPAction() {}
         virtual ~CheckpointWPAction() = default;
 
         std::string actionToString() override { return "checkpoint"; }
 
-        void invokeAction(WatchPoint* wp) override {
+        void invokeAction(WatchPoint* wp) override
+        {
             wp->setCheckpoint();
-            if (wp->checkReset()) wp->resetTraceBuffer();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
         }
     };
 
-    class PrintStatusWPAction : public WPAction {
+    class PrintStatusWPAction : public WPAction
+    {
     public:
+
         PrintStatusWPAction() {}
         virtual ~PrintStatusWPAction() = default;
 
         std::string actionToString() override { return "printStatus"; }
 
-        void invokeAction(WatchPoint* wp) override {
+        void invokeAction(WatchPoint* wp) override
+        {
             wp->printStatus();
-            if (wp->checkReset()) wp->resetTraceBuffer();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
         }
     };
 
-    class SetVarWPAction : public WPAction {
+    class SetVarWPAction : public WPAction
+    {
     public:
-        SetVarWPAction(std::string vname, Core::Serialization::ObjectMap* obj, std::string tval):
-        name_(vname),
-        obj_(obj),
-        valStr_(tval)
+        SetVarWPAction(std::string vname, Core::Serialization::ObjectMap* obj, std::string tval) :
+            name_(vname),
+            obj_(obj),
+            valStr_(tval)
         {}
 
         virtual ~SetVarWPAction() = default;
 
-        std::string actionToString() override { 
-            return "set " + name_ + " " + valStr_; }
+        std::string actionToString() override { return "set " + name_ + " " + valStr_; }
 
-        void invokeAction(WatchPoint* wp) override {
+        void invokeAction(WatchPoint* wp) override
+        {
             try {
                 obj_->set(valStr_);
             }
-            catch (std::exception& e) {
+            catch ( std::exception& e ) {
                 printf("Invalid set var: %s\n", valStr_.c_str());
                 return;
             }
 
-            if (wp->checkReset()) wp->resetTraceBuffer();
+            // Can this somehow be tied to debug?
+            wp->printTriggerRecord();
+            printf("%s\n", actionToString().c_str());
+
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
         }
 
     private:
-        std::string name_ = "";
-        Core::Serialization::ObjectMap* obj_ = nullptr;
-        std::string valStr_ = "";
+        std::string                     name_   = "";
+        Core::Serialization::ObjectMap* obj_    = nullptr;
+        std::string                     valStr_ = "";
     };
-    
+
     void setAction(WPAction* action) { wpAction = action; }
 
     void printAction() { std::cout << wpAction->actionToString(); }
@@ -380,9 +401,9 @@ private:
     std::string                                            name_;
     Core::Serialization::TraceBuffer*                      tb_ = nullptr;
 
-    unsigned handler  = ALL;
-    bool     trigger  = false;
-    bool     reset_   = false;
+    unsigned  handler = ALL;
+    bool      trigger = false;
+    bool      reset_  = false;
     WPAction* wpAction;
 
     void setBufferReset()
