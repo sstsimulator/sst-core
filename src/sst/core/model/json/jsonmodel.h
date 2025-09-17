@@ -32,6 +32,9 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <map>
+#include <stack>
+#include <cstdint>
 
 using namespace SST;
 using json = nlohmann::json;
