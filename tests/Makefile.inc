@@ -50,6 +50,7 @@ EXTRA_DIST += \
     tests/test_MemPool_overflow.py \
     tests/test_MemPool_undeleted_items.py \
     tests/test_Module.py \
+    tests/test_OverheadMeasure.py \
     tests/test_PortModule.py \
     tests/test_RealTime.py \
     tests/test_SubComponent.py \

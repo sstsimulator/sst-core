@@ -268,7 +268,7 @@ findComponentByName(PyObject* UNUSED(self), PyObject* args)
 
     if ( SUBCOMPONENT_ID_MASK(cc->id) == 0 ) {
         // Component
-        PyObject* argList = Py_BuildValue("ssk", name, "irrelephant", cc->id);
+        PyObject* argList = Py_BuildValue("ssk", name, "irrelevant", cc->id);
         PyObject* res     = PyObject_CallObject((PyObject*)&PyModel_ComponentType, argList);
         Py_DECREF(argList);
         return res;
@@ -943,6 +943,50 @@ getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
     return res;
 }
 
+static PyObject*
+buildOverheadMeasureTest(PyObject* UNUSED(self), PyObject* args)
+{
+    int argOK     = 0;
+    int num_comps = 0;
+    int num_links = 0;
+
+    PyErr_Clear();
+
+    // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
+    argOK = PyArg_ParseTuple(args, "ii", &num_comps, &num_links);
+
+    if ( !argOK ) return nullptr;
+
+    // Create the ConfigGraph with the specified number of components and links
+    ComponentId_t last_comp_id = gModel->addComponent("c0", "coreTestElement.overhead_measure");
+    // ConfigComponent* last_comp = gModel->getGraph()->findComponent(last_comp_id);
+    gModel->getGraph()->findComponent(last_comp_id)->addParameter("id", "0", true);
+    for ( int i = 1; i < num_comps; ++i ) {
+        std::string cname("c");
+        cname += std::to_string(i);
+        ComponentId_t curr_comp_id = gModel->addComponent(cname.c_str(), "coreTestElement.overhead_measure");
+        gModel->getGraph()->findComponent(curr_comp_id)->addParameter("id", std::to_string(i), true);
+
+        // Links
+        std::string link_base_name = std::string("l_") + std::to_string(i) + std::string("_");
+        std::string link_name;
+
+        std::string left("left_");
+        std::string right("right_");
+
+        for ( int j = 0; j < num_links; ++j ) {
+            link_name = link_base_name + std::to_string(j);
+
+            std::string last_port = right + std::to_string(j);
+            std::string curr_port = left + std::to_string(j);
+
+            gModel->addLink(last_comp_id, link_name.c_str(), last_port.c_str(), "1ns", false);
+            gModel->addLink(curr_comp_id, link_name.c_str(), curr_port.c_str(), "1ns", false);
+        }
+    }
+    return Py_None;
+}
+
 static PyMethodDef sstModuleMethods[] = {
     { "setProgramOption", setProgramOption, METH_VARARGS,
         "Sets a single program configuration option (form:  setProgramOption(name, value))" },
@@ -999,6 +1043,8 @@ static PyMethodDef sstModuleMethods[] = {
     { "setCallPythonFinalize", setCallPythonFinalize, METH_O,
         "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
         "called by default if this function is not called." },
+    { "buildOverheadMeasureTest", buildOverheadMeasureTest, METH_VARARGS,
+        "Build the OverheadMeasure test with the specified number of components and links between components." },
     { nullptr, nullptr, 0, nullptr }
 };
 
@@ -1313,7 +1359,7 @@ SSTPythonModelDefinition::createConfigGraph()
 
     if ( nullptr != PyErr_Occurred() ) {
         PyErr_Print();
-        output->fatal(CALL_INFO, 1, "Error occured handling the creation of the component graph in Python.\n");
+        output->fatal(CALL_INFO, 1, "Error occurred handling the creation of the component graph in Python.\n");
     }
 
 #if PY_MINOR_VERSION >= 9

@@ -343,7 +343,6 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
         }
     }
 
-
     // Only rank 0 will populate the graph, unless we are using
     // parallel load.  In this case, all ranks will load the graph
     if ( myRank.rank == 0 || cfg.parallel_load() ) {
@@ -1064,6 +1063,7 @@ main(int argc, char* argv[])
     // Count of the number of components
     uint64_t comp_count = 0;
 
+    Simulation_impl::basicPerf.beginRegion("model-execution");
     if ( restart ) {
         restart_graph_gen(cpt_currentSimCycle, cpt_currentPriority);
     }
@@ -1071,6 +1071,7 @@ main(int argc, char* argv[])
         Factory::createFactory(cfg.getLibPath());
         start_graph_creation(graph, world_size, myRank);
     }
+    Simulation_impl::basicPerf.endRegion("model-execution");
 
     //// Initialize global data that needed to wait until Config was
     //// possibly updated by the SDL file
@@ -1096,12 +1097,23 @@ main(int argc, char* argv[])
         // in graph construction
         if ( myRank.rank == 0 || cfg.parallel_load() ) {
 
+            Simulation_impl::basicPerf.beginRegion("graph-cleanup");
             graph->postCreationCleanup();
+            Simulation_impl::basicPerf.endRegion("graph-cleanup");
 
             // Check config graph to see if there are structural errors.
+            Simulation_impl::basicPerf.beginRegion("graph-error-check");
             if ( graph->checkForStructuralErrors() ) {
                 g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
             }
+            Simulation_impl::basicPerf.endRegion("graph-error-check");
+        }
+        else {
+            Simulation_impl::basicPerf.beginRegion("gragh-cleanup");
+            Simulation_impl::basicPerf.endRegion("gragh-cleanup");
+
+            Simulation_impl::basicPerf.beginRegion("graph-error-check");
+            Simulation_impl::basicPerf.endRegion("graph-error-check");
         }
 
         // Compute the total number components in the simulation.

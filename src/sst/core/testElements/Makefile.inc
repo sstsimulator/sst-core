@@ -47,6 +47,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_MemPoolTest.cc \
 	testElements/coreTest_Checkpoint.h \
 	testElements/coreTest_Checkpoint.cc \
+	testElements/coreTest_OverheadMeasure.h \
+	testElements/coreTest_OverheadMeasure.cc \
         testElements/message_mesh/messageEvent.h \
 	testElements/message_mesh/enclosingComponent.h \
 	testElements/message_mesh/enclosingComponent.cc
