@@ -66,6 +66,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_complexcontainer(self):
         self.serialization_test_template("complexcontainer")
 
+    def test_Serialization_unique_ptr(self):
+        self.serialization_test_template("unique_ptr")
+
     def test_Serialization_variant(self):
         self.serialization_test_template("variant")
 
