@@ -257,7 +257,7 @@ private:
 
 
 protected:
-    StatisticBase(); // For serialization only
+    StatisticBase() {} // For serialization only
 
 private:
     enum Flag : uint8_t {

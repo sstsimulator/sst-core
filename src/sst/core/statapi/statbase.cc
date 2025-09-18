@@ -185,17 +185,18 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
         SST_SER(reset_count_on_output_);
         SST_SER(clear_data_on_output_);
         SST_SER(output_at_end_of_sim_);
-    }
+    
 
-    /* Store/restore data type */
-    if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
-        std::string name(StatisticFieldInfo::getFieldTypeShortName(stat_data_type_));
-        SST_SER(name);
-    }
-    else {
-        std::string name;
-        SST_SER(name);
-        stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
+        /* Store/restore data type */
+        if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
+            std::string name(StatisticFieldInfo::getFieldTypeShortName(stat_data_type_));
+            SST_SER(name);
+        }
+        else {
+            std::string name;
+            SST_SER(name);
+            stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
+        }
     }
 }
 
