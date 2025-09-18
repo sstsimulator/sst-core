@@ -13,37 +13,33 @@
 #define SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 
 #include "sst/core/eli/elementinfo.h"
-#include "sst/core/interactiveConsole.h"
 #include "sst/core/serialization/objectMapDeferred.h"
-#include "sst/core/watchPoint.h"
 
+#include <sst/core/interactiveConsole.h>
+#include <sst/core/watchPoint.h>
 #include <string>
 #include <vector>
+// #include "probe.h"
+// using namespace SSTDEBUG::Probe;
 
 namespace SST::IMPL::Interactive {
 
-
-/**
-   Self partitioner actually does nothing.  It is simply a pass
-   through for graphs which have been partitioned during graph
-   creation.
-*/
 class SimpleDebugger : public SST::InteractiveConsole
 {
 
 public:
     SST_ELI_REGISTER_INTERACTIVE_CONSOLE(
-        SimpleDebugger,
-        "sst",
-        "interactive.simpledebug",
-        SST_ELI_ELEMENT_VERSION(1, 0, 0),
-        "{EXPERIMENTAL} Basic interactive debugging console for interactive mode."
-    )
+      SimpleDebugger,   // class
+      "sst",     // library
+      "interactive.simpledebug", // name
+      SST_ELI_ELEMENT_VERSION(1, 0, 0),
+      "{EXPERIMENTAL} Interactive console debug probe")
 
     /**
-       Creates a new self partition scheme.
+           Creates a new self partition scheme.
     */
     explicit SimpleDebugger(Params& params);
+    ~SimpleDebugger() {}
 
     void execute(const std::string& msg) override;
 
@@ -66,9 +62,9 @@ private:
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
-    void cmd_help(std::vector<std::string>& tokens);
-    void cmd_pwd(std::vector<std::string>& tokens);
-    void cmd_ls(std::vector<std::string>& tokens);
+    void cmd_help(std::vector<std::string>& UNUSED(tokens));
+    void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
+    void cmd_ls(std::vector<std::string>& UNUSED(tokens));
     void cmd_cd(std::vector<std::string>& tokens);
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);
@@ -77,6 +73,15 @@ private:
     void cmd_watch(std::vector<std::string>& tokens);
     void cmd_unwatch(std::vector<std::string>& tokens);
     void cmd_shutdown(std::vector<std::string>& tokens);
+    // New functionality
+    void cmd_exit(std::vector<std::string>& UNUSED(tokens));
+    void cmd_watchlist(std::vector<std::string>& tokens);
+    void cmd_trace(std::vector<std::string>& tokens);
+    void cmd_setHandler(std::vector<std::string>& tokens);
+    void cmd_addTraceVar(std::vector<std::string>& tokens);
+    void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
+    void cmd_printTrace(std::vector<std::string>& tokens);
+    void cmd_printWatchpoint(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
 };
