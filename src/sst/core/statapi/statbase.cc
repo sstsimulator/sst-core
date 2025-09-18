@@ -185,7 +185,7 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
         SST_SER(reset_count_on_output_);
         SST_SER(clear_data_on_output_);
         SST_SER(output_at_end_of_sim_);
-    
+
 
         /* Store/restore data type */
         if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
