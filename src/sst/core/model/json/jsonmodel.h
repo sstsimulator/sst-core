@@ -28,7 +28,10 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cstdint>
 #include <fstream>
+#include <map>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <vector>
