@@ -28,13 +28,13 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cstdint>
 #include <fstream>
+#include <map>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <map>
-#include <stack>
-#include <cstdint>
 
 using namespace SST;
 using json = nlohmann::json;
