@@ -13,9 +13,10 @@
 #define SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 
 #include "sst/core/eli/elementinfo.h"
+#include <sst/core/interactiveConsole.h>
+
 #include "sst/core/serialization/objectMapDeferred.h"
 
-#include <sst/core/interactiveConsole.h>
 #include <sst/core/watchPoint.h>
 #include <string>
 #include <vector>
