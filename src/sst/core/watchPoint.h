@@ -71,13 +71,13 @@ public:
                 trigger          = false;
                 if ( invoke ) {
                     setBufferReset();
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
             else {
                 printf("    No trace buffer\n");
                 if ( trigger ) {
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
         } // if AFTER_EVENT
@@ -100,13 +100,13 @@ public:
                 trigger          = false;
                 if ( invoke ) {
                     setBufferReset();
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
             else {
                 printf("    No trace buffer\n");
                 if ( trigger ) {
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
         } // if AFTER_EVENT
@@ -129,13 +129,13 @@ public:
                 trigger          = false;
                 if ( invoke ) {
                     setBufferReset();
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
             else {
                 printf("    No trace buffer\n");
                 if ( trigger ) {
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
         } // if AFTER_CLOCK
@@ -157,13 +157,13 @@ public:
                 trigger          = false;
                 if ( invoke ) {
                     setBufferReset();
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
             else {
                 printf("    No trace buffer\n");
                 if ( trigger ) {
-                    invokeAction();
+                    wpAction->invokeAction(this);
                 }
             }
         } // if AFTER_CLOCK
@@ -178,6 +178,13 @@ public:
         }
         else {
             return 0;
+        }
+    }
+
+    void printTriggerRecord()
+    {
+        if ( tb_ != nullptr ) {
+            tb_->dumpTriggerRecord();
         }
     }
 
@@ -241,38 +248,122 @@ public:
         }
     }
 
+    bool checkReset() { return reset_; }
 
-    enum WPACTION : unsigned { // Watchpoint Action
-        INTERACTIVE  = 0,
-        PRINT_TRACE  = 1,
-        CHECKPOINT   = 2,
-        PRINT_STATUS = 3,
-        HEARTBEAT    = 4,
-        INVALID      = 5
+    class WPAction
+    {
+    public:
+        WPAction() {}
+        virtual ~WPAction() = default;
+
+        virtual std::string actionToString()             = 0;
+        virtual void        invokeAction(WatchPoint* wp) = 0;
     };
 
-    std::string actionToString(WPACTION wpa)
+    class InteractiveWPAction : public WPAction
     {
+    public:
+        InteractiveWPAction() {}
+        virtual ~InteractiveWPAction() = default;
 
-        switch ( wpa ) {
-        case INTERACTIVE:
-            return "interactive";
-        case PRINT_TRACE:
-            return "printTrace";
-        case CHECKPOINT:
-            return "checkpoint";
-        case HEARTBEAT:
-            return "heartbeat";
-        case INVALID:
-            return "invalid action";
-        default:
-            return "undefined action";
+        std::string actionToString() override { return "interactive"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            printf("    SetInteractive\n");
+            wp->setEnterInteractive(); // Trigger action
+            wp->setInteractiveMsg(format_string("Watch point %s buffer", wp->name_.c_str()));
+            // Note that the interactive action is delayed and
+            // we want to be able to print the Trace Buffer there.
+            // So, resetTraceBuffer for this case is in handlers
         }
-    }
+    };
 
-    void setAction(WPACTION actionType) { wpAction = actionType; }
+    class PrintTraceWPAction : public WPAction
+    {
+    public:
+        PrintTraceWPAction() {}
+        virtual ~PrintTraceWPAction() = default;
 
-    void printAction() { std::cout << actionToString(wpAction); }
+        std::string actionToString() override { return "printTrace"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            wp->printTrace();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
+        }
+    };
+
+    class CheckpointWPAction : public WPAction
+    {
+    public:
+        CheckpointWPAction() {}
+        virtual ~CheckpointWPAction() = default;
+
+        std::string actionToString() override { return "checkpoint"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            wp->setCheckpoint();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
+        }
+    };
+
+    class PrintStatusWPAction : public WPAction
+    {
+    public:
+
+        PrintStatusWPAction() {}
+        virtual ~PrintStatusWPAction() = default;
+
+        std::string actionToString() override { return "printStatus"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            wp->printStatus();
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
+        }
+    };
+
+    class SetVarWPAction : public WPAction
+    {
+    public:
+        SetVarWPAction(std::string vname, Core::Serialization::ObjectMap* obj, std::string tval) :
+            name_(vname),
+            obj_(obj),
+            valStr_(tval)
+        {}
+
+        virtual ~SetVarWPAction() = default;
+
+        std::string actionToString() override { return "set " + name_ + " " + valStr_; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            try {
+                obj_->set(valStr_);
+            }
+            catch ( std::exception& e ) {
+                printf("Invalid set var: %s\n", valStr_.c_str());
+                return;
+            }
+
+            // Can this somehow be tied to debug?
+            wp->printTriggerRecord();
+            printf("%s\n", actionToString().c_str());
+
+            if ( wp->checkReset() ) wp->resetTraceBuffer();
+        }
+
+    private:
+        std::string                     name_   = "";
+        Core::Serialization::ObjectMap* obj_    = nullptr;
+        std::string                     valStr_ = "";
+    };
+
+    void setAction(WPAction* action) { wpAction = action; }
+
+    void printAction() { std::cout << wpAction->actionToString(); }
 
     void addTraceBuffer(Core::Serialization::TraceBuffer* tb) { tb_ = tb; }
 
@@ -310,10 +401,10 @@ private:
     std::string                                            name_;
     Core::Serialization::TraceBuffer*                      tb_ = nullptr;
 
-    unsigned handler  = ALL;
-    bool     trigger  = false;
-    bool     reset_   = false;
-    WPACTION wpAction = INTERACTIVE;
+    unsigned  handler = ALL;
+    bool      trigger = false;
+    bool      reset_  = false;
+    WPAction* wpAction;
 
     void setBufferReset()
     {
@@ -321,38 +412,6 @@ private:
             printf("    Set Buffer Reset\n");
             tb_->setBufferReset();
             reset_ = true;
-        }
-    }
-
-    void invokeAction()
-    {
-        switch ( wpAction ) {
-        case INTERACTIVE:
-            printf("    SetInteractive\n");
-            setEnterInteractive(); // Trigger action
-            setInteractiveMsg(format_string("Watch point %s buffer", name_.c_str()));
-            // Note that the interactive action is delayed and
-            // we want to be able to print the Trace Buffer there.
-            // So, resetTraceBuffer for this case is in handlers
-            break;
-        case PRINT_TRACE:
-            tb_->dumpTraceBufferT();
-            if ( reset_ ) resetTraceBuffer();
-            break;
-        case CHECKPOINT:
-            setCheckpoint();
-            if ( reset_ ) resetTraceBuffer();
-            break;
-        case PRINT_STATUS:
-            printStatus();
-            if ( reset_ ) resetTraceBuffer();
-            break;
-        case HEARTBEAT:
-            heartbeat();
-            if ( reset_ ) resetTraceBuffer();
-            break;
-        default:
-            printf("ERROR: invalid watchpoint action\n");
         }
     }
 
