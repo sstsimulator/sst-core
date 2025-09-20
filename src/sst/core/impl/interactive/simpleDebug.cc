@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <unistd.h>
 
 namespace SST::IMPL::Interactive {
 
@@ -43,7 +44,11 @@ SimpleDebugger::execute(const std::string& msg)
     while ( !done ) {
         printf("> ");
         std::getline(std::cin, line);
-        dispatch_cmd(line);
+        try {
+            dispatch_cmd(line);
+        } catch (const std::runtime_error& e) {
+            printf("Parsing error. Ignoring %s", line.c_str());
+        }
     }
 }
 
@@ -128,6 +133,8 @@ SimpleDebugger::cmd_help(std::vector<std::string>& UNUSED(tokens))
                 "the specified watchpoint\n");
     help.append("   - unwatch <watchpointIndex>: removes the specified "
                 "watchpoint from the watch list. If no index is provided, all watchpoints are removed.\n");
+    help.append("\nGDB/LLDB support\n");
+    help.append("   - spinThread: enter spin loop to allow gdb/lldb attach. See SimpleDebugger::cmd_spinThread");
     help.append("\n");
     help.append("  Execute: Execute the simulation for a specified duration\n");
     help.append("   - run [TIME]: runs the simulation from the current point for "
@@ -467,6 +474,7 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
         size_t bufsize = wp->getBufferSize();
         if ( bufsize == 0 ) {
             printf("Watchpoint %ld does not have tracing enabled\n", wpIndex);
+            return;
         }
         auto* ob = map->getObjectBuffer(obj_->getFullName() + "/" + tvar, bufsize);
         wp->addObjectBuffer(ob);
@@ -600,6 +608,24 @@ SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
     return;
 }
 
+// gdb helper. Recommended SST configuration
+// CXXFLAGS="-g3 -O0" CFLAGS="-g3 -O0"  ../configure --prefix=$SST_CORE_HOME --enable-debug'
+void
+SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
+{
+    // Print the watch points
+    std::cout << "Spinning PID " << getpid() << std::endl;
+    while( spinner > 0 ) {
+        spinner++;
+        usleep(100000);
+        // set debug breakpoint here and set spinner to 0 to continue
+        if( spinner % 10 == 0 )                                                                                                                 
+            std::cout << "." << std::flush;
+    }
+    std::cout << std::endl;
+    return;
+}
+
 Core::Serialization::ObjectMapComparison*
 parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj, std::string& name)
 {
@@ -621,7 +647,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
     if ( op != Core::Serialization::ObjectMapComparison::Op::CHANGED ) {
         if ( index == tokens.size() ) {
             printf("Invalid format for trigger test. Valid formats are <var> changed"
-                   "and <var> <op> <val>\n");
+                   " and <var> <op> <val>\n");
             return nullptr;
         }
         v2 = tokens[index++];
@@ -1188,7 +1214,9 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     else if ( tokens[0] == "printWatchpoint" ) {
         cmd_printWatchpoint(tokens);
     }
-    else {
+    else if ( tokens[0] == "spinThread" ) {
+        cmd_spinThread(tokens);
+    } else {
         printf("Unknown command: %s\n", tokens[0].c_str());
     }
 }

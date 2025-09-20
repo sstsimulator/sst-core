@@ -55,6 +55,9 @@ private:
     SST::Core::Serialization::ObjectMap* obj_ = nullptr;
     bool                                 done = false;
 
+    // gdb/lldb thread spin support
+    uint64_t spinner = 1;
+
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
 
@@ -83,6 +86,8 @@ private:
     void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
     void cmd_printTrace(std::vector<std::string>& tokens);
     void cmd_printWatchpoint(std::vector<std::string>& tokens);
+    // GDB helpers
+    void cmd_spinThread(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
 };
