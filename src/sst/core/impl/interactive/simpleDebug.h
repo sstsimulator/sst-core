@@ -18,6 +18,8 @@
 #include "sst/core/serialization/objectMapDeferred.h"
 
 #include <sst/core/watchPoint.h>
+
+#include <fstream>
 #include <string>
 #include <vector>
 // #include "probe.h"
@@ -40,7 +42,7 @@ public:
            Creates a new self partition scheme.
     */
     explicit SimpleDebugger(Params& params);
-    ~SimpleDebugger() {}
+    ~SimpleDebugger();
 
     void execute(const std::string& msg) override;
 
@@ -58,6 +60,13 @@ private:
     // gdb/lldb thread spin support
     uint64_t spinner = 1;
 
+    // logging support
+    std::ofstream loggingFile;
+    std::ifstream replayFile;
+    std::string loggingFilePath = "sst-console.out";
+    std::string replayFilePath = "sst-console.in";
+    bool enLogging = false;
+
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
 
@@ -66,19 +75,25 @@ private:
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
+    // Navigation
     void cmd_help(std::vector<std::string>& UNUSED(tokens));
     void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
     void cmd_ls(std::vector<std::string>& UNUSED(tokens));
     void cmd_cd(std::vector<std::string>& tokens);
+    
+    // Variable Access
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);
     void cmd_time(std::vector<std::string>& tokens);
-    void cmd_run(std::vector<std::string>& tokens);
     void cmd_watch(std::vector<std::string>& tokens);
     void cmd_unwatch(std::vector<std::string>& tokens);
+
+    // Simulation Control
+    void cmd_run(std::vector<std::string>& tokens);
     void cmd_shutdown(std::vector<std::string>& tokens);
-    // New functionality
     void cmd_exit(std::vector<std::string>& UNUSED(tokens));
+
+    // Watch/Trace
     void cmd_watchlist(std::vector<std::string>& tokens);
     void cmd_trace(std::vector<std::string>& tokens);
     void cmd_setHandler(std::vector<std::string>& tokens);
@@ -86,7 +101,12 @@ private:
     void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
     void cmd_printTrace(std::vector<std::string>& tokens);
     void cmd_printWatchpoint(std::vector<std::string>& tokens);
-    // GDB helpers
+
+    // Logging/Replay
+    void cmd_logging(std::vector<std::string>& tokens);
+    void cmd_replay(std::vector<std::string>& tokens);
+
+    // LLDB/GDB helper
     void cmd_spinThread(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);

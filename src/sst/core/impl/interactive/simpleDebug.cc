@@ -18,9 +18,11 @@
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <unistd.h>
+#include "simpleDebug.h"
 
 namespace SST::IMPL::Interactive {
 
@@ -28,6 +30,11 @@ SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) :
     InteractiveConsole()
 {
     // registerAsPrimaryComponent();
+}
+
+SimpleDebugger::~SimpleDebugger() {
+    if (loggingFile.is_open())
+        loggingFile.close();
 }
 
 void
@@ -42,12 +49,44 @@ SimpleDebugger::execute(const std::string& msg)
 
     std::string line;
     while ( !done ) {
-        printf("> ");
-        std::getline(std::cin, line);
+        
         try {
+            // File input
+            if ( replayFile.is_open() ) {
+                while ( std::getline(replayFile, line) ) {
+                    std::cout << "> " << line << std::endl;
+                    dispatch_cmd(line);
+                }
+                if (replayFile.eof())
+                    std::cout << "Reached end of file " << replayFilePath << std::endl;
+                else if (replayFile.fail())
+                    std::cerr << "Input error occurred while reading " << replayFilePath << std::endl;
+                else if (replayFile.bad())
+                    std::cout << "I/O error while reading " << replayFilePath << std::endl;
+                else 
+                    std::cout << "Unknown error while reading " << replayFilePath << std::endl;
+                replayFile.close();
+                if (done)
+                    break;
+            }
+
+            // User input prompt
+            std::cout << "> " << std::flush;
+            if (!std::cin) 
+                std::cin.clear(); // fix corrupted input after process resumed
+            
+            std::getline(std::cin, line);
             dispatch_cmd(line);
+
+            // Command Logging
+            if (enLogging)
+                loggingFile << line.c_str() << std::endl;
+            // This prevents logging the 'logging' command
+            if (loggingFile.is_open())
+                enLogging = true; 
+                
         } catch (const std::runtime_error& e) {
-            printf("Parsing error. Ignoring %s", line.c_str());
+            std::cout << "Parsing error. Ignoring " << line << std::endl;
         }
     }
 }
@@ -133,23 +172,23 @@ SimpleDebugger::cmd_help(std::vector<std::string>& UNUSED(tokens))
                 "the specified watchpoint\n");
     help.append("   - unwatch <watchpointIndex>: removes the specified "
                 "watchpoint from the watch list. If no index is provided, all watchpoints are removed.\n");
-    help.append("\nGDB/LLDB support\n");
-    help.append("   - spinThread: enter spin loop to allow gdb/lldb attach. See SimpleDebugger::cmd_spinThread");
-    help.append("\n");
-    help.append("  Execute: Execute the simulation for a specified duration\n");
+    help.append("\nSimulation Control\n");
     help.append("   - run [TIME]: runs the simulation from the current point for "
                 "TIME and then returns to\n");
     help.append("                 interactive mode; if no time is given, the "
                 "simulation runs to completion;\n");
     help.append("                 TIME is of the format <Number><unit> e.g. 4us\n");
-    help.append("\n");
-    help.append("  Exit: Exit the interactive console\n");
     help.append("   - exit or quit: exits the interactive console and resumes "
                 "simulation execution\n");
     help.append("   - shutdown: exits the interactive console and does a clean "
                 "shutdown of the simulation\n");
+    help.append("\nGDB/LLDB support\n");
+    help.append("   - spinThread: enter spin loop to allow gdb/lldb attach. See SimpleDebugger::cmd_spinThread\n");
+    help.append("\nCommand line controls\n");
+    help.append("   - logging <filepath>: log command line entires to file\n");
+    help.append("   - replay <filepath>: read and executive commands from a file ( See also: sst --replay\n");
     help.append("\n");
-    printf("%s", help.c_str());
+    std::cout << help << std::endl;
 }
 
 // pwd: print current working directory
@@ -383,15 +422,15 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        printf(" Invalid watchpoint index: %ld\n", wpIndex);
+        std::cout << " Invalid watchpoint index: << " << wpIndex << std::endl;
         return;
     }
 
@@ -579,6 +618,47 @@ SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
     return;
 }
 
+
+// logging <filepath>
+void
+SimpleDebugger::cmd_logging(std::vector<std::string>& tokens)
+{
+    if (loggingFile.is_open()) {
+        std::cout << "Logging file is already set to " << loggingFilePath << std::endl;
+        return;
+    }
+    if (tokens.size() > 1 ) {
+        loggingFilePath = tokens[1];
+    }
+    // Attempt to open an SST output file
+    loggingFile.open(loggingFilePath);
+    if (! loggingFile.is_open()) {
+        std::cout << "Could not open %s\n" << loggingFilePath.c_str() << std::endl;
+        return;
+    }
+    std::cout << "sst console commands will be logged to " << loggingFilePath << std::endl;
+    return;
+}
+
+// replay <filepath>
+void
+SimpleDebugger::cmd_replay(std::vector<std::string>& tokens)
+{
+    if (replayFile.is_open()) {
+        std::cout << "Replay file is already set to " << replayFilePath << std::endl;
+        return;
+    }
+    if (tokens.size() > 1 ) {
+        replayFilePath = tokens[1];
+    }
+
+    replayFile.open(replayFilePath);
+    if (! replayFile.is_open()) 
+        std::cout << "Could not open replay file: " << replayFilePath << std::endl;
+
+    return;
+}
+
 WatchPoint::LogicOp
 getLogicOpFromString(const std::string& opStr)
 {
@@ -622,6 +702,7 @@ SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
         if( spinner % 10 == 0 )                                                                                                                 
             std::cout << "." << std::flush;
     }
+    spinner=1; // reset spinner
     std::cout << std::endl;
     return;
 }
@@ -1216,7 +1297,14 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     }
     else if ( tokens[0] == "spinThread" ) {
         cmd_spinThread(tokens);
-    } else {
+    }
+    else if ( tokens[0] == "logging") {
+        cmd_logging(tokens);
+    }
+    else if ( tokens[0] == "replay") {
+        cmd_replay(tokens);
+    }
+    else { 
         printf("Unknown command: %s\n", tokens[0].c_str());
     }
 }
