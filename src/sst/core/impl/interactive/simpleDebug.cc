@@ -1247,6 +1247,9 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     std::vector<std::string> tokens;
     tokenize(tokens, cmd);
 
+    // just whitespace
+    if (tokens.size()==0) return;
+
     // comment
     if ( tokens[0][0]=='#') 
         return;
