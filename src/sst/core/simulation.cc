@@ -333,6 +333,7 @@ Simulation_impl::Simulation_impl(
 
     interactive_type_  = config.interactive_console();
     interactive_start_ = config.interactive_start_time();
+    replay_file_ = config.replay_file();
 }
 
 void
@@ -2009,12 +2010,15 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 
     // Need to parse the type string to see if there are any parameters
     std::string actual_type = type;
-    SST::Params p;
+    SST::Params p {};
     // For now, just ignore parameters
     // size_t index = type.find_first_of('(');
     // if ( index != std::string::npos ) {
     //     size_t end_index =
     // }
+
+    if (replay_file_.size()>0)
+        p.insert("replayFile", replay_file_);
 
     interactive_ = factory->Create<InteractiveConsole>(actual_type, p);
 }

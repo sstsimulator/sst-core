@@ -21,20 +21,26 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 #include <unistd.h>
 #include "simpleDebug.h"
 
 namespace SST::IMPL::Interactive {
 
-SimpleDebugger::SimpleDebugger(Params& UNUSED(params)) :
+SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
     // registerAsPrimaryComponent();
+    std::string sstReplayFilePath = params.find<std::string>("replayFile", "");
+    if (sstReplayFilePath.size()>0)
+        injectedCommand << "replay " << sstReplayFilePath << std::endl;
 }
 
 SimpleDebugger::~SimpleDebugger() {
     if (loggingFile.is_open())
         loggingFile.close();
+    if (replayFile.is_open())
+        replayFile.close();
 }
 
 void
@@ -51,7 +57,14 @@ SimpleDebugger::execute(const std::string& msg)
     while ( !done ) {
         
         try {
-            // File input
+            // Injected command stream (currently just one command)
+            if (! injectedCommand.str().empty()) {
+                line = injectedCommand.str();
+                dispatch_cmd(line);
+                injectedCommand.str("");
+                continue;
+            }
+            // Replay commands from file
             if ( replayFile.is_open() ) {
                 while ( std::getline(replayFile, line) ) {
                     std::cout << "> " << line << std::endl;
@@ -66,10 +79,8 @@ SimpleDebugger::execute(const std::string& msg)
                 else 
                     std::cout << "Unknown error while reading " << replayFilePath << std::endl;
                 replayFile.close();
-                if (done)
-                    break;
+                continue;
             }
-
             // User input prompt
             std::cout << "> " << std::flush;
             if (!std::cin) 

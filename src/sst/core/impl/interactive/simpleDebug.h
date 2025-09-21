@@ -38,6 +38,10 @@ public:
       SST_ELI_ELEMENT_VERSION(1, 0, 0),
       "{EXPERIMENTAL} Interactive console debug probe")
 
+    SST_ELI_DOCUMENT_PARAMS(
+      {"replayFile", "script for playback upon entering interactive debug console", ""}
+    )
+
     /**
            Creates a new self partition scheme.
     */
@@ -66,6 +70,9 @@ private:
     std::string loggingFilePath = "sst-console.out";
     std::string replayFilePath = "sst-console.in";
     bool enLogging = false;
+
+    // command injection
+    std::stringstream injectedCommand;
 
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;

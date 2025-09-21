@@ -532,6 +532,9 @@ Config::insertOptions()
         "interactive console was set. NOTE: This currently only works for serial jobs and this option will be ignored "
         "for parallel runs.",
         interactive_start_time_, true, false, false);
+    DEF_ARG("replay-file", 0, "FILE",
+        "Specify file for replaying an interactive debug console session.",
+        replay_file_, false);
 #ifdef USE_MEMPOOL
     DEF_ARG("output-undeleted-events", 0, "FILE",
         "file to write information about all undeleted events at the end of simulation (STDOUT and STDERR can be used "
