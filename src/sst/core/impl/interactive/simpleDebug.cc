@@ -53,6 +53,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         {"printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint",             ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printWatchpoint(tokens); }},
         {"printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printTrace(tokens); }},
         {"resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint",  ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_resetTraceBuffer(tokens); }},
+        {"setHandler", "shn", "<idx> <t1> ... <t2>: trigger check/sampling handler",     ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_setHandler(tokens); }},
         {"unwatch", "uw", "<watchpointIndex>: remove 1 or all watchpoints",              ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_unwatch(tokens); }},
         {"run", "r",  "[TIME]: continues the simulation",                                ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
         {"continue", "c",  "alias for run",                                              ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
@@ -92,6 +93,8 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         {"printWatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
         {"printTrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
         {"resetTrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
+        {"setHandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
+                       "\tset where to do trigger checks and sampling (before/after clock/event handler)"},
         {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list. If no index is provided, all watchpoints are removed."},
         {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
                 "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
