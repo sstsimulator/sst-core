@@ -33,7 +33,8 @@ enum class ConsoleCommandGroup {
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
   { ConsoleCommandGroup::GENERAL, "General" },
-  { ConsoleCommandGroup::NAVIGATION, "Model State" },
+  { ConsoleCommandGroup::NAVIGATION, "Navigation" },
+  { ConsoleCommandGroup::STATE, "State" },
   { ConsoleCommandGroup::WATCH, "Watch/Trace" },
   { ConsoleCommandGroup::SIMULATION, "Simulation" },
   { ConsoleCommandGroup::LOGGING, "Logging" },
