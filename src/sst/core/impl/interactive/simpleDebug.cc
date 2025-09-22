@@ -57,36 +57,25 @@ SimpleDebugger::execute(const std::string& msg)
     while ( !done ) {
         
         try {
-            // Injected command stream (currently just one command)
-            if (! injectedCommand.str().empty()) {
-                line = injectedCommand.str();
-                dispatch_cmd(line);
-                injectedCommand.str("");
-                continue;
-            }
-            // Replay commands from file
-            if ( replayFile.is_open() ) {
-                while ( std::getline(replayFile, line) ) {
-                    std::cout << "> " << line << std::endl;
-                    dispatch_cmd(line);
-                }
-                if (replayFile.eof())
-                    std::cout << "Reached end of file " << replayFilePath << std::endl;
-                else if (replayFile.fail())
-                    std::cerr << "Input error occurred while reading " << replayFilePath << std::endl;
-                else if (replayFile.bad())
-                    std::cout << "I/O error while reading " << replayFilePath << std::endl;
-                else 
-                    std::cout << "Unknown error while reading " << replayFilePath << std::endl;
-                replayFile.close();
-                continue;
-            }
             // User input prompt
             std::cout << "> " << std::flush;
-            if (!std::cin) 
-                std::cin.clear(); // fix corrupted input after process resumed
-            
-            std::getline(std::cin, line);
+
+            if (! injectedCommand.str().empty()) {
+                // Injected command stream (currently just one command)
+                line = injectedCommand.str();
+                injectedCommand.str("");
+                std::cout << line << std::endl;
+            } else if ( replayFile.is_open() ) {
+                // Replay commands from file
+                std::getline(replayFile, line);
+                std::cout << line << std::endl;
+            } else { 
+                // Standard Input
+                if (!std::cin) 
+                    std::cin.clear(); // fix corrupted input after process resumed
+                std::getline(std::cin, line);
+            }
+
             dispatch_cmd(line);
 
             // Command Logging
