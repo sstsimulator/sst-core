@@ -31,9 +31,73 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
     // registerAsPrimaryComponent();
+
+    // We can specify a replay file from the sst command line.
     std::string sstReplayFilePath = params.find<std::string>("replayFile", "");
     if (sstReplayFilePath.size()>0)
         injectedCommand << "replay " << sstReplayFilePath << std::endl;
+
+    // Populate the command registry
+    cmdRegistry = {
+        {"help",  "?",      "[CMD]: show this help or detailed command help",            ConsoleCommandGroup::GENERAL,    [this](std::vector<std::string>& tokens){ cmd_help(tokens);  }},
+        {"pwd",   "pwd",    "print the current working directory in the object map",     ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_pwd(tokens);   }},
+        {"chdir", "cd",     "change directory level in the object map",                  ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_cd(tokens);    }},
+        {"list",  "ls",     "list the objects in the current level of the object map",   ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_ls(tokens);    }},
+        {"time",  "tm",     "print current simulation time in cycles",                   ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_time(tokens);  }},
+        {"print", "pr",     "[-rN] [<obj>]: print objects at the current level",         ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_print(tokens); }},
+        {"set",   "s",      "[-rN] [<obj>]: print objects at the current level",         ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_set(tokens);   }},
+        {"watch", "w",      "<trig>: adds watchpoint to the watchlist",                  ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_watch(tokens); }},
+        {"trace", "t",      "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_trace(tokens); }},
+        {"watchlist", "wl", "prints the current list of watchpoints",                    ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_watchlist(tokens); }},
+        {"addTraceVar", "add", "<watchpointIndex> <var1> ... <varN>",                    ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_addTraceVar(tokens); }},
+        {"printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint",             ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printWatchpoint(tokens); }},
+        {"printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printTrace(tokens); }},
+        {"resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint",  ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_resetTraceBuffer(tokens); }},
+        {"unwatch", "u", "<watchpointIndex>: remove watchpoint (all if none specified)", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_unwatch(tokens); }},
+        {"run", "r",  "[TIME]: continues the simulation",                                ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
+        {"continue", "c",  "alias for run",                                              ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
+        {"exit", "e",  "exit debugger and continue simulation",                          ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_exit(tokens); }},
+        {"quit", "q",  "alias for exit",                                                 ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_exit(tokens); }},
+        {"shutdown", "shutdown",  "exit the debugger and cleanly shutdown simulator",    ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_shutdown(tokens); }},
+        {"logging", "log",  "<filepath>: log command line entires to file",              ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_logging(tokens); }},
+        {"replay", "rep", "<filepath>: run commands from a file (See also: sst --replay",ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_replay(tokens); }},
+        {"spinThread", "spin",  "enter spin loop. See SimpleDebugger::cmd_spinThread",  ConsoleCommandGroup::MISC,        [this](std::vector<std::string>& tokens){ cmd_spinThread(tokens); }},
+    };
+
+    // Detailed help from some commands. Can also add general things like 'help navigation'
+    cmdHelp = {
+        {"print","[-rN][<obj>]: print objects in the current level of the object map\n"
+                 "\tif -rN is provided print recursive N levels (default N=4)"},
+        {"set","<obj> <value>: sets an object in the current scope to the provided value;\n"
+                "\tobject must be a 'fundamental type' e.g. int" },
+        {"watchpoints", "Manage watchpoints (with or without tracing)\n"
+                "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
+                "\tE.g. <trigger> = <comparison> or <comparison1> <logicOp> <comparison2> ...\n"
+                "\tA <comparision> can be '<var> changed' which checks whether the value has changed\n"
+                "\tor '<var> <comp> <val>' which compares the variable to a given value\n"
+                "\tA <comp> can be <, <=, >, >=, ==, or !=\n"
+                "\tA <logicOp> can be && or ||\n"
+                "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
+                "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
+                "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus"},
+        {"watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
+                "\tExample: watch size > 90 && count < 100 || status changed"},
+        {"trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action> "
+                "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of <postDelay>"
+                "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay when triggered"
+                "\tExample: trace size > 90 || count == 100 : 32 4 : size count state : printTrace"},
+        {"watchlist", "prints the current list of watchpoints and their associated indices\n"
+                      "\tNote: a watchpoint's index may change as watchpoints are deleted"},
+        {"addTraceVar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified watchpoint's trace buffer"},
+        {"printWatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
+        {"printTrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
+        {"resetTrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
+        {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list. If no index is provided, all watchpoints are removed."},
+        {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
+                "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
+                "\tTIME is of the format <Number><unit> e.g. 4us"},
+    };
+
 }
 
 SimpleDebugger::~SimpleDebugger() {
@@ -48,6 +112,13 @@ SimpleDebugger::execute(const std::string& msg)
 {
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
+
+    // if (cmdRegistery.size()==0) {
+    //     cmdRegistery = {
+    //         {"help", "?", "Show help", ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens){ cmd_help(tokens); }}
+    //     };
+    // }
+
     if ( nullptr == obj_ ) {
         obj_ = getComponentObjectMap();
     }
@@ -118,88 +189,30 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
 }
 
 void
-SimpleDebugger::cmd_help(std::vector<std::string>& UNUSED(tokens))
-{
-    std::string help = "Interactive Console Debugger Commands\n";
-    help.append("  Navigation: Navigate the current object map\n");
-    help.append("   - pwd: print the current working directory in the object map\n");
-    help.append("   - cd: change directory level in the object map\n");
-    help.append("   - ls: list the objects in the current level of the object map\n");
+SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
+{   
+    // First check for specific command help
+    if (tokens.size()==1) {
+        for (const auto& g : GroupText ) {
+            std::cout << "--- " << g.second << " ---" << std::endl;
+            for ( const auto& c : cmdRegistry ) {
+                if ( g.first == c.group())
+                    std::cout << c << std::endl;
+            }
+        }
+        std::cout << "\nMore detailed help also available for: ";
+        for (const auto& pair : cmdHelp)
+            std::cout << pair.first << " ";
+        std::cout << std::endl;
+        return;
+    }
 
-    help.append("  Current State: Print information about the current simulation "
-                "state\n");
-    help.append("   - time: print current simulation time in cycles\n");
-    help.append("   - print [-rN][<obj>]: print objects in the current level of "
-                "the object map;\n");
-    help.append("                         if -rN is provided print recursive N "
-                "levels (default N=4)\n");
-
-    help.append("  Modify State: Modify simulation variables\n");
-    help.append("   - set <obj> <value>: sets an object in the current scope to "
-                "the provided value;\n");
-    help.append("                        object must be a \"fundamental type\" "
-                "e.g. int \n");
-    help.append("\n");
-    help.append("  Watchpoints: Manage watchpoints (with or without tracing)\n");
-    help.append("                A <trigger> can be a <comparison> or a sequence "
-                "of comparisons combined with a <logicOp>\n");
-    help.append("                E.g. <trigger> = <comparison> or <comparison1> "
-                "<logicOp> <comparison2> ...\n");
-    help.append("                A <comparision> can be \"<var> changed\" which "
-                "checks whether the value has changed\n");
-    help.append("                or \"<var> <comp> <val>\" which compares the "
-                "variable to a given value\n");
-    help.append("                A <comp> can be <, <=, >, >=, ==, or !=\n");
-    help.append("                A <logicOp> can be && or ||\n");
-    help.append("                \"watch\" creates a default watchpoint that "
-                "breaks into an interactive console when triggered\n");
-    help.append("                \"trace\" creates a watchpoint with a trace "
-                "buffer to trace a set of variables and trigger an <action>\n");
-    help.append("                Available actions include: interactive, "
-                "printTrace, checkpoint, set, or printStatus\n");
-    help.append("   - watch <trigger>: adds watchpoint to the watchlist; breaks "
-                "into interactive console when triggered\n");
-    help.append("                Example: watch size > 90 && count < 100 || "
-                "status changed\n");
-    help.append("   - trace <trigger> : <bufferSize> <postDelay> : <var1> ... "
-                "<varN> : <action> \n");
-    help.append("                Adds watchpoint to the watchlist with a trace buffer of "
-                "<bufferSize> and a post trigger delay of <postDelay>\n");
-    help.append("                Traces all of the variables specified in the var list "
-                "and invokes the <action> after postDelay when triggered\n");
-    help.append("                Example: trace size > 90 || count == 100 : 32 4 "
-                ": size count state : printTrace\n");
-    help.append("   - watchlist: prints the current list of watchpoints and "
-                "their associated indices\n");
-    help.append("                Note: a watchpoint's index may change as "
-                "watchpoints are deleted\n");
-    help.append("   - addTraceVar <watchpointIndex> <var1> ... <varN> : adds the "
-                "specified variables to the specified watchpoint's trace buffer\n");
-    help.append("   - printWatchpoint <watchpointIndex>: prints the watchpoint "
-                "based on the index specified by watchlist\n");
-    help.append("   - printTrace <watchpointIndex>: prints the trace buffer for "
-                "the specified watchpoint\n");
-    help.append("   - resetTrace <watchpointIndex>: resets the trace buffer for "
-                "the specified watchpoint\n");
-    help.append("   - unwatch <watchpointIndex>: removes the specified "
-                "watchpoint from the watch list. If no index is provided, all watchpoints are removed.\n");
-    help.append("\nSimulation Control\n");
-    help.append("   - run [TIME]: runs the simulation from the current point for "
-                "TIME and then returns to\n");
-    help.append("                 interactive mode; if no time is given, the "
-                "simulation runs to completion;\n");
-    help.append("                 TIME is of the format <Number><unit> e.g. 4us\n");
-    help.append("   - exit or quit: exits the interactive console and resumes "
-                "simulation execution\n");
-    help.append("   - shutdown: exits the interactive console and does a clean "
-                "shutdown of the simulation\n");
-    help.append("\nGDB/LLDB support\n");
-    help.append("   - spinThread: enter spin loop to allow gdb/lldb attach. See SimpleDebugger::cmd_spinThread\n");
-    help.append("\nCommand line controls\n");
-    help.append("   - logging <filepath>: log command line entires to file\n");
-    help.append("   - replay <filepath>: read and executive commands from a file ( See also: sst --replay\n");
-    help.append("\n");
-    std::cout << help << std::endl;
+    if (tokens.size()>1) {
+        std::string c = tokens[1];
+        if (cmdHelp.find(c) != cmdHelp.end()) {
+            std::cout << c << " " << cmdHelp.at(c) << std::endl;
+        }
+    }
 }
 
 // pwd: print current working directory
@@ -1254,75 +1267,16 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     if ( tokens[0][0]=='#') 
         return;
 
-    if ( tokens[0] == "exit" || tokens[0] == "quit" ) {
-        cmd_exit(tokens);
+    // The business
+    for ( auto consoleCommand : cmdRegistry ) {
+        if (consoleCommand.match(tokens[0])) {
+            consoleCommand.exec(tokens);
+            return;
+        }
     }
-    else if ( tokens[0] == "pwd" ) {
-        cmd_pwd(tokens);
-    }
-    else if ( tokens[0] == "ls" ) {
-        cmd_ls(tokens);
-    }
-    else if ( tokens[0] == "cd" ) {
-        cmd_cd(tokens);
-    }
-    else if ( tokens[0] == "print" ) {
-        cmd_print(tokens);
-    }
-    else if ( tokens[0] == "set" ) {
-        cmd_set(tokens);
-    }
-    else if ( tokens[0] == "time" ) {
-        cmd_time(tokens);
-    }
-    else if ( tokens[0] == "run" ) {
-        cmd_run(tokens);
-    }
-    else if ( tokens[0] == "watchlist" ) {
-        cmd_watchlist(tokens);
-    }
-    else if ( tokens[0] == "watch" ) {
-        cmd_watch(tokens);
-    }
-    else if ( tokens[0] == "unwatch" ) {
-        cmd_unwatch(tokens);
-    }
-    else if ( tokens[0] == "shutdown" ) {
-        cmd_shutdown(tokens);
-    }
-    else if ( tokens[0] == "help" ) {
-        cmd_help(tokens);
-    }
-    else if ( tokens[0] == "trace" ) {
-        cmd_trace(tokens);
-    }
-    else if ( tokens[0] == "setHandler" ) {
-        cmd_setHandler(tokens);
-    }
-    else if ( tokens[0] == "addTraceVar" ) {
-        cmd_addTraceVar(tokens);
-    }
-    else if ( tokens[0] == "resetTraceBuffer" ) {
-        cmd_resetTraceBuffer(tokens);
-    }
-    else if ( tokens[0] == "printTrace" ) {
-        cmd_printTrace(tokens);
-    }
-    else if ( tokens[0] == "printWatchpoint" ) {
-        cmd_printWatchpoint(tokens);
-    }
-    else if ( tokens[0] == "spinThread" ) {
-        cmd_spinThread(tokens);
-    }
-    else if ( tokens[0] == "logging") {
-        cmd_logging(tokens);
-    }
-    else if ( tokens[0] == "replay") {
-        cmd_replay(tokens);
-    }
-    else { 
-        printf("Unknown command: %s\n", tokens[0].c_str());
-    }
+
+    // Oops
+    printf("Unknown command: %s\n", tokens[0].c_str());
 }
 
 } // namespace SST::IMPL::Interactive
