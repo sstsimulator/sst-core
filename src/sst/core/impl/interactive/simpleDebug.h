@@ -20,12 +20,65 @@
 #include <sst/core/watchPoint.h>
 
 #include <fstream>
+#include <functional>
+#include <map>
 #include <string>
 #include <vector>
-// #include "probe.h"
-// using namespace SSTDEBUG::Probe;
 
 namespace SST::IMPL::Interactive {
+
+enum class ConsoleCommandGroup {
+  GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC
+};
+
+const std::map<ConsoleCommandGroup, std::string> GroupText {
+  { ConsoleCommandGroup::GENERAL, "General" },
+  { ConsoleCommandGroup::NAVIGATION, "Navigation" },
+  { ConsoleCommandGroup::STATE, "State" },
+  { ConsoleCommandGroup::WATCH, "Watch/Trace" },
+  { ConsoleCommandGroup::SIMULATION, "Simulation" },
+  { ConsoleCommandGroup::LOGGING, "Logging" },
+  { ConsoleCommandGroup::MISC, "Misc" },
+};
+
+// Encapsulate a console command.
+class ConsoleCommand {
+  public:
+    ConsoleCommand(
+      std::string str_long, std::string str_short, 
+      std::string str_help, ConsoleCommandGroup group,
+      std::function<void(std::vector<std::string>& tokens)> func)
+      : str_long_(str_long), str_short_(str_short), str_help_(str_help), 
+        group_(group), func_(func) {} 
+    const std::string& str_long()  const {return str_long_;}
+    const std::string& str_short() const {return str_short_;}
+    const std::string& str_help() const {return str_help_;}
+    const ConsoleCommandGroup& group() const {return group_;}
+    void exec(std::vector<std::string>& tokens) { return func_(tokens); }
+    bool match(const std::string& token) {
+      std::string lctoken = toLower(token);
+      if ( lctoken.size() == str_long_.size() && lctoken==toLower(str_long_) ) 
+        return true;
+      if ( lctoken.size() == str_short_.size() && lctoken==toLower(str_short_) ) 
+        return true;
+  
+      return false;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const ConsoleCommand c) {
+      os << c.str_long_ << " (" << c.str_short_ << ") " << c.str_help_;
+      return os;
+    }
+  private:
+    std::string str_long_;
+    std::string str_short_;
+    std::string str_help_;
+    ConsoleCommandGroup group_;
+    std::function<void(std::vector<std::string>& tokens)> func_;
+    std::string toLower(std::string s) {
+      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+      return s;
+    }
+  };
 
 class SimpleDebugger : public SST::InteractiveConsole
 {
@@ -72,7 +125,7 @@ private:
     bool enLogging = false;
 
     // command injection
-    std::stringstream injectedCommand;
+    std::stringstream injectedCommand; //TODO use ConsoleCommand object
 
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
@@ -117,6 +170,12 @@ private:
     void cmd_spinThread(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
+
+    // Command Registry
+    std::vector<ConsoleCommand> cmdRegistry;
+
+    // Detailed Command Help
+    std::map<std::string, std::string> cmdHelp;
 };
 
 } // namespace SST::IMPL::Interactive
