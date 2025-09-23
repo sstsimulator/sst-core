@@ -30,23 +30,23 @@ class StatisticProcessingEngine;
 class StatisticGroup
 {
 public:
-    StatisticGroup() :
-        isDefault(true),
-        name("default") {};
+    StatisticGroup() {};
     StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEngine* engine);
+    ~StatisticGroup();
 
     bool containsStatistic(const StatisticBase* stat) const;
     bool claimsStatistic(const StatisticBase* stat) const;
     void addStatistic(StatisticBase* stat);
 
-    bool             isDefault;
-    std::string      name;
-    StatisticOutput* output;
-    UnitAlgebra      outputFreq;
-    size_t           outputId;
+    bool             is_default  = true;
+    std::string      name        = "default";
+    SimTime_t        output_freq = 0;
+    StatisticOutput* output      = nullptr;
+    size_t           output_id   = 0;
+
 
     std::vector<ComponentId_t>  components;
-    std::vector<std::string>    statNames;
+    std::vector<std::string>    stat_names;
     std::vector<StatisticBase*> stats;
 
     void restartGroup(StatisticProcessingEngine* engine);

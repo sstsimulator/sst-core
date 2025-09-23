@@ -137,10 +137,12 @@ public:
     SST_ELI_DOCUMENT_PARAMS(
         {"id", "Id for this component", ""},
         {"mod", "Port modulus to restrict number of initial events", "1"},
-        {"verbose", "Print message count at end of simulation", "True"}
+        {"verbose", "Print message count at end of simulation", "True"},
+        {"stats", "Statistics per component", "0"}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
+        {"stat", "Test statistic", "count", 1},
     )
 
     SST_ELI_DOCUMENT_PORTS(
@@ -166,6 +168,9 @@ private:
 
     std::vector<PortInterface*> ports_;
     RouteInterface*             route_;
+
+    // Measuring statistics per component
+    std::vector<Statistic<uint64_t>*> stats_;
 
     int  my_id_;
     int  message_count_ = 0;

@@ -96,7 +96,7 @@ ProvidesStats::toString(std::ostream& os) const
     for ( auto& item : getValidStats() ) {
         os << "         " << item.name << ": " << (item.description == nullptr ? "<empty>" : item.description) << ", "
            << " (units = \"" << (item.units == nullptr ? "<empty>" : item.units) << "\")"
-           << " Enable level = " << (int16_t)item.enableLevel << "\n";
+           << " Enable level = " << (int16_t)item.enable_level << "\n";
     }
 }
 

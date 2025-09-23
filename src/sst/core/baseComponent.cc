@@ -46,6 +46,16 @@ BaseComponent::BaseComponent(ComponentId_t id) :
         // we shouldn't reset it.
         my_info_->component = this;
     }
+
+    // Do this once instead of for every stat
+    if ( my_info_->enabled_all_stats_ ) {
+        if ( my_info_->statLoadLevel == STATISTICLOADLEVELUNINITIALIZED ) {
+            my_info_->statLoadLevel = getStatEngine()->getStatLoadLevel();
+        }
+    }
+    else {
+        my_info_->statLoadLevel = 0; // All disabled, simplify checks later
+    }
 }
 
 BaseComponent::~BaseComponent()
@@ -668,11 +678,11 @@ BaseComponent::requireLibrary(const std::string& name)
     sim_->requireLibrary(name);
 }
 
-bool
-BaseComponent::doesComponentInfoStatisticExist(const std::string& statisticName) const
+uint8_t
+BaseComponent::getStatisticValidityAndLevel(const std::string& statisticName) const
 {
     const std::string& type = my_info_->getType();
-    return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
+    return Factory::getFactory()->GetStatisticValidityAndEnableLevel(type, statisticName);
 }
 
 StatisticProcessingEngine*
@@ -761,118 +771,30 @@ BaseComponent::doesSubComponentExist(const std::string& type)
     return Factory::getFactory()->doesSubComponentExist(type);
 }
 
-uint8_t
-BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statisticName) const
-{
-    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info_->type, statisticName);
-}
-
-void
-BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const std::string& name)
-{
-    StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    Output&                   out                = Simulation_impl::getSimulationOutput();
-    UnitAlgebra               collectionRate     = statistic->getCollectionRate();
-
-    // make sure we have a valid collection rate
-    // Check that the Collection Rate is a valid unit type that we can use
-    if ( collectionRate.hasUnits("s") || collectionRate.hasUnits("hz") ) {
-        // Rate is Periodic Based
-        statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-    }
-    else if ( collectionRate.hasUnits("event") ) {
-        // Rate is Count Based
-        statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    }
-    else if ( collectionRate.getValue() == 0 ) {
-        // Collection rate is zero
-        // so we just dump at beginning and end
-        collectionRate     = UnitAlgebra("0ns");
-        statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-    }
-    else {
-        // collectionRate is a unit type we dont recognize
-        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", name.c_str(),
-            collectionRate.toString().c_str());
-    }
-
-    if ( !statistic->isStatModeSupported(statCollectionMode) ) {
-        if ( StatisticBase::STAT_MODE_PERIODIC == statCollectionMode ) {
-            out.fatal(CALL_INFO, 1,
-                " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
-                name.c_str(), collectionRate.toString().c_str());
-        }
-        else {
-            out.fatal(CALL_INFO, 1,
-                " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n", name.c_str(),
-                collectionRate.toString().c_str());
-        }
-    }
-
-    statistic->setRegisteredCollectionMode(statCollectionMode);
-}
-
-Statistics::StatisticBase*
-BaseComponent::createStatistic(Params& cpp_params, const Params& python_params, const std::string& name,
-    const std::string& subId, bool check_load_level, StatCreateFunction fxn)
-{
-    auto* engine = getStatEngine();
-
-    if ( check_load_level ) {
-        uint8_t my_load_level = getStatisticLoadLevel();
-        uint8_t stat_load_level =
-            my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
-        if ( stat_load_level == 0 ) {
-            Simulation_impl::getSimulationOutput().verbose(CALL_INFO, 1, 0,
-                " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
-                name.c_str());
-            return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
-        }
-
-        uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
-        if ( stat_enable_level > stat_load_level ) {
-            Simulation_impl::getSimulationOutput().verbose(CALL_INFO, 1, 0,
-                " Warning: Load Level %d is too low to enable Statistic '%s' "
-                "with Enable Level %d, statistic will not be enabled...\n",
-                int(stat_load_level), name.c_str(), int(stat_enable_level));
-            return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
-        }
-    }
-
-    // this is enabled
-    configureAllowedStatParams(cpp_params);
-    cpp_params.insert(python_params);
-    std::string type = cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
-    auto*       stat = fxn(this, engine, type, name, subId, cpp_params);
-    configureCollectionMode(stat, name);
-    engine->registerStatisticWithEngine(stat);
-    return stat;
-}
-
 Statistics::StatisticBase*
 BaseComponent::createEnabledAllStatistic(
-    Params& params, const std::string& name, const std::string& statSubId, StatCreateFunction fxn)
+    Params& params, const std::string& name, const std::string& stat_sub_id, StatCreateFunction fxn)
 {
-    auto iter = m_enabled_all_stats_.find(name);
-    if ( iter != m_enabled_all_stats_.end() ) {
+    // Check if statistic was already registered, if so, return it
+    auto iter = enabled_all_stats_.find(name);
+    if ( iter != enabled_all_stats_.end() ) {
         auto& submap  = iter->second;
-        auto  subiter = submap.find(statSubId);
+        auto  subiter = submap.find(stat_sub_id);
         if ( subiter != submap.end() ) {
             return subiter->second;
         }
     }
 
-    // a matching statistic was not found
-    auto* stat = createStatistic(params, my_info_->all_stat_config_->params, name, statSubId, true, std::move(fxn));
-    if ( !stat->isNullStatistic() ) {
-        m_enabled_all_stats_[name][statSubId] = stat;
-    }
+    // New registration
+    params.insert(my_info_->all_stat_config_->params);
+    Statistics::StatisticBase* stat       = fxn(this, getStatEngine(), name, stat_sub_id, params);
+    enabled_all_stats_[name][stat_sub_id] = stat;
     return stat;
 }
 
 Statistics::StatisticBase*
 BaseComponent::createExplicitlyEnabledStatistic(
-    Params& params, StatisticId_t id, const std::string& name, const std::string& statSubId, StatCreateFunction fxn)
+    Params& params, StatisticId_t id, const std::string& name, const std::string& stat_sub_id, StatCreateFunction fxn)
 {
     Output& out = Simulation_impl::getSimulationOutput();
     if ( my_info_->parent_info ) {
@@ -887,51 +809,39 @@ BaseComponent::createExplicitlyEnabledStatistic(
     }
     auto& cfg = piter->second;
     if ( cfg.shared ) {
-        auto iter = m_explicitlyEnabledSharedStats.find(id);
-        if ( iter != m_explicitlyEnabledSharedStats.end() ) {
+        auto iter = explicitly_enabled_shared_stats_.find(id);
+        if ( iter != explicitly_enabled_shared_stats_.end() ) {
             return iter->second;
         }
         else {
-            // no subid
-            auto* stat = createStatistic(params, cfg.params, cfg.name, "", false, std::move(fxn));
-            m_explicitlyEnabledSharedStats[id] = stat;
+            params.insert(cfg.params);
+            Statistics::StatisticBase* stat      = fxn(this, getStatEngine(), cfg.name, "", params);
+            explicitly_enabled_shared_stats_[id] = stat;
             return stat;
         }
     }
     else {
-        auto iter = m_explicitlyEnabledUniqueStats.find(id);
-        if ( iter != m_explicitlyEnabledUniqueStats.end() ) {
+        auto iter = explicitly_enabled_unique_stats_.find(id);
+        if ( iter != explicitly_enabled_unique_stats_.end() ) {
             auto& map     = iter->second;
             auto  subiter = map.find(name);
             if ( subiter != map.end() ) {
                 auto& submap     = subiter->second;
-                auto  subsubiter = submap.find(statSubId);
+                auto  subsubiter = submap.find(stat_sub_id);
                 if ( subsubiter != submap.end() ) {
                     return subsubiter->second;
                 }
             }
         }
         // stat does not exist yet
-        auto* stat = createStatistic(params, cfg.params, name, statSubId, false, std::move(fxn));
-        m_explicitlyEnabledUniqueStats[id][name][statSubId] = stat;
+        params.insert(cfg.params);
+        auto* stat                                              = fxn(this, getStatEngine(), name, stat_sub_id, params);
+        explicitly_enabled_unique_stats_[id][name][stat_sub_id] = stat;
         return stat;
     }
 
     // unreachable
     return nullptr;
-}
-
-void
-BaseComponent::configureAllowedStatParams(SST::Params& params)
-{
-    // Identify what keys are Allowed in the parameters
-    std::vector<std::string> allowedKeySet;
-    allowedKeySet.push_back("type");
-    allowedKeySet.push_back("rate");
-    allowedKeySet.push_back("startat");
-    allowedKeySet.push_back("stopat");
-    allowedKeySet.push_back("resetOnOutput");
-    params.pushAllowedKeys(allowedKeySet);
 }
 
 void

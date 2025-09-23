@@ -44,8 +44,8 @@ class NullStatisticBase<T, true> : public Statistic<T>
 {
 public:
     NullStatisticBase(
-        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<T>(comp, statName, statSubId, statParams, true)
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        Statistic<T>(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     void addData_impl(T UNUSED(data)) override {}
@@ -63,8 +63,8 @@ class NullStatisticBase<std::tuple<Args...>, false> : public Statistic<std::tupl
 {
 public:
     NullStatisticBase(
-        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams, true)
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        Statistic<std::tuple<Args...>>(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     void addData_impl(Args... UNUSED(data)) override {}
@@ -82,8 +82,8 @@ class NullStatisticBase<T, false> : public Statistic<T>
 {
 public:
     NullStatisticBase(
-        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<T>(comp, statName, statSubId, statParams, true)
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        Statistic<T>(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     void addData_impl(T&& UNUSED(data)) override {}
@@ -111,8 +111,9 @@ public:
         "SST::Statistic<T>"
     )
 
-    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParam) :
-        NullStatisticBase<T>(comp, statName, statSubId, statParam)
+    NullStatistic(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        NullStatisticBase<T>(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     ~NullStatistic() {}
@@ -122,12 +123,12 @@ public:
         // Do Nothing
     }
 
-    void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
+    void registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output)) override
     {
         // Do Nothing
     }
 
-    void outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag)) override
     {
         // Do Nothing
     }
@@ -136,10 +137,7 @@ public:
 
     bool isNullStatistic() const override { return true; }
 
-    static bool isLoaded() { return loaded_; }
-
-private:
-    inline static bool loaded_ = true;
+    static bool isLoaded() { return true; }
 };
 
 template <>
@@ -157,8 +155,9 @@ public:
 
     SST_ELI_INTERFACE_INFO("Statistic<void>")
 
-    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
-        Statistic<void>(comp, statName, statSubId, statParams, true)
+    NullStatistic(
+        BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params) :
+        Statistic<void>(comp, stat_name, stat_sub_id, stat_params)
     {}
 
     virtual std::string getELIName() const override { return "sst.NullStatistic"; }

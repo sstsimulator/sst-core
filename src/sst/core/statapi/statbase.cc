@@ -26,79 +26,27 @@
 namespace SST::Stat::pvt {
 
 void
-registerStatWithEngineOnRestart(SST::Statistics::StatisticBase* s)
+registerStatWithEngineOnRestart(
+    SST::Statistics::StatisticBase* stat, SimTime_t start_factor, SimTime_t stop_factor, SimTime_t output_factor)
 {
-    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine(s);
+    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->reregisterStatisticWithEngine(
+        stat, start_factor, stop_factor, output_factor);
 }
 
 } // namespace SST::Stat::pvt
 
 namespace SST::Statistics {
 
-StatisticBase::StatisticInfo StatisticBase::null_info_;
-
-StatisticBase::StatisticBase(BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id,
-    Params& stat_params, bool null_stat = false)
+StatisticBase::StatisticBase(
+    BaseComponent* comp, const std::string& stat_name, const std::string& stat_sub_id, Params& stat_params)
 {
     component_ = comp;
 
-    if ( null_stat ) {
-        info_ = &null_info_;
-        return;
-    }
-
-    /* Remaining initialization is only for non-null statistics */
-    info_                  = new StatisticInfo();
-    info_->stat_name_      = stat_name;
-    info_->stat_sub_id_    = stat_sub_id;
-    info_->stat_full_name_ = buildStatisticFullName(getCompName(), info_->stat_name_, info_->stat_sub_id_);
-
-    /* Parameter: startat */
-    try {
-        UnitAlgebra startat = stat_params.find<UnitAlgebra>("startat", "0ns");
-        if ( !startat.hasUnits("s") ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-                "ERROR: Statistic %s - param 'startat' = '%s'; must be in units of seconds; exiting...\n",
-                getFullStatName().c_str(), startat.toStringBestSI().c_str());
-        }
-        info_->start_at_time_ = startat;
-    }
-    catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-            "ERROR: Statistic %s - param 'startat' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
-            stat_params.find<std::string>("startat", "0ns").c_str(), exc.what());
-    }
-
-    /* Parameter: stopat */
-    try {
-        UnitAlgebra stopat = stat_params.find<UnitAlgebra>("stopat", "0ns");
-        if ( !stopat.hasUnits("s") ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-                "ERROR: Statistic %s - param 'stopat' = '%s'; must be in units of seconds; exiting...\n",
-                getFullStatName().c_str(), stopat.toStringBestSI().c_str());
-        }
-        info_->stop_at_time_ = stopat;
-    }
-    catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-            "ERROR: Statistic %s - param 'stopat' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
-            stat_params.find<std::string>("stopat", "0ns").c_str(), exc.what());
-    }
-
-    /* Parameter: rate */
-    try {
-        UnitAlgebra rate        = stat_params.find<UnitAlgebra>("rate", "0ns");
-        // units are error checked by BaseComponent::configureCollectionMode
-        info_->collection_rate_ = rate;
-    }
-    catch ( UnitAlgebra::UnitAlgebraException& exc ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-            "ERROR: Statistic %s - param 'rate' = '%s'; Exception occured. %s\n", getFullStatName().c_str(),
-            stat_params.find<std::string>("rate", "0ns").c_str(), exc.what());
-    }
+    stat_name_   = stat_name;
+    stat_sub_id_ = stat_sub_id;
 
     /* Parameter: resetOnOutput */
-    info_->clear_data_on_output_ = stat_params.find<bool>("resetOnOutput", false);
+    clear_data_on_output_ = stat_params.find<bool>("resetOnOutput", false);
 }
 
 const std::vector<ElementInfoParam>&
@@ -119,45 +67,45 @@ void
 Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag))
 {
     Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-        "void statistic %s, type %s for component %s does not support outputing fields", getStatTypeName().c_str(),
-        getFullStatName().c_str(), getComponent()->getName().c_str());
+        "void statistic %s, type %s does not support outputing fields", getFullStatName().c_str(),
+        getStatTypeName().c_str());
 }
 
 void
 Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output))
 {
     Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-        "void statistic %s, type %s for component %s does not support outputing fields", getStatTypeName().c_str(),
-        getFullStatName().c_str(), getComponent()->getName().c_str());
+        "void statistic %s, type %s does not support outputing fields", getFullStatName().c_str(),
+        getStatTypeName().c_str());
 }
 REENABLE_WARNING
 
 void
 StatisticBase::incrementCollectionCount(uint64_t increment)
 {
-    info_->current_collection_count_ += increment;
-    info_->output_collection_count_ += increment;
+    current_collection_count_ += increment;
+    output_collection_count_ += increment;
     checkEventForOutput();
 }
 
 void
 StatisticBase::setCollectionCount(uint64_t new_count)
 {
-    info_->current_collection_count_ = new_count;
-    info_->output_collection_count_  = new_count;
+    current_collection_count_ = new_count;
+    output_collection_count_  = new_count;
     checkEventForOutput();
 }
 
 void
 StatisticBase::resetCollectionCount()
 {
-    info_->output_collection_count_ = 0;
+    output_collection_count_ = 0;
 }
 
 void
 StatisticBase::setCollectionCountLimit(uint64_t new_limit)
 {
-    info_->collection_count_limit_ = new_limit;
+    collection_count_limit_ = new_limit;
     checkEventForOutput();
 }
 
@@ -185,11 +133,10 @@ StatisticBase::buildStatisticFullName(
 void
 StatisticBase::checkEventForOutput()
 {
-    if ( (info_->registered_collection_mode_ == STAT_MODE_COUNT) &&
-         (info_->output_collection_count_ >= info_->collection_count_limit_) &&
-         (1 <= info_->collection_count_limit_) ) {
+    if ( (!registered_collection_mode_) && (output_collection_count_ >= collection_count_limit_) &&
+         (1 <= collection_count_limit_) ) {
         // Dont output if CountLimit is zero
-        component_->getStatEngine()->performStatisticOutput(this);
+        Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(this);
     }
 }
 
@@ -199,86 +146,58 @@ StatisticBase::operator==(StatisticBase& check_stat)
     return (getFullStatName() == check_stat.getFullStatName());
 }
 
+SimTime_t
+StatisticBase::getStartAtFactor()
+{
+    return Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->getStatisticStartTimeFactor(this);
+}
+
+SimTime_t
+StatisticBase::getStopAtFactor()
+{
+    return Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->getStatisticStopTimeFactor(this);
+}
+
+SimTime_t
+StatisticBase::getOutputRateFactor()
+{
+    return getGroup() ? getGroup()->output_freq : 0;
+}
+
+
 void
 StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    /* Only serialize info if stat is non-null */
+    /* Only serialize info if stat is non-null - this should be skipped for null stats anyways */
     if ( !isNullStatistic() ) {
         // Need to serialize info_ as a non-pointer because on UNPACK,
-        // it will have already been initiailized and serializing as a
+        // it will have already been initialized and serializing as a
         // pointer causes it to overwrite what is already there
         // (serializer assumes it is uninitialized and creates a new
         // one before calling serialize_order)
-        SST_SER(*info_);
+        SST_SER(stat_type_name_); // Deprecated
+        SST_SER(flags_);
+        SST_SER(current_collection_count_);
+        SST_SER(output_collection_count_);
+        SST_SER(collection_count_limit_);
+        SST_SER(registered_collection_mode_);
+        SST_SER(stat_enabled_);
+        SST_SER(reset_count_on_output_);
+        SST_SER(clear_data_on_output_);
+        SST_SER(output_at_end_of_sim_);
+
+
+        /* Store/restore data type */
+        if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
+            std::string name(StatisticFieldInfo::getFieldTypeShortName(stat_data_type_));
+            SST_SER(name);
+        }
+        else {
+            std::string name;
+            SST_SER(name);
+            stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
+        }
     }
-
-    /* Store/restore data type */
-    if ( ser.mode() != SST::Core::Serialization::serializer::UNPACK ) {
-        std::string name(StatisticFieldInfo::getFieldTypeShortName(stat_data_type_));
-        SST_SER(name);
-    }
-    else {
-        std::string name;
-        SST_SER(name);
-        stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
-    }
-}
-
-StatisticBase::StatisticInfo::StatisticInfo()
-{
-    stat_name_      = "";
-    stat_sub_id_    = "";
-    stat_type_name_ = "";
-    stat_full_name_ = "";
-    stat_enabled_   = true;
-
-    group_ = nullptr;
-
-    output_enabled_        = true;
-    reset_count_on_output_ = false;
-    clear_data_on_output_  = false;
-    output_at_end_of_sim_  = true;
-    output_delayed_        = false;
-    collection_delayed_    = false;
-    saved_stat_enabled_    = true;
-    saved_output_enabled_  = true;
-
-    // Since there is an instance of this class that is statically
-    // initialized, we can't use any units as they aren't initialized
-    // until main()
-    start_at_time_   = UnitAlgebra("0");
-    stop_at_time_    = UnitAlgebra("0");
-    collection_rate_ = UnitAlgebra("0");
-
-    current_collection_count_   = 0;
-    output_collection_count_    = 0;
-    collection_count_limit_     = 0;
-    registered_collection_mode_ = STAT_MODE_UNDEFINED;
-}
-
-void
-StatisticBase::StatisticInfo::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    // stat_name_ serialized by StatisticBase
-    // stat_sub_id_ serialized by StatisticBase
-    // group_ recreated on restart
-    SST_SER(stat_type_name_);
-    SST_SER(stat_full_name_);
-    SST_SER(current_collection_count_);
-    SST_SER(output_collection_count_);
-    SST_SER(collection_count_limit_);
-    SST_SER(registered_collection_mode_);
-    SST_SER(start_at_time_);
-    SST_SER(stop_at_time_);
-    SST_SER(collection_rate_);
-    SST_SER(stat_enabled_);
-    SST_SER(output_enabled_);
-    SST_SER(reset_count_on_output_);
-    SST_SER(clear_data_on_output_);
-    SST_SER(output_at_end_of_sim_);
-    SST_SER(output_delayed_);
-    SST_SER(saved_stat_enabled_);
-    SST_SER(saved_output_enabled_);
 }
 
 SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);

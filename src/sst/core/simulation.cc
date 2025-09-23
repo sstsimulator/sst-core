@@ -576,7 +576,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 int
 Simulation_impl::initializeStatisticEngine(StatsConfig* stats_config)
 {
-    stat_engine.setup(this, stats_config);
+    stat_engine.setup(stats_config);
     return 0;
 }
 
@@ -1960,7 +1960,7 @@ Simulation_impl::restart()
     completeBarrier.wait();
 
     /* Initial fix up of stat engine, the rest is after components re-register statistics */
-    stat_engine.restart(this);
+    stat_engine.restart();
 
 
     /* Extract components */
