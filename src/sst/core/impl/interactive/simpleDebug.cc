@@ -61,8 +61,9 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         {"quit", "q",  "alias for exit",                                                 ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_exit(tokens); }},
         {"shutdown", "shutdown",  "exit the debugger and cleanly shutdown simulator",    ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_shutdown(tokens); }},
         {"logging", "log",  "<filepath>: log command line entires to file",              ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_logging(tokens); }},
-        {"replay", "rep", "<filepath>: run commands from a file (See also: sst --replay",ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_replay(tokens); }},
-        {"spinThread", "spin",  "enter spin loop. See SimpleDebugger::cmd_spinThread",  ConsoleCommandGroup::MISC,        [this](std::vector<std::string>& tokens){ cmd_spinThread(tokens); }},
+        {"replay", "rep", "<filepath>: run commands from a file. See also: sst --replay",ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_replay(tokens); }},
+        {"history", "h", "[N]: display all or last N unique commands",                   ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_history(tokens); }},
+        {"spinThread", "spin",  "enter spin loop. See SimpleDebugger::cmd_spinThread",   ConsoleCommandGroup::MISC,       [this](std::vector<std::string>& tokens){ cmd_spinThread(tokens); }},
     };
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
@@ -99,8 +100,15 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
                 "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
                 "\tTIME is of the format <Number><unit> e.g. 4us"},
+        {"history", "[N]: list previous N instructions. If N is not set list all\n"
+                    "\tSupports bash-style commands:\n"
+                    "\t!!   execute previous command\n"
+                    "\t!!n  execute command at index n\n"
+                    "\t!-n  execute commad n lines back in history\n"
+                    "\tstring  execute the most recent command starting with `string`\n"
+                    "\t?string execute the most recent command containing `string`\n"
+                    "\t!...:p  print the instruction but not execute it."},
     };
-
 }
 
 SimpleDebugger::~SimpleDebugger() {
@@ -164,6 +172,63 @@ SimpleDebugger::execute(const std::string& msg)
         }
     }
 }
+
+// Invoke the command
+void
+SimpleDebugger::dispatch_cmd(std::string cmd)
+{
+    // empty command
+    if (cmd.size()==0) return;
+    
+    std::vector<std::string> tokens;
+    tokenize(tokens, cmd);
+
+    // just whitespace
+    if (tokens.size()==0) return;
+
+    // comment
+    if ( tokens[0][0]=='#') 
+        return;
+
+    // History !! and friends
+    if (tokens[0][0]=='!') {
+        std::string newcmd;
+        auto rc = cmdHistoryBuf.bang(tokens[0], newcmd );
+        if (rc==CommandHistoryBuffer::BANG_RC::ECHO) {
+            // print and save command in history
+            std::cout << newcmd << std::endl;
+            cmdHistoryBuf.append(newcmd);
+            return;
+        } else if (rc==CommandHistoryBuffer::BANG_RC::EXEC) {
+            //print new command, overwrite command and let it flow through
+            std::cout << newcmd << std::endl;
+            tokens.clear();
+            cmd = newcmd;
+            tokenize(tokens, cmd);
+        }
+    }
+
+    // The business
+    for ( auto consoleCommand : cmdRegistry ) {
+        if (consoleCommand.match(tokens[0])) {
+            consoleCommand.exec(tokens);  //TODO prefer having return code to know if succeeded
+            cmdHistoryBuf.append(cmd);
+            return;
+        }
+    }
+
+    // Oops
+    printf("Unknown command: %s\n", tokens[0].c_str());
+}
+
+//
+/* 
+    !!:  Executes the previous command
+    !!n: Executes the command at history index n.
+    !-n: Executes the command n lines back in history.
+    !string: Executes the most recent command starting with "string".
+    !?string: Executes the most recent command containing "string" anywhere.
+*/
 
 // Functions for the Explorer
 
@@ -673,6 +738,20 @@ SimpleDebugger::cmd_replay(std::vector<std::string>& tokens)
         std::cout << "Could not open replay file: " << replayFilePath << std::endl;
 
     return;
+}
+
+void
+SimpleDebugger::cmd_history(std::vector<std::string>& tokens)
+{
+    int recs=0; // 0 indicates all history
+    if (tokens.size()>1) {
+        try {
+            recs = (int) SST::Core::from_string<int>(tokens[1]);
+        } catch ( std::invalid_argument& e ) {
+            std::cout << "history: Ignoring arg1 (" << tokens[1] << ")" << std::endl;
+        }
+    }
+    cmdHistoryBuf.print(recs);
 }
 
 WatchPoint::LogicOp
@@ -1242,33 +1321,178 @@ SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
     return;
 }
 
+void
+CommandHistoryBuffer::append(std::string s)
+{ 
+    buf_[nxt_] = std::make_pair(count_++, s);
+    sz_ = sz_<MAX_CMDS-1 ? sz_+1 : MAX_CMDS;
+    cur_ = nxt_;
+    nxt_ = (nxt_ + 1) % MAX_CMDS;
+}
 
 void
-SimpleDebugger::dispatch_cmd(std::string cmd)
+CommandHistoryBuffer::print(int num)
 {
-    // empty command
-    if (cmd.size()==0) return;
-    
-    std::vector<std::string> tokens;
-    tokenize(tokens, cmd);
+    int n = num <sz_ ? num : sz_;
+    n = n<=0 ? sz_ : n;  
+    int idx = (nxt_-n) % sz_;
+    if (idx<0) idx += sz_;
+    for (int i=0; i<n; i++) {
+        std::cout <<  buf_[idx].first << " " << buf_[idx].second << std::endl;
+        idx = (idx + 1 ) % MAX_CMDS;
+    }
+}
 
-    // just whitespace
-    if (tokens.size()==0) return;
+CommandHistoryBuffer::BANG_RC
+CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
+{
+    auto rc = CommandHistoryBuffer::BANG_RC::INVALID;
+    if (this->sz_ == 0) return rc;
 
-    // comment
-    if ( tokens[0][0]=='#') 
-        return;
+    // !!       Execute the previous instruction
+    // !!n      Execute instruction at history index n
+    // !-n      Execute instruction n lines back in history
+    // !string  Execute the most recent command starting with string
+    // !?string Execute the most recent command containing string
+    // !...:p   Find instruction in history but only print it
 
-    // The business
-    for ( auto consoleCommand : cmdRegistry ) {
-        if (consoleCommand.match(tokens[0])) {
-            consoleCommand.exec(tokens);
-            return;
+    // Check for :p  and strip it from token
+    bool echo = false;
+    std::string base = token;
+    if (token.length()>=2) {
+        std::string last2chars = token.substr(token.length()-2);
+        if (last2chars==":p") {
+            echo = true;
+            base = token.substr(0, token.length()-2);
         }
     }
 
-    // Oops
-    printf("Unknown command: %s\n", tokens[0].c_str());
+    // grab first two chars and arg
+    if (base.length() < 2 ) 
+        return rc;
+    std::string cmd = base.substr(0,2);
+    std::string arg = "";
+    if (base.length() > 2) 
+        arg = base.substr(2);
+    
+    bool found = false;
+    if (cmd=="!!") {
+        if (arg.length()==0) {
+            newcmd = buf_[cur_].second;
+            found = true;
+        } else {
+            // !!n
+            found = findEvent(arg, newcmd);
+        }
+    } else if (cmd=="!-") {
+        found = findOffset(arg, newcmd);
+    } else if (cmd=="!?") {
+        found = searchAny(arg, newcmd);
+    } else {
+        arg = base.substr(1);
+        found = searchFirst(arg, newcmd);
+    }
+
+    if (found) {
+        rc = echo ? CommandHistoryBuffer::BANG_RC::ECHO : CommandHistoryBuffer::BANG_RC::EXEC;
+    }
+
+    return rc;
 }
+
+bool
+CommandHistoryBuffer::findEvent(const std::string& s, std::string& newcmd)
+{
+    // !!n
+    int event = -1;
+    try {
+        event = (int) SST::Core::from_string<int>(s);
+    } catch ( std::invalid_argument& e ) {
+        std::cout << "history: invalid event: " << s << std::endl;
+        return false;
+    }
+    if (event<0) {
+        std::cout << "history: invalid event: " << event << std::endl;
+        return false; 
+    }
+    // search backwards (most recent first)
+    int idx = cur_;
+    for (int i=0; i<sz_; i++) {
+        if (buf_[idx].first == (size_t) event) {
+            newcmd = buf_[idx].second;
+            return true;
+        }
+        idx--;
+        if (idx<0) idx = sz_ - 1;
+    }
+    return false;
+}
+
+bool
+CommandHistoryBuffer::findOffset(const std::string& s, std::string& newcmd)
+{
+    // !-n
+    int offset = -1;
+    try {
+        offset = (int) SST::Core::from_string<int>(s);
+    } catch ( std::invalid_argument& e ) {
+        std::cout << "history: invalid offset: " << s << std::endl;
+        return false;
+    }
+
+    if (offset>sz_) {
+        std::cout << "history: offset not found: " << offset << std::endl;
+        return false;
+    }
+
+    int idx = cur_ - offset;
+    if (idx<0)
+        idx += sz_;
+
+    newcmd = buf_[idx].second;
+    return true;
+}
+
+bool
+CommandHistoryBuffer::searchFirst(const std::string& s, std::string& newcmd)
+{
+    // !string
+    // search backwards. Most recent first
+    int idx = cur_;
+    for (int i=0;i<sz_;i++) {
+        std::string chk = buf_[idx].second;
+        idx--;
+        if (idx<0) idx += sz_;
+        if (chk.length()<s.length())
+            continue;
+        if (chk.substr(0,s.length())==s) {
+            newcmd = chk;
+            return true;
+        }
+    }
+    std::cout << "history: start string not found: " << s << std::endl;
+    return false;
+}
+
+bool
+CommandHistoryBuffer::searchAny(const std::string& s, std::string& newcmd)
+{
+    // !?string
+    int idx = cur_;
+    for (int i=0;i<sz_;i++) {
+        std::string chk = buf_[idx].second;
+        idx--;
+        if (idx<0) idx += sz_;
+        if (chk.length()<s.length())
+            continue;
+        if ( chk.find(s) != std::string::npos) {
+            newcmd = chk;
+            return true;
+        }
+    }
+    std::cout << "history: string not found: " << s << std::endl;
+    return false;
+}
+
 
 } // namespace SST::IMPL::Interactive

@@ -80,6 +80,27 @@ class ConsoleCommand {
     }
   };
 
+class CommandHistoryBuffer {
+public:
+  const int MAX_CMDS=200;
+  CommandHistoryBuffer() { buf_.resize(MAX_CMDS); }
+  void append(std::string s);
+  void print(int num);
+  enum BANG_RC { INVALID, ECHO, EXEC };
+  BANG_RC bang( const std::string& token, std::string& newcmd );
+private:
+  int cur_ = 0;
+  int nxt_ = 0;
+  int sz_ = 0;
+  int count_ = 0;
+  std::vector<std::pair<std::size_t, std::string>> buf_;
+  // support for ! history retrieval
+  bool findEvent(const std::string& s, std::string& newcmd);
+  bool findOffset(const std::string& s, std::string& newcmd);
+  bool searchFirst(const std::string& s, std::string& newcmd);
+  bool searchAny(const std::string& s, std::string& newcmd);
+};
+
 class SimpleDebugger : public SST::InteractiveConsole
 {
 
@@ -165,6 +186,7 @@ private:
     // Logging/Replay
     void cmd_logging(std::vector<std::string>& tokens);
     void cmd_replay(std::vector<std::string>& tokens);
+    void cmd_history(std::vector<std::string>& tokens);
 
     // LLDB/GDB helper
     void cmd_spinThread(std::vector<std::string>& tokens);
@@ -176,6 +198,9 @@ private:
 
     // Detailed Command Help
     std::map<std::string, std::string> cmdHelp;
+
+    // Command History
+    CommandHistoryBuffer cmdHistoryBuf;
 };
 
 } // namespace SST::IMPL::Interactive
