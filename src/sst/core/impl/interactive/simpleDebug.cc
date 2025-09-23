@@ -105,7 +105,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                     "\t!!   execute previous command\n"
                     "\t!!n  execute command at index n\n"
                     "\t!-n  execute commad n lines back in history\n"
-                    "\tstring  execute the most recent command starting with `string`\n"
+                    "\t!string  execute the most recent command starting with `string`\n"
                     "\t?string execute the most recent command containing `string`\n"
                     "\t!...:p  print the instruction but not execute it."},
     };
