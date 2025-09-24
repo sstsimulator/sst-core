@@ -63,12 +63,12 @@ JSONConfigGraphOutput::outputLinks(ConfigGraph* graph, std::ofstream& ofs)
             // left link
             linkRecord["left"]["component"] = graph->findComponent(linkItr->component[0])->getFullName();
             linkRecord["left"]["port"]      = linkItr->port[0];
-            linkRecord["left"]["latency"]   = linkItr->latency_str[0];
+            linkRecord["left"]["latency"]   = linkItr->latency_str(0);
 
             // right link
             linkRecord["right"]["component"] = graph->findComponent(linkItr->component[1])->getFullName();
             linkRecord["right"]["port"]      = linkItr->port[1];
-            linkRecord["right"]["latency"]   = linkItr->latency_str[1];
+            linkRecord["right"]["latency"]   = linkItr->latency_str(1);
 
             ofs << linkRecord.dump(2);
             if ( count != const_cast<ConfigLinkMap_t&>(linkMap).size() ) {

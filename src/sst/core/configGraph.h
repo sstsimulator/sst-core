@@ -48,17 +48,28 @@ using LinkIdMap_t      = std::vector<LinkId_t>;
 /** Represents the configuration of a generic Link */
 class ConfigLink : public SST::Core::Serialization::serializable
 {
-public:
-    LinkId_t      id;             /*!< ID of this link */
-    std::string   name;           /*!< Name of this link */
-    ComponentId_t component[2];   /*!< IDs of the connected components */
-    std::string   port[2];        /*!< Names of the connected ports */
-    SimTime_t     latency[2];     /*!< Latency from each side */
-    std::string   latency_str[2]; /*!< Temp string holding latency */
+    // Static data structures to map latency string to an index that
+    // will hold the SimTime_t for the latency once the atomic
+    // timebase has been set.
+    static std::map<std::string, uint32_t> lat_to_index;
 
-    LinkId_t order;  /*!< Number of components currently referring to this Link.  After graph construction, it will
-                       be repurposed to hold the enforce_order value */
-    bool     no_cut; /*!< If set to true, partitioner will not make a cut through this Link */
+    static uint32_t               getIndexForLatency(const char* latency);
+    static std::vector<SimTime_t> initializeLinkLatencyVector();
+    SimTime_t                     getLatencyFromIndex(uint32_t index);
+
+public:
+    LinkId_t      id;    /*!< ID of this link */
+    LinkId_t      order; /*!< Number of components currently referring to this Link.  After graph construction, it will
+                               be repurposed to hold the enforce_order value */
+    ComponentId_t component[2] = { 0, 0 }; /*!< IDs of the connected components */
+    SimTime_t     latency[2]   = { 0, 0 };
+    std::string   name;    /*!< Name of this link */
+    std::string   port[2]; /*!< Names of the connected ports */
+
+    // At construct time, holds the index into the lat_index_to_time
+    // vector to get the SimTime_t factor for the latency
+
+    bool no_cut; /*!< If set to true, partitioner will not make a cut through this Link */
 
     // inline const std::string& key() const { return name; }
     inline LinkId_t key() const { return id; }
@@ -69,6 +80,8 @@ public:
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];
     }
+
+    std::string latency_str(uint32_t index) const;
 
     /** Print the Link information */
     void print(std::ostream& os) const
@@ -95,8 +108,6 @@ public:
         SST_SER(port[1]);
         SST_SER(latency[0]);
         SST_SER(latency[1]);
-        SST_SER(latency_str[0]);
-        SST_SER(latency_str[1]);
         SST_SER(order);
     }
 
@@ -127,7 +138,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    void updateLatencies(TimeLord*);
+    void updateLatencies();
 };
 
 class ConfigStatistic : public SST::Core::Serialization::serializable

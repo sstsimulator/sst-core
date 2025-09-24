@@ -68,35 +68,60 @@ checkForValidLinkName(const std::string& name)
 
 
 namespace SST {
+std::map<std::string, uint32_t> ConfigLink::lat_to_index;
+
+uint32_t
+ConfigLink::getIndexForLatency(const char* latency)
+{
+    std::string lat(latency);
+    uint32_t&   index = lat_to_index[lat];
+    if ( index == 0 ) {
+        // Wasn't there, set it to lat_to_index.size(), which is the
+        // next index (skipping zero as that is the check for a new
+        // entry)
+        index = lat_to_index.size();
+    }
+    return index;
+}
+
+std::vector<SimTime_t>
+ConfigLink::initializeLinkLatencyVector()
+{
+    TimeLord*              timeLord = Simulation_impl::getTimeLord();
+    std::vector<SimTime_t> vec;
+    vec.resize(lat_to_index.size() + 1);
+    for ( auto& [lat, index] : lat_to_index ) {
+        vec[index] = timeLord->getSimCycles(lat, __FUNCTION__);
+    }
+    return vec;
+}
+
+SimTime_t
+ConfigLink::getLatencyFromIndex(uint32_t index)
+{
+    static std::vector<SimTime_t> vec = initializeLinkLatencyVector();
+    return vec[index];
+}
+
+std::string
+ConfigLink::latency_str(uint32_t index) const
+{
+    static TimeLord* timelord = Simulation_impl::getTimeLord();
+    UnitAlgebra      tb       = timelord->getTimeBase();
+    auto             tmp      = tb * latency[index];
+    return tmp.toStringBestSI();
+}
 
 void
-ConfigLink::updateLatencies(TimeLord* timeLord)
+ConfigLink::updateLatencies()
 {
     // Need to clean up some elements before we can test for zero latency
     if ( order >= 1 ) {
-        latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__);
+        latency[0] = ConfigLink::getLatencyFromIndex(latency[0]);
     }
-    // if ( latency[0] == 0 ) {
-    //     latency[0] = 1;
-    //     if ( !zero_latency_warning ) {
-    //         Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a
-    //         latency of %s\n",
-    //                                           Simulation_impl::getTimeLord()->getTimeBase().toStringBestSI().c_str());
-    //         zero_latency_warning = true;
-    //     }
-    // }
     if ( order >= 2 ) {
-        latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
+        latency[1] = ConfigLink::getLatencyFromIndex(latency[1]);
     }
-    // if ( latency[1] == 0 ) {
-    //     latency[1] = 1;
-    //     if ( !zero_latency_warning ) {
-    //         Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a
-    //         latency of %s\n",
-    //                                           Simulation_impl::getTimeLord()->getTimeBase().toStringBestSI().c_str());
-    //         zero_latency_warning = true;
-    //     }
-    // }
 }
 
 void
@@ -728,9 +753,8 @@ ConfigGraph::checkRanks(RankInfo ranks)
 void
 ConfigGraph::postCreationCleanup()
 {
-    TimeLord* timeLord = Simulation_impl::getTimeLord();
     for ( ConfigLink* link : getLinkMap() ) {
-        link->updateLatencies(timeLord);
+        link->updateLatencies();
     }
 
     // Need to assign the link delivery order.  This is done
@@ -873,8 +897,7 @@ ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, 
 
     // A nullptr for latency_str means use the latency specified at
     // link creation
-    if ( latency_str ) link->latency_str[index] = latency_str;
-    // if ( latency_str ) link->latency[index] = ConfigLink::getIndexForLatency(latency_str);
+    if ( latency_str ) link->latency[index] = ConfigLink::getIndexForLatency(latency_str);
 
     // Need to add this link to the ConfigComponent's link list.
     // Check to make sure the link doesn't already exist in the
@@ -897,11 +920,9 @@ ConfigGraph::createLink(const char* name, const char* latency)
     ConfigLink* link = new ConfigLink(id, name);
     links_.insert(link);
     if ( latency ) {
-        // uint32_t index   = ConfigLink::getIndexForLatency(latency);
-        // link->latency[0] = index;
-        // link->latency[1] = index;
-        link->latency_str[0] = latency;
-        link->latency_str[1] = latency;
+        uint32_t index   = ConfigLink::getIndexForLatency(latency);
+        link->latency[0] = index;
+        link->latency[1] = index;
     }
     return id;
 }
