@@ -975,13 +975,14 @@ buildOverheadMeasureTest(PyObject* UNUSED(self), PyObject* args)
         std::string right("right_");
 
         for ( int j = 0; j < num_links; ++j ) {
-            link_name = link_base_name + std::to_string(j);
+            link_name        = link_base_name + std::to_string(j);
+            LinkId_t link_id = gModel->createLink(link_name.c_str(), "1ns");
 
             std::string last_port = right + std::to_string(j);
             std::string curr_port = left + std::to_string(j);
 
-            gModel->addLink(last_comp_id, link_name.c_str(), last_port.c_str(), "1ns", false);
-            gModel->addLink(curr_comp_id, link_name.c_str(), curr_port.c_str(), "1ns", false);
+            gModel->addLink(last_comp_id, link_id, last_port.c_str(), "1ns");
+            gModel->addLink(curr_comp_id, link_id, curr_port.c_str(), "1ns");
         }
     }
     return Py_None;

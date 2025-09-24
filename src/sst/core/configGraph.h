@@ -534,12 +534,16 @@ public:
 
     long getStatLoadLevel() const { return stats_config_->load_level; }
 
-    /** Add a Link to a Component on a given Port */
-    void addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
-        const std::string& latency_str, bool no_cut = false);
+    /**
+       Create link and return it's ID.  The provided name is not
+       checked against existing links
+     */
+    LinkId_t createLink(const char* name, const char* latency = nullptr);
 
+    /** Add a Link to a Component on a given Port */
+    void addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, const char* latency_str);
     /** Set a Link to be no-cut */
-    void setLinkNoCut(const std::string& link_name);
+    void setLinkNoCut(LinkId_t link_name);
 
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();

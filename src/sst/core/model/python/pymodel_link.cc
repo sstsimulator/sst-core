@@ -42,16 +42,19 @@ linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
     PyObject *  lobj = nullptr, *lstr = nullptr;
     if ( !PyArg_ParseTuple(args, "s|O", &name, &lobj) ) return -1;
 
-    self->name   = gModel->addNamePrefix(name);
-    self->no_cut = false;
+    char* full_name = gModel->addNamePrefix(name);
 
     if ( nullptr != lobj ) {
-        lstr = PyObject_CallMethod(lobj, (char*)"__str__", nullptr);
+        lstr = PyObject_Str(lobj);
         lat  = SST_ConvertToCppString(lstr);
     }
-    self->latency = lat ? strdup(lat) : nullptr;
+    char* latency = lat ? strdup(lat) : nullptr;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
+    self->link_id = gModel->createLink(name, latency);
+
+    free(full_name);
+    // if ( latency ) free(latency);
+    Py_XDECREF(lstr);
 
     return 0;
 }
@@ -59,8 +62,6 @@ linkInit(LinkPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 static void
 linkDealloc(LinkPy_t* self)
 {
-    if ( self->name ) free(self->name);
-    if ( self->latency ) free(self->latency);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -87,11 +88,9 @@ linkConnect(PyObject* self, PyObject* args)
     }
 
     if ( nullptr != l0 ) {
-        lstr0 = PyObject_CallMethod(l0, (char*)"__str__", nullptr);
+        lstr0 = PyObject_Str(l0);
         lat0  = SST_ConvertToCppString(lstr0);
     }
-
-    if ( nullptr == lat0 ) lat0 = link->latency;
 
 
     if ( !PyArg_ParseTuple(t1, "O!s|O", &PyModel_ComponentType, &c1, &port1, &l1) ) {
@@ -102,26 +101,25 @@ linkConnect(PyObject* self, PyObject* args)
     }
 
     if ( nullptr != l1 ) {
-        lstr1 = PyObject_CallMethod(l1, (char*)"__str__", nullptr);
+        lstr1 = PyObject_Str(l1);
         lat1  = SST_ConvertToCppString(lstr1);
     }
 
-    if ( nullptr == lat1 ) lat1 = link->latency;
-
-    if ( nullptr == lat0 || nullptr == lat1 ) {
-        gModel->getOutput()->fatal(CALL_INFO, 1, "No Latency specified for link %s\n", link->name);
-        return nullptr;
-    }
+    // NEED TO REPLACE THIS ERROR MESSAGE
+    // if ( nullptr == lat0 || nullptr == lat1 ) {
+    //     gModel->getOutput()->fatal(CALL_INFO, 1, "No Latency specified for link %s\n", link->name);
+    //     return nullptr;
+    // }
 
     ComponentId_t id0, id1;
     id0 = getComp(c0)->id;
     id1 = getComp(c1)->id;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0,
-        "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n", id0, id1,
-        ((LinkPy_t*)self)->name, lat0, lat1);
-    gModel->addLink(id0, link->name, port0, lat0, link->no_cut);
-    gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
+    // gModel->getOutput()->verbose(CALL_INFO, 3, 0,
+    //     "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n", id0, id1,
+    //     ((LinkPy_t*)self)->name, lat0, lat1);
+    gModel->addLink(id0, link->link_id, port0, lat0);
+    gModel->addLink(id1, link->link_id, port1, lat1);
 
     Py_XDECREF(lstr0);
     Py_XDECREF(lstr1);
@@ -133,11 +131,10 @@ static PyObject*
 linkSetNoCut(PyObject* self, PyObject* UNUSED(args))
 {
     LinkPy_t* link = (LinkPy_t*)self;
-    bool      prev = link->no_cut;
-    link->no_cut   = true;
-    gModel->setLinkNoCut(link->name);
-    return PyBool_FromLong(prev ? 1 : 0);
+    gModel->setLinkNoCut(link->link_id);
+    return PyBool_FromLong(0);
 }
+
 
 static PyMethodDef linkMethods[] = { { "connect", linkConnect, METH_VARARGS, "Connects two components to a Link" },
     { "setNoCut", linkSetNoCut, METH_NOARGS, "Specifies that this link should not be partitioned across" },

@@ -733,12 +733,19 @@ ConfigGraph::postCreationCleanup()
         link->updateLatencies(timeLord);
     }
 
+    // Need to assign the link delivery order.  This is done
+    // alphabetically by link name. To save memory, we'll sort links_
+    // by name, then sort it back by link_id
+    std::sort(links_.begin(), links_.end(),
+        [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
+
     LinkId_t count = 1;
-    for ( auto& it : link_names_ ) {
-        ConfigLink* link = links_[it.second];
-        link->order      = count;
+    for ( auto* link : links_ ) {
+        link->order = count;
         count++;
     }
+
+    links_.sort();
 
     /* Force component / statistic registration for Group stats */
     for ( auto& cfg : getStatGroups() ) {
@@ -836,36 +843,32 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
     stats_config_->load_level = loadLevel;
 }
 
+
 void
-ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
-    const std::string& latency_str, bool no_cut)
+ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, const char* latency_str)
 {
-    checkForValidLinkName(link_name);
+    // checkForValidLinkName(link_name);
 
-    // If the link already exists, it just gets it out of the links
-    // data structure.  If the link does not exist, we create it, add
-    // the link_name to id mapping (the id is links.size()) and add
-    // the link to the links data structure.  The insert function
-    // returns a reference to the newly inserted link.
-    auto link_name_it = link_names_.find(link_name);
-
-    ConfigLink* link = (link_name_it == link_names_.end())
-                           ? links_.insert(new ConfigLink(link_names_[link_name] = links_.size(), link_name))
-                           : links_[link_name_it->second];
+    // The Link was created eariler, just get it out of the links_
+    // data structure.
+    ConfigLink* link = links_[link_id];
 
     // Check to make sure the link has not been referenced too many
     // times.
     if ( link->order >= 2 ) {
         output.fatal(
-            CALL_INFO, 1, "ERROR: Parsing SDL file: Link %s referenced more than two times\n", link_name.c_str());
+            CALL_INFO, 1, "ERROR: Parsing SDL file: Link %s referenced more than two times\n", link->name.c_str());
     }
 
     // Update link information
-    int index                = link->order++;
-    link->component[index]   = comp_id;
-    link->port[index]        = port;
-    link->latency_str[index] = latency_str;
-    link->no_cut             = link->no_cut | no_cut;
+    int index              = link->order++;
+    link->component[index] = comp_id;
+    link->port[index]      = port;
+
+    // A nullptr for latency_str means use the latency specified at
+    // link creation
+    if ( latency_str ) link->latency_str[index] = latency_str;
+    // if ( latency_str ) link->latency[index] = ConfigLink::getIndexForLatency(latency_str);
 
     // Need to add this link to the ConfigComponent's link list.
     // Check to make sure the link doesn't already exist in the
@@ -880,14 +883,27 @@ ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const 
     }
 }
 
-void
-ConfigGraph::setLinkNoCut(const std::string& link_name)
+LinkId_t
+ConfigGraph::createLink(const char* name, const char* latency)
 {
-    // If link doesn't exist, return
-    if ( link_names_.find(link_name) == link_names_.end() ) return;
+    checkForValidLinkName(name);
+    LinkId_t    id   = (LinkId_t)links_.size();
+    ConfigLink* link = new ConfigLink(id, name);
+    links_.insert(link);
+    if ( latency ) {
+        // uint32_t index   = ConfigLink::getIndexForLatency(latency);
+        // link->latency[0] = index;
+        // link->latency[1] = index;
+        link->latency_str[0] = latency;
+        link->latency_str[1] = latency;
+    }
+    return id;
+}
 
-    ConfigLink* link = links_[link_names_[link_name]];
-    link->no_cut     = true;
+void
+ConfigGraph::setLinkNoCut(LinkId_t link_id)
+{
+    links_[link_id]->no_cut = true;
 }
 
 bool

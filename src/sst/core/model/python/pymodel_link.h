@@ -25,10 +25,14 @@ extern "C" {
 
 struct LinkPy_t
 {
-    PyObject_HEAD char* name;
-    bool                no_cut;
-    char*               latency;
+    PyObject_HEAD SST::LinkId_t link_id;
 };
+// struct LinkPy_t
+// {
+//     PyObject_HEAD char* name;
+//     bool                no_cut;
+//     char*               latency;
+// };
 
 extern PyTypeObject PyModel_LinkType;
 
