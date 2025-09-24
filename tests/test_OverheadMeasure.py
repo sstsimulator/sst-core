@@ -14,7 +14,7 @@ import sys
 num_links = 1
 if len(sys.argv) == 2:
     num_links = int(sys.argv[1])
-    
+
 
 sst.buildOverheadMeasureTest(2,num_links)
 
