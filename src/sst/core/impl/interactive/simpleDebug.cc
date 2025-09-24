@@ -103,7 +103,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         {"history", "[N]: list previous N instructions. If N is not set list all\n"
                     "\tSupports bash-style commands:\n"
                     "\t!!   execute previous command\n"
-                    "\t!!n  execute command at index n\n"
+                    "\t!n   execute command at index n\n"
                     "\t!-n  execute commad n lines back in history\n"
                     "\t!string  execute the most recent command starting with `string`\n"
                     "\t?string execute the most recent command containing `string`\n"
@@ -173,9 +173,11 @@ SimpleDebugger::execute(const std::string& msg)
     }
 }
 
-// Invoke the command
+// Invoke the command.
+// Substitution actions (!!, !?, ...) can modify the command.
+// This ensure the final, resolved, command is captured in the command log
 void
-SimpleDebugger::dispatch_cmd(std::string cmd)
+SimpleDebugger::dispatch_cmd(std::string& cmd)
 {
     // empty command
     if (cmd.size()==0) return;
@@ -195,16 +197,20 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
         std::string newcmd;
         auto rc = cmdHistoryBuf.bang(tokens[0], newcmd );
         if (rc==CommandHistoryBuffer::BANG_RC::ECHO) {
-            // print and save command in history
-            std::cout << newcmd << std::endl;
-            cmdHistoryBuf.append(newcmd);
+            // replace, print, save command in history
+            cmd = newcmd; 
+            std::cout << cmd << std::endl;
+            cmdHistoryBuf.append(cmd);
             return;
         } else if (rc==CommandHistoryBuffer::BANG_RC::EXEC) {
-            //print new command, overwrite command and let it flow through
+            //replace and print new command then let it flow through
             std::cout << newcmd << std::endl;
             tokens.clear();
-            cmd = newcmd;
+            cmd = newcmd; 
             tokenize(tokens, cmd);
+        } else if (rc==CommandHistoryBuffer::BANG_RC::NOP) {
+            // invalid search, just return
+            return;
         }
     }
 
@@ -224,7 +230,7 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
 //
 /* 
     !!:  Executes the previous command
-    !!n: Executes the command at history index n.
+    !n:  Executes the command at history index n.
     !-n: Executes the command n lines back in history.
     !string: Executes the most recent command starting with "string".
     !?string: Executes the most recent command containing "string" anywhere.
@@ -1350,7 +1356,7 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
     if (this->sz_ == 0) return rc;
 
     // !!       Execute the previous instruction
-    // !!n      Execute instruction at history index n
+    // !n      Execute instruction at history index n
     // !-n      Execute instruction n lines back in history
     // !string  Execute the most recent command starting with string
     // !?string Execute the most recent command containing string
@@ -1370,6 +1376,10 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
     // grab first two chars and arg
     if (base.length() < 2 ) 
         return rc;
+
+    // At this point we have a valid command. Worst case a NOP
+    rc = CommandHistoryBuffer::BANG_RC::NOP;
+
     std::string cmd = base.substr(0,2);
     std::string arg = "";
     if (base.length() > 2) 
@@ -1381,16 +1391,21 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
             newcmd = buf_[cur_].second;
             found = true;
         } else {
-            // !!n
-            found = findEvent(arg, newcmd);
+            std::cout << "Invalid command: " << base << std::endl;
+            return rc;
         }
     } else if (cmd=="!-") {
         found = findOffset(arg, newcmd);
     } else if (cmd=="!?") {
         found = searchAny(arg, newcmd);
     } else {
+        // Either !n or !string
         arg = base.substr(1);
-        found = searchFirst(arg, newcmd);
+        found = findEvent(arg,newcmd);
+        if (! found)
+            found = searchFirst(arg, newcmd);
+        if (! found) 
+            std::cout << "history: event not found: " << arg << std::endl;
     }
 
     if (found) {
@@ -1403,16 +1418,16 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
 bool
 CommandHistoryBuffer::findEvent(const std::string& s, std::string& newcmd)
 {
-    // !!n
+    // !n
     int event = -1;
     try {
         event = (int) SST::Core::from_string<int>(s);
     } catch ( std::invalid_argument& e ) {
-        std::cout << "history: invalid event: " << s << std::endl;
+        // std::cout << "history: invalid event: " << s << std::endl;
         return false;
     }
     if (event<0) {
-        std::cout << "history: invalid event: " << event << std::endl;
+        // std::cout << "history: invalid event: " << event << std::endl;
         return false; 
     }
     // search backwards (most recent first)
@@ -1440,12 +1455,12 @@ CommandHistoryBuffer::findOffset(const std::string& s, std::string& newcmd)
         return false;
     }
 
-    if (offset>sz_) {
+    if (offset>sz_ || offset<1) {
         std::cout << "history: offset not found: " << offset << std::endl;
         return false;
     }
 
-    int idx = cur_ - offset;
+    int idx = cur_ - offset + 1;
     if (idx<0)
         idx += sz_;
 
@@ -1470,7 +1485,7 @@ CommandHistoryBuffer::searchFirst(const std::string& s, std::string& newcmd)
             return true;
         }
     }
-    std::cout << "history: start string not found: " << s << std::endl;
+    // std::cout << "history: start string not found: " << s << std::endl;
     return false;
 }
 

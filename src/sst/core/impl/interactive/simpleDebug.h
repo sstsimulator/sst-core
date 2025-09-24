@@ -86,7 +86,7 @@ public:
   CommandHistoryBuffer() { buf_.resize(MAX_CMDS); }
   void append(std::string s);
   void print(int num);
-  enum BANG_RC { INVALID, ECHO, EXEC };
+  enum BANG_RC { INVALID, ECHO, EXEC, NOP };
   BANG_RC bang( const std::string& token, std::string& newcmd );
 private:
   int cur_ = 0;
@@ -191,7 +191,7 @@ private:
     // LLDB/GDB helper
     void cmd_spinThread(std::vector<std::string>& tokens);
 
-    void dispatch_cmd(std::string cmd);
+    void dispatch_cmd(std::string& cmd);
 
     // Command Registry
     std::vector<ConsoleCommand> cmdRegistry;
