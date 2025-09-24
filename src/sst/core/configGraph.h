@@ -58,35 +58,117 @@ class ConfigLink : public SST::Core::Serialization::serializable
     SimTime_t                     getLatencyFromIndex(uint32_t index);
 
 public:
-    LinkId_t      id;    /*!< ID of this link */
-    LinkId_t      order; /*!< Number of components currently referring to this Link.  After graph construction, it will
-                               be repurposed to hold the enforce_order value */
+    /**
+       id of the link.  This is used primarily to find the link in
+       ConfigGraph::links
+     */
+    LinkId_t id = 0;
+
+    /**
+       This is a dual purpose data member.  During graph construction,
+       it counts the number of components currently referencing this
+       link.  After graph construction, it is assigned the value used
+       to enforce ordering of events based on the links they were sent
+       on.
+
+       @see Activity::setOrderTag, Link::tag
+     */
+    LinkId_t order = 0;
+
+    /**
+       Components that are connected to this link. They are filled in
+       the order they are attached in.  If the link is marked as
+       non-local, then component[1] holds the rank of the remote
+       component.
+     */
     ComponentId_t component[2] = { 0, 0 }; /*!< IDs of the connected components */
-    SimTime_t     latency[2]   = { 0, 0 };
-    std::string   name;    /*!< Name of this link */
-    std::string   port[2]; /*!< Names of the connected ports */
 
-    // At construct time, holds the index into the lat_index_to_time
-    // vector to get the SimTime_t factor for the latency
+    /**
+       This is a dual purpose data member.
 
-    bool no_cut; /*!< If set to true, partitioner will not make a cut through this Link */
+       Graph construction - during graph construction, it holds the
+       index into the LinkLatencyVector, which maps the stored index
+       to the actual latency string.  This is done to reduce memory
+       usage because we assume there will be a small number of
+       different latencies specified.
 
-    // inline const std::string& key() const { return name; }
+       Post graph construction - after graph construction, the latency
+       index is replaced with the SimTime_t value representing the
+       specified latency that will be used by the link to add the
+       specified latency to the event.
+
+       In both cases, the indices match the indices found in the
+       component array, and represent the latency of the link for
+       events sent from the corresponding component.
+
+       If the link is marked as non-local, then latency[1] holds the
+       thread of the remote component.
+     */
+    SimTime_t latency[2] = { 0, 0 };
+
+    /**
+       Name of the link.  This is used in three cases:
+
+       Errors - if an error is found in the graph construction, the
+       name is used to report the error to the user
+
+       Link ordering - the event ordering for links is based on the
+       alphabetized name of the links.  The links are sorted by name
+       and order is assigned linearly starting at 1
+
+       Parallel load - for parallel load, links that cross partition
+       boundaries are connected by matching link names
+     */
+    std::string name;
+
+    /**
+       Name of the ports the link is connected to.  The indices match
+       the ones used in the component array
+     */
+    std::string port[2];
+
+    /**
+       Whether or not this link is set to be no-cut
+     */
+    bool no_cut = false;
+
+    /**
+       Whether this link crosses the graph boundary and is connected
+       on one end to a non-local component.  If set to true, there
+       will only be one component connected (information in index 0
+       for the arrays) and the rank for the remote component will be
+       stored in component[1] and the thread in latency[1].
+    */
+    bool nonlocal = false;
+
     inline LinkId_t key() const { return id; }
 
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const
     {
+        if ( nonlocal ) return latency[0];
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];
     }
 
     std::string latency_str(uint32_t index) const;
 
+    /**
+       Sets the link as a non-local link.
+
+       @param which_local specifies which index is for the local side
+       of the link
+
+       @param remote_rank_info Rank of the remote side of the link
+
+     */
+    void setAsNonLocal(int which_local, RankInfo remote_rank_info);
+
     /** Print the Link information */
     void print(std::ostream& os) const
     {
         os << "Link " << name << " (id = " << id << ")" << std::endl;
+        os << "  nonlocal = " << nonlocal << std::endl;
         os << "  component[0] = " << component[0] << std::endl;
         os << "  port[0] = " << port[0] << std::endl;
         os << "  latency[0] = " << latency[0] << std::endl;
@@ -109,6 +191,8 @@ public:
         SST_SER(latency[0]);
         SST_SER(latency[1]);
         SST_SER(order);
+        SST_SER(nonlocal);
+        SST_SER(no_cut);
     }
 
     ImplementSerializable(SST::ConfigLink)
@@ -478,7 +562,12 @@ public:
     void print(std::ostream& os) const
     {
         os << "Printing graph" << std::endl;
+        os << "Components:" << std::endl;
         for ( ConfigComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
+            (*i)->print(os);
+        }
+        os << "Links:" << std::endl;
+        for ( auto i = links_.begin(); i != links_.end(); ++i ) {
             (*i)->print(os);
         }
     }
@@ -553,6 +642,12 @@ public:
 
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, const char* latency_str);
+
+    /**
+       Adds the remote rank info for nonlocal links
+     */
+    void addNonLocalLink(LinkId_t link_id, int rank, int thread);
+
     /** Set a Link to be no-cut */
     void setLinkNoCut(LinkId_t link_name);
 
@@ -612,7 +707,7 @@ public:
         SST_SER(comps_);
         SST_SER(stats_config_);
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
-            // Need to reintialize the ConfigGraph ptrs in the
+            // Need to reinitialize the ConfigGraph ptrs in the
             // ConfigComponents
             setComponentConfigGraphPointers();
         }

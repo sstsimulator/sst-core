@@ -91,7 +91,7 @@ statAddParam(PyObject* self, PyObject* args)
 
     // Get the string-ized value by calling __str__ function of the
     // value object
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_Str(value);
     c->addParameter(param, SST_ConvertToCppString(vstr), true);
     Py_XDECREF(vstr);
 
@@ -114,8 +114,8 @@ statAddParams(PyObject* self, PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         c->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);

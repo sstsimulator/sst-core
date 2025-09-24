@@ -1108,8 +1108,8 @@ main(int argc, char* argv[])
             Simulation_impl::basicPerf.endRegion("graph-error-check");
         }
         else {
-            Simulation_impl::basicPerf.beginRegion("gragh-cleanup");
-            Simulation_impl::basicPerf.endRegion("gragh-cleanup");
+            Simulation_impl::basicPerf.beginRegion("graph-cleanup");
+            Simulation_impl::basicPerf.endRegion("graph-cleanup");
 
             Simulation_impl::basicPerf.beginRegion("graph-error-check");
             Simulation_impl::basicPerf.endRegion("graph-error-check");
@@ -1203,7 +1203,6 @@ main(int argc, char* argv[])
 
         // Run the partitioner
         start_partitioning(world_size, myRank, Factory::getFactory(), graph);
-
         ////// End Partitioning //////
 
         ////// Calculate Minimum Partitioning //////
@@ -1216,10 +1215,12 @@ main(int argc, char* argv[])
                 // Find the minimum latency across a partition
                 for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
                     ConfigLink* clink = *iter;
-                    RankInfo    rank[2];
-                    rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
-                    rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
-                    if ( rank[0].rank == rank[1].rank ) continue;
+                    if ( !clink->nonlocal ) {
+                        RankInfo rank[2];
+                        rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
+                        rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
+                        if ( rank[0].rank == rank[1].rank ) continue;
+                    }
                     if ( clink->getMinLatency() < local_min_part ) {
                         local_min_part = clink->getMinLatency();
                     }
@@ -1261,6 +1262,7 @@ main(int argc, char* argv[])
         restarted jobs that have no repartitioning.
     ***************************************************************************/
     Simulation_impl::basicPerf.beginRegion("graph-distribution");
+
 
     if ( !restart ) {
 #ifdef SST_CONFIG_HAVE_MPI

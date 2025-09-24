@@ -125,21 +125,30 @@ PythonConfigGraphOutput::generateCommonLink(const char* objName, const ConfigCom
             int   srcIdx     = 0;
             int   destIdx    = 1;
             char* esPortName = makeEscapeSafe(link->port[srcIdx].c_str());
-            char* edPortName = makeEscapeSafe(link->port[destIdx].c_str());
             char* destName   = nullptr;
-
-            auto destComp = getGraph()->findComponent(link->component[1]);
-            destName      = generateCompName(destComp);
 
             const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
 
-            fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n", linkName.c_str(), objName,
-                esPortName, link->latency_str(srcIdx).c_str(), destName, edPortName,
-                link->latency_str(destIdx).c_str());
-            fprintf(outputFile, "\n");
+            if ( !link->nonlocal ) {
+                char* edPortName = makeEscapeSafe(link->port[destIdx].c_str());
+                auto  destComp   = getGraph()->findComponent(link->component[1]);
+                destName         = generateCompName(destComp);
 
+
+                fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n", linkName.c_str(),
+                    objName, esPortName, link->latency_str(srcIdx).c_str(), destName, edPortName,
+                    link->latency_str(destIdx).c_str());
+                fprintf(outputFile, "\n");
+
+                free(edPortName);
+            }
+            else {
+                int rank   = link->component[1];
+                int thread = link->latency[1];
+                fprintf(outputFile, "%s.connectNonLocal((%s, \"%s\", \"%s\"),(%d, %d))\n", linkName.c_str(), objName,
+                    esPortName, link->latency_str(srcIdx).c_str(), rank, thread);
+            }
             free(esPortName);
-            free(edPortName);
             free(destName);
         }
     }

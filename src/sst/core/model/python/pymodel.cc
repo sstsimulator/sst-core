@@ -771,9 +771,10 @@ enableStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
         auto       params   = pythonToCppParams(statParamDict);
         for ( uint32_t x = 0; x < numStats; x++ ) {
             PyObject*   pylistitem = PyList_GetItem(statList, x);
-            PyObject*   pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+            PyObject*   pyname     = PyObject_Str(pylistitem);
             std::string statName   = SST_ConvertToCppString(pyname);
             enableStatisticForComponentType(compType, statName, params, apply_to_children);
+            Py_XDECREF(pyname);
         }
     }
     else {
@@ -884,7 +885,7 @@ addSharedParam(PyObject* UNUSED(self), PyObject* args)
 
     // Get the string-ized value by calling __str__ function of the
     // value object
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_Str(value);
     gModel->addGlobalParameter(set, param, SST_ConvertToCppString(vstr), true);
     Py_XDECREF(vstr);
 
@@ -907,8 +908,8 @@ addSharedParams(PyObject* UNUSED(self), PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(dict, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         gModel->addGlobalParameter(set, SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -1470,8 +1471,8 @@ SST::Core::generateStatisticParameters(PyObject* statParamDict)
 
             // Extract the Key and Value for each parameter and put them into the vectors
             while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
-                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", nullptr);
-                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", nullptr);
+                PyObject* pyparam = PyObject_Str(pykey);
+                PyObject* pyvalue = PyObject_Str(pyval);
 
                 p[SST_ConvertToCppString(pyparam)] = SST_ConvertToCppString(pyvalue);
 
@@ -1522,11 +1523,12 @@ SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObj
     // For each stat, enable on component
     for ( uint32_t x = 0; x < numStats; x++ ) {
         PyObject*        pylistitem = PyList_GetItem(statList, x);
-        PyObject*        pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+        PyObject*        pyname     = PyObject_Str(pylistitem);
         std::string      name       = SST_ConvertToCppString(pyname);
         ConfigStatistic* cs         = cc->enableStatistic(name, params, apply_to_children);
         PyObject*        statObj    = buildStatisticObject(cs->id);
         PyList_SetItem(statList, x, statObj);
+        Py_XDECREF(pyname);
     }
     return statObjectList;
 }

@@ -44,7 +44,7 @@ unitAlgebraInit(UnitAlgebraPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
     }
     PyErr_Clear();
     if ( PyArg_ParseTuple(args, "O", &str_obj) ) {
-        PyObject* vstr = PyObject_CallMethod(str_obj, (char*)"__str__", nullptr);
+        PyObject* vstr = PyObject_Str(str_obj);
         try {
             self->obj = SST_ConvertToCppString(vstr);
         }

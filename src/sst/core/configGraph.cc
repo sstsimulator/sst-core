@@ -24,7 +24,8 @@
 
 #include <algorithm>
 #include <fstream>
-#include <string.h>
+#include <string>
+#include <utility>
 
 namespace {
 // bool zero_latency_warning = false;
@@ -110,6 +111,26 @@ ConfigLink::latency_str(uint32_t index) const
     UnitAlgebra      tb       = timelord->getTimeBase();
     auto             tmp      = tb * latency[index];
     return tmp.toStringBestSI();
+}
+
+void
+ConfigLink::setAsNonLocal(int which_local, RankInfo remote_rank_info)
+{
+    // First, if which_local != 0, we need to swap the data for index
+    // 0 and 1
+    if ( which_local == 1 ) {
+        std::swap(component[0], component[1]);
+        std::swap(port[0], port[1]);
+        std::swap(latency[0], latency[1]);
+    }
+
+    // Now add remote annotations.  Rank goes in component[1], thread
+    // goes in latency[1], port[1] is not needed
+    component[1] = remote_rank_info.rank;
+    latency[1]   = remote_rank_info.thread;
+    port[1].clear();
+
+    nonlocal = true;
 }
 
 void
@@ -873,13 +894,12 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
     stats_config_->load_level = loadLevel;
 }
 
-
 void
 ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, const char* latency_str)
 {
     // checkForValidLinkName(link_name);
 
-    // The Link was created eariler, just get it out of the links_
+    // The Link was created earlier, just get it out of the links_
     // data structure.
     ConfigLink* link = links_[link_id];
 
@@ -888,6 +908,18 @@ ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, 
     if ( link->order >= 2 ) {
         output.fatal(
             CALL_INFO, 1, "ERROR: Parsing SDL file: Link %s referenced more than two times\n", link->name.c_str());
+    }
+    else if ( link->order == 1 && link->nonlocal ) {
+        output.fatal(CALL_INFO, 1,
+            "ERROR: Parsing SDL file: Attempting to connect second component to link %s which is set as non-local\n",
+            link->name.c_str());
+    }
+
+    // Check to make sure that a latency was specified, either in the
+    // call or at ConfigLink construct time
+    if ( nullptr == latency_str && link->latency[0] == 0 ) {
+        output.fatal(CALL_INFO, 1, "ERROR: Parsing SDL file: Connecting link with no latency assigned: %s\n",
+            link->name.c_str());
     }
 
     // Update link information
@@ -911,6 +943,26 @@ ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, 
         compLinks->push_back(link->id);
     }
 }
+
+void
+ConfigGraph::addNonLocalLink(LinkId_t link_id, int rank, int thread)
+{
+    ConfigLink* link = links_[link_id];
+    if ( link->nonlocal ) {
+        output.fatal(CALL_INFO, 1,
+            "ERROR: Parsing SDL file: Trying to set link %s as as non-local, which is already set to non-local\n",
+            link->name.c_str());
+    }
+    else if ( link->order == 2 ) {
+        output.fatal(CALL_INFO, 1,
+            "ERROR: Parsing SDL file: Link %s being set as non-local, but is already connected to two components\n",
+            link->name.c_str());
+    }
+    link->nonlocal     = true;
+    link->component[1] = rank;
+    link->latency[1]   = thread;
+}
+
 
 LinkId_t
 ConfigGraph::createLink(const char* name, const char* latency)
@@ -1038,7 +1090,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
         bool comp1_in_ranks = (rank_set.find(comp1->rank.rank) != rank_set.end());
 
         if ( comp0_in_ranks || comp1_in_ranks ) {
-            // Clone the link and add to new lin k map
+            // Clone the link and add to new link map
             graph->links_.insert(new ConfigLink(*link)); // Will make a copy into map
 
             graph->findComponent(comp0->id)->links.push_back(link->id);
@@ -1075,16 +1127,21 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
 {
     // Need to see if the link is connected to components in the
     // old and/or new graph
-    int ranks[2];
-    ranks[0] = ograph_->findComponent(link->component[0])->rank.rank;
-    ranks[1] = ograph_->findComponent(link->component[1])->rank.rank;
+    RankInfo ranks[2];
+    ranks[0] = ograph_->findComponent(link->component[0])->rank;
+    if ( link->nonlocal ) {
+        ranks[1].rank = -1;
+    }
+    else {
+        ranks[1] = ograph_->findComponent(link->component[1])->rank;
+    }
 
     // First bit of flag checks to see if either end is in the set
     // that will stay in the original graph
-    uint8_t flag = oset_.count(ranks[0]) | oset_.count(ranks[1]);
+    uint8_t flag = oset_.count(ranks[0].rank) | oset_.count(ranks[1].rank);
 
     // Second bit will check for the set that will be in the new graph
-    flag |= ((nset_.count(ranks[0]) | nset_.count(ranks[1])) << 1);
+    flag |= ((nset_.count(ranks[0].rank) | nset_.count(ranks[1].rank)) << 1);
 
     switch ( flag ) {
     case 0:
@@ -1103,8 +1160,26 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         return nullptr;
     case 3:
         // Connected in both graphs.  Make a copy for the new graph
-        ConfigLink* l = new ConfigLink(*link);
-        ngraph_->links_.insert(l);
+        // and mark both links as cross partition.  NOTE: we won't get
+        // to this state unless the graph originally used a ghost
+        // component for the cross partition link. Links marked as
+        // cross platform can't get here because ranks[1] is set to
+        // -1.
+        ConfigLink* link_new = new ConfigLink(*link);
+        ngraph_->links_.insert(link_new);
+
+        // No change the two links to cross partition
+        if ( nset_.count(ranks[0].rank) ) {
+            // component[0] in new set
+            link->setAsNonLocal(1, ranks[0]);
+            link_new->setAsNonLocal(0, ranks[1]);
+        }
+        else {
+            // component[1] in new set
+            link->setAsNonLocal(0, ranks[1]);
+            link_new->setAsNonLocal(1, ranks[0]);
+        }
+
         return link;
     }
     // Silence warning even though every possible path has a return
@@ -1115,118 +1190,35 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
 ConfigComponent*
 ConfigGraph::GraphFilter::operator()(ConfigComponent* comp)
 {
-    // Need to figure out which graph this component should end up in.
-    // If it's in both graphs, then one will get a ghost component (or
-    // both may get a ghost component if it is already a ghost
-    // component).
-
-    // First, see if it is actually in one of the sets.  If not, then
-    // it is already a ghost component.
-    if ( ((oset_.count(comp->rank.rank) + nset_.count(comp->rank.rank)) == 0) ) {
-        // A ghost component could end up being in one or both of the new
-        // graphs.  Also, unlike real components, links could end up
-        // getting deleted from either version of the ghost cell, so we
-        // will just start with a clean slate for both and add them back
-        // in as needed.
-        ConfigComponent* extra         = nullptr;
-        bool             keep_original = false;
-        for ( LinkId_t id : comp->clearAllLinks() ) {
-            // Each link will only be in one of the new graphs since one
-            // side already connects to a component out of the bounds of
-            // the input graph.
-            if ( ograph_->links_.contains(id) ) {
-                // Add back into comp
-                ConfigLink*   link  = ograph_->links_[id];
-                ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
-                                          ? link->component[0]
-                                          : link->component[1];
-                comp->findSubComponent(subid)->links.push_back(id);
-                keep_original = true;
-            }
-            else if ( ngraph_->links_.contains(id) ) {
-                // Add to "extra"
-                if ( nullptr == extra ) extra = comp->cloneWithoutLinksOrParams(ngraph_);
-                ConfigLink*   link  = ngraph_->links_[id];
-                ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
-                                          ? link->component[0]
-                                          : link->component[1];
-                extra->findSubComponent(subid)->links.push_back(id);
-            }
-            else {
-                // Extra link that didn't get deleted before.  Nothing
-                // needs to be done
-            }
-        }
-
-        // If we created a new ghost add it to the ngraph
-        if ( extra ) {
-            ngraph_->comps_.insert(extra);
-        }
-
-        if ( !keep_original ) {
-            // Remove from ograph and delete
-            delete comp;
-            return nullptr;
-        }
-        else {
-            // Keep in ograph
-            return comp;
-        }
-    }
-
-    // Not a ghost component, which means the whole thing will end up
-    // in one graph and the other may get a ghost.
-    ConfigGraph* other;
+    // Figure out which graph it belongs in and put it there.  All the
+    // cross partition info is now held in ConfigLink
 
     if ( oset_.count(comp->rank.rank) ) {
-        other = ngraph_;
-    }
-    else {
-        // Need to move comp to ngraph
-        comp->graph = ngraph_;
-        ngraph_->comps_.insert(comp);
-
-        other = ograph_;
-    }
-
-
-    // Possible ghost
-    ConfigComponent* ghost = nullptr;
-
-    // Need to see if any of the links in the component cross the
-    // parition.  If so, we need a "ghost component".
-    for ( LinkId_t id : comp->allLinks() ) {
-        // Link will for sure be in real, so only need to check other
-        if ( other->links_.contains(id) ) {
-            // Link is in the other partition.  Will need a ghost
-            // cell.  Ghost cell will end up in other graph
-            if ( nullptr == ghost ) ghost = comp->cloneWithoutLinksOrParams(other);
-            ConfigLink*   link  = other->links_[id];
-            ComponentId_t subid = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
-                                      ? link->component[0]
-                                      : link->component[1];
-            ghost->findSubComponent(subid)->links.push_back(id);
-        }
-    }
-
-    // Now need to sort out where the ghost cell goes
-    if ( oset_.count(comp->rank.rank) ) {
-        // Ghost goes in ngraph.  Comp stays in ograph
-        if ( ghost ) {
-            ngraph_->comps_.insert(ghost);
-        }
+        // Stays in the current graph
         return comp;
     }
+    else if ( nset_.count(comp->rank.rank) ) {
+        // Move to new graph
+        comp->graph = ngraph_;
+        ngraph_->comps_.insert(comp);
+        return nullptr;
+    }
     else {
-        // Ghost goes in ograph
-        return ghost;
+        // Not in either group.  Need to delete comp and return
+        // nullptr.  This should only happen if the user used ghost
+        // components to specify remote rank
+        delete comp;
+        return nullptr;
     }
 }
+
 
 ConfigGraph*
 ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<uint32_t>& new_rank_set)
 {
-    ConfigGraph* graph = new ConfigGraph();
+    ConfigGraph* graph = nullptr;
+
+    if ( !new_rank_set.empty() ) graph = new ConfigGraph();
 
     // Split up the links
     GraphFilter filter(this, graph, orig_rank_set, new_rank_set);
@@ -1236,7 +1228,7 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
     comps_.filter(filter);
 
     // Copy the statistic configuration to the sub-graph
-    graph->stats_config_->outputs = this->stats_config_->outputs;
+    if ( graph ) graph->stats_config_->outputs = this->stats_config_->outputs;
 
     // Need to copy statgroups contained in new graph and remove
     // statgroups that are no longer needed in original graph
@@ -1246,7 +1238,7 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         bool copy   = false;
         bool remove = true;
         for ( auto& id : it->second.components ) {
-            if ( graph->containsComponent(id) ) {
+            if ( graph && graph->containsComponent(id) ) {
                 copy = true;
                 // We can stop if we've verified it belongs in both
                 // already.  In this case, if remove is false, then we
@@ -1258,12 +1250,12 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
                 // We can stop if we've verified it belongs in both
                 // already.  In this case, if copy is true, then we
                 // can break
-                if ( copy ) break;
+                if ( (nullptr == graph) || copy ) break;
             }
         }
 
         // See if we need to copy into new graph
-        if ( copy ) {
+        if ( copy ) { // If graph is nullptr, then copy can't be true
             graph->stats_config_->groups.insert(std::make_pair(it->first, it->second));
         }
 

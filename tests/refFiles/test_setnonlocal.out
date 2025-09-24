@@ -1,0 +1,33 @@
+Sent an event, 14 more to send
+Sent an event, 13 more to send
+Sent an event, 12 more to send
+Got an event
+Sent an event, 11 more to send
+Sent an event, 10 more to send
+Got an event
+Got an event
+Got an event
+Sent an event, 9 more to send
+Sent an event, 8 more to send
+Sent an event, 7 more to send
+Sent an event, 6 more to send
+Sent an event, 5 more to send
+Sent an event, 4 more to send
+Sent an event, 3 more to send
+Sent an event, 2 more to send
+Sent an event, 1 more to send
+Sent an event, 0 more to send
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+Got an event
+ Loader0:mySubComp.numSent : Accumulator : Sum.u32 = 15; SumSQ.u32 = 15; Count.u64 = 15; Min.u32 = 1; Max.u32 = 1; 
+ Loader1:mySubComp.numRecv : Accumulator : Sum.u32 = 15; SumSQ.u32 = 15; Count.u64 = 15; Min.u32 = 1; Max.u32 = 1; 
+Simulation is complete, simulated time: 10.6 us

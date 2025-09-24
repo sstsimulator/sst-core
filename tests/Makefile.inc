@@ -58,6 +58,8 @@ EXTRA_DIST += \
     tests/test_UnitAlgebra.py \
     tests/test_PythonUnitAlgebra.py \
     tests/test_PerfComponent.py \
+    tests/test_setnonlocal0.py \
+    tests/test_setnonlocal1.py \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_Component_time_overflow.out \
     tests/refFiles/test_ComponentExtension.out \
@@ -108,6 +110,7 @@ EXTRA_DIST += \
     tests/refFiles/test_SharedObject_map.out \
     tests/refFiles/test_SharedObject_bool_array.out \
     tests/refFiles/test_SharedObject_set.out \
+    tests/refFiles/test_setnonlocal.out \
     tests/subcomponent_tests/test_sc_2a.py \
     tests/subcomponent_tests/test_sc_2u2u.py \
     tests/subcomponent_tests/test_sc_2u.py \

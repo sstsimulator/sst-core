@@ -109,6 +109,11 @@ public: /* Public, but private.  Called only from Python functions */
         graph->addLink(id, link_id, port, latency);
     }
 
+    void addNonLocalLink(LinkId_t link_id, int rank, int thread) const
+    {
+        graph->addNonLocalLink(link_id, rank, thread);
+    }
+
     void setLinkNoCut(LinkId_t link_id) const { graph->setLinkNoCut(link_id); }
 
     void  pushNamePrefix(const char* name);
