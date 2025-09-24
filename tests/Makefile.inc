@@ -92,6 +92,7 @@ EXTRA_DIST += \
     tests/refFiles/test_StatisticsComponent_basic_group_stats.txt \
     tests/refFiles/test_Links_basic.out \
     tests/refFiles/test_Links_dangling.out \
+    tests/refFiles/test_Links_unused.out \
     tests/refFiles/test_Links_wrong_port.out \
     tests/refFiles/test_Module.out \
     tests/refFiles/test_Serialization.out \

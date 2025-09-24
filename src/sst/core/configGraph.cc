@@ -772,14 +772,20 @@ ConfigGraph::checkForStructuralErrors()
     bool found_error = false;
     for ( ConfigLinkMap_t::iterator iter = links_.begin(); iter != links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
-        // This one should never happen since the slots are
-        // initialized in order, but just in case...
-        if ( clink->component[0] == ULONG_MAX ) {
-            output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
-                clink->name.c_str(), comps_[clink->component[1]]->name.c_str());
+
+        // First check to see if the link is completely unused
+        if ( clink->order == 0 ) {
+            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
             found_error = true;
         }
-        if ( clink->component[1] == ULONG_MAX ) {
+
+        // If component[0] is not initialized, this is an unused link
+        if ( clink->component[0] == ULONG_MAX ) {
+            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+            found_error = true;
+        }
+        // If component[1] is not initialized, this is a dangling link
+        else if ( clink->component[1] == ULONG_MAX ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
                 clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
             found_error = true;

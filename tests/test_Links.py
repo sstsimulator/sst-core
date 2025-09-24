@@ -13,9 +13,11 @@ import sys
 
 dangling = False
 wrong_port = False
+unused = False
 if len(sys.argv) == 2:
     if sys.argv[1] == "dangling": dangling=True
     if sys.argv[1] == "wrong_port": wrong_port=True
+    if sys.argv[1] == "unused": unused=True
 
 # Define the simulation components
 comp_c0 = sst.Component("c1", "coreTestElement.coreTestLinks")
@@ -68,3 +70,5 @@ link_2_3.connect( (comp_c2, "Elink", "12 ns"), (comp_c3, "Wlink", "12 ns") )
 link_3 = sst.Link("link_3")
 link_3.connect( (comp_c3, "Elink", "16 ns"), (comp_c3, "Elink", "16 ns") )
 
+if unused:
+    link_unused = sst.Link("unused_link")
