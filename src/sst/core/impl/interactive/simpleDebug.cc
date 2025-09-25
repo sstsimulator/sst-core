@@ -84,17 +84,17 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                 "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus"},
         {"watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
                 "\tExample: watch size > 90 && count < 100 || status changed"},
-        {"trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action> "
-                "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of <postDelay>"
-                "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay when triggered"
+        {"trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
+                "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of <postDelay>\n"
+                "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay when triggered\n"
                 "\tExample: trace size > 90 || count == 100 : 32 4 : size count state : printTrace"},
         {"watchlist", "prints the current list of watchpoints and their associated indices\n"
                       "\tNote: a watchpoint's index may change as watchpoints are deleted"},
-        {"addTraceVar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified watchpoint's trace buffer"},
-        {"printWatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
-        {"printTrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
-        {"resetTrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
-        {"setHandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
+        {"addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified watchpoint's trace buffer"},
+        {"printwatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
+        {"printtrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
+        {"resettrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
+        {"sethandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
                        "\tset where to do trigger checks and sampling (before/after clock/event handler)"},
         {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list. If no index is provided, all watchpoints are removed."},
         {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
@@ -124,12 +124,6 @@ SimpleDebugger::execute(const std::string& msg)
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 
-    // if (cmdRegistery.size()==0) {
-    //     cmdRegistery = {
-    //         {"help", "?", "Show help", ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens){ cmd_help(tokens); }}
-    //     };
-    // }
-
     if ( nullptr == obj_ ) {
         obj_ = getComponentObjectMap();
     }
@@ -149,8 +143,15 @@ SimpleDebugger::execute(const std::string& msg)
                 std::cout << line << std::endl;
             } else if ( replayFile.is_open() ) {
                 // Replay commands from file
-                std::getline(replayFile, line);
-                std::cout << line << std::endl;
+                if (std::getline(replayFile, line)) {
+                    std::cout << line << std::endl;
+                } else {
+                    if ( replayFile.eof() )
+                        std::cout << "(Finished reading from " << replayFilePath << ")" << std::endl;
+                    else 
+                        std::cout << "An error occured reading from " << replayFilePath << std::endl;
+                    replayFile.close();
+                }
             } else { 
                 // Standard Input
                 if (!std::cin) 
@@ -263,9 +264,17 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
                     std::cout << c << std::endl;
             }
         }
-        std::cout << "\nMore detailed help also available for: ";
-        for (const auto& pair : cmdHelp)
-            std::cout << pair.first << " ";
+        std::cout << "\nMore detailed help also available for:\n";
+        std::stringstream s;
+        for (const auto& pair : cmdHelp) {
+            if ( (s.str().length() + pair.first.length() > 39) ) {
+                std::cout << "\t" << s.str() << std::endl;
+                s.str("");
+                s.clear();
+            } 
+            s << pair.first << " ";
+        }
+        std::cout << "\t" << s.str() << std::endl;
         std::cout << std::endl;
         return;
     }
