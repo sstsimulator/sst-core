@@ -12,13 +12,13 @@
 #include "sst_config.h"
 
 #include "sst/core/impl/interactive/simpleDebug.h"
+#include "sst/core/objectMapVisitor.hpp"
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
 
-#include <iostream>
-#include <stdexcept>
+using namespace SST::Core;
 
 namespace SST::IMPL::Interactive {
 
@@ -77,6 +77,7 @@ SimpleDebugger::cmd_help(std::vector<std::string>& UNUSED(tokens))
     help.append("  Modify State: Modify simulation variables\n");
     help.append("   - set <obj> <value>: sets an object in the current scope to the provided value;\n");
     help.append("                        object must be a \"fundamental type\" e.g. int \n");
+    help.append("   - examine <obj> prints object in the current scope;\n");
 
     help.append("  Watch Points: Manage watch points which break into interactive console when triggered\n");
     help.append("   - watch: prints the current list of watch points and their associated indices\n");
@@ -236,6 +237,58 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     }
 }
 
+/*
+ * feature to assist with debugging serialization - recursively prints the contents
+ * of the object map to make sure what is in the object map is consistent with expectations
+ * we've had issues previously with serialization not supporting specific types and this
+ * feature provides the foundation to simplify the object map's verification process. this
+ * feature avoids creating a situation where the team needs to create an exhaustive list
+ * of bash scripts to perform the verification of the object map.
+ */
+
+void
+SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
+    if ( tokens.size() < 2 ) {
+        printf("Invalid format for set command (examine <obj>)\n");
+        return;
+    }
+
+    if(obj_ == nullptr) {
+        printf("objectMap is null\n");
+        return;
+    }
+
+    auto& vars = obj_->getVariables();
+    std::vector< std::pair<std::string, Core::Serialization::ObjectMap*> > history{};
+    history.reserve(vars.size());
+    auto itr = history.begin();
+
+    for(auto & var : vars) { 
+       history.push_back(var);
+
+
+       while(0 < history.size()) {
+          itr = history.begin();
+
+          if(itr->second->isFundamental()) {
+             printf("%s = %s (%s)\n", itr->first.c_str(), itr->second->get().c_str(), itr->second->getType().c_str());
+          }
+          else {
+             printf("%s/ (%s)\n", itr->first.c_str(), itr->second->getType().c_str());
+             std::vector<std::string> tmp{"cd", itr->first};
+             cmd_cd(tmp);
+             auto & args = obj_->getVariables();
+             for(auto & arg : args) { history.push_back(arg); }
+          }
+
+std::cout << '\t' << history.size() << std::endl;
+          history.erase(history.begin());
+std::cout << history.size() << std::endl;
+       }
+    }
+
+    return;
+}
 
 void
 SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
@@ -453,6 +506,9 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     else if ( tokens[0] == "set" ) {
         cmd_set(tokens);
     }
+    else if ( tokens[0] == "examine" ) {
+        cmd_examine(tokens);
+    }
     else if ( tokens[0] == "time" ) {
         cmd_time(tokens);
     }
@@ -474,6 +530,10 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
     else {
         printf("Unknown command: %s\n", tokens[0].c_str());
     }
+}
+
+void
+SimpleDebugger::cli_dump() {
 }
 
 } // namespace SST::IMPL::Interactive

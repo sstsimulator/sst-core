@@ -140,6 +140,7 @@ set(SSTHeaders
     module.h
     namecheck.h
     objectComms.h
+    objectMapVisitor.hpp
     oneshot.h
     output.h
     params.h

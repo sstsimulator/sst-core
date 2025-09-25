@@ -52,6 +52,7 @@ nobase_dist_sst_HEADERS = \
 	module.h \
 	namecheck.h \
 	oneshot.h \
+        objectMapVisitor.hpp \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \

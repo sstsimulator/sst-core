@@ -72,6 +72,7 @@ private:
     void cmd_cd(std::vector<std::string>& tokens);
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);
+    void cmd_examine(std::vector<std::string>& tokens);
     void cmd_time(std::vector<std::string>& tokens);
     void cmd_run(std::vector<std::string>& tokens);
     void cmd_watch(std::vector<std::string>& tokens);
@@ -79,6 +80,8 @@ private:
     void cmd_shutdown(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
+
+    void cli_dump();
 };
 
 } // namespace SST::IMPL::Interactive
