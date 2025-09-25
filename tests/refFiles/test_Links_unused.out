@@ -1,0 +1,2 @@
+WARNING:  Found unused link: unused_link
+FATAL:  SST Core: Structure errors found in the ConfigGraph.

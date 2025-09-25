@@ -260,7 +260,7 @@ soAddParam(PyObject* self, PyObject* args)
     ConfigStatOutput* so = ((StatOutputPy_t*)self)->ptr;
     if ( nullptr == so ) return nullptr;
 
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_Str(value);
     so->addParameter(param, SST_ConvertToCppString(vstr));
     Py_XDECREF(vstr);
 
@@ -282,8 +282,8 @@ soAddParams(PyObject* self, PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         so->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr));
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);

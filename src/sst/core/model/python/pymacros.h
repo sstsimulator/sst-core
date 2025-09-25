@@ -25,7 +25,9 @@ REENABLE_WARNING
 #define SST_ConvertToPythonBool(x)   PyBool_FromLong(x)
 #define SST_ConvertToCppLong(x)      PyLong_AsLong(x)
 #define SST_ConvertToPythonString(x) PyUnicode_FromString(x)
-#define SST_ConvertToCppString(x)    PyUnicode_AsUTF8(x)
+
+// returns const char*.  No need to delete, it is managed by object it was called on
+#define SST_ConvertToCppString(x) PyUnicode_AsUTF8(x)
 
 #if PY_MINOR_VERSION == 8
 #define SST_TP_PRINT_DEP nullptr,
