@@ -990,7 +990,7 @@ public:
     virtual std::string getTriggerVal()                    = 0;
 
     std::string getName() { return name_; }
-    size_t getBufSize() { return bufSize_; }
+    size_t      getBufSize() { return bufSize_; }
 
 private:
     std::string name_;

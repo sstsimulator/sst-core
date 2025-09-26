@@ -20,9 +20,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <unistd.h>
+
 #include "simpleDebug.h"
 
 namespace SST::IMPL::Interactive {
@@ -34,89 +35,117 @@ SimpleDebugger::SimpleDebugger(Params& params) :
 
     // We can specify a replay file from the sst command line.
     std::string sstReplayFilePath = params.find<std::string>("replayFile", "");
-    if (sstReplayFilePath.size()>0)
-        injectedCommand << "replay " << sstReplayFilePath << std::endl;
+    if ( sstReplayFilePath.size() > 0 ) injectedCommand << "replay " << sstReplayFilePath << std::endl;
 
     // Populate the command registry
     cmdRegistry = {
-        {"help",  "?",      "[CMD]: show this help or detailed command help",            ConsoleCommandGroup::GENERAL,    [this](std::vector<std::string>& tokens){ cmd_help(tokens);  }},
-        {"confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,   [this](std::vector<std::string>& tokens) { cmd_setConfirm(tokens); }},
-        {"pwd",   "pwd",    "print the current working directory in the object map",     ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_pwd(tokens);   }},
-        {"chdir", "cd",     "change directory level in the object map",                  ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_cd(tokens);    }},
-        {"list",  "ls",     "list the objects in the current level of the object map",   ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_ls(tokens);    }},
-        {"time",  "tm",     "print current simulation time in cycles",                   ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_time(tokens);  }},
-        {"print", "p",      "[-rN] [<obj>]: print objects at the current level",         ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_print(tokens); }},
-        {"set",   "s",      "[-rN] [<obj>]: print objects at the current level",         ConsoleCommandGroup::STATE,      [this](std::vector<std::string>& tokens){ cmd_set(tokens);   }},
-        {"watch", "w",      "<trig>: adds watchpoint to the watchlist",                  ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_watch(tokens); }},
-        {"trace", "t",      "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_trace(tokens); }},
-        {"watchlist", "wl", "prints the current list of watchpoints",                    ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_watchlist(tokens); }},
-        {"addTraceVar", "add", "<watchpointIndex> <var1> ... <varN>",                    ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_addTraceVar(tokens); }},
-        {"printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint",             ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printWatchpoint(tokens); }},
-        {"printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_printTrace(tokens); }},
-        {"resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint",  ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_resetTraceBuffer(tokens); }},
-        {"setHandler", "shn", "<idx> <t1> ... <t2>: trigger check/sampling handler",     ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_setHandler(tokens); }},
-        {"unwatch", "uw", "<watchpointIndex>: remove 1 or all watchpoints",              ConsoleCommandGroup::WATCH,      [this](std::vector<std::string>& tokens){ cmd_unwatch(tokens); }},
-        {"run", "r",  "[TIME]: continues the simulation",                                ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
-        {"continue", "c",  "alias for run",                                              ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_run(tokens); }},
-        {"exit", "e",  "exit debugger and continue simulation",                          ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_exit(tokens); }},
-        {"quit", "q",  "alias for exit",                                                 ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_exit(tokens); }},
-        {"shutdown", "shutdown",  "exit the debugger and cleanly shutdown simulator",    ConsoleCommandGroup::SIMULATION, [this](std::vector<std::string>& tokens){ cmd_shutdown(tokens); }},
-        {"logging", "log",  "<filepath>: log command line entires to file",              ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_logging(tokens); }},
-        {"replay", "rep", "<filepath>: run commands from a file. See also: sst --replay",ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_replay(tokens); }},
-        {"history", "h", "[N]: display all or last N unique commands",                   ConsoleCommandGroup::LOGGING,    [this](std::vector<std::string>& tokens){ cmd_history(tokens); }},
-        {"spinThread", "spin",  "enter spin loop. See SimpleDebugger::cmd_spinThread",   ConsoleCommandGroup::MISC,       [this](std::vector<std::string>& tokens){ cmd_spinThread(tokens); }},
+        { "help", "?", "[CMD]: show this help or detailed command help", ConsoleCommandGroup::GENERAL,
+            [this](std::vector<std::string>& tokens) { cmd_help(tokens); } },
+        { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
+            [this](std::vector<std::string>& tokens) { cmd_setConfirm(tokens); } },
+        { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
+            [this](std::vector<std::string>& tokens) { cmd_pwd(tokens); } },
+        { "chdir", "cd", "change directory level in the object map", ConsoleCommandGroup::NAVIGATION,
+            [this](std::vector<std::string>& tokens) { cmd_cd(tokens); } },
+        { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
+            [this](std::vector<std::string>& tokens) { cmd_ls(tokens); } },
+        { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
+            [this](std::vector<std::string>& tokens) { cmd_time(tokens); } },
+        { "print", "p", "[-rN] [<obj>]: print objects at the current level", ConsoleCommandGroup::STATE,
+            [this](std::vector<std::string>& tokens) { cmd_print(tokens); } },
+        { "set", "s", "[-rN] [<obj>]: print objects at the current level", ConsoleCommandGroup::STATE,
+            [this](std::vector<std::string>& tokens) { cmd_set(tokens); } },
+        { "watch", "w", "<trig>: adds watchpoint to the watchlist", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_watch(tokens); } },
+        { "trace", "t", "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_trace(tokens); } },
+        { "watchlist", "wl", "prints the current list of watchpoints", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_watchlist(tokens); } },
+        { "addTraceVar", "add", "<watchpointIndex> <var1> ... <varN>", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_addTraceVar(tokens); } },
+        { "printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_printWatchpoint(tokens); } },
+        { "printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_printTrace(tokens); } },
+        { "resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_resetTraceBuffer(tokens); } },
+        { "setHandler", "shn", "<idx> <t1> ... <t2>: trigger check/sampling handler", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_setHandler(tokens); } },
+        { "unwatch", "uw", "<watchpointIndex>: remove 1 or all watchpoints", ConsoleCommandGroup::WATCH,
+            [this](std::vector<std::string>& tokens) { cmd_unwatch(tokens); } },
+        { "run", "r", "[TIME]: continues the simulation", ConsoleCommandGroup::SIMULATION,
+            [this](std::vector<std::string>& tokens) { cmd_run(tokens); } },
+        { "continue", "c", "alias for run", ConsoleCommandGroup::SIMULATION,
+            [this](std::vector<std::string>& tokens) { cmd_run(tokens); } },
+        { "exit", "e", "exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION,
+            [this](std::vector<std::string>& tokens) { cmd_exit(tokens); } },
+        { "quit", "q", "alias for exit", ConsoleCommandGroup::SIMULATION,
+            [this](std::vector<std::string>& tokens) { cmd_exit(tokens); } },
+        { "shutdown", "shutdown", "exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
+            [this](std::vector<std::string>& tokens) { cmd_shutdown(tokens); } },
+        { "logging", "log", "<filepath>: log command line entires to file", ConsoleCommandGroup::LOGGING,
+            [this](std::vector<std::string>& tokens) { cmd_logging(tokens); } },
+        { "replay", "rep", "<filepath>: run commands from a file. See also: sst --replay", ConsoleCommandGroup::LOGGING,
+            [this](std::vector<std::string>& tokens) { cmd_replay(tokens); } },
+        { "history", "h", "[N]: display all or last N unique commands", ConsoleCommandGroup::LOGGING,
+            [this](std::vector<std::string>& tokens) { cmd_history(tokens); } },
+        { "spinThread", "spin", "enter spin loop. See SimpleDebugger::cmd_spinThread", ConsoleCommandGroup::MISC,
+            [this](std::vector<std::string>& tokens) { cmd_spinThread(tokens); } },
     };
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
     cmdHelp = {
-        {"print","[-rN][<obj>]: print objects in the current level of the object map\n"
-                 "\tif -rN is provided print recursive N levels (default N=4)"},
-        {"set","<obj> <value>: sets an object in the current scope to the provided value;\n"
-                "\tobject must be a 'fundamental type' e.g. int" },
-        {"watchpoints", "Manage watchpoints (with or without tracing)\n"
-                "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
-                "\tE.g. <trigger> = <comparison> or <comparison1> <logicOp> <comparison2> ...\n"
-                "\tA <comparision> can be '<var> changed' which checks whether the value has changed\n"
-                "\tor '<var> <comp> <val>' which compares the variable to a given value\n"
-                "\tA <comp> can be <, <=, >, >=, ==, or !=\n"
-                "\tA <logicOp> can be && or ||\n"
-                "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
-                "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
-                "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus"},
-        {"watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
-                "\tExample: watch var1 > 90 && var2 < 100 || var3 changed"},
-        {"trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
-                "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of <postDelay>\n"
-                "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay when triggered\n"
-                "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace"},
-        {"watchlist", "prints the current list of watchpoints and their associated indices"},
-        {"addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified watchpoint's trace buffer"},
-        {"printwatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
-        {"printtrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
-        {"resettrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
-        {"sethandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
-                       "\tset where to do trigger checks and sampling (before/after clock/event handler)"},
-        {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list.\n"
-                "\tIf no index is provided, all watchpoints are removed."},
-        {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
-                "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
-                "\tTIME is of the format <Number><unit> e.g. 4us"},
-        {"history", "[N]: list previous N instructions. If N is not set list all\n"
-                    "\tSupports bash-style commands:\n"
-                    "\t!!   execute previous command\n"
-                    "\t!n   execute command at index n\n"
-                    "\t!-n  execute commad n lines back in history\n"
-                    "\t!string  execute the most recent command starting with `string`\n"
-                    "\t?string execute the most recent command containing `string`\n"
-                    "\t!...:p  print the instruction but not execute it."},
+        { "print", "[-rN][<obj>]: print objects in the current level of the object map\n"
+                   "\tif -rN is provided print recursive N levels (default N=4)" },
+        { "set", "<obj> <value>: sets an object in the current scope to the provided value;\n"
+                 "\tobject must be a 'fundamental type' e.g. int" },
+        { "watchpoints",
+            "Manage watchpoints (with or without tracing)\n"
+            "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
+            "\tE.g. <trigger> = <comparison> or <comparison1> <logicOp> <comparison2> ...\n"
+            "\tA <comparision> can be '<var> changed' which checks whether the value has changed\n"
+            "\tor '<var> <comp> <val>' which compares the variable to a given value\n"
+            "\tA <comp> can be <, <=, >, >=, ==, or !=\n"
+            "\tA <logicOp> can be && or ||\n"
+            "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
+            "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
+            "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus" },
+        { "watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
+                   "\tExample: watch var1 > 90 && var2 < 100 || var3 changed" },
+        { "trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
+                   "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of "
+                   "<postDelay>\n"
+                   "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay "
+                   "when triggered\n"
+                   "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace" },
+        { "watchlist", "prints the current list of watchpoints and their associated indices" },
+        { "addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified "
+                         "watchpoint's trace buffer" },
+        { "printwatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist" },
+        { "printtrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint" },
+        { "resettrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint" },
+        { "sethandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
+                        "\tset where to do trigger checks and sampling (before/after clock/event handler)" },
+        { "unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list.\n"
+                     "\tIf no index is provided, all watchpoints are removed." },
+        { "run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
+                 "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
+                 "\tTIME is of the format <Number><unit> e.g. 4us" },
+        { "history", "[N]: list previous N instructions. If N is not set list all\n"
+                     "\tSupports bash-style commands:\n"
+                     "\t!!   execute previous command\n"
+                     "\t!n   execute command at index n\n"
+                     "\t!-n  execute commad n lines back in history\n"
+                     "\t!string  execute the most recent command starting with `string`\n"
+                     "\t?string execute the most recent command containing `string`\n"
+                     "\t!...:p  print the instruction but not execute it." },
     };
 }
 
-SimpleDebugger::~SimpleDebugger() {
-    if (loggingFile.is_open())
-        loggingFile.close();
-    if (replayFile.is_open())
-        replayFile.close();
+SimpleDebugger::~SimpleDebugger()
+{
+    if ( loggingFile.is_open() ) loggingFile.close();
+    if ( replayFile.is_open() ) replayFile.close();
 }
 
 void
@@ -132,44 +161,44 @@ SimpleDebugger::execute(const std::string& msg)
 
     std::string line;
     while ( !done ) {
-        
+
         try {
             // User input prompt
             std::cout << "> " << std::flush;
 
-            if (! injectedCommand.str().empty()) {
+            if ( !injectedCommand.str().empty() ) {
                 // Injected command stream (currently just one command)
                 line = injectedCommand.str();
                 injectedCommand.str("");
                 std::cout << line << std::endl;
-            } else if ( replayFile.is_open() ) {
+            }
+            else if ( replayFile.is_open() ) {
                 // Replay commands from file
-                if (std::getline(replayFile, line)) {
+                if ( std::getline(replayFile, line) ) {
                     std::cout << line << std::endl;
-                } else {
+                }
+                else {
                     if ( replayFile.eof() )
                         std::cout << "(Finished reading from " << replayFilePath << ")" << std::endl;
-                    else 
+                    else
                         std::cout << "An error occured reading from " << replayFilePath << std::endl;
                     replayFile.close();
                 }
-            } else { 
+            }
+            else {
                 // Standard Input
-                if (!std::cin) 
-                    std::cin.clear(); // fix corrupted input after process resumed
+                if ( !std::cin ) std::cin.clear(); // fix corrupted input after process resumed
                 std::getline(std::cin, line);
             }
 
             dispatch_cmd(line);
 
             // Command Logging
-            if (enLogging)
-                loggingFile << line.c_str() << std::endl;
+            if ( enLogging ) loggingFile << line.c_str() << std::endl;
             // This prevents logging the 'logging' command
-            if (loggingFile.is_open())
-                enLogging = true; 
-                
-        } catch (const std::runtime_error& e) {
+            if ( loggingFile.is_open() ) enLogging = true;
+        }
+        catch ( const std::runtime_error& e ) {
             std::cout << "Parsing error. Ignoring " << line << std::endl;
         }
     }
@@ -182,35 +211,36 @@ void
 SimpleDebugger::dispatch_cmd(std::string& cmd)
 {
     // empty command
-    if (cmd.size()==0) return;
-    
+    if ( cmd.size() == 0 ) return;
+
     std::vector<std::string> tokens;
     tokenize(tokens, cmd);
 
     // just whitespace
-    if (tokens.size()==0) return;
+    if ( tokens.size() == 0 ) return;
 
     // comment
-    if ( tokens[0][0]=='#') 
-        return;
+    if ( tokens[0][0] == '#' ) return;
 
     // History !! and friends
-    if (tokens[0][0]=='!') {
+    if ( tokens[0][0] == '!' ) {
         std::string newcmd;
-        auto rc = cmdHistoryBuf.bang(tokens[0], newcmd );
-        if (rc==CommandHistoryBuffer::BANG_RC::ECHO) {
+        auto        rc = cmdHistoryBuf.bang(tokens[0], newcmd);
+        if ( rc == CommandHistoryBuffer::BANG_RC::ECHO ) {
             // replace, print, save command in history
-            cmd = newcmd; 
+            cmd = newcmd;
             std::cout << cmd << std::endl;
             cmdHistoryBuf.append(cmd);
             return;
-        } else if (rc==CommandHistoryBuffer::BANG_RC::EXEC) {
-            //replace and print new command then let it flow through
+        }
+        else if ( rc == CommandHistoryBuffer::BANG_RC::EXEC ) {
+            // replace and print new command then let it flow through
             std::cout << newcmd << std::endl;
             tokens.clear();
-            cmd = newcmd; 
+            cmd = newcmd;
             tokenize(tokens, cmd);
-        } else if (rc==CommandHistoryBuffer::BANG_RC::NOP) {
+        }
+        else if ( rc == CommandHistoryBuffer::BANG_RC::NOP ) {
             // invalid search, just return
             return;
         }
@@ -218,8 +248,8 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
 
     // The business
     for ( auto consoleCommand : cmdRegistry ) {
-        if (consoleCommand.match(tokens[0])) {
-            consoleCommand.exec(tokens);  //TODO prefer having return code to know if succeeded
+        if ( consoleCommand.match(tokens[0]) ) {
+            consoleCommand.exec(tokens); // TODO prefer having return code to know if succeeded
             cmdHistoryBuf.append(cmd);
             return;
         }
@@ -230,7 +260,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
 }
 
 //
-/* 
+/*
     !!:  Executes the previous command
     !n:  Executes the command at history index n.
     !-n: Executes the command n lines back in history.
@@ -255,24 +285,23 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
 
 void
 SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
-{   
+{
     // First check for specific command help
-    if (tokens.size()==1) {
-        for (const auto& g : GroupText ) {
+    if ( tokens.size() == 1 ) {
+        for ( const auto& g : GroupText ) {
             std::cout << "--- " << g.second << " ---" << std::endl;
             for ( const auto& c : cmdRegistry ) {
-                if ( g.first == c.group())
-                    std::cout << c << std::endl;
+                if ( g.first == c.group() ) std::cout << c << std::endl;
             }
         }
         std::cout << "\nMore detailed help also available for:\n";
         std::stringstream s;
-        for (const auto& pair : cmdHelp) {
+        for ( const auto& pair : cmdHelp ) {
             if ( (s.str().length() + pair.first.length() > 39) ) {
                 std::cout << "\t" << s.str() << std::endl;
                 s.str("");
                 s.clear();
-            } 
+            }
             s << pair.first << " ";
         }
         std::cout << "\t" << s.str() << std::endl;
@@ -280,9 +309,9 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
         return;
     }
 
-    if (tokens.size()>1) {
+    if ( tokens.size() > 1 ) {
         std::string c = tokens[1];
-        if (cmdHelp.find(c) != cmdHelp.end()) {
+        if ( cmdHelp.find(c) != cmdHelp.end() ) {
             std::cout << c << " " << cmdHelp.at(c) << std::endl;
         }
     }
@@ -468,8 +497,8 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
         return;
     }
     std::string value = tokens[2];
-    if (var->getType() == "std::string") {
-        for (size_t index = 3; index < tokens.size(); index++) {
+    if ( var->getType() == "std::string" ) {
+        for ( size_t index = 3; index < tokens.size(); index++ ) {
             value = value + " " + tokens[index];
         }
     }
@@ -541,7 +570,7 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    if (wp == nullptr) {
+    if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
@@ -598,7 +627,7 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    if (wp == nullptr) {
+    if ( wp == nullptr ) {
         std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
@@ -661,7 +690,7 @@ SimpleDebugger::cmd_resetTraceBuffer(std::vector<std::string>& tokens)
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    if (wp == nullptr) {
+    if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
@@ -696,11 +725,11 @@ SimpleDebugger::cmd_printTrace(std::vector<std::string>& tokens)
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    if (wp == nullptr) {
+    if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
-  
+
     wp->printTrace();
 
     return;
@@ -732,7 +761,7 @@ SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    if (wp == nullptr) {
+    if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
@@ -749,16 +778,16 @@ SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
 void
 SimpleDebugger::cmd_logging(std::vector<std::string>& tokens)
 {
-    if (loggingFile.is_open()) {
+    if ( loggingFile.is_open() ) {
         std::cout << "Logging file is already set to " << loggingFilePath << std::endl;
         return;
     }
-    if (tokens.size() > 1 ) {
+    if ( tokens.size() > 1 ) {
         loggingFilePath = tokens[1];
     }
     // Attempt to open an SST output file
     loggingFile.open(loggingFilePath);
-    if (! loggingFile.is_open()) {
+    if ( !loggingFile.is_open() ) {
         std::cout << "Could not open %s\n" << loggingFilePath.c_str() << std::endl;
         return;
     }
@@ -770,17 +799,16 @@ SimpleDebugger::cmd_logging(std::vector<std::string>& tokens)
 void
 SimpleDebugger::cmd_replay(std::vector<std::string>& tokens)
 {
-    if (replayFile.is_open()) {
+    if ( replayFile.is_open() ) {
         std::cout << "Replay file is already set to " << replayFilePath << std::endl;
         return;
     }
-    if (tokens.size() > 1 ) {
+    if ( tokens.size() > 1 ) {
         replayFilePath = tokens[1];
     }
 
     replayFile.open(replayFilePath);
-    if (! replayFile.is_open()) 
-        std::cout << "Could not open replay file: " << replayFilePath << std::endl;
+    if ( !replayFile.is_open() ) std::cout << "Could not open replay file: " << replayFilePath << std::endl;
 
     return;
 }
@@ -788,11 +816,12 @@ SimpleDebugger::cmd_replay(std::vector<std::string>& tokens)
 void
 SimpleDebugger::cmd_history(std::vector<std::string>& tokens)
 {
-    int recs=0; // 0 indicates all history
-    if (tokens.size()>1) {
+    int recs = 0; // 0 indicates all history
+    if ( tokens.size() > 1 ) {
         try {
-            recs = (int) SST::Core::from_string<int>(tokens[1]);
-        } catch ( std::invalid_argument& e ) {
+            recs = (int)SST::Core::from_string<int>(tokens[1]);
+        }
+        catch ( std::invalid_argument& e ) {
             std::cout << "history: Ignoring arg1 (" << tokens[1] << ")" << std::endl;
         }
     }
@@ -822,7 +851,7 @@ SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
     int count = 0;
     for ( auto& x : watch_points_ ) {
         // printf("  %d - %s\n", count++, x.first->getName().c_str());
-        if (x.first == nullptr) {
+        if ( x.first == nullptr ) {
             count++;
         }
         else {
@@ -840,14 +869,13 @@ SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
 {
     // Print the watch points
     std::cout << "Spinning PID " << getpid() << std::endl;
-    while( spinner > 0 ) {
+    while ( spinner > 0 ) {
         spinner++;
         usleep(100000);
         // set debug breakpoint here and set spinner to 0 to continue
-        if( spinner % 10 == 0 )                                                                                                                 
-            std::cout << "." << std::flush;
+        if ( spinner % 10 == 0 ) std::cout << "." << std::flush;
     }
-    spinner=1; // reset spinner
+    spinner = 1; // reset spinner
     std::cout << std::endl;
     return;
 }
@@ -1031,7 +1059,7 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
     size_t      index = 1;
     std::string name  = "";
 
-    if (tokens.size() < 3) {
+    if ( tokens.size() < 3 ) {
         printf("Invalid format for watch command\n");
         return;
     }
@@ -1113,17 +1141,19 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
 }
 
 // confirm <true/false>
-void 
-SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens) {
+void
+SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens)
+{
 
-    if (tokens.size() != 2) {
+    if ( tokens.size() != 2 ) {
         std::cout << "Invalid format for confirm command: confirm <true/false>\n";
         return;
     }
 
-    if ((tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1")) {
+    if ( (tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1") ) {
         confirm = true;
-    } else if ((tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0")) {
+    }
+    else if ( (tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0") ) {
         confirm = false;
     }
     else {
@@ -1131,28 +1161,27 @@ SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens) {
     }
 }
 
-bool 
-SimpleDebugger::clear_watchlist() {
+bool
+SimpleDebugger::clear_watchlist()
+{
 
-    if (confirm) {
+    if ( confirm ) {
         std::string line;
         std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
         std::getline(std::cin, line);
         std::vector<std::string> tokens;
         tokenize(tokens, line);
 
-        if (tokens.size() == 0)
-            return false;
-        if (!(tokens[0] == "yes"))
-            return false;
+        if ( tokens.size() == 0 ) return false;
+        if ( !(tokens[0] == "yes") ) return false;
     }
 
     // Remove watchpoints
     // Does this delete the objects correctly?
-    for (std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_) {
-        
+    for ( std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_ ) {
+
         WatchPoint* pt = wp.first;
-        if (pt != nullptr) {  // already removed using unwatch <wpindex>
+        if ( pt != nullptr ) { // already removed using unwatch <wpindex>
             BaseComponent* comp = wp.second;
             comp->removeWatchPoint(pt);
         }
@@ -1197,17 +1226,16 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
         return;
     }
 
-    WatchPoint*    pt   = watch_points_[index].first;
-    if (pt != nullptr) { // already removed
+    WatchPoint* pt = watch_points_[index].first;
+    if ( pt != nullptr ) { // already removed
         BaseComponent* comp = watch_points_[index].second;
 
         // Remove and mark as unused
         comp->removeWatchPoint(pt);
-        watch_points_[index].first = nullptr;
+        watch_points_[index].first  = nullptr;
         watch_points_[index].second = nullptr;
     }
     return;
-
 }
 
 
@@ -1407,8 +1435,8 @@ SimpleDebugger::cmd_exit(std::vector<std::string>& UNUSED(tokens))
 {
     // Remove all watchpoints
     bool cleared = clear_watchlist();
-    if (cleared) {
-        std:: cout << "Removing all watchpoints and exiting ObjectExplorer\n";
+    if ( cleared ) {
+        std::cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
     else {
         std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
@@ -1430,23 +1458,23 @@ SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
 
 void
 CommandHistoryBuffer::append(std::string s)
-{ 
+{
     buf_[nxt_] = std::make_pair(count_++, s);
-    sz_ = sz_<MAX_CMDS-1 ? sz_+1 : MAX_CMDS;
-    cur_ = nxt_;
-    nxt_ = (nxt_ + 1) % MAX_CMDS;
+    sz_        = sz_ < MAX_CMDS - 1 ? sz_ + 1 : MAX_CMDS;
+    cur_       = nxt_;
+    nxt_       = (nxt_ + 1) % MAX_CMDS;
 }
 
 void
 CommandHistoryBuffer::print(int num)
 {
-    int n = num <sz_ ? num : sz_;
-    n = n<=0 ? sz_ : n;  
-    int idx = (nxt_-n) % sz_;
-    if (idx<0) idx += sz_;
-    for (int i=0; i<n; i++) {
-        std::cout <<  buf_[idx].first << " " << buf_[idx].second << std::endl;
-        idx = (idx + 1 ) % MAX_CMDS;
+    int n   = num < sz_ ? num : sz_;
+    n       = n <= 0 ? sz_ : n;
+    int idx = (nxt_ - n) % sz_;
+    if ( idx < 0 ) idx += sz_;
+    for ( int i = 0; i < n; i++ ) {
+        std::cout << buf_[idx].first << " " << buf_[idx].second << std::endl;
+        idx = (idx + 1) % MAX_CMDS;
     }
 }
 
@@ -1454,7 +1482,7 @@ CommandHistoryBuffer::BANG_RC
 CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
 {
     auto rc = CommandHistoryBuffer::BANG_RC::INVALID;
-    if (this->sz_ == 0) return rc;
+    if ( this->sz_ == 0 ) return rc;
 
     // !!       Execute the previous instruction
     // !n      Execute instruction at history index n
@@ -1464,52 +1492,52 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
     // !...:p   Find instruction in history but only print it
 
     // Check for :p  and strip it from token
-    bool echo = false;
+    bool        echo = false;
     std::string base = token;
-    if (token.length()>=2) {
-        std::string last2chars = token.substr(token.length()-2);
-        if (last2chars==":p") {
+    if ( token.length() >= 2 ) {
+        std::string last2chars = token.substr(token.length() - 2);
+        if ( last2chars == ":p" ) {
             echo = true;
-            base = token.substr(0, token.length()-2);
+            base = token.substr(0, token.length() - 2);
         }
     }
 
     // grab first two chars and arg
-    if (base.length() < 2 ) 
-        return rc;
+    if ( base.length() < 2 ) return rc;
 
     // At this point we have a valid command. Worst case a NOP
     rc = CommandHistoryBuffer::BANG_RC::NOP;
 
-    std::string cmd = base.substr(0,2);
+    std::string cmd = base.substr(0, 2);
     std::string arg = "";
-    if (base.length() > 2) 
-        arg = base.substr(2);
-    
+    if ( base.length() > 2 ) arg = base.substr(2);
+
     bool found = false;
-    if (cmd=="!!") {
-        if (arg.length()==0) {
+    if ( cmd == "!!" ) {
+        if ( arg.length() == 0 ) {
             newcmd = buf_[cur_].second;
-            found = true;
-        } else {
+            found  = true;
+        }
+        else {
             std::cout << "Invalid command: " << base << std::endl;
             return rc;
         }
-    } else if (cmd=="!-") {
+    }
+    else if ( cmd == "!-" ) {
         found = findOffset(arg, newcmd);
-    } else if (cmd=="!?") {
+    }
+    else if ( cmd == "!?" ) {
         found = searchAny(arg, newcmd);
-    } else {
+    }
+    else {
         // Either !n or !string
-        arg = base.substr(1);
-        found = findEvent(arg,newcmd);
-        if (! found)
-            found = searchFirst(arg, newcmd);
-        if (! found) 
-            std::cout << "history: event not found: " << arg << std::endl;
+        arg   = base.substr(1);
+        found = findEvent(arg, newcmd);
+        if ( !found ) found = searchFirst(arg, newcmd);
+        if ( !found ) std::cout << "history: event not found: " << arg << std::endl;
     }
 
-    if (found) {
+    if ( found ) {
         rc = echo ? CommandHistoryBuffer::BANG_RC::ECHO : CommandHistoryBuffer::BANG_RC::EXEC;
     }
 
@@ -1522,24 +1550,25 @@ CommandHistoryBuffer::findEvent(const std::string& s, std::string& newcmd)
     // !n
     int event = -1;
     try {
-        event = (int) SST::Core::from_string<int>(s);
-    } catch ( std::invalid_argument& e ) {
+        event = (int)SST::Core::from_string<int>(s);
+    }
+    catch ( std::invalid_argument& e ) {
         // std::cout << "history: invalid event: " << s << std::endl;
         return false;
     }
-    if (event<0) {
+    if ( event < 0 ) {
         // std::cout << "history: invalid event: " << event << std::endl;
-        return false; 
+        return false;
     }
     // search backwards (most recent first)
     int idx = cur_;
-    for (int i=0; i<sz_; i++) {
-        if (buf_[idx].first == (size_t) event) {
+    for ( int i = 0; i < sz_; i++ ) {
+        if ( buf_[idx].first == (size_t)event ) {
             newcmd = buf_[idx].second;
             return true;
         }
         idx--;
-        if (idx<0) idx = sz_ - 1;
+        if ( idx < 0 ) idx = sz_ - 1;
     }
     return false;
 }
@@ -1550,20 +1579,20 @@ CommandHistoryBuffer::findOffset(const std::string& s, std::string& newcmd)
     // !-n
     int offset = -1;
     try {
-        offset = (int) SST::Core::from_string<int>(s);
-    } catch ( std::invalid_argument& e ) {
+        offset = (int)SST::Core::from_string<int>(s);
+    }
+    catch ( std::invalid_argument& e ) {
         std::cout << "history: invalid offset: " << s << std::endl;
         return false;
     }
 
-    if (offset>sz_ || offset<1) {
+    if ( offset > sz_ || offset < 1 ) {
         std::cout << "history: offset not found: " << offset << std::endl;
         return false;
     }
 
     int idx = cur_ - offset + 1;
-    if (idx<0)
-        idx += sz_;
+    if ( idx < 0 ) idx += sz_;
 
     newcmd = buf_[idx].second;
     return true;
@@ -1575,13 +1604,12 @@ CommandHistoryBuffer::searchFirst(const std::string& s, std::string& newcmd)
     // !string
     // search backwards. Most recent first
     int idx = cur_;
-    for (int i=0;i<sz_;i++) {
+    for ( int i = 0; i < sz_; i++ ) {
         std::string chk = buf_[idx].second;
         idx--;
-        if (idx<0) idx += sz_;
-        if (chk.length()<s.length())
-            continue;
-        if (chk.substr(0,s.length())==s) {
+        if ( idx < 0 ) idx += sz_;
+        if ( chk.length() < s.length() ) continue;
+        if ( chk.substr(0, s.length()) == s ) {
             newcmd = chk;
             return true;
         }
@@ -1595,13 +1623,12 @@ CommandHistoryBuffer::searchAny(const std::string& s, std::string& newcmd)
 {
     // !?string
     int idx = cur_;
-    for (int i=0;i<sz_;i++) {
+    for ( int i = 0; i < sz_; i++ ) {
         std::string chk = buf_[idx].second;
         idx--;
-        if (idx<0) idx += sz_;
-        if (chk.length()<s.length())
-            continue;
-        if ( chk.find(s) != std::string::npos) {
+        if ( idx < 0 ) idx += sz_;
+        if ( chk.length() < s.length() ) continue;
+        if ( chk.find(s) != std::string::npos ) {
             newcmd = chk;
             return true;
         }
