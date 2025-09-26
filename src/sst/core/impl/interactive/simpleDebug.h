@@ -12,6 +12,7 @@
 #ifndef SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 #define SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 
+// clang-format off
 #include "sst/core/eli/elementinfo.h"
 #include <sst/core/interactiveConsole.h>
 
@@ -24,81 +25,87 @@
 #include <map>
 #include <string>
 #include <vector>
+// clang-format on
 
 namespace SST::IMPL::Interactive {
 
-enum class ConsoleCommandGroup {
-  GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC
-};
+enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC };
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
-  { ConsoleCommandGroup::GENERAL, "General" },
-  { ConsoleCommandGroup::NAVIGATION, "Navigation" },
-  { ConsoleCommandGroup::STATE, "State" },
-  { ConsoleCommandGroup::WATCH, "Watch/Trace" },
-  { ConsoleCommandGroup::SIMULATION, "Simulation" },
-  { ConsoleCommandGroup::LOGGING, "Logging" },
-  { ConsoleCommandGroup::MISC, "Misc" },
+    { ConsoleCommandGroup::GENERAL, "General" },
+    { ConsoleCommandGroup::NAVIGATION, "Navigation" },
+    { ConsoleCommandGroup::STATE, "State" },
+    { ConsoleCommandGroup::WATCH, "Watch/Trace" },
+    { ConsoleCommandGroup::SIMULATION, "Simulation" },
+    { ConsoleCommandGroup::LOGGING, "Logging" },
+    { ConsoleCommandGroup::MISC, "Misc" },
 };
 
 // Encapsulate a console command.
-class ConsoleCommand {
-  public:
-    ConsoleCommand(
-      std::string str_long, std::string str_short, 
-      std::string str_help, ConsoleCommandGroup group,
-      std::function<void(std::vector<std::string>& tokens)> func)
-      : str_long_(str_long), str_short_(str_short), str_help_(str_help), 
-        group_(group), func_(func) {} 
-    const std::string& str_long()  const {return str_long_;}
-    const std::string& str_short() const {return str_short_;}
-    const std::string& str_help() const {return str_help_;}
-    const ConsoleCommandGroup& group() const {return group_;}
-    void exec(std::vector<std::string>& tokens) { return func_(tokens); }
-    bool match(const std::string& token) {
-      std::string lctoken = toLower(token);
-      if ( lctoken.size() == str_long_.size() && lctoken==toLower(str_long_) ) 
-        return true;
-      if ( lctoken.size() == str_short_.size() && lctoken==toLower(str_short_) ) 
-        return true;
-  
-      return false;
-    }
-    friend std::ostream& operator<<(std::ostream& os, const ConsoleCommand c) {
-      os << c.str_long_ << " (" << c.str_short_ << ") " << c.str_help_;
-      return os;
-    }
-  private:
-    std::string str_long_;
-    std::string str_short_;
-    std::string str_help_;
-    ConsoleCommandGroup group_;
-    std::function<void(std::vector<std::string>& tokens)> func_;
-    std::string toLower(std::string s) {
-      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-      return s;
-    }
-  };
-
-class CommandHistoryBuffer {
+class ConsoleCommand
+{
 public:
-  const int MAX_CMDS=200;
-  CommandHistoryBuffer() { buf_.resize(MAX_CMDS); }
-  void append(std::string s);
-  void print(int num);
-  enum BANG_RC { INVALID, ECHO, EXEC, NOP };
-  BANG_RC bang( const std::string& token, std::string& newcmd );
+    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
+        std::function<void(std::vector<std::string>& tokens)> func) :
+        str_long_(str_long),
+        str_short_(str_short),
+        str_help_(str_help),
+        group_(group),
+        func_(func)
+    {}
+    const std::string&         str_long() const { return str_long_; }
+    const std::string&         str_short() const { return str_short_; }
+    const std::string&         str_help() const { return str_help_; }
+    const ConsoleCommandGroup& group() const { return group_; }
+    void                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
+    bool                       match(const std::string& token)
+    {
+        std::string lctoken = toLower(token);
+        if ( lctoken.size() == str_long_.size() && lctoken == toLower(str_long_) ) return true;
+        if ( lctoken.size() == str_short_.size() && lctoken == toLower(str_short_) ) return true;
+
+        return false;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const ConsoleCommand c)
+    {
+        os << c.str_long_ << " (" << c.str_short_ << ") " << c.str_help_;
+        return os;
+    }
+
 private:
-  int cur_ = 0;
-  int nxt_ = 0;
-  int sz_ = 0;
-  int count_ = 0;
-  std::vector<std::pair<std::size_t, std::string>> buf_;
-  // support for ! history retrieval
-  bool findEvent(const std::string& s, std::string& newcmd);
-  bool findOffset(const std::string& s, std::string& newcmd);
-  bool searchFirst(const std::string& s, std::string& newcmd);
-  bool searchAny(const std::string& s, std::string& newcmd);
+    std::string                                           str_long_;
+    std::string                                           str_short_;
+    std::string                                           str_help_;
+    ConsoleCommandGroup                                   group_;
+    std::function<void(std::vector<std::string>& tokens)> func_;
+    std::string                                           toLower(std::string s)
+    {
+        std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+        return s;
+    }
+};
+
+class CommandHistoryBuffer
+{
+public:
+    const int MAX_CMDS = 200;
+    CommandHistoryBuffer() { buf_.resize(MAX_CMDS); }
+    void append(std::string s);
+    void print(int num);
+    enum BANG_RC { INVALID, ECHO, EXEC, NOP };
+    BANG_RC bang(const std::string& token, std::string& newcmd);
+
+private:
+    int                                              cur_   = 0;
+    int                                              nxt_   = 0;
+    int                                              sz_    = 0;
+    int                                              count_ = 0;
+    std::vector<std::pair<std::size_t, std::string>> buf_;
+    // support for ! history retrieval
+    bool                                             findEvent(const std::string& s, std::string& newcmd);
+    bool                                             findOffset(const std::string& s, std::string& newcmd);
+    bool                                             searchFirst(const std::string& s, std::string& newcmd);
+    bool                                             searchAny(const std::string& s, std::string& newcmd);
 };
 
 class SimpleDebugger : public SST::InteractiveConsole
@@ -141,18 +148,20 @@ private:
     // logging support
     std::ofstream loggingFile;
     std::ifstream replayFile;
-    std::string loggingFilePath = "sst-console.out";
-    std::string replayFilePath = "sst-console.in";
-    bool enLogging = false;
+    std::string   loggingFilePath = "sst-console.out";
+    std::string   replayFilePath  = "sst-console.in";
+    bool          enLogging       = false;
 
     // command injection
-    std::stringstream injectedCommand; //TODO use ConsoleCommand object
+    std::stringstream injectedCommand; // TODO use ConsoleCommand object
 
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
 
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
+    bool                                                clear_watchlist();
+    bool                                                confirm = true; // Ask for confirmation to clear watchlist
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
@@ -161,7 +170,7 @@ private:
     void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
     void cmd_ls(std::vector<std::string>& UNUSED(tokens));
     void cmd_cd(std::vector<std::string>& tokens);
-    
+
     // Variable Access
     void cmd_print(std::vector<std::string>& tokens);
     void cmd_set(std::vector<std::string>& tokens);
@@ -182,6 +191,7 @@ private:
     void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
     void cmd_printTrace(std::vector<std::string>& tokens);
     void cmd_printWatchpoint(std::vector<std::string>& tokens);
+    void cmd_setConfirm(std::vector<std::string>& tokens);
 
     // Logging/Replay
     void cmd_logging(std::vector<std::string>& tokens);

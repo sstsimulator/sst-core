@@ -246,6 +246,9 @@ public:
         if ( tb_ != nullptr ) {
             tb_->resetTraceBuffer();
         }
+        else {
+            std::cout << "No tracing enabled\n";
+        }
     }
 
     bool checkReset() { return reset_; }
