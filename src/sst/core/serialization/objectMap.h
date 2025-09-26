@@ -922,7 +922,7 @@ compareType(U1 v, ObjectMapComparison::Op op, U2 w)
 
 // Comparison of two variables with at least one non-arithmetic type
 template <typename U1, typename U2,
-    std::enable_if_t<(!std::is_same_v<U1, U2> && (!std::is_arithmetic_v<U1>) || !std::is_arithmetic_v<U2>), int> = true>
+	  std::enable_if_t<( !std::is_same_v<U1, U2> && (!std::is_arithmetic_v<U1> || !std::is_arithmetic_v<U2>) ), int> = true>
 bool
 compareType(U1 UNUSED(v), ObjectMapComparison::Op UNUSED(op), U2 UNUSED(w))
 {
