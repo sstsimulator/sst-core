@@ -40,6 +40,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     // Populate the command registry
     cmdRegistry = {
         {"help",  "?",      "[CMD]: show this help or detailed command help",            ConsoleCommandGroup::GENERAL,    [this](std::vector<std::string>& tokens){ cmd_help(tokens);  }},
+        {"confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,   [this](std::vector<std::string>& tokens) { cmd_setConfirm(tokens); }},
         {"pwd",   "pwd",    "print the current working directory in the object map",     ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_pwd(tokens);   }},
         {"chdir", "cd",     "change directory level in the object map",                  ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_cd(tokens);    }},
         {"list",  "ls",     "list the objects in the current level of the object map",   ConsoleCommandGroup::NAVIGATION, [this](std::vector<std::string>& tokens){ cmd_ls(tokens);    }},
@@ -83,20 +84,20 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                 "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
                 "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus"},
         {"watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
-                "\tExample: watch size > 90 && count < 100 || status changed"},
+                "\tExample: watch var1 > 90 && var2 < 100 || var3 changed"},
         {"trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
                 "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of <postDelay>\n"
                 "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay when triggered\n"
-                "\tExample: trace size > 90 || count == 100 : 32 4 : size count state : printTrace"},
-        {"watchlist", "prints the current list of watchpoints and their associated indices\n"
-                      "\tNote: a watchpoint's index may change as watchpoints are deleted"},
+                "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace"},
+        {"watchlist", "prints the current list of watchpoints and their associated indices"},
         {"addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified watchpoint's trace buffer"},
         {"printwatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist"},
         {"printtrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint"},
         {"resettrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint"},
         {"sethandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
                        "\tset where to do trigger checks and sampling (before/after clock/event handler)"},
-        {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list. If no index is provided, all watchpoints are removed."},
+        {"unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list.\n"
+                "\tIf no index is provided, all watchpoints are removed."},
         {"run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
                 "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
                 "\tTIME is of the format <Number><unit> e.g. 4us"},
@@ -434,7 +435,7 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
 void
 SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
 {
-    if ( tokens.size() != 3 ) {
+    if ( tokens.size() < 3 ) {
         printf("Invalid format for set command (set <obj> <value>)\n");
         return;
     }
@@ -466,9 +467,18 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
         var->selectParent();
         return;
     }
+    std::string value = tokens[2];
+    if (var->getType() == "std::string") {
+        for (size_t index = 3; index < tokens.size(); index++) {
+            value = value + " " + tokens[index];
+        }
+    }
+    else {
+        value = tokens[2];
+    }
 
     try {
-        var->set(tokens[2]);
+        var->set(value);
     }
     catch ( std::exception& e ) {
         printf("Invalid format: %s\n", tokens[2].c_str());
@@ -518,19 +528,23 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        std::cout << " Invalid watchpoint index: << " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
+    if (wp == nullptr) {
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
+        return;
+    }
     printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
 
     // Get handlerTypes and add associated objectBuffers
@@ -571,19 +585,23 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        printf(" Invalid watchpoint index\n");
+        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
+    if (wp == nullptr) {
+        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
+        return;
+    }
     printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
 
     // Get trace vars and add associated objectBuffers
@@ -622,7 +640,7 @@ void
 SimpleDebugger::cmd_resetTraceBuffer(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
-        printf("Invalid format: resetTraceBuffer <watchpointIndex>\n");
+        std::cout << "Invalid format: resetTraceBuffer <watchpointIndex>\n";
         return;
     }
     size_t wpIndex = watch_points_.size();
@@ -630,20 +648,23 @@ SimpleDebugger::cmd_resetTraceBuffer(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        printf(" Invalid watchpoint index\n");
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    // printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
+    if (wp == nullptr) {
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
+        return;
+    }
     wp->resetTraceBuffer();
 
     return;
@@ -662,20 +683,24 @@ SimpleDebugger::cmd_printTrace(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        printf(" Invalid watchpoint index\n");
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    // printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
+    if (wp == nullptr) {
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
+        return;
+    }
+  
     wp->printTrace();
 
     return;
@@ -686,7 +711,7 @@ void
 SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
-        printf("Invalid format: printWatchpoint <watchpointIndex>\n");
+        std::cout << "Invalid format: printWatchpoint <watchpointIndex>\n";
         return;
     }
     size_t wpIndex = watch_points_.size();
@@ -694,22 +719,27 @@ SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        printf(" Invalid watchpoint index\n");
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
-    // printf("WP %ld: - %s\n", wpIndex, wp->getName().c_str());
-    std::cout << "WP" << wpIndex << ": ";
-    wp->printWatchpoint();
+    if (wp == nullptr) {
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
+        return;
+    }
+    else {
+        std::cout << "WP" << wpIndex << ": ";
+        wp->printWatchpoint();
+    }
 
     return;
 }
@@ -792,8 +822,13 @@ SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
     int count = 0;
     for ( auto& x : watch_points_ ) {
         // printf("  %d - %s\n", count++, x.first->getName().c_str());
-        std::cout << count++ << ": ";
-        x.first->printWatchpoint();
+        if (x.first == nullptr) {
+            count++;
+        }
+        else {
+            std::cout << count++ << ": ";
+            x.first->printWatchpoint();
+        }
     }
     return;
 }
@@ -995,6 +1030,11 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
 {
     size_t      index = 1;
     std::string name  = "";
+
+    if (tokens.size() < 3) {
+        printf("Invalid format for watch command\n");
+        return;
+    }
     try {
         // Get first comparison
         Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
@@ -1018,6 +1058,7 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         if ( comp ) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
+            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
         }
         else
             printf("Not a component\n");
@@ -1071,19 +1112,64 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
     }
 }
 
+// confirm <true/false>
+void 
+SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens) {
+
+    if (tokens.size() != 2) {
+        std::cout << "Invalid format for confirm command: confirm <true/false>\n";
+        return;
+    }
+
+    if ((tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1")) {
+        confirm = true;
+    } else if ((tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0")) {
+        confirm = false;
+    }
+    else {
+        std::cout << "Invalid argument for confirm: must be true or false" << tokens[1] << std::endl;
+    }
+}
+
+bool 
+SimpleDebugger::clear_watchlist() {
+
+    if (confirm) {
+        std::string line;
+        std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
+        std::getline(std::cin, line);
+        std::vector<std::string> tokens;
+        tokenize(tokens, line);
+
+        if (tokens.size() == 0)
+            return false;
+        if (!(tokens[0] == "yes"))
+            return false;
+    }
+
+    // Remove watchpoints
+    // Does this delete the objects correctly?
+    for (std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_) {
+        
+        WatchPoint* pt = wp.first;
+        if (pt != nullptr) {  // already removed using unwatch <wpindex>
+            BaseComponent* comp = wp.second;
+            comp->removeWatchPoint(pt);
+        }
+    }
+    watch_points_.clear();
+    return true;
+}
+
+
 // unwatch <wpIndex>
 void
 SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
 {
-
     // If no arguments, unwatch all watchpoints
     if ( tokens.size() == 1 ) {
-        for ( std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_ ) {
-            WatchPoint*    pt   = wp.first;
-            BaseComponent* comp = wp.second;
-            comp->removeWatchPoint(pt);
-        }
-        watch_points_.clear();
+        clear_watchlist();
+        std::cout << "Watchlist cleared\n";
         return;
     }
 
@@ -1112,11 +1198,16 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
     }
 
     WatchPoint*    pt   = watch_points_[index].first;
-    BaseComponent* comp = watch_points_[index].second;
+    if (pt != nullptr) { // already removed
+        BaseComponent* comp = watch_points_[index].second;
 
-    comp->removeWatchPoint(pt);
+        // Remove and mark as unused
+        comp->removeWatchPoint(pt);
+        watch_points_[index].first = nullptr;
+        watch_points_[index].second = nullptr;
+    }
+    return;
 
-    watch_points_.erase(watch_points_.begin() + index);
 }
 
 
@@ -1299,6 +1390,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         if ( comp ) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
+            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
         }
         else
             printf("Not a component\n");
@@ -1314,13 +1406,13 @@ void
 SimpleDebugger::cmd_exit(std::vector<std::string>& UNUSED(tokens))
 {
     // Remove all watchpoints
-    for ( std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_ ) {
-        WatchPoint*    pt   = wp.first;
-        BaseComponent* comp = wp.second;
-        comp->removeWatchPoint(pt);
+    bool cleared = clear_watchlist();
+    if (cleared) {
+        std:: cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
-    watch_points_.clear();
-    printf("Removing all watchpoints and exiting ObjectExplorer\n");
+    else {
+        std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
+    }
     done = true;
     return;
 }

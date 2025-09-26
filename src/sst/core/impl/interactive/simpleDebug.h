@@ -153,6 +153,8 @@ private:
 
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
+    bool clear_watchlist();
+    bool confirm = true;  // Ask for confirmation to clear watchlist
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
@@ -182,6 +184,7 @@ private:
     void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
     void cmd_printTrace(std::vector<std::string>& tokens);
     void cmd_printWatchpoint(std::vector<std::string>& tokens);
+    void cmd_setConfirm(std::vector<std::string>& tokens);
 
     // Logging/Replay
     void cmd_logging(std::vector<std::string>& tokens);
