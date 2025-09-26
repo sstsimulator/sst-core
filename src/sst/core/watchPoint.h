@@ -364,6 +364,23 @@ public:
         std::string                     valStr_ = "";
     };
 
+    class ShutdownWPAction : public WPAction
+    {
+    public:
+        ShutdownWPAction() {}
+        virtual ~ShutdownWPAction() = default;
+
+        std::string actionToString() override { return "shutdown"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            wp->printTriggerRecord();
+            printf("  Trigger action shutting down simulation\n");
+            wp->simulationShutdown();
+            return;
+        }
+    };
+
     void setAction(WPAction* action) { wpAction = action; }
 
     void printAction() { std::cout << wpAction->actionToString(); }
@@ -395,6 +412,7 @@ protected:
     void      setCheckpoint();
     void      printStatus();
     void      heartbeat();
+    void      simulationShutdown();
 
 private:
     Core::Serialization::ObjectMapComparison*              obj_;

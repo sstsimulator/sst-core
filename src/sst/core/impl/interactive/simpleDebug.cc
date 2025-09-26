@@ -97,19 +97,21 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     cmdHelp = {
         { "print", "[-rN][<obj>]: print objects in the current level of the object map\n"
                    "\tif -rN is provided print recursive N levels (default N=4)" },
-        { "set", "<obj> <value>: sets an object in the current scope to the provided value;\n"
-                 "\tobject must be a 'fundamental type' e.g. int" },
+        { "set", "<obj> <value>: sets an object in the current scope to the provided value\n"
+                 "\tobject must be a 'fundamental type' (arithmetic or string)\n"
+                 "\t e.g. set mystring hello world" },
         { "watchpoints",
             "Manage watchpoints (with or without tracing)\n"
             "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
             "\tE.g. <trigger> = <comparison> or <comparison1> <logicOp> <comparison2> ...\n"
             "\tA <comparision> can be '<var> changed' which checks whether the value has changed\n"
-            "\tor '<var> <comp> <val>' which compares the variable to a given value\n"
-            "\tA <comp> can be <, <=, >, >=, ==, or !=\n"
+            "\tor '<var> <op> <val>' which compares the variable to a given value\n"
+            "\tAn <op> can be <, <=, >, >=, ==, or !=\n"
             "\tA <logicOp> can be && or ||\n"
             "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
             "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
-            "\tAvailable actions include: interactive, printTrace, checkpoint, set, or printStatus" },
+            "\tAvailable actions include: \n"
+            "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown" },
         { "watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
                    "\tExample: watch var1 > 90 && var2 < 100 || var3 changed" },
         { "trace", "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
@@ -117,6 +119,8 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                    "<postDelay>\n"
                    "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay "
                    "when triggered\n"
+                   "\tAvailable actions include: \n"
+                   "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown\n"
                    "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace" },
         { "watchlist", "prints the current list of watchpoints and their associated indices" },
         { "addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified "
@@ -1035,9 +1039,12 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
     }
 #if 0
     else if (action == "heartbeat") {
-        return WatchPoint::HeartbeatAction();
+        return new WatchPoint::HeartbeatWPAction();
     }
 #endif
+    else if ( action == "shutdown" ) {
+        return new WatchPoint::ShutdownWPAction();
+    }
     else {
         return nullptr;
     }
