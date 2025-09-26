@@ -31,11 +31,15 @@
 
 namespace SST::Statistics {
 
-std::vector<StatisticOutput*> StatisticProcessingEngine::m_statOutputs;
+std::vector<StatisticOutput*> StatisticProcessingEngine::stat_outputs_;
 
 StatisticProcessingEngine::StatisticProcessingEngine() :
-    m_output(Output::getDefaultObject())
-{}
+    output_(Output::getDefaultObject())
+{
+    // Stat group for default event-based and end-of-time output
+    StatisticGroup group;
+    stat_default_groups_.insert(std::make_pair(0, group));
+}
 
 
 void
@@ -43,14 +47,14 @@ StatisticProcessingEngine::static_setup(StatsConfig* stats_config)
 {
     // Outputs are per MPI rank, so have to be static data
     for ( auto& cfg : stats_config->outputs ) {
-        m_statOutputs.push_back(createStatisticOutput(cfg));
+        stat_outputs_.push_back(createStatisticOutput(cfg));
     }
 }
 
 void
 StatisticProcessingEngine::stat_outputs_simulation_start()
 {
-    for ( auto& so : m_statOutputs ) {
+    for ( auto& so : stat_outputs_ ) {
         so->startOfSimulation();
     }
 }
@@ -58,105 +62,67 @@ StatisticProcessingEngine::stat_outputs_simulation_start()
 void
 StatisticProcessingEngine::stat_outputs_simulation_end()
 {
-    for ( auto& so : m_statOutputs ) {
+    for ( auto& so : stat_outputs_ ) {
         so->endOfSimulation();
     }
 }
 
 
 void
-StatisticProcessingEngine::setup(Simulation_impl* sim, StatsConfig* stats_config)
+StatisticProcessingEngine::setup(StatsConfig* stats_config)
 {
-    m_sim = sim;
+    simulation_started_ = false;
+    stat_load_level_    = stats_config->load_level;
 
-    m_SimulationStarted = false;
-    m_statLoadLevel     = stats_config->load_level;
-
-    m_defaultGroup.output = m_statOutputs[0];
+    if ( stat_default_groups_.empty() ) stat_default_groups_.insert(std::make_pair(0, StatisticGroup()));
+    for ( auto& group : stat_default_groups_ ) {
+        group.second.output = stat_outputs_[0];
+    }
     for ( auto& cfg : stats_config->groups ) {
-        m_statGroups.emplace_back(cfg.second, this);
+        stat_groups_.emplace_back(cfg.second, this);
     }
 }
 
 void
-StatisticProcessingEngine::restart(Simulation_impl* sim)
+StatisticProcessingEngine::restart()
 {
-    m_sim                 = sim;
-    m_SimulationStarted   = false;
-    m_defaultGroup.output = m_statOutputs[0];
-    for ( std::vector<StatisticGroup>::iterator it = m_statGroups.begin(); it != m_statGroups.end(); it++ ) {
+    simulation_started_ = false;
+    if ( stat_default_groups_.empty() ) stat_default_groups_.insert(std::make_pair(0, StatisticGroup()));
+    for ( auto group : stat_default_groups_ ) {
+        group.second.output = stat_outputs_[0];
+    }
+    for ( std::vector<StatisticGroup>::iterator it = stat_groups_.begin(); it != stat_groups_.end(); it++ ) {
         it->restartGroup(this);
     }
 }
 
 StatisticProcessingEngine::~StatisticProcessingEngine()
 {
-    StatArray_t*   statArray;
-    StatisticBase* stat;
-
-    // Destroy all the Statistics that have been created
-    for ( CompStatMap_t::iterator it_m = m_CompStatMap.begin(); it_m != m_CompStatMap.end(); it_m++ ) {
-        // Get the Array for this Map Item
-        statArray = it_m->second;
-
-        // Walk the stat Array and delete each stat
-        for ( StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++ ) {
-            stat = *it_v;
-            delete stat;
-        }
-    }
+    stat_default_groups_.clear();
+    stat_groups_.clear();
 }
 
+// Regular start registration
 bool
-StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
+StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Params& params)
 {
     if ( stat->isNullStatistic() ) return true;
+
     auto* comp = stat->getComponent();
     if ( comp == nullptr ) {
-        m_output.verbose(CALL_INFO, 1, 0, " Error: Statistic %s hasn't any associated component .\n",
+        output_.verbose(CALL_INFO, 1, 0, " Error: Statistic %s hasn't any associated component .\n",
             stat->getFullStatName().c_str());
         return false;
     }
 
+    // Determine group if any
     StatisticGroup& group = getGroupForStatistic(stat);
-    if ( group.isDefault ) {
-        // If the mode is Periodic Based, the add the statistic to the
-        // StatisticProcessingEngine otherwise add it as an Event Based Stat.
-        UnitAlgebra collectionRate = stat->getCollectionRate();
-        bool        success        = true;
-        switch ( stat->getRegisteredCollectionMode() ) {
-        case StatisticBase::STAT_MODE_PERIODIC:
-            success = addPeriodicBasedStatistic(collectionRate, stat);
-            break;
-        case StatisticBase::STAT_MODE_COUNT:
-            success = addEventBasedStatistic(collectionRate, stat);
-            break;
-        case StatisticBase::STAT_MODE_DUMP_AT_END:
-            success = addEndOfSimStatistic(stat);
-            break;
-        case StatisticBase::STAT_MODE_UNDEFINED:
-            m_output.fatal(
-                CALL_INFO, 1, "Stat mode is undefined for %s in registerStatistic", stat->getFullStatName().c_str());
-            break;
-        }
-        if ( !success ) return false;
-    }
-    else {
-        switch ( stat->getRegisteredCollectionMode() ) {
-        case StatisticBase::STAT_MODE_PERIODIC:
-        case StatisticBase::STAT_MODE_DUMP_AT_END:
-            break;
-        default:
-            m_output.output("ERROR: Statistics in groups must be periodic or dump at end\n");
-            return false;
-        }
-    }
 
     // Make sure that the wireup has not been completed
     // If it has, stat output must support dynamic registration
     if ( true == Simulation_impl::getSimulation()->isWireUpFinished() ) {
         if ( !group.output->supportsDynamicRegistration() ) {
-            m_output.fatal(CALL_INFO, 1,
+            output_.fatal(CALL_INFO, 1,
                 "ERROR: Statistic %s - "
                 "Cannot be registered for output %s after the Components have been wired up. "
                 "Statistics on output %s must be registered on Component creation. exiting...\n",
@@ -165,30 +131,130 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
         }
     }
 
-    /* All checks pass.  Add the stat */
-    group.addStatistic(stat);
+    // Configure output rate - new stat only
+    std::string rate     = params.find<std::string>("rate", "0ns");
+    UnitAlgebra rate_ua  = UnitAlgebra(rate);
+    bool        periodic = false;
+    if ( rate_ua.hasUnits("s") || rate_ua.hasUnits("hz") ) {
+        periodic = true;
+    }
+    else if ( !rate_ua.hasUnits("event") ) {
+        // rate has a unit type we dont recognize
+        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+            "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", stat->getFullStatName().c_str(),
+            rate.c_str());
+    }
+    stat->setRegisteredCollectionMode(periodic);
 
-    if ( group.isDefault ) {
-        getOutputForStatistic(stat)->registerStatistic(stat);
+    // Check that the stat's mode is compatible with the stat's type
+    if ( !stat->isStatModeSupported(periodic) ) {
+        output_.fatal(CALL_INFO, 1,
+            " Warning: Statistic %s Does not support %s Based Collections; Collection Rate = %s\n",
+            stat->getFullStatName().c_str(), (periodic ? "Periodic" : "Event"), rate.c_str());
     }
 
-    setStatisticStartTime(stat);
-    setStatisticStopTime(stat);
+    // Do actual group assignment
+    if ( group.is_default ) {
+        // If the mode is Periodic Based, add the statistic to the
+        // StatisticProcessingEngine otherwise add it as an Event Based Stat.
+        bool success = true;
+        if ( periodic ) {
+            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua)->getFactor();
+            success          = addPeriodicBasedStatistic(factor, stat); // will place stat in correct default group
+        }
+        else {
+            addEventBasedStatistic(rate_ua, stat);
+        }
+        if ( !success ) return false;
+
+        getOutputForStatistic(stat)->registerStatistic(stat);
+    }
+    else {
+        if ( stat->isOutputEventBased() ) {
+            output_.output("ERROR: Statistics in groups must be periodic or dump at end, event-based output triggers "
+                           "are not allowed\n");
+            return false;
+        }
+        group.addStatistic(stat);
+    }
+
+    // Convert params to startat/stopat
+    // Note that checkpoint restart skips this b/c params are empty
+    // Restart directly calls setStatisticStart/StopTime
+    std::string start_at = params.find<std::string>("startat", "0ns");
+    UnitAlgebra ua;
+    SimTime_t   factor;
+    if ( start_at != "0ns" ) {
+        ua = UnitAlgebra(start_at);
+        if ( ua.getValue() != 0 ) {
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            setStatisticStartTime(stat, factor);
+        }
+    }
+
+    std::string stop_at = params.find<std::string>("stopat", "0ns");
+    if ( stop_at != "0ns" ) {
+        ua = UnitAlgebra(stop_at);
+        if ( ua.getValue() != 0 ) {
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            setStatisticStopTime(stat, factor);
+        }
+    }
 
     return true;
+}
+
+// Restart registration
+bool
+StatisticProcessingEngine::reregisterStatisticWithEngine(
+    StatisticBase* stat, SimTime_t start_at_time, SimTime_t stop_at_time, SimTime_t output_factor)
+{
+    if ( stat->isNullStatistic() ) return true;
+
+    if ( stat->getComponent() == nullptr ) {
+        output_.verbose(CALL_INFO, 1, 0, " Error: Statistic %s hasn't any associated component .\n",
+            stat->getFullStatName().c_str());
+        return false;
+    }
+
+    // Determine group if any
+    StatisticGroup& group = getGroupForStatistic(stat);
+
+    bool success = true;
+    if ( group.is_default ) {
+        // If the mode is Periodic Based, add the statistic to the
+        // StatisticProcessingEngine otherwise add it as an Event Based Stat.
+        if ( stat->isOutputPeriodic() ) {
+            success = addPeriodicBasedStatistic(output_factor, stat);
+        }
+        else {
+            stat_default_groups_[0].addStatistic(stat);
+        }
+        if ( !success ) return false;
+
+        getOutputForStatistic(stat)->registerStatistic(stat);
+    }
+    else {
+        group.addStatistic(stat);
+    }
+
+    if ( start_at_time != 0 ) setStatisticStartTime(stat, start_at_time);
+    if ( stop_at_time != 0 ) setStatisticStopTime(stat, stop_at_time);
+
+    return success;
 }
 
 void
 StatisticProcessingEngine::finalizeInitialization()
 {
-    for ( auto& g : m_statGroups ) {
-        g.output->registerGroup(&g);
+    for ( auto& group : stat_groups_ ) {
+        group.output->registerGroup(&group);
 
         /* Register group clock, if rate is set */
-        if ( g.outputFreq.getValue() != 0 ) {
-            Simulation_impl::getSimulation()->registerClock(g.outputFreq,
+        if ( group.output_freq != 0 ) {
+            Simulation_impl::getSimulation()->registerClock(group.output_freq,
                 new Clock::Handler2<StatisticProcessingEngine, &StatisticProcessingEngine::handleGroupClockEvent,
-                    StatisticGroup*>(this, &g),
+                    StatisticGroup*>(this, &group),
                 STATISTICCLOCKPRIORITY);
         }
     }
@@ -197,55 +263,42 @@ StatisticProcessingEngine::finalizeInitialization()
 void
 StatisticProcessingEngine::startOfSimulation()
 {
-    m_SimulationStarted = true;
+    simulation_started_ = true;
 }
 
 void
 StatisticProcessingEngine::endOfSimulation()
 {
-    // This is a redundant call to all this code
-    // Looping all the statistic groups and outputting them
-    // will cause all of this code to be executed anyway
-    // so really we are double dumping the end-of-time stats
-
-    // Output the Event based Statistics
-    for ( StatisticBase* stat : m_EventStatisticArray ) {
-        // Check to see if the Statistic is to output at end of sim
-        if ( true == stat->getFlagOutputAtEndOfSim() ) {
-            // Perform the output
+    // Output default group stats
+    for ( auto& group : stat_default_groups_ ) {
+        for ( StatisticBase* stat : group.second.stats ) {
             performStatisticOutputImpl(stat, true);
         }
     }
 
-    // Output the Periodic Based Statistics
-    for ( auto& it_m : m_PeriodicStatisticMap ) {
-        // Get the array from the Map Iterator
-        StatArray_t* statArray = it_m.second;
-
-        for ( StatisticBase* stat : *statArray ) {
-            // Check to see if the Statistic is to output at end of sim
-            if ( true == stat->getFlagOutputAtEndOfSim() ) {
-                // Perform the output
-                performStatisticOutputImpl(stat, true);
-            }
-        }
-    }
-
-    for ( auto& sg : m_statGroups ) {
-        performStatisticGroupOutputImpl(sg, true);
+    // Output non-default group stats
+    for ( auto& group : stat_groups_ ) {
+        performStatisticGroupOutputImpl(group, true);
     }
 }
 
 StatisticOutput*
 StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput& cfg)
 {
-    auto& unsafeParams = const_cast<SST::Params&>(cfg.params);
-    auto  lcType       = cfg.type;
-    std::transform(lcType.begin(), lcType.end(), lcType.begin(), ::tolower);
-    StatisticOutput* so = Factory::getFactory()->CreateWithParams<StatisticOutput>(lcType, unsafeParams, unsafeParams);
+    auto& unsafe_params = const_cast<SST::Params&>(cfg.params);
+    auto  lc_type       = cfg.type;
+    std::transform(lc_type.begin(), lc_type.end(), lc_type.begin(), ::tolower);
+    StatisticOutput* so =
+        Factory::getFactory()->CreateWithParams<StatisticOutput>(lc_type, unsafe_params, unsafe_params);
     if ( nullptr == so ) {
-        Output::getDefaultObject().fatal(
-            CALL_INFO, 1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+        // This fix addresses a problem where if the lib or element type actually has an upper case char, the
+        // tolower above will not allow you to use it. However, it does mean if there's an upper case in the lib,
+        // the element name will also be case-sensitive. Oh well.
+        so = Factory::getFactory()->CreateWithParams<StatisticOutput>(cfg.type, unsafe_params, unsafe_params);
+        if ( nullptr == so ) {
+            Output::getDefaultObject().fatal(
+                CALL_INFO, 1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+        }
     }
 
     if ( false == so->checkOutputParameters() ) {
@@ -262,75 +315,65 @@ StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput& cfg)
 }
 
 void
-StatisticProcessingEngine::castError(const std::string& type, const std::string& statName, const std::string& fieldName)
+StatisticProcessingEngine::castError(
+    const std::string& type, const std::string& stat_name, const std::string& field_name)
 {
     Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
-        "Unable to cast statistic %s of type %s to correct field type %s", statName.c_str(), type.c_str(),
-        fieldName.c_str());
+        "Unable to cast statistic %s of type %s to correct field type %s", stat_name.c_str(), type.c_str(),
+        field_name.c_str());
 }
 
 StatisticOutput*
 StatisticProcessingEngine::getOutputForStatistic(const StatisticBase* stat) const
 {
-    return getGroupForStatistic(stat).output;
+    return stat->getGroup()->output;
 }
 
 /* Return the group that would claim this stat */
 StatisticGroup&
 StatisticProcessingEngine::getGroupForStatistic(const StatisticBase* stat) const
 {
-    for ( auto& g : m_statGroups ) {
-        if ( g.claimsStatistic(stat) ) {
-            return const_cast<StatisticGroup&>(g);
+    for ( auto& group : stat_groups_ ) {
+        if ( group.claimsStatistic(stat) ) {
+            return const_cast<StatisticGroup&>(group);
         }
     }
-    return const_cast<StatisticGroup&>(m_defaultGroup);
+    return const_cast<StatisticGroup&>(stat_default_groups_.at(0));
 }
 
 bool
-StatisticProcessingEngine::addEndOfSimStatistic(StatisticBase* /*stat*/)
+StatisticProcessingEngine::addPeriodicBasedStatistic(SimTime_t factor, StatisticBase* stat)
 {
-    return true;
-}
-
-bool
-StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
-{
-    Simulation_impl*    sim      = Simulation_impl::getSimulation();
-    TimeConverter*      tcFreq   = sim->getTimeLord()->getTimeConverter(freq);
-    SimTime_t           tcFactor = tcFreq->getFactor();
-    Clock::HandlerBase* ClockHandler;
-    StatArray_t*        statArray;
+    Simulation_impl*    sim = Simulation_impl::getSimulation();
+    Clock::HandlerBase* clock_handler;
 
     // See if the map contains an entry for this factor
-    if ( m_PeriodicStatisticMap.find(tcFactor) == m_PeriodicStatisticMap.end() ) {
-        // Check to see if the freq is zero.  Only add a new clock if the freq is non zero
-        if ( 0 != freq.getValue() ) {
+    if ( stat_default_groups_.find(factor) == stat_default_groups_.end() ) {
+        // Create a new default group with this factor, factor=0 is always already in the group map
+        StatisticGroup group;
+        group.output_freq = factor;
+        group.output      = stat_default_groups_[0].output;
+        stat_default_groups_.insert(std::make_pair(factor, group));
 
-            // This tcFactor is not found in the map, so create a new clock handler.
-            ClockHandler = new Clock::Handler2<StatisticProcessingEngine,
-                &StatisticProcessingEngine::handleStatisticEngineClockEvent, SimTime_t>(this, tcFactor);
+        // This factor is not found in the map, so create a new clock handler.
+        clock_handler = new Clock::Handler2<StatisticProcessingEngine,
+            &StatisticProcessingEngine::handleStatisticEngineClockEvent, SimTime_t>(this, factor);
 
-            // Set the clock priority so that normal clocks events will occur before
-            // this clock event.
-            sim->registerClock(freq, ClockHandler, STATISTICCLOCKPRIORITY);
-        }
-
-        // Also create a new Array of Statistics and relate it to the map
-        statArray                        = new std::vector<StatisticBase*>();
-        m_PeriodicStatisticMap[tcFactor] = statArray;
+        // Set the clock priority so that normal clocks events will occur before this clock event.
+        sim->registerClock(factor, clock_handler, STATISTICCLOCKPRIORITY);
     }
 
-    // The Statistic Map has the time factor registered.
-    statArray = m_PeriodicStatisticMap[tcFactor];
+    // Add stat to correct group
+    stat_default_groups_[factor].addStatistic(stat);
 
-    // Add the statistic to the lists of statistics to be called when the clock fires.
-    statArray->push_back(stat);
+    if ( 0 != factor ) { // Set output rate flag and update stat's default group to correct one
+        stat->setOutputRateFlag();
+    }
 
     return true;
 }
 
-bool
+void
 StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* stat)
 {
     if ( 0 != count.getValue() ) {
@@ -342,99 +385,111 @@ StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count, Stat
     }
     stat->setFlagResetCountOnOutput(true);
 
-    // Add the statistic to the Array of Event Based Statistics
-    m_EventStatisticArray.push_back(stat);
-    return true;
+    // Add the statistic to the default group
+    stat_default_groups_[0].addStatistic(stat);
 }
 
 void
-StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
+StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat, SimTime_t factor)
 {
-    UnitAlgebra      startTime   = stat->getStartAtTime();
-    Simulation_impl* sim         = Simulation_impl::getSimulation();
-    TimeConverter*   tcStartTime = sim->getTimeLord()->getTimeConverter(startTime);
-    SimTime_t        tcFactor    = tcStartTime->getFactor();
-    StatArray_t*     statArray;
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    StatArray_t*     stat_array;
 
     // Check to see if the time is zero or has already passed, if it is we skip this work
-    if ( (0 != startTime.getValue()) && (tcFactor > sim->getCurrentSimCycle()) ) {
+    if ( factor > sim->getCurrentSimCycle() ) {
         // See if the map contains an entry for this factor
-        if ( m_StartTimeMap.find(tcFactor) == m_StartTimeMap.end() ) {
+        if ( start_time_map_.find(factor) == start_time_map_.end() ) {
             sim->one_shot_manager_.registerAbsoluteHandler<StatisticProcessingEngine,
                 &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, SimTime_t>(
-                tcFactor, STATISTICCLOCKPRIORITY, this, tcFactor);
+                factor, STATISTICCLOCKPRIORITY, this, factor);
 
             // Also create a new Array of Statistics and relate it to the map
-            statArray                = new std::vector<StatisticBase*>();
-            m_StartTimeMap[tcFactor] = statArray;
+            stat_array              = new std::vector<StatisticBase*>();
+            start_time_map_[factor] = stat_array;
         }
 
         // The Statistic Map has the time factor registered.
-        statArray = m_StartTimeMap[tcFactor];
+        stat_array = start_time_map_[factor];
 
         // Add the statistic to the lists of statistics to be called when the OneShot fires.
-        statArray->push_back(stat);
+        stat_array->push_back(stat);
 
         // Disable the Statistic until the start time event occurs
         stat->disable();
+        stat->setStartAtFlag();
     }
 }
 
-void
-StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
+SimTime_t
+StatisticProcessingEngine::getStatisticStartTimeFactor(StatisticBase* stat)
 {
-    UnitAlgebra      stopTime   = stat->getStopAtTime();
-    Simulation_impl* sim        = Simulation_impl::getSimulation();
-    TimeConverter*   tcStopTime = sim->getTimeLord()->getTimeConverter(stopTime);
-    SimTime_t        tcFactor   = tcStopTime->getFactor();
-    StatArray_t*     statArray;
+    for ( auto& time : start_time_map_ ) {
+        for ( auto stat_ptr : *time.second ) {
+            if ( stat == stat_ptr ) return time.first;
+        }
+    }
+    return 0;
+}
+
+void
+StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat, SimTime_t factor)
+{
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    StatArray_t*     stat_array;
 
     // Check to see if the time is zero or has already passed, if it is we skip this work
-    if ( (0 != stopTime.getValue()) && (tcFactor > sim->getCurrentSimCycle()) ) {
+    if ( factor > sim->getCurrentSimCycle() ) {
         // See if the map contains an entry for this factor
-        if ( m_StopTimeMap.find(tcFactor) == m_StopTimeMap.end() ) {
+        if ( stop_time_map_.find(factor) == stop_time_map_.end() ) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
             sim->one_shot_manager_.registerAbsoluteHandler<StatisticProcessingEngine,
                 &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, SimTime_t>(
-                tcFactor, STATISTICCLOCKPRIORITY, this, tcFactor);
+                factor, STATISTICCLOCKPRIORITY, this, factor);
 
             // Also create a new Array of Statistics and relate it to the map
-            statArray               = new std::vector<StatisticBase*>();
-            m_StopTimeMap[tcFactor] = statArray;
+            stat_array             = new std::vector<StatisticBase*>();
+            stop_time_map_[factor] = stat_array;
         }
 
         // The Statistic Map has the time factor registered.
-        statArray = m_StopTimeMap[tcFactor];
+        stat_array = stop_time_map_[factor];
 
         // Add the statistic to the lists of statistics to be called when the OneShot fires.
-        statArray->push_back(stat);
+        stat_array->push_back(stat);
+        stat->setStopAtFlag();
     }
 }
 
-void
-StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag /*=false*/)
+SimTime_t
+StatisticProcessingEngine::getStatisticStopTimeFactor(StatisticBase* stat)
 {
-    if ( stat->getGroup()->isDefault )
-        performStatisticOutputImpl(stat, endOfSimFlag);
-    else
-        performStatisticGroupOutputImpl(*const_cast<StatisticGroup*>(stat->getGroup()), endOfSimFlag);
+    for ( auto& time : stop_time_map_ ) {
+        for ( auto stat_ptr : *time.second ) {
+            if ( stat == stat_ptr ) return time.first;
+        }
+    }
+    return 0;
 }
 
 void
-StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag /*=false*/)
+StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool end_of_sim_flag /*=false*/)
 {
-    StatisticOutput* statOutput = getOutputForStatistic(stat);
+    if ( stat->getGroup()->is_default )
+        performStatisticOutputImpl(stat, end_of_sim_flag);
+    else
+        performStatisticGroupOutputImpl(*const_cast<StatisticGroup*>(stat->getGroup()), end_of_sim_flag);
+}
+
+void
+StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool end_of_sim_flag /*=false*/)
+{
+    StatisticOutput* stat_output = getOutputForStatistic(stat);
 
     // Has the simulation started?
-    if ( true == m_SimulationStarted ) {
-        // Is the Statistic Output Enabled?
-        if ( false == stat->isOutputEnabled() ) {
-            return;
-        }
+    if ( true == simulation_started_ ) {
+        stat_output->output(stat, end_of_sim_flag);
 
-        statOutput->output(stat, endOfSimFlag);
-
-        if ( false == endOfSimFlag ) {
+        if ( false == end_of_sim_flag ) {
             // Check to see if the Statistic Count needs to be reset
             if ( true == stat->getFlagResetCountOnOutput() ) {
                 stat->resetCollectionCount();
@@ -449,16 +504,16 @@ StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool 
 }
 
 void
-StatisticProcessingEngine::performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag /*=false*/)
+StatisticProcessingEngine::performStatisticGroupOutputImpl(StatisticGroup& group, bool end_of_sim_flag /*=false*/)
 {
-    StatisticOutput* statOutput = group.output;
+    StatisticOutput* stat_output = group.output;
 
     // Has the simulation started?
-    if ( true == m_SimulationStarted ) {
+    if ( true == simulation_started_ ) {
 
-        statOutput->outputGroup(&group, endOfSimFlag);
+        stat_output->outputGroup(&group, end_of_sim_flag);
 
-        if ( false == endOfSimFlag ) {
+        if ( false == end_of_sim_flag ) {
             for ( auto& stat : group.stats ) {
                 // Check to see if the Statistic Count needs to be reset
                 if ( true == stat->getFlagResetCountOnOutput() ) {
@@ -475,46 +530,26 @@ StatisticProcessingEngine::performStatisticGroupOutputImpl(StatisticGroup& group
 }
 
 void
-StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /*=false*/)
+StatisticProcessingEngine::performGlobalStatisticOutput(bool end_of_sim_flag /*=false*/)
 {
-    StatArray_t*   statArray;
-    StatisticBase* stat;
-
-    // Output Event based statistics
-    for ( StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++ ) {
-        stat = *it_v;
-        performStatisticOutputImpl(stat, endOfSimFlag);
-    }
-
-    // Output Periodic based statistics
-    for ( StatMap_t::iterator it_m = m_PeriodicStatisticMap.begin(); it_m != m_PeriodicStatisticMap.end(); it_m++ ) {
-        statArray = it_m->second;
-
-        for ( StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++ ) {
-            stat = *it_v;
-            performStatisticOutputImpl(stat, endOfSimFlag);
+    // Output default stats
+    for ( auto& group : stat_default_groups_ ) {
+        for ( auto& stat : group.second.stats ) {
+            performStatisticOutputImpl(stat, end_of_sim_flag);
         }
     }
 
-    for ( auto& sg : m_statGroups ) {
-        performStatisticGroupOutputImpl(sg, endOfSimFlag);
+    // Output non-default stats
+    for ( auto& group : stat_groups_ ) {
+        performStatisticGroupOutputImpl(group, end_of_sim_flag);
     }
 }
 
 bool
-StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleNum), SimTime_t timeFactor)
+StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(cycle_num), SimTime_t time_factor)
 {
-    StatArray_t*   statArray;
-    StatisticBase* stat;
-    unsigned int   x;
-
-    // Get the array for the timeFactor
-    statArray = m_PeriodicStatisticMap[timeFactor];
-
-    // Walk the array, and call the output method of each statistic
-    for ( x = 0; x < statArray->size(); x++ ) {
-        stat = statArray->at(x);
-
+    // Walk the default group for this time_factor and call the output method of each statistic
+    for ( auto& stat : stat_default_groups_[time_factor].stats ) {
         // Perform the output
         performStatisticOutputImpl(stat, false);
     }
@@ -523,78 +558,46 @@ StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleN
 }
 
 bool
-StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(CycleNum), StatisticGroup* group)
+StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(cycle_num), StatisticGroup* group)
 {
     performStatisticGroupOutputImpl(*group, false);
     return false;
 }
 
 void
-StatisticProcessingEngine::handleStatisticEngineStartTimeEvent(SimTime_t timeFactor)
+StatisticProcessingEngine::handleStatisticEngineStartTimeEvent(SimTime_t time_factor)
 {
-    StatArray_t*   statArray;
-    StatisticBase* stat;
-    unsigned int   x;
-
-    // Get the array for the timeFactor
-    statArray = m_StartTimeMap[timeFactor];
-
-    // Walk the array, and call the output method of each statistic
-    for ( x = 0; x < statArray->size(); x++ ) {
-        stat = statArray->at(x);
-
-        // Enable the Statistic
+    StatArray_t* stat_array = start_time_map_[time_factor];
+    for ( auto& stat : *stat_array ) {
         stat->enable();
+        stat->unsetStartAtFlag();
     }
+
+    start_time_map_.erase(time_factor);
+    delete stat_array;
 }
 
 void
-StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t timeFactor)
+StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t time_factor)
 {
-    StatArray_t*   statArray;
-    StatisticBase* stat;
-    unsigned int   x;
-
-    // Get the array for the timeFactor
-    statArray = m_StopTimeMap[timeFactor];
-
-    // Walk the array, and call the output method of each statistic
-    for ( x = 0; x < statArray->size(); x++ ) {
-        stat = statArray->at(x);
-
-        // Disable the Statistic
+    StatArray_t* stat_array = stop_time_map_[time_factor];
+    for ( auto& stat : *stat_array ) {
         stat->disable();
-    }
-}
-
-void
-StatisticProcessingEngine::addStatisticToCompStatMap(
-    StatisticBase* Stat, StatisticFieldInfo::fieldType_t UNUSED(fieldType))
-{
-    StatArray_t*  statArray;
-    ComponentId_t compId = Stat->getComponent()->getId();
-
-    // See if the map contains an entry for this Component ID
-    if ( m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
-        // Nope, Create a new Array of Statistics and relate it to the map
-        statArray             = new std::vector<StatisticBase*>();
-        m_CompStatMap[compId] = statArray;
+        stat->unsetStopAtFlag();
     }
 
-    // The CompStatMap has Component ID registered, get the array associated with it
-    statArray = m_CompStatMap[compId];
-
-    // Add the statistic to the lists of statistics registered to this component
-    statArray->push_back(Stat);
+    stop_time_map_.erase(time_factor);
+    delete stat_array;
 }
 
 void
 StatisticProcessingEngine::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    SST_SER(m_SimulationStarted);
-    SST_SER(m_statLoadLevel);
-    SST_SER(m_statGroups); // Going to have to revisit if changing partitioning - will stat groups need to be global?
+    SST_SER(simulation_started_); // Always true at restart (checkpoints can't occur before sim start)
+    SST_SER(stat_load_level_);    // This is global
+    SST_SER(stat_groups_); // Going to have to revisit if changing partitioning - will stat groups need to be global?
                            // Are they global already?
+    // Default stat groups are reconstructed on restart
 }
 
 } // namespace SST::Statistics

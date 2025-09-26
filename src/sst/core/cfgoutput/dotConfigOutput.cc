@@ -16,6 +16,9 @@
 
 #include "sst/core/config.h"
 #include "sst/core/configGraphOutput.h"
+#include "sst/core/simulation_impl.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/unitAlgebra.h"
 
 #include <cinttypes>
 
@@ -28,7 +31,6 @@ DotConfigGraphOutput::DotConfigGraphOutput(const char* path) :
 void
 DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
-
     if ( nullptr == outputFile ) {
         throw ConfigGraphOutputException("Output file is not open for writing");
     }
@@ -134,13 +136,18 @@ DotConfigGraphOutput::generateDot(const ConfigComponent* comp, const ConfigLinkM
 void
 DotConfigGraphOutput::generateDot(const ConfigLink* link, const uint32_t dot_verbosity) const
 {
+    UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
 
     int minLatIdx = (link->latency[0] <= link->latency[1]) ? 0 : 1;
+
+    auto tmp = tb * link->latency[minLatIdx];
+
+
     // Link name and latency displayed. Connected to specific port on component
     if ( dot_verbosity >= 8 ) {
         fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n", link->component[0],
             link->port[0].c_str(), link->component[1], link->port[1].c_str(), link->name.c_str(),
-            link->latency_str[minLatIdx].c_str());
+            tmp.toStringBestSI().c_str());
 
         // No link name or latency. Connected to specific port on component
     }

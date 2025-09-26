@@ -145,9 +145,17 @@ public:
     {
         data.swap(new_data);
         if ( !sorted ) {
-            std::sort(data.begin(), data.end,
-                [](const classT& lhs, const classT& rhs) -> bool { return lhs.key() < rhs.key(); });
+            sort();
         }
+    }
+
+    /**
+       Force a sort of the data
+     */
+    void sort()
+    {
+        std::sort(data.begin(), data.end(),
+            [](const classT& lhs, const classT& rhs) -> bool { return lhs.key() < rhs.key(); });
     }
 
     using iterator       = typename std::vector<classT>::iterator;
@@ -403,9 +411,17 @@ public:
     {
         data.swap(new_data);
         if ( !sorted ) {
-            std::sort(data.begin(), data.end,
-                [](const classT* lhs, const classT* rhs) -> bool { return lhs->key() < rhs->key(); });
+            sort();
         }
+    }
+
+    /**
+       Force a sort of the data
+     */
+    void sort()
+    {
+        std::sort(data.begin(), data.end(),
+            [](const classT* lhs, const classT* rhs) -> bool { return lhs->key() < rhs->key(); });
     }
 
     using iterator       = typename std::vector<classT*>::iterator;
@@ -679,8 +695,16 @@ public:
     {
         data.swap(new_data);
         if ( !sorted ) {
-            std::sort(data.begin(), data.end, [](const keyT& lhs, const keyT& rhs) -> bool { return lhs < rhs; });
+            sort();
         }
+    }
+
+    /**
+       Force a sort of the data
+     */
+    void sort()
+    {
+        std::sort(data.begin(), data.end, [](const keyT& lhs, const keyT& rhs) -> bool { return lhs < rhs; });
     }
 
     using iterator       = typename std::vector<keyT>::iterator;

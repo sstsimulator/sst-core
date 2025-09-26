@@ -121,12 +121,16 @@ compAddParam(PyObject* self, PyObject* args)
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) ) return nullptr;
 
     ConfigComponent* c = getComp(self);
+
     if ( nullptr == c ) return nullptr;
 
     // Get the string-ized value by calling __str__ function of the
     // value object
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
-    c->addParameter(param, SST_ConvertToCppString(vstr), true);
+    PyObject*   vstr          = PyObject_Str(value);
+    const char* str_val       = SST_ConvertToCppString(vstr);
+    char*       another_value = strdup(str_val);
+    c->addParameter(param, another_value, true);
+
     Py_XDECREF(vstr);
 
     return SST_ConvertToPythonLong(0);
@@ -147,8 +151,8 @@ compAddParams(PyObject* self, PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         c->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -202,9 +206,10 @@ compAddLink(PyObject* self, PyObject* args)
     ComponentId_t    id = c->id;
 
     PyObject*   plink = nullptr;
-    PyObject *  plat = nullptr, *lstr = nullptr;
-    char*       port = nullptr;
-    const char* lat  = nullptr;
+    PyObject*   plat  = nullptr;
+    PyObject*   lstr  = nullptr;
+    char*       port  = nullptr;
+    const char* lat   = nullptr;
 
     if ( !PyArg_ParseTuple(args, "O!s|O", &PyModel_LinkType, &plink, &port, &plat) ) {
         return nullptr;
@@ -212,15 +217,14 @@ compAddLink(PyObject* self, PyObject* args)
     LinkPy_t* link = (LinkPy_t*)plink;
 
     if ( nullptr != plat ) {
-        lstr = PyObject_CallMethod(plat, (char*)"__str__", nullptr);
+        lstr = PyObject_Str(plat);
         lat  = SST_ConvertToCppString(lstr);
     }
-    if ( nullptr == lat ) lat = link->latency;
-    if ( nullptr == lat ) return nullptr;
 
-    gModel->getOutput()->verbose(
-        CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
-    gModel->addLink(id, link->name, port, lat, link->no_cut);
+    // gModel->getOutput()->verbose(
+    //     CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
+
+    gModel->addLink(id, link->link_id, port, lat);
 
     Py_XDECREF(lstr);
 

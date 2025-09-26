@@ -102,11 +102,19 @@ public: /* Public, but private.  Called only from Python functions */
 
     ConfigComponentMap_t& components() { return graph->getComponentMap(); }
 
-    void addLink(ComponentId_t id, const char* link_name, const char* port, const char* latency, bool no_cut) const
+    LinkId_t createLink(const char* link_name, const char* latency) { return graph->createLink(link_name, latency); }
+
+    void addLink(ComponentId_t id, LinkId_t link_id, const char* port, const char* latency) const
     {
-        graph->addLink(id, link_name, port, latency, no_cut);
+        graph->addLink(id, link_id, port, latency);
     }
-    void setLinkNoCut(const char* link_name) const { graph->setLinkNoCut(link_name); }
+
+    void addNonLocalLink(LinkId_t link_id, int rank, int thread) const
+    {
+        graph->addNonLocalLink(link_id, rank, thread);
+    }
+
+    void setLinkNoCut(LinkId_t link_id) const { graph->setLinkNoCut(link_id); }
 
     void  pushNamePrefix(const char* name);
     void  popNamePrefix();

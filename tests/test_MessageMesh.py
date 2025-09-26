@@ -15,6 +15,14 @@ import sys
 sst.setProgramOption("stop-at", "10us")
 #sst.setProgramOption("verbose", "3")
 
+### Arguments
+## [1] - X dimension, required
+## [2] - Y dimension, required
+## [3] - Factor to reduce initial messages by, optional
+## [4] - Verbose output, optional
+## [5] - Number of stats to register, optional
+## [6] - Whether to enable stat output (0=disable, 1=dump-at-end, 2=dump at rate), optional
+
 x_size = int(sys.argv[1])
 y_size = int(sys.argv[2])
 
@@ -26,6 +34,15 @@ verbose = True
 if len(sys.argv) > 4:
     verbose = int(sys.argv[4])
 
+stats = 0
+if len(sys.argv) > 5:
+    stats = int(sys.argv[5])
+
+stat_gen = 0 # No enable
+if len(sys.argv) > 6:
+    stat_gen = int(sys.argv[6])
+
+#print("stats={}, gen={}".format(stats, stat_gen))
 
 # Calculate number of routers and endpoints
 num_routers = x_size * y_size
@@ -47,8 +64,9 @@ for i in range(num_routers):
     comp.addParam("id",i)
     comp.addParam("mod",mod)
     comp.addParam("verbose",verbose)
+    comp.addParam("stats", stats)
 
-    # Setup up all the ports.  X ports will use MessagePort directly, Y ports, will use the SlotPort
+    # Setup up all the ports. X ports will use MessagePort directly, Y ports, will use the SlotPort
     port_x_pos = comp.setSubComponent("ports","coreTestElement.message_mesh.message_port",0);
     port_x_neg = comp.setSubComponent("ports","coreTestElement.message_mesh.message_port",1);
 
@@ -96,5 +114,8 @@ for i in range(num_routers):
 
 
 sst.setStatisticOutput("sst.statOutputCSV")
-sst.enableAllStatisticsForAllComponents()
+if stat_gen == 2:
+    sst.enableAllStatisticsForAllComponents({"rate" : "250ns"})
+elif stat_gen == 1:
+    sst.enableAllStatisticsForAllComponents()
 sst.setStatisticLoadLevel(2)
