@@ -576,7 +576,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 int
 Simulation_impl::initializeStatisticEngine(StatsConfig* stats_config)
 {
-    stat_engine.setup(this, stats_config);
+    stat_engine.setup(stats_config);
     return 0;
 }
 
@@ -585,8 +585,8 @@ int
 Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // First, go through all the components that are in this rank and
-    // create the ComponentInfo object for it
-    // Now, build all the components
+    // create the ComponentInfo object for it, then populate the
+    // LinkMaps
     for ( ConfigComponentMap_t::const_iterator iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
@@ -601,7 +601,13 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
         rank[0] = graph.comps_[COMPONENT_ID_MASK(clink->component[0])]->rank;
-        rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
+        if ( clink->nonlocal ) {
+            rank[1].rank   = clink->component[1];
+            rank[1].thread = clink->latency[1];
+        }
+        else {
+            rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
+        }
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -620,7 +626,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
-                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
+                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
+                        clink->component[0]);
                 }
                 cinfo->getLinkMap()->insertLink(clink->port[0], link);
             }
@@ -635,7 +642,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
-                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
+                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
+                        clink->component[0]);
                 }
                 cinfo->getLinkMap()->insertLink(clink->port[0], lp.getLeft());
 
@@ -1790,7 +1798,7 @@ void
 Simulation_impl::checkpoint_append_registry(const std::string& registry_name, const std::string& blob_name)
 {
     // The top level registry file for the checkpoint will be a text
-    // file and will include global data first, then a registery of
+    // file and will include global data first, then a registry of
     // where each component data blob is located (file + offset).
 
     // Rank 0, thread 0 will write out the global data, then after all
@@ -1960,7 +1968,7 @@ Simulation_impl::restart()
     completeBarrier.wait();
 
     /* Initial fix up of stat engine, the rest is after components re-register statistics */
-    stat_engine.restart(this);
+    stat_engine.restart();
 
 
     /* Extract components */

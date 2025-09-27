@@ -18,6 +18,8 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_mpi.h"
 
+#include <clocale>
+
 namespace SST::Util {
 
 
@@ -301,6 +303,12 @@ std::wstring fullBox      = L"■"; // ■
 void
 BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
 {
+    // We need to change the locale to support unicode.  Just need to
+    // change the c-locale since we are using output, which uses
+    // printf
+    std::string orig_c_locale = std::setlocale(LC_ALL, nullptr);
+    std::setlocale(LC_ALL, "en_US.UTF-8");
+
     bool print = (rank_ == 0);
 
     // Use vector as stack to keep track of hierarchy
@@ -330,7 +338,6 @@ BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
                 region_stack.pop_back();
             }
         }
-
 
         std::wstring region_indicator;
         if ( x.level == 1 ) {
@@ -391,6 +398,9 @@ BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
                     "%ls Memory: Total - %s\n", stat_prefix.c_str(), mem_size_global_us.toStringBestSI(4).c_str());
         }
     }
+
+    // Restore the locale
+    std::setlocale(LC_ALL, orig_c_locale.c_str());
 }
 
 } // namespace SST::Util

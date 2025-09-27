@@ -23,7 +23,7 @@ jobs:
           path: sst-elements
           persist-credentials: false
           ref: devel
-          repository: sstsimulator-at2/sst-elements
+          repository: sstsimulator/sst-elements
 
       - name: Install system-level dependencies
         run: |

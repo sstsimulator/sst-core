@@ -23,6 +23,542 @@ DISABLE_WARN_STRICT_ALIASING
 using namespace SST;
 using namespace SST::Core;
 
+ComponentId_t
+SSTConfigSaxHandler::findComponentIdByName(const std::string& Name, bool& success)
+{
+    ComponentId_t    Id   = -1;
+    ConfigComponent* Comp = nullptr;
+
+    if ( Name.length() == 0 ) {
+        errorStr = "Error: Name given to findComponentIdByName is null";
+        success  = false;
+        return Id;
+    }
+
+    // first, find the component pointer from the name
+    Comp = graph->findComponentByName(Name);
+    if ( Comp == nullptr ) {
+        errorStr = "Error finding component ID by name: " + Name;
+        success  = false;
+        return Id;
+    }
+
+    success = true;
+    return Comp->id;
+}
+
+std::string
+SSTConfigSaxHandler::getCurrentPath() const
+{
+    std::string path;
+    for ( size_t i = 0; i < path_stack.size(); ++i ) {
+        if ( i > 0 ) path += ".";
+        path += path_stack[i];
+    }
+    return path;
+}
+
+const std::map<std::string, std::string>
+SSTConfigSaxHandler::getProgramOptions()
+{
+    return ProgramOptions;
+}
+
+void
+SSTConfigSaxHandler::processValue(const json& value)
+{
+    std::string path = getCurrentPath();
+
+    if ( current_state == PROGRAM_OPTIONS ) {
+        if ( value.get<std::string>() == "false" ) {
+            ProgramOptions[current_key] = "0";
+        }
+        else if ( value.get<std::string>() == "true" ) {
+            ProgramOptions[current_key] = "1";
+        }
+        else {
+            ProgramOptions[current_key] = value.get<std::string>();
+        }
+    }
+    else if ( current_state == STATISTICS_OPTIONS ) {
+        if ( current_key == "statisticLoadLevel" && value.is_number_integer() ) {
+            graph->setStatisticLoadLevel(value.get<int>());
+        }
+        else if ( current_key == "statisticOutput" && value.is_string() ) {
+            graph->setStatisticOutput(value.get<std::string>());
+        }
+        else if ( path.find("statistics_options.params") != std::string::npos && value.is_string() ) {
+            graph->addStatisticOutputParameter(current_key, value.get<std::string>());
+        }
+    }
+    else if ( current_state == SHARED_PARAMS ) {
+        graph->addSharedParam(current_shared_name, current_key, value.get<std::string>());
+    }
+    else if ( current_state == COMPONENTS ) {
+        if ( current_key == "rank" && value.is_number_integer() ) {
+            current_comp_rank = value.get<unsigned int>();
+        }
+        else if ( current_key == "thread" && value.is_number_integer() ) {
+            RankInfo Rank(current_comp_rank, value.get<unsigned int>());
+            current_component->setRank(Rank);
+        }
+        else if ( path.find("params_shared_sets") != std::string::npos && value.is_string() ) {
+            current_component->addSharedParamSet(value.get<std::string>());
+        }
+        else if ( current_key == "slot_number" && in_comp_subcomp && value.is_number_integer() ) {
+            subcomp_slot = value.get<int>();
+        }
+        else if ( current_key == "params_shared_sets" && in_comp_subcomp && value.is_string() ) {
+            current_sub_component->addSharedParamSet(value.get<std::string>());
+        }
+    }
+    else if ( current_state == LINKS ) {
+        if ( current_key == "noCut" && value.is_boolean() ) {
+            no_cut = value.get<bool>();
+        }
+        else if ( current_key == "nonlocal" && value.is_boolean() ) {
+            nonlocal = value.get<bool>();
+        }
+        else if ( in_right_link && nonlocal ) {
+            if ( current_key == "rank" ) {
+                right_rank = value.get<int>();
+            }
+            else if ( current_key == "thread" ) {
+                right_thread = value.get<int>();
+            }
+        }
+    }
+}
+
+bool
+SSTConfigSaxHandler::null()
+{
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::boolean(bool val)
+{
+    json j_val = val;
+    processValue(j_val);
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::number_integer(json::number_integer_t val)
+{
+    json j_val = val;
+    processValue(j_val);
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
+{
+    json j_val = val;
+    processValue(j_val);
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::number_float(json::number_float_t val, [[maybe_unused]] const std::string& str)
+{
+    json j_val = val;
+    processValue(j_val);
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::binary([[maybe_unused]] json::binary_t& val)
+{
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::string(std::string& val)
+{
+    json j_val = val;
+    processValue(j_val);
+
+    // handle specific string assignment based upon context
+    if ( current_state == COMPONENTS ) {
+        if ( current_key == "name" && !in_comp_stats ) {
+            current_comp_name = val;
+        }
+        else if ( current_key == "type" && !in_comp_stats && !in_comp_subcomp ) {
+            current_comp_id   = graph->addComponent(current_comp_name, val);
+            current_component = graph->findComponent(current_comp_id);
+        }
+        else if ( in_comp_params && !in_comp_subcomp ) {
+            current_component->addParameter(current_key, val, false);
+        }
+        else if ( current_key == "name" && in_comp_stats ) {
+            current_comp_stat_name = val;
+        }
+        else if ( in_comp_stats && in_comp_stats_params ) {
+            current_stat_params.insert(current_key, val);
+        }
+        else if ( current_key == "slot_name" ) {
+            current_subcomp_name = val;
+        }
+        else if ( current_key == "type" && in_comp_subcomp ) {
+            current_subcomp_type = val;
+            current_sub_component =
+                Parents.top()->addSubComponent(current_subcomp_name, current_subcomp_type, subcomp_slot);
+        }
+        else if ( in_comp_subcomp_params ) {
+            current_sub_component->addParameter(current_key, val, false);
+        }
+    }
+    else if ( current_state == LINKS ) {
+        if ( current_key == "name" ) {
+            link_name = val;
+        }
+        else if ( in_left_link ) {
+            if ( current_key == "component" ) {
+                left_comp = val;
+            }
+            else if ( current_key == "port" ) {
+                left_port = val;
+            }
+            else if ( current_key == "latency" ) {
+                left_latency = val;
+            }
+        }
+        else if ( in_right_link ) {
+            if ( current_key == "component" ) {
+                right_comp = val;
+            }
+            else if ( current_key == "port" ) {
+                right_port = val;
+            }
+            else if ( current_key == "latency" ) {
+                right_latency = val;
+            }
+        }
+    }
+    else if ( current_state == STATISTICS_GROUP ) {
+        if ( in_grp_stats_output ) {
+            if ( current_key == "type" ) {
+                auto& statOuts = graph->getStatOutputs();
+                statOuts.emplace_back(ConfigStatOutput(val));
+                current_stat_group->setOutput(statOuts.size() - 1);
+            }
+            else if ( in_grp_stats_output_params ) {
+                auto& statOuts = graph->getStatOutputs();
+                statOuts.back().addParameter(current_key, val);
+            }
+        }
+        else if ( in_grp_stats_def ) {
+            if ( current_key == "name" ) {
+                current_grp_stat_name = val;
+            }
+            else if ( in_grp_stats_def_params ) {
+                current_stat_params.insert(current_key, val);
+            }
+        }
+        else if ( in_grp_stats_comps ) {
+            bool success = false;
+            current_stat_group->addComponent(findComponentIdByName(val, success));
+            if ( !success ) {
+                return false;
+            }
+        }
+        else if ( current_key == "name" ) {
+            current_stat_group = graph->getStatGroup(val);
+            if ( current_stat_group == nullptr ) {
+                errorStr = "Error creating statistics group from: " + val;
+                return false;
+            }
+        }
+        else if ( current_key == "frequency" ) {
+            if ( !current_stat_group->setFrequency(val) ) {
+                errorStr = "Error setting frequency for statistics group: " + val;
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::start_object(std::size_t elements)
+{
+    if ( elements == 0 ) {
+        return true;
+    }
+
+    context_stack.push(json::value_t::object);
+
+    if ( !path_stack.empty() ) {
+        std::string current_section = path_stack[path_stack.size() - 1];
+
+        if ( current_section == "program_options" ) {
+            current_state = PROGRAM_OPTIONS;
+        }
+        else if ( current_section == "shared_params" ) {
+            current_state = SHARED_PARAMS;
+            if ( !in_shared_params_object && path_stack.size() == 2 ) {
+                current_shared_name     = path_stack[1];
+                in_shared_params_object = true;
+            }
+        }
+        else if ( current_section == "statistics_options" ) {
+            current_state = STATISTICS_OPTIONS;
+        }
+        else if ( current_state == STATISTICS_GROUP ) {
+            if ( current_section == "output" ) {
+                in_grp_stats_output = true;
+            }
+            else if ( current_section == "params" && in_grp_stats_output ) {
+                in_grp_stats_output_params = true;
+            }
+            else if ( current_section == "params" && in_grp_stats_def ) {
+                in_grp_stats_def_params = true;
+            }
+        }
+        else if ( current_state == COMPONENTS ) {
+            if ( current_section == "params" && !in_comp_stats && !in_comp_subcomp ) {
+                in_comp_params = true;
+            }
+            else if ( current_section == "params" && in_comp_stats ) {
+                in_comp_stats_params = true;
+            }
+            else if ( current_section == "params" && in_comp_subcomp ) {
+                in_comp_subcomp_params = true;
+            }
+        }
+        else if ( current_state == LINKS ) {
+            if ( current_section == "left" ) {
+                in_left_link = true;
+            }
+            else if ( current_section == "right" ) {
+                in_right_link = true;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::end_object()
+{
+    if ( !context_stack.empty() ) {
+        context_stack.pop();
+    }
+
+    // handle each object completion
+    if ( current_state == PROGRAM_OPTIONS ) {
+        current_state = ROOT;
+    }
+    else if ( current_state == STATISTICS_OPTIONS && current_key != "params" ) {
+        current_state = ROOT;
+    }
+    else if ( current_state == SHARED_PARAMS && in_shared_params_object && path_stack.size() == 2 ) {
+        in_shared_params_object = false;
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_output && in_grp_stats_output_params ) {
+        in_grp_stats_output_params = false;
+        current_stat_params.clear();
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_output ) {
+        in_grp_stats_output = false;
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def && in_grp_stats_def_params ) {
+        in_grp_stats_def_params = false;
+        current_stat_params.clear();
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def ) {
+        current_stat_group->addStatistic(current_grp_stat_name, current_stat_params);
+        current_stat_params.clear();
+        bool        verified = false;
+        std::string reason;
+        std::tie(verified, reason) = current_stat_group->verifyStatsAndComponents(graph);
+        if ( !verified ) {
+            errorStr = "Error verifying statistics and components: " + reason;
+            return false;
+        }
+    }
+    else if ( current_state == COMPONENTS && in_comp_params ) {
+        in_comp_params = false;
+    }
+    else if ( current_state == COMPONENTS && in_comp_stats && in_comp_stats_params ) {
+        current_component->enableStatistic(current_comp_stat_name, current_stat_params);
+        in_comp_stats_params = false;
+        current_stat_params.clear();
+    }
+    else if ( current_state == COMPONENTS && in_comp_stats_params && in_comp_subcomp ) {
+        current_sub_component->enableStatistic(current_comp_stat_name, current_stat_params);
+        in_comp_stats_params = false;
+        current_stat_params.clear();
+    }
+    else if ( current_state == COMPONENTS && in_comp_subcomp && in_comp_subcomp_params ) {
+        in_comp_subcomp_params = false;
+    }
+    else if ( current_state == LINKS ) {
+        if ( in_left_link ) {
+            in_left_link = false;
+        }
+        else if ( in_right_link ) {
+            in_right_link = false;
+        }
+        else {
+            LinkId_t link_id = graph->createLink(link_name.c_str(), nullptr);
+            if ( no_cut ) graph->setLinkNoCut(link_id);
+
+            // left side
+            ComponentId_t CompID  = -1;
+            bool          success = false;
+            CompID                = findComponentIdByName(left_comp, success);
+            if ( !success ) {
+                return false;
+            }
+            graph->addLink(CompID, link_id, left_port.c_str(), left_latency.c_str());
+
+            // right side
+            if ( nonlocal ) {
+                graph->addNonLocalLink(link_id, right_rank, right_thread);
+            }
+            else {
+                success = false;
+                CompID  = findComponentIdByName(right_comp, success);
+                if ( !success ) {
+                    return false;
+                }
+                graph->addLink(CompID, link_id, right_port.c_str(), right_latency.c_str());
+            }
+            no_cut       = false;
+            nonlocal     = false;
+            right_rank   = -1;
+            right_thread = -1;
+        }
+    }
+
+    if ( !path_stack.empty() ) {
+        path_stack.pop_back();
+    }
+
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::start_array([[maybe_unused]] std::size_t elements)
+{
+    context_stack.push(json::value_t::array);
+    array_depth++;
+
+    if ( current_state == ROOT ) {
+        // top-level array elements
+        if ( current_key == "components" ) {
+            current_state   = COMPONENTS;
+            foundComponents = true;
+        }
+        else if ( current_key == "shared_params" ) {
+            current_state = SHARED_PARAMS;
+        }
+        else if ( current_key == "statistics_group" ) {
+            current_state = STATISTICS_GROUP;
+            if ( !foundComponents ) {
+                errorStr = "Encountered statistics_group before components; components must be loaded before "
+                           "statistics_groups";
+                return false;
+            }
+        }
+        else if ( current_key == "links" ) {
+            current_state = LINKS;
+        }
+    }
+    else if ( current_state == STATISTICS_GROUP ) {
+        // array elements within statistics_group
+        if ( current_key == "statistics" ) {
+            in_grp_stats_def = true;
+        }
+        else if ( current_key == "components" ) {
+            in_grp_stats_comps = true;
+        }
+    }
+    else if ( current_state == COMPONENTS ) {
+        // array elements within components
+        if ( current_key == "statistics" ) {
+            in_comp_stats = true;
+        }
+        else if ( current_key == "subcomponents" && in_comp_subcomp ) {
+            in_comp_subsubcomp = true;
+            Parents.push(current_sub_component);
+        }
+        else if ( current_key == "subcomponents" ) {
+            in_comp_subcomp = true;
+            Parents.push(current_component);
+        }
+    }
+
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::end_array()
+{
+    if ( current_state == SHARED_PARAMS ) {
+        current_state = ROOT;
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_comps ) {
+        in_grp_stats_comps = false;
+    }
+    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def ) {
+        in_grp_stats_def = false;
+    }
+    else if ( current_state == STATISTICS_GROUP ) {
+        current_state = ROOT;
+    }
+    else if ( current_state == COMPONENTS && in_comp_stats ) {
+        in_comp_stats = false;
+    }
+    else if ( current_state == COMPONENTS && in_comp_subsubcomp ) {
+        in_comp_subsubcomp = false;
+        Parents.pop();
+    }
+    else if ( current_state == COMPONENTS && in_comp_subcomp ) {
+        in_comp_subcomp = false;
+        Parents.pop();
+    }
+    else if ( current_state == COMPONENTS ) {
+        current_state = ROOT;
+    }
+    else if ( current_state == LINKS ) {
+        current_state = ROOT;
+    }
+
+    if ( !context_stack.empty() ) {
+        context_stack.pop();
+    }
+    array_depth--;
+    return true;
+}
+
+bool
+SSTConfigSaxHandler::key(std::string& val)
+{
+    current_key = val;
+    path_stack.push_back(val);
+    return true;
+}
+
+void
+SSTConfigSaxHandler::setConfigGraph(ConfigGraph* g)
+{
+    graph = g;
+}
+
+bool
+SSTConfigSaxHandler::parse_error(std::size_t position, const std::string& last_token, const json::exception& ex)
+{
+    errorPos = position;
+    errorStr = last_token + " : " + ex.what();
+    return false;
+}
+
 SSTJSONModelDefinition::SSTJSONModelDefinition(
     const std::string& script_file, int verbosity, Config* configObj, double start_time) :
     SSTModelDescription(configObj),
@@ -48,461 +584,6 @@ SSTJSONModelDefinition::~SSTJSONModelDefinition()
     delete output;
 }
 
-ComponentId_t
-SSTJSONModelDefinition::findComponentIdByName(const std::string& Name)
-{
-    ComponentId_t    Id   = -1;
-    ConfigComponent* Comp = nullptr;
-
-    if ( Name.length() == 0 ) {
-        output->fatal(CALL_INFO, 1, "Error: Name given to findComponentIdByName is null\n");
-        return Id;
-    }
-
-    // first, find the component pointer from the name
-    Comp = graph->findComponentByName(Name);
-    if ( Comp == nullptr ) {
-        output->fatal(CALL_INFO, 1, "Error finding component ID by name: %s\n", Name.c_str());
-        return Id;
-    }
-
-    return Comp->id;
-}
-
-void
-SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlohmann::basic_json<>& compArray)
-{
-    std::string      Name;
-    std::string      Type;
-    std::string      StatName;
-    ConfigComponent* Comp = nullptr;
-    int              Slot = 0;
-
-    auto subs = compArray.find("subcomponents");
-    if ( subs == compArray.end() ) return; // No subcomponents
-    for ( auto& subArray : compArray["subcomponents"] ) {
-        Slot = 0;
-
-        // -- Slot Name
-        auto x = subArray.find("slot_name");
-        if ( x != subArray.end() ) {
-            Name = x.value();
-        }
-        else {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering subcomponent slot name from script: %s\n", scriptName.c_str());
-        }
-
-        // -- Type
-        x = subArray.find("type");
-        if ( x != subArray.end() ) {
-            Type = x.value();
-        }
-        else {
-            output->fatal(CALL_INFO, 1, "Error discovering subcomponent type from script: %s\n", scriptName.c_str());
-        }
-
-        // -- Slot index
-        x = subArray.find("slot_number");
-        if ( x != subArray.end() ) {
-            Slot = x.value();
-        }
-        else {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering subcomponent slot number from script: %s\n", scriptName.c_str());
-        }
-
-        // add the subcomponent
-        Comp = Parent->addSubComponent(Name, Type, Slot);
-
-        // read all the parameters
-        if ( subArray.contains("params") ) {
-            for ( auto& paramArray : subArray["params"].items() ) {
-                Comp->addParameter(paramArray.key(), paramArray.value(), false);
-            }
-        }
-
-        // read all the shared parameters
-        if ( subArray.contains("params_shared_sets") ) {
-            for ( auto& sharedArray : subArray["params_shared_sets"].items() ) {
-                Comp->addSharedParamSet(sharedArray.value().get<std::string>());
-            }
-        }
-
-        // read the statistics
-        if ( subArray.contains("statistics") ) {
-            for ( auto& stats : compArray.at("statistics") ) {
-                // -- stat name
-                if ( stats.contains("name") ) {
-                    auto sn = stats.find("name");
-                    if ( sn != stats.end() ) {
-                        StatName = sn.value();
-                    }
-                    else {
-                        output->fatal(CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
-                            scriptName.c_str());
-                    }
-                }
-
-                // -- stat params
-                Params StatParams;
-                if ( stats.contains("params") ) {
-                    for ( auto& paramArray : stats.at("params").items() ) {
-                        StatParams.insert(paramArray.key(), paramArray.value());
-                    }
-                }
-
-                Comp->enableStatistic(StatName, StatParams);
-            }
-        }
-
-        // recursively build up the subcomponents
-        if ( subArray.contains("subcomponents") ) {
-            auto& subsubArray = subArray["subcomponents"];
-            if ( subsubArray.size() > 0 ) {
-                recursiveSubcomponent(Comp, subArray);
-            }
-        }
-    }
-}
-
-void
-SSTJSONModelDefinition::discoverComponents(const json& jFile)
-{
-    std::string      Name;
-    std::string      Type;
-    std::string      StatName;
-    ComponentId_t    Id;
-    ConfigComponent* Comp   = nullptr;
-    uint32_t         rank   = 0;
-    uint32_t         thread = 0;
-
-    if ( !jFile.contains("components") ) {
-        output->fatal(CALL_INFO, 1, "Error, no \"components\" section in json file: %s\n", scriptName.c_str());
-    }
-
-    for ( auto& compArray : jFile["components"] ) {
-        // -- Name
-        auto x = compArray.find("name");
-        if ( x != compArray.end() ) {
-            Name = x.value();
-        }
-        else {
-            output->fatal(CALL_INFO, 1, "Error discovering component name from script: %s\n", scriptName.c_str());
-        }
-
-        // -- Type
-        x = compArray.find("type");
-        if ( x != compArray.end() ) {
-            Type = x.value();
-        }
-        else {
-            output->fatal(CALL_INFO, 1, "Error discovering component type from script: %s\n", scriptName.c_str());
-        }
-
-        // Add the component so we have the ComponentID
-        Id = graph->addComponent(Name, Type);
-
-        Comp = graph->findComponent(Id);
-
-        // read all the parameters
-        if ( compArray.contains("params") ) {
-            for ( auto& paramArray : compArray["params"].items() ) {
-                Comp->addParameter(paramArray.key(), paramArray.value(), false);
-            }
-        }
-
-        // read all the shared parameters
-        if ( compArray.contains("params_shared_sets") ) {
-            for ( auto& sharedArray : compArray["params_shared_sets"].items() ) {
-                Comp->addSharedParamSet(sharedArray.value().get<std::string>());
-            }
-        }
-
-        // read the partition info
-        if ( compArray.contains("partition") ) {
-            for ( auto& partArray : compArray["partition"].items() ) {
-                if ( partArray.key() == "rank" ) {
-                    rank = partArray.value();
-                }
-                else if ( partArray.key() == "thread" ) {
-                    thread = partArray.value();
-                }
-            }
-        }
-
-        // read the statistics
-        if ( compArray.contains("statistics") ) {
-            for ( auto& stats : compArray.at("statistics") ) {
-                // -- stat name
-                if ( stats.contains("name") ) {
-                    auto sn = stats.find("name");
-                    if ( sn != stats.end() ) {
-                        StatName = sn.value();
-                    }
-                    else {
-                        output->fatal(CALL_INFO, 1, "Error discovering component stat name from script: %s\n",
-                            scriptName.c_str());
-                    }
-                }
-
-                // -- stat params
-                Params StatParams;
-                if ( stats.contains("params") ) {
-                    for ( auto& paramArray : stats.at("params").items() ) {
-                        StatParams.insert(paramArray.key(), paramArray.value());
-                    }
-                }
-
-                Comp->enableStatistic(StatName, StatParams);
-            }
-        }
-
-        // set the rank information
-        RankInfo Rank(rank, thread);
-        Comp->setRank(Rank);
-
-        // recursively read the subcomponents
-        recursiveSubcomponent(Comp, compArray);
-
-        // reset the variables
-        Id   = -1;
-        Comp = nullptr;
-    }
-}
-
-void
-SSTJSONModelDefinition::discoverLinks(const json& jFile)
-{
-    std::string   Name;
-    std::string   Comp[2];
-    std::string   Port[2];
-    std::string   Latency[2];
-    bool          NoCut = false;
-    ComponentId_t LinkID;
-
-    if ( !jFile.contains("links") ) {
-        output->fatal(CALL_INFO, 1, "Error, no \"links\" section in json file: %s\n", scriptName.c_str());
-    }
-
-    for ( auto& linkArray : jFile["links"] ) {
-        // -- Name
-        auto x = linkArray.find("name");
-        if ( x != linkArray.end() ) {
-            Name = x.value();
-        }
-        else {
-            output->fatal(CALL_INFO, 1, "Error discovering link name from script: %s\n", scriptName.c_str());
-        }
-
-        // -- NoCut
-        x = linkArray.find("noCut");
-        if ( x != linkArray.end() ) {
-            NoCut = x.value();
-        }
-        else {
-            NoCut = false;
-        }
-
-        // -- Components
-        std::string sides[2] = { "left", "right" };
-        for ( int i = 0; i < 2; ++i ) {
-            auto side = linkArray.find(sides[i]);
-            if ( side == linkArray.end() ) {
-                output->fatal(CALL_INFO, 1, "Error discovering %s link component for Link=%s from script: %s\n",
-                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
-            }
-
-            auto item = side->find("component");
-            if ( item != side->end() ) {
-                Comp[i] = item.value();
-            }
-            else {
-                output->fatal(CALL_INFO, 1,
-                    "Error finding component field of %s link component for Link=%s from script: %s\n",
-                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
-            }
-
-            // -- Port
-            item = side->find("port");
-            if ( item != side->end() ) {
-                Port[i] = item.value();
-            }
-            else {
-                output->fatal(CALL_INFO, 1,
-                    "Error finding port field of %s link component for Link=%s from script: %s\n", sides[i].c_str(),
-                    Name.c_str(), scriptName.c_str());
-            }
-
-            // -- Latency
-            item = side->find("latency");
-            if ( item != side->end() ) {
-                Latency[i] = item.value();
-            }
-            else {
-                output->fatal(CALL_INFO, 1,
-                    "Error finding latency field of %s link component for Link=%s from script: %s\n", sides[i].c_str(),
-                    Name.c_str(), scriptName.c_str());
-            }
-
-            LinkID = findComponentIdByName(Comp[i]);
-            graph->addLink(LinkID, Name, Port[i], Latency[i], NoCut);
-        }
-    }
-}
-
-void
-SSTJSONModelDefinition::discoverProgramOptions(const json& jFile)
-{
-    if ( jFile.contains("program_options") ) {
-        for ( auto& option : jFile["program_options"].items() ) {
-            setOptionFromModel(option.key(), option.value());
-        }
-    }
-}
-
-void
-SSTJSONModelDefinition::discoverSharedParams(const json& jFile)
-{
-    std::string SharedName;
-
-    if ( jFile.contains("shared_params") ) {
-        for ( auto& gp : jFile["shared_params"].items() ) {
-            SharedName = gp.key();
-            for ( auto& param : jFile["shared_params"].at(SharedName).items() ) {
-                graph->addSharedParam(SharedName, param.key(), param.value().get<std::string>());
-            }
-        }
-    }
-}
-
-void
-SSTJSONModelDefinition::setStatGroupOptions(const json& jFile)
-{
-    std::string Name;
-    std::string Frequency;
-    std::string Type;
-    std::string StatName;
-
-    for ( auto& statArray : jFile.at("statistics_group") ) {
-        // -- name
-        auto x = statArray.find("name");
-        if ( x != statArray.end() ) {
-            Name = x.value();
-        }
-        else {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering statistics group name from script: %s\n", scriptName.c_str());
-        }
-
-        auto* csg = graph->getStatGroup(Name);
-        if ( csg == nullptr ) {
-            output->fatal(CALL_INFO, 1, "Error creating statistics group from script %s; name=%s\n", scriptName.c_str(),
-                Name.c_str());
-        }
-
-        // -- frequency
-        auto f = statArray.find("frequency");
-        if ( f != statArray.end() ) {
-            Frequency = f.value();
-            if ( !csg->setFrequency(Frequency) ) {
-                output->fatal(CALL_INFO, 1, "Error setting frequency for statistics group: %s\n", Name.c_str());
-            }
-        }
-
-        // -- output
-        if ( statArray.contains("output") ) {
-            auto& statOuts = graph->getStatOutputs();
-            if ( statArray.at("output").contains("type") ) {
-                statArray.at("output").at("type").get_to(Type);
-            }
-            else {
-                output->fatal(
-                    CALL_INFO, 1, "Error discovering statistics group output type for group: %s\n", Name.c_str());
-            }
-
-            statOuts.emplace_back(ConfigStatOutput(Type));
-            csg->setOutput(statOuts.size() - 1);
-
-            if ( statArray.at("output").contains("params") ) {
-                for ( auto& paramArray : statArray.at("output").at("params").items() ) {
-                    statOuts.back().addParameter(paramArray.key(), paramArray.value());
-                }
-            }
-        }
-
-        // -- statistics
-        if ( statArray.contains("statistics") ) {
-            for ( auto& stats : statArray.at("statistics") ) {
-                // -- stat name
-                if ( stats.contains("name") ) {
-                    auto sn = stats.find("name");
-                    if ( sn != stats.end() ) {
-                        StatName = sn.value();
-                    }
-                    else {
-                        output->fatal(CALL_INFO, 1, "Error discovering statistics group stat name from script: %s\n",
-                            scriptName.c_str());
-                    }
-                }
-
-                // -- stat params
-                Params StatParams;
-                if ( stats.contains("params") ) {
-                    for ( auto& paramArray : stats.at("params").items() ) {
-                        StatParams.insert(paramArray.key(), paramArray.value());
-                    }
-                }
-
-                csg->addStatistic(StatName, StatParams);
-
-                bool        verified;
-                std::string reason;
-                std::tie(verified, reason) = csg->verifyStatsAndComponents(graph);
-                if ( !verified ) {
-                    output->fatal(CALL_INFO, 1, "Error verifying statistics and components: %s\n", reason.c_str());
-                }
-            }
-        }
-
-        // -- components
-        if ( statArray.contains("components") ) {
-            for ( auto& compArray : statArray["components"].items() ) {
-                csg->addComponent(findComponentIdByName(compArray.value()));
-            }
-        }
-    }
-}
-
-void
-SSTJSONModelDefinition::discoverStatistics(const json& jFile)
-{
-    // discover the global statistics options
-    if ( jFile.contains("statistics_options") ) {
-        if ( jFile.at("statistics_options").contains("statisticLoadLevel") ) {
-            uint8_t loadLevel;
-            jFile.at("statistics_options").at("statisticLoadLevel").get_to(loadLevel);
-            graph->setStatisticLoadLevel(loadLevel);
-        }
-
-        if ( jFile.at("statistics_options").contains("statisticOutput") ) {
-            std::string output;
-            jFile.at("statistics_options").at("statisticOutput").get_to(output);
-            graph->setStatisticOutput(output);
-        }
-
-        if ( jFile.at("statistics_options").contains("params") ) {
-            for ( auto& paramArray : jFile.at("statistics_options").at("params").items() ) {
-                graph->addStatisticOutputParameter(paramArray.key(), paramArray.value());
-            }
-        }
-    }
-    // discover the statistics groups
-    if ( jFile.contains("statistics_group") ) {
-        setStatGroupOptions(jFile);
-    }
-}
-
 ConfigGraph*
 SSTJSONModelDefinition::createConfigGraph()
 {
@@ -513,26 +594,24 @@ SSTJSONModelDefinition::createConfigGraph()
         return nullptr;
     }
 
-    // create parsed json object
-    json jFile = json::parse(ifs);
+    // create the SAX handler
+    SSTConfigSaxHandler handler;
+    handler.setConfigGraph(graph);
+    bool result = json::sax_parse(ifs, &handler);
+    if ( !result ) {
+        output->fatal(CALL_INFO, 1, "Error parsing json file at position %lu: (%s)\n", handler.errorPos,
+            handler.errorStr.c_str());
+        return nullptr;
+    }
+
+    // set the program options
+    auto ProgramOptions = handler.getProgramOptions();
+    for ( const auto& [key, value] : ProgramOptions ) {
+        setOptionFromModel(key, value);
+    }
 
     // close the file
     ifs.close();
-
-    // discover all the globals
-    discoverProgramOptions(jFile);
-
-    // discover the shared parameters
-    discoverSharedParams(jFile);
-
-    // discover the components
-    discoverComponents(jFile);
-
-    // discover the links
-    discoverLinks(jFile);
-
-    // discover statistics
-    discoverStatistics(jFile);
 
     return graph;
 }

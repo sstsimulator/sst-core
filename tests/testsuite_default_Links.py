@@ -36,6 +36,9 @@ class testcase_Links(SSTTestCase):
     def test_Links_wrong_port(self):
         self.component_test_template("wrong_port", "--model-options=wrong_port", 1)
 
+    def test_Links_unused(self):
+        self.component_test_template("unused", "--model-options=unused", 1)
+
 #####
 
     def component_test_template(self, testtype, extra_args="", rc=0):
