@@ -16,6 +16,8 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/marsaglia.h"
 
+#include <vector>
+
 namespace SST::CoreTestOverhead {
 
 class OverheadMeasure : public SST::Component
