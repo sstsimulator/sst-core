@@ -1136,13 +1136,17 @@ public:
             samplesLost_++;
         }
 
-        if ( state_ == POSTTRIGGER ) {
-            postCount_++;
+        if ((state_ == TRIGGER) && (postDelay_ == 0)) {
+            invokeAction = true;
+            std::cout << "    Invoke Action\n";
         }
 
-        if ( postCount_ >= postDelay_ ) {
-            invokeAction = true;
-            printf("    Invoke Action\n");
+        if (state_ == POSTTRIGGER) {
+            postCount_++;
+            if (postCount_ >= postDelay_) {
+                invokeAction = true;
+                std::cout << "    Invoke Action\n";
+            }
         }
 
         return invokeAction;
