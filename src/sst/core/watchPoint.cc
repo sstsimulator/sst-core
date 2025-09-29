@@ -65,4 +65,10 @@ WatchPoint::heartbeat()
     // Could it just use RTAction?
 }
 
+void
+WatchPoint::simulationShutdown()
+{
+    Simulation_impl::getSimulation()->endSimulation();
+}
+
 } // namespace SST
