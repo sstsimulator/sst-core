@@ -121,6 +121,10 @@ sst.setStatisticOutput("sst.statOutputConsole", {
 #			                                 "separator" : ", "
 #                                            })
 
+
+# List to hold all the components
+comp_list = []
+
 ########################################################################
 ########################################################################
 
@@ -131,14 +135,12 @@ sst.setStatisticOutput("sst.statOutputConsole", {
 # output happens on the same cycle as simulation ends.  For serial,
 # both the periodic and end outputs happen.  In parallel, only the end
 # output prints, which makes the diff fail between serial and parallel
-# runs.  This only occurs here because we have no links so all the
-# ranks run independently.  This does not seem to happen for runs that
-# have a proper synchronization happening (i.e. there are links that
-# cross partition boundaries).
+# runs.
 
 # These first two components are to test
 # enableAllStatisticsForAllComponents
 StatGlobal0 = sst.Component("StatGlobal0", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGlobal0)
 StatGlobal0.addParams({
       "rng" : "marsaglia",
       "count" : "101",   # Change For number of 1ns clocks
@@ -148,12 +150,15 @@ StatGlobal0.addParams({
 })
 
 StatGlobal1 = sst.Component("StatGlobal1", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGlobal1)
 StatGlobal1.addParams({
       "rng" : "marsaglia",
       "count" : "101",   # Change For number of 1ns clocks
       "seed_w" : "1441",
       "seed_z" : "1047"
 })
+
+
 StatGlobal1.setStatisticLoadLevel(4)
 
 # This will only enable stats for Components that are already created
@@ -168,6 +173,7 @@ sst.enableAllStatisticsForAllComponents({
 
 # Object 0
 StatBasic0 = sst.Component("StatBasic0", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic0)
 
 # Set Component Parameters
 StatBasic0.addParams({
@@ -208,6 +214,7 @@ StatBasic0.enableStatistics(["stat5_dyn"], {
 
 # Object 1
 StatBasic1 = sst.Component("StatBasic1", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic1)
 
 # Set Component Parameters
 StatBasic1.addParams({
@@ -243,6 +250,7 @@ StatBasic1.enableStatistics(["stat4_I64"], {
 
 # Object 2
 StatBasic2 = sst.Component("StatBasic2", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic2)
 
 # Set Component Parameters
 StatBasic2.addParams({
@@ -267,6 +275,7 @@ StatBasic2.enableStatistics(["stat2_U64", "stat4_I64"], {
 
 # Object 3
 StatBasic3 = sst.Component("StatBasic3", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic3)
 
 # Set Component Parameters
 StatBasic3.addParams({
@@ -288,9 +297,9 @@ StatBasic3.enableStatistics(["stat2_U64", "stat4_I64"], {
     "stopat" : "60 ns",
     "resetOnOutput" : True})
 
-
 # Object 4
 StatBasic4 = sst.Component("StatBasic4", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic4)
 
 # Set Component Parameters
 StatBasic4.addParams({
@@ -326,6 +335,7 @@ sst.enableStatisticsForComponentName("StatBasic4", ["stat4_I64"], {
 
 # Object 5
 StatBasic5 = sst.Component("StatBasic5", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic5)
 
 # Set Component Parameters
 StatBasic5.addParams({
@@ -361,6 +371,7 @@ sst.enableStatisticsForComponentName("StatBasic5", ["stat4_I64"], {
 
 # Object 6
 StatBasic6 = sst.Component("StatBasic6", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic6)
 
 # Set Component Parameters
 StatBasic6.addParams({
@@ -385,6 +396,7 @@ sst.enableStatisticsForComponentName("StatBasic6", ["stat2_U64", "stat4_I64"], {
 
 # Object 7
 StatBasic7 = sst.Component("StatBasic7", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic7)
 
 # Set Component Parameters
 StatBasic7.addParams({
@@ -412,6 +424,7 @@ sst.enableStatisticsForComponentName("StatBasic7", ["stat2_U64", "stat4_I64"], {
 
 # Object 8
 StatBasic8 = sst.Component("StatBasic8", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic8)
 
 # Set Component Parameters
 StatBasic8.addParams({
@@ -428,6 +441,7 @@ StatBasic8.enableAllStatistics({
 
 # Object 9
 StatBasic9 = sst.Component("StatBasic9", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic9)
 
 # Set Component Parameters
 StatBasic9.addParams({
@@ -446,6 +460,7 @@ StatBasic9.setStatisticLoadLevel(4)
 
 # Object 10
 StatBasic10 = sst.Component("StatBasic10", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatBasic10)
 
 # Set Component Parameters
 StatBasic10.addParams({
@@ -464,6 +479,7 @@ sst.setStatisticLoadLevelForComponentName("StatBasic10", 1)
 
 # The following components test sst.enableAllStatisticsForComponentType()
 StatType0 = sst.Component("StatType0", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatType0)
 
 # Set Component Parameters
 StatType0.addParams({
@@ -474,6 +490,7 @@ StatType0.addParams({
 })
 
 StatType1 = sst.Component("StatType1", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatType1)
 
 # Set Component Parameters
 StatType1.addParams({
@@ -484,6 +501,7 @@ StatType1.addParams({
 })
 
 StatType2 = sst.Component("StatType2", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatType2)
 
 # Set Component Parameters
 StatType2.addParams({
@@ -508,6 +526,7 @@ StatType2.setStatisticLoadLevel(2)
 # objects (sst.Statistic)
 
 StatObjComp0 = sst.Component("StatObjComp0", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatObjComp0)
 
 # Set Component Parameters
 StatObjComp0.addParams({
@@ -527,6 +546,7 @@ StatObjComp0.setStatistic("stat2_F64", stat)
 
 # This component tests sharing of stats by multiple stat slots
 StatObjComp1 = sst.Component("StatObjComp1", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatObjComp1)
 
 # Set Component Parameters
 StatObjComp1.addParams({
@@ -555,6 +575,7 @@ StatObjComp1.setStatistic("stat3_F64", stat)
 StatGroup0 = sst.StatisticGroup("StatGroup0")
 
 StatGroupObj0 = sst.Component("StatGroupObj0", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj0)
 
 # Set Component Parameters
 StatGroupObj0.addParams({
@@ -566,6 +587,7 @@ StatGroupObj0.addParams({
 
 # This component will test stat groups
 StatGroupObj1 = sst.Component("StatGroupObj1", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj1)
 
 # Set Component Parameters
 StatGroupObj1.addParams({
@@ -577,6 +599,7 @@ StatGroupObj1.addParams({
 
 # This component will test stat groups
 StatGroupObj2 = sst.Component("StatGroupObj2", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj2)
 
 # Set Component Parameters
 StatGroupObj2.addParams({
@@ -615,6 +638,7 @@ StatGroup0.setOutput(StatOutput0)
 StatGroup1 = sst.StatisticGroup("StatGroup1")
 
 StatGroupObj3 = sst.Component("StatGroupObj3", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj3)
 
 # Set Component Parameters
 StatGroupObj3.addParams({
@@ -626,6 +650,7 @@ StatGroupObj3.addParams({
 
 # This component will test stat groups
 StatGroupObj4 = sst.Component("StatGroupObj4", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj4)
 
 # Set Component Parameters
 StatGroupObj4.addParams({
@@ -637,6 +662,7 @@ StatGroupObj4.addParams({
 
 # This component will test stat groups
 StatGroupObj5 = sst.Component("StatGroupObj5", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj5)
 
 # Set Component Parameters
 StatGroupObj5.addParams({
@@ -645,7 +671,6 @@ StatGroupObj5.addParams({
       "seed_w" : "1466",
       "seed_z" : "1071"
 })
-
 
 # Add the components
 StatGroup1.addComponent(StatGroupObj3);
@@ -678,6 +703,7 @@ StatGroup1.setOutput(StatOutput1)
 StatGroup2 = sst.StatisticGroup("StatGroup2")
 
 StatGroupObj6 = sst.Component("StatGroupObj6", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj6)
 
 # Set Component Parameters
 StatGroupObj6.addParams({
@@ -689,6 +715,7 @@ StatGroupObj6.addParams({
 
 # This component will test stat groups
 StatGroupObj7 = sst.Component("StatGroupObj7", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj7)
 
 # Set Component Parameters
 StatGroupObj7.addParams({
@@ -700,6 +727,7 @@ StatGroupObj7.addParams({
 
 # This component will test stat groups
 StatGroupObj8 = sst.Component("StatGroupObj8", "coreTestElement.StatisticsComponent.int")
+comp_list.append(StatGroupObj8)
 
 # Set Component Parameters
 StatGroupObj8.addParams({
@@ -737,6 +765,7 @@ StatGroup2.setOutput(StatOutput2)
 StatGroup3 = sst.StatisticGroup("StatGroup3")
 
 StatGroupObj9 = sst.Component("StatGroupObj9", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatGroupObj9)
 
 # Set Component Parameters
 StatGroupObj9.addParams({
@@ -748,6 +777,7 @@ StatGroupObj9.addParams({
 
 # This component will test stat groups
 StatGroupObj10 = sst.Component("StatGroupObj10", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatGroupObj10)
 
 # Set Component Parameters
 StatGroupObj10.addParams({
@@ -759,6 +789,7 @@ StatGroupObj10.addParams({
 
 # This component will test stat groups
 StatGroupObj11 = sst.Component("StatGroupObj11", "coreTestElement.StatisticsComponent.float")
+comp_list.append(StatGroupObj11)
 
 # Set Component Parameters
 StatGroupObj11.addParams({
@@ -767,7 +798,6 @@ StatGroupObj11.addParams({
       "seed_w" : "1471",
       "seed_z" : "1077"
 })
-
 
 # Add the components
 StatGroup3.addComponent(StatGroupObj9);
@@ -796,6 +826,7 @@ if testH5:
     StatGroup4 = sst.StatisticGroup("StatGroup4")
 
     StatGroupObj12 = sst.Component("StatGroupObj12", "coreTestElement.StatisticsComponent.int")
+    comp_list.append(StatGroupObj12)
 
     # Set Component Parameters
     StatGroupObj12.addParams({
@@ -806,6 +837,7 @@ if testH5:
     })
 
     StatGroupObj13 = sst.Component("StatGroupObj13", "coreTestElement.StatisticsComponent.int")
+    comp_list.append(StatGroupObj13)
 
     # Set Component Parameters
     StatGroupObj13.addParams({
@@ -817,6 +849,7 @@ if testH5:
 
     # This component will test stat groups
     StatGroupObj14 = sst.Component("StatGroupObj14", "coreTestElement.StatisticsComponent.int")
+    comp_list.append(StatGroupObj14)
 
     # Set Component Parameters
     StatGroupObj14.addParams({
@@ -825,7 +858,6 @@ if testH5:
           "seed_w" : "1474",
           "seed_z" : "1080"
     })
-
 
     # Add the components
     StatGroup4.addComponent(StatGroupObj12);
@@ -846,3 +878,17 @@ if testH5:
     StatOutput4 = sst.StatisticOutput("sst.statOutputHDF5", {"filepath" : "test_StatisticsComponent_basic_group_stats.h5"})
     StatGroup4.setOutput(StatOutput4)
 
+
+
+count = 0;
+curr_comp = None
+comp_list.append(None)
+
+for x in comp_list:
+    if curr_comp:
+        curr_comp.addLink(link, "left")
+    if x:
+        link = sst.Link("link{}".format(count), "10ns")
+        count += 1
+        x.addLink(link, "right")
+    curr_comp = x

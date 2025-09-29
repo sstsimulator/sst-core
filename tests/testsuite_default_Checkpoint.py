@@ -90,6 +90,18 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_Statistics_basic(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic");
 
+    def test_Checkpoint_Statistics_basic_n2one(self) -> None:
+        self.checkpoint_test_template("StatisticsComponent_basic", n_to_one=True);
+
+    def test_Checkpoint_sc_2u2u_n2one(self) -> None:
+        self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True)
+
+    def test_Checkpoint_SharedObject_bool_array_n2one(self) -> None:
+        self.checkpoint_test_template("SharedObject", 1, 2, modelparams="--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_bool_array", n_to_one=True)
+
+    def test_Checkpoint_n2one(self) -> None:
+        self.checkpoint_test_template("Checkpoint", 1, 1, n_to_one=True)
+
     @unittest.skipIf(testing_check_get_num_ranks() > 1, parallelerr)
     @unittest.skipIf(testing_check_get_num_threads() > 1, parallelerr)
     def test_Checkpoint_Module(self) -> None:
@@ -102,7 +114,7 @@ class testcase_Checkpoint(SSTTestCase):
     # subcom: Set to True if this is a subcomponent test as the file/path name differs
     # modelparams: Set what is passed into --model-params when running SST
     # outstr: If set, is used in place of testtype to generate reference and output filenames
-    def checkpoint_test_template(self, testtype: str, rst_index: int = 1, cr_index: int = 0, subcomp: bool = False, modelparams: str = "", outstr: str = "") -> None:
+    def checkpoint_test_template(self, testtype: str, rst_index: int = 1, cr_index: int = 0, subcomp: bool = False, modelparams: str = "", outstr: str = "", n_to_one: bool = False) -> None:
 
         # name conventions:
         # X_cpt - files/options associated with first checkpoint run
@@ -169,7 +181,7 @@ class testcase_Checkpoint(SSTTestCase):
             CheckpointInfoFilter(),
             StartsWithFilter("WARNING: No components are assigned") ]
 
-        cmp_result = testing_compare_filtered_diff("NeedSomethingHere", outfile_cpt, reffile, True, filters_cpt)
+        cmp_result = testing_compare_filtered_diff(testtype, outfile_cpt, reffile, True, filters_cpt)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
@@ -192,7 +204,10 @@ class testcase_Checkpoint(SSTTestCase):
 
         options_rst += options_checkpoint_rst
 
-        self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst)
+        if n_to_one:
+            self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst, num_ranks=1, num_threads=1)
+        else:
+            self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst)
 
         # Check that restart output is a subset of checkpoint output
         filters_rst = [
@@ -200,7 +215,7 @@ class testcase_Checkpoint(SSTTestCase):
             CheckpointInfoFilter(),
             StartsWithFilter("WARNING: No components are assigned") ]
 
-        cmp_result = testing_compare_filtered_diff("PortModule", outfile_rst, reffile, True, filters_rst)
+        cmp_result = testing_compare_filtered_diff(testtype, outfile_rst, reffile, True, filters_rst)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
@@ -213,14 +228,17 @@ class testcase_Checkpoint(SSTTestCase):
         outfile_cr = "{0}/test_Checkpoint_{1}_ckpt_restart.out".format(outdir, testtype)
         options_cr = "--load-checkpoint"
 
-        self.run_sst(sdlfile_cr, outfile_cr, other_args=options_cr)
+        if n_to_one:
+            self.run_sst(sdlfile_cr, outfile_cr, other_args=options_cr, num_ranks=1, num_threads=1)
+        else:
+            self.run_sst(sdlfile_cr, outfile_cr, other_args=options_cr)
 
         # Check that restart output is a subset of checkpoint output
         filters_cr = [
             CheckpointRefFileFilter(cr_index + rst_index),
             CheckpointInfoFilter() ]
 
-        cmp_result = testing_compare_filtered_diff("PortModule", outfile_cr, reffile, True, filters_cr)
+        cmp_result = testing_compare_filtered_diff(testtype, outfile_cr, reffile, True, filters_cr)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
