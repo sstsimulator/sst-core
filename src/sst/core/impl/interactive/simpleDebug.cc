@@ -139,6 +139,15 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                      "\t!string  execute the most recent command starting with `string`\n"
                      "\t?string execute the most recent command containing `string`\n"
                      "\t!...:p  print the instruction but not execute it." },
+        { "editing", ": bash style command line editing using arrow and control keys:\n"
+                     "\tUp/Down keys: navigate command history\n"
+                     "\tLeft/Right keys: navigate command string\n"
+                     "\tbackspace: delete characters to the left\n"
+                     "\tctrl-a: move cursor to beginning of line\n"
+                     "\tctrl-b: move cursor to the left\n"
+                     "\tctrl-d: delete character at cursor\n"
+                     "\tctrl-e: move cursor to end of line\n"
+                     "\tctrl-f: move cursor to the right\n" },
     };
 }
 
@@ -188,7 +197,10 @@ SimpleDebugger::execute(const std::string& msg)
             else {
                 // Standard Input
                 if ( !std::cin ) std::cin.clear(); // fix corrupted input after process resumed
-                std::getline(std::cin, line);
+                if (isatty(STDIN_FILENO))
+                    cmdLineEditor.getline(cmdHistoryBuf.getBuffer(), line);
+                else
+                    std::getline(std::cin, line);
             }
 
             dispatch_cmd(line);
@@ -226,7 +238,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
     if ( tokens[0][0] == '!' ) {
         std::string newcmd;
         auto        rc = cmdHistoryBuf.bang(tokens[0], newcmd);
-        if ( rc == CommandHistoryBuffer::BANG_RC::ECHO ) {
+        if ( rc == CommandHistoryBuffer::BANG_RC::ECHO_ONLY ) {
             // replace, print, save command in history
             cmd = newcmd;
             std::cout << cmd << std::endl;
@@ -256,7 +268,8 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
     }
 
     // Oops
-    printf("Unknown command: %s\n", tokens[0].c_str());
+    std::cout << "Unknown command: " << tokens[0].c_str() << std::endl;
+    cmdHistoryBuf.append(cmd); // want garbled command so we can fix using command line editor
 }
 
 //
@@ -1478,6 +1491,21 @@ CommandHistoryBuffer::print(int num)
     }
 }
 
+std::vector<std::string>&
+CommandHistoryBuffer::getBuffer()
+{
+    // TODO: combine for print
+    stringBuffer_.clear();
+    int n  = sz_;
+    int idx = (nxt_ - n) % sz_;
+    if ( idx < 0 ) idx += sz_;
+    for ( int i = 0; i < n; i++ ) {
+        stringBuffer_.emplace_back(buf_[idx].second);
+        idx = (idx + 1) % MAX_CMDS;
+    }
+    return stringBuffer_;
+}
+
 CommandHistoryBuffer::BANG_RC
 CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
 {
@@ -1538,7 +1566,7 @@ CommandHistoryBuffer::bang(const std::string& token, std::string& newcmd)
     }
 
     if ( found ) {
-        rc = echo ? CommandHistoryBuffer::BANG_RC::ECHO : CommandHistoryBuffer::BANG_RC::EXEC;
+        rc = echo ? CommandHistoryBuffer::BANG_RC::ECHO_ONLY : CommandHistoryBuffer::BANG_RC::EXEC;
     }
 
     return rc;

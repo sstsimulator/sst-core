@@ -15,9 +15,8 @@
 // clang-format off
 #include "sst/core/eli/elementinfo.h"
 #include <sst/core/interactiveConsole.h>
-
 #include "sst/core/serialization/objectMapDeferred.h"
-
+#include "sst/core/impl/interactive/cmdLineEditor.h"
 #include <sst/core/watchPoint.h>
 
 #include <fstream>
@@ -89,10 +88,13 @@ class CommandHistoryBuffer
 {
 public:
     const int MAX_CMDS = 200;
-    CommandHistoryBuffer() { buf_.resize(MAX_CMDS); }
+    CommandHistoryBuffer() { 
+        buf_.resize(MAX_CMDS);
+    }
     void append(std::string s);
     void print(int num);
-    enum BANG_RC { INVALID, ECHO, EXEC, NOP };
+    std::vector<std::string>& getBuffer();
+    enum BANG_RC { INVALID, ECHO_ONLY, EXEC, NOP };
     BANG_RC bang(const std::string& token, std::string& newcmd);
 
 private:
@@ -100,7 +102,8 @@ private:
     int                                              nxt_   = 0;
     int                                              sz_    = 0;
     int                                              count_ = 0;
-    std::vector<std::pair<std::size_t, std::string>> buf_;
+    std::vector<std::pair<std::size_t, std::string>> buf_; 
+    std::vector<std::string> stringBuffer_; 
     // support for ! history retrieval
     bool                                             findEvent(const std::string& s, std::string& newcmd);
     bool                                             findOffset(const std::string& s, std::string& newcmd);
@@ -211,6 +214,9 @@ private:
 
     // Command History
     CommandHistoryBuffer cmdHistoryBuf;
+
+    // Command Line Editor
+    CmdLineEditor cmdLineEditor;
 };
 
 } // namespace SST::IMPL::Interactive
