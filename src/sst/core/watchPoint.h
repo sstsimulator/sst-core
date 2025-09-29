@@ -38,11 +38,12 @@ public:
         virtual ~Logic()     = default;
     };
 
-    WatchPoint(const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
+    WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
         Clock::HandlerBase::AttachPoint(),
         Event::HandlerBase::AttachPoint(),
         // obj_(obj),
-        name_(name)
+        name_(name),
+        wpIndex(index)
     {
         addComparison(obj);
     }
@@ -275,7 +276,7 @@ public:
         {
             printf("    SetInteractive\n");
             wp->setEnterInteractive(); // Trigger action
-            wp->setInteractiveMsg(format_string("Watch point %s buffer", wp->name_.c_str()));
+            wp->setInteractiveMsg(format_string("  WP%ld: %s ...", wp->wpIndex, wp->name_.c_str()));
             // Note that the interactive action is delayed and
             // we want to be able to print the Trace Buffer there.
             // So, resetTraceBuffer for this case is in handlers
@@ -364,6 +365,23 @@ public:
         std::string                     valStr_ = "";
     };
 
+    class ShutdownWPAction : public WPAction
+    {
+    public:
+        ShutdownWPAction() {}
+        virtual ~ShutdownWPAction() = default;
+
+        std::string actionToString() override { return "shutdown"; }
+
+        void invokeAction(WatchPoint* wp) override
+        {
+            wp->printTriggerRecord();
+            printf("  Trigger action shutting down simulation\n");
+            wp->simulationShutdown();
+            return;
+        }
+    };
+
     void setAction(WPAction* action) { wpAction = action; }
 
     void printAction() { std::cout << wpAction->actionToString(); }
@@ -395,6 +413,7 @@ protected:
     void      setCheckpoint();
     void      printStatus();
     void      heartbeat();
+    void      simulationShutdown();
 
 private:
     Core::Serialization::ObjectMapComparison*              obj_;
@@ -403,6 +422,7 @@ private:
     std::vector<LogicOp>                                   logicOps_;
     std::string                                            name_;
     Core::Serialization::TraceBuffer*                      tb_ = nullptr;
+    size_t                                                 wpIndex;
 
     unsigned  handler = ALL;
     bool      trigger = false;
