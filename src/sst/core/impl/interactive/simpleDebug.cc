@@ -256,7 +256,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
     }
 
     // Oops
-    printf("Unknown command: %s\n", tokens[0].c_str());
+    std::cout << "Unknown command: " << tokens[0] << std::endl;
 }
 
 //
@@ -330,7 +330,7 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
     //     curr = curr->getParent();
     // }
 
-    printf("%s (%s)\n", obj_->getFullName().c_str(), obj_->getType().c_str());
+    std::cout << obj_->getFullName() << " (" << obj_->getType() << ")\n";
 }
 
 // ls: list current directory
@@ -340,10 +340,11 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     auto& vars = obj_->getVariables();
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
-            printf("%s = %s (%s)\n", x.first.c_str(), x.second->get().c_str(), x.second->getType().c_str());
+            std::cout << x.first << " = " << x.second->get() <<
+                " (" <<  x.second->getType() << ")" << std::endl;
         }
         else {
-            printf("%s/ (%s)\n", x.first.c_str(), x.second->getType().c_str());
+            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
     }
 }
@@ -1081,23 +1082,14 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         pt->addObjectBuffer(ob);
 #endif
 
-        // Get the top level component to set the watch point
-        BaseComponent* comp = static_cast<BaseComponent*>(base_comp_->getAddr());
-        if ( comp ) {
-            comp->addWatchPoint(pt);
-            watch_points_.emplace_back(pt, comp);
-            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
-        }
-        else
-            printf("Not a component\n");
-
         // Add additional comparisons and logical ops
         while ( index < tokens.size() ) {
 
             // Get Logical Operator
             WatchPoint::LogicOp logicOp = getLogicOpFromString(tokens[index++]);
             if ( logicOp == WatchPoint::LogicOp::UNDEFINED ) {
-                printf("Invalid logic operator: %s", tokens[index - 1].c_str());
+                std::cout << "Invalid logic operator: " << tokens[index - 1] << std::endl;
+                return;
             }
             else {
                 pt->addLogicOp(logicOp);
@@ -1126,6 +1118,18 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         }
         else {
             pt->setAction(actionObj);
+        }
+
+        // Get the top level component to set the watch point
+        BaseComponent* comp = static_cast<BaseComponent*>(base_comp_->getAddr());
+        if (comp) {
+            comp->addWatchPoint(pt);
+            watch_points_.emplace_back(pt, comp);
+            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
+        }
+        else {
+            printf("Not a component\n");
+            return;
         }
     } // try/catch  TODO: need to revisit what can actually throw an exception
     catch ( std::exception& e ) {
@@ -1247,8 +1251,8 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
 
     // Get buffer config
     if ( tokens[index++] != ":" ) {
-        printf("Invalid format: trace <trigger> : <bufsize> <postdelay> : <v1> ... "
-               "<vN> : <action>\n");
+        std::cout << "Invalid format: trace <trigger> : <bufsize> <postdelay> : <v1> ... "
+               "<vN> : <action>\n";
         return nullptr;
     }
     // Could check for ":" here and assume that means they just want default
@@ -1280,8 +1284,8 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
     }
 
     if ( tokens[index++] != ":" ) {
-        printf("Invalid format: trace <var> <op> <value> : <bufsize> <postdelay> : "
-               "<v1> ... <vN> : <action>\n");
+        std::cout << "Invalid format: trace <var> <op> <value> : <bufsize> <postdelay> : "
+               "<v1> ... <vN> : <action>\n";
         return nullptr;
     }
 
@@ -1290,7 +1294,7 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
         return new Core::Serialization::TraceBuffer(obj, bufsize, pdelay);
     }
     catch ( std::exception& e ) {
-        printf("HERE: Invalid buffer argument passed to trace command\n");
+        std::cout << "Invalid buffer argument passed to trace command\n";
         return nullptr;
     }
 }
@@ -1301,15 +1305,14 @@ parseTraceVar(std::string& tvar, Core::Serialization::ObjectMap* obj, Core::Seri
     // Find and check trace variable
     Core::Serialization::ObjectMap* map = obj->findVariable(tvar);
     if ( nullptr == map ) {
-        printf("Unknown variable: %s\n", tvar.c_str());
+        std::cout << "Unknown variable: " << tvar << std::endl;
         return nullptr;
     }
 
     // Is variable fundamental
     if ( !map->isFundamental() ) {
-        printf("Traces can only be placed on fundamental types; %s is not "
-               "fundamental\n",
-            tvar.c_str());
+        std::cout << "Traces can only be placed on fundamental types; " << tvar <<
+               "is not fundamental\n";
         return nullptr;
     }
     std::string name = obj->getFullName() + "/" + tvar;
@@ -1351,20 +1354,21 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         // Get Logical Operator
         WatchPoint::LogicOp logicOp = getLogicOpFromString(tokens[index++]);
         if ( logicOp == WatchPoint::LogicOp::UNDEFINED ) {
-            printf("Invalid logic operator: %s", tokens[index - 1].c_str());
+            std::cout << "Invalid logic operator: " << tokens[index - 1] << std::endl;
+            return;
         }
         else {
             pt->addLogicOp(logicOp);
         }
         if ( index == tokens.size() ) {
-            printf("Invalid format for trace command\n");
+            std::cout << "Invalid format for trace command\n";
             return;
         }
 
         // Get next comparison
         Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
         if ( c == nullptr ) {
-            printf("Invalid argument in comparison of trace command\n");
+            std::cout << "Invalid argument in comparison of trace command\n";
             return;
         }
         pt->addComparison(c);
@@ -1374,7 +1378,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
     try {
         auto* tb = parseTraceBuffer(tokens, index, obj_);
         if ( tb == nullptr ) {
-            printf("Invalid trace buffer argument in trace command\n");
+            std::cout << "Invalid trace buffer argument in trace command\n";
             return;
         }
         pt->addTraceBuffer(tb);
@@ -1389,7 +1393,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
 
             auto* objBuf = parseTraceVar(tvar, obj_, tb);
             if ( objBuf == nullptr ) {
-                printf("Invalid trace variable argument passed to trace command\n");
+                std::cout << "Invalid trace variable argument passed to trace command\n";
                 return;
             }
             pt->addObjectBuffer(objBuf);
@@ -1400,7 +1404,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
 
         WatchPoint::WPAction* actionObj = parseAction(tokens, index, obj_);
         if ( actionObj == nullptr ) {
-            printf("Error in action: %s\n", action.c_str());
+            std::cout << "Error in action: " << action << std::endl;
             return;
         }
         else {
@@ -1420,8 +1424,10 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
             watch_points_.emplace_back(pt, comp);
             std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
         }
-        else
-            printf("Not a component\n");
+        else {
+            std::cout << "Not a component\n";
+            return;
+        }
     }
     catch ( std::exception& e ) {
         printf("Invalid format for trace command\n");
