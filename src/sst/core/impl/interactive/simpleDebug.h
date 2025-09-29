@@ -102,8 +102,8 @@ private:
     int                                              nxt_   = 0;
     int                                              sz_    = 0;
     int                                              count_ = 0;
-    std::vector<std::pair<std::size_t, std::string>> buf_; 
-    std::vector<std::string> stringBuffer_; 
+    std::vector<std::pair<std::size_t, std::string>> buf_; // actual history with index number
+    std::vector<std::string> stringBuffer_;                // copy of history strings provided to command line editor
     // support for ! history retrieval
     bool                                             findEvent(const std::string& s, std::string& newcmd);
     bool                                             findOffset(const std::string& s, std::string& newcmd);

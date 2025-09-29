@@ -1481,6 +1481,7 @@ CommandHistoryBuffer::append(std::string s)
 void
 CommandHistoryBuffer::print(int num)
 {
+    if (sz_==0) return;
     int n   = num < sz_ ? num : sz_;
     n       = n <= 0 ? sz_ : n;
     int idx = (nxt_ - n) % sz_;
@@ -1496,6 +1497,7 @@ CommandHistoryBuffer::getBuffer()
 {
     // TODO: combine for print
     stringBuffer_.clear();
+    if (sz_==0) return stringBuffer_;
     int n  = sz_;
     int idx = (nxt_ - n) % sz_;
     if ( idx < 0 ) idx += sz_;
