@@ -882,6 +882,7 @@ if testH5:
 
 count = 0;
 curr_comp = None
+link = None
 comp_list.append(None)
 
 for x in comp_list:
