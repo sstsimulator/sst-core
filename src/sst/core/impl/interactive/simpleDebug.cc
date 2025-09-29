@@ -1078,7 +1078,8 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
             printf("Invalid comparison argument passed to watch command\n");
             return;
         }
-        auto* pt = new WatchPoint(name, c);
+        size_t wpIndex = watch_points_.size();
+        auto* pt = new WatchPoint(wpIndex, name, c);
 
 #if 0 // watch variables currently don't trace, but they could automatically
       // trace test vars
@@ -1132,7 +1133,7 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         if (comp) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
-            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
+            std::cout << "Added watchpoint #" << wpIndex << std::endl;
         }
         else {
             printf("Not a component\n");
@@ -1349,7 +1350,8 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         printf("Invalid argument passed in comparison trigger command\n");
         return;
     }
-    auto* pt = new WatchPoint(name, c);
+    size_t wpIndex = watch_points_.size();
+    auto* pt = new WatchPoint(wpIndex, name, c);
 
     // Add additional comparisons and logical ops
     while ( index < tokens.size() ) {
@@ -1429,7 +1431,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         if ( comp ) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
-            std::cout << "Added watchpoint #" << watch_points_.size() - 1 << std::endl;
+            std::cout << "Added watchpoint #" << wpIndex << std::endl;
         }
         else {
             std::cout << "Not a component\n";
