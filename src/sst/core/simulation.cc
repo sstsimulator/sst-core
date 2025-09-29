@@ -1744,6 +1744,7 @@ Simulation_impl::checkpoint_write_globals(
 
     /* Section 2: Common data for Simulation_impl */
     ser.start_sizing();
+    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
     SST_SER(max_event_id);
@@ -1752,6 +1753,7 @@ Simulation_impl::checkpoint_write_globals(
     buffer.resize(size);
 
     ser.start_packing(buffer.data(), size);
+    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
     SST_SER(max_event_id);
@@ -1917,6 +1919,9 @@ Simulation_impl::restart()
     ser.enable_pointer_tracking();
     ser.start_unpacking(buffer.data(), size);
 
+    RankInfo num_ranks_cpt;
+    SST_SER(num_ranks_cpt);
+
     SST_SER(minPart);
     SST_SER(minPartTC);
     SST_SER(max_event_id);
@@ -1932,61 +1937,122 @@ Simulation_impl::restart()
         Event::id_counter.store(max_event_id);
     }
 
-    // Look for the line that has my rank's file info
-    std::string blob_filename;
-    search_str = "** (";
-    search_str = search_str + std::to_string(my_rank.rank) + ":" + std::to_string(my_rank.thread) + "): ";
-    while ( std::getline(fs, line) ) {
-        size_t pos = line.find(search_str);
-        if ( pos == 0 ) {
-            // Get the file name
-            blob_filename = line.substr(search_str.length());
-            break;
+    serial_restart_ = (num_ranks.rank == 1 && num_ranks.thread == 1) && (num_ranks != num_ranks_cpt);
+
+    // Need to find the file(s) for restart.  If this is a serial
+    // restart, we will get all the files.  If not, only get the file
+    // for current rank
+    std::vector<std::string> blob_filenames;
+
+    // Need to do this in the same order as the registry file so we
+    // don't have to keep looking from the beginning
+    for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
+        for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
+            if ( !serial_restart_ && (my_rank.rank != r || my_rank.thread != t) ) continue;
+            search_str = "** (";
+            search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
+            while ( std::getline(fs, line) ) {
+                size_t pos = line.find(search_str);
+                if ( pos == 0 ) {
+                    // Get the file name
+                    blob_filenames.push_back(line.substr(search_str.length()));
+                    break;
+                }
+            }
         }
     }
+
+
     fs.close();
 
     ser.enable_pointer_tracking();
-    std::ifstream fs_blob(blob_filename, std::ios::binary);
 
-    /* Now get the global blob */
-    fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
-    buffer.resize(size);
-    fs_blob.read(buffer.data(), size);
+    if ( blob_filenames.size() == 1 ) {
+        // This is a regular restart (same parallelism as checkpoint)
+        std::ifstream fs_blob(blob_filenames[0], std::ios::binary);
 
-    ser.start_unpacking(buffer.data(), size);
-
-    SST_SER(interThreadMinLatency);
-    SST_SER(independent);
-
-    initBarrier.wait();
-
-    // Set up the syncManager
-    syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
-    // Look at simulation.cc line 365 on setting up profile tools
-
-    completeBarrier.wait();
-
-    /* Initial fix up of stat engine, the rest is after components re-register statistics */
-    stat_engine.restart();
-
-
-    /* Extract components */
-    size_t compCount;
-    fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
-
-    // Deserialize component blobs individually
-    for ( size_t comp = 0; comp < compCount; comp++ ) {
+        /* Now get the global blob */
         fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
         buffer.resize(size);
-        fs_blob.read(&buffer[0], size);
-        ser.start_unpacking(&buffer[0], size);
-        ComponentInfo* compInfo = new ComponentInfo();
-        SST_SER(compInfo);
-        compInfoMap.insert(compInfo);
-    }
+        fs_blob.read(buffer.data(), size);
 
-    fs_blob.close();
+        ser.start_unpacking(buffer.data(), size);
+
+        SST_SER(interThreadMinLatency);
+        SST_SER(independent);
+
+        // Set up the syncManager
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+        // Look at simulation.cc line 365 on setting up profile tools
+
+        completeBarrier.wait();
+
+        /* Initial fix up of stat engine, the rest is after components re-register statistics */
+        stat_engine.restart();
+
+
+        /* Extract components */
+        size_t compCount;
+        fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
+
+        // Deserialize component blobs individually
+        for ( size_t comp = 0; comp < compCount; comp++ ) {
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(&buffer[0], size);
+            ser.start_unpacking(&buffer[0], size);
+            ComponentInfo* compInfo = new ComponentInfo();
+            SST_SER(compInfo);
+            compInfoMap.insert(compInfo);
+        }
+        fs_blob.close();
+    }
+    else {
+        // This is a parallel checkpoint restarted as a serial job
+        interThreadMinLatency = MAX_SIMTIME_T;
+        independent           = false;
+        minPart               = MAX_SIMTIME_T;
+
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+
+        stat_engine.restart();
+
+        // Now we need to extract the components from all of the files
+        std::ifstream fs_blob;
+        for ( std::string filename : blob_filenames ) {
+            fs_blob.open(filename, std::ios::binary);
+
+            /* Now get the global blob */
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(buffer.data(), size);
+
+            ser.start_unpacking(buffer.data(), size);
+
+            // These are the variables interThreadLatencies and
+            // independent. They aren't used in this path, but need to
+            // be read from the serialization stream
+            uint64_t dummy_int;
+            SST_SER(dummy_int); // interThreadLatencies
+            bool dummy_bool;
+            SST_SER(dummy_bool); // independent
+
+            size_t compCount;
+            fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
+
+            // Deserialize component blobs individually
+            for ( size_t comp = 0; comp < compCount; comp++ ) {
+                fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+                buffer.resize(size);
+                fs_blob.read(&buffer[0], size);
+                ser.start_unpacking(&buffer[0], size);
+                ComponentInfo* compInfo = new ComponentInfo();
+                SST_SER(compInfo);
+                compInfoMap.insert(compInfo);
+            }
+            fs_blob.close();
+        }
+    }
 
     // If we are a parallel job, need to call
     // finalizeLinkConfigurations() in order to finish setting up all
