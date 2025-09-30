@@ -1,100 +1,67 @@
-WARNING: Building component "StatGlobal0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1046, m_w = 1440
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGlobal1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1047, m_w = 1441
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1053, m_w = 1447
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1054, m_w = 1448
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic2" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1055, m_w = 1449
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic3" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1056, m_w = 1450
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic4" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1057, m_w = 1451
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic5" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1058, m_w = 1452
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic6" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1059, m_w = 1453
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic7" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1060, m_w = 1454
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic8" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1061, m_w = 1455
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic9" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1062, m_w = 1456
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatBasic10" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatType0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatType1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatType2" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1063, m_w = 1457
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatObjComp0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1064, m_w = 1458
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatObjComp1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1065, m_w = 1459
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj0" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1066, m_w = 1460
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj1" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1067, m_w = 1461
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj2" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1068, m_w = 1462
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj3" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1069, m_w = 1463
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj4" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1070, m_w = 1464
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj5" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1071, m_w = 1466
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj6" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1072, m_w = 1466
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj7" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1073, m_w = 1467
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj8" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1074, m_w = 1468
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj9" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1075, m_w = 1469
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj10" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1076, m_w = 1470
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj11" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1077, m_w = 1471
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj12" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1078, m_w = 1472
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj13" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1079, m_w = 1473
 REGISTER CLOCK #1 at 1 ns
-WARNING: Building component "StatGroupObj14" with no links assigned.
 Using Marsaglia Random Number Generator with seeds m_z = 1080, m_w = 1474
 REGISTER CLOCK #1 at 1 ns
  StatBasic0.stat1_U32.1 : Accumulator : SimTime = 5000; Sum.u32 = 1034; SumSQ.u32 = 343326; Count.u64 = 5; Min.u32 = 2; Max.u32 = 376; 

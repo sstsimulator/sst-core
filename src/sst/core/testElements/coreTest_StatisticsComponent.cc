@@ -86,6 +86,10 @@ StatisticsComponentInt::StatisticsComponentInt(ComponentId_t id, Params& params)
         output.output("ERROR: When reregistering the same statistic, did not recieve the same object back\n");
     }
 
+    // Connect the ports, which will not be used
+    left  = configureLink("left");
+    right = configureLink("right");
+
     // Test Statistic functions for delayed output and collection and to disable Stat
     //    stat1_U32->disable();
     //    stat1_U32->delayOutput("10 ns");
@@ -147,6 +151,8 @@ StatisticsComponentInt::serialize_order(SST::Core::Serialization::serializer& se
     SST_SER(rng_max_count);
     SST_SER(rng_count);
     SST_SER(dynamic_reg);
+    SST_SER(left);
+    SST_SER(right);
 
     // Statistics
     SST_SER(stat1_U32);
@@ -211,6 +217,10 @@ StatisticsComponentFloat::StatisticsComponentFloat(ComponentId_t id, Params& par
     stat1_F32 = registerStatistic<float>("stat1_F32", "1");
     stat2_F64 = registerStatistic<double>("stat2_F64", "2");
     stat3_F64 = registerStatistic<double>("stat3_F64", "3");
+
+    // Connect the ports, which will not be used
+    left  = configureLink("left");
+    right = configureLink("right");
 }
 
 StatisticsComponentFloat::StatisticsComponentFloat() :
@@ -259,6 +269,8 @@ StatisticsComponentFloat::serialize_order(SST::Core::Serialization::serializer& 
     SST_SER(rng_type);
     SST_SER(rng_max_count);
     SST_SER(rng_count);
+    SST_SER(left);
+    SST_SER(right);
 
     // Statistics
     SST_SER(stat1_F32);

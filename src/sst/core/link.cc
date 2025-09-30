@@ -293,7 +293,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
           Determine current sync state
         */
         if ( type != SELF ) {
-            pair_restart_rank = sim->getRankForLinkOnRestart(pair_rank.rank, pair_tag);
+            pair_restart_rank = sim->getRankForLinkOnRestart(pair_rank, pair_tag);
 
             // If pair_restart_rank.rank == UNASSIGNED, then we have
             // the same paritioning as the checkpoint and the ranks
