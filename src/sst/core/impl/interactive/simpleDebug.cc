@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <sstream>
 #include <stdexcept>
 #include <unistd.h>
@@ -153,6 +154,15 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                      "\tctrl-e: move cursor to end of line\n"
                      "\tctrl-f: move cursor to the right\n" },
     };
+
+    // Command autofill strings
+    std::list<std::string> cmdStrings;
+    for ( const ConsoleCommand& c : cmdRegistry ) {
+        cmdStrings.emplace_back(c.str_long());
+        cmdStrings.emplace_back(c.str_short());
+    }
+    cmdStrings.sort();
+    cmdLineEditor.set_cmd_strings(cmdStrings);
 }
 
 SimpleDebugger::~SimpleDebugger()
