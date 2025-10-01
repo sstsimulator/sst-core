@@ -10,11 +10,8 @@
 // distribution.
 
 #include "sst/core/impl/interactive/cmdLineEditor.h"
-#include <cctype>
 #include <iostream>
-#include <sstream>
 #include <unistd.h>
-#include "cmdLineEditor.h"
 
 void CmdLineEditor::setRawMode() {
     termios rawTerm;
@@ -50,66 +47,8 @@ void CmdLineEditor::move_cursor_right(int slen) {
     }
 }
 
-void
-CmdLineEditor::set_cmd_strings(const std::list<std::string>& sortedStrings)
-{  
-    cmdStrings = sortedStrings;
-}
-
-void
-CmdLineEditor::auto_complete(std::string& cmd) {
-    std::istringstream iss(cmd);
-    std::string token;
-    std::vector<std::string> tokens;
-    while (iss >> token)
-        tokens.push_back(token);
-    if (tokens.size() == 0 ) {
-        // list all command strings
-        if (cmdStrings.size()>0) {
-            std::cout << "\n";
-            for ( const std::string& s : cmdStrings )
-                std::cout << s << " ";
-            // TODO std::cout << move_up_ctl << std::flush;
-            // Cleaner for now
-            std::cout << std::endl;
-        }
-    } else if (tokens.size() == 1 ) {
-        // find all matching command strings starting with token[0]
-        std::vector<std::string> matches;
-        std::string searchfor = tokens[0];
-        std::copy_if(
-            cmdStrings.begin(), cmdStrings.end(),
-            std::back_inserter(matches),
-            [&searchfor](const std::string& s) {
-                return matchBeginStringCaseInsensitive(searchfor, s);
-            });
-        if (matches.size()==1) {
-            // unique. Set command to this.
-            cmd = matches[0];
-            curpos = cmd.size() + prompt.size() + 1;
-            return;
-        } else if (matches.size()>0) {
-            // list all matching commands
-            std::cout << "\n";
-            for (const std::string& s : matches)
-                std::cout << s << " ";
-            std::cout << std::endl;
-        }
-    }
-}
-
-
-
-void
-CmdLineEditor::redraw_line(const std::string& s)
-{
-    std::cout << prompt_clear << s << esc_ctl << curpos << "G" << std::flush;
-};
-
-void
-CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& newcmd)
-{
-
+void CmdLineEditor::getline(const std::vector<std::string> &cmdHistory, std::string &newcmd) {
+    
     // save terminal settings and enable raw mode
     this->setRawMode();
     
@@ -158,7 +97,7 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
             }
             history[index].insert(position, 1, c);
             curpos++;
-            redraw_line(history[index]);
+            std::cout << prompt_clear << history[index] << esc_ctl << curpos << "G" << std::flush;
         } else if ( c == bs_char ) {
             // backspace. Delete a character to the left
             if (curpos <= (int)prompt.size() + 1 ) continue;
@@ -168,7 +107,7 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
                 continue;
             }
             history[index].erase(position, 1);
-            redraw_line(history[index]);
+            std::cout << prompt_clear << history[index] << esc_ctl << curpos << "G" << std::flush;
         } else if ( c == ctrl_d) {
             // delete character at cursor
             int position = curpos - prompt.size()-1;
@@ -176,11 +115,11 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
                 continue;
             }
             history[index].erase(position,1);
-            redraw_line(history[index]);
+            std::cout << prompt_clear << history[index] << esc_ctl << curpos << "G" << std::flush;
         } else if ( c == ctrl_a) {
             // move cursor to start of line
             curpos = prompt.size()+ 1;
-            redraw_line(history[index]);
+            std::cout << prompt_clear << history[index] << esc_ctl << curpos << "G" << std::flush;
         } else if ( c == ctrl_e ) {
             // move cursor to the end of the line
             curpos = history[index].size() + prompt.size()+ 1;
@@ -201,9 +140,6 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
             move_cursor_left();
         } else if ( c == ctrl_f ) {
             move_cursor_right(history[index].size());
-        } else if ( c == tab_char ) {
-            auto_complete(history[index]);
-            redraw_line(history[index]);
         }
     }
 
