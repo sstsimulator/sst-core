@@ -55,6 +55,8 @@ public:
 
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PORTS(
+        { "left", "left port", {""} },
+        { "right", "right port", {""} },
     )
 
     // Optional since there is nothing to document
@@ -81,6 +83,9 @@ private:
     int         rng_count;
     int         dynamic_reg;
     Output&     output;
+
+    Link* left;
+    Link* right;
 
     // Statistics
     Statistic<uint32_t>* stat1_U32;
@@ -119,6 +124,8 @@ public:
 
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PORTS(
+        { "left", "left port", {""} },
+        { "right", "right port", {""} },
     )
 
     // Optional since there is nothing to document
@@ -144,6 +151,9 @@ private:
     int         rng_max_count;
     int         rng_count;
     Output&     output;
+
+    Link* left;
+    Link* right;
 
     // Statistics
     Statistic<float>*  stat1_F32;
