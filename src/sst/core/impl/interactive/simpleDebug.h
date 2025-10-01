@@ -134,6 +134,9 @@ public:
 
     void execute(const std::string& msg) override;
 
+    // Callbacks from command line completions
+    void get_listing_strings(std::list<std::string>&);
+
 private:
     // This is the stack of where we are in the class hierarchy.  This
     // is needed because when we advance time, we'll need to delete
