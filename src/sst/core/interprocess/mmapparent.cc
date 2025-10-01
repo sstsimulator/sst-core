@@ -24,8 +24,9 @@ template class SST::Core::Interprocess::MMAPParent<testtunnel>;
 namespace SST::Core::Interprocess {
 
 int
-SST_MPI_Comm_spawn_multiple(int count, char* array_of_commands[], char** array_of_argv[], const int array_of_maxprocs[],
-    const char* array_of_env[])
+SST_MPI_Comm_spawn_multiple(int UNUSED_WO_MPI(count), char* UNUSED_WO_MPI(array_of_commands)[],
+    char** UNUSED_WO_MPI(array_of_argv)[], const int UNUSED_WO_MPI(array_of_maxprocs)[],
+    const char* UNUSED_WO_MPI(array_of_env)[])
 {
 
 #ifdef SST_CONFIG_HAVE_MPI
