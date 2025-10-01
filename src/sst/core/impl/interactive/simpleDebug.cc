@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <sstream>
 #include <stdexcept>
 #include <unistd.h>
@@ -147,12 +148,25 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                      "\tUp/Down keys: navigate command history\n"
                      "\tLeft/Right keys: navigate command string\n"
                      "\tbackspace: delete characters to the left\n"
+	             "\ttab: auto-completion\n"
                      "\tctrl-a: move cursor to beginning of line\n"
                      "\tctrl-b: move cursor to the left\n"
                      "\tctrl-d: delete character at cursor\n"
                      "\tctrl-e: move cursor to end of line\n"
-                     "\tctrl-f: move cursor to the right\n" },
+	             "\tctrl-f: move cursor to the right\n" },
     };
+
+    // Command autofill strings
+    std::list<std::string> cmdStrings;
+    for ( const ConsoleCommand& c : cmdRegistry ) {
+        cmdStrings.emplace_back(c.str_long());
+        cmdStrings.emplace_back(c.str_short());
+    }
+    cmdStrings.sort();
+    cmdLineEditor.set_cmd_strings(cmdStrings);  // could also realize as callback to generalize
+
+    // Callback for directory listing strings
+    cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); } );
 }
 
 SimpleDebugger::~SimpleDebugger()
@@ -366,6 +380,21 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     }
 }
 
+// callback for autofill of object string (similar to ls)
+void SimpleDebugger::get_listing_strings(std::list<std::string>& list) {
+    list.clear();
+    auto& vars = obj_->getVariables();
+    for ( auto& x : vars ) {
+        std::stringstream s;
+        s << x.first;
+        if (! x.second->isFundamental())
+            s << "/";
+        list.emplace_back(s.str());
+    }
+    list.sort();
+}
+
+
 // cd <path>: change to new directory
 void
 SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
@@ -375,8 +404,12 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
         return;
     }
 
+    // Allow for trailing '/'
+    std::string selection = tokens[1];
+    if (!selection.empty() && selection.back() == '/') selection.pop_back();
+
     // Check for ..
-    if ( tokens[1] == ".." ) {
+    if ( selection == ".." ) {
         auto* parent = obj_->selectParent();
         if ( parent == nullptr ) {
             printf("Already at top of object hierarchy\n");
@@ -392,15 +425,15 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
     }
 
     bool                                 loop_detected = false;
-    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(tokens[1], loop_detected);
+    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected);
 
     if ( !new_obj ) {
-        printf("Unknown object in cd command: %s\n", tokens[1].c_str());
+        printf("Unknown object in cd command: %s\n", selection.c_str());
         return;
     }
 
     if ( new_obj->isFundamental() ) {
-        printf("Object %s is a fundamental type so you cannot cd into it\n", tokens[1].c_str());
+        printf("Object %s is a fundamental type so you cannot cd into it\n", selection.c_str());
         new_obj->selectParent();
         return;
     }
