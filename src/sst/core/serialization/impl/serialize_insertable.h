@@ -115,20 +115,20 @@ constexpr bool is_simple_set_v<SET<KEY, REST...>> =
 //
 // clang-format off
 template <typename T>
-constexpr bool is_insertable_v =
-    is_same_type_template_v<T, std::deque              > ||
-    is_same_type_template_v<T, std::forward_list       > ||
-    is_same_type_template_v<T, std::list               > ||
-    is_same_type_template_v<T, std::map                > ||
-    is_same_type_template_v<T, std::multimap           > ||
-    is_same_type_template_v<T, std::multiset           > ||
-    is_same_type_template_v<T, std::set                > ||
-    is_same_type_template_v<T, std::unordered_map      > ||
-    is_same_type_template_v<T, std::unordered_multimap > ||
-    is_same_type_template_v<T, std::unordered_multiset > ||
-    is_same_type_template_v<T, std::unordered_set      > ||
-    is_same_type_template_v<T, std::vector             > ;
-//clang-format on
+constexpr bool is_insertable_v = std::disjunction_v<
+    is_same_type_template<T, std::deque>,
+    is_same_type_template<T, std::forward_list>,
+    is_same_type_template<T, std::list>,
+    is_same_type_template<T, std::map>,
+    is_same_type_template<T, std::multimap>,
+    is_same_type_template<T, std::multiset>,
+    is_same_type_template<T, std::set>,
+    is_same_type_template<T, std::unordered_map>,
+    is_same_type_template<T, std::unordered_multimap>,
+    is_same_type_template<T, std::unordered_multiset>,
+    is_same_type_template<T, std::unordered_set>,
+    is_same_type_template<T, std::vector> >;
+// clang-format on
 
 template <typename OBJ>
 class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
@@ -138,6 +138,9 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
 
     void operator()(OBJ& obj, serializer& ser, ser_opt_t options)
     {
+        // Options to use per-element
+        const ser_opt_t opts = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
+
         switch ( const auto mode = ser.mode() ) {
         case serializer::SIZER:
         case serializer::PACK:
@@ -152,12 +155,9 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
             if constexpr ( is_vector_bool_v<OBJ> ) {
                 // For std::vector<bool>, iterate over bool values instead of references to elements.
                 for ( bool e : obj )
-                    // as_ptr_elem not valid for bool
-                    SST_SER(e);
+                    SST_SER(e); // as_ptr_elem not valid for bool
             }
             else {
-                ser_opt_t opts =
-                    SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
                 // Iterate over references to elements, casting away any const in keys
                 for ( auto& e : obj )
                     SST_SER(const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), opts);
@@ -168,10 +168,8 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
         case serializer::UNPACK:
         {
             // Get the total size of the container
-            size_t size;
+            size_t size {};
             ser.unpack(size);
-
-            ser_opt_t opts = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
 
             // Erase the container
             obj.clear();
@@ -188,37 +186,32 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
             }
             else {
                 for ( size_t i = 0; i < size; ++i ) {
-                    if constexpr (
-                        is_same_type_template_v<OBJ, std::map> ||
-                        is_same_type_template_v<OBJ, std::unordered_map> ) {
+                    if constexpr ( is_same_type_template_v<OBJ, std::map> ||
+                                   is_same_type_template_v<OBJ, std::unordered_map> ) {
                         typename OBJ::key_type key {};
                         SST_SER(key);
                         auto& value = obj[std::move(key)];
                         SST_SER(value, opts);
                     }
-                    else if constexpr (
-                        is_same_type_template_v<OBJ, std::multimap> ||
-                        is_same_type_template_v<OBJ, std::unordered_multimap> ) {
+                    else if constexpr ( is_same_type_template_v<OBJ, std::multimap> ||
+                                        is_same_type_template_v<OBJ, std::unordered_multimap> ) {
                         typename OBJ::key_type key {};
                         SST_SER(key);
                         auto& value = obj.emplace(std::move(key), typename OBJ::mapped_type {})->second;
                         SST_SER(value, opts);
                     }
-                    else if constexpr (
-                        is_same_type_template_v<OBJ, std::set> ||
-                        is_same_type_template_v<OBJ, std::unordered_set> ||
-                        is_same_type_template_v<OBJ, std::multiset> ||
-                        is_same_type_template_v<OBJ, std::unordered_multiset> ) {
+                    else if constexpr ( is_same_type_template_v<OBJ, std::set> ||
+                                        is_same_type_template_v<OBJ, std::unordered_set> ||
+                                        is_same_type_template_v<OBJ, std::multiset> ||
+                                        is_same_type_template_v<OBJ, std::unordered_multiset> ) {
                         typename OBJ::key_type key {};
                         // TODO: Figure out how to make as_ptr_elem work with sets
-                        opts = SerOption::none;
-                        SST_SER(key, opts);
+                        SST_SER(key);
                         obj.emplace(std::move(key));
                     }
                     else if constexpr ( is_vector_bool_v<OBJ> ) {
                         bool value {};
-                        opts = SerOption::none;
-                        SST_SER(value, opts);
+                        SST_SER(value);
                         obj.push_back(value);
                     }
                     else { // std::vector, std::deque, std::list
@@ -234,20 +227,19 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
         case serializer::MAP:
         {
             using SST::Core::to_string;
-            const std::string& name    = ser.getMapName();
-            auto*              obj_map = new ObjectMapContainer<OBJ>(&obj);
-            ser.mapper().map_hierarchy_start(name, obj_map);
+            const std::string& name = ser.getMapName();
+            ser.mapper().map_hierarchy_start(name, new ObjectMapContainer<OBJ>(&obj));
 
             if constexpr ( is_vector_bool_v<OBJ> ) {
                 // std::vector<bool>
                 size_t i = 0;
                 for ( bool e : obj )
-                    sst_ser_object(ser, e, SerOption::none, to_string(i++).c_str());
+                    SST_SER_NAME(e, to_string(i++).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
                 for ( auto& [key, value] : obj )
-                    sst_ser_object(ser, value, SerOption::none, to_string(key).c_str());
+                    SST_SER_NAME(value, to_string(key).c_str());
             }
             // TODO: handle is_simple_set
             else {
@@ -256,9 +248,8 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                 // std::map, std::set, std::unordered_map std::unordered_set with non-simple keys
                 size_t i = 0;
                 for ( auto& e : obj )
-                    sst_ser_object(
-                        ser, const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), SerOption::none,
-                        to_string(i++).c_str());
+                    SST_SER_NAME(
+                        const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;
@@ -269,14 +260,16 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
     SST_FRIEND_SERIALIZE();
 };
 
-template<typename OBJ>
-class serialize_impl<OBJ*, std::enable_if_t<is_insertable_v<OBJ>>>{
+template <typename OBJ>
+class serialize_impl<OBJ*, std::enable_if_t<is_insertable_v<OBJ>>>
+{
     void operator()(OBJ*& obj, serializer& ser, ser_opt_t options)
     {
-        if ( ser.mode() == serializer::UNPACK ) { obj = new OBJ; }
+        if ( ser.mode() == serializer::UNPACK ) obj = new OBJ;
         SST_SER(*obj, options);
-        // serialize_impl<T>()(*obj, ser, options);
-    }SST_FRIEND_SERIALIZE();
+    }
+
+    SST_FRIEND_SERIALIZE();
 };
 
 } // namespace SST::Core::Serialization
