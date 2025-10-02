@@ -21,6 +21,7 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstdint>
 #include <vector>
 
 namespace SST::CoreTest::MessageMesh {
