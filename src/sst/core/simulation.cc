@@ -1712,12 +1712,6 @@ Simulation_impl::checkpoint_write_globals(
     factory->getLoadedLibraryNames(libnames);
     SST_SER(libnames);
 
-    // Add shared regions
-    SST_SER(SharedObject::manager);
-
-    // Store the stats config
-    SST_SER(stats_config_);
-
     size = ser.size();
     buffer.resize(size);
 
@@ -1733,10 +1727,32 @@ Simulation_impl::checkpoint_write_globals(
     // Add list of loaded libraries
     SST_SER(libnames);
 
-    // Add shared regions
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+
+    /* Section 1a: Shared regions */
+    ser.start_sizing();
     SST_SER(SharedObject::manager);
 
-    // Store the stats config
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
+    SST_SER(SharedObject::manager);
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+
+    /* Section 1b: stats config */
+    ser.start_sizing();
+    SST_SER(stats_config_);
+
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
     SST_SER(stats_config_);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1905,9 +1921,11 @@ Simulation_impl::restart()
     std::vector<char> buffer;
     uint64_t          max_event_id;
 
-    // Read how much data in Section 1, which we will skip over
-    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
-    fs_globals.seekg(size, std::ios_base::cur);
+    // Read how much data in Section 1, which we will skip over (there are three sub sections in section 1)
+    for ( int i = 0; i < 3; ++i ) {
+        fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+        fs_globals.seekg(size, std::ios_base::cur);
+    }
 
     // Now read the size of the common data blob
     fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));

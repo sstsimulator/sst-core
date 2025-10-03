@@ -889,7 +889,7 @@ for x in comp_list:
     if curr_comp:
         curr_comp.addLink(link, "left")
     if x:
-        link = sst.Link("link{}".format(count), "10ns")
+        link = sst.Link("link{}".format(count), "1ns")
         count += 1
         x.addLink(link, "right")
     curr_comp = x

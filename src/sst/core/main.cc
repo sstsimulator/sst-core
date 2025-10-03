@@ -850,7 +850,6 @@ restart_graph_gen(SimTime_t& cpt_currentSimCycle, int& cpt_currentPriority)
     fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
     restart_data_buffer.resize(size);
     fs_globals.read(restart_data_buffer.data(), size);
-    fs_globals.close();
 
     Config cpt_config;
 
@@ -896,14 +895,23 @@ restart_graph_gen(SimTime_t& cpt_currentSimCycle, int& cpt_currentPriority)
     factory->loadUnloadedLibraries(libnames);
 
     // Initialize SharedObjectManager
+    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+    restart_data_buffer.resize(size);
+    fs_globals.read(restart_data_buffer.data(), size);
+    ser.start_unpacking(restart_data_buffer.data(), size);
     Simulation_impl::serializeSharedObjectManager(ser);
     // SST_SER(SST::Shared::SharedObject::manager);
 
     // Get the stats config
+    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+    restart_data_buffer.resize(size);
+    fs_globals.read(restart_data_buffer.data(), size);
+    ser.start_unpacking(restart_data_buffer.data(), size);
     SST_SER(Simulation_impl::stats_config_);
 
     // Done with restart_data_buffer
     restart_data_buffer.clear();
+    fs_globals.close();
 }
 
 int
@@ -1039,11 +1047,6 @@ main(int argc, char* argv[])
         return -1; /* checkConfigFile provides error message */
     }
 
-    // Current simulation time.  Needed to properly initialize
-    // Simulation_impl object for restarts.
-    SimTime_t cpt_currentSimCycle = 0;
-    int       cpt_currentPriority = 0;
-
 
     /**************************************************************************
       2.a.1 - Model generation
@@ -1052,9 +1055,8 @@ main(int argc, char* argv[])
         SDL file and/or carried over from a checkpoint.  This stage
         will also determine the currentSimCycle and currentPriority,
         which is 0, 0 for a normal run and read from the checkpoint
-        for a restart run. This phase also initializes the Factory at
-        the appropriate time (regular and restart runs need to do it
-        at slightly different times).
+        for a restart run. This phase also initializes the Factory and
+        updates the path after the model generation.
 
         Outputs of this phase are the Config object with finalized
         options set, the ConfigGraph (if needed), and currentSimCycle
@@ -1064,9 +1066,6 @@ main(int argc, char* argv[])
     ***************************************************************************/
     Simulation_impl::basicPerf.beginRegion("model-generation");
 
-    // Check to see if we are doing a restart from a checkpoint
-    bool restart = cfg.load_from_checkpoint();
-
     ConfigGraph* graph    = nullptr;
     SimTime_t    min_part = 0xffffffffffffffffl;
 
@@ -1074,13 +1073,14 @@ main(int argc, char* argv[])
     uint64_t comp_count = 0;
 
     Simulation_impl::basicPerf.beginRegion("model-execution");
-    if ( restart ) {
-        restart_graph_gen(cpt_currentSimCycle, cpt_currentPriority);
-    }
-    else {
-        Factory::createFactory(cfg.getLibPath());
-        start_graph_creation(graph, world_size, myRank);
-    }
+    Factory::createFactory(cfg.getLibPath());
+    start_graph_creation(graph, world_size, myRank);
+
+    Factory::getFactory()->updateSearchPaths(cfg.getLibPath());
+    // Check to see if we are doing a restart from a checkpoint
+    bool restart = cfg.load_from_checkpoint();
+
+
     Simulation_impl::basicPerf.endRegion("model-execution");
 
     //// Initialize global data that needed to wait until Config was
@@ -1100,33 +1100,34 @@ main(int argc, char* argv[])
     // TimeLord must be initialized prior to postCreationCleanup() call
     Simulation_impl::getTimeLord()->init(cfg.timeBase());
 
-    // For regular runs, need to check the ConfigGraph and finalize things
+    // Check the ConfigGraph and finalize things
+
+    // Cleanup after graph creation, but only if rank participated
+    // in graph construction
+    if ( myRank.rank == 0 || cfg.parallel_load() ) {
+
+        Simulation_impl::basicPerf.beginRegion("graph-cleanup");
+        if ( cfg.parallel_load() ) graph->reduceGraphToSingleRank(myRank.rank);
+        graph->postCreationCleanup();
+        Simulation_impl::basicPerf.endRegion("graph-cleanup");
+
+        // Check config graph to see if there are structural errors.
+        Simulation_impl::basicPerf.beginRegion("graph-error-check");
+        if ( graph->checkForStructuralErrors() ) {
+            g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
+        }
+        Simulation_impl::basicPerf.endRegion("graph-error-check");
+    }
+    else {
+        Simulation_impl::basicPerf.beginRegion("graph-cleanup");
+        Simulation_impl::basicPerf.endRegion("graph-cleanup");
+
+        Simulation_impl::basicPerf.beginRegion("graph-error-check");
+        Simulation_impl::basicPerf.endRegion("graph-error-check");
+    }
+
+    // Compute the total number components in the simulation.
     if ( !restart ) {
-
-        // Cleanup after graph creation, but only if rank participated
-        // in graph construction
-        if ( myRank.rank == 0 || cfg.parallel_load() ) {
-
-            Simulation_impl::basicPerf.beginRegion("graph-cleanup");
-            graph->postCreationCleanup();
-            Simulation_impl::basicPerf.endRegion("graph-cleanup");
-
-            // Check config graph to see if there are structural errors.
-            Simulation_impl::basicPerf.beginRegion("graph-error-check");
-            if ( graph->checkForStructuralErrors() ) {
-                g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
-            }
-            Simulation_impl::basicPerf.endRegion("graph-error-check");
-        }
-        else {
-            Simulation_impl::basicPerf.beginRegion("graph-cleanup");
-            Simulation_impl::basicPerf.endRegion("graph-cleanup");
-
-            Simulation_impl::basicPerf.beginRegion("graph-error-check");
-            Simulation_impl::basicPerf.endRegion("graph-error-check");
-        }
-
-        // Compute the total number components in the simulation.
         if ( !cfg.parallel_load() && myRank.rank == 0 ) {
             comp_count = graph->getNumComponents();
         }
@@ -1192,76 +1193,61 @@ main(int argc, char* argv[])
 
     // For now, nothing to do in the restart path
     Simulation_impl::basicPerf.beginRegion("graph-partitioning");
-    if ( !restart ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        // If we did a parallel load, check to make sure that all the
-        // ranks have the same thread count set (the python can change the
-        // thread count if not specified on the command line
-        if ( cfg.parallel_load() ) {
-            uint32_t max_thread_count = 0;
-            uint32_t my_thread_count  = cfg.num_threads();
-            MPI_Allreduce(&my_thread_count, &max_thread_count, 1, MPI_UINT32_T, MPI_MAX, MPI_COMM_WORLD);
-            if ( my_thread_count != max_thread_count ) {
-                g_output.fatal(
-                    CALL_INFO, 1, "Thread counts do no match across ranks for configuration using parallel loading\n");
-            }
-        }
-#endif
-
-        // If this is a serial job, just use the single partitioner,
-        // but the same code path
-        if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
-
-        // Run the partitioner
-        start_partitioning(world_size, myRank, Factory::getFactory(), graph);
-        ////// End Partitioning //////
-
-        ////// Calculate Minimum Partitioning //////
-        SimTime_t local_min_part = 0xffffffffffffffffl;
-        if ( world_size.rank > 1 ) {
-            // Check the graph for the minimum latency crossing a partition boundary
-            if ( myRank.rank == 0 || cfg.parallel_load() ) {
-                ConfigComponentMap_t& comps = graph->getComponentMap();
-                ConfigLinkMap_t&      links = graph->getLinkMap();
-                // Find the minimum latency across a partition
-                for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
-                    ConfigLink* clink = *iter;
-                    if ( !clink->nonlocal ) {
-                        RankInfo rank[2];
-                        rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
-                        rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
-                        if ( rank[0].rank == rank[1].rank ) continue;
-                    }
-                    if ( clink->getMinLatency() < local_min_part ) {
-                        local_min_part = clink->getMinLatency();
-                    }
-                }
-            }
-
-            // Fix for case that probably doesn't matter in practice, but
-            // does come up during some specific testing.  If there are no
-            // links that cross the boundary and we're a multi-rank job,
-            // we need to put in a sync interval to look for the exit
-            // conditions being met.
-            // if ( min_part == MAX_SIMTIME_T ) {
-            //     // std::cout << "No links cross rank boundary" << std::endl;
-            //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
-            // }
-
-            SST_MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
-            // Comms::broadcast(min_part, 0);
-        } // if ( world_size > 1 )
-        ////// End Calculate Minimum Partitioning //////
-
-        ////// Write out the graph, if requested //////
-        if ( myRank.rank == 0 ) {
-            doSerialOnlyGraphOutput(graph);
-
-            if ( !cfg.parallel_output() ) {
-                doParallelCapableGraphOutput(graph, myRank, world_size);
-            }
+    // If we did a parallel load, check to make sure that all the
+    // ranks have the same thread count set (the python can change the
+    // thread count if not specified on the command line
+    if ( cfg.parallel_load() ) {
+        uint32_t max_thread_count = 0;
+        uint32_t my_thread_count  = cfg.num_threads();
+        MPI_Allreduce(&my_thread_count, &max_thread_count, 1, MPI_UINT32_T, MPI_MAX, MPI_COMM_WORLD);
+        if ( my_thread_count != max_thread_count ) {
+            g_output.fatal(
+                CALL_INFO, 1, "Thread counts do no match across ranks for configuration using parallel loading\n");
         }
     }
+#endif
+
+    // If this is a serial job, just use the single partitioner,
+    // but the same code path
+    if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner_ = "sst.single";
+
+    // Run the partitioner
+    start_partitioning(world_size, myRank, Factory::getFactory(), graph);
+    ////// End Partitioning //////
+
+    ////// Calculate Minimum Partitioning //////
+    SimTime_t local_min_part = 0xffffffffffffffffl;
+    if ( world_size.rank > 1 ) {
+        // Check the graph for the minimum latency crossing a partition boundary
+        if ( myRank.rank == 0 || cfg.parallel_load() ) {
+            local_min_part = graph->getMinimumPartitionLatency();
+        }
+
+        // Fix for case that probably doesn't matter in practice, but
+        // does come up during some specific testing.  If there are no
+        // links that cross the boundary and we're a multi-rank job,
+        // we need to put in a sync interval to look for the exit
+        // conditions being met.
+        // if ( min_part == MAX_SIMTIME_T ) {
+        //     // std::cout << "No links cross rank boundary" << std::endl;
+        //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
+        // }
+
+        SST_MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
+        // Comms::broadcast(min_part, 0);
+    } // if ( world_size > 1 )
+    ////// End Calculate Minimum Partitioning //////
+
+    ////// Write out the graph, if requested //////
+    if ( myRank.rank == 0 && !restart ) {
+        doSerialOnlyGraphOutput(graph);
+
+        if ( !cfg.parallel_output() ) {
+            doParallelCapableGraphOutput(graph, myRank, world_size);
+        }
+    }
+
     Simulation_impl::basicPerf.endRegion("graph-partitioning");
 
     /**************************************************************************
@@ -1275,74 +1261,71 @@ main(int argc, char* argv[])
     Simulation_impl::basicPerf.beginRegion("graph-distribution");
 
 
-    if ( !restart ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        if ( world_size.rank > 1 && !cfg.parallel_load() ) {
-            try {
-                Comms::broadcast(Params::keyMap, 0);
-                Comms::broadcast(Params::keyMapReverse, 0);
-                Comms::broadcast(Params::nextKeyID, 0);
-                Comms::broadcast(Params::shared_params, 0);
+    if ( world_size.rank > 1 && !cfg.parallel_load() ) {
+        try {
+            Comms::broadcast(Params::keyMap, 0);
+            Comms::broadcast(Params::keyMapReverse, 0);
+            Comms::broadcast(Params::nextKeyID, 0);
+            Comms::broadcast(Params::shared_params, 0);
 
-                std::set<uint32_t> my_ranks;
-                std::set<uint32_t> your_ranks;
+            std::set<uint32_t> my_ranks;
+            std::set<uint32_t> your_ranks;
 
-                if ( 0 == myRank.rank ) {
-                    // Split the rank space in half
-                    for ( uint32_t i = 0; i < world_size.rank / 2; i++ ) {
-                        my_ranks.insert(i);
-                    }
-
-                    for ( uint32_t i = world_size.rank / 2; i < world_size.rank; i++ ) {
-                        your_ranks.insert(i);
-                    }
-
-                    // Need to send the your_ranks set and the proper
-                    // subgraph for further distribution
-                    // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                    ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
-                    int          dest       = *your_ranks.begin();
-                    Comms::send(dest, 0, your_ranks);
-                    Comms::send(dest, 0, *your_graph);
-                    your_ranks.clear();
-                    delete your_graph;
-                }
-                else {
-                    Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
-                    Comms::recv(MPI_ANY_SOURCE, 0, *graph);
+            if ( 0 == myRank.rank ) {
+                // Split the rank space in half
+                for ( uint32_t i = 0; i < world_size.rank / 2; i++ ) {
+                    my_ranks.insert(i);
                 }
 
-                while ( my_ranks.size() != 1 ) {
-                    // This means I have more data to pass on to other ranks
-                    std::set<uint32_t>::iterator mid = my_ranks.begin();
-                    for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
-                        ++mid;
-                    }
-
-                    your_ranks.insert(mid, my_ranks.end());
-                    my_ranks.erase(mid, my_ranks.end());
-
-                    // // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-                    ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
-
-                    uint32_t dest = *your_ranks.begin();
-
-                    Comms::send(dest, 0, your_ranks);
-                    Comms::send(dest, 0, *your_graph);
-                    your_ranks.clear();
-                    delete your_graph;
+                for ( uint32_t i = world_size.rank / 2; i < world_size.rank; i++ ) {
+                    your_ranks.insert(i);
                 }
+
+                // Need to send the your_ranks set and the proper
+                // subgraph for further distribution
+                // ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
+                int          dest       = *your_ranks.begin();
+                Comms::send(dest, 0, your_ranks);
+                Comms::send(dest, 0, *your_graph);
+                your_ranks.clear();
+                delete your_graph;
             }
-            catch ( std::exception& e ) {
-                g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
+            else {
+                Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
+                Comms::recv(MPI_ANY_SOURCE, 0, *graph);
+            }
+
+            while ( my_ranks.size() != 1 ) {
+                // This means I have more data to pass on to other ranks
+                std::set<uint32_t>::iterator mid = my_ranks.begin();
+                for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
+                    ++mid;
+                }
+
+                your_ranks.insert(mid, my_ranks.end());
+                my_ranks.erase(mid, my_ranks.end());
+
+                ConfigGraph* your_graph = graph->splitGraph(my_ranks, your_ranks);
+
+                uint32_t dest = *your_ranks.begin();
+
+                Comms::send(dest, 0, your_ranks);
+                Comms::send(dest, 0, *your_graph);
+                your_ranks.clear();
+                delete your_graph;
             }
         }
+        catch ( std::exception& e ) {
+            g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
+        }
+    }
 #endif
-        ////// End Broadcast Graph //////
-        if ( cfg.parallel_output() ) {
-            doParallelCapableGraphOutput(graph, myRank, world_size);
-        }
-    } // end if ( !restart )
+    ////// End Broadcast Graph //////
+    if ( cfg.parallel_output() && !restart ) {
+        doParallelCapableGraphOutput(graph, myRank, world_size);
+    }
     Simulation_impl::basicPerf.endRegion("graph-distribution");
     Simulation_impl::basicPerf.endRegion("graph-processing");
 
@@ -1428,6 +1411,9 @@ main(int argc, char* argv[])
     MemPoolAccessor::initializeGlobalData(world_size.thread, cfg.cache_align_mempools());
 #endif
 
+    // On restart, need to intialize SharedObjectManager, stats_config_ and load libraries from the checkpoint
+    if ( restart ) graph->restoreRestartData();
+
     std::vector<std::thread>     threads(world_size.thread);
     std::vector<SimThreadInfo_t> threadInfo(world_size.thread);
     for ( uint32_t i = 0; i < world_size.thread; i++ ) {
@@ -1448,14 +1434,14 @@ main(int argc, char* argv[])
         Output::setThreadID(std::this_thread::get_id(), 0);
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
             threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier),
-                cpt_currentSimCycle, cpt_currentPriority);
+                graph->cpt_currentSimCycle, graph->cpt_currentPriority);
             Output::setThreadID(threads[i].get_id(), i);
         }
 
         /* Unblock signals on thread 0 */
         pthread_sigmask(SIG_UNBLOCK, &maskset, NULL);
         // Call start_simulation for the main thread
-        start_simulation(0, threadInfo[0], mainBarrier, cpt_currentSimCycle, cpt_currentPriority);
+        start_simulation(0, threadInfo[0], mainBarrier, graph->cpt_currentSimCycle, graph->cpt_currentPriority);
 
         // Join all the threads when the execute phase is done
         for ( uint32_t i = 1; i < world_size.thread; i++ ) {
@@ -1524,7 +1510,6 @@ main(int argc, char* argv[])
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
 
-    // if ( myRank.rank == 0 && (cfg.verbose() || cfg.print_timing() || cfg.timing_json() != "") ) {
     if ( cfg.verbose() || cfg.print_timing() || cfg.timing_json() != "" ) {
         if ( myRank.rank == 0 ) {
             int          timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();

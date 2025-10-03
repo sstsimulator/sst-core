@@ -53,6 +53,13 @@ public:
 
     static Factory* createFactory(const std::string& searchPaths);
 
+    /**
+       Update the search paths
+       @param searchPaths New search paths to use
+     */
+    void updateSearchPaths(const std::string& paths);
+
+
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format
      * @return True if this is a valid portname

@@ -27,6 +27,12 @@ public:
     explicit ElemLoader(const std::string& searchPaths);
     ~ElemLoader();
 
+    /**
+       Update the search paths
+       @param searchPaths New search paths to use
+     */
+    void updateSearchPaths(const std::string& paths);
+
     /** Attempt to load a library
      * @param elemlib - The name of the Element Library to load
      * @param err_os - Where to print errors associated with attempting to find and load the library

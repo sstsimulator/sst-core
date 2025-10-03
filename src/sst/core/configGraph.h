@@ -21,12 +21,14 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statoutput.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <set>
 #include <string>
@@ -46,7 +48,7 @@ using ComponentIdMap_t = SparseVectorMap<ComponentId_t>;
 using LinkIdMap_t      = std::vector<LinkId_t>;
 
 /** Represents the configuration of a generic Link */
-class ConfigLink : public SST::Core::Serialization::serializable
+class ConfigLink
 {
     // Static data structures to map latency string to an index that
     // will hold the SimTime_t for the latency once the atomic
@@ -58,23 +60,6 @@ class ConfigLink : public SST::Core::Serialization::serializable
     SimTime_t                     getLatencyFromIndex(uint32_t index);
 
 public:
-    /**
-       id of the link.  This is used primarily to find the link in
-       ConfigGraph::links
-     */
-    LinkId_t id = 0;
-
-    /**
-       This is a dual purpose data member.  During graph construction,
-       it counts the number of components currently referencing this
-       link.  After graph construction, it is assigned the value used
-       to enforce ordering of events based on the links they were sent
-       on.
-
-       @see Activity::setOrderTag, Link::tag
-     */
-    LinkId_t order = 0;
-
     /**
        Components that are connected to this link. They are filled in
        the order they are attached in.  If the link is marked as
@@ -122,6 +107,23 @@ public:
     std::string name;
 
     /**
+       id of the link.  This is used primarily to find the link in
+       ConfigGraph::links
+     */
+    LinkId_t id = 0;
+
+    /**
+       This is a dual purpose data member.  During graph construction,
+       it counts the number of components currently referencing this
+       link.  After graph construction, it is assigned the value used
+       to enforce ordering of events based on the links they were sent
+       on.
+
+       @see Activity::setOrderTag, Link::tag
+     */
+    LinkId_t order = 0;
+
+    /**
        Name of the ports the link is connected to.  The indices match
        the ones used in the component array
      */
@@ -140,6 +142,16 @@ public:
        stored in component[1] and the thread in latency[1].
     */
     bool nonlocal = false;
+
+    /**
+       Set to true if this is a cross rank link
+     */
+    bool cross_rank = false;
+
+    /**
+       Set to true if this is a cross thread link on same rank
+    */
+    bool cross_thread = false;
 
     inline LinkId_t key() const { return id; }
 
@@ -180,7 +192,7 @@ public:
     /* Do not use.  For serialization only */
     ConfigLink() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void serialize_order(SST::Core::Serialization::serializer& ser) /*override*/
     {
         SST_SER(id);
         SST_SER(name);
@@ -193,9 +205,9 @@ public:
         SST_SER(order);
         SST_SER(nonlocal);
         SST_SER(no_cut);
+        SST_SER(cross_rank);
+        SST_SER(cross_thread);
     }
-
-    ImplementSerializable(SST::ConfigLink)
 
 private:
     friend class ConfigGraph;
@@ -683,10 +695,10 @@ public:
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() { return links_; }
 
-    ConfigGraph* getSubGraph(uint32_t start_rank, uint32_t end_rank);
-    ConfigGraph* getSubGraph(const std::set<uint32_t>& rank_set);
-
     ConfigGraph* splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<uint32_t>& new_rank_set);
+    void         reduceGraphToSingleRank(uint32_t rank);
+
+    SimTime_t getMinimumPartitionLatency();
 
     PartitionGraph* getPartitionGraph();
     PartitionGraph* getCollapsedPartitionGraph();
@@ -711,7 +723,35 @@ public:
             // ConfigComponents
             setComponentConfigGraphPointers();
         }
+
+        SST_SER(cpt_ranks);
+        SST_SER(cpt_currentSimCycle);
+        SST_SER(cpt_currentPriority);
+        SST_SER(cpt_minPart);
+        SST_SER(cpt_minPartTC);
+        SST_SER(cpt_max_event_id);
+
+        SST_SER(*(cpt_libnames.get()));
+        SST_SER(*(cpt_shared_objects.get()));
+        SST_SER(*(cpt_stats_config.get()));
     }
+
+    void restoreRestartData();
+
+    /********* vv Variables used on restarts only vv ***********/
+    RankInfo      cpt_ranks;
+    SimTime_t     cpt_currentSimCycle = 0;
+    int           cpt_currentPriority = 0;
+    SimTime_t     cpt_minPart         = std::numeric_limits<SimTime_t>::max();
+    TimeConverter cpt_minPartTC;
+    uint64_t      cpt_max_event_id = 0;
+
+    std::shared_ptr<std::set<std::string>> cpt_libnames       = std::make_shared<std::set<std::string>>();
+    std::shared_ptr<std::vector<char>>     cpt_shared_objects = std::make_shared<std::vector<char>>();
+    std::shared_ptr<std::vector<char>>     cpt_stats_config   = std::make_shared<std::vector<char>>();
+
+    /********* ^^ Variables used on restarts only ^^ ***********/
+
 
 private:
     friend class Simulation_impl;

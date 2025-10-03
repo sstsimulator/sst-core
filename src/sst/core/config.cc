@@ -574,7 +574,7 @@ Config::insertOptions()
         checkpoint_sim_period_, true, false, false);
     DEF_FLAG("load-checkpoint", 0,
         "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",
-        load_from_checkpoint_, false, false, false);
+        load_from_checkpoint_, true, false, false);
     DEF_ARG("checkpoint-prefix", 0, "PREFIX",
         "Set prefix for checkpoint filenames. The checkpoint prefix defaults to checkpoint if this option is not set "
         "and checkpointing is enabled.",
