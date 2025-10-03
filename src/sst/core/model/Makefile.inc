@@ -9,7 +9,9 @@ sst_core_sources += \
 	model/sstmodel.h \
 	model/sstmodel.cc \
 	model/element_python.h \
-	model/element_python.cc
+	model/element_python.cc \
+	model/restart/sstcptmodel.h \
+	model/restart/sstcptmodel.cc
 
 sst_core_python_headers = \
   model/python/pymacros.h
