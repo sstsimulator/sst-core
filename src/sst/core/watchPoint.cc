@@ -49,7 +49,12 @@ WatchPoint::getCurrentSimCycle()
 void
 WatchPoint::setCheckpoint()
 {
-    Simulation_impl::getSimulation()->scheduleCheckpoint();
+    if (Simulation_impl::getSimulation()->checkpoint_directory_ == "") {
+        std::cout << "Invalid action: checkpointing not enabled (use --checkpoint-enable cmd line option)\n";
+    }
+    else {
+        Simulation_impl::getSimulation()->scheduleCheckpoint();
+    }
 }
 
 void

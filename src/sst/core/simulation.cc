@@ -940,11 +940,18 @@ Simulation_impl::run()
 
     // Setup interactive mode (only in serial jobs for now)
     if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
-        if ( interactive_type_ != "" ) {
+        if ( interactive_type_ != "" ) { 
+            // --interactive-console used to override default
             initialize_interactive_console(interactive_type_);
         }
-        if ( interactive_start_ != "" ) {
-            if ( nullptr == interactive_ ) {
+        else if ((interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") || (config.sigusr2() == "sst.rt.interactive")) {
+            // use default interactive console
+            interactive_type_ = "sst.interactive.simpledebug";  
+            initialize_interactive_console(interactive_type_);
+        }
+
+        if ( interactive_start_ != "" ) {          
+            if ( nullptr == interactive_ ) { // Should never get here
                 sim_output.fatal(CALL_INFO, 1,
                     "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
                     "interactive action that should be used.\n");

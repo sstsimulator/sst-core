@@ -12,6 +12,8 @@
 // #include "simpleDebug.h"
 #include "sst_config.h"
 
+#include "sst/core/simulation_impl.h"
+
 #include "sst/core/impl/interactive/simpleDebug.h"
 
 #include "sst/core/baseComponent.h"
@@ -122,6 +124,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                    "when triggered\n"
                    "\tAvailable actions include: \n"
                    "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown\n"
+                   "\t  Note: checkpoint action must be enabled at startup via the '--checkpoint-enable' command line option\n"
                    "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace" },
         { "watchlist", "prints the current list of watchpoints and their associated indices" },
         { "addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified "
@@ -1035,6 +1038,10 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
         return new WatchPoint::PrintTraceWPAction();
     }
     else if ( action == "checkpoint" ) {
+        if (Simulation_impl::getSimulation()->checkpoint_directory_ == "") {
+            std::cout << "Invalid action: checkpointing not enabled (use --checkpoint-enable cmd line option)\n";
+            return nullptr;
+        }
         return new WatchPoint::CheckpointWPAction();
     }
     else if ( action == "printStatus" ) {

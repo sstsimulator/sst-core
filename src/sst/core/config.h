@@ -579,6 +579,11 @@ private:
 
     /**** Advanced options - Checkpointing ****/
 
+     /**
+     * Enable checkpointing for interactive debug
+     */
+    SST_CONFIG_DECLARE_OPTION(bool, checkpoint_enable, 0, &StandardConfigParsers::flag_set_true);
+
     /**
      * Interval at which to create a checkpoint in wall time
      */
