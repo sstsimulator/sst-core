@@ -762,12 +762,35 @@ ConfigGraph::containsComponentInRank(RankInfo rank)
 bool
 ConfigGraph::checkRanks(RankInfo ranks)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
-        if ( !(*iter)->rank.isAssigned() || !ranks.inRange((*iter)->rank) ) {
-            fprintf(stderr, "Bad rank: %u %u\n", (*iter)->rank.rank, (*iter)->rank.thread);
+    for ( auto& comp : comps_ ) {
+        if ( !comp->rank.isAssigned() || !ranks.inRange(comp->rank) ) {
+            fprintf(stderr, "Bad rank: %u %u\n", comp->rank.rank, comp->rank.thread);
             return false;
         }
     }
+
+    // Set the cross_rank and cross_thread flags
+    for ( auto& link : links_ ) {
+        RankInfo r0(-1, -1);
+        RankInfo r1(-1, -1);
+        r0 = comps_[COMPONENT_ID_MASK(link->component[0])]->rank;
+
+        if ( link->nonlocal ) {
+            r1.rank   = link->component[1];
+            r1.thread = link->latency[1];
+        }
+        else {
+            r1 = comps_[COMPONENT_ID_MASK(link->component[1])]->rank;
+        }
+
+        if ( r0.rank != r1.rank ) {
+            link->cross_rank = true;
+        }
+        else if ( r0.thread != r1.thread ) {
+            link->cross_thread = true;
+        }
+    }
+
     return true;
 }
 
@@ -1037,82 +1060,6 @@ ConfigGraph::findStatistic(StatisticId_t id) const
     return findComponent(cfg_id)->findStatistic(id);
 }
 
-ConfigGraph*
-ConfigGraph::getSubGraph(uint32_t start_rank, uint32_t end_rank)
-{
-    std::set<uint32_t> rank_set;
-    for ( uint32_t i = start_rank; i <= end_rank; i++ ) {
-        rank_set.insert(i);
-    }
-    return getSubGraph(rank_set);
-}
-
-ConfigGraph*
-ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
-{
-    ConfigGraph* graph = new ConfigGraph();
-
-    // SparseVectorMap is extremely slow at random inserts, so make
-    // sure things go in in order into both comps and links, then tie
-    // it all together.
-    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
-        const ConfigComponent* comp = *it;
-
-        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) {
-            graph->comps_.insert(comp->cloneWithoutLinks(graph));
-        }
-        else {
-            // See if the other side of any of component's links is in
-            // set, if so, add to graph
-            for ( LinkId_t l : comp->allLinks() ) {
-                const ConfigLink* link   = links_[l];
-                ComponentId_t     remote = COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(comp->id)
-                                               ? link->component[1]
-                                               : link->component[0];
-                if ( rank_set.find(comps_[COMPONENT_ID_MASK(remote)]->rank.rank) != rank_set.end() ) {
-                    graph->comps_.insert(comp->cloneWithoutLinksOrParams(graph));
-                    break;
-                }
-            }
-        }
-    }
-
-    // Look through all the links.  Add any link that has either side
-    // hooked to a component in the specified rank set.  Then add link
-    // to components (which are already in the graph)
-    for ( ConfigLinkMap_t::iterator it = links_.begin(); it != links_.end(); ++it ) {
-        const ConfigLink* link = *it;
-
-        const ConfigComponent* comp0 = findComponent(link->component[0]);
-        const ConfigComponent* comp1 = findComponent(link->component[1]);
-
-        bool comp0_in_ranks = (rank_set.find(comp0->rank.rank) != rank_set.end());
-        bool comp1_in_ranks = (rank_set.find(comp1->rank.rank) != rank_set.end());
-
-        if ( comp0_in_ranks || comp1_in_ranks ) {
-            // Clone the link and add to new link map
-            graph->links_.insert(new ConfigLink(*link)); // Will make a copy into map
-
-            graph->findComponent(comp0->id)->links.push_back(link->id);
-            graph->findComponent(comp1->id)->links.push_back(link->id);
-        }
-    }
-
-    // Copy the statistic configuration to the sub-graph
-    graph->stats_config_->outputs = this->stats_config_->outputs;
-    /* Only need to copy StatGroups which are referenced in this subgraph */
-    for ( auto& kv : this->stats_config_->groups ) {
-        for ( auto& id : kv.second.components ) {
-            if ( graph->containsComponent(id) ) {
-                graph->stats_config_->groups.insert(std::make_pair(kv.first, kv.second));
-                break;
-            }
-        }
-    }
-    graph->setStatisticLoadLevel(this->getStatLoadLevel());
-
-    return graph;
-}
 
 ConfigGraph::GraphFilter::GraphFilter(ConfigGraph* original_graph, ConfigGraph* new_graph,
     const std::set<uint32_t>& original_rank_set, const std::set<uint32_t>& new_rank_set) :
@@ -1136,12 +1083,18 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         ranks[1] = ograph_->findComponent(link->component[1])->rank;
     }
 
+    // Check to see which components are in which sets
+    bool c0_in_orig = oset_.count(ranks[0].rank);
+    bool c1_in_orig = oset_.count(ranks[1].rank);
+    bool c0_in_new  = nset_.count(ranks[0].rank);
+    bool c1_in_new  = nset_.count(ranks[1].rank);
+
     // First bit of flag checks to see if either end is in the set
     // that will stay in the original graph
-    uint8_t flag = oset_.count(ranks[0].rank) | oset_.count(ranks[1].rank);
+    uint8_t flag = c0_in_orig | c1_in_orig;
 
     // Second bit will check for the set that will be in the new graph
-    flag |= ((nset_.count(ranks[0].rank) | nset_.count(ranks[1].rank)) << 1);
+    flag |= ((c0_in_new | c1_in_new) << 1);
 
     switch ( flag ) {
     case 0:
@@ -1152,24 +1105,35 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         return nullptr;
     case 1:
         // Connected in original graph, not in new. Just return it
+
+        // See if link needs to be set as nonlocal
+        if ( !link->nonlocal && (c0_in_orig ^ c1_in_orig) ) {
+            // Only one side is in the set. Figure out which one and set the link as nonlocal
+            int index = c0_in_orig ? 0 : 1;
+            link->setAsNonLocal(index, ranks[(index + 1) % 2]);
+        }
         return link;
     case 2:
         // Connected in new graph, but not original.  Move to new
         // graph
         ngraph_->links_.insert(link);
+
+        // See if link needs to be set as nonlocal
+        if ( !link->nonlocal && (c0_in_new ^ c1_in_new) ) {
+            // Only one side is in the set. Figure out which one and set the link as nonlocal
+            int index = c0_in_new ? 0 : 1;
+            link->setAsNonLocal(index, ranks[(index + 1) % 1]);
+        }
         return nullptr;
     case 3:
-        // Connected in both graphs.  Make a copy for the new graph
-        // and mark both links as cross partition.  NOTE: we won't get
-        // to this state unless the graph originally used a ghost
-        // component for the cross partition link. Links marked as
-        // cross platform can't get here because ranks[1] is set to
-        // -1.
+        // Connected in both graphs.  Make a copy for the new graph and mark both links as cross partition.  NOTE: we
+        // won't get to this state unless the graph originally used a ghost component for the cross partition
+        // link. Links marked as cross platform can't get here because ranks[1] is set to -1.
         ConfigLink* link_new = new ConfigLink(*link);
         ngraph_->links_.insert(link_new);
 
-        // No change the two links to cross partition
-        if ( nset_.count(ranks[0].rank) ) {
+        // Now change the two links to cross partition
+        if ( c0_in_new ) {
             // component[0] in new set
             link->setAsNonLocal(1, ranks[0]);
             link_new->setAsNonLocal(0, ranks[1]);
@@ -1218,7 +1182,21 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
 {
     ConfigGraph* graph = nullptr;
 
-    if ( !new_rank_set.empty() ) graph = new ConfigGraph();
+    if ( !new_rank_set.empty() ) {
+        graph = new ConfigGraph();
+
+        // Need to copy over any restart data
+        graph->cpt_ranks           = cpt_ranks;
+        graph->cpt_currentSimCycle = cpt_currentSimCycle;
+        graph->cpt_currentPriority = cpt_currentPriority;
+        graph->cpt_minPart         = cpt_minPart;
+        graph->cpt_minPartTC       = cpt_minPartTC;
+        graph->cpt_max_event_id    = cpt_max_event_id;
+
+        graph->cpt_libnames       = cpt_libnames;
+        graph->cpt_shared_objects = cpt_shared_objects;
+        graph->cpt_stats_config   = cpt_stats_config;
+    }
 
     // Split up the links
     GraphFilter filter(this, graph, orig_rank_set, new_rank_set);
@@ -1230,22 +1208,27 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
     // Copy the statistic configuration to the sub-graph
     if ( graph ) graph->stats_config_->outputs = this->stats_config_->outputs;
 
-    // Need to copy statgroups contained in new graph and remove
-    // statgroups that are no longer needed in original graph
+    // Need to copy statgroups contained in new graph and remove statgroups that are no longer needed in original graph.
+    // However, for now, we need to leave all stat group information on rank 0 so that all statgroups get checkpointed
+    // (only rank 0 adds statgroups to the checkpoint)
+
     // for ( auto& kv : this->statGroups ) {
+
+    bool orig_includes_zero = orig_rank_set.count(0);
+    bool new_includes_zero  = new_rank_set.count(0);
     for ( auto it = this->stats_config_->groups.begin(); it != this->stats_config_->groups.end();
         /* increment in loop body */ ) {
         bool copy   = false;
         bool remove = true;
         for ( auto& id : it->second.components ) {
-            if ( graph && graph->containsComponent(id) ) {
+            if ( (graph && graph->containsComponent(id)) || new_includes_zero ) {
                 copy = true;
                 // We can stop if we've verified it belongs in both
                 // already.  In this case, if remove is false, then we
                 // can break
                 if ( !remove ) break;
             }
-            if ( containsComponent(id) ) {
+            if ( containsComponent(id) || orig_includes_zero ) {
                 remove = false;
                 // We can stop if we've verified it belongs in both
                 // already.  In this case, if copy is true, then we
@@ -1268,10 +1251,38 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         }
     }
 
-    graph->setStatisticLoadLevel(this->getStatLoadLevel());
+    if ( graph ) graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
 
     return graph;
+}
+
+void
+ConfigGraph::reduceGraphToSingleRank(uint32_t rank)
+{
+    std::set<uint32_t> ranks = { rank };
+    splitGraph(ranks, std::set<uint32_t>());
+}
+
+SimTime_t
+ConfigGraph::getMinimumPartitionLatency()
+{
+    if ( getNumComponents() == 0 ) {
+        // This is a restart run with no repartitioning, so just return the minPart from the checkpoint
+        return cpt_minPart;
+    }
+
+    SimTime_t graph_min_part = std::numeric_limits<SimTime_t>::max();
+
+    for ( auto& link : links_ ) {
+        if ( link->cross_rank ) {
+            SimTime_t min_lat = link->getMinLatency();
+            if ( min_lat < graph_min_part ) {
+                graph_min_part = min_lat;
+            }
+        }
+    }
+    return graph_min_part;
 }
 
 
@@ -1446,6 +1457,30 @@ ConfigGraph::setComponentConfigGraphPointers()
     for ( auto* x : comps_ ) {
         x->setConfigGraphPointer(this);
     }
+}
+
+void
+ConfigGraph::restoreRestartData()
+{
+    SST::Core::Serialization::serializer ser;
+    ser.enable_pointer_tracking();
+
+    // Load libraries from the checkpoint
+    Factory::getFactory()->loadUnloadedLibraries(*(cpt_libnames.get()));
+
+    // Initialize SharedObjectManager
+    auto* vec_som = cpt_shared_objects.get();
+    ser.start_unpacking(vec_som->data(), vec_som->size());
+    Simulation_impl::serializeSharedObjectManager(ser);
+
+    // Get the stats config
+    auto* vec_sc = cpt_stats_config.get();
+    ser.start_unpacking(vec_sc->data(), vec_sc->size());
+    SST_SER(Simulation_impl::stats_config_);
+
+    cpt_libnames.reset();
+    cpt_shared_objects.reset();
+    cpt_stats_config.reset();
 }
 
 void

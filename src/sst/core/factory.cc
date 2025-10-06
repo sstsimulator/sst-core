@@ -71,6 +71,13 @@ Factory::~Factory()
     delete loader;
 }
 
+void
+Factory::updateSearchPaths(const std::string& paths)
+{
+    searchPaths = paths;
+    loader->updateSearchPaths(paths);
+}
+
 static bool
 checkPort(const std::string& def, const std::string& offered)
 {
