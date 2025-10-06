@@ -779,7 +779,7 @@ ConfigGraph::checkRanks(RankInfo ranks)
             r1.rank   = link->component[1];
             r1.thread = link->latency[1];
         }
-        else if ( link->nonlocal ) {
+        else {
             r1 = comps_[COMPONENT_ID_MASK(link->component[1])]->rank;
         }
 
@@ -1267,7 +1267,6 @@ ConfigGraph::reduceGraphToSingleRank(uint32_t rank)
 SimTime_t
 ConfigGraph::getMinimumPartitionLatency()
 {
-    fflush(stdout);
     if ( getNumComponents() == 0 ) {
         // This is a restart run with no repartitioning, so just return the minPart from the checkpoint
         return cpt_minPart;
