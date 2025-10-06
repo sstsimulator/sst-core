@@ -136,7 +136,9 @@ public:
             }
             numBuffs = isd->numBuffers;
 
-            return --(isd->expectedChildren);
+            auto t                = isd->expectedChildren - 1;
+            isd->expectedChildren = t;
+            return t;
         }
     }
 

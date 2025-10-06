@@ -128,7 +128,7 @@ coreTestPerfComponent::clockTic(Cycle_t)
     volatile double sum = 0.0;
     for ( int i = 0; i < workPerCycle; ++i ) {
         sum = sum + sin(double(i));
-        v++;
+        v += 1;
     }
 
     // communicate?
