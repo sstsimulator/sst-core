@@ -525,10 +525,13 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
 
         // If we aren't ignoring unknown arguments, we'll get an error
         // above. Otherwise, just ignore all the positional arguments.
-        if ( positional_args )
+        if ( positional_args ) {
             status = positional_args(count, argv[pos++]);
-        else
+            ++count;
+        }
+        else {
             pos++;
+        }
     }
 
     // Support further additional arguments specified after -- to be
