@@ -59,7 +59,14 @@ sub print_summary {
         if ($fix) {
             print "\nMissing #includes found and fixed in $errors files.\n";
         } else {
-            print "\nMissing #includes found in $errors files.\n";
+            print <<EOF;
+
+Missing #includes found in $errors files.
+
+To automatically fix these errors in a Git working tree, run:
+
+scripts/test-includes.pl --fix
+EOF
             exit 1;
         }
     } else {
