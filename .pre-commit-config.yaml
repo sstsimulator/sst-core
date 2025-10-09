@@ -44,9 +44,9 @@ repos:
     hooks:
       - id: actionlint
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.9.4"
+    rev: "v0.14.0"
     hooks:
-      - id: ruff
+      - id: ruff-check
   - repo: https://github.com/pre-commit/mirrors-mypy
     # This needs to match the last version that still supports the minimum
     # required Python version
