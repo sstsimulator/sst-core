@@ -59,6 +59,8 @@ SSTCPTModelDefinition::createConfigGraph()
         SST_Exit(-1);
     }
 
+    std::string checkpoint_directory = cfg.configFile().substr(0, cfg.configFile().find_last_of("/"));
+
     std::string line;
 
     // Look for the line that has the global data file
@@ -69,7 +71,7 @@ SSTCPTModelDefinition::createConfigGraph()
         size_t pos = line.find(search_str);
         if ( pos == 0 ) {
             // Get the file name
-            globals_filename = line.substr(search_str.length());
+            globals_filename = checkpoint_directory + "/" + line.substr(search_str.length());
             break;
         }
     }
@@ -79,15 +81,15 @@ SSTCPTModelDefinition::createConfigGraph()
     std::ifstream fs_globals(globals_filename);
     if ( !fs_globals.is_open() ) {
         if ( fs_globals.bad() ) {
-            fprintf(stderr, "Unable to open checkpoint globals file [%s]: badbit set\n", globals_filename.c_str());
+            fprintf(stderr, "XXUnable to open checkpoint globals file [%s]: badbit set\n", globals_filename.c_str());
             SST_Exit(-1);
         }
         if ( fs_globals.fail() ) {
-            fprintf(
-                stderr, "Unable to open checkpoint globals file [%s]: %s\n", globals_filename.c_str(), strerror(errno));
+            fprintf(stderr, "YYUnable to open checkpoint globals file [%s]: %s\n", globals_filename.c_str(),
+                strerror(errno));
             SST_Exit(-1);
         }
-        fprintf(stderr, "Unable to open checkpoint globals file [%s]: unknown error\n", globals_filename.c_str());
+        fprintf(stderr, "ZZUnable to open checkpoint globals file [%s]: unknown error\n", globals_filename.c_str());
         SST_Exit(-1);
     }
 

@@ -164,11 +164,12 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
     }
 
     // Need to create a directory for this checkpoint
-    std::string prefix   = sim->checkpoint_prefix_;
+    std::string prefix = sim->checkpoint_prefix_;
+
+    // Get the basename for the checkpoint directory using the checkpoint name format
     std::string basename = pvt::createNameFromFormat(dir_format_, prefix, checkpoint_id, sim->currentSimCycle);
 
-    // Directory is shared across threads.  Make it a static and make
-    // sure we barrier in the right places
+    // Get the final checkpoint directory by adding the base checkpoint directory
     std::string directory = sim->checkpoint_directory_ + "/" + basename;
 
     // Only thread 0 will participate in setup
@@ -182,28 +183,31 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
         Comms::broadcast(directory, 0);
 #endif
     }
+
+    // Get the basename for the files
     basename = pvt::createNameFromFormat(file_format_, prefix, checkpoint_id, sim->currentSimCycle);
-    std::string filename =
-        directory + "/" + basename + "_" + std::to_string(rank_.rank) + "_" + std::to_string(rank_.thread) + ".bin";
+
+    // Add the rank and thread info to the name
+    std::string filename = basename + "_" + std::to_string(rank_.rank) + "_" + std::to_string(rank_.thread) + ".bin";
 
     barrier.wait();
 
     if ( rank_.thread == 0 ) checkpoint_id++;
 
     // Write out the checkpoints for the partitions
-    sim->checkpoint(filename);
+    sim->checkpoint(directory + "/" + filename);
 
     // Write out the registry.  Rank 0 thread 0 will write the global
     // state and its registry, then each thread will take a turn
     // writing its part of the registry
     RankInfo num_ranks = sim->getNumRanks();
 
-    std::string registry_name = directory + "/" + basename + ".sstcpt";
+    std::string registry_name = basename + ".sstcpt";
 
     // Need to write out the globals
     // Only rank0/thread0 writes, but all may need to participate in global data gather
-    std::string globals_name = directory + "/" + basename + "_globals.bin";
-    sim->checkpoint_write_globals(checkpoint_id - 1, registry_name, globals_name);
+    std::string globals_name = basename + "_globals.bin";
+    sim->checkpoint_write_globals(checkpoint_id - 1, directory, registry_name, globals_name);
 
     // No need to barrier here since rank 0 thread 0 will be the first
     // to execute in the loop below and everything else will wait
@@ -213,7 +217,7 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
             for ( uint32_t t = 0; t < num_ranks.thread; ++t ) {
                 // If this is my thread go ahead
                 if ( t == rank_.thread ) {
-                    sim->checkpoint_append_registry(registry_name, filename);
+                    sim->checkpoint_append_registry(directory + "/" + registry_name, filename);
                     barrier.wait();
                 }
                 else {

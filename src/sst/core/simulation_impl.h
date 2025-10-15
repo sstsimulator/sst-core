@@ -415,8 +415,8 @@ public:
        Write the global data to a binary file and create the registry
        and write the header info
      */
-    void checkpoint_write_globals(
-        int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
+    void checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_filename,
+        const std::string& registry_filename, const std::string& globals_filename);
     void restart();
 
     /**

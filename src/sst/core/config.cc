@@ -408,8 +408,8 @@ Config::insertOptions()
     addVerboseOptions(true);
     DEF_ARG("num-threads", 'n', "NUM", "Number of parallel threads to use per rank", num_threads_, true);
     DEF_ARG("sdl-file", 0, "FILE",
-        "Specify SST Configuration file.  Note: this is most often done by just specifying the file without an option."
-        " For runs specifying --load-checkpoint, the SDL file is the checkpoint manifest file (.sstcpt file)",
+        "Specify SST Configuration file.  Note: this is most often done by just specifying the file without an option. "
+        "The SDL file can be the manifest file from a checkpoint (*.sstcpt).",
         configFile_, false);
     DEF_ARG("model-options", 0, "STR",
         "Provide options to the python configuration script.  Additionally, any arguments provided after a final '-- ' "
@@ -573,7 +573,8 @@ Config::insertOptions()
         "time units (s or Hz) and SI prefixes are accepted.",
         checkpoint_sim_period_, true, false, false);
     DEF_FLAG("load-checkpoint", 0,
-        "Load checkpoint and continue simulation. Specified SDL file will be used as the checkpoint file.",
+        "[UNUSED] This options is no longer needed.  SST will automatically detect if a checkpoint file is specified "
+        "as the SDL file by detecting the .sstcpt extension.",
         load_from_checkpoint_, true, false, false);
     DEF_ARG("checkpoint-prefix", 0, "PREFIX",
         "Set prefix for checkpoint filenames. The checkpoint prefix defaults to checkpoint if this option is not set "
