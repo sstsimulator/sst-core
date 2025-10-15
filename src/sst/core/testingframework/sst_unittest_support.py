@@ -2231,15 +2231,11 @@ def _get_linux_version(filepath: str, sep: str) -> str:
     # Find the first digit + period in the tokenized string list
     with open(filepath, 'r') as filehandle:
         for line in filehandle:
-            #print("found line = " + line)
             word_list = line.split(sep)
             for word in word_list:
-                #print("word =" + word)
                 m_data = re.search(r"[\d.]+", word)
-                #print("found_ver = {0}".format(m_data))
                 if m_data is not None:
                     found_ver = m_data.string[m_data.start():m_data.end()]
-                    #print("found_ver = {0}".format(found_ver))
                     return found_ver
     return "undefined"
 
