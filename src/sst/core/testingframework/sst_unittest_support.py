@@ -2044,6 +2044,11 @@ def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
             (str) Space separated string of extracted fields.
     """
     if isinstance(in_str, bytes):
+        warn(
+            "Passing bytes and not a string to os_awk_print() is deprecated and will be disallowed in future version of SST.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         check_param_type("in_str", in_str, bytes)
     else:
         check_param_type("in_str", in_str, str)
