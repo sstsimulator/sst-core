@@ -18,8 +18,10 @@
 #include "sst/core/warnmacros.h"
 
 #include <chrono>
+#include <cstdint>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace SST {

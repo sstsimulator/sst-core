@@ -16,8 +16,11 @@
 #include "sst/core/output.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 using namespace SST;
 

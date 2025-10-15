@@ -32,6 +32,9 @@
 #include "sst/core/warnmacros.h"
 #include "sst/core/watchPoint.h"
 
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 
 namespace SST {

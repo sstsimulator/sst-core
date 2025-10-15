@@ -17,11 +17,13 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/timeConverter.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <map>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace SST {
 

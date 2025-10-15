@@ -18,6 +18,7 @@
 #include "sst/core/util/smartTextFormatter.h"
 #include "sst/core/warnmacros.h"
 
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <getopt.h>

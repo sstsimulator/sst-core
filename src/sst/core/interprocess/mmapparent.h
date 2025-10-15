@@ -12,6 +12,7 @@
 #ifndef SST_CORE_INTERPROCESS_TUNNEL_MMAP_PARENT_H
 #define SST_CORE_INTERPROCESS_TUNNEL_MMAP_PARENT_H
 
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

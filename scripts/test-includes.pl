@@ -56,16 +56,22 @@ my $errors = 0;
 sub print_summary {
     print STDERR "\n" if !$quiet;
     if ($errors) {
+        print '-' x 119, "\n";
         if ($fix) {
-            print "\nMissing #includes found and fixed in $errors files.\n";
+            print "Missing #includes found and fixed in $errors files.\n";
         } else {
-            print "\nMissing #includes found in $errors files.\n";
-            exit 1;
+            die <<EOF;
+Missing #includes found in $errors files.
+
+To automatically fix these errors in a Git working tree, run:
+
+$0 --fix
+EOF
         }
     } else {
-        print "\nNo missing #includes found\n\nALL TESTS PASSED\n";
+        print "No missing #includes found\n\nALL TESTS PASSED\n";
     }
-    exit 0;
+    exit;
 }
 
 # Get the command-line options
@@ -90,16 +96,20 @@ sub get_options {
 #
 # Returns an object which stringifies to filename and deletes it when destroyed
 sub open_temp_src {
-    my ($file, $suffix, $header, $hdr) = @_;
+    my ($file, $suffix, $headers, $header, $hdr) = @_;
+    my @headers;
     my $tmp = File::Temp->new(SUFFIX => $suffix);
     open my $f, "<", $file or die "Internal error: Cannot open $file: $!\n";
     while (<$f>) {
-        if (my ($inc) = /^\s*#\s*include\s*"([^"]*)"/) {
-            if (defined($hdr) && basename($inc) eq $header) {
-                print $tmp qq(#include "$hdr"\n) ;
-            } else {
-                print $tmp "\n";
-            }
+        if (my ($inc) = /^\s*#\s*include\s*"([^"]+)"/) {
+            # Project #include "..." headers
+            # Leave out $include "..." so that we can detect missing #includes
+            next;
+        } elsif (my ($sysinc) = /^\s*#\s*include\s*(<[^>]+>)/) {
+            # System #include <...> headers
+            $$headers{$sysinc} = 1;
+
+            # Leave out #include <...> so that we can detect missing #includes
             next;
         }
         print $tmp $_;
@@ -137,19 +147,18 @@ sub check_file {
         }
     }
 
-    for my $tries (0..4) {
-        my ($hdr, $src);
+    TRY: for my $tries (0..4) {
+        my ($hdr, $src, %headers);
 
-        # If this is not a header file, create a modified header file of the
-        # same prefix if it exists, and #include the modified header file in
-        # the modified C/C++ file.
-        #
-        # If this a header file, create a modified header file
         if ($suffix ne ".h") {
-            $hdr = open_temp_src($header, ".h") if -e $header;
-            $src = open_temp_src($file, $suffix, $header, $hdr);
+            # If this is not a header file, create a modified header file of
+            # the same prefix if it exists, and #include the modified header
+            # file in the modified C/C++ file.
+            $hdr = open_temp_src($header, ".h", \%headers) if -e $header;
+            $src = open_temp_src($file, $suffix, \%headers, $header, $hdr);
         } else {
-            $src = open_temp_src($header, ".h");
+            # If this a header file, create a modified header file
+            $src = open_temp_src($header, ".h", \%headers);
         }
 
         -e "$src" or die "Internal error: File $src does not exist\n";
@@ -160,35 +169,29 @@ sub check_file {
 
         # Parse the GCC output
         open my $gcc, "-|", $cmd or die "Could not execute $cmd: $!\n";
-        my (@src, %hit, %edits);
+        my (@src, %edits);
 
         LINE: while (<$gcc>) {
-          s:$hdr:$dir/$header: if $hdr;
-          s:$src:$dir/$file:;
+            s:$hdr:$dir/$header: if $hdr;
+            s:$src:$dir/$file:;
             push @src, $_;
 
             # A +++ at the beginning of a line followed by an #include indicates
             # A missing system header which needs to be added
-            if (my ($inc) = /^\s*\+\+\+ \|\+(#include <[^>]+>)$/) {
-                $inc .= "\n";
+            if (my ($inc) = /^\s*\+\+\+ \|\+#include (<[^>]+>)$/) {
                 # Don't handle the same missing #include twice in the same file
-                if (!$hit{$inc}++) {
-                    # Find the filename GCC is complaining about and mark it with
-                    # the #include, merging duplicates
+                if (!exists $edits{$inc}) {
+                    # Find the filename GCC is complaining about
                     for (@src[max($#src-4, 0) .. $#src]) {
-
                         if (my ($editfile) = /^([^:]+):\d+:\d+: \w/) {
-                            # skip the edit file if it is not under $root
-                            next LINE if substr(abs2rel($editfile, $root), 0, 3) eq "../";
-                            next LINE if realpath($editfile) ne $fullpath;
-                            ++$errors if !$tries && !exists $edits{$editfile};
-                            if (!$edits{$editfile}{$inc}++) {
-                                # Print the lines of compiler output of the #include warning
-                                print "\n", "-" x 119, "\n$fullpath\n",
-                                    @src[max($#src-5, 0) .. $#src];
+                            # Skip the edit file if it is not under $root
+                            if (substr(abs2rel($editfile, $root), 0, 3) ne "../" &&
+                                realpath($editfile) eq $fullpath) {
+                                $edits{$inc} = sprintf "\n" . "-" x 119 . "\n%s\n%s",
+                                    $fullpath, join "", @src[max($#src-5, 0) .. $#src];
                             }
-                            next LINE;
                         }
+                        next LINE;
                     }
                     die "Internal error: GCC output not recognized:\n",
                         @src[max($#src-5, 0) .. $#src];
@@ -196,107 +199,122 @@ sub check_file {
             }
         }
 
-        return if !$fix or !grep keys %{$edits{$_}}, keys %edits;
-
-        # Remove the temporary files
+        # Delete the temporary files
         undef $hdr;
         undef $src;
 
-        # Go through all files marked for editing
-        for my $editfile (keys %edits) {
-            # The list of #include <...> which need to be added to the file
-            my @inc = keys %{$edits{$editfile}};
+        # Remove edits with headers which were included with #include <...>
+        delete @edits{keys %headers};
 
-            # The complete file to edit
-            my @prog = do {
-                open my $fh, "<", $editfile
-                    or die "Internal error: Cannot open $editfile: $!\n";
-                <$fh>
-            };
+        # Return if there are no edits
+        return if !%edits;
 
-            # Scan the program, building @new from @prog and @inc
-            # Several scans are made with different matching criteria,
-            # and the first match wins
-            my @new;
+        # Increment error count on try 0
+        ++$errors if !$tries;
 
-            # Put #include before first #include<> line if it exists
-            if (@inc) {
-                undef @new;
-                for (@prog) {
-                    if (@inc) {
-                        # Ignore #if/#ifdef blocks
-                        unless (/^\s*#\s*if(def)?\b/ .. /^\s*#\s*endif\b/) {
-                            @inc = splice @new, @new, 0, @inc if /^\s*#\s*include\s*</;
-                        }
-                    }
-                    push @new, $_;
-                }
-            }
+        # Print the lines of compiler output of the #include warning
+        print values %edits;
 
-            # Put #include after the last #include in the file
-            if (@inc) {
-                my $insert;
-                for my $i (0..$#prog) {
-                    local $_ = $prog[$i];
+        # Return if we are not fixing files
+        return if !$fix;
+
+        # The contents of the source file
+        my @prog = do {
+            open my $fh, "<", $fullpath
+                or die "Internal error: Cannot open $fullpath: $!\n";
+            <$fh>
+        };
+
+        # The list of #include <...> which need to be added to the file
+        my @inc = map { "#include $_\n" } keys %edits;
+
+        # Scan the program, building @new from @prog and @inc
+        # Several scans are made with different matching criteria,
+        # and the first match wins
+        my @new;
+
+        # Put #include before first #include<> line if it exists
+        if (@inc) {
+            undef @new;
+            for (@prog) {
+                if (@inc) {
                     # Ignore #if/#ifdef blocks
                     unless (/^\s*#\s*if(def)?\b/ .. /^\s*#\s*endif\b/) {
-                        # bail out early if certain declarations occur
-                        last if /^\s*((class|struct|namespace|template)\b|extern\s*"C")/;
-                        $insert = $i+1 if /^\s*#\s*include\b/;
+                        @inc = splice @new, @new, 0, @inc if /^\s*#\s*include\s*</;
                     }
                 }
-                if (defined $insert) {
-                    @new = @prog;
-                    @inc = splice @new, $insert, 0, "\n", @inc;
-                }
+                push @new, $_;
             }
-
-            # Put #include before first class/struct/namespace/extern declaration
-            if (@inc) {
-                undef @new;
-                for (@prog) {
-                    if (@inc) {
-                        # Ignore #if/#ifdef blocks
-                        unless (/^\s*#\s*if(def)?\b/ .. /^\s*#\s*endif\b/) {
-                            @inc = splice @new, @new, 0, @inc, "\n"
-                                if /^\s*(class|struct|namespace|template|extern)\b/;
-                        }
-                    }
-                    push @new, $_;
-                }
-            }
-
-            # Put #include after any comments at the beginning of the file
-            if (@inc) {
-                undef @new;
-                for (@prog) {
-                    if (@inc) {
-                        unless ((m:^\s*/\*: .. m:\*/\s*$:) || m:^\s*//:) {
-                            @inc = splice @new, @new, 0, "\n", @inc;
-                            push @new, "\n" if /\S/;
-                        }
-                    }
-                    push @new, $_;
-                }
-            }
-
-            # Sort contiguous blocks of #include <...>
-            my $start;
-            for (my $i = 0; $i <= $#new; $i++) {
-                if ($new[$i] =~ /^\s*#\s*include\s*</) {
-                    $start //= $i;
-                } elsif (defined $start) {
-                    @new[$start .. $i-1] = sort @new[$start .. $i-1];
-                    undef $start;
-                }
-            }
-            @new[$start .. $#new] = sort @new[$start .. $#new] if defined $start;
-
-            # Output the new file
-            open my $fh, ">", $editfile
-                or die "Internal error: Cannot open $editfile: $!\n";
-            print $fh @new;
         }
+
+        # Put #include after the last #include in the file
+        if (@inc) {
+            my $insert;
+            for my $i (0..$#prog) {
+                local $_ = $prog[$i];
+                # Ignore #if/#ifdef blocks
+                unless (/^\s*#\s*if(def)?\b/ .. /^\s*#\s*endif\b/) {
+                    # bail out early if certain declarations occur
+                    last if /^\s*((class|struct|namespace|template)\b|extern\s*"C")/;
+                    $insert = $i+1 if /^\s*#\s*include\b/;
+                }
+            }
+            if (defined $insert) {
+                @new = @prog;
+                @inc = splice @new, $insert, 0, "\n", @inc;
+            }
+        }
+
+        # Put #include before first class/struct/namespace/extern declaration
+        if (@inc) {
+            undef @new;
+            for (@prog) {
+                if (@inc) {
+                    # Ignore #if/#ifdef blocks
+                    unless (/^\s*#\s*if(def)?\b/ .. /^\s*#\s*endif\b/) {
+                        @inc = splice @new, @new, 0, @inc, "\n"
+                            if /^\s*(class|struct|namespace|template|extern)\b/;
+                    }
+                }
+                push @new, $_;
+            }
+        }
+
+        # Put #include after any comments at the beginning of the file
+        if (@inc) {
+            undef @new;
+            for (@prog) {
+                if (@inc) {
+                    unless ((m:^\s*/\*: .. m:\*/\s*$:) || m:^\s*//:) {
+                        @inc = splice @new, @new, 0, "\n", @inc;
+                        push @new, "\n" if /\S/;
+                    }
+                }
+                push @new, $_;
+            }
+        }
+
+        # Sort #includes, putting sst_config.h first
+        sub byname {
+            $a =~ /\bsst_config\.h\b/ ? -1 : $b =~ /\bsst_config\.h\b/ ? 1 : $a cmp $b;
+        }
+
+        # Sort contiguous blocks of #include <...> without periods between <>
+        my $start;
+        for (my $i = 0; $i <= $#new; $i++) {
+            if ($new[$i] =~ /^\s*#\s*include\s*<[^.>]+>/) {
+                $start //= $i;
+            } elsif (defined $start) {
+                @new[$start .. $i-1] = sort byname @new[$start .. $i-1];
+                undef $start;
+            }
+        }
+        @new[$start .. $#new] = sort byname @new[$start .. $#new] if defined $start;
+
+        # Output the new file
+        open my $fh, ">", $fullpath
+            or die "Internal error: Cannot open $fullpath: $!\n";
+        print $fh @new;
     }
 
     print STDERR <<EOF;
@@ -314,7 +332,6 @@ for future runs of this script.
 
 This script adds #includes next to existing #includes, so adding one for the
 first time should make it work.
-
 
 EOF
     exit 2;

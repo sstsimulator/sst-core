@@ -22,8 +22,11 @@
 
 #include "sst/core/interprocess/circularBuffer.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <inttypes.h>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 namespace SST::Core::Interprocess {
