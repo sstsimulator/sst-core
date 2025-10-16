@@ -76,6 +76,35 @@ serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
     delete[] buffer;
 }
 
+template <typename... Ts>
+void
+serializeDeserialize(std::tuple<Ts...>& input, std::tuple<Ts...>& output, bool with_tracking = false)
+{
+    // Set up serializer and buffers
+    char*                                buffer;
+    SST::Core::Serialization::serializer ser;
+    ser_opt_t                            options = 0;
+    if ( with_tracking ) {
+        ser.enable_pointer_tracking();
+    }
+
+    ser.start_sizing();
+    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, input);
+
+    size_t size = ser.size();
+
+    buffer = new char[size];
+
+    ser.start_packing(buffer, size);
+    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, input);
+
+    ser.start_unpacking(buffer, size);
+    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, output);
+
+    ser.finalize();
+    delete[] buffer;
+}
+
 
 template <typename T>
 struct checkSimpleSerializeDeserialize
@@ -977,6 +1006,86 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             if ( deleted != 1 )
                 out.output(
                     "ERROR: std::unique_ptr<int32_t, function pointer deleter> did not serialize/deserialize properly");
+        }
+        {
+            std::tuple<std::unique_ptr<int32_t>, int32_t*> i, o;
+            std::get<0>(i) = std::make_unique<int32_t>(rng->generateNextInt32());
+            std::get<1>(i) = std::get<0>(i).get();
+            serializeDeserialize(i, o, true);
+            if ( *std::get<0>(i) != *std::get<0>(o) || *std::get<1>(i) != *std::get<1>(o) ||
+                 std::get<0>(o).get() != std::get<1>(o) )
+                out.output("ERROR: std::tuple<std::unique_ptr, int32_t*> did not serialize/deserialize properly");
+        }
+        {
+            std::tuple<int32_t*, std::unique_ptr<int32_t>> i, o;
+            std::get<1>(i) = std::make_unique<int32_t>(rng->generateNextInt32());
+            std::get<0>(i) = std::get<1>(i).get();
+            serializeDeserialize(i, o, true);
+            if ( *std::get<0>(i) != *std::get<0>(o) || *std::get<1>(i) != *std::get<1>(o) ||
+                 std::get<0>(o) != std::get<1>(o).get() )
+                out.output("ERROR: std::tuple<int32_t*, std::unique_ptr> did not serialize/deserialize properly");
+        }
+        {
+            // Serialize both a raw pointer and a std::unique_ptr to a variable-sized array, serializing the
+            // std::unique_ptr first and the raw pointer second. This ensures that raw pointers can interoperate
+            // with std::unique_ptr smart owners.
+
+            size_t                     isize = 100;
+            size_t                     osize = -1;
+            std::unique_ptr<int32_t[]> i1    = std::make_unique<int32_t[]>(isize);
+            std::unique_ptr<int32_t[]> o1;
+            int32_t*                   i0 = i1.get();
+            int32_t*                   o0 = nullptr;
+            for ( size_t t = 0; t < isize; ++t )
+                i1[t] = rng->generateNextInt32();
+
+            serializeDeserialize(std::forward_as_tuple(SST::Core::Serialization::unique_ptr(i1, isize),
+                                     SST::Core::Serialization::array(i0, isize)),
+                std::forward_as_tuple(
+                    SST::Core::Serialization::unique_ptr(o1, osize), SST::Core::Serialization::array(o0, osize)),
+                true);
+
+            if ( isize != osize )
+                out.output("ERROR: std::tuple<int32_t*, std::unique_ptr> did not serialize/deserialize properly: size");
+            else
+                for ( size_t t = 0; t < isize; ++t ) {
+                    if ( i0[t] != o0[t] || i1[t] != o1[t] ) {
+                        out.output("ERROR: std::tuple<int32_t*, std::unique_ptr> did not serialize/deserialize "
+                                   "properly: content");
+                        break;
+                    }
+                }
+        }
+        {
+            // Serialize both a raw pointer and a std::unique_ptr to a variable-sized array, serializing the raw
+            // pointer first and the std::unique_ptr second. This ensures that raw pointers can interoperate
+            // with std::unique_ptr smart owners.
+
+            size_t                     isize = 100;
+            size_t                     osize = -1;
+            std::unique_ptr<int32_t[]> i1    = std::make_unique<int32_t[]>(isize);
+            std::unique_ptr<int32_t[]> o1;
+            int32_t*                   i0 = i1.get();
+            int32_t*                   o0 = nullptr;
+            for ( size_t t = 0; t < isize; ++t )
+                i1[t] = rng->generateNextInt32();
+
+            serializeDeserialize(std::forward_as_tuple(SST::Core::Serialization::array(i0, isize),
+                                     SST::Core::Serialization::unique_ptr(i1, isize)),
+                std::forward_as_tuple(
+                    SST::Core::Serialization::array(o0, osize), SST::Core::Serialization::unique_ptr(o1, osize)),
+                true);
+
+            if ( isize != osize )
+                out.output("ERROR: std::tuple<int32_t*, std::unique_ptr> did not serialize/deserialize properly: size");
+            else
+                for ( size_t t = 0; t < isize; ++t ) {
+                    if ( i0[t] != o0[t] || i1[t] != o1[t] ) {
+                        out.output("ERROR: std::tuple<int32_t*, std::unique_ptr> did not serialize/deserialize "
+                                   "properly: content");
+                        break;
+                    }
+                }
         }
     }
     else if ( test == "unordered_containers" ) {
