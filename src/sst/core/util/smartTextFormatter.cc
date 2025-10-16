@@ -13,6 +13,7 @@
 
 #include "smartTextFormatter.h"
 
+#include <cstddef>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>

@@ -17,7 +17,10 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <exception>
 #include <functional>
 #include <getopt.h>
 #include <iostream>

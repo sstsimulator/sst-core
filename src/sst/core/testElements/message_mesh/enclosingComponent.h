@@ -21,6 +21,7 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 

@@ -16,7 +16,10 @@
 #include "sst/core/env/envquery.h"
 #include "sst/core/warnmacros.h"
 
+#include <cerrno>
 #include <climits>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <map>
 #include <string>

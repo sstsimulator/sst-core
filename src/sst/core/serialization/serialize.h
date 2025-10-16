@@ -22,6 +22,7 @@
 #undef SST_INCLUDING_SERIALIZE_H
 
 #include <atomic>
+#include <cstdint>
 #include <iostream>
 #include <type_traits>
 #include <typeinfo>

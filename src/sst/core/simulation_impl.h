@@ -28,14 +28,17 @@
 #include "sst/core/util/filesystem.h"
 
 #include <atomic>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <map>
 #include <mutex>
 #include <set>
 #include <signal.h>
+#include <string>
 #include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */

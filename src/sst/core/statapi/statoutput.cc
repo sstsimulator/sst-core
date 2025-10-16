@@ -19,6 +19,8 @@
 #include "sst/core/stringize.h"
 #include "sst/core/util/filesystem.h"
 
+#include <cstdint>
+
 
 namespace SST::Statistics {
 

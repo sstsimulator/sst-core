@@ -19,9 +19,11 @@
 #include "sst/core/warnmacros.h"
 
 #include <cinttypes>
+#include <cstdint>
 #include <cstring>
 #include <errno.h>
 #include <sstream>
+#include <string>
 
 // Default Priority Settings
 #define INTERACTIVEPRIOIRTY    0

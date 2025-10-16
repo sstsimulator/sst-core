@@ -15,6 +15,7 @@
 #include "sst/core/eli/elibase.h"
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace SST::ELI {

@@ -18,6 +18,7 @@
 #include "sst/core/sst_types.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <string>
 #include <vector>
 

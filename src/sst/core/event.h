@@ -18,7 +18,9 @@
 
 #include <atomic>
 #include <cinttypes>
+#include <cstdint>
 #include <string>
+#include <utility>
 
 namespace SST {
 

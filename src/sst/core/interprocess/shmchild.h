@@ -14,6 +14,8 @@
 
 #include "sst/core/interprocess/tunneldef.h"
 
+#include <cerrno>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

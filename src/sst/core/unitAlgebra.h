@@ -21,8 +21,10 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <map>
 #include <mutex>
+#include <ostream>
 #include <string>
 #include <vector>
 

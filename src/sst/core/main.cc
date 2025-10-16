@@ -20,6 +20,13 @@ DISABLE_WARN_DEPRECATED_REGISTER
 #undef _XOPEN_SOURCE
 #endif
 #include <Python.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 REENABLE_WARNING
 
 #include "sst/core/activity.h"

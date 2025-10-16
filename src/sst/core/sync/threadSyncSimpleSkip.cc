@@ -19,6 +19,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
+#include <cstddef>
 #include <mutex>
 
 namespace SST {

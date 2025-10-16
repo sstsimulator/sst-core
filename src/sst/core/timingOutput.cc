@@ -20,6 +20,7 @@
 #include <cinttypes>
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 #include <sys/ioctl.h>
 
 namespace json = ::nlohmann;

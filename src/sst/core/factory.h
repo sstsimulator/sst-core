@@ -18,10 +18,15 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <cstdint>
 #include <iostream>
 #include <mutex>
 #include <set>
+#include <sstream>
 #include <stdio.h>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */

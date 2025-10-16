@@ -25,6 +25,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <fstream>
+#include <ostream>
 #include <set>
 #include <stdio.h>
 #include <tuple>

@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <climits>
+#include <cstdint>
 #include <iomanip>
 #include <ios>
 #include <map>

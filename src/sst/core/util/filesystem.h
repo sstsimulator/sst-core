@@ -13,9 +13,11 @@
 #define SST_CORE_FILESYSTEM_H
 
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
+#include <string>
 
 // REMOVE ME
 #include <filesystem>

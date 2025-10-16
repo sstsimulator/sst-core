@@ -18,13 +18,17 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cerrno>
+#include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <getopt.h>
 #include <iostream>
 #include <string>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <vector>
 
 namespace SST {
 

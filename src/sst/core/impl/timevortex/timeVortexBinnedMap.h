@@ -15,6 +15,8 @@
 #include "sst/core/threadsafe.h"
 
 #include <atomic>
+#include <cstdint>
+#include <map>
 #include <queue>
 #include <sst/core/timeVortex.h>
 #include <vector>

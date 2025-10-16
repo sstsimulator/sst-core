@@ -23,6 +23,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <fstream>
 #include <string>
 #include <utility>

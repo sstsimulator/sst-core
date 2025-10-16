@@ -18,6 +18,8 @@
 #include "sst/core/threadsafe.h"
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <inttypes.h>
 #include <iostream>
 #include <map>
@@ -27,6 +29,8 @@
 #include <stack>
 #include <stdexcept>
 #include <stdlib.h>
+#include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
