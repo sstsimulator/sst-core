@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <deque>
 #include <forward_list>
+#include <iterator>
 #include <list>
 #include <map>
 #include <set>

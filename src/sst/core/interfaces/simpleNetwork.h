@@ -21,6 +21,7 @@
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 

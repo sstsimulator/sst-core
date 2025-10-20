@@ -15,6 +15,7 @@
 
 #include "sst/core/sst_mpi.h"
 
+#include <cstdint>
 #include <sys/resource.h>
 
 using namespace SST::Core;

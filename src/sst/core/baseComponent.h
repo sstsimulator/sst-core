@@ -31,6 +31,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 using namespace SST::Statistics;

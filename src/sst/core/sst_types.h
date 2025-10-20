@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <limits>
+#include <ostream>
 
 namespace SST {
 

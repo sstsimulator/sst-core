@@ -17,6 +17,8 @@
 #include "sst/core/sst_types.h"
 
 // Pull in the patchlevel for Python so we can check Python version
+#include <cstddef>
+#include <cstdio>
 #include <patchlevel.h>
 #include <string>
 

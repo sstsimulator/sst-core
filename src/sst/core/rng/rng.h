@@ -14,6 +14,7 @@
 
 #include "sst/core/serialization/serializable.h"
 
+#include <cstdint>
 #include <stdint.h>
 
 namespace SST::RNG {

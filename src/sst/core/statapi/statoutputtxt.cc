@@ -15,6 +15,9 @@
 
 #include "sst/core/stringize.h"
 
+#include <cerrno>
+#include <cstdarg>
+#include <cstddef>
 #include <cstdint>
 
 namespace SST::Statistics {

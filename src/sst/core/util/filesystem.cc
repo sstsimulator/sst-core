@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <filesystem>
 #include <fstream>
+#include <ostream>
 #include <random>
 #include <string>
 #include <sys/stat.h>

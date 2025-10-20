@@ -19,6 +19,7 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <cinttypes>
+#include <cstdio>
 
 namespace SST {
 

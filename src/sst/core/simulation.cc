@@ -46,11 +46,16 @@
 #include <algorithm>
 #include <atomic>
 #include <cinttypes>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <mutex>
+#include <ostream>
 #include <set>
 #include <string>
 #include <thread>

@@ -34,6 +34,9 @@
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 REENABLE_WARNING
 
 #include "sst/core/sst_mpi.h"

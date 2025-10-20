@@ -32,6 +32,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace SST::Statistics;
