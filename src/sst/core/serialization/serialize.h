@@ -424,6 +424,7 @@ sst_ser_or_helper(Args... args)
 // Set the #define that will disable the warnings.
 #define SST_INCLUDING_SERIALIZE_H
 #include "sst/core/serialization/impl/serialize_adapter.h"
+#include "sst/core/serialization/impl/serialize_aggregate.h"
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
 #include "sst/core/serialization/impl/serialize_bitset.h"

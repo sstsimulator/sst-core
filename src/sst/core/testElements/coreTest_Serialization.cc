@@ -1178,6 +1178,20 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             if ( !passed ) out.output("ERROR: std::variant<...> did not serialize/deserialize properly\n");
         }
     }
+    else if ( test == "aggregate" ) {
+        {
+            auto iup = std::make_unique<int32_t>(rng->generateNextInt32());
+            struct S
+            {
+                int32_t  a;
+                int32_t* ip;
+                float    x;
+            } i { rng->generateNextInt32(), iup.get(), (float)rng->generateNextInt32() }, o {};
+            serializeDeserialize(i, o, true);
+            if ( o.a != i.a || !o.ip != !i.ip || *o.ip != *i.ip || o.x != i.x )
+                out.output("ERROR: aggregate did not serialize/deserialize properly\n");
+        }
+    }
     else if ( test == "map_to_vector" ) {
 
         // Containers to other containers
