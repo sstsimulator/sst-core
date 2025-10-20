@@ -140,7 +140,8 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
     void operator()(OBJ& obj, serializer& ser, ser_opt_t options)
     {
         // Options to use per-element
-        const ser_opt_t opts = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
+        const ser_opt_t UNUSED(opts) =
+            SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
 
         switch ( const auto mode = ser.mode() ) {
         case serializer::SIZER:
