@@ -82,6 +82,7 @@ nobase_dist_sst_HEADERS = \
 	eli/elibase.h \
 	eli/attributeInfo.h \
 	eli/categoryInfo.h \
+	eli/checkpointableInfo.h \
 	eli/defaultInfo.h \
 	eli/elementbuilder.h \
 	eli/interfaceInfo.h \

@@ -68,6 +68,8 @@ public:
         { "install_on_send",  "Controls whether the PortModule is installed on the send or receive side.  Set to true to register on send and false to register on recieve.", "false" },
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     explicit TestPortModule(Params& params);
 
     // For serialization only
@@ -126,6 +128,8 @@ public:
         {"port_slot", "SLot for loading subcomponent to test shared ports", "" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     coreTestPortModuleComponent(SST::ComponentId_t id, SST::Params& params);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -170,6 +174,8 @@ public:
         "Subcomponent used to test putting PortModules on shared ports",
         SST::CoreTestPortModule::PortSubComponent
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     PortSubComponent(ComponentId_t id, Params& params);
     PortSubComponent() = default; // For serialization
