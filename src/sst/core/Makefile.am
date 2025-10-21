@@ -107,6 +107,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/ser_buffer_accessor.h \
 	serialization/impl/serialize_insertable.h \
         serialization/impl/serialize_optional.h \
+        serialization/impl/ser_shared_ptr_tracker.h \
+        serialization/impl/serialize_shared_ptr.h \
 	serialization/impl/serialize_tuple.h \
         serialization/impl/serialize_unique_ptr.h \
 	serialization/impl/serialize_utility.h \
@@ -235,10 +237,12 @@ sst_core_sources = \
 	serialization/serializable.cc \
 	serialization/serializer.cc \
 	serialization/impl/unpacker.cc \
+	serialization/impl/ser_shared_ptr_tracker.cc \
 	serialization/statics.cc \
 	serialization/impl/mapper.cc \
 	serialization/impl/serialize_array.cc \
 	serialization/impl/serialize_trivial.cc \
+	serialization/impl/serialize_shared_ptr.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/stdMem.cc \
