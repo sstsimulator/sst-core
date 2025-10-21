@@ -15,18 +15,29 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <iostream>
 #include <map>
+#include <ostream>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <vector>
 
+// #define _OBJMAP_DEBUG_
+
 namespace SST::Core::Serialization {
 
 class ObjectMap;
+class TraceBuffer;
+class ObjectBuffer;
 
+
+// class ObjectMapComparison_impl<T>;
 /**
    Metadata object that each ObjectMap has a pointer to in order to
    track the hierarchy information while traversing the data
@@ -84,7 +95,32 @@ public:
         if ( op == ">=" ) return Op::GTE;
         if ( op == "==" ) return Op::EQ;
         if ( op == "!=" ) return Op::NEQ;
+        if ( op == "changed" ) return Op::CHANGED; // Could also use <>
         return Op::INVALID;
+    }
+
+    static std::string getStringFromOp(Op op)
+    {
+        switch ( op ) {
+        case Op::LT:
+            return "<";
+        case Op::LTE:
+            return "<+";
+        case Op::GT:
+            return ">";
+        case Op::GTE:
+            return ">=";
+        case Op::EQ:
+            return "==";
+        case Op::NEQ:
+            return "!=";
+        case Op::CHANGED:
+            return "CHANGED";
+        case Op::INVALID:
+            return "INVALID";
+        default:
+            return "Invalid Op";
+        }
     }
 
     ObjectMapComparison() = default;
@@ -92,14 +128,24 @@ public:
     ObjectMapComparison(const std::string& name) :
         name_(name)
     {}
+
+    ObjectMapComparison(const std::string& name, ObjectMap* obj) :
+        name_(name),
+        obj_(obj)
+    {}
+
     virtual ~ObjectMapComparison() = default;
 
-    virtual bool        compare()         = 0;
-    virtual std::string getCurrentValue() = 0;
+    virtual bool        compare()                   = 0;
+    virtual std::string getCurrentValue()           = 0;
+    virtual void        print(std::ostream& stream) = 0;
     std::string         getName() { return name_; }
+
+    virtual void* getVar() = 0;
 
 protected:
     std::string name_ = "";
+    ObjectMap*  obj_  = nullptr;
 };
 
 /**
@@ -198,6 +244,13 @@ public:
      */
     void setReadOnly(bool state = true) { read_only_ = state; }
 
+    /**
+     Check if value string is valid for this type
+
+     @param value Value to set the object to expressed as a string
+   */
+    virtual bool checkValue(const std::string& UNUSED(value)) { return false; }
+
 
     /**
        Get the name of the variable represented by this ObjectMap.  If
@@ -283,6 +336,15 @@ public:
         return nullptr;
     }
 
+    virtual ObjectMapComparison* getComparisonVar(const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op),
+        const std::string& UNUSED(name2), ObjectMap* UNUSED(var2))
+    {
+        printf("In virtual ObjectMapComparison\n");
+        return nullptr;
+    }
+
+    virtual ObjectBuffer* getObjectBuffer(const std::string& UNUSED(name), size_t UNUSED(sz)) { return nullptr; }
+
     /************ Functions for walking the Object Hierarchy ************/
 
 
@@ -295,7 +357,9 @@ public:
     ObjectMap* selectParent();
 
     /**
-       Get the ObjectMap for the specified variable
+       Get the ObjectMap for the specified variable.
+       Important!!! This function return 'this' pointer and not a nullptr!!!
+       TODO: prefer this return nullptr as bugs have occurred with incorrect use
 
        @param name Name of variable to select
 
@@ -530,7 +594,9 @@ public:
     ~ObjectMapWithChildren() override
     {
         for ( auto& obj : variables_ ) {
-            if ( obj.second != nullptr ) obj.second->decRefCount();
+            if ( obj.second != nullptr ) {
+                obj.second->decRefCount();
+            }
         }
     }
 
@@ -671,7 +737,7 @@ public:
 
 
 /**
-   Templated implementation of ObjectMapComparison
+   Template implementation of ObjectMapComparison for <var> <op> <value>
  */
 template <typename T>
 class ObjectMapComparison_impl : public ObjectMapComparison
@@ -732,12 +798,457 @@ public:
 
     std::string getCurrentValue() override { return SST::Core::to_string(*var_); }
 
+    void* getVar() override { return var_; }
+
+    void print(std::ostream& stream) override
+    {
+        stream << name_ << " " << getStringFromOp(op_);
+        if ( op_ == Op::CHANGED )
+            stream << " ";
+        else
+            stream << " " << SST::Core::to_string(comp_value_) << " ";
+    }
 
 private:
     T* var_        = nullptr;
     T  comp_value_ = T();
     Op op_         = Op::INVALID;
-};
+}; // class ObjectMapComparison_impl
+
+/**
+    Templated compareType implementations
+    Variables are currently cast to matching types before being passed to this function
+*/
+template <typename V1>
+bool
+cmp(V1 v, ObjectMapComparison::Op op, V1 w)
+{
+    switch ( op ) {
+    case ObjectMapComparison::Op::LT:
+        return v < w;
+        break;
+    case ObjectMapComparison::Op::LTE:
+        return v <= w;
+        break;
+    case ObjectMapComparison::Op::GT:
+        return v > w;
+        break;
+    case ObjectMapComparison::Op::GTE:
+        return v >= w;
+        break;
+    case ObjectMapComparison::Op::EQ:
+        return v == w;
+        break;
+    case ObjectMapComparison::Op::NEQ:
+        return v != w;
+        break;
+    default:
+        std::cout << "Invalid comparison operator\n";
+        return false;
+        break;
+    }
+}
+
+// Comparison of two variables of the same type
+template <typename U1, typename U2, std::enable_if_t<std::is_same_v<U1, U2>, int> = true>
+bool
+compareType(U1 v, ObjectMapComparison::Op op, U2 w)
+{
+    // Handle same type - just compare
+    // printf("  CMP: Same type\n");
+    return cmp(v, op, w);
+}
+
+// Comparison of two variables with different arithmetic types
+template <typename U1, typename U2,
+    std::enable_if_t<!std::is_same_v<U1, U2> && std::is_arithmetic_v<U1> && std::is_arithmetic_v<U2>, int> = true>
+bool
+compareType(U1 v, ObjectMapComparison::Op op, U2 w)
+{
+    // printf("  CMP: Different types\n");
+    //  Handle integrals (bool, char, flavors of int)
+    if ( std::is_integral_v<U1> && std::is_integral_v<U2> ) {
+        // both unsigned integrals - cast to unsigned long long
+        if ( std::is_unsigned_v<U1> && std::is_unsigned_v<U2> ) {
+            // printf("  CMP: Both unsigned integrals\n");
+            unsigned long long v1 = static_cast<unsigned long long>(v);
+            unsigned long long w1 = static_cast<unsigned long long>(w);
+            return cmp(v1, op, w1);
+        }
+        // both integers but at least one signed - cast to signed long long
+        else {
+            // printf("  CMP: Not both unsigned integrals\n");
+            long long v1 = static_cast<long long>(v);
+            long long w1 = static_cast<long long>(w);
+            return cmp(v1, op, w1);
+        }
+    }
+    // Handle float/double combinations - cast to long double
+    else if ( std::is_floating_point_v<U1> && std::is_floating_point_v<U2> ) {
+        // printf("  CMP: Both fp\n");
+        long double v1 = static_cast<long double>(v);
+        long double w1 = static_cast<long double>(w);
+        return cmp(v1, op, w1);
+    }
+    else { // Integral and FP comparison - cast integral to fp
+        // printf("  CMP: integral and fp\n");
+        if ( std::is_integral_v<U1> ) {
+            if ( std::is_same_v<U2, float> ) {
+                float v1 = static_cast<float>(v);
+                float w1 = static_cast<float>(w); // unnecessary but compiler needs to know they are the same
+                return cmp(v1, op, w1);
+            }
+            else if ( std::is_same_v<U2, double> ) {
+                double v1 = static_cast<double>(v);
+                double w1 = static_cast<double>(w); // unnecessary ...
+                return cmp(v1, op, w1);
+            }
+            else {
+                long double v1 = static_cast<long double>(v);
+                long double w1 = static_cast<long double>(w); // unnecessary ...
+                return cmp(v1, op, w1);
+            }
+        }
+        else {
+            if ( std::is_same_v<U1, float> ) {
+                float v1 = static_cast<float>(v); // unnecessary ...
+                float w1 = static_cast<float>(w);
+                return cmp(v1, op, w1);
+            }
+            else if ( std::is_same_v<U1, double> ) {
+                double v1 = static_cast<double>(v); // unnecessary ...
+                double w1 = static_cast<double>(w);
+                return cmp(v1, op, w1);
+            }
+            else {
+                long double v1 = static_cast<long double>(v); // unnecessary ...
+                long double w1 = static_cast<long double>(w);
+                return cmp(v1, op, w1);
+            }
+        }
+    }
+}
+
+// Comparison of two variables with at least one non-arithmetic type
+template <typename U1, typename U2,
+    std::enable_if_t<(!std::is_same_v<U1, U2> && (!std::is_arithmetic_v<U1> || !std::is_arithmetic_v<U2>)), int> = true>
+bool
+compareType(U1 UNUSED(v), ObjectMapComparison::Op UNUSED(op), U2 UNUSED(w))
+{
+    // We shouldn't get here.... Can I throw an error somehow?
+    printf("  ERROR: CMP: Does not support non-arithmetic types\n");
+    return false;
+}
+
+
+/**
+Template implementation of ObjectMapComparison for <var> <op> <var>
+*/
+template <typename T1, typename T2>
+class ObjectMapComparison_var : public ObjectMapComparison
+{
+public:
+    ObjectMapComparison_var(const std::string& name1, T1* var1, Op op, const std::string& name2, T2* var2) :
+        ObjectMapComparison(name1),
+        name2_(name2),
+        var1_(var1),
+        op_(op),
+        var2_(var2)
+    {}
+
+    bool compare() override
+    {
+        T1 v1 = *var1_;
+        T2 v2 = *var2_;
+        return compareType(v1, op_, v2);
+    }
+
+    std::string getCurrentValue() override { return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_); }
+
+    void* getVar() override { return var1_; }
+
+    void print(std::ostream& stream) override
+    {
+        stream << name_ << " " << getStringFromOp(op_);
+        if ( op_ == Op::CHANGED )
+            stream << " ";
+        else
+            stream << " " << name2_ << " ";
+    }
+
+private:
+    std::string name2_ = "";
+    T1*         var1_  = nullptr;
+    Op          op_    = Op::INVALID;
+    T2*         var2_  = nullptr;
+}; // class ObjectMapComparison_impl
+
+
+class ObjectBuffer
+{
+public:
+    ObjectBuffer(const std::string& name, size_t sz) :
+        name_(name),
+        bufSize_(sz)
+    {}
+
+    virtual ~ObjectBuffer() = default;
+
+    virtual void        sample(size_t index, bool trigger) = 0;
+    virtual std::string get(size_t index)                  = 0;
+    virtual std::string getTriggerVal()                    = 0;
+
+    std::string getName() { return name_; }
+    size_t      getBufSize() { return bufSize_; }
+
+private:
+    std::string name_;
+    size_t      bufSize_;
+
+}; // class ObjectBuffer
+
+template <typename T>
+class ObjectBuffer_impl : public ObjectBuffer
+{
+public:
+    ObjectBuffer_impl(const std::string& name, T* varPtr, size_t sz) :
+        ObjectBuffer(name, sz),
+        varPtr_(varPtr)
+    {
+        objectBuffer_.resize(sz);
+    }
+
+    void sample(size_t index, bool trigger) override
+    {
+        objectBuffer_[index] = *varPtr_;
+        if ( trigger ) triggerVal = *varPtr_;
+    }
+
+    std::string get(size_t index) override { return SST::Core::to_string(objectBuffer_.at(index)); }
+
+    std::string getTriggerVal() override { return SST::Core::to_string(triggerVal); }
+
+
+private:
+    T*             varPtr_ = nullptr;
+    std::vector<T> objectBuffer_;
+    T              triggerVal;
+
+}; // class ObjectBuffer_impl
+
+
+class TraceBuffer
+{
+
+public:
+    TraceBuffer(Core::Serialization::ObjectMap* var, size_t sz, size_t pdelay) :
+        varObj_(var),
+        bufSize_(sz),
+        postDelay_(pdelay)
+    {
+        tagBuffer_.resize(bufSize_);
+        cycleBuffer_.resize(bufSize_);
+        handlerBuffer_.resize(bufSize_);
+    }
+
+    virtual ~TraceBuffer() = default;
+
+    void setBufferReset() { reset_ = true; }
+
+    void resetTraceBuffer()
+    {
+        printf("    Reset Trace Buffer\n");
+        postCount_   = 0;
+        cur_         = 0;
+        first_       = 0;
+        numRecs_     = 0;
+        samplesLost_ = 0;
+        isOverrun_   = false;
+        reset_       = false;
+        state_       = CLEAR;
+    }
+
+    size_t getBufferSize() { return bufSize_; }
+
+    void addObjectBuffer(ObjectBuffer* vb)
+    {
+        objBuffers_.push_back(vb);
+        numObjects++;
+    }
+
+    enum BufferState : int {
+        CLEAR,       // 0 Pre Trigger
+        TRIGGER,     // 1 Trigger
+        POSTTRIGGER, // 2 Post Trigger
+        OVERRUN      // 3 Overrun
+    };
+
+    const std::map<BufferState, char> state2char { { CLEAR, '-' }, { TRIGGER, '!' }, { POSTTRIGGER, '+' },
+        { OVERRUN, 'o' } };
+
+
+    bool sampleT(bool trigger, uint64_t cycle, const std::string& handler)
+    {
+        size_t start_state  = state_;
+        bool   invokeAction = false;
+
+        // if Trigger == TRUE
+        if ( trigger ) {
+            if ( start_state == CLEAR ) { // Not previously triggered
+                state_ = TRIGGER;         // State becomes trigger record
+            }
+            // printf("    Sample: trigger\n");
+
+        } // if trigger
+
+        if ( start_state == TRIGGER || start_state == POSTTRIGGER ) { // trigger record or post trigger
+            state_ = POSTTRIGGER;                                     // State becomes post trigger
+            // printf("    Sample: post trigger\n");
+        }
+
+// Circular buffer
+#ifdef _OBJMAP_DEBUG_
+        std::cout << "    Sample:" << handler << ": numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
+                  << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
+                  << " samplesLost:" << samplesLost_ << std::endl;
+#endif
+        cycleBuffer_[cur_]   = cycle;
+        handlerBuffer_[cur_] = handler;
+        if ( trigger ) {
+            triggerCycle = cycle;
+        }
+
+        // Sample all the trace object buffers
+        ObjectBuffer* varBuffer_;
+        for ( size_t obj = 0; obj < numObjects; obj++ ) {
+            varBuffer_ = objBuffers_[obj];
+            varBuffer_->sample(cur_, trigger);
+        }
+
+        if ( numRecs_ < bufSize_ ) {
+            tagBuffer_[cur_] = state_;
+            numRecs_++;
+            cur_ = (cur_ + 1) % bufSize_;
+            if ( cur_ == 0 ) first_ = 0; // 1;
+        }
+        else { // Buffer full
+            // Check to see if we are overwriting trigger
+            if ( tagBuffer_[cur_] == TRIGGER ) {
+                // printf("    Sample Overrun\n");
+                isOverrun_ = true;
+            }
+            tagBuffer_[cur_] = state_;
+            numRecs_++;
+            cur_   = (cur_ + 1) % bufSize_;
+            first_ = cur_;
+        }
+
+        if ( isOverrun_ ) {
+            samplesLost_++;
+        }
+
+        if ( (state_ == TRIGGER) && (postDelay_ == 0) ) {
+            invokeAction = true;
+            std::cout << "    Invoke Action\n";
+        }
+
+        if ( state_ == POSTTRIGGER ) {
+            postCount_++;
+            if ( postCount_ >= postDelay_ ) {
+                invokeAction = true;
+                std::cout << "    Invoke Action\n";
+            }
+        }
+
+        return invokeAction;
+    }
+
+    void dumpTraceBufferT()
+    {
+        if ( numRecs_ == 0 ) return;
+
+        size_t start;
+        size_t end;
+
+        start = first_;
+        if ( cur_ == 0 ) {
+            end = bufSize_ - 1;
+        }
+        else {
+            end = cur_ - 1;
+        }
+        // std::cout << "start=" << start << " end=" << end << std::endl;
+
+        for ( int j = start;; j++ ) {
+            size_t i = j % bufSize_;
+
+            std::cout << "buf[" << i << "] " << handlerBuffer_.at(i) << " @" << cycleBuffer_.at(i) << " ("
+                      << state2char.at(tagBuffer_.at(i)) << ") ";
+
+            for ( size_t obj = 0; obj < numObjects; obj++ ) {
+                ObjectBuffer* varBuffer_ = objBuffers_[obj];
+                std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->get(i) << " ";
+            }
+            std::cout << std::endl;
+
+            if ( i == end ) {
+                break;
+            }
+        }
+    }
+
+    void dumpTriggerRecord()
+    {
+        if ( numRecs_ == 0 ) {
+            std::cout << "No trace samples in current buffer" << std::endl;
+            return;
+        }
+        if ( state_ != CLEAR ) {
+            std::cout << "TriggerRecord:@cycle" << triggerCycle << ": samples lost = " << samplesLost_ << ": ";
+            for ( size_t obj = 0; obj < numObjects; obj++ ) {
+                ObjectBuffer* varBuffer_ = objBuffers_[obj];
+                std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void printVars()
+    {
+        for ( size_t obj = 0; obj < numObjects; obj++ ) {
+            ObjectBuffer* varBuffer_ = objBuffers_[obj];
+            std::cout << SST::Core::to_string(varBuffer_->getName()) << " ";
+        }
+    }
+
+    void printConfig()
+    {
+        std::cout << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
+        printVars();
+    }
+
+    // private:
+    Core::Serialization::ObjectMap* varObj_      = nullptr;
+    size_t                          bufSize_     = 64;
+    size_t                          postDelay_   = 8;
+    size_t                          postCount_   = 0;
+    size_t                          cur_         = 0;
+    size_t                          first_       = 0;
+    size_t                          numRecs_     = 0;
+    bool                            isOverrun_   = false;
+    size_t                          samplesLost_ = 0;
+    bool                            reset_       = false;
+    BufferState                     state_       = CLEAR;
+
+    size_t                     numObjects = 0;
+    std::vector<BufferState>   tagBuffer_;
+    std::vector<std::string>   handlerBuffer_;
+    std::vector<ObjectBuffer*> objBuffers_;
+    std::vector<uint64_t>      cycleBuffer_;
+    uint64_t                   triggerCycle;
+
+}; // class TraceBuffer
+
 
 /**
    ObjectMap representing fundamental types, and classes treated as
@@ -766,6 +1277,25 @@ public:
        as a string
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
+
+    virtual bool checkValue(const std::string& value) override
+    {
+        bool ret = false;
+        try {
+            T v = SST::Core::from_string<T>(value);
+            ret = static_cast<bool>(v);
+        }
+        catch ( const std::invalid_argument& e ) {
+            std::cerr << "Error: Invalid value: " << value << std::endl;
+            return false;
+        }
+        catch ( const std::out_of_range& e ) {
+            std::cerr << "Error: Value is out of range: " << value << std::endl;
+            return false;
+        }
+        ret = true;
+        return ret;
+    }
 
     /**
        Get the value of the object as a string
@@ -814,9 +1344,109 @@ public:
     std::string getType() override { return demangle_name(typeid(T).name()); }
 
     ObjectMapComparison* getComparison(
-        const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
+        const std::string& name, ObjectMapComparison::Op UNUSED(op), const std::string& value) override
     {
         return new ObjectMapComparison_impl<T>(name, addr_, op, value);
+    }
+
+    ObjectMapComparison* getComparisonVar(
+        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) override
+    {
+        // Ensure var2 is fundamental type
+        if ( !var2->isFundamental() ) {
+            printf("Triggers can only use fundamental types; %s is not "
+                   "fundamental\n",
+                name2.c_str());
+            return nullptr;
+        }
+
+        std::string type = var2->getType();
+#if 0
+        std::cout << "In ObjectMapComparison_var: " << name << " " << name2 << std::endl;
+        // std::cout << "typeid(T): " << demangle_name(typeid(T).name()) << std::endl;
+        std::string type1 = getType();
+        std::cout << "getType(v1): " << type1 << std::endl;
+        std::cout << "getType(v2): " << type << std::endl;
+#endif
+
+        // Create ObjectMapComparison_var which compares two variables
+        // Only support arithmetic types for now
+        if ( std::is_arithmetic_v<T> ) {
+            if ( type == "int" ) {
+                int* addr2 = static_cast<int*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, int>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "unsigned int" ) {
+                unsigned int* addr2 = static_cast<unsigned int*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, unsigned int>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "long" ) {
+                long* addr2 = static_cast<long*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, long>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "unsigned long" ) {
+                unsigned long* addr2 = static_cast<unsigned long*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, unsigned long>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "char" ) {
+                char* addr2 = static_cast<char*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, char>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "signed char" ) {
+                signed char* addr2 = static_cast<signed char*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, signed char>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "unsigned char" ) {
+                unsigned char* addr2 = static_cast<unsigned char*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, unsigned char>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "short" ) {
+                short* addr2 = static_cast<short*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, short>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "unsigned short" ) {
+                unsigned short* addr2 = static_cast<unsigned short*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, unsigned short>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "long long" ) {
+                long long* addr2 = static_cast<long long*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, long long>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "unsigned long long" ) {
+                unsigned long long* addr2 = static_cast<unsigned long long*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, unsigned long long>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "bool" ) {
+                bool* addr2 = static_cast<bool*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, bool>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "float" ) {
+                float* addr2 = static_cast<float*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, float>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "double" ) {
+                double* addr2 = static_cast<double*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, double>(name, addr_, op, name2, addr2);
+            }
+            else if ( type == "long double" ) {
+                long double* addr2 = static_cast<long double*>(var2->getAddr());
+                return new ObjectMapComparison_var<T, long double>(name, addr_, op, name2, addr2);
+            }
+
+            else {
+                std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
+                return nullptr;
+            }
+        } // end if first var is arithmetic
+        else {
+            std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
+            return nullptr;
+        }
+    }
+
+    ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
+    {
+        return new ObjectBuffer_impl<T>(name, addr_, sz);
     }
 };
 
@@ -860,6 +1490,7 @@ public:
     {}
     ~ObjectMapArray() override = default;
 };
+
 
 } // namespace SST::Core::Serialization
 

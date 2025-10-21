@@ -12,6 +12,9 @@
 #ifndef SST_CORE_FROM_STRING_H
 #define SST_CORE_FROM_STRING_H
 
+#include <iomanip>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -107,7 +110,16 @@ template <class T>
 std::enable_if_t<!std::is_enum_v<T>, std::string>
 to_string(const T& input)
 {
-    if constexpr ( std::is_arithmetic_v<T> )
+    if constexpr ( std::is_floating_point_v<T> ) {
+        std::stringstream s;
+        T                 abs_val = input < 0 ? -input : input;
+        if ( abs_val > (T)10e6 || abs_val < (T)10e-6 )
+            s << std::scientific << std::setprecision(std::numeric_limits<double>::max_digits10) << input;
+        else
+            s << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << input;
+        return s.str().c_str();
+    }
+    else if constexpr ( std::is_arithmetic_v<T> )
         return std::to_string(input);
     else
         return typeid(T).name(); // For now, return a string if the type isn't handled elsewhere

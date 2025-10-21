@@ -515,6 +515,7 @@ public:
     RealTimeManager*        real_time_;
     std::string             interactive_type_  = "";
     std::string             interactive_start_ = "";
+    std::string             replay_file_       = "";
     InteractiveConsole*     interactive_       = nullptr;
     bool                    enter_interactive_ = false;
     std::string             interactive_msg_;
