@@ -18,7 +18,6 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel.h"
-#include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
@@ -159,8 +158,7 @@ portModCompare(PyObject* obj0, PyObject* obj1)
 #endif
 
 /**
- * @brief portModEnableStatistic. Creates a new statistic object unique to this slot
- *        rather than using a shared statistic created by compCreateStatistic
+ * @brief portModEnableStatistic. Enables a specific statistic on the port module.
  * @param self The Python port module
  * @param args The name of the stat slot to fill and optionally a params dictionary
  * @return The Python stat object assigned to this slot
@@ -182,8 +180,8 @@ portModEnableStatistic(PyObject* self, PyObject* args)
 }
 
 /**
- * @brief compEnableAllStatistics
- * @param self The Python component
+ * @brief portModEnableAllStatistics
+ * @param self The Python PortModule
  * @param args Optionally a params dictionary
  * @return Just a flag (0) indicating success. The enable all functions
  *         do not return Python stat handles.
@@ -211,12 +209,11 @@ portModEnableAllStatistics(PyObject* self, PyObject* args)
 }
 
 /**
- * @brief compEnableStatistics
- * @param self  The Python component
+ * @brief portModEnableStatistics
+ * @param self  The Python PortModule
  * @param args  The statistic slot to enable (single) or a list of slots to enable, optionally also params dictionary
  * @return A list of Python statistic templates.  Each Statistic template will generate a unique object
- *         in C++ rather than a shared object.  If wanted a shared object, use compCreateStatistic
- *         and then assigned the created statistic to slots.
+ *         in C++.
  */
 static PyObject*
 portModEnableStatistics(PyObject* self, PyObject* args)

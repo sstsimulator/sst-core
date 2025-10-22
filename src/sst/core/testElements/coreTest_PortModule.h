@@ -70,7 +70,7 @@ public:
         { "events_intercepted", "How many events were intercepted by the module", "count", 4 },
         { "not_enabled", "A statistic that isn't enabled in tests to ensure that stat level is respected", "none", 7 }
     )
-    
+
     SST_ELI_IS_CHECKPOINTABLE()
 
     explicit TestPortModule(Params& params);
