@@ -70,6 +70,8 @@ public:
         { "events_intercepted", "How many events were intercepted by the module", "count", 4 },
         { "not_enabled", "A statistic that isn't enabled in tests to ensure that stat level is respected", "none", 7 }
     )
+    
+    SST_ELI_IS_CHECKPOINTABLE()
 
     explicit TestPortModule(Params& params);
 
@@ -140,6 +142,8 @@ public:
         {"port_slot", "Slot for loading subcomponent to test shared ports", "" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     coreTestPortModuleComponent(SST::ComponentId_t id, SST::Params& params);
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -191,6 +195,8 @@ public:
         "Subcomponent used to test putting PortModules on shared ports",
         SST::CoreTestPortModule::PortSubComponent
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     PortSubComponent(ComponentId_t id, Params& params);
     PortSubComponent() = default; // For serialization

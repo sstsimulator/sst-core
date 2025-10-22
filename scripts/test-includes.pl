@@ -9,7 +9,6 @@ use File::Spec::Functions qw(abs2rel);
 use File::Temp;
 use Getopt::Long;
 use List::Util qw(max);
-use Memoize;
 use Pod::Usage;
 
 my ($root, $fix, $quiet);
@@ -24,14 +23,16 @@ GCC needs to be installed and g++ needs to be in the PATH.
 This tool uses GCC-specific warnings which are not available on Clang.
 EOF
 
-memoize(qw(check_ignore NORMALIZER realpath));
 find_and_check_files();
 print_summary();
 
 # Whether a file is ignored by Git
+my %check_ignore;
 sub check_ignore {
-    exit 2 if -257 & system qw(git check-ignore -q --), $_[0];
-    return $? == 0;
+    my $path = realpath $_[0];
+    return $check_ignore{$path} if exists $check_ignore{$path};
+    exit 2 if -257 & system qw(git check-ignore -q --), $path;
+    return $check_ignore{$path} = $? == 0;
 }
 
 # Scan C/C++ files starting from $root
