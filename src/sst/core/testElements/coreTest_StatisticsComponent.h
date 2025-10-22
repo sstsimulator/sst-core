@@ -63,6 +63,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     StatisticsComponentInt(ComponentId_t id, Params& params);
     StatisticsComponentInt(); // For checkpointing only
     void setup() override {}
@@ -131,6 +133,8 @@ public:
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     StatisticsComponentFloat(ComponentId_t id, Params& params);
     StatisticsComponentFloat(); // For serialization only

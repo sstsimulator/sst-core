@@ -40,6 +40,7 @@ public:
         ELI::ProvidesPorts,
         ELI::ProvidesSubComponentSlots,
         ELI::ProvidesStats,
+        ELI::ProvidesCheckpointable,
         ELI::ProvidesProfilePoints,
         ELI::ProvidesAttributes)
 

@@ -110,6 +110,8 @@ public:
         {"nullstat", "Test that non-enabled stats are checkpointed correctly", "number", 5}
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
     ~coreTestCheckpoint();
 

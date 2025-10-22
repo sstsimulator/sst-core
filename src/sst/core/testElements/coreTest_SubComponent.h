@@ -143,6 +143,8 @@ public:
         {"mySubComp", "Test slot", "SST::CoreTestSubComponent::SubCompInterface" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     SubComponentLoader(ComponentId_t id, SST::Params& params);
 
     SubComponentLoader() {}
@@ -186,6 +188,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
         {"mySubCompSlot", "Test slot", "SST::CoreTestSubComponent::SubCompInterface" }
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     SubCompSlot() {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -245,6 +249,7 @@ public:
         {"numRecv", "# of msgs recv", "", 1},
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
 
     explicit SubCompSendRecvInterface(ComponentId_t id) :
         SubCompInterface(id)
@@ -289,6 +294,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
         {"test_slot", "Test slot", "" }
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     SubCompSender() {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -346,6 +353,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
         SST_ELI_DELETE_SUBCOMPONENT_SLOT("test_slot")
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     SubCompReceiver() {}
     void serialize_order(SST::Core::Serialization::serializer& ser) override

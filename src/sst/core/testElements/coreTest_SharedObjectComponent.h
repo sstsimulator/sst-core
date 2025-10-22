@@ -98,6 +98,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     coreTestSharedObjectsComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestSharedObjectsComponent() {}
 
