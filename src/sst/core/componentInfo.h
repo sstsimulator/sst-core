@@ -115,7 +115,7 @@ private:
 
     TimeConverter defaultTimeBase;
 
-    std::map<std::string, std::vector<ConfigPortModule>>* portModules         = nullptr;
+    std::map<std::string, std::vector<ConfigPortModule>>* port_modules_       = nullptr;
     std::map<StatisticId_t, ConfigStatistic>*             stat_configs_       = nullptr;
     std::map<std::string, StatisticId_t>*                 enabled_stat_names_ = nullptr;
     bool                                                  enabled_all_stats_  = false;

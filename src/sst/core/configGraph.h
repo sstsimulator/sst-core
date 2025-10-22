@@ -345,11 +345,14 @@ using ConfigLinkMap_t = SparseVectorMap<LinkId_t, ConfigLink*>;
 /**
    Class that represents a PortModule in ConfigGraph
  */
-class ConfigPortModule : public SST::Core::Serialization::serializable
+class ConfigPortModule
 {
 public:
     std::string type;
     Params      params;
+    uint8_t     stat_load_level = STATISTICLOADLEVELUNINITIALIZED;
+    Params      all_stat_config; /*!< If all stats are enabled, the config information for the stats */
+    std::map<std::string, Params> per_stat_configs;
 
     ConfigPortModule() = default;
     ConfigPortModule(const std::string& type, const Params& params) :
@@ -357,12 +360,20 @@ public:
         params(params)
     {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void addParameter(const std::string& key, const std::string& value);
+    void addSharedParamSet(const std::string& set);
+    void setStatisticLoadLevel(const uint8_t level);
+    void enableAllStatistics(const SST::Params& params);
+    void enableStatistic(const std::string& statistic_name, const SST::Params& params);
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
     {
         SST_SER(type);
         SST_SER(params);
+        SST_SER(stat_load_level);
+        SST_SER(all_stat_config);
+        SST_SER(per_stat_configs);
     }
-    ImplementSerializable(SST::ConfigPortModule)
 };
 
 
@@ -383,7 +394,8 @@ public:
     Params                params;        /*!< Set of Parameters */
     uint8_t               statLoadLevel; /*!< Statistic load level for this component */
 
-    std::map<std::string, std::vector<ConfigPortModule>> portModules;
+    std::map<std::string, std::vector<ConfigPortModule>>
+        port_modules; /*!< Map of port names to port modules loaded on that port */
     std::map<std::string, StatisticId_t>
                     enabledStatNames; /*!< Map of explicitly enabled statistic names to unique IDs */
     bool            enabledAllStats;  /*!< Whether all stats in this (sub)component have been enabled */
@@ -457,7 +469,8 @@ public:
         return params.getSubscribedSharedParamSets();
     }
 
-    void addPortModule(const std::string& port, const std::string& type, const Params& params);
+    std::pair<std::vector<ConfigPortModule>*, size_t> addPortModule(
+        const std::string& port, const std::string& type, const Params& params);
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -477,7 +490,7 @@ public:
         SST_SER(links);
         SST_SER(params);
         SST_SER(statLoadLevel);
-        SST_SER(portModules);
+        SST_SER(port_modules);
         SST_SER(enabledStatNames);
         SST_SER(enabledAllStats);
         SST_SER(statistics_);
@@ -690,7 +703,6 @@ public:
     ConfigComponent*       findComponentByName(const std::string& name);
     const ConfigComponent* findComponent(ComponentId_t) const;
 
-    bool             containsStatistic(StatisticId_t id) const;
     ConfigStatistic* findStatistic(StatisticId_t) const;
 
     /** Return the map of links */

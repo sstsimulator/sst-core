@@ -29,7 +29,9 @@ sst_core_python_sources = \
 	model/python/pymodel_stat.h \
 	model/python/pymodel_stat.cc \
 	model/python/pymodel_statgroup.h \
-	model/python/pymodel_statgroup.cc
+	model/python/pymodel_statgroup.cc \
+	model/python/pymodel_portmodule.h \
+	model/python/pymodel_portmodule.cc
 
 sst_core_json_sources = \
   model/json/jsonmodel.h \
