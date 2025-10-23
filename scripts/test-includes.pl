@@ -11,20 +11,35 @@ use Getopt::Long;
 use List::Util qw(max);
 use Pod::Usage;
 
-my ($root, $fix, $quiet);
+my ($root, $fix, $quiet, $nosort, $gcc);
 
 get_options();
-
-# Confirm the presence of g++ compiler
-die <<EOF if `g++ --version`, $?;
-
-GCC needs to be installed and g++ needs to be in the PATH.
-
-This tool uses GCC-specific warnings which are not available on Clang.
-EOF
-
+find_gcc();
 find_and_check_files();
 print_summary();
+
+# Find the g++ compiler and confirm that it produces the correct output
+sub find_gcc {
+    my $tmp = File::Temp->new(SUFFIX => ".cc");
+    print $tmp "std::vector<int> x;\n";
+    close $tmp;
+    for my $gcc_val (qw(g++ g++-18 g++-17 g++-16 g++-15 g++-14 g++-13 g++-12 g++-11 g++-10 g++-9 g++-8)) {
+        $gcc = $gcc_val;
+        if (open my $comp, "-|", "$gcc -S -o /dev/null '$tmp' 2>&1") {
+            while (<$comp>) {
+                if (/^\s*\+\+\+ \|\+#include <vector>$/) {
+                    print STDERR "Using GCC = $gcc\n" if !$quiet;
+                    return;
+                }
+            }
+        }
+    }
+    print STDERR "GCC needs to be installed, and g++ or g++-<nnn> needs to be in the PATH.\n\n",
+        "This tool uses GCC-specific warnings which are not available on clang.\n";
+    print STDERR "\nOn MacOS, g++ is usually aliased to clang, but g++-<nnn> may be available.\n"
+        if $^O =~ /darwin/i;
+    exit 2;
+}
 
 # Whether a file is ignored by Git
 my %check_ignore;
@@ -35,7 +50,7 @@ sub check_ignore {
     return $check_ignore{$path} = $? == 0;
 }
 
-# Scan C/C++ files starting from $root
+# Scan C/C++ files in @ARGV
 # Scan .h files first, in case --fix is enabled and fixing the .h
 # file will automatically fix the corresponding other files
 sub find_and_check_files {
@@ -49,7 +64,7 @@ sub find_and_check_files {
                 &check_file if /\Q$suffix\E$/ && !check_ignore($_);
             }
         };
-        find($filter, $root);
+        find($filter, $_) for @ARGV;
     }
 }
 
@@ -82,14 +97,11 @@ sub get_options {
         help => sub { pod2usage(-verbose => 2, -noperldoc => 1, -exitval => 0) },
         quiet => \$quiet,
         fix => \$fix,
+        nosort => \$nosort,
         ) or pod2usage(-verbose => 1, -noperldoc => 1, -exitval => 2);
-    if (@ARGV) {
-        $root = realpath($ARGV[0]);
-    } else {
-        chomp($root = `git rev-parse --show-toplevel`);
-        exit 2 if $?;
-    }
-    die qq(No such directory "$root"\n) if !-d $root;
+    chomp($root = `git rev-parse --show-toplevel`);
+    exit 2 if $?;
+    unshift @ARGV, $root if !@ARGV;
 }
 
 # Open a temporary source file with $suffix, editing $file, removing #include "..."
@@ -166,13 +178,13 @@ sub check_file {
         -e "$hdr" or die "Internal error: File $hdr does not exist\n" if $hdr;
 
         # GCC command to generate warnings about missing headers
-        my $cmd = "g++ $lang -S -o /dev/null '$src' 2>&1";
+        my $cmd = "$gcc $lang -S -o /dev/null '$src' 2>&1";
 
         # Parse the GCC output
-        open my $gcc, "-|", $cmd or die "Could not execute $cmd: $!\n";
+        open my $comp, "-|", $cmd or die "Could not execute $cmd: $!\n";
         my (@src, %edits);
 
-        LINE: while (<$gcc>) {
+        LINE: while (<$comp>) {
             s:$hdr:$dir/$header: if $hdr;
             s:$src:$dir/$file:;
             push @src, $_;
@@ -300,17 +312,19 @@ sub check_file {
             $a =~ /\bsst_config\.h\b/ ? -1 : $b =~ /\bsst_config\.h\b/ ? 1 : $a cmp $b;
         }
 
-        # Sort contiguous blocks of #include <...> without periods between <>
-        my $start;
-        for (my $i = 0; $i <= $#new; $i++) {
-            if ($new[$i] =~ /^\s*#\s*include\s*<[^.>]+>/) {
-                $start //= $i;
-            } elsif (defined $start) {
-                @new[$start .. $i-1] = sort byname @new[$start .. $i-1];
-                undef $start;
+        # Sort contiguous blocks of #include <>
+        if (!$nosort) {
+            my $start;
+            for (my $i = 0; $i <= $#new; $i++) {
+                if ($new[$i] =~ /^\s*#\s*include\s*<[^>]+>/) {
+                    $start //= $i;
+                } elsif (defined $start) {
+                    @new[$start .. $i-1] = sort byname @new[$start .. $i-1];
+                    undef $start;
+                }
             }
+            @new[$start .. $#new] = sort byname @new[$start .. $#new] if defined $start;
         }
-        @new[$start .. $#new] = sort byname @new[$start .. $#new] if defined $start;
 
         # Output the new file
         open my $fh, ">", $fullpath
@@ -346,7 +360,7 @@ test-includes.pl - Test C/C++ sources for system #include files necessary to com
 
 =head1 SYNOPSIS
 
-test-includes.pl [ options ] [ rootdir ]
+test-includes.pl [ options ] [ path... ]
 
 =head1 OPTIONS
 
@@ -355,6 +369,10 @@ test-includes.pl [ options ] [ rootdir ]
 =item B<--fix>
 
 Fix the files, adding suggested #include lines. Changes will need to be reviewed and tested, and added to a Git commit.
+
+=item B<--nosort>
+
+Do not sort the #include<> directives in lexical order
 
 =item B<--quiet>
 
@@ -368,13 +386,13 @@ This help message
 
 =head1 DESCRIPTION
 
-Looks at C/C++ files in the root directory and its subdirectories, looking for missing #include <> directives for system headers.
+Looks at C/C++ files in the specified paths, looking for missing #include <> directives for system headers.
 
 For example, if std::vector is used in a file, then #include <vector> should appear.
 
 The .git and external directories, and any files/directories ignored by Git, are not scanned.
 
-If no root directory is specified, the root directory of the Git respository in the current working directory is used.
+If no paths are specified, the root directory of the Git respository in the current working directory is used.
 
 =head1 RETURN VALUE
 

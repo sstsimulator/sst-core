@@ -52,7 +52,7 @@ class serialize_impl<T,
     std::enable_if_t<std::conjunction_v<std::negation<is_trivially_serializable_excluded<std::remove_pointer_t<T>>>,
         is_trivially_serializable<std::remove_pointer_t<T>>>>>
 {
-    void operator()(T& t, serializer& ser, ser_opt_t options)
+    void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
