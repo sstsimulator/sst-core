@@ -78,6 +78,7 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
+	watchPoint.h \
 	eli/elementinfo.h \
 	eli/elibase.h \
 	eli/attributeInfo.h \
