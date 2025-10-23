@@ -339,6 +339,7 @@ Simulation_impl::Simulation_impl(
 
     interactive_type_  = config.interactive_console();
     interactive_start_ = config.interactive_start_time();
+    replay_file_       = config.replay_file();
 }
 
 void
@@ -946,10 +947,18 @@ Simulation_impl::run()
     // Setup interactive mode (only in serial jobs for now)
     if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
         if ( interactive_type_ != "" ) {
+            // --interactive-console used to override default
             initialize_interactive_console(interactive_type_);
         }
+        else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
+                  (config.sigusr2() == "sst.rt.interactive") ) {
+            // use default interactive console
+            interactive_type_ = "sst.interactive.simpledebug";
+            initialize_interactive_console(interactive_type_);
+        }
+
         if ( interactive_start_ != "" ) {
-            if ( nullptr == interactive_ ) {
+            if ( nullptr == interactive_ ) { // Should never get here
                 sim_output.fatal(CALL_INFO, 1,
                     "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
                     "interactive action that should be used.\n");
@@ -2110,12 +2119,14 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 
     // Need to parse the type string to see if there are any parameters
     std::string actual_type = type;
-    SST::Params p;
+    SST::Params p {};
     // For now, just ignore parameters
     // size_t index = type.find_first_of('(');
     // if ( index != std::string::npos ) {
     //     size_t end_index =
     // }
+
+    if ( replay_file_.size() > 0 ) p.insert("replayFile", replay_file_);
 
     interactive_ = factory->Create<InteractiveConsole>(actual_type, p);
 }

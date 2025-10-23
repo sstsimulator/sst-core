@@ -512,6 +512,10 @@ private:
         std::bind(&StandardConfigParsers::from_string_default<std::string>, std::placeholders::_1,
             std::placeholders::_2, "0"));
 
+    /**
+       File to replay an interactive console script
+    */
+    SST_CONFIG_DECLARE_OPTION(std::string, replay_file, "", &StandardConfigParsers::from_string<std::string>);
 
 #ifdef USE_MEMPOOL
     /**
@@ -576,6 +580,11 @@ private:
 
 
     /**** Advanced options - Checkpointing ****/
+
+    /**
+     * Enable checkpointing for interactive debug
+     */
+    SST_CONFIG_DECLARE_OPTION(bool, checkpoint_enable, 0, &StandardConfigParsers::flag_set_true);
 
     /**
      * Interval at which to create a checkpoint in wall time
