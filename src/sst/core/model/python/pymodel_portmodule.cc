@@ -85,7 +85,7 @@ portModAddParam(PyObject* self, PyObject* args)
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) ) return nullptr;
 
     // If bound, can update immediately, otherwise need to buffer parameters
-    ConfigPortModule* pm = getPortModule(self);
+    SST::ConfigPortModule* pm = getPortModule(self);
     if ( nullptr == pm ) return nullptr; // Should never happen
     PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
     pm->addParameter(param, SST_ConvertToCppString(vstr));
@@ -97,7 +97,7 @@ portModAddParam(PyObject* self, PyObject* args)
 static PyObject*
 portModAddParams(PyObject* self, PyObject* args)
 {
-    ConfigPortModule* pm = getPortModule(self);
+    SST::ConfigPortModule* pm = getPortModule(self);
     if ( nullptr == pm ) return nullptr;
 
     if ( !PyDict_Check(args) ) {
@@ -172,7 +172,7 @@ portModEnableStatistic(PyObject* self, PyObject* args)
     if ( !PyArg_ParseTuple(args, "s|O", &name, &py_params) ) {
         return nullptr;
     }
-    ConfigPortModule* pm = getPortModule(self);
+    SST::ConfigPortModule* pm = getPortModule(self);
     if ( nullptr == pm ) return nullptr;
     pm->enableStatistic(name, pythonToCppParams(py_params));
 
@@ -198,7 +198,7 @@ portModEnableAllStatistics(PyObject* self, PyObject* args)
     argOK = PyArg_ParseTuple(args, "|O", &PyDict_Type, &stat_param_dict);
 
     if ( argOK ) {
-        ConfigPortModule* pm = getPortModule(self);
+        SST::ConfigPortModule* pm = getPortModule(self);
         pm->enableAllStatistics(pythonToCppParams(stat_param_dict));
     }
     else {
@@ -218,11 +218,11 @@ portModEnableAllStatistics(PyObject* self, PyObject* args)
 static PyObject*
 portModEnableStatistics(PyObject* self, PyObject* args)
 {
-    int               arg_ok          = 0;
-    PyObject*         stat_list       = nullptr;
-    char*             stat_str        = nullptr;
-    PyObject*         stat_param_dict = nullptr;
-    ConfigPortModule* pm              = getPortModule(self);
+    int                    arg_ok          = 0;
+    PyObject*              stat_list       = nullptr;
+    char*                  stat_str        = nullptr;
+    PyObject*              stat_param_dict = nullptr;
+    SST::ConfigPortModule* pm              = getPortModule(self);
 
     PyErr_Clear();
 
@@ -262,9 +262,9 @@ portModEnableStatistics(PyObject* self, PyObject* args)
 static PyObject*
 portModSetStatisticLoadLevel(PyObject* self, PyObject* args)
 {
-    int               arg_ok = 0;
-    int               level  = STATISTICLOADLEVELUNINITIALIZED;
-    ConfigPortModule* pm     = getPortModule(self);
+    int                    arg_ok = 0;
+    int                    level  = STATISTICLOADLEVELUNINITIALIZED;
+    SST::ConfigPortModule* pm     = getPortModule(self);
 
     PyErr_Clear();
     arg_ok = PyArg_ParseTuple(args, "i|i", &level);
@@ -288,7 +288,7 @@ portModAddSharedParamSet(PyObject* self, PyObject* arg)
     PyErr_Clear();
     set = SST_ConvertToCppString(arg);
 
-    ConfigPortModule* pm = getPortModule(self);
+    SST::ConfigPortModule* pm = getPortModule(self);
 
     if ( set != nullptr ) {
         pm->addSharedParamSet(set);

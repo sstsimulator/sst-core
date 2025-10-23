@@ -26,6 +26,7 @@ REENABLE_WARNING
 
 namespace SST {
 class ConfigPortModule;
+}
 
 extern "C" {
 
@@ -34,9 +35,9 @@ struct PyPortModule;
 
 struct PyPortModule
 {
-    PortModulePy_t*                pobj;
-    std::vector<ConfigPortModule>* ptr  = nullptr; // list of port modules bound at port, we match one of these
-    int                            lkup = -1; // Index of this port module at port, for lookup or -1 if not yet bound
+    PortModulePy_t*                     pobj;
+    std::vector<SST::ConfigPortModule>* ptr = nullptr; // list of port modules bound at port, we match one of these
+    int lkup = -1; // Index of this port module at port, for lookup or -1 if not yet bound
 
     PyPortModule(PortModulePy_t* pobj, int lkup) :
         pobj(pobj),
@@ -68,6 +69,5 @@ getPortModule(PyObject* pobj)
 }
 
 } /* extern C */
-} // namespace SST
 
 #endif // SST_CORE_MODEL_PYTHON_PYMODEL_PORTMODULE_H
