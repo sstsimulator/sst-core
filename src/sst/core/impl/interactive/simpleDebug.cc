@@ -292,7 +292,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         }
     }
 
-    // The business
+    // Search for the requested command and execute it if found.
     for ( auto consoleCommand : cmdRegistry ) {
         if ( consoleCommand.match(tokens[0]) ) {
             consoleCommand.exec(tokens); // TODO prefer having return code to know if succeeded
@@ -301,7 +301,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         }
     }
 
-    // Oops
+    // No matching command found
     std::cout << "Unknown command: " << tokens[0].c_str() << std::endl;
     cmdHistoryBuf.append(cmd); // want garbled command so we can fix using command line editor
 }
