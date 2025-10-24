@@ -18,8 +18,8 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 namespace SST::ELI {
 
