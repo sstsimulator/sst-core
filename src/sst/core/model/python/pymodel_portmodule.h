@@ -35,13 +35,16 @@ struct PyPortModule;
 
 struct PyPortModule
 {
-    PortModulePy_t*                     pobj;
-    std::vector<SST::ConfigPortModule>* ptr = nullptr; // list of port modules bound at port, we match one of these
-    int lkup = -1; // Index of this port module at port, for lookup or -1 if not yet bound
+    PortModulePy_t*    pobj;
+    SST::ComponentId_t id;   // ID of component this port module is loaded at
+    unsigned           lkup; // Index of this port module at port
+    std::string        port; // Port name
 
-    PyPortModule(PortModulePy_t* pobj, int lkup) :
+    PyPortModule(PortModulePy_t* pobj, SST::ComponentId_t id, unsigned lkup, const char* port) :
         pobj(pobj),
-        lkup(lkup)
+        id(id),
+        lkup(lkup),
+        port(port)
     {}
     ~PyPortModule() = default;
     int                    compare(PyPortModule* other);

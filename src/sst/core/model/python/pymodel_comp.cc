@@ -248,14 +248,11 @@ compAddPortModule(PyObject* self, PyObject* args)
     PyObject* py_params = nullptr;
     if ( !PyArg_ParseTuple(args, "ss|O", &port, &type, &py_params) ) return nullptr;
 
-    auto                           params = pythonToCppParams(py_params);
-    std::vector<ConfigPortModule>* vec_ptr;
-    unsigned                       index_num;
-    std::tie(vec_ptr, index_num) = c->addPortModule(port, type, params);
+    auto     params    = pythonToCppParams(py_params);
+    unsigned index_num = c->addPortModule(port, type, params);
 
-    PyObject* argList                    = Py_BuildValue("(k)", index_num);
-    PyObject* pmodule                    = PyObject_CallObject((PyObject*)&PyModel_PortModuleType, argList);
-    ((PortModulePy_t*)pmodule)->obj->ptr = vec_ptr;
+    PyObject* argList = Py_BuildValue("KIs", c->id, index_num, port);
+    PyObject* pmodule = PyObject_CallObject((PyObject*)&PyModel_PortModuleType, argList);
     Py_DECREF(argList);
 
     return pmodule;

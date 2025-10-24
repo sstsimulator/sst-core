@@ -469,8 +469,7 @@ public:
         return params.getSubscribedSharedParamSets();
     }
 
-    std::pair<std::vector<ConfigPortModule>*, size_t> addPortModule(
-        const std::string& port, const std::string& type, const Params& params);
+    size_t addPortModule(const std::string& port, const std::string& type, const Params& params);
 
     std::vector<LinkId_t> allLinks() const;
 

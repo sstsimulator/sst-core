@@ -694,11 +694,11 @@ ConfigComponent::findStatistic(StatisticId_t sid) const
     }
 }
 
-std::pair<std::vector<ConfigPortModule>*, size_t>
+size_t
 ConfigComponent::addPortModule(const std::string& port, const std::string& type, const Params& params)
 {
     port_modules[port].emplace_back(type, params);
-    return std::make_pair(&port_modules[port], port_modules.size() - 1);
+    return port_modules.size() - 1;
 }
 
 std::vector<LinkId_t>

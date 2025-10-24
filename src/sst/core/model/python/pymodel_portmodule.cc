@@ -32,13 +32,14 @@ REENABLE_WARNING
 
 using namespace SST;
 using namespace SST::Core;
+extern SST::Core::SSTPythonModelDefinition* gModel;
 
 SST::ConfigPortModule*
 PyPortModule::getPortModule()
 {
     // Pointer to element in vector is temporarily safe because when this code is called,
     // no other entity can be modifying the vector
-    return &(ptr->at(lkup));
+    return &(gModel->getGraph()->findComponent(id)->port_modules.find(port)->second[lkup]);
 }
 
 
@@ -46,9 +47,13 @@ int
 PyPortModule::compare(PyPortModule* other)
 {
     // Just sort the ptrs, and then indices
-    if ( ptr < other->ptr )
+    if ( id < other->id )
         return -1;
-    else if ( ptr > other->ptr )
+    else if ( id > other->id )
+        return 1;
+    else if ( port < other->port )
+        return -1;
+    else if ( port > other->port )
         return 1;
     else if ( lkup < other->lkup )
         return -1;
@@ -59,14 +64,15 @@ PyPortModule::compare(PyPortModule* other)
 }
 
 static int
-portModInit(PortModulePy_t* self, PyObject* UNUSED(args), PyObject* UNUSED(kwds))
+portModInit(PortModulePy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    unsigned num;
-    if ( !PyArg_ParseTuple(args, "k", &num) ) return -1;
+    unsigned           num;
+    SST::ComponentId_t id;
+    const char*        pstr;
+    if ( !PyArg_ParseTuple(args, "KIs", &id, &num, &pstr) ) return -1;
 
-    PyPortModule* obj = new PyPortModule(self, (int)num);
+    PyPortModule* obj = new PyPortModule(self, id, num, pstr);
     self->obj         = obj;
-
     return 0;
 }
 
