@@ -91,9 +91,14 @@ public:
      */
     void setFlagOutputAtEndOfSim(bool flag) { output_at_end_of_sim_ = flag; }
 
+    /** Set port name if stat is owned by a port module
+     *  Temporary field until a common base class for elements with stats is created
+     */
+    void setPortModName(std::string& port, size_t index) { stat_mod_name_ = "." + port + "." + std::to_string(index); }
+
     // Get Data & Information on Statistic
     /** Return the Component Name */
-    const std::string& getCompName() const;
+    const std::string getCompName() const;
 
     /** Return the Statistic Name */
     inline const std::string& getStatName() const { return stat_name_; }
@@ -187,7 +192,9 @@ public:
     virtual bool isNullStatistic() const { return false; }
 
     /** Serialization */
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser);
+    virtual void   serialize_order(SST::Core::Serialization::serializer& ser);
+    void           serializeStat(SST::Core::Serialization::serializer& ser);
+    BaseComponent* deserializeComponentPtr(SST::Core::Serialization::serializer& ser);
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
@@ -209,7 +216,6 @@ protected:
     // Destructor
     virtual ~StatisticBase() {}
 
-protected:
     /** Set the Statistic Data Type */
     void setStatisticDataType(const StatisticFieldInfo::fieldType_t data_type) { stat_data_type_ = data_type; }
 
@@ -270,6 +276,8 @@ private:
     std::string stat_name_      = ""; // Name of stat, matches ELI
     std::string stat_sub_id_    = ""; // Sub ID for this instance of the stat (default="")
     std::string stat_type_name_ = ""; // DEPRECATED (remove SST 16.0) - override 'getStatTypeName()' instead
+    std::string stat_mod_name_ =
+        ""; // Modifier for component name, temporary until we figure out a nameable base class for elements
 
     uint8_t  flags_                      = 0;    // Flags for checkpoint output
     bool     stat_enabled_               = true; // Whether stat is currently collecting data
@@ -657,26 +665,7 @@ class serialize_impl<Statistics::Statistic<T>*>
             SST_SER(stat_eli_type);
 
             if ( !s->isNullStatistic() ) {
-                std::string    stat_name = s->getStatName();
-                std::string    stat_id   = s->getStatSubId();
-                BaseComponent* comp      = s->getComponent();
-                SimTime_t      factor    = s->getOutputRateFactor();
-                SST_SER(comp);
-                SST_SER(stat_name);
-                SST_SER(stat_id);
-                SST_SER(factor);
-                s->serialize_order(ser);
-
-                // Get state stored at stat engine if needed, must be after stat serialization
-                // because we need to read flags first to determine if these fields exist
-                if ( s->getStartAtFlag() ) {
-                    factor = s->getStartAtFactor();
-                    SST_SER(factor);
-                }
-                if ( s->getStopAtFlag() ) {
-                    factor = s->getStopAtFactor();
-                    SST_SER(factor);
-                }
+                s->serializeStat(ser);
             }
             break;
         }
@@ -696,7 +685,7 @@ class serialize_impl<Statistics::Statistic<T>*>
             }
             else {
 
-                BaseComponent* comp;
+                BaseComponent* comp = s->deserializeComponentPtr(ser);
                 std::string    stat_name;
                 std::string    stat_id;
                 SimTime_t      output_rate_factor;
@@ -704,7 +693,6 @@ class serialize_impl<Statistics::Statistic<T>*>
                 SimTime_t start_at_factor = 0;
                 SimTime_t stop_at_factor  = 0;
 
-                SST_SER(comp);
                 SST_SER(stat_name);
                 SST_SER(stat_id);
                 SST_SER(output_rate_factor);

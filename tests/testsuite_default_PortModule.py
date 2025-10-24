@@ -181,10 +181,7 @@ class testcase_PortModule(SSTTestCase):
             bind_at = "recv"
 
         sdlfile = "{0}/test_PortModule.py".format(testsuitedir)
-        if testtype != "randomdrop":
-            reffile = "{0}/refFiles/test_PortModule_{1}.out".format(testsuitedir,testtype)
-        else:
-            reffile = "{0}/refFiles/test_PortModule_{1}_{2}.out".format(testsuitedir,testtype,bind_at)
+        reffile = "{0}/refFiles/test_PortModule_{1}_{2}.out".format(testsuitedir,testtype,bind_at)
 
         if use_subcomp:
             suffix = "{1}_{2}_subcomp".format(outdir,testtype,bind_at)

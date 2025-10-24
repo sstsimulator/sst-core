@@ -56,10 +56,10 @@ StatisticBase::ELI_getParams()
     return empty;
 }
 
-const std::string&
+const std::string
 StatisticBase::getCompName() const
 {
-    return component_->getName();
+    return component_->getName() + stat_mod_name_;
 }
 
 DISABLE_WARN_MISSING_NORETURN
@@ -170,12 +170,8 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     /* Only serialize info if stat is non-null - this should be skipped for null stats anyways */
     if ( !isNullStatistic() ) {
-        // Need to serialize info_ as a non-pointer because on UNPACK,
-        // it will have already been initialized and serializing as a
-        // pointer causes it to overwrite what is already there
-        // (serializer assumes it is uninitialized and creates a new
-        // one before calling serialize_order)
         SST_SER(stat_type_name_); // Deprecated
+        SST_SER(stat_mod_name_);
         SST_SER(flags_);
         SST_SER(current_collection_count_);
         SST_SER(output_collection_count_);
@@ -198,6 +194,39 @@ StatisticBase::serialize_order(SST::Core::Serialization::serializer& ser)
             stat_data_type_ = StatisticFieldTypeBase::getField(name.c_str());
         }
     }
+}
+
+void
+StatisticBase::serializeStat(SST::Core::Serialization::serializer& ser)
+{
+    std::string    stat_name = getStatName();
+    std::string    stat_id   = getStatSubId();
+    BaseComponent* comp      = getComponent();
+    SimTime_t      factor    = getOutputRateFactor();
+    SST_SER(comp);
+    SST_SER(stat_name);
+    SST_SER(stat_id);
+    SST_SER(factor);
+    this->serialize_order(ser);
+
+    // Get state stored at stat engine if needed, must be after stat serialization
+    // because we need to read flags first to determine if these fields exist
+    if ( getStartAtFlag() ) {
+        factor = getStartAtFactor();
+        SST_SER(factor);
+    }
+    if ( getStopAtFlag() ) {
+        factor = getStopAtFactor();
+        SST_SER(factor);
+    }
+}
+
+BaseComponent*
+StatisticBase::deserializeComponentPtr(SST::Core::Serialization::serializer& ser)
+{
+    BaseComponent* comp = nullptr;
+    SST_SER(comp);
+    return comp;
 }
 
 SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);

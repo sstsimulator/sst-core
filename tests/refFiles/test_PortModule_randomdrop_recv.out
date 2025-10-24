@@ -1,25 +1,52 @@
 # Creating simulation checkpoint at simulated time period of 1.2us.
-(111000) Got an unmodified event
 (211000) comp11/left: Dropping event on receive
-(311000) Got an unmodified event
-(411000) Got an unmodified event
 (511000) comp11/left: Dropping event on receive
-(611000) Got an unmodified event
 (711000) comp11/left: Dropping event on receive
 (811000) comp11/left: Dropping event on receive
-(911000) Got an unmodified event
 (1011000) comp11/left: Dropping event on receive
-(1111000) Got an unmodified event
 # Simulation Checkpoint: Simulated Time 1.2 us (Real CPU time since last checkpoint 0.00119 seconds)
-(1211000) Got an unmodified event
-(1311000) Got an unmodified event
 (1411000) comp11/left: Dropping event on receive
 (1511000) comp11/left: Dropping event on receive
 (1611000) comp11/left: Dropping event on receive
-(1711000) Got an unmodified event
 (1811000) comp11/left: Dropping event on receive
-(1911000) Got an unmodified event
-(2011000) Got an unmodified event
 (2111000) comp11/left: Dropping event on receive
 (2211000) comp11/left: Dropping event on receive
+ comp0.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp0.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp0.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp1.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp1.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp1.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp2.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp2.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp2.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp3.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp3.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp3.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp4.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp4.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp4.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp5.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp5.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp5.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp6.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp6.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp6.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp7.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp7.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp7.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp8.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp8.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp8.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp9.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp9.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp9.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp10.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp10.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp10.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp11.left.0.dropped : Accumulator : SimTime = 2311000; Sum.u64 = 11; SumSQ.u64 = 11; Count.u64 = 11; Min.u64 = 1; Max.u64 = 1; 
+ comp11.left.0.observed : Accumulator : SimTime = 2311000; Sum.u64 = 23; SumSQ.u64 = 23; Count.u64 = 23; Min.u64 = 1; Max.u64 = 1; 
+ comp11.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp11.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 12; SumSQ.u32 = 12; Count.u64 = 12; Min.u32 = 1; Max.u32 = 1; 
+ comp11.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
 Simulation is complete, simulated time: 2.311 us

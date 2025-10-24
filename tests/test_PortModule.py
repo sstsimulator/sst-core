@@ -15,6 +15,17 @@ import sst
 import argparse
 import sys
 
+## Stat testing note
+# Only non-randomdrop/recv tests enable all stats
+# Otherwise stats are enabled on the port module
+# and component 11 which counts events received
+#
+## Tested configs
+# Global enable-all + globally high enough enable level
+# Global enable-all + locally high enough enable level
+# Module enable-all
+# Module enable specific stats
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run PortModule test")
     parser.add_argument('--send', action='store_true', help="Install PortModule on send")
@@ -57,38 +68,55 @@ def main() -> None:
 
     comp2 = sst.Component("comp{0}".format(num_comps-1),"coreTestElement.coreTestPortModuleComponent")
     comp2.addParams(params)
+    comp2.enableAllStatistics() # Only the last component counts stats
+    comp2.setStatisticLoadLevel(1)
     link = sst.Link("link_{0}".format(num_comps-1))
     link.connect((comp,"right","1ns"),(comp2,"left","1ns"))
 
     # Add the PortModule
     if args.randomdrop:
         if args.recv:
-            comp2.addPortModule("left", "sst.portmodules.random_drop", {
+            pm = comp2.addPortModule("left", "sst.portmodules.random_drop", {
                 "drop_prob": 0.5,
                 "drop_on_send": False,
                 "verbose" : True
             })
+            # Test global stat enable
+            sst.setStatisticLoadLevel(3)
+            sst.enableAllStatisticsForAllComponents()
         else:
-            comp.addPortModule("right", "sst.portmodules.random_drop", {
+            pm = comp.addPortModule("right", "sst.portmodules.random_drop")
+            pm.addParams({
                 "drop_prob": 0.5,
                 "drop_on_send": True,
                 "verbose" : True
             })
+            # Test explicit stat enable
+            pm.enableStatistics(["observed", "dropped"])
     else:
         if args.recv:
-            comp2.addPortModule("left", "coreTestElement.portmodules.test", {
+            pm = comp2.addPortModule("left", "coreTestElement.portmodules.test", {
                 "modify": args.modify,
                 "drop": args.drop,
                 "replace": args.replace,
                 "install_on_send": False
             })
+            # Test local stat enable level
+            pm.setStatisticLoadLevel(5) # PortMod stat enabled at 4
+            sst.enableAllStatisticsForAllComponents()
         else:
-            comp.addPortModule("right", "coreTestElement.portmodules.test", {
-                "modify": args.modify,
-                "drop": args.drop,
+            pm = comp.addPortModule("right", "coreTestElement.portmodules.test")
+            pm.addParam("modify", args.modify)  # Test addParam call
+            pm.addParam("drop", args.drop)      # Test addParam call
+            pm.addParams({                      # Test addParams with dict
                 "replace": args.replace,
                 "install_on_send": True
             })
+            sst.setStatisticLoadLevel(6)
+            pm.enableAllStatistics()
+
+    sst.setStatisticOutput("sst.statOutputConsole", { "outputrank" : False, "outputsimtime" : True } )
+
 
 if __name__ == "__main__":
     main()

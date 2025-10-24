@@ -68,6 +68,7 @@ class BaseComponent : public SST::Core::Serialization::serializable_base
     friend class ComponentInfo;
     friend class SubComponent;
     friend class SubComponentSlotInfo;
+    friend class PortModule;
 
 protected:
     using StatCreateFunction = std::function<Statistics::StatisticBase*(BaseComponent*,
@@ -1141,7 +1142,12 @@ private:
 
     using StatNameMap = std::map<std::string, std::map<std::string, Statistics::StatisticBase*>>;
 
-    std::vector<PortModule*> portModules;
+    ConfigPortModule& getPortModuleConfig(PortModuleId_t);
+
+    static thread_local std::pair<ComponentId_t, PortModuleId_t> port_module_id_;
+
+    std::vector<PortModule*> port_modules_;
+
     std::map<StatisticId_t, Statistics::StatisticBase*>
         explicitly_enabled_shared_stats_; // Lookup structure to determine if an explicitly enabled shared stat has
                                           // already been registered. In this context, a shared stat is one that has

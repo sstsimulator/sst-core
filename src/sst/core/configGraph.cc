@@ -218,6 +218,42 @@ ConfigStatGroup::verifyStatsAndComponents(const ConfigGraph* graph)
 }
 
 void
+ConfigPortModule::addParameter(const std::string& key, const std::string& value)
+{
+    params.insert(key, value);
+}
+
+void
+ConfigPortModule::addSharedParamSet(const std::string& set)
+{
+    params.addSharedParamSet(set);
+}
+
+void
+ConfigPortModule::setStatisticLoadLevel(const uint8_t level)
+{
+    stat_load_level = level;
+}
+
+void
+ConfigPortModule::enableAllStatistics(const SST::Params& params)
+{
+    all_stat_config.insert(params);
+}
+
+void
+ConfigPortModule::enableStatistic(const std::string& statistic_name, const SST::Params& params)
+{
+    auto iter = per_stat_configs.find(statistic_name);
+    if ( iter == per_stat_configs.end() ) {
+        per_stat_configs[statistic_name] = params;
+    }
+    else {
+        per_stat_configs[statistic_name].insert(params);
+    }
+}
+
+void
 ConfigComponent::print(std::ostream& os) const
 {
     os << "Component " << name << " (id = " << std::hex << id << std::dec << ")" << std::endl;
@@ -658,10 +694,11 @@ ConfigComponent::findStatistic(StatisticId_t sid) const
     }
 }
 
-void
+size_t
 ConfigComponent::addPortModule(const std::string& port, const std::string& type, const Params& params)
 {
-    portModules[port].emplace_back(type, params);
+    port_modules[port].emplace_back(type, params);
+    return port_modules.size() - 1;
 }
 
 std::vector<LinkId_t>

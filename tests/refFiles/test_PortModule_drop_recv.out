@@ -1,0 +1,7 @@
+# Creating simulation checkpoint at simulated time period of 1.2us.
+# Simulation Checkpoint: Simulated Time 1.2 us (Real CPU time since last checkpoint 0.00104 seconds)
+ comp11.left.0.events_intercepted : Accumulator : SimTime = 2111000; Sum.u64 = 21; SumSQ.u64 = 21; Count.u64 = 21; Min.u64 = 1; Max.u64 = 1; 
+ comp11.handle_modified_event : Accumulator : SimTime = 2111000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp11.handle_unmodified_event : Accumulator : SimTime = 2111000; Sum.u32 = 1; SumSQ.u32 = 1; Count.u64 = 1; Min.u32 = 1; Max.u32 = 1; 
+ comp11.handle_ack_event : Accumulator : SimTime = 2111000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+Simulation is complete, simulated time: 2.111 us

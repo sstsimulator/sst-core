@@ -29,14 +29,19 @@ public:
         "sst",
         "portmodules.random_drop",
         SST_ELI_ELEMENT_VERSION(0, 1, 0),
-        "Port module that will randomly drop events based on specified propability"
+        "Port module that will randomly drop events based on specified probability"
     )
 
     SST_ELI_DOCUMENT_PARAMS(
         { "drop_prob", "Probability to drop event", "0.01" },
-        { "drop_on_send",  "Controls whether to drop packetes during the send versus the default of on the receive", "false" },
+        { "drop_on_send",  "Controls whether to drop packets during the send versus the default of on the receive", "false" },
         { "rngseed", "Set a seed for the random number generator used to control drops", "7" },
         { "verbose", "Debugging output", "false"}
+    )
+
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "dropped", "Counts number of events that are dropped", "events", 1},
+        { "observed", "Counts number of events that are observed, including any dropped", "events", 1}
     )
 
     explicit RandomDrop(Params& params);
@@ -83,6 +88,9 @@ private:
     // String will store information about component and port names if
     // verbose is turned on.
     std::string* print_info_ = nullptr;
+
+    Statistic<uint64_t>* stat_dropped_  = nullptr;
+    Statistic<uint64_t>* stat_observed_ = nullptr;
 };
 
 } // namespace SST::IMPL::PortModule

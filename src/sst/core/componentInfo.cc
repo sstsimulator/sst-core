@@ -112,8 +112,8 @@ ComponentInfo::ComponentInfo(
     type(ccomp->type),
     link_map(link_map),
     component(nullptr),
-    params(&ccomp->params),           // Inaccessible after construction
-    portModules(&ccomp->portModules), // Inaccessible after construction
+    params(&ccomp->params),              // Inaccessible after construction
+    port_modules_(&ccomp->port_modules), // Inaccessible after construction
     enabled_all_stats_(ccomp->enabledAllStats),
     statLoadLevel(ccomp->statLoadLevel),
     coordinates(ccomp->coords),
@@ -164,7 +164,7 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     subComponents(std::move(o.subComponents)),
     params(o.params),
     defaultTimeBase(o.defaultTimeBase),
-    portModules(o.portModules),
+    port_modules_(o.port_modules_),
     stat_configs_(o.stat_configs_),
     all_stat_config_(o.all_stat_config_),
     statLoadLevel(o.statLoadLevel),

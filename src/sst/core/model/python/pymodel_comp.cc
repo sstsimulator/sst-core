@@ -21,6 +21,7 @@
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_link.h"
+#include "sst/core/model/python/pymodel_portmodule.h"
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
@@ -239,18 +240,22 @@ compAddPortModule(PyObject* self, PyObject* args)
     PyErr_Clear();
     // we can have 2 or 3 arguments
     // mandatory port
-    // mandatory type
+    // mandatory type or instance
     // optional parameters
 
     char*     port      = nullptr;
     char*     type      = nullptr;
     PyObject* py_params = nullptr;
-
     if ( !PyArg_ParseTuple(args, "ss|O", &port, &type, &py_params) ) return nullptr;
-    auto params = pythonToCppParams(py_params);
-    c->addPortModule(port, type, params);
 
-    return SST_ConvertToPythonLong(0);
+    auto     params    = pythonToCppParams(py_params);
+    unsigned index_num = c->addPortModule(port, type, params);
+
+    PyObject* argList = Py_BuildValue("KIs", c->id, index_num, port);
+    PyObject* pmodule = PyObject_CallObject((PyObject*)&PyModel_PortModuleType, argList);
+    Py_DECREF(argList);
+
+    return pmodule;
 }
 
 static PyObject*

@@ -71,10 +71,14 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction.out \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
-    tests/refFiles/test_PortModule_drop.out \
-    tests/refFiles/test_PortModule_modify.out \
-    tests/refFiles/test_PortModule_pass.out \
-    tests/refFiles/test_PortModule_replace.out \
+    tests/refFiles/test_PortModule_drop_recv.out \
+    tests/refFiles/test_PortModule_drop_send.out \
+    tests/refFiles/test_PortModule_modify_recv.out \
+    tests/refFiles/test_PortModule_modify_send.out \
+    tests/refFiles/test_PortModule_pass_recv.out \
+    tests/refFiles/test_PortModule_pass_send.out \
+    tests/refFiles/test_PortModule_replace_recv.out \
+    tests/refFiles/test_PortModule_replace_send.out \
     tests/refFiles/test_PortModule_randomdrop_recv.out \
     tests/refFiles/test_PortModule_randomdrop_send.out \
     tests/refFiles/test_Profiling_event_global.out \
