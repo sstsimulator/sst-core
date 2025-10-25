@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+use v5.10.0;
 use strict;
 use warnings qw(FATAL all);
 use Cwd qw(realpath);
@@ -10,8 +11,17 @@ use File::Temp;
 use Getopt::Long;
 use List::Util qw(max);
 use Pod::Usage;
+use Text::Wrap;
 
-my ($root, $fix, $quiet, $nosort, $gcc);
+$SIG{__DIE__} = sub { print STDERR @_; exit 2 };
+
+# The regular expression used to detect GCC missing #include file warnings
+my $regex = qr/^(?:(?:[+ |]*\+#include\s*(?<header><[^>]+>)|.*?(?:did you forget to|probably fixable by adding) ‘#include (?<header><[^>]+>)’))$/;
+
+# The g++ compiler flags used to test files
+my $cxxflags = "-fsyntax-only -std=c++17";
+
+my ($root, $fix, $quiet, $nosort, $gcc, $errors);
 
 get_options();
 find_gcc();
@@ -20,30 +30,58 @@ print_summary();
 
 # Find the g++ compiler and confirm that it produces the correct output
 sub find_gcc {
+    my $gcc_found;
     my $tmp = File::Temp->new(SUFFIX => ".cc");
     print $tmp "std::vector<int> x;\n";
     close $tmp;
-    for my $gcc_val (qw(g++ g++-18 g++-17 g++-16 g++-15 g++-14 g++-13 g++-12 g++-11 g++-10 g++-9 g++-8)) {
-        $gcc = $gcc_val;
-        if (open my $comp, "-|", "$gcc -S -o /dev/null '$tmp' 2>&1") {
+    for my $gcc_val ("g++", map "g++-$_", reverse 8..18) {
+        if (open my $comp, "-|", "$gcc_val $cxxflags '$tmp' 2>&1") {
+            $gcc_found //= $gcc_val;
             while (<$comp>) {
-                if (/^\s*\+\+\+ \|\+#include <vector>$/) {
-                    print STDERR "Using GCC = $gcc\n" if !$quiet;
+                if (/$regex/ && $+{header} eq "<vector>") {
+                    $gcc = $gcc_val;
+                    print STDERR `$gcc --version` if !$quiet;
+                    print STDERR "Warning: GCC versions prior to 10 may not find all missing #includes\n"
+                        if int(`$gcc -dumpversion`) < 10;
                     return;
                 }
             }
         }
     }
-    print STDERR "GCC needs to be installed, and g++ or g++-<nnn> needs to be in the PATH.\n\n",
-        "This tool uses GCC-specific warnings which are not available on clang.\n";
-    print STDERR "\nOn MacOS, g++ is usually aliased to clang, but g++-<nnn> may be available.\n"
-        if $^O =~ /darwin/i;
+    if ($gcc_found) {
+        print STDERR `$gcc_found --version`, wrap("", "", <<EOF)
+
+GCC command has been found as $gcc_found but it is not producing the expected warning output for missing #include <...> files.
+
+This might require modifying \$regex in $0 to recognize slightly different GCC output.
+EOF
+    }
+    gcc_error();
+}
+
+sub gcc_error {
+    print STDERR wrap("", "", <<'EOF');
+
+GCC needs to be installed, and g++ or g++-<nnn> needs to be in the $PATH.
+
+This tool uses GCC-specific warnings which are not available on clang.
+
+These features require GCC version 8 or later. GCC versions prior to 10 may not find all missing #includes.
+EOF
+
+    print STDERR wrap("", "", <<'EOF') if $^O =~ /darwin/i;
+
+On MacOS, g++ is usually aliased to clang, but g++-<nnn> may be available.
+
+/usr/local/bin may need to appear before /usr/bin in $PATH so that a homebrew-installed GCC can be found.
+EOF
+
     exit 2;
 }
 
 # Whether a file is ignored by Git
-my %check_ignore;
 sub check_ignore {
+    state %check_ignore;
     my $path = realpath $_[0];
     return $check_ignore{$path} if exists $check_ignore{$path};
     exit 2 if -257 & system qw(git check-ignore -q --), $path;
@@ -68,7 +106,6 @@ sub find_and_check_files {
     }
 }
 
-my $errors = 0;
 sub print_summary {
     print STDERR "\n" if !$quiet;
     if ($errors) {
@@ -178,7 +215,7 @@ sub check_file {
         -e "$hdr" or die "Internal error: File $hdr does not exist\n" if $hdr;
 
         # GCC command to generate warnings about missing headers
-        my $cmd = "$gcc $lang -S -o /dev/null '$src' 2>&1";
+        my $cmd = "$gcc $lang $cxxflags '$src' 2>&1";
 
         # Parse the GCC output
         open my $comp, "-|", $cmd or die "Could not execute $cmd: $!\n";
@@ -189,9 +226,10 @@ sub check_file {
             s:$src:$dir/$file:;
             push @src, $_;
 
-            # A +++ at the beginning of a line followed by an #include indicates
-            # A missing system header which needs to be added
-            if (my ($inc) = /^\s*\+\+\+ \|\+#include (<[^>]+>)$/) {
+            # A +#include <...> at the beginning on a line indicates a missing
+            # system header which needs to be added
+            if (/$regex/) {
+                my $inc = $+{header};
                 # Don't handle the same missing #include twice in the same file
                 if (!exists $edits{$inc}) {
                     # Find the filename GCC is complaining about
@@ -203,11 +241,12 @@ sub check_file {
                                 $edits{$inc} = sprintf "\n" . "-" x 119 . "\n%s\n%s",
                                     $fullpath, join "", @src[max($#src-5, 0) .. $#src];
                             }
+                            next LINE;
                         }
-                        next LINE;
                     }
-                    die "Internal error: GCC output not recognized:\n",
+                    print STDERR "Internal error: GCC output not recognized:\n",
                         @src[max($#src-5, 0) .. $#src];
+                    gcc_error();
                 }
             }
         }
@@ -307,13 +346,13 @@ sub check_file {
             }
         }
 
-        # Sort #includes, putting sst_config.h first
-        sub byname {
-            $a =~ /\bsst_config\.h\b/ ? -1 : $b =~ /\bsst_config\.h\b/ ? 1 : $a cmp $b;
-        }
-
         # Sort contiguous blocks of #include <>
         if (!$nosort) {
+            # Sort #includes, putting sst_config.h first
+            sub byname {
+                $a =~ /\bsst_config\.h\b/ ? -1 : $b =~ /\bsst_config\.h\b/ ? 1 : $a cmp $b;
+            }
+
             my $start;
             for (my $i = 0; $i <= $#new; $i++) {
                 if ($new[$i] =~ /^\s*#\s*include\s*<[^>]+>/) {
@@ -332,7 +371,7 @@ sub check_file {
         print $fh @new;
     }
 
-    print STDERR <<EOF;
+    die <<EOF;
 
 Too many repeated edits of
 
@@ -349,7 +388,6 @@ This script adds #includes next to existing #includes, so adding one for the
 first time should make it work.
 
 EOF
-    exit 2;
 }
 
 =pod
@@ -408,6 +446,6 @@ If no paths are specified, the root directory of the Git respository in the curr
 
 =head1 LIMITATIONS
 
-GCC needs to be installed and g++ needs to be in the PATH. This tool uses GCC-specific warnings which are not available on Clang.
+GCC needs to be installed and g++ or g++-<nnn> needs to be in the PATH. This tool uses GCC-specific warnings which are not available on Clang.
 
 =cut
