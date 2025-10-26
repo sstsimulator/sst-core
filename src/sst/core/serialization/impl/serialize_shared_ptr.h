@@ -84,18 +84,14 @@ std::pair<size_t, bool>
 get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& ptr, serializer& ser)
 {
     // Workaround for libstdc++ bug 120561 which prevents converting std::weak_ptr<array> to std::weak_ptr<const void>
-#if defined(__GLIBCXX__) && __GLIBCXX__ < 20250425
-    if constexpr ( is_same_template_v<PTR_TEMPLATE, std::weak_ptr> && std::is_array_v<PTR_TYPE> ) {
+    if constexpr ( std::conjunction_v<is_same_template<PTR_TEMPLATE, std::weak_ptr>, std::is_array<PTR_TYPE>> ) {
         // We set weak_ptr on a separate statement so that ptr's shared_ptr refcount is restored before return statement
         std::weak_ptr<const void> weak_ptr = ptr.lock();
 
         // Return this function using the newly cast std::weak_ptr<const void> instead of std::weak_ptr<array>
         return get_shared_ptr_owner_tag(weak_ptr, ser);
     }
-    else
-#endif
-
-    {
+    else {
         if ( ser.mode() == serializer::SIZER )
             return ser.sizer().get_shared_ptr_owner_tag(ptr);
         else
