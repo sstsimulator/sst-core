@@ -152,7 +152,7 @@ main(int argc, char* argv[])
     }
 
     // Process all specified libraries
-    g_searchPath = g_configuration.getLibPath();
+    g_searchPath = g_configuration.getLibPath(true);
     processSSTElementFiles();
 
     // Run interactive mode
@@ -175,7 +175,7 @@ main(int argc, char* argv[])
     }
 
     // Process all specified libraries
-    g_searchPath = g_configuration.getLibPath();
+    g_searchPath = g_configuration.getLibPath(true);
     processSSTElementFiles();
 
     // Run interactive mode

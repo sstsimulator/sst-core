@@ -96,7 +96,7 @@ private:
 
 public:
 
-    std::string getLibPath() const;
+    std::string getLibPath(bool exclude_ext_paths = false) const;
 };
 
 } // namespace SST
