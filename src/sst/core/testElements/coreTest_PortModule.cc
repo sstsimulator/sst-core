@@ -30,12 +30,15 @@ TestPortModule::TestPortModule(Params& params) :
     replace_         = params.find<bool>("replace", "false");
     install_on_send_ = params.find<bool>("install_on_send", "false");
 
-    int count = 0;
-    if ( modify_ ) count++;
-    if ( drop_ ) count++;
-    if ( replace_ ) count++;
+    count_   = registerStatistic<uint64_t>("events_intercepted");
+    no_stat_ = registerStatistic<uint64_t>("not_enabled");
 
-    if ( count > 1 ) {
+    int param_count = 0;
+    if ( modify_ ) param_count++;
+    if ( drop_ ) param_count++;
+    if ( replace_ ) param_count++;
+
+    if ( param_count > 1 ) {
         getSimulationOutput().fatal(
             CALL_INFO_LONG, 1, "ERROR: Only one of the parameters modify, drop and replace can be set to true\n");
     }
@@ -46,6 +49,8 @@ TestPortModule::eventSent(uintptr_t UNUSED(key), Event*& ev)
 {
     // This only gets PortModuleEvents
     PortModuleEvent* event = static_cast<PortModuleEvent*>(ev);
+    count_->addData(1);
+    no_stat_->addData(1);
 
     // The last event is for control only and the PortModule will
     // ignore it
@@ -78,6 +83,8 @@ TestPortModule::interceptHandler(uintptr_t UNUSED(key), Event*& data, bool& canc
 {
     // This only gets PortModuleEvents
     PortModuleEvent* event = static_cast<PortModuleEvent*>(data);
+    count_->addData(1);
+    no_stat_->addData(1);
 
     // Default is to not cancel delivery
     cancel = false;
@@ -168,6 +175,11 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
     }
 
     repeat_last_ = params.find<bool>("repeat_last", "false");
+
+    // Register statistics
+    stat_mod_event_   = registerStatistic<uint32_t>("handle_modified_event");
+    stat_unmod_event_ = registerStatistic<uint32_t>("handle_unmodified_event");
+    stat_ack_event_   = registerStatistic<uint32_t>("handle_ack_event");
 }
 
 bool
@@ -203,15 +215,15 @@ coreTestPortModuleComponent::handleEventLast(Event* ev)
     // See what type of event this is
     PortModuleEvent* event = dynamic_cast<PortModuleEvent*>(ev);
     if ( event ) {
+        if ( event->modified ) {
+            stat_mod_event_->addData(1);
+        }
+        else {
+            stat_unmod_event_->addData(1);
+        }
         if ( event->last ) {
             // Report end of simulation
             primaryComponentOKToEndSim();
-        }
-        else if ( event->modified ) {
-            getSimulationOutput().output("(%" PRI_SIMTIME ") Got a modified event\n", getCurrentSimCycle());
-        }
-        else {
-            getSimulationOutput().output("(%" PRI_SIMTIME ") Got an unmodified event\n", getCurrentSimCycle());
         }
         delete ev;
         return;
@@ -220,7 +232,7 @@ coreTestPortModuleComponent::handleEventLast(Event* ev)
     // Not a regular event, see if it is an ack
     PortModuleAckEvent* ack = dynamic_cast<PortModuleAckEvent*>(ev);
     if ( ack ) {
-        getSimulationOutput().output("(%" PRI_SIMTIME ") Got an ack event\n", getCurrentSimCycle());
+        stat_ack_event_->addData(1);
         delete ev;
         return;
     }

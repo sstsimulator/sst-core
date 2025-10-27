@@ -59,13 +59,16 @@ public:
         SST_ELI_ELEMENT_VERSION(0, 1, 0),
         "PortModule used for testing port module functionality")
 
-    // TODO Need stats
-
     SST_ELI_DOCUMENT_PARAMS(
         { "modify", "Set to true to have PortModule mark event as modfied. NOTE: only 1 of modify, drop or replace can be set to true.", "false" },
         { "drop", "Set to true to have PortModule drop events. NOTE: only 1 of modify, drop, or replace can be set to true.", "false" },
         { "replace", "Set to true to have PortModule drop events and deliver an Ack event instead. NOTE: only 1 of modify, drop or replace can be set to true.", "false" },
         { "install_on_send",  "Controls whether the PortModule is installed on the send or receive side.  Set to true to register on send and false to register on recieve.", "false" },
+    )
+
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "events_intercepted", "How many events were intercepted by the module", "count", 4 },
+        { "not_enabled", "A statistic that isn't enabled in tests to ensure that stat level is respected", "none", 7 }
     )
 
     SST_ELI_IS_CHECKPOINTABLE()
@@ -88,6 +91,9 @@ private:
     bool drop_            = false;
     bool replace_         = false;
 
+    Statistic<uint64_t>* count_   = nullptr;
+    Statistic<uint64_t>* no_stat_ = nullptr;
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::PortModule::serialize_order(ser);
@@ -95,6 +101,8 @@ private:
         SST_SER(modify_);
         SST_SER(drop_);
         SST_SER(replace_);
+        SST_SER(count_);
+        SST_SER(no_stat_);
     }
     ImplementSerializable(SST::CoreTestPortModule::TestPortModule)
 };
@@ -123,9 +131,15 @@ public:
         { "repeat_last",  "When set to true, will keep sending \"last\" events until the simulation terminates.  This is to support test of the RandomDropPortModule which doesn't check event types or values so will not automatically pass through the event marked last.", "false" },
     )
 
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "handle_modified_event", "How many modified events were handled", "events", 1 },
+        { "handle_ack_event", "How many ack events were handled", "events", 1 },
+        { "handle_unmodified_event", "How many unmodified events were handled", "events", 1 },
+    )
+
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
-        {"port_slot", "SLot for loading subcomponent to test shared ports", "" }
+        {"port_slot", "Slot for loading subcomponent to test shared ports", "" }
     )
 
     SST_ELI_IS_CHECKPOINTABLE()
@@ -140,12 +154,19 @@ public:
         SST_SER(repeat_last_);
         SST_SER(left_);
         SST_SER(right_);
+        SST_SER(stat_mod_event_);
+        SST_SER(stat_unmod_event_);
+        SST_SER(stat_ack_event_);
     }
     ImplementSerializable(SST::CoreTestPortModule::coreTestPortModuleComponent)
 
 private:
     int  sendcount_   = 20;
     bool repeat_last_ = false;
+
+    Statistic<uint32_t>* stat_mod_event_;
+    Statistic<uint32_t>* stat_ack_event_;
+    Statistic<uint32_t>* stat_unmod_event_;
 
     Link* left_;
     Link* right_;

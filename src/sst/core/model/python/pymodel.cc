@@ -25,6 +25,7 @@
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_link.h"
+#include "sst/core/model/python/pymodel_portmodule.h"
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/model/python/pymodel_statgroup.h"
 #include "sst/core/model/python/pymodel_unitalgebra.h"
@@ -1078,11 +1079,13 @@ PyInit_sst()
     PyModel_UnitAlgebraType.tp_new  = PyType_GenericNew;
     PyModel_StatGroupType.tp_new    = PyType_GenericNew;
     PyModel_StatOutputType.tp_new   = PyType_GenericNew;
+    PyModel_PortModuleType.tp_new   = PyType_GenericNew;
     ModuleLoaderType.tp_new         = PyType_GenericNew;
     if ( (PyType_Ready(&PyModel_ComponentType) < 0) || (PyType_Ready(&PyModel_SubComponentType) < 0) ||
-         (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_UnitAlgebraType) < 0) ||
-         (PyType_Ready(&PyModel_StatType) < 0) || (PyType_Ready(&PyModel_StatGroupType) < 0) ||
-         (PyType_Ready(&PyModel_StatOutputType) < 0) || (PyType_Ready(&ModuleLoaderType) < 0) ) {
+         (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_PortModuleType) < 0) ||
+         (PyType_Ready(&PyModel_UnitAlgebraType) < 0) || (PyType_Ready(&PyModel_StatType) < 0) ||
+         (PyType_Ready(&PyModel_StatGroupType) < 0) || (PyType_Ready(&PyModel_StatOutputType) < 0) ||
+         (PyType_Ready(&ModuleLoaderType) < 0) ) {
         return nullptr; // TODO better error message
     }
 
@@ -1094,6 +1097,7 @@ PyInit_sst()
     Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_StatType);
     Py_INCREF(&PyModel_LinkType);
+    Py_INCREF(&PyModel_PortModuleType);
     Py_INCREF(&PyModel_UnitAlgebraType);
     Py_INCREF(&PyModel_StatGroupType);
     Py_INCREF(&PyModel_StatOutputType);
@@ -1103,6 +1107,7 @@ PyInit_sst()
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "UnitAlgebra", (PyObject*)&PyModel_UnitAlgebraType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
+    PyModule_AddObject(module, "PortModule", (PyObject*)&PyModel_PortModuleType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
     PyModule_AddObject(module, "Statistic", (PyObject*)&PyModel_StatType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
