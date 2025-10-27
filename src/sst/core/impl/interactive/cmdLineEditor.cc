@@ -11,12 +11,11 @@
 
 #include "sst/core/impl/interactive/cmdLineEditor.h"
 
-#include <cctype>
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <iterator>
 #include <sstream>
-#include <unistd.h>
 
 // #define _KEYB_DEBUG_
 

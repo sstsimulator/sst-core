@@ -12,6 +12,7 @@
 #ifndef SST_CORE_IMPL_INTERACTIVE_CMDLINEEDITOR_H
 #define SST_CORE_IMPL_INTERACTIVE_CMDLINEEDITOR_H
 
+#include <cctype>
 #include <fstream>
 #include <functional>
 #include <list>
