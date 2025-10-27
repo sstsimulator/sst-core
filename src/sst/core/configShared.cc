@@ -71,7 +71,7 @@ ConfigShared::addVerboseOptions(bool sdl_avail)
 
  */
 std::string
-ConfigShared::getLibPath() const
+ConfigShared::getLibPath(bool exclude_ext_paths) const
 {
     std::string fullLibPath;
 
@@ -114,6 +114,8 @@ ConfigShared::getLibPath() const
 
                 if ( key.size() >= 6 ) {
                     if ( "LIBDIR" == key.substr(key.size() - 6) ) {
+                        // See if this is an _EXT_ key and if we need to skip it
+                        if ( exclude_ext_paths && (key.find("_EXT_") != std::string::npos) ) continue;
                         // See if there is a value, if not, skip it
                         if ( value.size() > 0 ) {
                             // If this is the first one, we don't need

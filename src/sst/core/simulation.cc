@@ -503,7 +503,6 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     if ( my_rank.thread == 0 ) {
         minPartTC = minPartToTC(min_part);
     }
-
     // Get the minimum latencies for links between the various threads
     interThreadLatencies.resize(num_ranks.thread);
     for ( size_t i = 0; i < interThreadLatencies.size(); i++ ) {
@@ -519,7 +518,11 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         // Find the minimum latency across a partition
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink* clink = *iter;
-            RankInfo    rank[2];
+            // If link is nonlocal, then doesn't affect interthread latencies
+            if ( clink->nonlocal ) continue;
+
+            // If link is not nonlocal, see if it crosses a thread boundary
+            RankInfo rank[2];
             rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
             rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
             // We only care about links that are on my rank, but
