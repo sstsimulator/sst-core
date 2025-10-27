@@ -90,10 +90,9 @@ portModAddParam(PyObject* self, PyObject* args)
     PyObject* value = nullptr;
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) ) return nullptr;
 
-    // If bound, can update immediately, otherwise need to buffer parameters
     SST::ConfigPortModule* pm = getPortModule(self);
     if ( nullptr == pm ) return nullptr; // Should never happen
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_Str(value);
     pm->addParameter(param, SST_ConvertToCppString(vstr));
     Py_XDECREF(vstr);
 
@@ -115,8 +114,8 @@ portModAddParams(PyObject* self, PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         pm->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr));
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -255,7 +254,7 @@ portModEnableStatistics(PyObject* self, PyObject* args)
 
     for ( uint32_t x = 0; x < num_stats; x++ ) {
         PyObject*   pylistitem = PyList_GetItem(stat_list, x);
-        PyObject*   pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+        PyObject*   pyname     = PyObject_Str(pylistitem);
         std::string name       = SST_ConvertToCppString(pyname);
         pm->enableStatistic(name, params);
     }
@@ -273,7 +272,7 @@ portModSetStatisticLoadLevel(PyObject* self, PyObject* args)
     SST::ConfigPortModule* pm     = getPortModule(self);
 
     PyErr_Clear();
-    arg_ok = PyArg_ParseTuple(args, "i|i", &level);
+    arg_ok = PyArg_ParseTuple(args, "i", &level);
     level  = level & 0xff;
 
     if ( arg_ok ) {

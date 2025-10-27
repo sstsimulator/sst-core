@@ -469,6 +469,8 @@ public:
         return params.getSubscribedSharedParamSets();
     }
 
+    /* Adds a PortModule on the port 'port' of the associated component. Returns the index of the
+     * module in the component's vector of PortModules for the given port. */
     size_t addPortModule(const std::string& port, const std::string& type, const Params& params);
 
     std::vector<LinkId_t> allLinks() const;

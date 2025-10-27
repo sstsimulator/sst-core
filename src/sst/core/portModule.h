@@ -291,6 +291,32 @@ protected:
     void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
+    /** Convenience function for testing for and reporting fatal
+        conditions.  If the condition holds, fatal() will be called,
+        otherwise, the function will return.  The function will create
+        a new Output object and call fatal() using the supplied
+        parameters.  Before calling Output::fatal(), the function will
+        also print other information about the (sub)component that
+        called fatal and about the simulation state.
+
+        From Output::fatal: Message will be sent to the output
+        location and to stderr.  The output will be prepended with the
+        expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+        @param condition on which to call fatal(); fatal() is called
+        if the bool is false.
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simulation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void sst_assert(bool condition, uint32_t line, const char* file, const char* func, int exit_code,
+        const char* format, ...) const __attribute__((format(printf, 7, 8)));
+
     /** Registers a statistic.
          If Statistic is allowed to exist (controlled by Python runtime parameters),
          then a statistic will be created and returned. If not allowed to exist,
@@ -377,7 +403,8 @@ private:
     uint8_t getStatisticValidityAndLevel(const std::string& statistic_name) const;
 
     /**
-       Returns the name of the
+       Returns a pair containing a bool indicating whether the statistic was enabled and a params object with any params
+       the statistic has been given.
      */
     std::pair<bool, Params> isStatisticEnabled(const std::string& statistic_name, const uint8_t min_level);
 };

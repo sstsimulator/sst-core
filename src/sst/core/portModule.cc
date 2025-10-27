@@ -203,5 +203,17 @@ PortModule::fatal(uint32_t line, const char* file, const char* func, int exit_co
     va_end(arg);
 }
 
+void
+PortModule::sst_assert(
+    bool condition, uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+{
+    if ( !condition ) {
+        va_list arg;
+        va_start(arg, format);
+        vfatal(line, file, func, exit_code, format, arg);
+        va_end(arg);
+    }
+}
+
 
 } // namespace SST
