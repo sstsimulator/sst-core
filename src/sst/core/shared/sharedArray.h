@@ -216,7 +216,12 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Shared::SharedObject::serialize_order(ser);
-        SST_SER(published);
+        SST_SER(published, SerOption::map_read_only);
+        bool initialized = (data != nullptr);
+        SST_SER(initialized, SerOption::map_read_only);
+
+        if ( !initialized ) return;
+
         switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK:
@@ -241,7 +246,7 @@ public:
 
 private:
     bool  published;
-    Data* data;
+    Data* data = nullptr;
 
     class Data : public SharedObjectData
     {
@@ -629,7 +634,12 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Shared::SharedObject::serialize_order(ser);
-        SST_SER(published);
+        SST_SER(published, SerOption::map_read_only);
+        bool initialized = (data != nullptr);
+        SST_SER(initialized, SerOption::map_read_only);
+
+        if ( !initialized ) return;
+
         switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK:
@@ -654,7 +664,7 @@ public:
 
 private:
     bool  published;
-    Data* data;
+    Data* data = nullptr;
 
     class Data : public SharedObjectData
     {

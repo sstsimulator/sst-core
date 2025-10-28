@@ -141,7 +141,8 @@ ConfigLink::updateLatencies()
     if ( order >= 1 ) {
         latency[0] = ConfigLink::getLatencyFromIndex(latency[0]);
     }
-    if ( order >= 2 ) {
+    // If this is nonlocal, latency[1] holds the remote thread instead of the latency
+    if ( order >= 2 && !nonlocal ) {
         latency[1] = ConfigLink::getLatencyFromIndex(latency[1]);
     }
 }
@@ -1160,7 +1161,7 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         if ( !link->nonlocal && (c0_in_new ^ c1_in_new) ) {
             // Only one side is in the set. Figure out which one and set the link as nonlocal
             int index = c0_in_new ? 0 : 1;
-            link->setAsNonLocal(index, ranks[(index + 1) % 1]);
+            link->setAsNonLocal(index, ranks[(index + 1) % 2]);
         }
         return nullptr;
     case 3:
