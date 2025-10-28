@@ -230,9 +230,9 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST::Shared::SharedObject::serialize_order(ser);
-        SST_SER(published, SerOption::map_read_only);
+        SST_SER(published);
         bool initialized = (data != nullptr);
-        SST_SER(initialized, SerOption::map_read_only);
+        SST_SER(initialized);
 
         if ( !initialized ) return;
 
