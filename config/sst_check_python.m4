@@ -16,8 +16,8 @@ dnl check if user provided a specific python-config
 dnl search python3-config
   AS_IF([test $PYTHON_CONFIG_EXE = "no"],
     [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.14-config" "python3.13-config" "python3.12-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.14-config" "python3.13-config" "python3.12-config" "python3.11-config" "python3.10-config" "python3.9-config" "python3.8-config" "python3.7-config" "python3.6-config"], ["no"])])])
 
 dnl search python-config
   AS_IF([test $PYTHON_CONFIG_EXE = "no"],
