@@ -349,7 +349,8 @@ public:
 
                 // Set the std::shared_ptr or std::weak_ptr to either nullptr, or to an offset within the owner.
                 // What is very important, is that "ptr" must have the same control block as "owner".
-                ptr = std::shared_ptr<PTR_TYPE>(owner, addr);
+                ptr = std::shared_ptr<PTR_TYPE>(
+                    owner, reinterpret_cast<typename std::shared_ptr<PTR_TYPE>::element_type*>(addr));
             }
             break;
         }
