@@ -2195,7 +2195,7 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
     try:
         this_tar = tarfile.open(tarfilepath)
         if sys.version_info.minor >= 12:
-            this_tar.extractall(targetdir, filter="data")  # type: ignore [call-arg]
+            this_tar.extractall(targetdir, filter="data")
         else:
             this_tar.extractall(targetdir)
         this_tar.close()
