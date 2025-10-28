@@ -1023,7 +1023,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<std::string*>::check_all("test_string", out, "std::string*");
     }
     else if ( test == "shared_ptr" ) {
-       //testSharedPtr(out, rng);
+        // testSharedPtr(out, rng);
     }
     else if ( test == "array" ) {
         {
