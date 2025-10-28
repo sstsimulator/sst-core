@@ -18,6 +18,11 @@
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
 
+#include <cstdarg>
+#include <cstdint>
+#include <string>
+#include <utility>
+
 using namespace SST::Statistics;
 
 namespace SST {
