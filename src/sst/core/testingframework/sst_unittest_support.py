@@ -31,6 +31,7 @@ import threading
 import time
 import traceback
 import unittest
+from inspect import signature
 from pathlib import Path
 from shutil import which
 from typing import (Any, Callable, List, Mapping, Optional, Sequence, Tuple,
@@ -2194,7 +2195,9 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
         return False
     try:
         this_tar = tarfile.open(tarfilepath)
-        if sys.version_info.minor >= 12:
+        # The filter argument was added in 3.12, but some distributions
+        # backport the addition, so a version check is not sufficient.
+        if "filter" in signature(this_tar.extractall).parameters:
             this_tar.extractall(targetdir, filter="data")  # type: ignore [call-arg]
         else:
             this_tar.extractall(targetdir)
