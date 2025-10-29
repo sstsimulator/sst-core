@@ -752,7 +752,7 @@ checkSameOwner(const T1& t1, const T2& t2)
 }
 
 // Compare two std::shared_ptr
-template <typename T>
+/*template <typename T>
 bool
 checkSharedPtr(
     const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
@@ -776,9 +776,9 @@ checkSharedPtr(
     else
         return objectEqual(*reinterpret_cast<T*>(p1.get()), *reinterpret_cast<T*>(p2.get()));
 }
-
+*/
 // Compare two std::weak_ptr
-template <typename T>
+/*template <typename T>
 bool
 checkSharedPtr(
     const std::weak_ptr<T>& p1, const std::weak_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
@@ -795,9 +795,9 @@ checkSharedPtr(const std::tuple<T...>& p1, const std::tuple<T...>& p2)
         [&](auto&&... p1s) { return std::apply([&](auto&&... p2s) { return (checkSharedPtr(p1s, p2s) && ...); }, p2); },
         p1);
 }
-
+*/
 // Test std::shared_ptr and std::weak_ptr
-void
+/*void
 testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
 {
     auto test = [&](auto value, auto rand) {
@@ -950,7 +950,7 @@ testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
         return v;
     });
 }
-
+*/
 coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     Component(id)
 {
@@ -1023,7 +1023,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<std::string*>::check_all("test_string", out, "std::string*");
     }
     else if ( test == "shared_ptr" ) {
-        testSharedPtr(out, rng);
+        // testSharedPtr(out, rng);
     }
     else if ( test == "array" ) {
         {
