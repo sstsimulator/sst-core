@@ -988,7 +988,9 @@ main(int argc, char* argv[])
     if ( myRank.rank == 0 || cfg.parallel_load() ) {
 
         Simulation_impl::basicPerf.beginRegion("graph-cleanup");
-        if ( cfg.parallel_load() ) graph->reduceGraphToSingleRank(myRank.rank);
+        if ( cfg.parallel_load() ) {
+            graph->reduceGraphToSingleRank(myRank.rank);
+        }
         graph->postCreationCleanup();
         Simulation_impl::basicPerf.endRegion("graph-cleanup");
 

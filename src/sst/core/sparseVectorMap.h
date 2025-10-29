@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -232,12 +233,13 @@ public:
 
        @return reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     classT& operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }
@@ -252,12 +254,13 @@ public:
 
        @return const reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     const classT& operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }
@@ -498,12 +501,13 @@ public:
 
        @return reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     classT* operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }
@@ -518,12 +522,13 @@ public:
 
        @return const reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     const classT* operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }
@@ -781,12 +786,13 @@ public:
 
        @return reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     keyT& operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }
@@ -801,12 +807,13 @@ public:
 
        @return const reference to the requested item.
 
+       @exception std::out_of_range try to access an element that doesn't exist in the SparseVectorMap
     */
     const keyT& operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
-            // Need to error out
+            throw std::out_of_range("SparseVectorMap: trying to access element that does not exist");
         }
         return data[index];
     }

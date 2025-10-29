@@ -198,6 +198,11 @@ public:
     {
         SST::Shared::SharedObject::serialize_order(ser);
         SST_SER(published);
+        bool initialized = (data != nullptr);
+        SST_SER(initialized);
+
+        if ( !initialized ) return;
+
         switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK:
@@ -222,7 +227,7 @@ public:
 
 private:
     bool  published;
-    Data* data;
+    Data* data = nullptr;
 
     class Data : public SharedObjectData
     {
