@@ -62,9 +62,9 @@ template <bool TS>
 bool
 TimeVortexBinnedMapBase<TS>::empty()
 {
-    if ( TS ) slock.lock();
+    if constexpr ( TS ) slock.lock();
     bool ret = current_depth == 0;
-    if ( TS ) slock.unlock();
+    if constexpr ( TS ) slock.unlock();
     return ret;
 }
 
@@ -102,7 +102,7 @@ TimeVortexBinnedMapBase<TS>::insert(Activity* activity)
 
     // Look to see if we already have a TimeUnit for this delivery
     // time.  Any access to the map must be protected with a mutex.
-    if ( TS ) slock.lock();
+    if constexpr ( TS ) slock.lock();
     auto element = map.find(sort_time);
     if ( element == map.end() ) {
         // Need to create a new entry in map for this delivery time,
@@ -110,13 +110,13 @@ TimeVortexBinnedMapBase<TS>::insert(Activity* activity)
         auto entry = pool.remove();
         entry->setSortTime(sort_time);
         map.emplace_hint(map.end(), sort_time, entry);
-        slock.unlock();
+        if constexpr ( TS ) slock.unlock();
         entry->insert(activity);
     }
     else {
         // Don't need to add a new TimeUnit, so drop the lock before
         // inserting.
-        slock.unlock();
+        if constexpr ( TS ) slock.unlock();
         // Just drop this into the existing vector
         (*element).second->insert(activity);
     }
@@ -131,7 +131,7 @@ TimeVortexBinnedMapBase<TS>::pop()
 
     Activity* ret = current_time_unit->pop();
     if ( ret == nullptr ) {
-        if ( TS ) slock.lock();
+        if constexpr ( TS ) slock.lock();
         // Need to get the next TimeUnit
 
         // Return current time unit to pool
@@ -140,7 +140,7 @@ TimeVortexBinnedMapBase<TS>::pop()
         current_time_unit = map.begin()->second;
         // Erase this time unit from map
         map.erase(current_time_unit->getSortTime());
-        if ( TS ) slock.unlock();
+        if constexpr ( TS ) slock.unlock();
         ret = current_time_unit->pop();
     }
     return ret;
