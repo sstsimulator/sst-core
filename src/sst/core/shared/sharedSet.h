@@ -294,7 +294,7 @@ private:
 
         void write(const valT& value)
         {
-            // std::lock_guard<std::mutex> lock(mtx);
+            std::lock_guard<std::mutex> lock(mtx);
             check_lock_for_write("SharedSet");
             update_write(value);
             if ( change_set ) change_set->addChange(value);
