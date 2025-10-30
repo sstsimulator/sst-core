@@ -17,6 +17,7 @@
 
 #include <cinttypes>
 #include <iostream>
+#include <string>
 
 namespace SST {
 

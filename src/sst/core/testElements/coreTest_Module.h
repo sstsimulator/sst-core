@@ -43,6 +43,8 @@ public:
         { "seed",    "The seed to use for the random number generator.", "11" },
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     explicit CoreTestModuleExample(SST::Params& params);
     ~CoreTestModuleExample();
     std::string getRNGType() const;
@@ -91,6 +93,8 @@ public:
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     coreTestModuleLoader(SST::ComponentId_t id, SST::Params& params);
     ~coreTestModuleLoader();

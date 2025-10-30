@@ -14,6 +14,7 @@
 
 #include "sst/core/eli/attributeInfo.h"
 #include "sst/core/eli/categoryInfo.h"
+#include "sst/core/eli/checkpointableInfo.h"
 #include "sst/core/eli/defaultInfo.h"
 #include "sst/core/eli/elementbuilder.h"
 #include "sst/core/eli/elibase.h"

@@ -1,25 +1,19 @@
 # Creating simulation checkpoint at simulated time period of 1.2us.
-(111000) Got an unmodified event
 (210000) comp10/right: Dropping event on send
-(311000) Got an unmodified event
-(411000) Got an unmodified event
 (510000) comp10/right: Dropping event on send
-(611000) Got an unmodified event
 (710000) comp10/right: Dropping event on send
 (810000) comp10/right: Dropping event on send
-(911000) Got an unmodified event
 (1010000) comp10/right: Dropping event on send
-(1111000) Got an unmodified event
 # Simulation Checkpoint: Simulated Time 1.2 us (Real CPU time since last checkpoint 0.00107 seconds)
-(1211000) Got an unmodified event
-(1311000) Got an unmodified event
 (1410000) comp10/right: Dropping event on send
 (1510000) comp10/right: Dropping event on send
 (1610000) comp10/right: Dropping event on send
-(1711000) Got an unmodified event
 (1810000) comp10/right: Dropping event on send
-(1911000) Got an unmodified event
-(2011000) Got an unmodified event
 (2110000) comp10/right: Dropping event on send
 (2210000) comp10/right: Dropping event on send
+ comp10.right.0.dropped : Accumulator : SimTime = 2311000; Sum.u64 = 11; SumSQ.u64 = 11; Count.u64 = 11; Min.u64 = 1; Max.u64 = 1; 
+ comp10.right.0.observed : Accumulator : SimTime = 2311000; Sum.u64 = 23; SumSQ.u64 = 23; Count.u64 = 23; Min.u64 = 1; Max.u64 = 1; 
+ comp11.handle_modified_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+ comp11.handle_unmodified_event : Accumulator : SimTime = 2311000; Sum.u32 = 12; SumSQ.u32 = 12; Count.u64 = 12; Min.u32 = 1; Max.u32 = 1; 
+ comp11.handle_ack_event : Accumulator : SimTime = 2311000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
 Simulation is complete, simulated time: 2.311 us

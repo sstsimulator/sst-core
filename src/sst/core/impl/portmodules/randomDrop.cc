@@ -29,6 +29,9 @@ RandomDrop::RandomDrop(Params& params) :
     drop_prob_    = params.find<double>("drop_prob", 0.01);
     verbose_      = params.find<bool>("verbose", false);
     drop_on_send_ = params.find<bool>("drop_on_send");
+
+    stat_dropped_  = registerStatistic<uint64_t>("dropped");
+    stat_observed_ = registerStatistic<uint64_t>("observed");
 }
 
 RandomDrop::~RandomDrop()
@@ -51,7 +54,6 @@ void
 RandomDrop::eventSent(uintptr_t UNUSED(key), Event*& ev)
 {
     double pull = rng_.nextUniform();
-
     if ( pull < drop_prob_ ) {
         if ( verbose_ ) {
             getSimulationOutput().output(
@@ -59,7 +61,9 @@ RandomDrop::eventSent(uintptr_t UNUSED(key), Event*& ev)
         }
         delete ev;
         ev = nullptr;
+        stat_dropped_->addData(1);
     }
+    stat_observed_->addData(1);
 }
 
 uintptr_t
@@ -85,10 +89,12 @@ RandomDrop::interceptHandler(uintptr_t UNUSED(key), Event*& data, bool& cancel)
         }
         delete data;
         cancel = true;
+        stat_dropped_->addData(1);
     }
     else {
         cancel = false;
     }
+    stat_observed_->addData(1);
 }
 
 void
@@ -101,6 +107,8 @@ RandomDrop::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(drop_on_send_);
     SST_SER(rng_);
     SST_SER(print_info_);
+    SST_SER(stat_dropped_);
+    SST_SER(stat_observed_);
 }
 
 } // namespace SST::IMPL::PortModule

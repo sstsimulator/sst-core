@@ -47,6 +47,8 @@ public:
         { "test_element", "true" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     explicit coreTestComponentBase(ComponentId_t id) :
         SST::Component(id)
     {}
@@ -75,6 +77,8 @@ public:
     SST_ELI_DOCUMENT_PORTS(
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     explicit coreTestComponentBase2(ComponentId_t id) :
         coreTestComponentBase(id)
@@ -122,6 +126,8 @@ public:
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     coreTestComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestComponent();

@@ -21,6 +21,7 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -154,6 +155,8 @@ public:
         {"route", "Slot that the route object goes in", "SST::CoreTest::MessageMesh::RouteInterface" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     EnclosingComponent(ComponentId_t id, Params& params);
     EnclosingComponent() {}
     ~EnclosingComponent() {}
@@ -207,6 +210,8 @@ public:
         {"port", "Slot to load the real PortInterface object", "SST::CoreTest::MessageMesh::PortInterface" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     PortSlot(ComponentId_t id, Params& params);
     PortSlot() {}
     ~PortSlot() {}
@@ -217,6 +222,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTest::MessageMesh::PortSlot);
+
 
 private:
     PortInterface* port_;
@@ -289,6 +295,8 @@ public:
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     RouteMessage(ComponentId_t id, Params& params, std::vector<PortInterface*>& ports, int my_id);
     RouteMessage() {}

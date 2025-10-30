@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 namespace SST::Statistics {
 

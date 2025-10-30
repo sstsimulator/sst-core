@@ -22,8 +22,11 @@
 
 #include "sst/core/interprocess/circularBuffer.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <inttypes.h>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 namespace SST::Core::Interprocess {
@@ -136,7 +139,9 @@ public:
             }
             numBuffs = isd->numBuffers;
 
-            return --(isd->expectedChildren);
+            auto t                = isd->expectedChildren - 1;
+            isd->expectedChildren = t;
+            return t;
         }
     }
 

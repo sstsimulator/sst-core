@@ -17,6 +17,9 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/distrib.h"
 #include "sst/core/rng/rng.h"
+#include "sst/core/shared/sharedArray.h"
+#include "sst/core/shared/sharedMap.h"
+#include "sst/core/shared/sharedSet.h"
 
 #include <cstdint>
 #include <string>
@@ -110,6 +113,8 @@ public:
         {"nullstat", "Test that non-enabled stats are checkpointed correctly", "number", 5}
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     coreTestCheckpoint(ComponentId_t id, SST::Params& params);
     ~coreTestCheckpoint();
 
@@ -162,6 +167,14 @@ private:
     Statistic<uint32_t>*     stat_rng        = nullptr;
     Statistic<double>*       stat_dist       = nullptr;
     Statistic<uint32_t>*     stat_null       = nullptr;
+
+
+    Shared::SharedArray<int>    shared_array;
+    Shared::SharedArray<int>    shared_array_uninit;
+    Shared::SharedSet<int>      shared_set;
+    Shared::SharedSet<int>      shared_set_uninit;
+    Shared::SharedMap<int, int> shared_map;
+    Shared::SharedMap<int, int> shared_map_uninit;
 };
 
 } // namespace SST::CoreTestCheckpoint

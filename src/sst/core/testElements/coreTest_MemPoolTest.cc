@@ -17,6 +17,7 @@
 #include "sst/core/mempoolAccessor.h"
 #include "sst/core/output.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 

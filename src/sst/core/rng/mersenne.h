@@ -14,6 +14,7 @@
 
 #include "rng.h"
 
+#include <cstdint>
 #include <stdint.h>
 #include <sys/time.h>
 

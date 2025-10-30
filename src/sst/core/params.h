@@ -18,6 +18,8 @@
 #include "sst/core/threadsafe.h"
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <inttypes.h>
 #include <iostream>
 #include <map>
@@ -27,6 +29,8 @@
 #include <stack>
 #include <stdexcept>
 #include <stdlib.h>
+#include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -36,6 +40,7 @@ namespace SST {
 
 class ConfigGraph;
 class ConfigComponent;
+class ConfigPortModule;
 class Output;
 class SSTModelDescription;
 
@@ -860,6 +865,7 @@ private:
     //// outputters (classes that use it are friended below)
     friend class SST::ConfigGraph;
     friend class SST::ConfigComponent;
+    friend class SST::ConfigPortModule;
     friend class SST::Core::ConfigGraphOutput;
     friend class SST::SSTModelDescription;
 

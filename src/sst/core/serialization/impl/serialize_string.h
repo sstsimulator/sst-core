@@ -20,6 +20,7 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace SST::Core::Serialization {

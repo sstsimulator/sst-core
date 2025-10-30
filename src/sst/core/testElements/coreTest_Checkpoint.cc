@@ -127,12 +127,26 @@ void
 coreTestCheckpoint::init(unsigned UNUSED(phase))
 {
     output->output("%s, init()\n", getName().c_str());
+
+    // Put data in the shared objects.  Since there are no IDs, and we can't differentiate the components from each
+    // other, we'll just have all of them put in the same values.
+    shared_array.initialize("shared_array", 10);
+    shared_set.initialize("shared_set");
+    shared_map.initialize("shared_map");
+    for ( int i = 0; i < 10; ++i ) {
+        shared_array.write(i, i);
+        shared_set.insert(i);
+        shared_map.write(i, i);
+    }
 }
 
 void
 coreTestCheckpoint::setup()
 {
     output->output("%s, setup()\n", getName().c_str());
+    shared_array.publish();
+    shared_set.publish();
+    shared_map.publish();
     if ( counter > 0 ) link_right->send(new coreTestCheckpointEvent(counter));
 }
 
@@ -148,6 +162,39 @@ coreTestCheckpoint::finish()
 {
     output->output("%s finished. teststring=%s, output=('%s',%" PRIu32 ")\n", getName().c_str(), test_string.c_str(),
         output->getPrefix().c_str(), output->getVerboseLevel());
+
+    // Check the shared objects
+
+    // Shared Array
+    bool error = false;
+    for ( int i = 0; i < 10; ++i ) {
+        if ( shared_array[i] != i ) error = true;
+    }
+
+    if ( error ) {
+        output->output("Error: contents in shared_array do not match");
+    }
+
+    // Shared Set
+    error     = false;
+    int count = 0;
+    for ( auto x : shared_set ) {
+        if ( x != count++ ) error = true;
+    }
+
+    if ( error ) {
+        output->output("Error: contents in shared_set do not match");
+    }
+
+    // Shared Map
+    error = false;
+    for ( auto x : shared_map ) {
+        if ( x.first != x.second ) error = true;
+    }
+
+    if ( error ) {
+        output->output("Error: contents in shared_map do not match");
+    }
 }
 
 // incoming event is bounced back after decrementing its counter
@@ -253,6 +300,12 @@ coreTestCheckpoint::serialize_order(SST::Core::Serialization::serializer& ser)
     SST_SER(stat_rng);
     SST_SER(stat_dist);
     SST_SER(stat_null);
+    SST_SER(shared_array);
+    SST_SER(shared_array_uninit);
+    SST_SER(shared_set);
+    SST_SER(shared_set_uninit);
+    SST_SER(shared_map);
+    SST_SER(shared_map_uninit);
 }
 
 

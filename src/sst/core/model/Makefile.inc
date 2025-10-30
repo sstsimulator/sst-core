@@ -9,7 +9,9 @@ sst_core_sources += \
 	model/sstmodel.h \
 	model/sstmodel.cc \
 	model/element_python.h \
-	model/element_python.cc
+	model/element_python.cc \
+	model/restart/sstcptmodel.h \
+	model/restart/sstcptmodel.cc
 
 sst_core_python_headers = \
   model/python/pymacros.h
@@ -27,7 +29,9 @@ sst_core_python_sources = \
 	model/python/pymodel_stat.h \
 	model/python/pymodel_stat.cc \
 	model/python/pymodel_statgroup.h \
-	model/python/pymodel_statgroup.cc
+	model/python/pymodel_statgroup.cc \
+	model/python/pymodel_portmodule.h \
+	model/python/pymodel_portmodule.cc
 
 sst_core_json_sources = \
   model/json/jsonmodel.h \

@@ -23,6 +23,7 @@
 #include <atomic>
 #include <cerrno>
 #include <cinttypes>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>

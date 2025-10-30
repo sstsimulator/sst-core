@@ -25,6 +25,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <fstream>
+#include <ostream>
 #include <set>
 #include <stdio.h>
 #include <tuple>
@@ -69,6 +70,13 @@ Factory::Factory(const std::string& searchPaths) :
 Factory::~Factory()
 {
     delete loader;
+}
+
+void
+Factory::updateSearchPaths(const std::string& paths)
+{
+    searchPaths = paths;
+    loader->updateSearchPaths(paths);
 }
 
 static bool
@@ -329,8 +337,22 @@ Factory::GetStatisticValidityAndEnableLevel(const std::string& comp_type, const 
         }
     }
 
+    auto* mod_lib = ELI::InfoDatabase::getLibrary<PortModule>(elemlib);
+    if ( mod_lib ) {
+        auto* info = mod_lib->getInfo(elem);
+        if ( info ) {
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.enable_level;
+                }
+            }
+            return 255;
+        }
+    }
+
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", comp_type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested element '%s'\n%s\n", comp_type.c_str(), error_os.str().c_str());
     return 255;
 }
 

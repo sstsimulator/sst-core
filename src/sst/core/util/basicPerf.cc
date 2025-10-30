@@ -19,6 +19,7 @@
 #include "sst/core/sst_mpi.h"
 
 #include <clocale>
+#include <cstdio>
 
 namespace SST::Util {
 

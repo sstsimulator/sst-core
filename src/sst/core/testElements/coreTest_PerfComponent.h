@@ -12,6 +12,8 @@
 #ifndef SST_CORE_CORETEST_PERF_COMPONENT_H
 #define SST_CORE_CORETEST_PERF_COMPONENT_H
 
+#include <cstddef>
+#include <cstdio>
 #include <sst/core/component.h>
 #include <sst/core/link.h>
 #include <sst/core/rng/marsaglia.h>

@@ -13,7 +13,6 @@
 #define SST_CORE_INTERACTIVE_CONSOLE_H
 
 #include "sst/core/action.h"
-#include "sst/core/config.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/output.h"

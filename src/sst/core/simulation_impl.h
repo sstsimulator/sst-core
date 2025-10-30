@@ -28,14 +28,17 @@
 #include "sst/core/util/filesystem.h"
 
 #include <atomic>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <map>
 #include <mutex>
 #include <set>
 #include <signal.h>
+#include <string>
 #include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */
@@ -415,8 +418,8 @@ public:
        Write the global data to a binary file and create the registry
        and write the header info
      */
-    void checkpoint_write_globals(
-        int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
+    void checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_filename,
+        const std::string& registry_filename, const std::string& globals_filename);
     void restart();
 
     /**
@@ -512,6 +515,7 @@ public:
     RealTimeManager*        real_time_;
     std::string             interactive_type_  = "";
     std::string             interactive_start_ = "";
+    std::string             replay_file_       = "";
     InteractiveConsole*     interactive_       = nullptr;
     bool                    enter_interactive_ = false;
     std::string             interactive_msg_;

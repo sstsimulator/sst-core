@@ -32,6 +32,9 @@
 #include "sst/core/warnmacros.h"
 #include "sst/core/watchPoint.h"
 
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 
 namespace SST {
@@ -104,8 +107,8 @@ BaseComponent::~BaseComponent()
         delete handler;
     }
 
-    // Delete any portModules
-    for ( auto port : portModules ) {
+    // Delete any Port Modules
+    for ( auto port : port_modules_ ) {
         delete port;
     }
 }
@@ -286,13 +289,13 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
             if ( !tmp->isConfigured() ) {
                 myLinks->removeLink(port);
                 // Need to see if there are any associated PortModules
-                if ( my_info_->portModules != nullptr ) {
-                    auto it = my_info_->portModules->find(port);
-                    if ( it != my_info_->portModules->end() ) {
+                if ( my_info_->port_modules_ != nullptr ) {
+                    auto it = my_info_->port_modules_->find(port);
+                    if ( it != my_info_->port_modules_->end() ) {
                         // Found PortModules, swap them into
                         // port_modules and remove from my map
                         port_modules.swap(it->second);
-                        my_info_->portModules->erase(it);
+                        my_info_->port_modules_->erase(it);
                     }
                 }
                 return tmp;
@@ -311,6 +314,10 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port, std::vector<
         return nullptr;
     }
 }
+
+thread_local std::pair<ComponentId_t, PortModuleId_t> BaseComponent::port_module_id_ =
+    std::make_pair(UNSET_COMPONENT_ID, std::make_pair("", 0));
+
 
 Link*
 BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler)
@@ -343,15 +350,15 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
                 tmp->resetDefaultTimeBase();
 
                 // Need to see if I got any port_modules, if so, need
-                // to add them to my_info_->portModules
+                // to add them to my_info_->port_modules_
 
                 if ( port_modules.size() > 0 ) {
-                    if ( nullptr == my_info_->portModules ) {
-                        // This memory is currently leaked as portModules is otherwise a pointer to ConfigComponent
+                    if ( nullptr == my_info_->port_modules_ ) {
+                        // This memory is currently leaked as port_modules_ is otherwise a pointer to ConfigComponent
                         // ConfigComponent does not exist for anonymous subcomponents
-                        my_info_->portModules = new std::map<std::string, std::vector<ConfigPortModule>>();
+                        my_info_->port_modules_ = new std::map<std::string, std::vector<ConfigPortModule>>();
                     }
-                    (*my_info_->portModules)[name].swap(port_modules);
+                    (*my_info_->port_modules_)[name].swap(port_modules);
                 }
             }
         }
@@ -381,16 +388,19 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
         }
 
         // Check for PortModules
-        // portModules pointer may be invalid after wire up
+        // port_modules_ pointer may be invalid after wire up
         // Only SelfLinks can be initialized after wire up and SelfLinks do not support PortModules
-        if ( !sim_->isWireUpFinished() && my_info_->portModules != nullptr ) {
-            auto it = my_info_->portModules->find(name);
-            if ( it != my_info_->portModules->end() ) {
+        if ( !sim_->isWireUpFinished() && my_info_->port_modules_ != nullptr ) {
+            auto it = my_info_->port_modules_->find(name);
+            if ( it != my_info_->port_modules_->end() ) {
                 EventHandlerMetaData mdata(my_info_->getID(), getName(), getType(), name);
-                for ( auto& portModule : it->second ) {
+                size_t               count = 0;
+                for ( auto& port_module : it->second ) {
+                    port_module_id_ = std::make_pair(my_info_->id_, std::make_pair(name, count));
+
                     auto* pm = Factory::getFactory()->CreateWithParams<PortModule>(
-                        portModule.type, portModule.params, portModule.params);
-                    pm->setComponent(this);
+                        port_module.type, port_module.params, port_module.params);
+
                     if ( pm->installOnSend() ) tmp->attachTool(pm, mdata);
                     if ( pm->installOnReceive() ) {
                         if ( handler )
@@ -399,7 +409,8 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
                             fatal(
                                 CALL_INFO_LONG, 1, "ERROR: Trying to install a receive PortModule on a Polling Link\n");
                     }
-                    portModules.push_back(pm);
+                    port_modules_.push_back(pm);
+                    count++;
                 }
             }
         }
@@ -501,6 +512,13 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
     addSelfLink(name);
     return configureLink(name, handler);
 }
+
+ConfigPortModule&
+BaseComponent::getPortModuleConfig(PortModuleId_t id)
+{
+    return my_info_->port_modules_->at(id.first)[id.second];
+}
+
 
 UnitAlgebra
 BaseComponent::getCoreTimeBase() const

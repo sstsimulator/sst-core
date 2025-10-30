@@ -15,7 +15,15 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/event.h"
 #include "sst/core/link.h"
-#include "sst/core/serialization/serializable.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statengine.h"
+
+#include <cstdarg>
+#include <cstdint>
+#include <string>
+#include <utility>
+
+using namespace SST::Statistics;
 
 namespace SST {
 
@@ -53,10 +61,10 @@ public:
     // listed here
     SST_ELI_DECLARE_INFO_EXTERN(
         ELI::ProvidesParams,
-        // ELI::ProvidesStats, // Will add stats in the future
+        ELI::ProvidesStats,
         ELI::ProvidesAttributes)
 
-    PortModule() = default;
+    PortModule();
     virtual ~PortModule() {};
 
     /******* Functions inherited from Link::AttachPoint *******/
@@ -205,6 +213,8 @@ public:
      */
     virtual bool installOnSend() { return false; }
 
+    const std::string& getName() const;
+
 protected:
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
@@ -262,24 +272,157 @@ protected:
     */
     SimTime_t getCurrentSimTimeMilli() const;
 
+    /** Convenience function for reporting fatal conditions.  The
+        function will create a new Output object and call fatal()
+        using the supplied parameters.  Before calling
+        Output::fatal(), the function will also print other
+        information about the (sub)component that called fatal and
+        about the simulation state.
+
+        From Output::fatal: Message will be sent to the output
+        location and to stderr.  The output will be prepended with the
+        expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simulation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    [[noreturn]]
+    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+        __attribute__((format(printf, 6, 7)));
+
+    /** Convenience function for testing for and reporting fatal
+        conditions.  If the condition holds, fatal() will be called,
+        otherwise, the function will return.  The function will create
+        a new Output object and call fatal() using the supplied
+        parameters.  Before calling Output::fatal(), the function will
+        also print other information about the (sub)component that
+        called fatal and about the simulation state.
+
+        From Output::fatal: Message will be sent to the output
+        location and to stderr.  The output will be prepended with the
+        expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+        @param condition on which to call fatal(); fatal() is called
+        if the bool is false.
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simulation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void sst_assert(bool condition, uint32_t line, const char* file, const char* func, int exit_code,
+        const char* format, ...) const __attribute__((format(printf, 7, 8)));
+
+    /** Registers a statistic.
+         If Statistic is allowed to exist (controlled by Python runtime parameters),
+         then a statistic will be created and returned. If not allowed to exist,
+         then a NullStatistic will be returned.  The type of Statistic is set by Python
+         runtime parameters.
+         @param params Additional parameter set to be passed to the statistic constructor.
+         @param stat_name Primary name of the statistic. This name must match the
+                defined ElementInfoStatistic in the component, and must also
+                be enabled in the Python input file.
+         @param stat_sub_id An additional sub name for the statistic
+         @return Either a created statistic or a NullStatistic depending upon runtime settings.
+     */
+    template <typename T>
+    Statistics::Statistic<T>* registerStatistic(
+        SST::Params& params, const std::string& stat_name, const std::string& stat_sub_id = "")
+    {
+        return registerStatistic_impl<T>(params, stat_name, stat_sub_id);
+    }
+
+    template <typename T>
+    Statistics::Statistic<T>* registerStatistic(const std::string& stat_name, const std::string& stat_sub_id = "")
+    {
+        SST::Params empty {};
+        return registerStatistic_impl<T>(empty, stat_name, stat_sub_id);
+    }
+
+    virtual std::string getEliType() const { return ""; }
+
 private:
     friend class BaseComponent;
 
     /**
        Component that owns this PortModule
      */
-    BaseComponent* component_;
+    BaseComponent* component_ = nullptr;
+
+    PortModuleId_t id_; // Together with component_, uniquely identifies a port module
+
+    std::string name_;
+
+    // Utility function used by fatal and sst_assert
+    [[noreturn]]
+    void vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
+        __attribute__((format(printf, 6, 0)));
 
     /**
-       Set the component that owns this PortModule
+       Internal function to manage statistic registration
      */
-    void setComponent(SST::BaseComponent* comp);
+    template <typename T>
+    Statistics::Statistic<T>* registerStatistic_impl(
+        SST::Params& params, const std::string& stat_name, const std::string& stat_sub_id)
+    {
+        // Lookup statistic enable level in ELI; if not present, returns 255
+        uint8_t level = getStatisticValidityAndLevel(stat_name);
+        if ( level == 255 ) {
+            fatal(__LINE__, __FILE__, "registerStatistic", 1,
+                "attempting to register a statistic '%s' that is not found in ELI", stat_name.c_str());
+        }
+
+        Params cfg_params;
+        bool   enabled;
+        std::tie(enabled, cfg_params) = isStatisticEnabled(stat_name, level);
+
+        if ( enabled ) {
+            cfg_params.insert(params);
+            auto stat = getStatEngine()->createStatistic<T>(component_, stat_name, stat_sub_id, cfg_params);
+            stat->setPortModName(id_.first, id_.second);
+            return stat;
+        }
+        else {
+            return getStatEngine()->createDisabledStatistic<T>();
+        }
+    }
+
+    /** Helper functions for statistic enablement */
+    /**
+       Returns the local stat engine instance
+     */
+    Statistics::StatisticProcessingEngine* getStatEngine() const;
+
+    /**
+       Returns the required statistic level if stat exists in ELI, else returns 255
+     */
+    uint8_t getStatisticValidityAndLevel(const std::string& statistic_name) const;
+
+    /**
+       Returns a pair containing a bool indicating whether the statistic was enabled and a params object with any params
+       the statistic has been given.
+     */
+    std::pair<bool, Params> isStatisticEnabled(const std::string& statistic_name, const uint8_t min_level);
 };
 
 } // namespace SST
 
 // Macro used to register PortModules in the ELI database
 #define SST_ELI_REGISTER_PORTMODULE(cls, lib, name, version, desc) \
-    SST_ELI_REGISTER_DERIVED(SST::PortModule,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)
+    SST_ELI_REGISTER_DERIVED(SST::PortModule,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)                                       \
+    std::string getEliType() const override                        \
+    {                                                              \
+        std::string ret(lib);                                      \
+        return ret + "." + name;                                   \
+    }
 
 #endif // SST_CORE_PORTMODULE_H

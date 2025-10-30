@@ -28,7 +28,7 @@ public:
     SST_ELI_DECLARE_BASE(Module)
     // declare extern to limit compile times
     SST_ELI_DECLARE_CTORS(ELI_CTOR(SST::Params&), ELI_CTOR(Component*, SST::Params&))
-    SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
+    SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams, ELI::ProvidesCheckpointable)
     Module() {}
     virtual ~Module() {}
     void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}

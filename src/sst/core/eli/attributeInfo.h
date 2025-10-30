@@ -16,6 +16,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace SST::ELI {

@@ -18,10 +18,15 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <cstdint>
 #include <iostream>
 #include <mutex>
 #include <set>
+#include <sstream>
 #include <stdio.h>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */
@@ -52,6 +57,13 @@ public:
     static Factory* getFactory() { return instance; }
 
     static Factory* createFactory(const std::string& searchPaths);
+
+    /**
+       Update the search paths
+       @param searchPaths New search paths to use
+     */
+    void updateSearchPaths(const std::string& paths);
+
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format

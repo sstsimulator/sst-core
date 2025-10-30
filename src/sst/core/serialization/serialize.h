@@ -22,6 +22,7 @@
 #undef SST_INCLUDING_SERIALIZE_H
 
 #include <atomic>
+#include <cstdint>
 #include <iostream>
 #include <type_traits>
 #include <typeinfo>
@@ -423,11 +424,14 @@ sst_ser_or_helper(Args... args)
 // Set the #define that will disable the warnings.
 #define SST_INCLUDING_SERIALIZE_H
 #include "sst/core/serialization/impl/serialize_adapter.h"
+#include "sst/core/serialization/impl/serialize_aggregate.h"
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
 #include "sst/core/serialization/impl/serialize_bitset.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_optional.h"
+// Disable until more stable across platforms
+// #include "sst/core/serialization/impl/serialize_shared_ptr.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_trivial.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"

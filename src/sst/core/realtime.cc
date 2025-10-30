@@ -24,6 +24,7 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <cinttypes>
+#include <cstddef>
 #include <string>
 #include <unistd.h>
 

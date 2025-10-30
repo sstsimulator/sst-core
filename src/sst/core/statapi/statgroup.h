@@ -16,6 +16,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
