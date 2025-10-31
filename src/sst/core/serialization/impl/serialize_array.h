@@ -56,7 +56,7 @@ template <typename ELEM_T>
 void
 serialize_array_element(serializer& ser, void* data, ser_opt_t opt, size_t index)
 {
-    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], opt, nullptr);
+    SST_SER(static_cast<ELEM_T*>(data)[index], opt);
 }
 
 // Serialize an array map element
@@ -65,7 +65,7 @@ template <typename ELEM_T>
 void
 serialize_array_map_element(serializer& ser, void* data, ser_opt_t opt, size_t index, const char* name)
 {
-    sst_ser_object(ser, static_cast<ELEM_T*>(data)[index], opt, name);
+    SST_SER_NAME(static_cast<ELEM_T*>(data)[index], name, opt);
 }
 
 // Serialize fixed arrays

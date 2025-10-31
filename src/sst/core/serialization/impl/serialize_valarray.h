@@ -65,7 +65,7 @@ class serialize_impl<T, std::enable_if_t<is_valarray_v<std::remove_pointer_t<T>>
             ser.mapper().map_hierarchy_start(
                 ser.getMapName(), new ObjectMapContainer<std::remove_pointer_t<T>>(objPtr));
             for ( size_t i = 0; i < size; ++i )
-                sst_ser_object(ser, (*objPtr)[i], SerOption::none, std::to_string(i).c_str());
+                SST_SER_NAME((*objPtr)[i], std::to_string(i).c_str());
             ser.mapper().map_hierarchy_end();
             return;
         }

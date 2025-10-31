@@ -93,7 +93,7 @@ protected:
         ser.enable_pointer_tracking();
         ser.start_mapping(this);
 
-        sst_ser_object(ser, addr_, SerOption::none, "!proxy!");
+        SST_SER_NAME(addr_, "!proxy!");
     }
 
     void deactivate_callback() override
