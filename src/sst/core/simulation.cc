@@ -312,6 +312,13 @@ Simulation_impl::Simulation_impl(
     Params p;
 
     timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
+    if ( restart ) {
+        StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
+        sa->setDeliveryTime(SST_SIMTIME_MAX);
+        timeVortex->insert(sa);
+    }
+
+
     if ( my_rank.thread == 0 ) {
         m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
     }
