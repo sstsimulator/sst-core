@@ -33,7 +33,7 @@ class serialize_impl<T,
     {
         // Serialize each element of tuple or pair
         ser_opt_t opt = SerOption::is_set(options, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
-        std::apply([&](auto&... e) { ((sst_ser_object(ser, e, opt)), ...); }, t);
+        std::apply([&](auto&... e) { ((SST_SER(e, opt)), ...); }, t);
     }
 
     SST_FRIEND_SERIALIZE();
