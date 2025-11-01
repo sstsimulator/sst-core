@@ -464,7 +464,9 @@ public:
         return nullptr;
     }
 
-private:
+    ObjectMapMetaData * getMetadata() { return mdata_; }
+
+public:
     /**
        Called to activate this ObjectMap.  This will create the
        metadata object and call activate_callback().

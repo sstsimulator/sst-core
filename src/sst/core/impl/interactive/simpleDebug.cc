@@ -12,7 +12,7 @@
 #include "sst_config.h"
 
 #include "sst/core/impl/interactive/simpleDebug.h"
-#include "sst/core/objectMapVisitor.hpp"
+//#include "sst/core/objectMapVisitor.hpp"
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/stringize.h"
@@ -238,6 +238,42 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
 }
 
 /*
+static std::string recursive_examine(SST::Core::Serialization::ObjectMap & self, std::string const& name, int const level) {
+   std::string ret;
+   std::string indent = std::string(level, ' ');
+
+   auto vars = self.getVariables();
+
+   if(self.isFundamental() ) {
+      ret = format_string("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
+      return ret;
+   }
+
+   auto xvars = self.getVariables();
+std::cout << "2VARS\t" << xvars.size() << std::endl << std::flush;
+
+//   ret = format_string("%s%s (%s)\n", indent.c_str(), name.c_str(), self.getType().c_str());
+//std::cout << "recursive_examine\t" << ret << std::endl;
+
+   for ( auto& x : self.getVariables() ) {
+      Core::Serialization::ObjectMapMetaData * mdata_ = x.second->getMetadata();
+      bool const loop = (nullptr != mdata_);
+      if ( loop ) {
+         ret += format_string(
+            "%s %s (%s) = <loopback>\n", indent.c_str(), x.first.c_str(), x.second->getType().c_str());
+      }
+      else {
+         x.second->activate(&self, name);
+         ret += recursive_examine(*x.second, x.first, level + 1);
+         x.second->deactivate();
+      }
+   }
+
+   return ret;   
+}
+*/
+
+/*
  * feature to assist with debugging serialization - recursively prints the contents
  * of the object map to make sure what is in the object map is consistent with expectations
  * we've had issues previously with serialization not supporting specific types and this
@@ -263,7 +299,7 @@ SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
     history.reserve(vars.size());
     auto itr = history.begin();
 
-    for(auto & var : vars) { 
+    for(auto & var : vars) {
        history.push_back(var);
 
 
@@ -271,6 +307,9 @@ SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
           itr = history.begin();
 
           if(itr->second->isFundamental()) {
+             printf("%s = %s (%s)\n", itr->first.c_str(), itr->second->get().c_str(), itr->second->getType().c_str());
+          }
+          else if(itr->second->isContainer()) {
              printf("%s = %s (%s)\n", itr->first.c_str(), itr->second->get().c_str(), itr->second->getType().c_str());
           }
           else {
@@ -281,9 +320,7 @@ SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
              for(auto & arg : args) { history.push_back(arg); }
           }
 
-std::cout << '\t' << history.size() << std::endl;
           history.erase(history.begin());
-std::cout << history.size() << std::endl;
        }
     }
 
