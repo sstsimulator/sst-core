@@ -47,6 +47,19 @@ public:
 
     void execute(const std::string& msg) override;
 
+    void cmd_help(std::vector<std::string>& tokens);
+    void cmd_pwd(std::vector<std::string>& tokens);
+    void cmd_ls(std::vector<std::string>& tokens);
+    void cmd_cd(std::vector<std::string>& tokens);
+    void cmd_print(std::vector<std::string>& tokens);
+    void cmd_set(std::vector<std::string>& tokens);
+    void cmd_examine(std::vector<std::string>& tokens);
+    void cmd_time(std::vector<std::string>& tokens);
+    void cmd_run(std::vector<std::string>& tokens);
+    void cmd_watch(std::vector<std::string>& tokens);
+    void cmd_unwatch(std::vector<std::string>& tokens);
+    void cmd_shutdown(std::vector<std::string>& tokens);
+
 private:
     // This is the stack of where we are in the class hierarchy.  This
     // is needed because when we advance time, we'll need to delete
@@ -65,19 +78,6 @@ private:
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
-
-    void cmd_help(std::vector<std::string>& tokens);
-    void cmd_pwd(std::vector<std::string>& tokens);
-    void cmd_ls(std::vector<std::string>& tokens);
-    void cmd_cd(std::vector<std::string>& tokens);
-    void cmd_print(std::vector<std::string>& tokens);
-    void cmd_set(std::vector<std::string>& tokens);
-    void cmd_examine(std::vector<std::string>& tokens);
-    void cmd_time(std::vector<std::string>& tokens);
-    void cmd_run(std::vector<std::string>& tokens);
-    void cmd_watch(std::vector<std::string>& tokens);
-    void cmd_unwatch(std::vector<std::string>& tokens);
-    void cmd_shutdown(std::vector<std::string>& tokens);
 
     void dispatch_cmd(std::string cmd);
 

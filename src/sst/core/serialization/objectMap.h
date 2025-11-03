@@ -110,7 +110,7 @@ protected:
  */
 class ObjectMap
 {
-protected:
+public:
     /**
        Static empty variable map for use by versions that don't have
        variables (i.e. are fundamentals or classes treated as
@@ -137,6 +137,7 @@ protected:
      */
     ObjectMapMetaData* mdata_ = nullptr;
 
+protected:
 
     /**
        Indicates whether or not the variable is read-only

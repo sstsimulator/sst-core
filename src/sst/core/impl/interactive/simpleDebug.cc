@@ -12,7 +12,6 @@
 #include "sst_config.h"
 
 #include "sst/core/impl/interactive/simpleDebug.h"
-//#include "sst/core/objectMapVisitor.hpp"
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/stringize.h"
@@ -236,42 +235,40 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
         printf("%s", listing.c_str());
     }
 }
-
 /*
-static std::string recursive_examine(SST::Core::Serialization::ObjectMap & self, std::string const& name, int const level) {
+        for ( auto& x : getVariables() ) {
+            bool loop = (nullptr != x.second->mdata_);
+            if ( loop ) {
+                ret += format_string(
+                    "%s %s (%s) = <loopback>\n", indent.c_str(), x.first.c_str(), x.second->getType().c_str());
+            }
+            else {
+                x.second->activate(this, name);
+                ret += x.second->listRecursive(x.first, level + 1, recurse);
+                x.second->deactivate();
+            }
+        }
+*/
+static void recursive_examine(SimpleDebugger & debugger, SST::Core::Serialization::ObjectMap & self, std::string const& name, int level) {
+
    std::string ret;
    std::string indent = std::string(level, ' ');
+   if ( self.isFundamental() ) {
+      printf("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
+      return;
+   }
 
+   printf("%s%s = (%s)\n", indent.c_str(), name.c_str(), self.get().c_str());
    auto vars = self.getVariables();
 
-   if(self.isFundamental() ) {
-      ret = format_string("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
-      return ret;
-   }
-
-   auto xvars = self.getVariables();
-std::cout << "2VARS\t" << xvars.size() << std::endl << std::flush;
-
-//   ret = format_string("%s%s (%s)\n", indent.c_str(), name.c_str(), self.getType().c_str());
-//std::cout << "recursive_examine\t" << ret << std::endl;
-
-   for ( auto& x : self.getVariables() ) {
-      Core::Serialization::ObjectMapMetaData * mdata_ = x.second->getMetadata();
-      bool const loop = (nullptr != mdata_);
-      if ( loop ) {
-         ret += format_string(
-            "%s %s (%s) = <loopback>\n", indent.c_str(), x.first.c_str(), x.second->getType().c_str());
-      }
-      else {
-         x.second->activate(&self, name);
-         ret += recursive_examine(*x.second, x.first, level + 1);
-         x.second->deactivate();
+   for(auto var : vars) {
+      if(nullptr == var.second->mdata_) {
+         var.second->activate(&self, var.first);
+         recursive_examine(debugger, *var.second, var.first, level+1);
+         var.second->deactivate();
       }
    }
-
-   return ret;   
 }
-*/
 
 /*
  * feature to assist with debugging serialization - recursively prints the contents
@@ -294,35 +291,7 @@ SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
         return;
     }
 
-    auto& vars = obj_->getVariables();
-    std::vector< std::pair<std::string, Core::Serialization::ObjectMap*> > history{};
-    history.reserve(vars.size());
-    auto itr = history.begin();
-
-    for(auto & var : vars) {
-       history.push_back(var);
-
-
-       while(0 < history.size()) {
-          itr = history.begin();
-
-          if(itr->second->isFundamental()) {
-             printf("%s = %s (%s)\n", itr->first.c_str(), itr->second->get().c_str(), itr->second->getType().c_str());
-          }
-          else if(itr->second->isContainer()) {
-             printf("%s = %s (%s)\n", itr->first.c_str(), itr->second->get().c_str(), itr->second->getType().c_str());
-          }
-          else {
-             printf("%s/ (%s)\n", itr->first.c_str(), itr->second->getType().c_str());
-             std::vector<std::string> tmp{"cd", itr->first};
-             cmd_cd(tmp);
-             auto & args = obj_->getVariables();
-             for(auto & arg : args) { history.push_back(arg); }
-          }
-
-          history.erase(history.begin());
-       }
-    }
+    recursive_examine(*this, *obj_, tokens[1], 0);
 
     return;
 }
