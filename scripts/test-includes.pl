@@ -41,8 +41,6 @@ sub find_gcc {
                 if (/$regex/ && $+{header} eq "<vector>") {
                     $gcc = $gcc_val;
                     print STDERR `$gcc --version` if !$quiet;
-                    print STDERR "Warning: GCC versions prior to 10 may not find all missing #includes\n"
-                        if int(`$gcc -dumpversion`) < 10;
                     return;
                 }
             }
