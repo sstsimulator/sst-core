@@ -369,7 +369,12 @@ checkFixedArraySerializeDeserialize(T& data)
             if ( data[i] != result[i] ) return false;
         }
     }
-    if constexpr ( std::is_pointer_v<T> ) delete[] result;
+    if constexpr ( std::is_pointer_v<T> ) {
+        if constexpr ( std::is_array_v<std::remove_pointer_t<T>> )
+            delete[] result;
+        else
+            delete result;
+    }
     return true;
 };
 
