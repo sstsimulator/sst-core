@@ -235,20 +235,7 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
         printf("%s", listing.c_str());
     }
 }
-/*
-        for ( auto& x : getVariables() ) {
-            bool loop = (nullptr != x.second->mdata_);
-            if ( loop ) {
-                ret += format_string(
-                    "%s %s (%s) = <loopback>\n", indent.c_str(), x.first.c_str(), x.second->getType().c_str());
-            }
-            else {
-                x.second->activate(this, name);
-                ret += x.second->listRecursive(x.first, level + 1, recurse);
-                x.second->deactivate();
-            }
-        }
-*/
+
 static void recursive_examine(SimpleDebugger & debugger, SST::Core::Serialization::ObjectMap & self, std::string const& name, int level) {
 
    std::string ret;

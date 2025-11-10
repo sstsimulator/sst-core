@@ -85,8 +85,7 @@ struct SerOption
 namespace Core::Serialization {
 
 template <typename T>
-void sst_ser_object(serializer& ser, T&& obj, ser_opt_t options = SerOption::none, const char* name = nullptr);
-
+void sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name);
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
 template <typename T>
@@ -381,7 +380,7 @@ template <class T>
 void
 operator&(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map);
+    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map, "");
 }
 
 template <class T>
@@ -391,7 +390,7 @@ template <class T>
 void
 operator|(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr);
+    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr, "");
 }
 
 
