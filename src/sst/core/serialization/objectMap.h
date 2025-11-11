@@ -1300,7 +1300,7 @@ public:
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return SST::Core::to_string(*addr_); }
+    virtual std::string get() override { return addr_ ? SST::Core::to_string(*addr_) : "nullptr"; }
 
     /**
        Returns true as object is a fundamental
