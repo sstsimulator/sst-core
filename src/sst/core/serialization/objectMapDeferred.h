@@ -42,7 +42,7 @@ public:
 
        @return nullptr
      */
-    void* getAddr() override { return static_cast<void*>(addr_); }
+    void* getAddr() override { return addr_; }
 
 
     /**
@@ -52,7 +52,7 @@ public:
        ObjectMap's child variables. pair.first is the name of the
        variable in the context of this object.
      */
-    const std::multimap<std::string, ObjectMap*>& getVariables() override { return obj_->getVariables(); }
+    const ObjectMultimap& getVariables() override { return obj_->getVariables(); }
 
     /**
        For the Deferred Build, the only variable that gets added will
@@ -87,7 +87,7 @@ protected:
     void activate_callback() override
     {
         // On activate, we need to create the ObjectMap data structure
-        if ( obj_ != nullptr ) return;
+        if ( obj_ ) return;
 
         SST::Core::Serialization::serializer ser;
         ser.enable_pointer_tracking();
@@ -117,7 +117,7 @@ private:
 
     /**
        Type of the variable as given by the demangled version of
-       typeif<T>.name() for the type.
+       typeid(T).name() for the type.
      */
     std::string type_ = "";
 };

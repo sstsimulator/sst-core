@@ -234,9 +234,9 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
 
             if constexpr ( is_vector_bool_v<OBJ> ) {
                 // std::vector<bool>
-                size_t i = 0;
-                for ( bool e : obj )
-                    SST_SER_NAME(e, to_string(i++).c_str());
+                // Serialize reference wrappers to each bit.
+                for ( size_t i = 0; i < obj.size(); ++i )
+                    SST_SER_NAME(pvt::reference_wrapper<OBJ>(obj[i]), to_string(i).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
@@ -273,6 +273,20 @@ class serialize_impl<OBJ*, std::enable_if_t<is_insertable_v<OBJ>>>
 
     SST_FRIEND_SERIALIZE();
 };
+
+// Serialize a std::vector<bool> bit using the pvt::reference_wrapper<std::vector<bool>>
+// This is only used in mapping mode
+template <typename ALLOC>
+class serialize_impl<pvt::reference_wrapper<std::vector<bool, ALLOC>>>
+{
+    void operator()(pvt::reference_wrapper<std::vector<bool, ALLOC>>& t, serializer& ser, ser_opt_t UNUSED(options))
+    {
+        ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapBitReference<std::vector<bool, ALLOC>>(t.ref));
+        ser.mapper().map_hierarchy_end();
+    }
+    SST_FRIEND_SERIALIZE();
+};
+
 
 } // namespace SST::Core::Serialization
 
