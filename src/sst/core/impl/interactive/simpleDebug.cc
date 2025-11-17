@@ -253,7 +253,7 @@ recursive_examine(
     for ( auto var : vars ) {
         if ( nullptr == var.second->mdata_ ) {
             var.second->activate(&self, var.first);
-            recursive_examine(debugger, *var.second, var.first, level+1);
+            recursive_examine(debugger, *var.second, var.first, level + 1);
             var.second->deactivate();
         }
     }
