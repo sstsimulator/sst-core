@@ -198,7 +198,6 @@ protected:
      */
     ObjectMapMetaData* mdata_ = nullptr;
 
-
     /**
        Indicates whether or not the variable is read-only
      */
@@ -265,7 +264,6 @@ public:
    */
     virtual bool checkValue(const std::string& UNUSED(value)) { return false; }
 
-
     /**
        Get the name of the variable represented by this ObjectMap.  If
        this ObjectMap has no metadata registered (i.e. it was not
@@ -275,7 +273,6 @@ public:
        @return Name of variable
      */
     std::string getName();
-
 
     /**
        Get the full hierarchical name of the variable represented by
@@ -287,7 +284,6 @@ public:
        @return Full hierarchical name of variable
      */
     std::string getFullName();
-
 
     /**
        Get the type of the variable represented by the ObjectMap
@@ -302,7 +298,6 @@ public:
        @return Address of variable
      */
     virtual void* getAddr() = 0;
-
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -757,6 +752,51 @@ public:
     void* getAddr() override { return addr_; }
 };
 
+// Whether two types share a common type they can both be converted to
+// Users are allowed to provide specializations for std::common_type<T1, T2> for user types
+template <class T1, class T2, class = void>
+struct have_common_type : std::false_type
+{};
+
+template <class T1, class T2>
+struct have_common_type<T1, T2, std::void_t<std::common_type_t<T1, T2>>> : std::true_type
+{};
+
+// Comparison of two variables if they are convertible to a common type
+template <typename T1, typename T2>
+std::enable_if_t<have_common_type<T1, T2>::value, bool>
+cmp(T1 t1, ObjectMapComparison::Op op, T2 t2)
+{
+    using T = std::common_type_t<T1, T2>;
+    switch ( op ) {
+    case ObjectMapComparison::Op::LT:
+        return static_cast<T>(t1) < static_cast<T>(t2);
+    case ObjectMapComparison::Op::LTE:
+        return static_cast<T>(t1) <= static_cast<T>(t2);
+    case ObjectMapComparison::Op::GT:
+        return static_cast<T>(t1) > static_cast<T>(t2);
+    case ObjectMapComparison::Op::GTE:
+        return static_cast<T>(t1) >= static_cast<T>(t2);
+    case ObjectMapComparison::Op::EQ:
+        return static_cast<T>(t1) == static_cast<T>(t2);
+    case ObjectMapComparison::Op::NEQ:
+    case ObjectMapComparison::Op::CHANGED:
+        return static_cast<T>(t1) != static_cast<T>(t2);
+    default:
+        std::cout << "Invalid comparison operator\n";
+        return false;
+    }
+}
+
+// Comparison of two variables if they are not convertible to a common type
+template <typename T1, typename T2>
+std::enable_if_t<!have_common_type<T1, T2>::value, bool>
+cmp(T1 UNUSED(t1), ObjectMapComparison::Op UNUSED(op), T2 UNUSED(t2))
+{
+    // We shouldn't get here.... Can I throw an error somehow?
+    printf("ERROR: CMP: Does not support comparison of two types without a std::common_type\n");
+    return false;
+}
 
 /**
    Template implementation of ObjectMapComparison for <var> <op> <value>
@@ -770,44 +810,25 @@ public:
         var_(var),
         op_(op)
     {
-        // If we are looking for changes, get the current value as the
-        // comp_value_
         if ( op_ == Op::CHANGED ) {
-            comp_value_ = *var_;
+            // If we are looking for changes, get the current value as the comp_value_
+            comp_value_ = static_cast<T>(*var_);
         }
-        // Otherwise, we have to have a valid value.  If the value is
-        // not valid, it will throw an exception.
         else {
+            // Otherwise, we have to have a valid value.  If the value is not valid, it will throw an exception.
             comp_value_ = SST::Core::from_string<T>(value);
         }
     }
 
     bool compare() override
     {
-        switch ( op_ ) {
-        case Op::LT:
-            return *var_ < comp_value_;
-        case Op::LTE:
-            return *var_ <= comp_value_;
-        case Op::GT:
-            return *var_ > comp_value_;
-        case Op::GTE:
-            return *var_ >= comp_value_;
-        case Op::EQ:
-            return *var_ == comp_value_;
-        case Op::NEQ:
-            return *var_ != comp_value_;
-        case Op::CHANGED:
-        {
-            // See if we've changed
-            bool ret    = *var_ != comp_value_;
-            // Store the current value for the next test
-            comp_value_ = *var_;
-            return ret;
-        }
-        default:
-            return false;
-        }
+        // Get the result of the comparison
+        bool ret = cmp(*var_, op_, comp_value_);
+
+        // For change detection, store the current value for the next test
+        if ( op_ == Op::CHANGED ) comp_value_ = static_cast<T>(*var_);
+
+        return ret;
     }
 
     std::string getCurrentValue() override { return SST::Core::to_string(*var_); }
@@ -826,126 +847,9 @@ public:
 private:
     REF* const var_;
     Op const   op_;
-    T          comp_value_ {};
+    T          comp_value_;
 }; // class ObjectMapComparison_impl
 
-/**
-    Templated compareType implementations
-    Variables are currently cast to matching types before being passed to this function
-*/
-template <typename V1>
-bool
-cmp(V1 v, ObjectMapComparison::Op op, V1 w)
-{
-    switch ( op ) {
-    case ObjectMapComparison::Op::LT:
-        return v < w;
-    case ObjectMapComparison::Op::LTE:
-        return v <= w;
-    case ObjectMapComparison::Op::GT:
-        return v > w;
-    case ObjectMapComparison::Op::GTE:
-        return v >= w;
-    case ObjectMapComparison::Op::EQ:
-        return v == w;
-    case ObjectMapComparison::Op::NEQ:
-        return v != w;
-    default:
-        std::cout << "Invalid comparison operator\n";
-        return false;
-    }
-}
-
-// Comparison of two variables of the same type
-template <typename U1, typename U2, std::enable_if_t<std::is_same_v<U1, U2>, int> = true>
-bool
-compareType(U1 v, ObjectMapComparison::Op op, U2 w)
-{
-    // Handle same type - just compare
-    // printf("  CMP: Same type\n");
-    return cmp(v, op, w);
-}
-
-// Comparison of two variables with different arithmetic types
-template <typename U1, typename U2,
-    std::enable_if_t<!std::is_same_v<U1, U2> && std::is_arithmetic_v<U1> && std::is_arithmetic_v<U2>, int> = true>
-bool
-compareType(U1 v, ObjectMapComparison::Op op, U2 w)
-{
-    // printf("  CMP: Different types\n");
-    //  Handle integrals (bool, char, flavors of int)
-    if ( std::is_integral_v<U1> && std::is_integral_v<U2> ) {
-        // both unsigned integrals - cast to unsigned long long
-        if ( std::is_unsigned_v<U1> && std::is_unsigned_v<U2> ) {
-            // printf("  CMP: Both unsigned integrals\n");
-            unsigned long long v1 = static_cast<unsigned long long>(v);
-            unsigned long long w1 = static_cast<unsigned long long>(w);
-            return cmp(v1, op, w1);
-        }
-        // both integers but at least one signed - cast to signed long long
-        else {
-            // printf("  CMP: Not both unsigned integrals\n");
-            long long v1 = static_cast<long long>(v);
-            long long w1 = static_cast<long long>(w);
-            return cmp(v1, op, w1);
-        }
-    }
-    // Handle float/double combinations - cast to long double
-    else if ( std::is_floating_point_v<U1> && std::is_floating_point_v<U2> ) {
-        // printf("  CMP: Both fp\n");
-        long double v1 = static_cast<long double>(v);
-        long double w1 = static_cast<long double>(w);
-        return cmp(v1, op, w1);
-    }
-    else { // Integral and FP comparison - cast integral to fp
-        // printf("  CMP: integral and fp\n");
-        if ( std::is_integral_v<U1> ) {
-            if ( std::is_same_v<U2, float> ) {
-                float v1 = static_cast<float>(v);
-                float w1 = static_cast<float>(w); // unnecessary but compiler needs to know they are the same
-                return cmp(v1, op, w1);
-            }
-            else if ( std::is_same_v<U2, double> ) {
-                double v1 = static_cast<double>(v);
-                double w1 = static_cast<double>(w); // unnecessary ...
-                return cmp(v1, op, w1);
-            }
-            else {
-                long double v1 = static_cast<long double>(v);
-                long double w1 = static_cast<long double>(w); // unnecessary ...
-                return cmp(v1, op, w1);
-            }
-        }
-        else {
-            if ( std::is_same_v<U1, float> ) {
-                float v1 = static_cast<float>(v); // unnecessary ...
-                float w1 = static_cast<float>(w);
-                return cmp(v1, op, w1);
-            }
-            else if ( std::is_same_v<U1, double> ) {
-                double v1 = static_cast<double>(v); // unnecessary ...
-                double w1 = static_cast<double>(w);
-                return cmp(v1, op, w1);
-            }
-            else {
-                long double v1 = static_cast<long double>(v); // unnecessary ...
-                long double w1 = static_cast<long double>(w);
-                return cmp(v1, op, w1);
-            }
-        }
-    }
-}
-
-// Comparison of two variables with at least one non-arithmetic type
-template <typename U1, typename U2,
-    std::enable_if_t<(!std::is_same_v<U1, U2> && (!std::is_arithmetic_v<U1> || !std::is_arithmetic_v<U2>)), int> = true>
-bool
-compareType(U1 UNUSED(v), ObjectMapComparison::Op UNUSED(op), U2 UNUSED(w))
-{
-    // We shouldn't get here.... Can I throw an error somehow?
-    printf("  ERROR: CMP: Does not support non-arithmetic types\n");
-    return false;
-}
 
 /**
 Template implementation of ObjectMapComparison for <var> <op> <var>
@@ -962,12 +866,7 @@ public:
         var2_(var2)
     {}
 
-    bool compare() override
-    {
-        T1 v1 = *var1_;
-        T2 v2 = *var2_;
-        return compareType(v1, op_, v2);
-    }
+    bool compare() override { return cmp(*var1_, op_, *var2_); }
 
     std::string getCurrentValue() override { return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_); }
 
@@ -983,12 +882,11 @@ public:
     }
 
 private:
-    std::string name2_ = "";
-    T1*         var1_  = nullptr;
-    Op          op_    = Op::INVALID;
-    T2*         var2_  = nullptr;
+    std::string const name2_;
+    T1* const         var1_;
+    Op const          op_;
+    T2* const         var2_;
 }; // class ObjectMapComparison_impl
-
 
 class ObjectBuffer
 {
@@ -1437,16 +1335,10 @@ public:
                 long double* addr2 = static_cast<long double*>(var2->getAddr());
                 return new ObjectMapComparison_var<REF, long double>(name, addr_, op, name2, addr2);
             }
-
-            else {
-                std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-                return nullptr;
-            }
         } // end if first var is arithmetic
-        else {
-            std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-            return nullptr;
-        }
+
+        std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
+        return nullptr;
     }
 
     ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
