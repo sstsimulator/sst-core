@@ -116,6 +116,17 @@ SSTConfigSaxHandler::processValue(const json& value)
         if ( current_key == "noCut" && value.is_boolean() ) {
             no_cut = value.get<bool>();
         }
+        else if ( current_key == "nonlocal" && value.is_boolean() ) {
+            nonlocal = value.get<bool>();
+        }
+        else if ( in_right_link && nonlocal ) {
+            if ( current_key == "rank" ) {
+                right_rank = value.get<int>();
+            }
+            else if ( current_key == "thread" ) {
+                right_thread = value.get<int>();
+            }
+        }
     }
 }
 
@@ -394,23 +405,34 @@ SSTConfigSaxHandler::end_object()
             in_right_link = false;
         }
         else {
+            LinkId_t link_id = graph->createLink(link_name.c_str(), nullptr);
+            if ( no_cut ) graph->setLinkNoCut(link_id);
+
             // left side
-            ComponentId_t LinkID  = -1;
+            ComponentId_t CompID  = -1;
             bool          success = false;
-            LinkID                = findComponentIdByName(left_comp, success);
+            CompID                = findComponentIdByName(left_comp, success);
             if ( !success ) {
                 return false;
             }
-            graph->addLink(LinkID, link_name, left_port, left_latency, no_cut);
+            graph->addLink(CompID, link_id, left_port.c_str(), left_latency.c_str());
 
             // right side
-            success = false;
-            LinkID  = findComponentIdByName(right_comp, success);
-            if ( !success ) {
-                return false;
+            if ( nonlocal ) {
+                graph->addNonLocalLink(link_id, right_rank, right_thread);
             }
-            graph->addLink(LinkID, link_name, right_port, right_latency, no_cut);
-            no_cut = false;
+            else {
+                success = false;
+                CompID  = findComponentIdByName(right_comp, success);
+                if ( !success ) {
+                    return false;
+                }
+                graph->addLink(CompID, link_id, right_port.c_str(), right_latency.c_str());
+            }
+            no_cut       = false;
+            nonlocal     = false;
+            right_rank   = -1;
+            right_thread = -1;
         }
     }
 

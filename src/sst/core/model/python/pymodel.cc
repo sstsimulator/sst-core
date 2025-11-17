@@ -25,6 +25,7 @@
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_link.h"
+#include "sst/core/model/python/pymodel_portmodule.h"
 #include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/model/python/pymodel_statgroup.h"
 #include "sst/core/model/python/pymodel_unitalgebra.h"
@@ -34,6 +35,9 @@
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 REENABLE_WARNING
 
 #include "sst/core/sst_mpi.h"
@@ -268,7 +272,7 @@ findComponentByName(PyObject* UNUSED(self), PyObject* args)
 
     if ( SUBCOMPONENT_ID_MASK(cc->id) == 0 ) {
         // Component
-        PyObject* argList = Py_BuildValue("ssk", name, "irrelephant", cc->id);
+        PyObject* argList = Py_BuildValue("ssk", name, "irrelevant", cc->id);
         PyObject* res     = PyObject_CallObject((PyObject*)&PyModel_ComponentType, argList);
         Py_DECREF(argList);
         return res;
@@ -771,9 +775,10 @@ enableStatisticsForComponentType(PyObject* UNUSED(self), PyObject* args)
         auto       params   = pythonToCppParams(statParamDict);
         for ( uint32_t x = 0; x < numStats; x++ ) {
             PyObject*   pylistitem = PyList_GetItem(statList, x);
-            PyObject*   pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+            PyObject*   pyname     = PyObject_Str(pylistitem);
             std::string statName   = SST_ConvertToCppString(pyname);
             enableStatisticForComponentType(compType, statName, params, apply_to_children);
+            Py_XDECREF(pyname);
         }
     }
     else {
@@ -884,7 +889,7 @@ addSharedParam(PyObject* UNUSED(self), PyObject* args)
 
     // Get the string-ized value by calling __str__ function of the
     // value object
-    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_Str(value);
     gModel->addGlobalParameter(set, param, SST_ConvertToCppString(vstr), true);
     Py_XDECREF(vstr);
 
@@ -907,8 +912,8 @@ addSharedParams(PyObject* UNUSED(self), PyObject* args)
     long       count = 0;
 
     while ( PyDict_Next(dict, &pos, &key, &val) ) {
-        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        PyObject* kstr = PyObject_Str(key);
+        PyObject* vstr = PyObject_Str(val);
         gModel->addGlobalParameter(set, SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -941,6 +946,51 @@ getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
     PyObject* res     = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);
     Py_DECREF(argList);
     return res;
+}
+
+static PyObject*
+buildOverheadMeasureTest(PyObject* UNUSED(self), PyObject* args)
+{
+    int argOK     = 0;
+    int num_comps = 0;
+    int num_links = 0;
+
+    PyErr_Clear();
+
+    // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
+    argOK = PyArg_ParseTuple(args, "ii", &num_comps, &num_links);
+
+    if ( !argOK ) return nullptr;
+
+    // Create the ConfigGraph with the specified number of components and links
+    ComponentId_t last_comp_id = gModel->addComponent("c0", "coreTestElement.overhead_measure");
+    // ConfigComponent* last_comp = gModel->getGraph()->findComponent(last_comp_id);
+    gModel->getGraph()->findComponent(last_comp_id)->addParameter("id", "0", true);
+    for ( int i = 1; i < num_comps; ++i ) {
+        std::string cname("c");
+        cname += std::to_string(i);
+        ComponentId_t curr_comp_id = gModel->addComponent(cname.c_str(), "coreTestElement.overhead_measure");
+        gModel->getGraph()->findComponent(curr_comp_id)->addParameter("id", std::to_string(i), true);
+
+        // Links
+        std::string link_base_name = std::string("l_") + std::to_string(i) + std::string("_");
+        std::string link_name;
+
+        std::string left("left_");
+        std::string right("right_");
+
+        for ( int j = 0; j < num_links; ++j ) {
+            link_name        = link_base_name + std::to_string(j);
+            LinkId_t link_id = gModel->createLink(link_name.c_str(), "1ns");
+
+            std::string last_port = right + std::to_string(j);
+            std::string curr_port = left + std::to_string(j);
+
+            gModel->addLink(last_comp_id, link_id, last_port.c_str(), "1ns");
+            gModel->addLink(curr_comp_id, link_id, curr_port.c_str(), "1ns");
+        }
+    }
+    return Py_None;
 }
 
 static PyMethodDef sstModuleMethods[] = {
@@ -999,6 +1049,8 @@ static PyMethodDef sstModuleMethods[] = {
     { "setCallPythonFinalize", setCallPythonFinalize, METH_O,
         "Sets whether or not Py_Finalize will be called after SST model generation is done.  Py_Finalize will be "
         "called by default if this function is not called." },
+    { "buildOverheadMeasureTest", buildOverheadMeasureTest, METH_VARARGS,
+        "Build the OverheadMeasure test with the specified number of components and links between components." },
     { nullptr, nullptr, 0, nullptr }
 };
 
@@ -1027,11 +1079,13 @@ PyInit_sst()
     PyModel_UnitAlgebraType.tp_new  = PyType_GenericNew;
     PyModel_StatGroupType.tp_new    = PyType_GenericNew;
     PyModel_StatOutputType.tp_new   = PyType_GenericNew;
+    PyModel_PortModuleType.tp_new   = PyType_GenericNew;
     ModuleLoaderType.tp_new         = PyType_GenericNew;
     if ( (PyType_Ready(&PyModel_ComponentType) < 0) || (PyType_Ready(&PyModel_SubComponentType) < 0) ||
-         (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_UnitAlgebraType) < 0) ||
-         (PyType_Ready(&PyModel_StatType) < 0) || (PyType_Ready(&PyModel_StatGroupType) < 0) ||
-         (PyType_Ready(&PyModel_StatOutputType) < 0) || (PyType_Ready(&ModuleLoaderType) < 0) ) {
+         (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_PortModuleType) < 0) ||
+         (PyType_Ready(&PyModel_UnitAlgebraType) < 0) || (PyType_Ready(&PyModel_StatType) < 0) ||
+         (PyType_Ready(&PyModel_StatGroupType) < 0) || (PyType_Ready(&PyModel_StatOutputType) < 0) ||
+         (PyType_Ready(&ModuleLoaderType) < 0) ) {
         return nullptr; // TODO better error message
     }
 
@@ -1043,6 +1097,7 @@ PyInit_sst()
     Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_StatType);
     Py_INCREF(&PyModel_LinkType);
+    Py_INCREF(&PyModel_PortModuleType);
     Py_INCREF(&PyModel_UnitAlgebraType);
     Py_INCREF(&PyModel_StatGroupType);
     Py_INCREF(&PyModel_StatOutputType);
@@ -1052,6 +1107,7 @@ PyInit_sst()
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "UnitAlgebra", (PyObject*)&PyModel_UnitAlgebraType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
+    PyModule_AddObject(module, "PortModule", (PyObject*)&PyModel_PortModuleType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
     PyModule_AddObject(module, "Statistic", (PyObject*)&PyModel_StatType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
@@ -1313,7 +1369,7 @@ SSTPythonModelDefinition::createConfigGraph()
 
     if ( nullptr != PyErr_Occurred() ) {
         PyErr_Print();
-        output->fatal(CALL_INFO, 1, "Error occured handling the creation of the component graph in Python.\n");
+        output->fatal(CALL_INFO, 1, "Error occurred handling the creation of the component graph in Python.\n");
     }
 
 #if PY_MINOR_VERSION >= 9
@@ -1423,8 +1479,8 @@ SST::Core::generateStatisticParameters(PyObject* statParamDict)
 
             // Extract the Key and Value for each parameter and put them into the vectors
             while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
-                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", nullptr);
-                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", nullptr);
+                PyObject* pyparam = PyObject_Str(pykey);
+                PyObject* pyvalue = PyObject_Str(pyval);
 
                 p[SST_ConvertToCppString(pyparam)] = SST_ConvertToCppString(pyvalue);
 
@@ -1475,11 +1531,12 @@ SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObj
     // For each stat, enable on component
     for ( uint32_t x = 0; x < numStats; x++ ) {
         PyObject*        pylistitem = PyList_GetItem(statList, x);
-        PyObject*        pyname     = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+        PyObject*        pyname     = PyObject_Str(pylistitem);
         std::string      name       = SST_ConvertToCppString(pyname);
         ConfigStatistic* cs         = cc->enableStatistic(name, params, apply_to_children);
         PyObject*        statObj    = buildStatisticObject(cs->id);
         PyList_SetItem(statList, x, statObj);
+        Py_XDECREF(pyname);
     }
     return statObjectList;
 }

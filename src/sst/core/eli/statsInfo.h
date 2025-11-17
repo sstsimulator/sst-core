@@ -15,6 +15,7 @@
 #include "sst/core/eli/elibase.h"
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace SST::ELI {
@@ -38,27 +39,16 @@ struct InfoStats<T, std::void_t<decltype(T::ELI_getStatistics())>>
 class ProvidesStats
 {
 private:
-    std::vector<std::string>          statnames;
     std::vector<ElementInfoStatistic> stats_;
-
-    void init()
-    {
-        for ( auto& item : stats_ ) {
-            statnames.push_back(item.name);
-        }
-    }
 
 protected:
     template <class T>
     explicit ProvidesStats(T* UNUSED(t)) :
         stats_(InfoStats<T>::get())
-    {
-        init();
-    }
+    {}
 
 public:
     const std::vector<ElementInfoStatistic>& getValidStats() const { return stats_; }
-    const std::vector<std::string>&          getStatnames() const { return statnames; }
 
     void toString(std::ostream& os) const;
 
@@ -67,14 +57,14 @@ public:
     {
         // Build the Element to Represent the Component
         int idx = 0;
-        for ( const ElementInfoStatistic& stat : stats_ ) {
+        for ( const auto& stat : stats_ ) {
             // Build the Element to Represent the Parameter
             auto* XMLStatElement = new XMLNode("Statistic");
             XMLStatElement->SetAttribute("Index", idx);
             XMLStatElement->SetAttribute("Name", stat.name);
             XMLStatElement->SetAttribute("Description", stat.description ? stat.description : "none");
             XMLStatElement->SetAttribute("Units", stat.units ? stat.units : "none");
-            XMLStatElement->SetAttribute("EnableLevel", stat.enableLevel);
+            XMLStatElement->SetAttribute("EnableLevel", stat.enable_level);
             node->LinkEndChild(XMLStatElement);
             ++idx;
         }

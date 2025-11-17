@@ -21,6 +21,8 @@
 
 #include <cinttypes>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 
@@ -117,33 +119,38 @@ PythonConfigGraphOutput::generateCompName(const ConfigComponent* comp)
 void
 PythonConfigGraphOutput::generateCommonLink(const char* objName, const ConfigComponent* comp)
 {
-    UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
-
     for ( auto linkID : comp->links ) {
         const ConfigLink* link = getGraph()->getLinkMap()[linkID];
 
         // only create the link if the component is the LHS of the port connection
         if ( link->component[0] == comp->id ) {
-            int         srcIdx     = 0;
-            int         destIdx    = 1;
-            SimTime_t   latency    = link->latency[srcIdx];
-            auto        tmp        = tb * latency;
-            std::string latencyStr = link->latency_str[srcIdx];
-            char*       esPortName = makeEscapeSafe(link->port[srcIdx].c_str());
-            char*       edPortName = makeEscapeSafe(link->port[destIdx].c_str());
-            char*       destName   = nullptr;
-
-            auto destComp = getGraph()->findComponent(link->component[1]);
-            destName      = generateCompName(destComp);
+            int   srcIdx     = 0;
+            int   destIdx    = 1;
+            char* esPortName = makeEscapeSafe(link->port[srcIdx].c_str());
+            char* destName   = nullptr;
 
             const std::string& linkName = getLinkObject(linkID, link->name, link->no_cut);
 
-            fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n", linkName.c_str(), objName,
-                esPortName, tmp.toStringBestSI().c_str(), destName, edPortName, tmp.toStringBestSI().c_str());
-            fprintf(outputFile, "\n");
+            if ( !link->nonlocal ) {
+                char* edPortName = makeEscapeSafe(link->port[destIdx].c_str());
+                auto  destComp   = getGraph()->findComponent(link->component[1]);
+                destName         = generateCompName(destComp);
 
+
+                fprintf(outputFile, "%s.connect((%s, \"%s\", \"%s\"),(%s, \"%s\", \"%s\"))\n", linkName.c_str(),
+                    objName, esPortName, link->latency_str(srcIdx).c_str(), destName, edPortName,
+                    link->latency_str(destIdx).c_str());
+                fprintf(outputFile, "\n");
+
+                free(edPortName);
+            }
+            else {
+                int rank   = link->component[1];
+                int thread = link->latency[1];
+                fprintf(outputFile, "%s.connectNonLocal((%s, \"%s\", \"%s\"),(%d, %d))\n", linkName.c_str(), objName,
+                    esPortName, link->latency_str(srcIdx).c_str(), rank, thread);
+            }
             free(esPortName);
-            free(edPortName);
             free(destName);
         }
     }

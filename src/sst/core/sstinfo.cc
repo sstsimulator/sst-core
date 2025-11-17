@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -37,8 +38,10 @@
 #include <iostream>
 #include <list>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <utility>
 
 using namespace SST;
 using namespace SST::Core;
@@ -149,7 +152,7 @@ main(int argc, char* argv[])
     }
 
     // Process all specified libraries
-    g_searchPath = g_configuration.getLibPath();
+    g_searchPath = g_configuration.getLibPath(true);
     processSSTElementFiles();
 
     // Run interactive mode
@@ -172,7 +175,7 @@ main(int argc, char* argv[])
     }
 
     // Process all specified libraries
-    g_searchPath = g_configuration.getLibPath();
+    g_searchPath = g_configuration.getLibPath(true);
     processSSTElementFiles();
 
     // Run interactive mode
@@ -211,8 +214,8 @@ parseInput(std::string input)
         if ( command == "help" ) {
             text =
                 "\n~=== SST-INFO ===~\n"
-                "This program lists documented Components, SubComponents, Events, Modules, and Partitioners within an "
-                "Element Library.\n\n"
+                "This program lists documented Components, SubComponents, Modules, PortModules, Partitioners, "
+                "ProfileTools, StatisticOutputs, and Statistic types within an Element Library.\n\n"
                 "~=== CONTROLS ===~\n"
                 "The 'Console' window contains a command-line style input box. Typed input will appear here.\n"
                 "The text window can be resized, and both arrow key and mouse scrolling is enabled.\n"
@@ -1031,6 +1034,7 @@ SSTLibraryInfo::setAllLibraryInfo()
     setAllLibraryInfo<Component>();
     setAllLibraryInfo<SubComponent>();
     setAllLibraryInfo<Module>();
+    setAllLibraryInfo<PortModule>();
     setAllLibraryInfo<SST::Partition::SSTPartitioner>();
     setAllLibraryInfo<SST::Profile::ProfileTool>();
 }
@@ -1082,6 +1086,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     outputHumanReadable<Component>(os, enableFullElementOutput);
     outputHumanReadable<SubComponent>(os, enableFullElementOutput);
     outputHumanReadable<Module>(os, enableFullElementOutput);
+    outputHumanReadable<PortModule>(os, enableFullElementOutput);
     outputHumanReadable<SST::Partition::SSTPartitioner>(os, enableFullElementOutput);
     outputHumanReadable<SST::Profile::ProfileTool>(os, enableFullElementOutput);
     outputHumanReadable<SST::SSTElementPythonModule>(os, enableFullElementOutput);
@@ -1125,6 +1130,7 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
     outputXML<Component>(XMLLibraryElement);
     outputXML<SubComponent>(XMLLibraryElement);
     outputXML<Module>(XMLLibraryElement);
+    outputXML<PortModule>(XMLLibraryElement);
     outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
     XMLParentElement->LinkEndChild(XMLLibraryElement);
 }

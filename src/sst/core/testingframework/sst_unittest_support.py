@@ -31,6 +31,8 @@ import threading
 import time
 import traceback
 import unittest
+from inspect import signature
+from pathlib import Path
 from shutil import which
 from typing import (Any, Callable, List, Mapping, Optional, Sequence, Tuple,
                     Type, TypeVar, Union)
@@ -48,6 +50,7 @@ if not sys.warnoptions:
 ################################################################################
 
 OS_DIST_OSX = "OSX"
+OS_DIST_ARCH = "ARCH"
 OS_DIST_CENTOS = "CENTOS"
 OS_DIST_RHEL = "RHEL"
 OS_DIST_TOSS = "TOSS"
@@ -241,6 +244,8 @@ def host_os_get_distribution_type() -> str:
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
+        if "arch" in dist_name:
+            return OS_DIST_ARCH
         if "centos" in dist_name:
             return OS_DIST_CENTOS
         if "red hat" in dist_name:
@@ -2040,6 +2045,11 @@ def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
             (str) Space separated string of extracted fields.
     """
     if isinstance(in_str, bytes):
+        warn(
+            "Passing bytes and not a string to os_awk_print() is deprecated and will be disallowed in future version of SST.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         check_param_type("in_str", in_str, bytes)
     else:
         check_param_type("in_str", in_str, str)
@@ -2185,7 +2195,9 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
         return False
     try:
         this_tar = tarfile.open(tarfilepath)
-        if sys.version_info.minor >= 12:
+        # The filter argument was added in 3.12, but some distributions
+        # backport the addition, so a version check is not sufficient.
+        if "filter" in signature(this_tar.extractall).parameters:
             this_tar.extractall(targetdir, filter="data")  # type: ignore [call-arg]
         else:
             this_tar.extractall(targetdir)
@@ -2214,13 +2226,11 @@ def _get_linux_distribution() -> Tuple[str, str]:
     elif os.path.isfile("/etc/redhat-release"):
         distname = "red hat"
         distver = _get_linux_version("/etc/redhat-release", " ")
-    elif os.path.isfile("/etc/lsb-release"):
-        # Until we have other OS's, this is Ubuntu.
-        distname = "ubuntu"
-        distver = _get_linux_version("/etc/lsb-release", " ")
     elif os.path.isfile("/etc/rocky-release"):
         distname = "rocky"
         distver = _get_linux_version("/etc/rocky-release", " ")
+    elif os.path.isfile("/etc/os-release"):
+        distname, distver = _read_os_release("/etc/os-release")
     rtn_data = (distname, distver)
     return rtn_data
 
@@ -2231,17 +2241,24 @@ def _get_linux_version(filepath: str, sep: str) -> str:
     # Find the first digit + period in the tokenized string list
     with open(filepath, 'r') as filehandle:
         for line in filehandle:
-            #print("found line = " + line)
             word_list = line.split(sep)
             for word in word_list:
-                #print("word =" + word)
                 m_data = re.search(r"[\d.]+", word)
-                #print("found_ver = {0}".format(m_data))
                 if m_data is not None:
                     found_ver = m_data.string[m_data.start():m_data.end()]
-                    #print("found_ver = {0}".format(found_ver))
                     return found_ver
     return "undefined"
+
+
+def _read_os_release(filepath: str) -> Tuple[str, str]:
+    """Read key-value pairs from a file that looks like /etc/os-release."""
+    lines = Path(filepath).read_text(encoding="utf-8").splitlines()
+    entries = dict()
+    for line in lines:
+        if line.strip() and not line.startswith("#"):
+            key, value = line.strip().split("=", 1)
+            entries[key] = value
+    return entries["ID"], entries.get("VERSION_ID", "")
 
 
 ################################################################################

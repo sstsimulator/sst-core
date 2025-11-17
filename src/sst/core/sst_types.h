@@ -15,16 +15,20 @@
 #include <cstdint>
 #include <iosfwd>
 #include <limits>
+#include <ostream>
+#include <utility>
 
 namespace SST {
 
-using ComponentId_t = uint64_t;
-using StatisticId_t = uint64_t;
-using LinkId_t      = uint32_t;
-using HandlerId_t   = uint64_t;
-using Cycle_t       = uint64_t;
-using SimTime_t     = uint64_t;
-using Time_t        = double;
+using ComponentId_t  = uint64_t;
+using StatisticId_t  = uint64_t;
+using LinkId_t       = uint32_t;
+using HandlerId_t    = uint64_t;
+using Cycle_t        = uint64_t;
+using SimTime_t      = uint64_t;
+using Time_t         = double;
+/* PorModuleId_t is a <port name,index> pair*/
+using PortModuleId_t = std::pair<std::string, size_t>;
 
 #define PRI_SIMTIME PRIu64
 

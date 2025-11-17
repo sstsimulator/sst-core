@@ -6,7 +6,7 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v5.0.0"
+    rev: "v6.0.0"
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
@@ -39,14 +39,14 @@ repos:
               src/sst/core/libltdl/|
               external/
           )
-  - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
-    rev: "v1.7.7.23"
+  - repo: https://github.com/rhysd/actionlint
+    rev: "v1.7.7"
     hooks:
       - id: actionlint
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.9.4"
+    rev: "v0.14.0"
     hooks:
-      - id: ruff
+      - id: ruff-check
   - repo: https://github.com/pre-commit/mirrors-mypy
     # This needs to match the last version that still supports the minimum
     # required Python version

@@ -81,7 +81,7 @@ struct has_serialize_order_impl : std::false_type
 {};
 
 template <class T>
-struct has_serialize_order_impl<T, decltype(std::declval<T>().serialize_order(std::declval<serializer&>()))> :
+struct has_serialize_order_impl<T, decltype(std::declval<T>().serialize_order(std::declval<class serializer&>()))> :
     std::true_type
 {};
 
@@ -89,17 +89,8 @@ struct has_serialize_order_impl<T, decltype(std::declval<T>().serialize_order(st
 // If serializable_base is a base class of T, we assume that T has a public serialize_order() method.
 // If serialize_order() is private or protected in a T derived from serializable_base, it will cause a
 // compile-time error in serialize_impl when invoking T{}.serialize_order() even though it's true here.
-#if defined(__GNUC__) && __GNUC__ < 12 && !defined(__llvm__) && !defined(__INTEL_COMPILER)
-
 template <class T>
 using has_serialize_order = std::disjunction<std::is_base_of<class serializable_base, T>, has_serialize_order_impl<T>>;
-
-#else
-
-template <class T>
-using has_serialize_order = has_serialize_order_impl<T>;
-
-#endif
 
 template <class T>
 constexpr bool has_serialize_order_v = has_serialize_order<T>::value;

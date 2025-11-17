@@ -15,6 +15,7 @@
 #include "sst/core/sst_types.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <deque>
 #include <map>
@@ -36,10 +37,10 @@ namespace SST {
  */
 struct ElementInfoStatistic
 {
-    const char*   name;        /*!< Name of the Statistic to be Enabled */
-    const char*   description; /*!< Brief description of the Statistic */
-    const char*   units;       /*!< Units associated with this Statistic value */
-    const uint8_t enableLevel; /*!< Level to meet to enable statistic 0 = disabled */
+    const char*   name;         /*!< Name of the Statistic to be Enabled */
+    const char*   description;  /*!< Brief description of the Statistic */
+    const char*   units;        /*!< Units associated with this Statistic value */
+    const uint8_t enable_level; /*!< Level to meet to enable statistic 0 = disabled */
 };
 
 /** Describes Parameters to a Component.

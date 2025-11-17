@@ -15,7 +15,10 @@
 #include "sst/core/serialization/serializer_fwd.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdarg>
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 // UNCOMMENT OUT THIS LINE TO ENABLE THE DEBUG METHOD -OR_

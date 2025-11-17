@@ -99,9 +99,12 @@ private:
     std::string right_comp;
     std::string right_port;
     std::string right_latency;
-    bool        no_cut = false;
+    bool        no_cut   = false;
+    bool        nonlocal = false;
     uint32_t    current_comp_rank;
     int         subcomp_slot = -1;
+    int         right_rank   = -1;
+    int         right_thread = -1;
 
     // FSM values
     bool foundComponents            = false;

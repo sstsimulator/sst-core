@@ -72,6 +72,12 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_variant(self):
         self.serialization_test_template("variant")
 
+    #def test_Serialization_shared_ptr(self):
+    #    self.serialization_test_template("shared_ptr")
+
+    def test_Serialization_aggregate(self):
+        self.serialization_test_template("aggregate")
+
 #####
     def serialization_test_template(self, testtype, default_reffile = True):
 

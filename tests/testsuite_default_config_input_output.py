@@ -58,6 +58,25 @@ class testcase_Config_input_output(SSTTestCase):
     def test_python_single_parallel_load(self):
         self.configio_test_template("python_single_parallel_load", "6 6", "py", False, "SINGLE")
 
+    @unittest.skipIf(testing_check_get_num_ranks() != 2 or testing_check_get_num_threads() != 1, "Test only run with 2 ranks and 1 thread")
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_python_parallel_load_setnonlocal(self):
+        # One off test, don't use the template
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_setnonlocal.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_setnonlocal.out".format(testsuitedir)
+        outfile = "{0}/test_setnonlocal.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile, other_args = "--parallel-load=multi", check_sdl_file=False)
+
+        cmp_result = testing_compare_filtered_diff("python_parallel_load_setnonlocal", outfile, reffile, sort=True)
+        if not cmp_result:
+            diffdata = testing_get_diff_data("python_parallel_load_setnonlocal")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
 
 #####
 

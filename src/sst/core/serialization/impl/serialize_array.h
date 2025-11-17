@@ -88,7 +88,11 @@ struct serialize_impl_fixed_array
         case serializer::UNPACK:
             if constexpr ( std::is_pointer_v<OBJ_TYPE> ) {
                 // for pointers to fixed arrays, we allocate the storage
-                ary = reinterpret_cast<OBJ_TYPE>(new std::remove_pointer_t<OBJ_TYPE>);
+                using T = std::remove_pointer_t<OBJ_TYPE>;
+                if constexpr ( std::is_array_v<T> )
+                    ary = reinterpret_cast<OBJ_TYPE>(new std::remove_extent_t<T>[std::extent_v<T>]);
+                else
+                    ary = reinterpret_cast<OBJ_TYPE>(new T);
             }
             [[fallthrough]];
 

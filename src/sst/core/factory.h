@@ -18,10 +18,15 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 
+#include <cstdint>
 #include <iostream>
 #include <mutex>
 #include <set>
+#include <sstream>
 #include <stdio.h>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */
@@ -52,6 +57,13 @@ public:
     static Factory* getFactory() { return instance; }
 
     static Factory* createFactory(const std::string& searchPaths);
+
+    /**
+       Update the search paths
+       @param searchPaths New search paths to use
+     */
+    void updateSearchPaths(const std::string& paths);
+
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format
@@ -252,7 +264,7 @@ public:
                 return fact->create(comp, statName, stat, params, std::forward<Args>(args)...);
             }
         }
-        // If we make it to here, component not found
+        // If we make it to here, statistic not found
         out.fatal(CALL_INFO, -1, "can't find requested statistic %s.\n%s\n", type.c_str(), sstr.str().c_str());
         return nullptr;
     }
@@ -281,7 +293,7 @@ public:
 
     const std::string& getSearchPaths();
 
-    /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
+    /** Determine if a SubComponentSlot is defined in a components ElementInfoSubComponentSlot
      * @param type - The name of the component/subcomponent
      * @param slotName - The name of the SubComponentSlot
      * @return True if the SubComponentSlot is defined in the component's ELI
@@ -290,26 +302,19 @@ public:
 
     /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
-     * @param statisticName - The name of the statistic
+     * @param statistic_name - The name of the statistic
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
-    bool DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
-
-    const std::vector<std::string>& GetValidStatistics(const std::string& compType);
-
-    /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
-     * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic
-     * @return The Enable Level of the statistic from the ElementInfoStatistic
-     */
-    uint8_t GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName);
+    bool DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statistic_name);
 
     /** Get the units of a statistic defined in the component's ElementInfoStatistic
-     * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic
+     * @param type - The name of the component
+     * @param statistic_name - The name of the statistic
      * @return The units string of the statistic from the ElementInfoStatistic
      */
-    std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
+    std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statistic_name);
+
+    uint8_t GetStatisticValidityAndEnableLevel(const std::string& type, const std::string& statistic_name);
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Type of component in lib.name format

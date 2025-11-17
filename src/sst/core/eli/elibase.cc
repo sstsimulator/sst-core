@@ -13,6 +13,8 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <utility>
+
 namespace SST::ELI {
 
 /**************************************************************************

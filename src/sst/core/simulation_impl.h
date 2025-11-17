@@ -28,14 +28,17 @@
 #include "sst/core/util/filesystem.h"
 
 #include <atomic>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <map>
 #include <mutex>
 #include <set>
 #include <signal.h>
+#include <string>
 #include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 /* Forward declare for Friendship */
@@ -415,8 +418,8 @@ public:
        Write the global data to a binary file and create the registry
        and write the header info
      */
-    void checkpoint_write_globals(
-        int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename);
+    void checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_filename,
+        const std::string& registry_filename, const std::string& globals_filename);
     void restart();
 
     /**
@@ -425,7 +428,11 @@ public:
        between checkpoint and restart and the original rank info
        stored in the checkpoint should be used.
      */
-    RankInfo getRankForLinkOnRestart(int UNUSED(rank), uintptr_t UNUSED(tag)) { return RankInfo(); }
+    RankInfo getRankForLinkOnRestart(RankInfo rank, uintptr_t UNUSED(tag))
+    {
+        if ( serial_restart_ ) return RankInfo(0, 0);
+        return RankInfo(rank.rank, rank.thread);
+    }
 
     void initialize_interactive_console(const std::string& type);
 
@@ -508,6 +515,7 @@ public:
     RealTimeManager*        real_time_;
     std::string             interactive_type_  = "";
     std::string             interactive_start_ = "";
+    std::string             replay_file_       = "";
     InteractiveConsole*     interactive_       = nullptr;
     bool                    enter_interactive_ = false;
     std::string             interactive_msg_;
@@ -658,6 +666,7 @@ public:
     uint32_t                                   checkpoint_id_       = 0;
     std::string                                checkpoint_prefix_   = "";
     std::string                                globalOutputFileName = "";
+    bool                                       serial_restart_      = false;
 
     // Config object used by the simulation
     static Config       config;

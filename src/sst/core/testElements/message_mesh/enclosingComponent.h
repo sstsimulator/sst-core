@@ -21,6 +21,8 @@
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace SST::CoreTest::MessageMesh {
@@ -137,10 +139,12 @@ public:
     SST_ELI_DOCUMENT_PARAMS(
         {"id", "Id for this component", ""},
         {"mod", "Port modulus to restrict number of initial events", "1"},
-        {"verbose", "Print message count at end of simulation", "True"}
+        {"verbose", "Print message count at end of simulation", "True"},
+        {"stats", "Statistics per component", "0"}
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
+        {"stat", "Test statistic", "count", 1},
     )
 
     SST_ELI_DOCUMENT_PORTS(
@@ -150,6 +154,8 @@ public:
         {"ports", "Slot that the ports objects go in", "SST::CoreTest::MessageMesh::PortInterface" },
         {"route", "Slot that the route object goes in", "SST::CoreTest::MessageMesh::RouteInterface" }
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     EnclosingComponent(ComponentId_t id, Params& params);
     EnclosingComponent() {}
@@ -166,6 +172,9 @@ private:
 
     std::vector<PortInterface*> ports_;
     RouteInterface*             route_;
+
+    // Measuring statistics per component
+    std::vector<Statistic<uint64_t>*> stats_;
 
     int  my_id_;
     int  message_count_ = 0;
@@ -201,6 +210,8 @@ public:
         {"port", "Slot to load the real PortInterface object", "SST::CoreTest::MessageMesh::PortInterface" }
     )
 
+    SST_ELI_IS_CHECKPOINTABLE()
+
     PortSlot(ComponentId_t id, Params& params);
     PortSlot() {}
     ~PortSlot() {}
@@ -211,6 +222,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::CoreTest::MessageMesh::PortSlot);
+
 
 private:
     PortInterface* port_;
@@ -283,6 +295,8 @@ public:
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
+
+    SST_ELI_IS_CHECKPOINTABLE()
 
     RouteMessage(ComponentId_t id, Params& params, std::vector<PortInterface*>& ports, int my_id);
     RouteMessage() {}

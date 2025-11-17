@@ -21,15 +21,18 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statoutput.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace SST::Statistics;
@@ -46,34 +49,139 @@ using ComponentIdMap_t = SparseVectorMap<ComponentId_t>;
 using LinkIdMap_t      = std::vector<LinkId_t>;
 
 /** Represents the configuration of a generic Link */
-class ConfigLink : public SST::Core::Serialization::serializable
+class ConfigLink
 {
+    // Static data structures to map latency string to an index that
+    // will hold the SimTime_t for the latency once the atomic
+    // timebase has been set.
+    static std::map<std::string, uint32_t> lat_to_index;
+
+    static uint32_t               getIndexForLatency(const char* latency);
+    static std::vector<SimTime_t> initializeLinkLatencyVector();
+    SimTime_t                     getLatencyFromIndex(uint32_t index);
+
 public:
-    LinkId_t      id;             /*!< ID of this link */
-    std::string   name;           /*!< Name of this link */
-    ComponentId_t component[2];   /*!< IDs of the connected components */
-    std::string   port[2];        /*!< Names of the connected ports */
-    SimTime_t     latency[2];     /*!< Latency from each side */
-    std::string   latency_str[2]; /*!< Temp string holding latency */
+    /**
+       Components that are connected to this link. They are filled in
+       the order they are attached in.  If the link is marked as
+       non-local, then component[1] holds the rank of the remote
+       component.
+     */
+    ComponentId_t component[2] = { 0, 0 }; /*!< IDs of the connected components */
 
-    LinkId_t order;  /*!< Number of components currently referring to this Link.  After graph construction, it will
-                       be repurposed to hold the enforce_order value */
-    bool     no_cut; /*!< If set to true, partitioner will not make a cut through this Link */
+    /**
+       This is a dual purpose data member.
 
-    // inline const std::string& key() const { return name; }
+       Graph construction - during graph construction, it holds the
+       index into the LinkLatencyVector, which maps the stored index
+       to the actual latency string.  This is done to reduce memory
+       usage because we assume there will be a small number of
+       different latencies specified.
+
+       Post graph construction - after graph construction, the latency
+       index is replaced with the SimTime_t value representing the
+       specified latency that will be used by the link to add the
+       specified latency to the event.
+
+       In both cases, the indices match the indices found in the
+       component array, and represent the latency of the link for
+       events sent from the corresponding component.
+
+       If the link is marked as non-local, then latency[1] holds the
+       thread of the remote component.
+     */
+    SimTime_t latency[2] = { 0, 0 };
+
+    /**
+       Name of the link.  This is used in three cases:
+
+       Errors - if an error is found in the graph construction, the
+       name is used to report the error to the user
+
+       Link ordering - the event ordering for links is based on the
+       alphabetized name of the links.  The links are sorted by name
+       and order is assigned linearly starting at 1
+
+       Parallel load - for parallel load, links that cross partition
+       boundaries are connected by matching link names
+     */
+    std::string name;
+
+    /**
+       id of the link.  This is used primarily to find the link in
+       ConfigGraph::links
+     */
+    LinkId_t id = 0;
+
+    /**
+       This is a dual purpose data member.  During graph construction,
+       it counts the number of components currently referencing this
+       link.  After graph construction, it is assigned the value used
+       to enforce ordering of events based on the links they were sent
+       on.
+
+       @see Activity::setOrderTag, Link::tag
+     */
+    LinkId_t order = 0;
+
+    /**
+       Name of the ports the link is connected to.  The indices match
+       the ones used in the component array
+     */
+    std::string port[2];
+
+    /**
+       Whether or not this link is set to be no-cut
+     */
+    bool no_cut = false;
+
+    /**
+       Whether this link crosses the graph boundary and is connected
+       on one end to a non-local component.  If set to true, there
+       will only be one component connected (information in index 0
+       for the arrays) and the rank for the remote component will be
+       stored in component[1] and the thread in latency[1].
+    */
+    bool nonlocal = false;
+
+    /**
+       Set to true if this is a cross rank link
+     */
+    bool cross_rank = false;
+
+    /**
+       Set to true if this is a cross thread link on same rank
+    */
+    bool cross_thread = false;
+
     inline LinkId_t key() const { return id; }
 
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const
     {
+        if ( nonlocal ) return latency[0];
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];
     }
+
+    std::string latency_str(uint32_t index) const;
+
+    /**
+       Sets the link as a non-local link.
+
+       @param which_local specifies which index is for the local side
+       of the link
+
+       @param remote_rank_info Rank of the remote side of the link
+
+     */
+    void setAsNonLocal(int which_local, RankInfo remote_rank_info);
 
     /** Print the Link information */
     void print(std::ostream& os) const
     {
         os << "Link " << name << " (id = " << id << ")" << std::endl;
+        os << "  nonlocal = " << nonlocal << std::endl;
         os << "  component[0] = " << component[0] << std::endl;
         os << "  port[0] = " << port[0] << std::endl;
         os << "  latency[0] = " << latency[0] << std::endl;
@@ -85,7 +193,7 @@ public:
     /* Do not use.  For serialization only */
     ConfigLink() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void serialize_order(SST::Core::Serialization::serializer& ser) /*override*/
     {
         SST_SER(id);
         SST_SER(name);
@@ -95,12 +203,12 @@ public:
         SST_SER(port[1]);
         SST_SER(latency[0]);
         SST_SER(latency[1]);
-        SST_SER(latency_str[0]);
-        SST_SER(latency_str[1]);
         SST_SER(order);
+        SST_SER(nonlocal);
+        SST_SER(no_cut);
+        SST_SER(cross_rank);
+        SST_SER(cross_thread);
     }
-
-    ImplementSerializable(SST::ConfigLink)
 
 private:
     friend class ConfigGraph;
@@ -127,7 +235,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    void updateLatencies(TimeLord*);
+    void updateLatencies();
 };
 
 class ConfigStatistic : public SST::Core::Serialization::serializable
@@ -237,11 +345,14 @@ using ConfigLinkMap_t = SparseVectorMap<LinkId_t, ConfigLink*>;
 /**
    Class that represents a PortModule in ConfigGraph
  */
-class ConfigPortModule : public SST::Core::Serialization::serializable
+class ConfigPortModule
 {
 public:
     std::string type;
     Params      params;
+    uint8_t     stat_load_level = STATISTICLOADLEVELUNINITIALIZED;
+    Params      all_stat_config; /*!< If all stats are enabled, the config information for the stats */
+    std::map<std::string, Params> per_stat_configs;
 
     ConfigPortModule() = default;
     ConfigPortModule(const std::string& type, const Params& params) :
@@ -249,12 +360,20 @@ public:
         params(params)
     {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void addParameter(const std::string& key, const std::string& value);
+    void addSharedParamSet(const std::string& set);
+    void setStatisticLoadLevel(const uint8_t level);
+    void enableAllStatistics(const SST::Params& params);
+    void enableStatistic(const std::string& statistic_name, const SST::Params& params);
+
+    void serialize_order(SST::Core::Serialization::serializer& ser)
     {
         SST_SER(type);
         SST_SER(params);
+        SST_SER(stat_load_level);
+        SST_SER(all_stat_config);
+        SST_SER(per_stat_configs);
     }
-    ImplementSerializable(SST::ConfigPortModule)
 };
 
 
@@ -275,7 +394,8 @@ public:
     Params                params;        /*!< Set of Parameters */
     uint8_t               statLoadLevel; /*!< Statistic load level for this component */
 
-    std::map<std::string, std::vector<ConfigPortModule>> portModules;
+    std::map<std::string, std::vector<ConfigPortModule>>
+        port_modules; /*!< Map of port names to port modules loaded on that port */
     std::map<std::string, StatisticId_t>
                     enabledStatNames; /*!< Map of explicitly enabled statistic names to unique IDs */
     bool            enabledAllStats;  /*!< Whether all stats in this (sub)component have been enabled */
@@ -349,7 +469,9 @@ public:
         return params.getSubscribedSharedParamSets();
     }
 
-    void addPortModule(const std::string& port, const std::string& type, const Params& params);
+    /* Adds a PortModule on the port 'port' of the associated component. Returns the index of the
+     * module in the component's vector of PortModules for the given port. */
+    size_t addPortModule(const std::string& port, const std::string& type, const Params& params);
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -369,7 +491,7 @@ public:
         SST_SER(links);
         SST_SER(params);
         SST_SER(statLoadLevel);
-        SST_SER(portModules);
+        SST_SER(port_modules);
         SST_SER(enabledStatNames);
         SST_SER(enabledAllStats);
         SST_SER(statistics_);
@@ -467,7 +589,12 @@ public:
     void print(std::ostream& os) const
     {
         os << "Printing graph" << std::endl;
+        os << "Components:" << std::endl;
         for ( ConfigComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
+            (*i)->print(os);
+        }
+        os << "Links:" << std::endl;
+        for ( auto i = links_.begin(); i != links_.end(); ++i ) {
             (*i)->print(os);
         }
     }
@@ -534,12 +661,22 @@ public:
 
     long getStatLoadLevel() const { return stats_config_->load_level; }
 
+    /**
+       Create link and return it's ID.  The provided name is not
+       checked against existing links
+     */
+    LinkId_t createLink(const char* name, const char* latency = nullptr);
+
     /** Add a Link to a Component on a given Port */
-    void addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port,
-        const std::string& latency_str, bool no_cut = false);
+    void addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, const char* latency_str);
+
+    /**
+       Adds the remote rank info for nonlocal links
+     */
+    void addNonLocalLink(LinkId_t link_id, int rank, int thread);
 
     /** Set a Link to be no-cut */
-    void setLinkNoCut(const std::string& link_name);
+    void setLinkNoCut(LinkId_t link_name);
 
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();
@@ -567,16 +704,15 @@ public:
     ConfigComponent*       findComponentByName(const std::string& name);
     const ConfigComponent* findComponent(ComponentId_t) const;
 
-    bool             containsStatistic(StatisticId_t id) const;
     ConfigStatistic* findStatistic(StatisticId_t) const;
 
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() { return links_; }
 
-    ConfigGraph* getSubGraph(uint32_t start_rank, uint32_t end_rank);
-    ConfigGraph* getSubGraph(const std::set<uint32_t>& rank_set);
-
     ConfigGraph* splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<uint32_t>& new_rank_set);
+    void         reduceGraphToSingleRank(uint32_t rank);
+
+    SimTime_t getMinimumPartitionLatency();
 
     PartitionGraph* getPartitionGraph();
     PartitionGraph* getCollapsedPartitionGraph();
@@ -597,11 +733,39 @@ public:
         SST_SER(comps_);
         SST_SER(stats_config_);
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
-            // Need to reintialize the ConfigGraph ptrs in the
+            // Need to reinitialize the ConfigGraph ptrs in the
             // ConfigComponents
             setComponentConfigGraphPointers();
         }
+
+        SST_SER(cpt_ranks);
+        SST_SER(cpt_currentSimCycle);
+        SST_SER(cpt_currentPriority);
+        SST_SER(cpt_minPart);
+        SST_SER(cpt_minPartTC);
+        SST_SER(cpt_max_event_id);
+
+        SST_SER(*(cpt_libnames.get()));
+        SST_SER(*(cpt_shared_objects.get()));
+        SST_SER(*(cpt_stats_config.get()));
     }
+
+    void restoreRestartData();
+
+    /********* vv Variables used on restarts only vv ***********/
+    RankInfo      cpt_ranks;
+    SimTime_t     cpt_currentSimCycle = 0;
+    int           cpt_currentPriority = 0;
+    SimTime_t     cpt_minPart         = std::numeric_limits<SimTime_t>::max();
+    TimeConverter cpt_minPartTC;
+    uint64_t      cpt_max_event_id = 0;
+
+    std::shared_ptr<std::set<std::string>> cpt_libnames       = std::make_shared<std::set<std::string>>();
+    std::shared_ptr<std::vector<char>>     cpt_shared_objects = std::make_shared<std::vector<char>>();
+    std::shared_ptr<std::vector<char>>     cpt_stats_config   = std::make_shared<std::vector<char>>();
+
+    /********* ^^ Variables used on restarts only ^^ ***********/
+
 
 private:
     friend class Simulation_impl;

@@ -20,6 +20,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <ctime>
 #include <map>
 #include <set>
 #include <signal.h>
@@ -126,6 +127,7 @@ public:
     InteractiveRealTimeAction();
     void execute() override;
     bool isValidSigalrmAction() override { return false; }
+    bool canInitiateCheckpoint() override { return true; }
 };
 
 /* Wrapper for RealTimeActions that occur on a time interval */

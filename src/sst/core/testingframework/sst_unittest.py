@@ -80,7 +80,6 @@ class SSTTestCase(unittest.TestCase):
             testname (str): Name of the test being initialized
         """
         # Placeholder method for overridden method in derived class
-        #log_forced("\nSSTTestCase: initializeClass() - {0}".format(testname))
         from warnings import warn
         warn("initializeClass() is deprecated and will be removed in SST 15.",
              DeprecationWarning, stacklevel=2)
@@ -99,7 +98,6 @@ class SSTTestCase(unittest.TestCase):
             (Single Thread Testing) - Called by frameworks.
             (Concurrent Thread Testing) - Called by frameworks.
         """
-        #log_forced("SSTTestCase: setUp() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = True
 
@@ -122,7 +120,6 @@ class SSTTestCase(unittest.TestCase):
             (Single Thread Testing) - Called by frameworks.
             (Concurrent Thread Testing) - Called by frameworks.
         """
-        #log_forced("SSTTestCase: tearDown() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
 
@@ -143,8 +140,6 @@ class SSTTestCase(unittest.TestCase):
             (Single Thread Testing): Called by frameworks.
             (Concurrent Thread Testing): NOT CALLED, NOT AVAILABLE.
         """
-        #log_forced("SSTTestCase: setUpClass() - {0}".\
-        #format(sys.modules[cls.__module__].__file__))
 
 ###
 
@@ -161,8 +156,6 @@ class SSTTestCase(unittest.TestCase):
             (Single Thread Testing) - Called by frameworks.
             (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE.
         """
-        #log_forced("SSTTestCase: tearDownClass() - {0}".\
-        #format(sys.modules[cls.__module__].__file__))
 
 ###
 
@@ -403,7 +396,6 @@ def setUpModule() -> None:
             in Single Thread testing mode.  It will NOT be called in Concurrent Thread
             testing mode.
     """
-    #log_forced("SSTTestCase: setUpModule() - {0}".format(__file__))
     test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'] = []
 
 ###
@@ -426,12 +418,10 @@ def tearDownModule() -> None:
             in Single Thread testing mode.  It will NOT be called in Concurrent Thread
             testing mode.
     """
-    #log_forced("SSTTestCase: tearDownModule() - {0}".format(__file__))
     t_s = JUnitTestSuite(test_engine_globals.TESTRUN_SINGTHREAD_TESTSUITE_NAME,
                          test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'])
 
     # Write out Test Suite Results
-    #log_forced(junit_to_xml_report_string([t_s]))
     xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUT_XMLDIRPATH,
                                              test_engine_globals.TESTRUN_SINGTHREAD_TESTSUITE_NAME))
 
@@ -460,9 +450,6 @@ def setUpModuleConcurrent(test: SSTTestCase) -> None:
     """
 
     testsuite_name = test.get_testsuite_name()
-#    testcase_name = test.get_testcase_name()
-#    log_forced("\nSSTTestCase - setUpModuleConcurrent suite={0}; case={1}; test={2}".\
-#    format(testsuite_name, testcase_name, test))
     if not testsuite_name in test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS:
         test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name] = []
 
@@ -488,14 +475,10 @@ def tearDownModuleConcurrent(test: SSTTestCase) -> None:
     """
 
     testsuite_name = test.get_testsuite_name()
-#    testcase_name = test.get_testcase_name()
-#    log_forced("\nSSTTestCase - tearDownModuleConcurrent suite={0}; case={1}; test={2}".\
-#    format(testsuite_name, testcase_name, test))
     t_s = JUnitTestSuite(testsuite_name,
                          test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name])
 
     # Write out Test Suite Results
-    #log_forced(junit_to_xml_report_string([t_s]))
     xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUT_XMLDIRPATH,
                                              testsuite_name))
 

@@ -70,12 +70,13 @@ class serialize_impl<pvt::unique_ptr_wrapper<PTR_TYPE, DELETER, SIZE_T>>
     using OWNER_TYPE = std::remove_cv_t<PTR_TYPE>;
 
     // ELEM_TYPE is the array element type, or OWNER_TYPE if OWNER_TYPE is not an array
-    using ELEM_TYPE = std::remove_extent_t<OWNER_TYPE>;
+    // "pointer" member of std::unique_ptr is used in case DELETER has its own pointer type
+    using ELEM_TYPE = std::remove_cv_t<std::remove_pointer_t<typename std::unique_ptr<PTR_TYPE, DELETER>::pointer>>;
 
     void operator()(pvt::unique_ptr_wrapper<PTR_TYPE, DELETER, SIZE_T>& ptr, serializer& ser, ser_opt_t opt)
     {
-        ser_opt_t  elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
-        const auto mode     = ser.mode();
+        const auto opts = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
+        const auto mode = ser.mode();
 
         if ( mode == serializer::MAP ) {
             // TODO: Mapping std::unique_ptr
@@ -85,74 +86,73 @@ class serialize_impl<pvt::unique_ptr_wrapper<PTR_TYPE, DELETER, SIZE_T>>
         // Destroy the old std::unique_ptr
         if ( mode == serializer::UNPACK ) ptr.ptr.~unique_ptr();
 
+        size_t size = 0;
         if constexpr ( is_unbounded_array_v<PTR_TYPE> ) {
-            // If PTR_TYPE is an unbounded array
+            // If PTR_TYPE is an unbounded array and there is a size parameter
 
             // Get the array size, which is 0 if the pointer is null
-            size_t size = 0;
-            if ( mode != serializer::UNPACK ) {
+            if ( mode != serializer::UNPACK )
                 if ( ptr.ptr )
                     size = get_array_size(ptr.size,
                         "Serialization Error: Array size in SST::Core::Serialization::unique_ptr() cannot fit "
                         "inside size_t. size_t should be used for array sizes.\n");
-            }
 
             // Serialize the array size
             ser.primitive(size);
             if ( mode == serializer::UNPACK ) ptr.size = static_cast<SIZE_T>(size);
-
-            // If the pointer is not null, serialize the pointee
-            if ( size != 0 ) {
-                // Allocate the array
-                if ( mode == serializer::UNPACK )
-                    new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(
-                        new ELEM_TYPE[size](), std::forward<decltype(ptr.del)>(ptr.del));
-
-                // Address of first element
-                ELEM_TYPE* addr = const_cast<ELEM_TYPE*>(reinterpret_cast<const ELEM_TYPE*>(ptr.ptr.get()));
-
-                // Serialize the array elements
-                if constexpr ( is_trivially_serializable_v<ELEM_TYPE> )
-                    ser.raw(addr, size * sizeof(ELEM_TYPE));
-                else
-                    pvt::serialize_array(ser, addr, elem_opt, size, pvt::serialize_array_element<ELEM_TYPE>);
-            }
-            else if ( mode == serializer::UNPACK ) {
-                // Null pointer
-                new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(nullptr, std::forward<decltype(ptr.del)>(ptr.del));
-            }
         }
-        else {
-            // If PTR_TYPE is a not an unbounded array
 
-            // Whether the pointer is null
-            bool nonnull(ptr.ptr);
-            ser.primitive(nonnull);
+        // Serialize the address stored in the std::unique_ptr
+        uintptr_t ptr_stored = reinterpret_cast<uintptr_t>(ptr.ptr.get());
+        ser.primitive(ptr_stored);
 
-            // If the pointer is not null, serialize the pointee
-            if ( nonnull ) {
-                if ( mode == serializer::UNPACK ) {
-                    // Allocate the object
-                    if constexpr ( std::is_array_v<OWNER_TYPE> ) {
-                        // For pointers to fixed-size arrays
-                        new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(
-                            reinterpret_cast<OWNER_TYPE*>(new ELEM_TYPE[std::extent_v<OWNER_TYPE>]()),
-                            std::forward<decltype(ptr.del)>(ptr.del));
-                    }
-                    else {
-                        // For pointers to non-arrays
-                        new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(
-                            new OWNER_TYPE(), std::forward<decltype(ptr.del)>(ptr.del));
-                    }
+        uintptr_t real_ptr      = ptr_stored;
+        bool      serialize_obj = false;
+
+        switch ( mode ) {
+        case serializer::SIZER:
+            serialize_obj = ptr_stored && !ser.sizer().check_pointer_sizer(ptr_stored);
+            break;
+
+        case serializer::PACK:
+            serialize_obj = ptr_stored && !ser.packer().check_pointer_pack(ptr_stored);
+            break;
+
+        case serializer::UNPACK:
+            if ( ptr_stored ) {
+                // Check if the pointer was seen before
+                real_ptr = ser.unpacker().check_pointer_unpack(ptr_stored);
+
+                // If pointer was not seen before, allocate the object, report its address and serialize the object
+                if ( !real_ptr ) {
+                    if constexpr ( is_unbounded_array_v<PTR_TYPE> )
+                        real_ptr = reinterpret_cast<uintptr_t>(new ELEM_TYPE[size]());
+                    else if constexpr ( std::is_array_v<PTR_TYPE> )
+                        real_ptr = reinterpret_cast<uintptr_t>(new ELEM_TYPE[std::extent_v<PTR_TYPE>]());
+                    else
+                        real_ptr = reinterpret_cast<uintptr_t>(new OWNER_TYPE());
+                    ser.unpacker().report_real_pointer(ptr_stored, real_ptr);
+                    serialize_obj = true;
                 }
+            }
+            // Create a std::unique_ptr owning the real pointer (or null pointer if ptr_stored == 0)
+            new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(
+                reinterpret_cast<ELEM_TYPE*>(real_ptr), std::forward<decltype(ptr.del)>(ptr.del));
+            break;
 
-                // Serialize the object
-                SST_SER(*const_cast<OWNER_TYPE*>(ptr.ptr.get()));
-            }
-            else if ( mode == serializer::UNPACK ) {
-                // Null pointer
-                new (&ptr.ptr) std::unique_ptr<PTR_TYPE, DELETER>(nullptr, std::forward<decltype(ptr.del)>(ptr.del));
-            }
+        default:
+            break;
+        }
+
+        // Serialize the object if the pointer is non-null and this is the first time it's been seen
+        if ( serialize_obj ) {
+            if constexpr ( !is_unbounded_array_v<PTR_TYPE> )
+                SST_SER(*reinterpret_cast<OWNER_TYPE*>(real_ptr));
+            else if constexpr ( is_trivially_serializable_v<ELEM_TYPE> )
+                ser.raw(reinterpret_cast<ELEM_TYPE*>(real_ptr), size * sizeof(ELEM_TYPE));
+            else
+                pvt::serialize_array(
+                    ser, reinterpret_cast<ELEM_TYPE*>(real_ptr), opts, size, pvt::serialize_array_element<ELEM_TYPE>);
         }
     }
 

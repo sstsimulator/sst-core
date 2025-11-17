@@ -58,7 +58,7 @@ class serialize_impl<std::optional<T>>
         }
 
         // Serialize the optional object if it is present
-        if ( has_value ) SST_SER(*obj, options); //, nullptr);
+        if ( has_value ) SST_SER(*obj, options);
     }
 
     SST_FRIEND_SERIALIZE();

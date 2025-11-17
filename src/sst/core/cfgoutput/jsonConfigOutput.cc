@@ -23,6 +23,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
@@ -57,18 +58,25 @@ JSONConfigGraphOutput::outputLinks(ConfigGraph* graph, std::ofstream& ofs)
             count++;
 
             // general link key:val pairs
-            linkRecord["name"]  = linkItr->name;
-            linkRecord["noCut"] = linkItr->no_cut;
+            linkRecord["name"]     = linkItr->name;
+            linkRecord["noCut"]    = linkItr->no_cut;
+            linkRecord["nonlocal"] = linkItr->nonlocal;
 
             // left link
             linkRecord["left"]["component"] = graph->findComponent(linkItr->component[0])->getFullName();
             linkRecord["left"]["port"]      = linkItr->port[0];
-            linkRecord["left"]["latency"]   = linkItr->latency_str[0];
+            linkRecord["left"]["latency"]   = linkItr->latency_str(0);
 
             // right link
-            linkRecord["right"]["component"] = graph->findComponent(linkItr->component[1])->getFullName();
-            linkRecord["right"]["port"]      = linkItr->port[1];
-            linkRecord["right"]["latency"]   = linkItr->latency_str[1];
+            if ( linkItr->nonlocal ) {
+                linkRecord["right"]["rank"]   = linkItr->component[1];
+                linkRecord["right"]["thread"] = linkItr->latency[1];
+            }
+            else {
+                linkRecord["right"]["component"] = graph->findComponent(linkItr->component[1])->getFullName();
+                linkRecord["right"]["port"]      = linkItr->port[1];
+                linkRecord["right"]["latency"]   = linkItr->latency_str(1);
+            }
 
             ofs << linkRecord.dump(2);
             if ( count != const_cast<ConfigLinkMap_t&>(linkMap).size() ) {

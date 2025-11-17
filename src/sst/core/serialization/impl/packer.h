@@ -19,6 +19,7 @@
 
 #include "sst/core/serialization/impl/get_array_size.h"
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
+#include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
 #include <cstdint>
 #include <cstring>
@@ -28,7 +29,7 @@
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_packer : public ser_buffer_accessor
+class ser_packer : public ser_buffer_accessor, public ser_shared_ptr_packer
 {
     std::set<uintptr_t> pointer_set;
 

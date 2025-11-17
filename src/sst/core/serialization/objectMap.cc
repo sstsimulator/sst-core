@@ -58,10 +58,13 @@ ObjectMap::selectParent()
 ObjectMap*
 ObjectMap::selectVariable(std::string name, bool& loop_detected)
 {
+    // kg maybe there is a way we can go through this to detect problems
+    //    before changing objmap state to avoid memory corruption bugs.
     loop_detected  = false;
     ObjectMap* var = findVariable(name);
 
-    // If we get nullptr back, then it didn't exist.  Just return this
+    // TODO Would prefer this be a simple nullptr to avoid confusion (bugs)
+    //  If we get nullptr back, then it didn't exist.  Just return this
     if ( nullptr == var ) return this;
 
     // See if this creates a loop
@@ -79,13 +82,32 @@ ObjectMap::selectVariable(std::string name, bool& loop_detected)
         // current->mdata_ = nullptr;
         current->deactivate();
         while ( parent != var ) {
+// #define _DEBUG_NULL_META_
+#ifdef _DEBUG_NULL_META_
+            std::cout << "current: &" << current->getName() << " = " << &current << "parent &" << parent->getName()
+                      << " = " << &parent << std::endl;
+            std::cout << "setting current=parent" << std::endl;
+#endif
             // TODO: check for parent == nullptr, which
             // would be the case where we didn't detect
             // the loop going back up the chain. This
             // would mean the metadata was corrupted
             // somehow.
             current = parent;
-            parent  = current->mdata_->parent;
+
+            // TODO: how are we getting into this state?
+            // seems to occur occassionally for set after 2nd token has error followed by correction
+            // test cause is using a double.
+            // > set d=0.1
+            //   error message for '='
+            // > set d 0.1
+            if ( !current->mdata_ ) {
+#if _DEBUG_NULL_META_
+                std::cout << "mdata is null. Returning " << var->getName() << std::endl;
+#endif
+                return var;
+            }
+            parent = current->mdata_->parent;
             // Clear the metadata for current
             // delete current->mdata_;
             // current->mdata_ = nullptr;
@@ -106,7 +128,8 @@ ObjectMap::get(const std::string& var)
 {
     bool       loop_detected = false;
     ObjectMap* obj           = selectVariable(var, loop_detected);
-    if ( nullptr == obj ) return "";
+    assert(obj);
+    if ( nullptr == obj || (obj == this) ) return "";
     if ( !obj->isFundamental() ) return "";
     std::string ret = obj->get();
     obj->selectParent();
@@ -118,7 +141,8 @@ ObjectMap::set(const std::string& var, const std::string& value, bool& found, bo
 {
     bool       loop_detected = false;
     ObjectMap* obj           = selectVariable(var, loop_detected);
-    if ( nullptr == obj ) {
+    assert(obj);
+    if ( nullptr == obj || obj == this ) {
         found = false;
         return;
     }

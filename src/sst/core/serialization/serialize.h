@@ -22,6 +22,7 @@
 #undef SST_INCLUDING_SERIALIZE_H
 
 #include <atomic>
+#include <cstdint>
 #include <iostream>
 #include <type_traits>
 #include <typeinfo>
@@ -84,8 +85,10 @@ struct SerOption
 
 namespace Core::Serialization {
 
+namespace pvt {
 template <typename T>
 void sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name);
+}
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
 template <typename T>
@@ -162,7 +165,7 @@ template <class T>
 class serialize
 {
     template <class U>
-    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
+    friend void sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
 
     void operator()(T& t, serializer& ser, ser_opt_t options) { return serialize_impl<T>()(t, ser, options); }
 
@@ -230,7 +233,7 @@ template <class T>
 class serialize<T*>
 {
     template <class U>
-    friend void SST::Core::Serialization::sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
+    friend void sst_ser_object(serializer& ser, U&& obj, ser_opt_t options, const char* name);
     void        operator()(T*& t, serializer& ser, ser_opt_t options)
     {
         // We are a pointer, need to see if tracking is turned on
@@ -323,8 +326,6 @@ class serialize<T*>
     }
 };
 
-} // namespace pvt
-
 // All serialization must go through this function to ensure
 // everything works correctly
 //
@@ -342,20 +343,17 @@ sst_ser_object(serializer& ser, TREF&& obj, ser_opt_t options, const char* name)
     // seeing if pointer tracking is turned off, because it is turned on for both checkpointing and mapping mode.
     if ( !ser.is_pointer_tracking_enabled() ) {
         // Options are wiped out since none apply in this case
-        return pvt::serialize<T>()(obj, ser, SerOption::none);
+        pvt::serialize<T>()(obj, ser, SerOption::none);
     }
-
-    // Mapping mode
-    if ( ser.mode() == serializer::MAP ) {
-        ObjectMapContext context(ser, name);
+    else if ( ser.mode() == serializer::MAP ) {
+        // Mapping mode
         // Check to see if we are NOMAP
-        if ( SerOption::is_set(options, SerOption::no_map) ) return;
-
-        pvt::serialize<T>()(obj, ser, options);
-        return;
+        if ( !SerOption::is_set(options, SerOption::no_map) ) {
+            ObjectMapContext context(ser, name);
+            pvt::serialize<T>()(obj, ser, options);
+        }
     }
-
-    if constexpr ( !std::is_pointer_v<T> ) {
+    else if constexpr ( !std::is_pointer_v<T> ) {
         // as_ptr is only valid for non-pointers
         if ( SerOption::is_set(options, SerOption::as_ptr) ) {
             pvt::serialize<T>().serialize_and_track_pointer(obj, ser, options);
@@ -370,6 +368,8 @@ sst_ser_object(serializer& ser, TREF&& obj, ser_opt_t options, const char* name)
     }
 }
 
+} // namespace pvt
+
 // A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
 // SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
 // matches serialization functions which only take lvalue references.
@@ -380,7 +380,7 @@ template <class T>
 void
 operator&(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map, "");
+    pvt::sst_ser_object(ser, obj, SerOption::no_map, "");
 }
 
 template <class T>
@@ -390,21 +390,18 @@ template <class T>
 void
 operator|(serializer& ser, T&& obj)
 {
-    SST::Core::Serialization::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr, "");
+    pvt::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr, "");
 }
 
 
 // Serialization macros for checkpoint/debug serialization
-#define SST_SER(obj, ...)                     \
-    SST::Core::Serialization::sst_ser_object( \
+#define SST_SER(obj, ...)                          \
+    SST::Core::Serialization::pvt::sst_ser_object( \
         ser, (obj), SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__), #obj)
 
-#define SST_SER_NAME(obj, name, ...)          \
-    SST::Core::Serialization::sst_ser_object( \
+#define SST_SER_NAME(obj, name, ...)               \
+    SST::Core::Serialization::pvt::sst_ser_object( \
         ser, (obj), SST::Core::Serialization::pvt::sst_ser_or_helper(__VA_ARGS__), name)
-
-
-// #define SST_SER_AS_PTR(obj) (ser | (obj));
 
 namespace pvt {
 template <typename... Args>
@@ -422,11 +419,14 @@ sst_ser_or_helper(Args... args)
 // Set the #define that will disable the warnings.
 #define SST_INCLUDING_SERIALIZE_H
 #include "sst/core/serialization/impl/serialize_adapter.h"
+#include "sst/core/serialization/impl/serialize_aggregate.h"
 #include "sst/core/serialization/impl/serialize_array.h"
 #include "sst/core/serialization/impl/serialize_atomic.h"
 #include "sst/core/serialization/impl/serialize_bitset.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_optional.h"
+// Disable until more stable across platforms
+// #include "sst/core/serialization/impl/serialize_shared_ptr.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_trivial.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"

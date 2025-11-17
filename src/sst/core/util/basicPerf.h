@@ -12,10 +12,12 @@
 #ifndef SST_CORE_UTIL_BASIC_PERF_H
 #define SST_CORE_UTIL_BASIC_PERF_H
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <stack>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace SST {
@@ -79,8 +81,8 @@ struct RegionPerfInfo
    Regions are tracked hierarchically and you can output various
    levels of data based on the verbose value supplied to the output
    functions.  Each region is denoted using beginRegion() and
-   endRegion().  Each regions can be contained with another region,
-   but it must be wholly contained within that region. For output, the
+   endRegion().  Each region can be contained with another region, but
+   it must be wholly contained within that region. For output, the
    verbose value can be used to indicate how much detail to output.
    The verbose value indicates how deep to print in the region
    hierarchy.  A verbose value of 0 indicates no output, 1 will output

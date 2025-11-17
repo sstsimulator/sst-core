@@ -46,11 +46,16 @@
 #include <algorithm>
 #include <atomic>
 #include <cinttypes>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <mutex>
+#include <ostream>
 #include <set>
 #include <string>
 #include <thread>
@@ -307,6 +312,13 @@ Simulation_impl::Simulation_impl(
     Params p;
 
     timeVortex = factory->Create<TimeVortex>(timeVortexType, p);
+    if ( restart ) {
+        StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
+        sa->setDeliveryTime(SST_SIMTIME_MAX);
+        timeVortex->insert(sa);
+    }
+
+
     if ( my_rank.thread == 0 ) {
         m_exit = new Exit(num_ranks.thread, num_ranks.rank == 1);
     }
@@ -318,8 +330,9 @@ Simulation_impl::Simulation_impl(
             &config, my_rank.rank, this, timeLord.getTimeConverter(config.heartbeat_sim_period()));
     }
     if ( config.checkpoint_sim_period() != "" ) {
-        sim_output.output("# Creating simulation checkpoint at simulated time period of %s.\n",
-            config.checkpoint_sim_period().c_str());
+        if ( my_rank.rank == 0 && my_rank.thread == 0 )
+            sim_output.output("# Creating simulation checkpoint at simulated time period of %s.\n",
+                config.checkpoint_sim_period().c_str());
         checkpoint_action_ =
             new CheckpointAction(&config, my_rank, this, timeLord.getTimeConverter(config.checkpoint_sim_period()));
         checkpoint_action_->insertIntoTimeVortex(this);
@@ -333,6 +346,7 @@ Simulation_impl::Simulation_impl(
 
     interactive_type_  = config.interactive_console();
     interactive_start_ = config.interactive_start_time();
+    replay_file_       = config.replay_file();
 }
 
 void
@@ -496,7 +510,6 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     if ( my_rank.thread == 0 ) {
         minPartTC = minPartToTC(min_part);
     }
-
     // Get the minimum latencies for links between the various threads
     interThreadLatencies.resize(num_ranks.thread);
     for ( size_t i = 0; i < interThreadLatencies.size(); i++ ) {
@@ -512,7 +525,11 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         // Find the minimum latency across a partition
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink* clink = *iter;
-            RankInfo    rank[2];
+            // If link is nonlocal, then doesn't affect interthread latencies
+            if ( clink->nonlocal ) continue;
+
+            // If link is not nonlocal, see if it crosses a thread boundary
+            RankInfo rank[2];
             rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
             rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
             // We only care about links that are on my rank, but
@@ -576,7 +593,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 int
 Simulation_impl::initializeStatisticEngine(StatsConfig* stats_config)
 {
-    stat_engine.setup(this, stats_config);
+    stat_engine.setup(stats_config);
     return 0;
 }
 
@@ -585,8 +602,8 @@ int
 Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // First, go through all the components that are in this rank and
-    // create the ComponentInfo object for it
-    // Now, build all the components
+    // create the ComponentInfo object for it, then populate the
+    // LinkMaps
     for ( ConfigComponentMap_t::const_iterator iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
         ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
@@ -601,7 +618,13 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
         rank[0] = graph.comps_[COMPONENT_ID_MASK(clink->component[0])]->rank;
-        rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
+        if ( clink->nonlocal ) {
+            rank[1].rank   = clink->component[1];
+            rank[1].thread = clink->latency[1];
+        }
+        else {
+            rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
+        }
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -620,7 +643,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
-                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
+                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
+                        clink->component[0]);
                 }
                 cinfo->getLinkMap()->insertLink(clink->port[0], link);
             }
@@ -635,7 +659,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
-                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
+                    sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
+                        clink->component[0]);
                 }
                 cinfo->getLinkMap()->insertLink(clink->port[0], lp.getLeft());
 
@@ -932,10 +957,18 @@ Simulation_impl::run()
     // Setup interactive mode (only in serial jobs for now)
     if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
         if ( interactive_type_ != "" ) {
+            // --interactive-console used to override default
             initialize_interactive_console(interactive_type_);
         }
+        else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
+                  (config.sigusr2() == "sst.rt.interactive") ) {
+            // use default interactive console
+            interactive_type_ = "sst.interactive.simpledebug";
+            initialize_interactive_console(interactive_type_);
+        }
+
         if ( interactive_start_ != "" ) {
-            if ( nullptr == interactive_ ) {
+            if ( nullptr == interactive_ ) { // Should never get here
                 sim_output.fatal(CALL_INFO, 1,
                     "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
                     "interactive action that should be used.\n");
@@ -1658,8 +1691,8 @@ Simulation_impl::scheduleCheckpoint()
 
 
 void
-Simulation_impl::checkpoint_write_globals(
-    int checkpoint_id, const std::string& registry_filename, const std::string& globals_filename)
+Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_directory,
+    const std::string& registry_filename, const std::string& globals_filename)
 {
     uint64_t local_event_id;
     uint64_t max_event_id;
@@ -1679,7 +1712,8 @@ Simulation_impl::checkpoint_write_globals(
         return;
     }
 
-    std::ofstream fs = filesystem.ofstream(globals_filename, std::ios::out | std::ios::binary);
+    std::ofstream fs =
+        filesystem.ofstream(checkpoint_directory + "/" + globals_filename, std::ios::out | std::ios::binary);
 
     // TODO: Add error checking for file open
 
@@ -1704,12 +1738,6 @@ Simulation_impl::checkpoint_write_globals(
     factory->getLoadedLibraryNames(libnames);
     SST_SER(libnames);
 
-    // Add shared regions
-    SST_SER(SharedObject::manager);
-
-    // Store the stats config
-    SST_SER(stats_config_);
-
     size = ser.size();
     buffer.resize(size);
 
@@ -1725,10 +1753,32 @@ Simulation_impl::checkpoint_write_globals(
     // Add list of loaded libraries
     SST_SER(libnames);
 
-    // Add shared regions
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+
+    /* Section 1a: Shared regions */
+    ser.start_sizing();
     SST_SER(SharedObject::manager);
 
-    // Store the stats config
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
+    SST_SER(SharedObject::manager);
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+
+    /* Section 1b: stats config */
+    ser.start_sizing();
+    SST_SER(stats_config_);
+
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
     SST_SER(stats_config_);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -1736,6 +1786,7 @@ Simulation_impl::checkpoint_write_globals(
 
     /* Section 2: Common data for Simulation_impl */
     ser.start_sizing();
+    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
     SST_SER(max_event_id);
@@ -1744,6 +1795,7 @@ Simulation_impl::checkpoint_write_globals(
     buffer.resize(size);
 
     ser.start_packing(buffer.data(), size);
+    SST_SER(num_ranks);
     SST_SER(minPart);
     SST_SER(minPartTC);
     SST_SER(max_event_id);
@@ -1755,7 +1807,7 @@ Simulation_impl::checkpoint_write_globals(
     fs.close();
 
 
-    std::ofstream fs_reg = filesystem.ofstream(registry_filename, std::ios::out);
+    std::ofstream fs_reg = filesystem.ofstream(checkpoint_directory + "/" + registry_filename, std::ios::out);
 
     /* Section 1: Checkpoint info */
     fs_reg << "## Checkpoint #" << checkpoint_id << " at time " << currentSimCycle << " ("
@@ -1790,7 +1842,7 @@ void
 Simulation_impl::checkpoint_append_registry(const std::string& registry_name, const std::string& blob_name)
 {
     // The top level registry file for the checkpoint will be a text
-    // file and will include global data first, then a registery of
+    // file and will include global data first, then a registry of
     // where each component data blob is located (file + offset).
 
     // Rank 0, thread 0 will write out the global data, then after all
@@ -1876,6 +1928,8 @@ Simulation_impl::restart()
 {
     std::ifstream fs(config.configFile());
 
+    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of("/"));
+
     std::string line;
 
     std::string globals_filename;
@@ -1884,7 +1938,7 @@ Simulation_impl::restart()
         size_t pos = line.find(search_str);
         if ( pos == 0 ) {
             // Get the file name
-            globals_filename = line.substr(search_str.length());
+            globals_filename = checkpoint_directory + "/" + line.substr(search_str.length());
             break;
         }
     }
@@ -1895,9 +1949,11 @@ Simulation_impl::restart()
     std::vector<char> buffer;
     uint64_t          max_event_id;
 
-    // Read how much data in Section 1, which we will skip over
-    fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
-    fs_globals.seekg(size, std::ios_base::cur);
+    // Read how much data in Section 1, which we will skip over (there are three sub sections in section 1)
+    for ( int i = 0; i < 3; ++i ) {
+        fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
+        fs_globals.seekg(size, std::ios_base::cur);
+    }
 
     // Now read the size of the common data blob
     fs_globals.read(reinterpret_cast<char*>(&size), sizeof(size));
@@ -1908,6 +1964,9 @@ Simulation_impl::restart()
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
     ser.start_unpacking(buffer.data(), size);
+
+    RankInfo num_ranks_cpt;
+    SST_SER(num_ranks_cpt);
 
     SST_SER(minPart);
     SST_SER(minPartTC);
@@ -1924,61 +1983,122 @@ Simulation_impl::restart()
         Event::id_counter.store(max_event_id);
     }
 
-    // Look for the line that has my rank's file info
-    std::string blob_filename;
-    search_str = "** (";
-    search_str = search_str + std::to_string(my_rank.rank) + ":" + std::to_string(my_rank.thread) + "): ";
-    while ( std::getline(fs, line) ) {
-        size_t pos = line.find(search_str);
-        if ( pos == 0 ) {
-            // Get the file name
-            blob_filename = line.substr(search_str.length());
-            break;
+    serial_restart_ = (num_ranks.rank == 1 && num_ranks.thread == 1) && (num_ranks != num_ranks_cpt);
+
+    // Need to find the file(s) for restart.  If this is a serial
+    // restart, we will get all the files.  If not, only get the file
+    // for current rank
+    std::vector<std::string> blob_filenames;
+
+    // Need to do this in the same order as the registry file so we
+    // don't have to keep looking from the beginning
+    for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
+        for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
+            if ( !serial_restart_ && (my_rank.rank != r || my_rank.thread != t) ) continue;
+            search_str = "** (";
+            search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
+            while ( std::getline(fs, line) ) {
+                size_t pos = line.find(search_str);
+                if ( pos == 0 ) {
+                    // Get the file name
+                    blob_filenames.push_back(checkpoint_directory + "/" + line.substr(search_str.length()));
+                    break;
+                }
+            }
         }
     }
+
+
     fs.close();
 
     ser.enable_pointer_tracking();
-    std::ifstream fs_blob(blob_filename, std::ios::binary);
 
-    /* Now get the global blob */
-    fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
-    buffer.resize(size);
-    fs_blob.read(buffer.data(), size);
+    if ( blob_filenames.size() == 1 ) {
+        // This is a regular restart (same parallelism as checkpoint)
+        std::ifstream fs_blob(blob_filenames[0], std::ios::binary);
 
-    ser.start_unpacking(buffer.data(), size);
-
-    SST_SER(interThreadMinLatency);
-    SST_SER(independent);
-
-    initBarrier.wait();
-
-    // Set up the syncManager
-    syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
-    // Look at simulation.cc line 365 on setting up profile tools
-
-    completeBarrier.wait();
-
-    /* Initial fix up of stat engine, the rest is after components re-register statistics */
-    stat_engine.restart(this);
-
-
-    /* Extract components */
-    size_t compCount;
-    fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
-
-    // Deserialize component blobs individually
-    for ( size_t comp = 0; comp < compCount; comp++ ) {
+        /* Now get the global blob */
         fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
         buffer.resize(size);
-        fs_blob.read(&buffer[0], size);
-        ser.start_unpacking(&buffer[0], size);
-        ComponentInfo* compInfo = new ComponentInfo();
-        SST_SER(compInfo);
-        compInfoMap.insert(compInfo);
-    }
+        fs_blob.read(buffer.data(), size);
 
-    fs_blob.close();
+        ser.start_unpacking(buffer.data(), size);
+
+        SST_SER(interThreadMinLatency);
+        SST_SER(independent);
+
+        // Set up the syncManager
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+        // Look at simulation.cc line 365 on setting up profile tools
+
+        completeBarrier.wait();
+
+        /* Initial fix up of stat engine, the rest is after components re-register statistics */
+        stat_engine.restart();
+
+
+        /* Extract components */
+        size_t compCount;
+        fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
+
+        // Deserialize component blobs individually
+        for ( size_t comp = 0; comp < compCount; comp++ ) {
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(&buffer[0], size);
+            ser.start_unpacking(&buffer[0], size);
+            ComponentInfo* compInfo = new ComponentInfo();
+            SST_SER(compInfo);
+            compInfoMap.insert(compInfo);
+        }
+        fs_blob.close();
+    }
+    else {
+        // This is a parallel checkpoint restarted as a serial job
+        interThreadMinLatency = MAX_SIMTIME_T;
+        independent           = false;
+        minPart               = MAX_SIMTIME_T;
+
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+
+        stat_engine.restart();
+
+        // Now we need to extract the components from all of the files
+        std::ifstream fs_blob;
+        for ( std::string filename : blob_filenames ) {
+            fs_blob.open(filename, std::ios::binary);
+
+            /* Now get the global blob */
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(buffer.data(), size);
+
+            ser.start_unpacking(buffer.data(), size);
+
+            // These are the variables interThreadLatencies and
+            // independent. They aren't used in this path, but need to
+            // be read from the serialization stream
+            uint64_t dummy_int;
+            SST_SER(dummy_int); // interThreadLatencies
+            bool dummy_bool;
+            SST_SER(dummy_bool); // independent
+
+            size_t compCount;
+            fs_blob.read(reinterpret_cast<char*>(&compCount), sizeof(compCount));
+
+            // Deserialize component blobs individually
+            for ( size_t comp = 0; comp < compCount; comp++ ) {
+                fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+                buffer.resize(size);
+                fs_blob.read(&buffer[0], size);
+                ser.start_unpacking(&buffer[0], size);
+                ComponentInfo* compInfo = new ComponentInfo();
+                SST_SER(compInfo);
+                compInfoMap.insert(compInfo);
+            }
+            fs_blob.close();
+        }
+    }
 
     // If we are a parallel job, need to call
     // finalizeLinkConfigurations() in order to finish setting up all
@@ -2009,12 +2129,14 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 
     // Need to parse the type string to see if there are any parameters
     std::string actual_type = type;
-    SST::Params p;
+    SST::Params p {};
     // For now, just ignore parameters
     // size_t index = type.find_first_of('(');
     // if ( index != std::string::npos ) {
     //     size_t end_index =
     // }
+
+    if ( replay_file_.size() > 0 ) p.insert("replayFile", replay_file_);
 
     interactive_ = factory->Create<InteractiveConsole>(actual_type, p);
 }

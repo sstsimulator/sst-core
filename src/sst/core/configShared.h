@@ -16,7 +16,10 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdio>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
 
 namespace SST {
@@ -93,7 +96,7 @@ private:
 
 public:
 
-    std::string getLibPath() const;
+    std::string getLibPath(bool exclude_ext_paths = false) const;
 };
 
 } // namespace SST

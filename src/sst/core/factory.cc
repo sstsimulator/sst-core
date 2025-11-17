@@ -25,6 +25,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <fstream>
+#include <ostream>
 #include <set>
 #include <stdio.h>
 #include <tuple>
@@ -69,6 +70,13 @@ Factory::Factory(const std::string& searchPaths) :
 Factory::~Factory()
 {
     delete loader;
+}
+
+void
+Factory::updateSearchPaths(const std::string& paths)
+{
+    searchPaths = paths;
+    loader->updateSearchPaths(paths);
 }
 
 static bool
@@ -284,68 +292,80 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     return false;
 }
 
-const std::vector<std::string>&
-Factory::GetValidStatistics(const std::string& compType)
+uint8_t
+Factory::GetStatisticValidityAndEnableLevel(const std::string& comp_type, const std::string& statistic_name)
 {
-    std::string compTypeToLoad = compType;
-    if ( compType.empty() ) {
-        compTypeToLoad = loadingComponentType;
-    }
+    // returns 255 if invalid, else enable level
+    // Allows single linear search of ELI for the statistic
+    std::string comp_type_to_load = comp_type.empty() ? loadingComponentType : comp_type;
 
+    // Look up Element
     std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
-
-    // ensure library is already loaded...
+    std::tie(elemlib, elem) = parseLoadName(comp_type_to_load);
     std::stringstream error_os;
     requireLibrary(elemlib, error_os);
 
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if ( sublib ) {
-        auto* info = sublib->getInfo(elem);
+    // Check if elemlib is a component and if so, get ELI
+    auto* comp_lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if ( comp_lib ) {
+        auto* info = comp_lib->getInfo(elem);
         if ( info ) {
-            return info->getStatnames();
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.enable_level;
+                }
+            }
+            return 255;
         }
     }
 
-    auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if ( complib ) {
-        auto* info = complib->getInfo(elem);
+    // Check if elemlib is a subcomponent and if so, get ELI
+    auto* sub_lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if ( sub_lib ) {
+        auto* info = sub_lib->getInfo(elem);
         if ( info ) {
-            return info->getStatnames();
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.enable_level;
+                }
+            }
+            return 255;
+        }
+    }
+
+    auto* mod_lib = ELI::InfoDatabase::getLibrary<PortModule>(elemlib);
+    if ( mod_lib ) {
+        auto* info = mod_lib->getInfo(elem);
+        if ( info ) {
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.enable_level;
+                }
+            }
+            return 255;
         }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
-        error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested element '%s'\n%s\n", comp_type.c_str(), error_os.str().c_str());
+    return 255;
 }
 
 bool
-Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName)
+Factory::DoesComponentInfoStatisticNameExist(const std::string& comp_type, const std::string& statistic_name)
 {
-    auto& my_list = GetValidStatistics(compType);
-    for ( auto& item : my_list ) {
-        if ( statisticName == item ) {
-            return true;
-        }
-    }
-    return false;
-}
-
-uint8_t
-Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName)
-{
-    std::string compTypeToLoad = type;
-    if ( true == type.empty() ) {
-        compTypeToLoad = loadingComponentType;
+    std::string comp_type_to_load = comp_type;
+    if ( true == comp_type.empty() ) {
+        comp_type_to_load = loadingComponentType;
     }
 
     std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(comp_type_to_load);
 
     // ensure library is already loaded...
     std::stringstream error_os;
@@ -355,47 +375,45 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if ( compLib ) {
-        auto* info = compLib->getInfo(elem);
+    auto* comp_lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if ( comp_lib ) {
+        auto* info = comp_lib->getInfo(elem);
         if ( info ) {
-            for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) {
-                    return item.enableLevel;
-                }
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) return true;
             }
+            return false;
         }
-        return 0;
     }
 
-    auto* subLib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if ( subLib ) {
-        auto* info = subLib->getInfo(elem);
+    auto* sub_lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if ( sub_lib ) {
+        auto* info = sub_lib->getInfo(elem);
         if ( info ) {
-            for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) {
-                    return item.enableLevel;
-                }
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) return true;
             }
+            return false;
         }
-        return 0;
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", comp_type.c_str(), error_os.str().c_str());
     return 0;
 }
 
 std::string
-Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName)
+Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statistic_name)
 {
-    std::string compTypeToLoad = type;
+    std::string comp_type_to_load = type;
     if ( true == type.empty() ) {
-        compTypeToLoad = loadingComponentType;
+        comp_type_to_load = loadingComponentType;
     }
 
     std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(comp_type_to_load);
 
     // ensure library is already loaded...
     std::stringstream error_os;
@@ -403,13 +421,28 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
         findLibrary(elemlib, error_os);
     }
 
-    auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if ( compLib ) {
-        auto* info = compLib->getInfo(elem);
+    auto* comp_lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if ( comp_lib ) {
+        auto* info = comp_lib->getInfo(elem);
         if ( info ) {
-            for ( auto& item : info->getValidStats() ) {
-                if ( statisticName == item.name ) {
-                    return item.units;
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.units;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    auto* sub_lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if ( sub_lib ) {
+        auto* info = sub_lib->getInfo(elem);
+        if ( info ) {
+            auto stats = info->getValidStats();
+            for ( auto stat : stats ) {
+                if ( stat.name == statistic_name ) {
+                    return stat.units;
                 }
             }
         }
