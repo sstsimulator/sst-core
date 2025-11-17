@@ -465,7 +465,7 @@ public:
         return nullptr;
     }
 
-    ObjectMapMetaData * getMetadata() { return mdata_; }
+    ObjectMapMetaData* getMetadata() { return mdata_; }
 
 public:
     /**

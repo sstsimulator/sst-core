@@ -236,25 +236,27 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     }
 }
 
-static void recursive_examine(SimpleDebugger & debugger, SST::Core::Serialization::ObjectMap & self, std::string const& name, int level) {
+static void
+recursive_examine(
+    SimpleDebugger& debugger, SST::Core::Serialization::ObjectMap& self, std::string const& name, int level)
+{
+    std::string ret;
+    std::string indent = std::string(level, ' ');
+    if ( self.isFundamental() ) {
+        printf("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
+        return;
+    }
 
-   std::string ret;
-   std::string indent = std::string(level, ' ');
-   if ( self.isFundamental() ) {
-      printf("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
-      return;
-   }
+    printf("%s%s = (%s)\n", indent.c_str(), name.c_str(), self.get().c_str());
+    auto vars = self.getVariables();
 
-   printf("%s%s = (%s)\n", indent.c_str(), name.c_str(), self.get().c_str());
-   auto vars = self.getVariables();
-
-   for(auto var : vars) {
-      if(nullptr == var.second->mdata_) {
-         var.second->activate(&self, var.first);
-         recursive_examine(debugger, *var.second, var.first, level+1);
-         var.second->deactivate();
-      }
-   }
+    for ( auto var : vars ) {
+        if ( nullptr == var.second->mdata_ ) {
+            var.second->activate(&self, var.first);
+            recursive_examine(debugger, *var.second, var.first, level+1);
+            var.second->deactivate();
+        }
+    }
 }
 
 /*
@@ -267,13 +269,14 @@ static void recursive_examine(SimpleDebugger & debugger, SST::Core::Serializatio
  */
 
 void
-SimpleDebugger::cmd_examine(std::vector<std::string>& tokens) {
+SimpleDebugger::cmd_examine(std::vector<std::string>& tokens)
+{
     if ( tokens.size() < 2 ) {
         printf("Invalid format for set command (examine <obj>)\n");
         return;
     }
 
-    if(obj_ == nullptr) {
+    if ( obj_ == nullptr ) {
         printf("objectMap is null\n");
         return;
     }
@@ -526,7 +529,7 @@ SimpleDebugger::dispatch_cmd(std::string cmd)
 }
 
 void
-SimpleDebugger::cli_dump() {
-}
+SimpleDebugger::cli_dump()
+{}
 
 } // namespace SST::IMPL::Interactive
