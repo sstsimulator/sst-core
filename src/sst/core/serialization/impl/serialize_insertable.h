@@ -228,7 +228,6 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
 
         case serializer::MAP:
         {
-            using SST::Core::to_string;
             const std::string& name = ser.getMapName();
             ser.mapper().map_hierarchy_start(name, new ObjectMapContainer<OBJ>(&obj));
 
@@ -236,10 +235,11 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                 // std::vector<bool>
                 // Serialize reference wrappers to each bit.
                 for ( size_t i = 0; i < obj.size(); ++i )
-                    SST_SER_NAME(pvt::reference_wrapper<OBJ>(obj[i]), to_string(i).c_str());
+                    SST_SER_NAME(pvt::reference_wrapper<OBJ>(obj[i]), std::to_string(i).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
+                using SST::Core::to_string;
                 for ( auto& [key, value] : obj )
                     SST_SER_NAME(value, to_string(key).c_str());
             }
@@ -251,7 +251,7 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                 size_t i = 0;
                 for ( auto& e : obj )
                     SST_SER_NAME(
-                        const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), to_string(i++).c_str());
+                        const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), std::to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;

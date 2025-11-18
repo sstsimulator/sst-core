@@ -38,7 +38,7 @@ class serialize_impl<std::bitset<N>>
 
             // Serialize reference wrappers to each bit
             for ( size_t i = 0; i < N; ++i )
-                SST_SER_NAME(pvt::reference_wrapper<std::bitset<N>>(t[i]), to_string(i).c_str());
+                SST_SER_NAME(pvt::reference_wrapper<std::bitset<N>>(t[i]), std::to_string(i).c_str());
 
             ser.mapper().map_hierarchy_end();
             break;

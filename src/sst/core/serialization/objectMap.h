@@ -1252,7 +1252,7 @@ public:
     std::string getType() override { return demangle_name(typeid(T).name()); }
 
     ObjectMapComparison* getComparison(
-        const std::string& name, ObjectMapComparison::Op UNUSED(op), const std::string& value) override
+        const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
     {
         return new ObjectMapComparison_impl<T, REF>(name, addr_, op, value);
     }
