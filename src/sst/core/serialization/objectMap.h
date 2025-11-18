@@ -24,6 +24,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -1395,13 +1396,13 @@ class ObjectMapBitReference : public ObjectMapFundamental<bool, typename T::refe
     typename T::reference ref;
 
 public:
-    explicit ObjectMapBitReference(typename T::reference ref) :
-        ObjectMapFundamental<bool, typename T::reference>(&this->ref),
+    // std::addressof is used because some libraries overload operator& on bit references to return bit iterators
+    explicit ObjectMapBitReference(const typename T::reference& ref) :
+        ObjectMapFundamental<bool, typename T::reference>(std::addressof(this->ref)),
         ref(ref)
     {}
     ~ObjectMapBitReference() override = default;
 };
-
 
 } // namespace SST::Core::Serialization
 
