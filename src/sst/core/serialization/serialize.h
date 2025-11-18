@@ -425,8 +425,7 @@ sst_ser_or_helper(Args... args)
 #include "sst/core/serialization/impl/serialize_bitset.h"
 #include "sst/core/serialization/impl/serialize_insertable.h"
 #include "sst/core/serialization/impl/serialize_optional.h"
-// Disable until more stable across platforms
-// #include "sst/core/serialization/impl/serialize_shared_ptr.h"
+#include "sst/core/serialization/impl/serialize_shared_ptr.h"
 #include "sst/core/serialization/impl/serialize_string.h"
 #include "sst/core/serialization/impl/serialize_trivial.h"
 #include "sst/core/serialization/impl/serialize_tuple.h"

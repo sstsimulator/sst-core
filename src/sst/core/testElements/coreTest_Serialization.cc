@@ -757,7 +757,7 @@ checkSameOwner(const T1& t1, const T2& t2)
 }
 
 // Compare two std::shared_ptr
-/*template <typename T>
+template <typename T>
 bool
 checkSharedPtr(
     const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
@@ -781,9 +781,9 @@ checkSharedPtr(
     else
         return objectEqual(*reinterpret_cast<T*>(p1.get()), *reinterpret_cast<T*>(p2.get()));
 }
-*/
+
 // Compare two std::weak_ptr
-/*template <typename T>
+template <typename T>
 bool
 checkSharedPtr(
     const std::weak_ptr<T>& p1, const std::weak_ptr<T>& p2, size_t* p1_size = nullptr, size_t* p2_size = nullptr)
@@ -800,9 +800,9 @@ checkSharedPtr(const std::tuple<T...>& p1, const std::tuple<T...>& p2)
         [&](auto&&... p1s) { return std::apply([&](auto&&... p2s) { return (checkSharedPtr(p1s, p2s) && ...); }, p2); },
         p1);
 }
-*/
+
 // Test std::shared_ptr and std::weak_ptr
-/*void
+void
 testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
 {
     auto test = [&](auto value, auto rand) {
@@ -830,28 +830,33 @@ testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
             }
         }
 
-        // a duplicated std::shared_ptr with a std::weak_ptr
+#if !SST_SERIALIZE_WEAK_PTR_ARRAY
+        if constexpr ( !std::is_array_v<T> )
+#endif
         {
-            std::shared_ptr<T> in1 = std::make_shared<T>(rand()), in2 = in1;
-            std::weak_ptr<T>   in3  = in2;
-            std::shared_ptr<T> out1 = std::make_shared<T>(rand()), out2 = std::make_shared<T>(rand());
-            std::weak_ptr<T>   out3;
+            // a duplicated std::shared_ptr with a std::weak_ptr
+            {
+                std::shared_ptr<T> in1 = std::make_shared<T>(rand()), in2 = in1;
+                std::weak_ptr<T>   in3  = in2;
+                std::shared_ptr<T> out1 = std::make_shared<T>(rand()), out2 = std::make_shared<T>(rand());
+                std::weak_ptr<T>   out3;
 
-            serializeDeserialize(std::tie(in1, in2, in3), std::tie(out1, out2, out3));
-            if ( !checkSameOwner(out1, out2) || !checkSameOwner(out2, out3) ||
-                 !checkSharedPtr(std::tie(in1, in2, in3), std::tie(out1, out2, out3)) ) {
-                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 3)\n");
+                serializeDeserialize(std::tie(in1, in2, in3), std::tie(out1, out2, out3));
+                if ( !checkSameOwner(out1, out2) || !checkSameOwner(out2, out3) ||
+                     !checkSharedPtr(std::tie(in1, in2, in3), std::tie(out1, out2, out3)) ) {
+                    output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 3)\n");
+                }
             }
-        }
 
-        // an expired std::weak_ptr
-        {
-            std::weak_ptr<T> in = std::make_shared<T>(rand());
-            std::weak_ptr<T> out;
+            // an expired std::weak_ptr
+            {
+                std::weak_ptr<T> in = std::make_shared<T>(rand());
+                std::weak_ptr<T> out;
 
-            serializeDeserialize(std::tie(in), std::tie(out));
-            if ( !checkSharedPtr(in, out) ) {
-                output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 4)\n");
+                serializeDeserialize(std::tie(in), std::tie(out));
+                if ( !checkSharedPtr(in, out) ) {
+                    output.output("ERROR: shared_ptr did not serialize/deserialize properly (test 4)\n");
+                }
             }
         }
 
@@ -955,7 +960,7 @@ testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
         return v;
     });
 }
-*/
+
 coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     Component(id)
 {
@@ -1028,7 +1033,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         checkSimpleSerializeDeserialize<std::string*>::check_all("test_string", out, "std::string*");
     }
     else if ( test == "shared_ptr" ) {
-        // testSharedPtr(out, rng);
+        testSharedPtr(out, rng);
     }
     else if ( test == "array" ) {
         {
