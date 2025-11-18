@@ -15,7 +15,7 @@
 // libc++ versions before 15 define std::weak_ptr<T>::element_type as T instead of std::remove_extent_t<T>, so we must
 // disable serialization of std::weak_ptr arrays.
 // https://reviews.llvm.org/D112092  https://cplusplus.github.io/LWG/issue3001
-#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 15000
+#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 150000
 #define SST_SERIALIZE_WEAK_PTR_ARRAY 0
 #else
 #define SST_SERIALIZE_WEAK_PTR_ARRAY 1
