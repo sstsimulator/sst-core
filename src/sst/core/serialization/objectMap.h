@@ -275,7 +275,7 @@ public:
 
        @return Name of variable
      */
-    std::string getName();
+    std::string getName() const { return mdata_ ? mdata_->name : ""; }
 
     /**
        Get the full hierarchical name of the variable represented by
