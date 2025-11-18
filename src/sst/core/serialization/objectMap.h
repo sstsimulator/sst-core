@@ -17,6 +17,7 @@
 
 #include <bitset>
 #include <cassert>
+#include <cerrno>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -42,14 +43,15 @@ struct ObjectMultimapCmp
 {
     bool operator()(const std::string& a, const std::string& b) const
     {
-        if ( *a.c_str() && *b.c_str() ) {
-            char* ea;
-            long  na = strtol(a.c_str(), &ea, 10);
-            if ( !*ea ) {
-                char* eb;
-                long  nb = strtol(b.c_str(), &eb, 10);
-                if ( !*eb ) return na < nb;
-            }
+        errno = 0;
+        char*     ea;
+        long long na = strtoll(a.c_str(), &ea, 10);
+        // *ea and *eb are 0 after strtol() if there are no invalid characters for integers left in the string
+        // errno is nonzero if either value is out of range; we fall back on string comparison then
+        if ( !*ea && !errno ) {
+            char*     eb;
+            long long nb = strtoll(b.c_str(), &eb, 10);
+            if ( !*eb && !errno ) return na < nb;
         }
         return std::less<>()(a, b);
     }
