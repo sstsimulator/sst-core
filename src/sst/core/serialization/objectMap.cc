@@ -20,13 +20,7 @@
 namespace SST::Core::Serialization {
 
 std::string
-ObjectMap::getName()
-{
-    return mdata_ ? mdata_->name : "";
-}
-
-std::string
-ObjectMap::getFullName()
+ObjectMap::getFullName() const
 {
     if ( !mdata_ ) return "";
 
