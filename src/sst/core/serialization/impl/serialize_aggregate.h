@@ -22,7 +22,9 @@
 
 #include <array>
 #include <cstddef>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 namespace SST::Core::Serialization {
 
@@ -48,20 +50,43 @@ namespace SST::Core::Serialization {
 
 namespace pvt {
 
+template <typename>
+struct serialize_aggregate_map_impl;
+
+// For a sequence of indices, serialize each element of an aggregate
+// This is only used in mapping mode
+template <size_t... INDEX>
+struct serialize_aggregate_map_impl<std::index_sequence<INDEX...>>
+{
+    template <typename T>
+    void operator()(T&& t, serializer& ser, ser_opt_t opt)
+    {
+        // Serialize each element
+        (SST_SER_NAME(std::get<INDEX>(t), std::to_string(INDEX).c_str(), opt), ...);
+    }
+};
+
 template <typename T, size_t NFIELDS>
 struct serialize_aggregate_impl : std::false_type
 {};
 
 // Structured binding extracts NFIELDS fields in __VA_ARGS__ and serializes each one separately
-#define SERIALIZE_AGGREGATE_IMPL(NFIELDS, ...)                        \
-    template <typename T>                                             \
-    struct serialize_aggregate_impl<T, NFIELDS> : std::true_type      \
-    {                                                                 \
-        void operator()(T& t, serializer& ser, ser_opt_t UNUSED(opt)) \
-        {                                                             \
-            auto& [__VA_ARGS__] = t;                                  \
-            [&](auto&... e) { (SST_SER(e), ...); }(__VA_ARGS__);      \
-        }                                                             \
+#define SERIALIZE_AGGREGATE_IMPL(NFIELDS, ...)                                                                      \
+    template <typename T>                                                                                           \
+    struct serialize_aggregate_impl<T, NFIELDS> : std::true_type                                                    \
+    {                                                                                                               \
+        void operator()(T& t, serializer& ser, ser_opt_t opt)                                                       \
+        {                                                                                                           \
+            auto& [__VA_ARGS__] = t;                                                                                \
+            if ( ser.mode() == serializer::MAP ) {                                                                  \
+                ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<T>(&t));                  \
+                serialize_aggregate_map_impl<std::make_index_sequence<NFIELDS>>()(std::tie(__VA_ARGS__), ser, opt); \
+                ser.mapper().map_hierarchy_end();                                                                   \
+            }                                                                                                       \
+            else {                                                                                                  \
+                [&](auto&... e) { (SST_SER(e), ...); }(__VA_ARGS__);                                                \
+            }                                                                                                       \
+        }                                                                                                           \
     }
 
 SERIALIZE_AGGREGATE_IMPL(1, a0);
