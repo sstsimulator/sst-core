@@ -70,7 +70,8 @@ class serialize_impl<pvt::bit_reference_wrapper<std::bitset<N>>>
 {
     void operator()(pvt::bit_reference_wrapper<std::bitset<N>>& t, serializer& ser, ser_opt_t UNUSED(options))
     {
-        ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapReference<bool, typename std::bitset<N>::reference>(t.ref));
+        ser.mapper().map_hierarchy_start(
+            ser.getMapName(), new ObjectMapFundamentalReference<bool, typename std::bitset<N>::reference>(t.ref));
         ser.mapper().map_hierarchy_end();
     }
     SST_FRIEND_SERIALIZE();

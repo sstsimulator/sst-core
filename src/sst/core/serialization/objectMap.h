@@ -1361,16 +1361,12 @@ protected:
     T* addr_;
 
 public:
-    bool isContainer() const final { return true; }
-
-    std::string getType() const override { return demangle_name(typeid(T).name()); }
-
-    void* getAddr() const override { return addr_; }
-
     explicit ObjectMapContainer(T* addr) :
         addr_(addr)
     {}
-
+    bool        isContainer() const final { return true; }
+    std::string getType() const override { return demangle_name(typeid(T).name()); }
+    void*       getAddr() const override { return addr_; }
     ~ObjectMapContainer() override = default;
 };
 
@@ -1384,7 +1380,7 @@ protected:
     size_t size;
 
 public:
-    virtual size_t getSize() { return size; }
+    virtual size_t getSize() const { return size; }
     ObjectMapArray(T* addr, size_t size) :
         ObjectMapContainer<T>(addr),
         size(size)
@@ -1393,33 +1389,34 @@ public:
 };
 
 // ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
-// pvt::atomic_reference, whose values cannot be copied or pointed to with pointers, but whose underlying values
-// are ordinary fundamental types.
+// atomic_reference, whose referenced types cannot be copied or pointed to with pointers, but whose
+// underlying values are ordinary fundamental types.
 //
-//     T is the underlying fundamental type, such as int, which is the type in which values are read and written.
-//   REF is the type of the proxy reference class which is copyable, convertible to T, and assignable from T.
+//     T is the underlying fundamental type, such as bool, which is the type in which values are read and written.
+//   REF is the type of the proxy reference class, which is copyable, convertible to T, and assignable from T.
 // PTYPE is the type to print, which defaults to T, but might be a decorated class name like std::atomic<T>.
 template <typename T, typename REF, typename PTYPE = T>
-class ObjectMapReference : public ObjectMapFundamental<T, REF>
+class ObjectMapFundamentalReference : public ObjectMapFundamental<T, REF>
 {
     REF ref;
 
-    static_assert(std::is_copy_constructible_v<REF> && std::is_assignable_v<REF, T> && std::is_convertible_v<REF, T>,
-        "ObjectMapReference<T, REF, PTYPE>: REF must be copyable, implicitly convertible to T, and assignable from T.");
+    static_assert(std::is_copy_constructible_v<REF> && std::is_convertible_v<REF, T> && std::is_assignable_v<REF, T>,
+        "ObjectMapFundamentalReference<T, REF, PTYPE>: REF must be copyable, implicitly convertible to T, and "
+        "assignable from T.");
 
 public:
     // std::addressof is used because some libraries overload REF::operator&()
-    explicit ObjectMapReference(const REF& ref) :
+    explicit ObjectMapFundamentalReference(const REF& ref) :
         ObjectMapFundamental<T, REF>(std::addressof(this->ref)),
         ref(ref)
     {}
 
     // Although this is a fundamental type of underlying type T, PTYPE can be something like std::atomic<T>
-    std::string getType() override { return this->demangle_name(typeid(PTYPE).name()); }
+    std::string getType() const override { return this->demangle_name(typeid(PTYPE).name()); }
 
-    ObjectMapReference(const ObjectMapReference&)            = default;
-    ObjectMapReference& operator=(const ObjectMapReference&) = delete;
-    ~ObjectMapReference() override                           = default;
+    ObjectMapFundamentalReference(const ObjectMapFundamentalReference&)            = default;
+    ObjectMapFundamentalReference& operator=(const ObjectMapFundamentalReference&) = delete;
+    ~ObjectMapFundamentalReference() override                                      = default;
 };
 
 } // namespace SST::Core::Serialization

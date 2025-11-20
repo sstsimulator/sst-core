@@ -281,7 +281,8 @@ class serialize_impl<pvt::bit_reference_wrapper<std::vector<bool, ALLOC>>>
 {
     void operator()(pvt::bit_reference_wrapper<std::vector<bool, ALLOC>>& t, serializer& ser, ser_opt_t UNUSED(options))
     {
-        ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapReference<bool, typename std::vector<bool, ALLOC>::reference>(t.ref));
+        ser.mapper().map_hierarchy_start(ser.getMapName(),
+            new ObjectMapFundamentalReference<bool, typename std::vector<bool, ALLOC>::reference>(t.ref));
         ser.mapper().map_hierarchy_end();
     }
     SST_FRIEND_SERIALIZE();
