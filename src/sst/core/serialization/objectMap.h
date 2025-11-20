@@ -160,14 +160,12 @@ public:
         obj_(obj)
     {}
 
-    virtual ~ObjectMapComparison() = default;
-
-    virtual bool        compare()                   = 0;
-    virtual std::string getCurrentValue()           = 0;
-    virtual void        print(std::ostream& stream) = 0;
-    std::string         getName() { return name_; }
-
-    virtual void* getVar() = 0;
+    virtual ~ObjectMapComparison()                        = default;
+    virtual bool        compare()                         = 0;
+    virtual std::string getCurrentValue() const           = 0;
+    virtual void        print(std::ostream& stream) const = 0;
+    virtual void*       getVar() const                    = 0;
+    const std::string&  getName() const { return name_; }
 
 protected:
     std::string name_ = "";
@@ -249,7 +247,7 @@ public:
 
        @return true if ObjectMap is read-only, false otherwise
      */
-    bool isReadOnly() { return read_only_; }
+    bool isReadOnly() const { return read_only_; }
 
     /**
        Set the read-only state of the object.  NOTE: If the ObjectMap
@@ -266,7 +264,7 @@ public:
 
      @param value Value to set the object to expressed as a string
    */
-    virtual bool checkValue(const std::string& UNUSED(value)) { return false; }
+    virtual bool checkValue(const std::string& UNUSED(value)) const { return false; }
 
     /**
        Get the name of the variable represented by this ObjectMap.  If
@@ -287,21 +285,21 @@ public:
 
        @return Full hierarchical name of variable
      */
-    std::string getFullName();
+    std::string getFullName() const;
 
     /**
        Get the type of the variable represented by the ObjectMap
 
        @return Type of variable
      */
-    virtual std::string getType() = 0;
+    virtual std::string getType() const = 0;
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of variable
      */
-    virtual void* getAddr() = 0;
+    virtual void* getAddr() const = 0;
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -310,7 +308,7 @@ public:
        ObjectMap's child variables. Fundamental types will return the
        same empty map.
      */
-    virtual const ObjectMultimap& getVariables()
+    virtual const ObjectMultimap& getVariables() const
     {
         /**
            Static empty variable map for use by versions that don't have
@@ -346,20 +344,20 @@ public:
 
        @return current value of reference counter for the object
      */
-    int32_t getRefCount() { return refCount_; }
+    int32_t getRefCount() const { return refCount_; }
 
     /**
        Get a watch point for this object.  If it is not a valid object
        for a watch point, nullptr will be returned.
     */
     virtual ObjectMapComparison* getComparison(
-        const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value))
+        const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value)) const
     {
         return nullptr;
     }
 
     virtual ObjectMapComparison* getComparisonVar(const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op),
-        const std::string& UNUSED(name2), ObjectMap* UNUSED(var2))
+        const std::string& UNUSED(name2), ObjectMap* UNUSED(var2)) const
     {
         printf("In virtual ObjectMapComparison\n");
         return nullptr;
@@ -412,7 +410,7 @@ public:
 
        @return Value of the represented variable as a string
      */
-    virtual std::string get() { return ""; }
+    virtual std::string get() const { return ""; }
 
     /**
        Sets the value of the variable represented by the ObjectMap to
@@ -471,7 +469,7 @@ public:
        @return true if this ObjectMap represents a fundamental or
        class treated as a fundamental, false otherwise
      */
-    virtual bool isFundamental() { return false; }
+    virtual bool isFundamental() const { return false; }
 
     /**
        Check to see if this ObjectMap represents a container
@@ -479,7 +477,7 @@ public:
        @return true if this ObjectMap represents a container, false
        otherwise
      */
-    virtual bool isContainer() { return false; }
+    virtual bool isContainer() const { return false; }
 
     /**
        Destructor.  NOTE: delete should not be called directly on
@@ -542,7 +540,7 @@ public:
        @return ObjectMap representing the requested variable if it is
        found, nullptr otherwise
      */
-    virtual ObjectMap* findVariable(const std::string& name)
+    ObjectMap* findVariable(const std::string& name) const
     {
         auto& variables = getVariables();
         for ( auto [it, end] = variables.equal_range(name); it != end; ++it )
@@ -586,7 +584,7 @@ private:
        @param recurse Number of levels deep to recurse
     */
     std::string listRecursive(const std::string& name, int level, int recurse);
-};
+}; // class ObjectMap
 
 /**
    ObjectMap object for non-fundamental, non-container types.  This
@@ -635,7 +633,7 @@ public:
 
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) override { variables_.emplace(name, obj); }
+    void addVariable(const std::string& name, ObjectMap* obj) final { variables_.emplace(name, obj); }
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -644,8 +642,8 @@ public:
        child variables. pair.first is the name of the variable in the
        context of this object. pair.second is a pointer to the ObjectMap.
      */
-    const ObjectMultimap& getVariables() override { return variables_; }
-};
+    const ObjectMultimap& getVariables() const final { return variables_; }
+}; // class ObjectMapWithChildren
 
 
 /**
@@ -677,7 +675,7 @@ public:
 
        @return empty string
      */
-    std::string getType() override { return ""; }
+    std::string getType() const override { return ""; }
 
     /**
        Returns nullptr since there is no underlying object being
@@ -685,8 +683,8 @@ public:
 
        @return nullptr
      */
-    void* getAddr() override { return nullptr; }
-};
+    void* getAddr() const override { return nullptr; }
+}; // class ObjectMapHierarchyOnly
 
 
 /**
@@ -746,15 +744,15 @@ public:
 
        @return type of represented object
      */
-    std::string getType() override { return type_; }
+    std::string getType() const override { return type_; }
 
     /**
        Get the address of the represented object
 
        @return address of represented object
      */
-    void* getAddr() override { return addr_; }
-};
+    void* getAddr() const override { return addr_; }
+}; // class ObjectMapClass
 
 // Whether two types share a common type they can both be converted to
 // Users are allowed to provide specializations for std::common_type<T1, T2> for user types
@@ -835,11 +833,11 @@ public:
         return ret;
     }
 
-    std::string getCurrentValue() override { return SST::Core::to_string(*var_); }
+    std::string getCurrentValue() const override { return SST::Core::to_string(*var_); }
 
-    void* getVar() override { return var_; }
+    void* getVar() const override { return var_; }
 
-    void print(std::ostream& stream) override
+    void print(std::ostream& stream) const override
     {
         stream << name_ << " " << getStringFromOp(op_);
         if ( op_ == Op::CHANGED )
@@ -872,11 +870,14 @@ public:
 
     bool compare() override { return cmp(*var1_, op_, *var2_); }
 
-    std::string getCurrentValue() override { return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_); }
+    std::string getCurrentValue() const override
+    {
+        return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_);
+    }
 
-    void* getVar() override { return var1_; }
+    void* getVar() const override { return var1_; }
 
-    void print(std::ostream& stream) override
+    void print(std::ostream& stream) const override
     {
         stream << name_ << " " << getStringFromOp(op_);
         if ( op_ == Op::CHANGED )
@@ -903,11 +904,11 @@ public:
     virtual ~ObjectBuffer() = default;
 
     virtual void        sample(size_t index, bool trigger) = 0;
-    virtual std::string get(size_t index)                  = 0;
-    virtual std::string getTriggerVal()                    = 0;
+    virtual std::string get(size_t index) const            = 0;
+    virtual std::string getTriggerVal() const              = 0;
 
-    std::string getName() { return name_; }
-    size_t      getBufSize() { return bufSize_; }
+    std::string getName() const { return name_; }
+    size_t      getBufSize() const { return bufSize_; }
 
 private:
     std::string name_;
@@ -931,10 +932,9 @@ public:
         if ( trigger ) triggerVal = *varPtr_;
     }
 
-    std::string get(size_t index) override { return SST::Core::to_string(objectBuffer_.at(index)); }
+    std::string get(size_t index) const override { return SST::Core::to_string(objectBuffer_.at(index)); }
 
-    std::string getTriggerVal() override { return SST::Core::to_string(triggerVal); }
-
+    std::string getTriggerVal() const override { return SST::Core::to_string(triggerVal); }
 
 private:
     REF* const     varPtr_;
@@ -1184,7 +1184,7 @@ public:
        @param value Value to set the underlying object to, represented
        as a string
      */
-    virtual void set_impl(const std::string& value) override
+    void set_impl(const std::string& value) override
     {
         try {
             *addr_ = SST::Core::from_string<T>(value);
@@ -1194,7 +1194,7 @@ public:
         }
     }
 
-    virtual bool checkValue(const std::string& value) override
+    bool checkValue(const std::string& value) const override
     {
         try {
             SST::Core::from_string<T>(value);
@@ -1209,21 +1209,21 @@ public:
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return addr_ ? SST::Core::to_string(static_cast<T>(*addr_)) : "nullptr"; }
+    std::string get() const override { return addr_ ? SST::Core::to_string(static_cast<T>(*addr_)) : "nullptr"; }
 
     /**
        Returns true as object is a fundamental
 
        @return true
      */
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of variable
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const override { return addr_; }
 
     explicit ObjectMapFundamental(REF* addr) :
         addr_(addr)
@@ -1250,16 +1250,16 @@ public:
 
        @return type of underlying object
      */
-    std::string getType() override { return demangle_name(typeid(T).name()); }
+    std::string getType() const override { return demangle_name(typeid(T).name()); }
 
     ObjectMapComparison* getComparison(
-        const std::string& name, ObjectMapComparison::Op op, const std::string& value) override
+        const std::string& name, ObjectMapComparison::Op op, const std::string& value) const override
     {
         return new ObjectMapComparison_impl<T, REF>(name, addr_, op, value);
     }
 
     ObjectMapComparison* getComparisonVar(
-        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) override
+        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) const override
     {
         // Ensure var2 is fundamental type
         if ( !var2->isFundamental() ) {
@@ -1361,11 +1361,11 @@ protected:
     T* addr_;
 
 public:
-    bool isContainer() override final { return true; }
+    bool isContainer() const final { return true; }
 
-    std::string getType() override { return demangle_name(typeid(T).name()); }
+    std::string getType() const override { return demangle_name(typeid(T).name()); }
 
-    void* getAddr() override { return addr_; }
+    void* getAddr() const override { return addr_; }
 
     explicit ObjectMapContainer(T* addr) :
         addr_(addr)

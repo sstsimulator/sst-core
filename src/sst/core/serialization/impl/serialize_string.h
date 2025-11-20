@@ -36,15 +36,15 @@ public:
 
        @return address of represented object
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const final { return addr_; }
 
-    std::string get() override { return *addr_; }
+    std::string get() const final { return *addr_; }
 
-    void set_impl(const std::string& value) override { *addr_ = value; }
+    void set_impl(const std::string& value) final { *addr_ = value; }
 
-    virtual bool isFundamental() override { return true; }
+    virtual bool isFundamental() const final { return true; }
 
-    std::string getType() override
+    std::string getType() const final
     {
         // The demangled name for std::string is ridiculously long, so
         // just return "std::string"

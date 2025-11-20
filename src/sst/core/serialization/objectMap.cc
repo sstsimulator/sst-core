@@ -20,7 +20,7 @@
 namespace SST::Core::Serialization {
 
 std::string
-ObjectMap::getFullName()
+ObjectMap::getFullName() const
 {
     if ( !mdata_ ) return "";
 
