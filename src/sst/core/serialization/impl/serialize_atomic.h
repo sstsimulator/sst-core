@@ -23,6 +23,38 @@
 
 namespace SST::Core::Serialization {
 
+namespace pvt {
+
+// Proxy struct which represents a reference to std::atomic<T>
+// This is only used in mapping mode
+template <typename T>
+class atomic_reference
+{
+    std::atomic<T>& ref;
+    explicit atomic_reference(std::atomic<T>& ref) :
+        ref(ref)
+    {}
+
+public:
+    // Set the atomic reference to a value
+    atomic_reference& operator=(const T& value)
+    {
+        ref.store(value);
+        return *this;
+    }
+
+    // Convert the atomic reference to its value
+    operator T() const { return ref.load(); }
+
+    atomic_reference(const atomic_reference&)            = default;
+    atomic_reference& operator=(const atomic_reference&) = delete;
+    ~atomic_reference()                                  = default;
+
+    friend class serialize_impl<std::atomic<T>>;
+};
+
+} // namespace pvt
+
 template <class T>
 class serialize_impl<std::atomic<T>>
 {
@@ -51,7 +83,10 @@ class serialize_impl<std::atomic<T>>
         }
         case serializer::MAP:
         {
-            // TODO: Add support for mapping mode
+            // Create an ObjectMapReference referring to a pvt::atomic_reference<T> proxy wrapper class
+            ser.mapper().map_hierarchy_start(ser.getMapName(),
+                new ObjectMapReference<T, pvt::atomic_reference<T>, std::atomic<T>>(pvt::atomic_reference<T>(v)));
+            ser.mapper().map_hierarchy_end();
             break;
         }
         }

@@ -1392,19 +1392,34 @@ public:
     ~ObjectMapArray() override = default;
 };
 
-// Object Map for bit references represented by std::bitset<N>::reference and std::vector<bool>::reference
-template <typename T>
-class ObjectMapBitReference : public ObjectMapFundamental<bool, typename T::reference>
+// ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
+// pvt::atomic_reference, whose values cannot be copied or pointed to with pointers, but whose underlying values
+// are ordinary fundamental types.
+//
+//     T is the underlying fundamental type, such as int, which is the type in which values are read and written.
+//   REF is the type of the proxy reference class which is copyable, convertible to T, and assignable from T.
+// PTYPE is the type to print, which defaults to T, but might be a decorated class name like std::atomic<T>.
+template <typename T, typename REF, typename PTYPE = T>
+class ObjectMapReference : public ObjectMapFundamental<T, REF>
 {
-    typename T::reference ref;
+    REF ref;
+
+    static_assert(std::is_copy_constructible_v<REF> && std::is_assignable_v<REF, T> && std::is_convertible_v<REF, T>,
+        "ObjectMapReference<T, REF, PTYPE>: REF must be copyable, implicitly convertible to T, and assignable from T.");
 
 public:
-    // std::addressof is used because some libraries overload operator& on bit references to return bit iterators
-    explicit ObjectMapBitReference(const typename T::reference& ref) :
-        ObjectMapFundamental<bool, typename T::reference>(std::addressof(this->ref)),
+    // std::addressof is used because some libraries overload REF::operator&()
+    explicit ObjectMapReference(const REF& ref) :
+        ObjectMapFundamental<T, REF>(std::addressof(this->ref)),
         ref(ref)
     {}
-    ~ObjectMapBitReference() override = default;
+
+    // Although this is a fundamental type of underlying type T, PTYPE can be something like std::atomic<T>
+    std::string getType() override { return this->demangle_name(typeid(PTYPE).name()); }
+
+    ObjectMapReference(const ObjectMapReference&)            = default;
+    ObjectMapReference& operator=(const ObjectMapReference&) = delete;
+    ~ObjectMapReference() override                           = default;
 };
 
 } // namespace SST::Core::Serialization

@@ -21,7 +21,6 @@
 
 #include <bitset>
 #include <cstddef>
-#include <type_traits>
 
 namespace SST::Core::Serialization {
 
@@ -38,14 +37,13 @@ class serialize_impl<std::bitset<N>>
 
             // Serialize reference wrappers to each bit
             for ( size_t i = 0; i < N; ++i )
-                SST_SER_NAME(pvt::reference_wrapper<std::bitset<N>>(t[i]), std::to_string(i).c_str());
+                SST_SER_NAME(pvt::bit_reference_wrapper<std::bitset<N>>(t[i]), std::to_string(i).c_str());
 
             ser.mapper().map_hierarchy_end();
             break;
         }
 
         default:
-            static_assert(std::is_trivially_copyable_v<std::bitset<N>> && std::is_standard_layout_v<std::bitset<N>>);
             ser.primitive(t);
             break;
         }
@@ -65,14 +63,14 @@ class serialize_impl<std::bitset<N>*>
     SST_FRIEND_SERIALIZE();
 };
 
-// Serialize a std::bitset<N> bit using the pvt::reference_wrapper<std::bitset<N>>
+// Serialize a std::bitset<N> bit using the pvt::bit_reference_wrapper<std::bitset<N>>
 // This is only used in mapping mode
 template <size_t N>
-class serialize_impl<pvt::reference_wrapper<std::bitset<N>>>
+class serialize_impl<pvt::bit_reference_wrapper<std::bitset<N>>>
 {
-    void operator()(pvt::reference_wrapper<std::bitset<N>>& t, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(pvt::bit_reference_wrapper<std::bitset<N>>& t, serializer& ser, ser_opt_t UNUSED(options))
     {
-        ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapBitReference<std::bitset<N>>(t.ref));
+        ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapReference<bool, typename std::bitset<N>::reference>(t.ref));
         ser.mapper().map_hierarchy_end();
     }
     SST_FRIEND_SERIALIZE();

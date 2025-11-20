@@ -95,6 +95,8 @@ public:
     template <typename T>
     void primitive(T& t)
     {
+        static_assert(std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T>,
+            "Error: ser.primitive() can only be called on trivially copyable, standard layout types.");
         switch ( mode() ) {
         case SIZER:
             sizer().size(t);
