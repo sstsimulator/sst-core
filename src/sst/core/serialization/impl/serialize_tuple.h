@@ -35,12 +35,13 @@ class serialize_impl<T,
     struct serialize_tuple;
 
     // For a sequence of indices, serialize each element of the tuple/pair
+    // This is only used in mapping mode
     template <size_t... INDEX>
     struct serialize_tuple<std::index_sequence<INDEX...>>
     {
         void operator()(T& t, serializer& ser, ser_opt_t opt)
         {
-            // Serialize each element
+            // Serialize each element in a std::tuple or std::pair
             (SST_SER_NAME(std::get<INDEX>(t), std::to_string(INDEX).c_str(), opt), ...);
         }
     };
@@ -56,6 +57,7 @@ class serialize_impl<T,
             break;
 
         default:
+            // Serialize each element in a std::tuple or std::pair
             std::apply([&](auto&... e) { ((SST_SER(e, opt)), ...); }, t);
             break;
         }
