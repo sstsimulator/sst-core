@@ -53,22 +53,17 @@ class serialize_impl<std::atomic<T>>
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
-        {
-            T t = v.load();
-            SST_SER(t);
-            break;
-        }
         case serializer::PACK:
         {
-            T t = v.load();
-            SST_SER(t);
+            T value { v.load() };
+            SST_SER(value);
             break;
         }
         case serializer::UNPACK:
         {
-            T val {};
-            SST_SER(val);
-            v.store(val);
+            T value {};
+            SST_SER(value);
+            v.store(value);
             break;
         }
         case serializer::MAP:
