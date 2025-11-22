@@ -21,26 +21,29 @@
 
 #include <bitset>
 #include <cstddef>
-#include <type_traits>
 
 namespace SST::Core::Serialization {
 
-// Serialize std::bitset
+// Serialize std::bitset<N>
 template <size_t N>
 class serialize_impl<std::bitset<N>>
 {
-    using T = std::bitset<N>;
-    void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(std::bitset<N>& t, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::MAP:
         {
-            // TODO: Should this be mapped as an array? It will have the same problems as std::vector<bool>
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<std::bitset<N>>(&t));
+
+            // Serialize reference wrappers to each bit
+            for ( size_t i = 0; i < N; ++i )
+                SST_SER_NAME(pvt::bit_reference_wrapper<std::bitset<N>>(t[i]), std::to_string(i).c_str());
+
+            ser.mapper().map_hierarchy_end();
             break;
         }
 
         default:
-            static_assert(std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T>);
             ser.primitive(t);
             break;
         }
@@ -48,14 +51,28 @@ class serialize_impl<std::bitset<N>>
     SST_FRIEND_SERIALIZE();
 };
 
+// Serialize std::bitset<N>*
 template <size_t N>
 class serialize_impl<std::bitset<N>*>
 {
-    using T = std::bitset<N>;
-    void operator()(T*& t, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(std::bitset<N>*& t, serializer& ser, ser_opt_t UNUSED(options))
     {
-        if ( ser.mode() == serializer::UNPACK ) t = new T {};
+        if ( ser.mode() == serializer::UNPACK ) t = new std::bitset<N>;
         SST_SER(*t);
+    }
+    SST_FRIEND_SERIALIZE();
+};
+
+// Serialize a std::bitset<N> bit using the pvt::bit_reference_wrapper<std::bitset<N>>
+// This is only used in mapping mode
+template <size_t N>
+class serialize_impl<pvt::bit_reference_wrapper<std::bitset<N>>>
+{
+    void operator()(pvt::bit_reference_wrapper<std::bitset<N>>& t, serializer& ser, ser_opt_t UNUSED(options))
+    {
+        ser.mapper().map_hierarchy_start(
+            ser.getMapName(), new ObjectMapFundamentalReference<bool, typename std::bitset<N>::reference>(t.ref));
+        ser.mapper().map_hierarchy_end();
     }
     SST_FRIEND_SERIALIZE();
 };

@@ -15,13 +15,20 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
+#include <bitset>
 #include <cassert>
+#include <cerrno>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <exception>
+#include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -32,12 +39,31 @@
 
 namespace SST::Core::Serialization {
 
+// Comparison of two keys: If both keys are integers, use numeric comparison, else lexicographic
+struct ObjectMultimapCmp
+{
+    bool operator()(const std::string& a, const std::string& b) const
+    {
+        errno = 0;
+        char*     ea;
+        long long na = strtoll(a.c_str(), &ea, 10);
+        // *ea and *eb are 0 after strtol() if there are no invalid characters for integers left in the string
+        // errno is nonzero if either value is out of range; we fall back on string comparison then
+        if ( !*ea && !errno ) {
+            char*     eb;
+            long long nb = strtoll(b.c_str(), &eb, 10);
+            if ( !*eb && !errno ) return na < nb;
+        }
+        return std::less<>()(a, b);
+    }
+};
+
 class ObjectMap;
 class TraceBuffer;
 class ObjectBuffer;
 
+using ObjectMultimap = std::multimap<std::string, ObjectMap*, ObjectMultimapCmp>;
 
-// class ObjectMapComparison_impl<T>;
 /**
    Metadata object that each ObjectMap has a pointer to in order to
    track the hierarchy information while traversing the data
@@ -134,14 +160,12 @@ public:
         obj_(obj)
     {}
 
-    virtual ~ObjectMapComparison() = default;
-
-    virtual bool        compare()                   = 0;
-    virtual std::string getCurrentValue()           = 0;
-    virtual void        print(std::ostream& stream) = 0;
-    std::string         getName() { return name_; }
-
-    virtual void* getVar() = 0;
+    virtual ~ObjectMapComparison()                        = default;
+    virtual bool        compare()                         = 0;
+    virtual std::string getCurrentValue() const           = 0;
+    virtual void        print(std::ostream& stream) const = 0;
+    virtual void*       getVar() const                    = 0;
+    const std::string&  getName() const { return name_; }
 
 protected:
     std::string name_ = "";
@@ -159,14 +183,6 @@ class ObjectMap
 {
 protected:
     /**
-       Static empty variable map for use by versions that don't have
-       variables (i.e. are fundamentals or classes treated as
-       fundamentals.  This is needed because getVariables() returns a
-       reference to the map.
-    */
-    static const std::multimap<std::string, ObjectMap*> emptyVars;
-
-    /**
        Metadata object for walking the object hierarchy.  When this
        object is selected by a parent object, a metadata object will
        be added.  The metadata contains a pointer to the parent and
@@ -183,7 +199,6 @@ protected:
        that path to the current path will be erased.
      */
     ObjectMapMetaData* mdata_ = nullptr;
-
 
     /**
        Indicates whether or not the variable is read-only
@@ -218,7 +233,7 @@ private:
        longer needed and the object will delete itself if refCount_
        reaches 0.
      */
-    int32_t refCount_ = 1;
+    size_t refCount_ = 1;
 
 public:
     /**
@@ -232,7 +247,7 @@ public:
 
        @return true if ObjectMap is read-only, false otherwise
      */
-    bool isReadOnly() { return read_only_; }
+    bool isReadOnly() const { return read_only_; }
 
     /**
        Set the read-only state of the object.  NOTE: If the ObjectMap
@@ -249,8 +264,7 @@ public:
 
      @param value Value to set the object to expressed as a string
    */
-    virtual bool checkValue(const std::string& UNUSED(value)) { return false; }
-
+    virtual bool checkValue(const std::string& UNUSED(value)) const { return false; }
 
     /**
        Get the name of the variable represented by this ObjectMap.  If
@@ -260,8 +274,7 @@ public:
 
        @return Name of variable
      */
-    std::string getName();
-
+    std::string getName() const { return mdata_ ? mdata_->name : ""; }
 
     /**
        Get the full hierarchical name of the variable represented by
@@ -272,23 +285,21 @@ public:
 
        @return Full hierarchical name of variable
      */
-    std::string getFullName();
-
+    std::string getFullName() const;
 
     /**
        Get the type of the variable represented by the ObjectMap
 
        @return Type of variable
      */
-    virtual std::string getType() = 0;
+    virtual std::string getType() const = 0;
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of variable
      */
-    virtual void* getAddr() = 0;
-
+    virtual void* getAddr() const = 0;
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -297,7 +308,17 @@ public:
        ObjectMap's child variables. Fundamental types will return the
        same empty map.
      */
-    virtual const std::multimap<std::string, ObjectMap*>& getVariables() { return emptyVars; }
+    virtual const ObjectMultimap& getVariables() const
+    {
+        /**
+           Static empty variable map for use by versions that don't have
+           variables (i.e. are fundamentals or classes treated as
+           fundamentals.  This is needed because getVariables() returns a
+           reference to the map.
+        */
+        static ObjectMultimap emptyVars;
+        return emptyVars;
+    }
 
     /**
        Increment the reference counter for this ObjectMap. When
@@ -323,21 +344,20 @@ public:
 
        @return current value of reference counter for the object
      */
-    int32_t getRefCount() { return refCount_; }
-
+    int32_t getRefCount() const { return refCount_; }
 
     /**
        Get a watch point for this object.  If it is not a valid object
        for a watch point, nullptr will be returned.
     */
     virtual ObjectMapComparison* getComparison(
-        const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value))
+        const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op), const std::string& UNUSED(value)) const
     {
         return nullptr;
     }
 
     virtual ObjectMapComparison* getComparisonVar(const std::string& UNUSED(name), ObjectMapComparison::Op UNUSED(op),
-        const std::string& UNUSED(name2), ObjectMap* UNUSED(var2))
+        const std::string& UNUSED(name2), ObjectMap* UNUSED(var2)) const
     {
         printf("In virtual ObjectMapComparison\n");
         return nullptr;
@@ -346,7 +366,6 @@ public:
     virtual ObjectBuffer* getObjectBuffer(const std::string& UNUSED(name), size_t UNUSED(sz)) { return nullptr; }
 
     /************ Functions for walking the Object Hierarchy ************/
-
 
     /**
        Get the parent for this ObjectMap
@@ -391,7 +410,7 @@ public:
 
        @return Value of the represented variable as a string
      */
-    virtual std::string get() { return ""; }
+    virtual std::string get() const { return ""; }
 
     /**
        Sets the value of the variable represented by the ObjectMap to
@@ -399,7 +418,7 @@ public:
        templated child classes for fundamentals will know how to
        convert the string to a value of the approproprite type.  NOTE:
        this function is only valid for ObjectMaps that represent
-       fundamental types or classes treated as fundamentatl types
+       fundamental types or classes treated as fundamental types
        (i.e. isFundamental() returns true).
 
        @param value Value to set the object to, represented as a string
@@ -450,7 +469,7 @@ public:
        @return true if this ObjectMap represents a fundamental or
        class treated as a fundamental, false otherwise
      */
-    virtual bool isFundamental() { return false; }
+    virtual bool isFundamental() const { return false; }
 
     /**
        Check to see if this ObjectMap represents a container
@@ -458,7 +477,7 @@ public:
        @return true if this ObjectMap represents a container, false
        otherwise
      */
-    virtual bool isContainer() { return false; }
+    virtual bool isContainer() const { return false; }
 
     /**
        Destructor.  NOTE: delete should not be called directly on
@@ -521,7 +540,7 @@ public:
        @return ObjectMap representing the requested variable if it is
        found, nullptr otherwise
      */
-    virtual ObjectMap* findVariable(const std::string& name)
+    ObjectMap* findVariable(const std::string& name) const
     {
         auto& variables = getVariables();
         for ( auto [it, end] = variables.equal_range(name); it != end; ++it )
@@ -565,7 +584,7 @@ private:
        @param recurse Number of levels deep to recurse
     */
     std::string listRecursive(const std::string& name, int level, int recurse);
-};
+}; // class ObjectMap
 
 /**
    ObjectMap object for non-fundamental, non-container types.  This
@@ -577,7 +596,7 @@ protected:
     /**
        Map that child ObjectMaps are stored in
      */
-    std::multimap<std::string, ObjectMap*> variables_;
+    ObjectMultimap variables_;
 
     /**
        Default constructor
@@ -614,7 +633,7 @@ public:
 
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) override { variables_.emplace(name, obj); }
+    void addVariable(const std::string& name, ObjectMap* obj) final { variables_.emplace(name, obj); }
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -623,8 +642,8 @@ public:
        child variables. pair.first is the name of the variable in the
        context of this object. pair.second is a pointer to the ObjectMap.
      */
-    const std::multimap<std::string, ObjectMap*>& getVariables() override { return variables_; }
-};
+    const ObjectMultimap& getVariables() const final { return variables_; }
+}; // class ObjectMapWithChildren
 
 
 /**
@@ -656,7 +675,7 @@ public:
 
        @return empty string
      */
-    std::string getType() override { return ""; }
+    std::string getType() const override { return ""; }
 
     /**
        Returns nullptr since there is no underlying object being
@@ -664,8 +683,8 @@ public:
 
        @return nullptr
      */
-    void* getAddr() override { return nullptr; }
-};
+    void* getAddr() const override { return nullptr; }
+}; // class ObjectMapHierarchyOnly
 
 
 /**
@@ -725,82 +744,100 @@ public:
 
        @return type of represented object
      */
-    std::string getType() override { return type_; }
+    std::string getType() const override { return type_; }
 
     /**
        Get the address of the represented object
 
        @return address of represented object
      */
-    void* getAddr() override { return addr_; }
-};
+    void* getAddr() const override { return addr_; }
+}; // class ObjectMapClass
 
+// Whether two types share a common type they can both be converted to
+// Users are allowed to provide specializations for std::common_type<T1, T2> for user types
+template <class T1, class T2, class = void>
+struct have_common_type : std::false_type
+{};
+
+template <class T1, class T2>
+struct have_common_type<T1, T2, std::void_t<std::common_type_t<T1, T2>>> : std::true_type
+{};
+
+// Comparison of two variables if they are convertible to a common type
+template <typename T1, typename T2>
+std::enable_if_t<have_common_type<T1, T2>::value, bool>
+cmp(T1 t1, ObjectMapComparison::Op op, T2 t2)
+{
+    using T = std::common_type_t<T1, T2>;
+    switch ( op ) {
+    case ObjectMapComparison::Op::LT:
+        return static_cast<T>(t1) < static_cast<T>(t2);
+    case ObjectMapComparison::Op::LTE:
+        return static_cast<T>(t1) <= static_cast<T>(t2);
+    case ObjectMapComparison::Op::GT:
+        return static_cast<T>(t1) > static_cast<T>(t2);
+    case ObjectMapComparison::Op::GTE:
+        return static_cast<T>(t1) >= static_cast<T>(t2);
+    case ObjectMapComparison::Op::EQ:
+        return static_cast<T>(t1) == static_cast<T>(t2);
+    case ObjectMapComparison::Op::NEQ:
+    case ObjectMapComparison::Op::CHANGED:
+        return static_cast<T>(t1) != static_cast<T>(t2);
+    default:
+        std::cout << "Invalid comparison operator\n";
+        return false;
+    }
+}
+
+// Comparison of two variables if they are not convertible to a common type
+template <typename T1, typename T2>
+std::enable_if_t<!have_common_type<T1, T2>::value, bool>
+cmp(T1 UNUSED(t1), ObjectMapComparison::Op UNUSED(op), T2 UNUSED(t2))
+{
+    // We shouldn't get here.... Can I throw an error somehow?
+    printf("ERROR: CMP: Does not support comparison of two types without a std::common_type\n");
+    return false;
+}
 
 /**
    Template implementation of ObjectMapComparison for <var> <op> <value>
  */
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectMapComparison_impl : public ObjectMapComparison
 {
 public:
-    ObjectMapComparison_impl(const std::string& name, T* var, Op op, const std::string& value) :
+    ObjectMapComparison_impl(const std::string& name, REF* var, Op op, const std::string& value) :
         ObjectMapComparison(name),
         var_(var),
         op_(op)
     {
-        // If we are looking for changes, get the current value as the
-        // comp_value_
         if ( op_ == Op::CHANGED ) {
-            comp_value_ = *var_;
+            // If we are looking for changes, get the current value as the comp_value_
+            comp_value_ = static_cast<T>(*var_);
         }
-        // Otherwise, we have to have a valid value.  If the value is
-        // not valid, it will throw an exception.
         else {
+            // Otherwise, we have to have a valid value.  If the value is not valid, it will throw an exception.
             comp_value_ = SST::Core::from_string<T>(value);
         }
     }
 
-
     bool compare() override
     {
-        switch ( op_ ) {
-        case Op::LT:
-            return *var_ < comp_value_;
-            break;
-        case Op::LTE:
-            return *var_ <= comp_value_;
-            break;
-        case Op::GT:
-            return *var_ > comp_value_;
-            break;
-        case Op::GTE:
-            return *var_ >= comp_value_;
-            break;
-        case Op::EQ:
-            return *var_ == comp_value_;
-            break;
-        case Op::NEQ:
-            return *var_ != comp_value_;
-            break;
-        case Op::CHANGED:
-        {
-            // See if we've changed
-            bool ret    = *var_ != comp_value_;
-            // Store the current value for the next test
-            comp_value_ = *var_;
-            return ret;
-        } break;
-        default:
-            return false;
-            break;
-        }
+        // Get the result of the comparison
+        bool ret = cmp(*var_, op_, comp_value_);
+
+        // For change detection, store the current value for the next test
+        if ( op_ == Op::CHANGED ) comp_value_ = static_cast<T>(*var_);
+
+        return ret;
     }
 
-    std::string getCurrentValue() override { return SST::Core::to_string(*var_); }
+    std::string getCurrentValue() const override { return SST::Core::to_string(*var_); }
 
-    void* getVar() override { return var_; }
+    void* getVar() const override { return var_; }
 
-    void print(std::ostream& stream) override
+    void print(std::ostream& stream) const override
     {
         stream << name_ << " " << getStringFromOp(op_);
         if ( op_ == Op::CHANGED )
@@ -810,135 +847,10 @@ public:
     }
 
 private:
-    T* var_        = nullptr;
-    T  comp_value_ = T();
-    Op op_         = Op::INVALID;
+    REF* const var_;
+    Op const   op_;
+    T          comp_value_;
 }; // class ObjectMapComparison_impl
-
-/**
-    Templated compareType implementations
-    Variables are currently cast to matching types before being passed to this function
-*/
-template <typename V1>
-bool
-cmp(V1 v, ObjectMapComparison::Op op, V1 w)
-{
-    switch ( op ) {
-    case ObjectMapComparison::Op::LT:
-        return v < w;
-        break;
-    case ObjectMapComparison::Op::LTE:
-        return v <= w;
-        break;
-    case ObjectMapComparison::Op::GT:
-        return v > w;
-        break;
-    case ObjectMapComparison::Op::GTE:
-        return v >= w;
-        break;
-    case ObjectMapComparison::Op::EQ:
-        return v == w;
-        break;
-    case ObjectMapComparison::Op::NEQ:
-        return v != w;
-        break;
-    default:
-        std::cout << "Invalid comparison operator\n";
-        return false;
-        break;
-    }
-}
-
-// Comparison of two variables of the same type
-template <typename U1, typename U2, std::enable_if_t<std::is_same_v<U1, U2>, int> = true>
-bool
-compareType(U1 v, ObjectMapComparison::Op op, U2 w)
-{
-    // Handle same type - just compare
-    // printf("  CMP: Same type\n");
-    return cmp(v, op, w);
-}
-
-// Comparison of two variables with different arithmetic types
-template <typename U1, typename U2,
-    std::enable_if_t<!std::is_same_v<U1, U2> && std::is_arithmetic_v<U1> && std::is_arithmetic_v<U2>, int> = true>
-bool
-compareType(U1 v, ObjectMapComparison::Op op, U2 w)
-{
-    // printf("  CMP: Different types\n");
-    //  Handle integrals (bool, char, flavors of int)
-    if ( std::is_integral_v<U1> && std::is_integral_v<U2> ) {
-        // both unsigned integrals - cast to unsigned long long
-        if ( std::is_unsigned_v<U1> && std::is_unsigned_v<U2> ) {
-            // printf("  CMP: Both unsigned integrals\n");
-            unsigned long long v1 = static_cast<unsigned long long>(v);
-            unsigned long long w1 = static_cast<unsigned long long>(w);
-            return cmp(v1, op, w1);
-        }
-        // both integers but at least one signed - cast to signed long long
-        else {
-            // printf("  CMP: Not both unsigned integrals\n");
-            long long v1 = static_cast<long long>(v);
-            long long w1 = static_cast<long long>(w);
-            return cmp(v1, op, w1);
-        }
-    }
-    // Handle float/double combinations - cast to long double
-    else if ( std::is_floating_point_v<U1> && std::is_floating_point_v<U2> ) {
-        // printf("  CMP: Both fp\n");
-        long double v1 = static_cast<long double>(v);
-        long double w1 = static_cast<long double>(w);
-        return cmp(v1, op, w1);
-    }
-    else { // Integral and FP comparison - cast integral to fp
-        // printf("  CMP: integral and fp\n");
-        if ( std::is_integral_v<U1> ) {
-            if ( std::is_same_v<U2, float> ) {
-                float v1 = static_cast<float>(v);
-                float w1 = static_cast<float>(w); // unnecessary but compiler needs to know they are the same
-                return cmp(v1, op, w1);
-            }
-            else if ( std::is_same_v<U2, double> ) {
-                double v1 = static_cast<double>(v);
-                double w1 = static_cast<double>(w); // unnecessary ...
-                return cmp(v1, op, w1);
-            }
-            else {
-                long double v1 = static_cast<long double>(v);
-                long double w1 = static_cast<long double>(w); // unnecessary ...
-                return cmp(v1, op, w1);
-            }
-        }
-        else {
-            if ( std::is_same_v<U1, float> ) {
-                float v1 = static_cast<float>(v); // unnecessary ...
-                float w1 = static_cast<float>(w);
-                return cmp(v1, op, w1);
-            }
-            else if ( std::is_same_v<U1, double> ) {
-                double v1 = static_cast<double>(v); // unnecessary ...
-                double w1 = static_cast<double>(w);
-                return cmp(v1, op, w1);
-            }
-            else {
-                long double v1 = static_cast<long double>(v); // unnecessary ...
-                long double w1 = static_cast<long double>(w);
-                return cmp(v1, op, w1);
-            }
-        }
-    }
-}
-
-// Comparison of two variables with at least one non-arithmetic type
-template <typename U1, typename U2,
-    std::enable_if_t<(!std::is_same_v<U1, U2> && (!std::is_arithmetic_v<U1> || !std::is_arithmetic_v<U2>)), int> = true>
-bool
-compareType(U1 UNUSED(v), ObjectMapComparison::Op UNUSED(op), U2 UNUSED(w))
-{
-    // We shouldn't get here.... Can I throw an error somehow?
-    printf("  ERROR: CMP: Does not support non-arithmetic types\n");
-    return false;
-}
 
 
 /**
@@ -956,18 +868,16 @@ public:
         var2_(var2)
     {}
 
-    bool compare() override
+    bool compare() override { return cmp(*var1_, op_, *var2_); }
+
+    std::string getCurrentValue() const override
     {
-        T1 v1 = *var1_;
-        T2 v2 = *var2_;
-        return compareType(v1, op_, v2);
+        return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_);
     }
 
-    std::string getCurrentValue() override { return SST::Core::to_string(*var1_) + " " + SST::Core::to_string(*var2_); }
+    void* getVar() const override { return var1_; }
 
-    void* getVar() override { return var1_; }
-
-    void print(std::ostream& stream) override
+    void print(std::ostream& stream) const override
     {
         stream << name_ << " " << getStringFromOp(op_);
         if ( op_ == Op::CHANGED )
@@ -977,12 +887,11 @@ public:
     }
 
 private:
-    std::string name2_ = "";
-    T1*         var1_  = nullptr;
-    Op          op_    = Op::INVALID;
-    T2*         var2_  = nullptr;
+    std::string const name2_;
+    T1* const         var1_;
+    Op const          op_;
+    T2* const         var2_;
 }; // class ObjectMapComparison_impl
-
 
 class ObjectBuffer
 {
@@ -995,23 +904,22 @@ public:
     virtual ~ObjectBuffer() = default;
 
     virtual void        sample(size_t index, bool trigger) = 0;
-    virtual std::string get(size_t index)                  = 0;
-    virtual std::string getTriggerVal()                    = 0;
+    virtual std::string get(size_t index) const            = 0;
+    virtual std::string getTriggerVal() const              = 0;
 
-    std::string getName() { return name_; }
-    size_t      getBufSize() { return bufSize_; }
+    std::string getName() const { return name_; }
+    size_t      getBufSize() const { return bufSize_; }
 
 private:
     std::string name_;
     size_t      bufSize_;
-
 }; // class ObjectBuffer
 
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectBuffer_impl : public ObjectBuffer
 {
 public:
-    ObjectBuffer_impl(const std::string& name, T* varPtr, size_t sz) :
+    ObjectBuffer_impl(const std::string& name, REF* varPtr, size_t sz) :
         ObjectBuffer(name, sz),
         varPtr_(varPtr)
     {
@@ -1024,17 +932,15 @@ public:
         if ( trigger ) triggerVal = *varPtr_;
     }
 
-    std::string get(size_t index) override { return SST::Core::to_string(objectBuffer_.at(index)); }
+    std::string get(size_t index) const override { return SST::Core::to_string(objectBuffer_.at(index)); }
 
-    std::string getTriggerVal() override { return SST::Core::to_string(triggerVal); }
-
+    std::string getTriggerVal() const override { return SST::Core::to_string(triggerVal); }
 
 private:
-    T*             varPtr_ = nullptr;
+    REF* const     varPtr_;
     std::vector<T> objectBuffer_;
-    T              triggerVal;
-
-}; // class ObjectBuffer_impl
+    T              triggerVal {};
+}; // Class ObjectBuffer_impl
 
 
 class TraceBuffer
@@ -1249,7 +1155,6 @@ public:
 
 }; // class TraceBuffer
 
-
 /**
    ObjectMap representing fundamental types, and classes treated as
    fundamental types.  In order for an object to be treated as a
@@ -1259,15 +1164,18 @@ public:
    desired to be treated as a fundamental.  The specialization will
    need to provide the functions for getting and setting the values as
    a string.
+
+   REF defaults to T, but may be a type like std::vector<bool>::reference
+   or std::bitset<N>::reference indicating a proxy reference to the object.
 */
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectMapFundamental : public ObjectMap
 {
 protected:
     /**
        Address of the variable for reading and writing
      */
-    T* addr_ = nullptr;
+    REF* addr_ = nullptr;
 
 public:
     /**
@@ -1276,47 +1184,48 @@ public:
        @param value Value to set the underlying object to, represented
        as a string
      */
-    virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
-
-    virtual bool checkValue(const std::string& value) override
+    void set_impl(const std::string& value) override
     {
-        bool ret = false;
         try {
-            T v = SST::Core::from_string<T>(value);
-            ret = static_cast<bool>(v);
+            *addr_ = SST::Core::from_string<T>(value);
         }
-        catch ( const std::invalid_argument& e ) {
-            std::cerr << "Error: Invalid value: " << value << std::endl;
+        catch ( const std::exception& e ) {
+            std::cerr << e.what() << ": " << value << std::endl;
+        }
+    }
+
+    bool checkValue(const std::string& value) const override
+    {
+        try {
+            SST::Core::from_string<T>(value);
+            return true;
+        }
+        catch ( const std::exception& e ) {
+            std::cerr << e.what() << ": " << value << std::endl;
             return false;
         }
-        catch ( const std::out_of_range& e ) {
-            std::cerr << "Error: Value is out of range: " << value << std::endl;
-            return false;
-        }
-        ret = true;
-        return ret;
     }
 
     /**
        Get the value of the object as a string
      */
-    virtual std::string get() override { return addr_ ? SST::Core::to_string(*addr_) : "nullptr"; }
+    std::string get() const override { return addr_ ? SST::Core::to_string(static_cast<T>(*addr_)) : "nullptr"; }
 
     /**
        Returns true as object is a fundamental
 
        @return true
      */
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of variable
      */
-    void* getAddr() override { return (void*)addr_; }
+    void* getAddr() const override { return addr_; }
 
-    explicit ObjectMapFundamental(T* addr) :
+    explicit ObjectMapFundamental(REF* addr) :
         addr_(addr)
     {}
 
@@ -1341,22 +1250,20 @@ public:
 
        @return type of underlying object
      */
-    std::string getType() override { return demangle_name(typeid(T).name()); }
+    std::string getType() const override { return demangle_name(typeid(T).name()); }
 
     ObjectMapComparison* getComparison(
-        const std::string& name, ObjectMapComparison::Op UNUSED(op), const std::string& value) override
+        const std::string& name, ObjectMapComparison::Op op, const std::string& value) const override
     {
-        return new ObjectMapComparison_impl<T>(name, addr_, op, value);
+        return new ObjectMapComparison_impl<T, REF>(name, addr_, op, value);
     }
 
     ObjectMapComparison* getComparisonVar(
-        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) override
+        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) const override
     {
         // Ensure var2 is fundamental type
         if ( !var2->isFundamental() ) {
-            printf("Triggers can only use fundamental types; %s is not "
-                   "fundamental\n",
-                name2.c_str());
+            printf("Triggers can only use fundamental types; %s is not fundamental\n", name2.c_str());
             return nullptr;
         }
 
@@ -1374,79 +1281,73 @@ public:
         if ( std::is_arithmetic_v<T> ) {
             if ( type == "int" ) {
                 int* addr2 = static_cast<int*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, int>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, int>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned int" ) {
                 unsigned int* addr2 = static_cast<unsigned int*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned int>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned int>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long" ) {
                 long* addr2 = static_cast<long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned long" ) {
                 unsigned long* addr2 = static_cast<unsigned long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "char" ) {
                 char* addr2 = static_cast<char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "signed char" ) {
                 signed char* addr2 = static_cast<signed char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, signed char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, signed char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned char" ) {
                 unsigned char* addr2 = static_cast<unsigned char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "short" ) {
                 short* addr2 = static_cast<short*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, short>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, short>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned short" ) {
                 unsigned short* addr2 = static_cast<unsigned short*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned short>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned short>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long long" ) {
                 long long* addr2 = static_cast<long long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, long long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned long long" ) {
                 unsigned long long* addr2 = static_cast<unsigned long long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned long long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned long long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "bool" ) {
                 bool* addr2 = static_cast<bool*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, bool>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, bool>(name, addr_, op, name2, addr2);
             }
             else if ( type == "float" ) {
                 float* addr2 = static_cast<float*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, float>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, float>(name, addr_, op, name2, addr2);
             }
             else if ( type == "double" ) {
                 double* addr2 = static_cast<double*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, double>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, double>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long double" ) {
                 long double* addr2 = static_cast<long double*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long double>(name, addr_, op, name2, addr2);
-            }
-
-            else {
-                std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-                return nullptr;
+                return new ObjectMapComparison_var<REF, long double>(name, addr_, op, name2, addr2);
             }
         } // end if first var is arithmetic
-        else {
-            std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-            return nullptr;
-        }
+
+        std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
+        return nullptr;
     }
 
     ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
     {
-        return new ObjectBuffer_impl<T>(name, addr_, sz);
+        return new ObjectBuffer_impl<T, REF>(name, addr_, sz);
     }
 };
 
@@ -1460,16 +1361,12 @@ protected:
     T* addr_;
 
 public:
-    bool isContainer() override final { return true; }
-
-    std::string getType() override { return demangle_name(typeid(T).name()); }
-
-    void* getAddr() override { return addr_; }
-
     explicit ObjectMapContainer(T* addr) :
         addr_(addr)
     {}
-
+    bool        isContainer() const final { return true; }
+    std::string getType() const override { return demangle_name(typeid(T).name()); }
+    void*       getAddr() const override { return addr_; }
     ~ObjectMapContainer() override = default;
 };
 
@@ -1483,7 +1380,7 @@ protected:
     size_t size;
 
 public:
-    virtual size_t getSize() { return size; }
+    virtual size_t getSize() const { return size; }
     ObjectMapArray(T* addr, size_t size) :
         ObjectMapContainer<T>(addr),
         size(size)
@@ -1491,6 +1388,36 @@ public:
     ~ObjectMapArray() override = default;
 };
 
+// ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
+// atomic_reference, whose referenced types cannot be copied or pointed to with pointers, but whose
+// underlying values are ordinary fundamental types.
+//
+//     T is the underlying fundamental type, such as bool, which is the type in which values are read and written.
+//   REF is the type of the proxy reference class, which is copyable, convertible to T, and assignable from T.
+// PTYPE is the type to print, which defaults to T, but might be a decorated class name like std::atomic<T>.
+template <typename T, typename REF, typename PTYPE = T>
+class ObjectMapFundamentalReference : public ObjectMapFundamental<T, REF>
+{
+    REF ref;
+
+    static_assert(std::is_copy_constructible_v<REF> && std::is_convertible_v<REF, T> && std::is_assignable_v<REF, T>,
+        "ObjectMapFundamentalReference<T, REF, PTYPE>: REF must be copyable, implicitly convertible to T, and "
+        "assignable from T.");
+
+public:
+    // std::addressof is used because some libraries overload REF::operator&()
+    explicit ObjectMapFundamentalReference(const REF& ref) :
+        ObjectMapFundamental<T, REF>(std::addressof(this->ref)),
+        ref(ref)
+    {}
+
+    // Although this is a fundamental type of underlying type T, PTYPE can be something like std::atomic<T>
+    std::string getType() const override { return this->demangle_name(typeid(PTYPE).name()); }
+
+    ObjectMapFundamentalReference(const ObjectMapFundamentalReference&)            = default;
+    ObjectMapFundamentalReference& operator=(const ObjectMapFundamentalReference&) = delete;
+    ~ObjectMapFundamentalReference() override                                      = default;
+};
 
 } // namespace SST::Core::Serialization
 

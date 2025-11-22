@@ -86,9 +86,26 @@ struct SerOption
 namespace Core::Serialization {
 
 namespace pvt {
+
 template <typename T>
 void sst_ser_object(serializer& ser, T&& obj, ser_opt_t options, const char* name);
-}
+
+// Proxy struct which represents a bit reference wrapper similar to std::reference_wrapper.
+// This proxy is needed in order for us to partially specialize serialize_impl for the
+// std::bitset<N>::reference and std::vector<bool>::reference types in mapping mode.
+template <typename T>
+struct bit_reference_wrapper
+{
+    typename T::reference ref;
+    explicit bit_reference_wrapper(typename T::reference ref) :
+        ref(ref)
+    {}
+    bit_reference_wrapper(const bit_reference_wrapper&)            = default;
+    bit_reference_wrapper& operator=(const bit_reference_wrapper&) = delete;
+    ~bit_reference_wrapper()                                       = default;
+};
+
+} // namespace pvt
 
 // get_ptr() returns reference to argument if it's a pointer, else address of argument
 template <typename T>
@@ -100,7 +117,6 @@ get_ptr(T& t)
     else
         return &t;
 }
-
 
 /**
    Base serialize class.
