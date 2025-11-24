@@ -14,10 +14,10 @@
 #include "sst/core/config.h"
 
 #include "sst/core/component.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
 #include "sst/core/model/configComponent.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/namecheck.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"

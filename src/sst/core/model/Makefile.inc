@@ -10,7 +10,6 @@ sst_core_sources += \
 	model/sstmodel.cc \
 	model/configComponent.h \
 	model/configComponent.cc \
-	model/configGraph.h \
 	model/configGraph.cc \
 	model/configStatistic.h \
 	model/configStatistic.cc \
@@ -18,6 +17,10 @@ sst_core_sources += \
 	model/element_python.cc \
 	model/restart/sstcptmodel.h \
 	model/restart/sstcptmodel.cc
+
+nobase_dist_sst_HEADERS += \
+	model/configGraph.h
+
 
 sst_core_python_headers = \
   model/python/pymacros.h

@@ -19,7 +19,7 @@
 // #ifdef SST_CONFIG_HAVE_PYTHON
 
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"

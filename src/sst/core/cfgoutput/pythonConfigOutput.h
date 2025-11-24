@@ -13,8 +13,8 @@
 #ifndef SST_CORE_PYTHON_CONFIG_OUTPUT_H
 #define SST_CORE_PYTHON_CONFIG_OUTPUT_H
 
-#include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
+#include "sst/core/model/configGraph.h"
 
 #include <cstddef>
 #include <map>

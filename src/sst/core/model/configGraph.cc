@@ -11,7 +11,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 
 #include "sst/core/component.h"
 #include "sst/core/config.h"

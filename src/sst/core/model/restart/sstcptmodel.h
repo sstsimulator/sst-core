@@ -15,7 +15,7 @@
 #define SST_CORE_MODEL_RESTART_SSTCPTMODEL_H
 
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"

@@ -15,8 +15,6 @@
 #include "sst/core/cfgoutput/jsonConfigOutput.h"
 
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
-#include "sst/core/configGraphOutput.h"
 #include "sst/core/params.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/util/filesystem.h"
