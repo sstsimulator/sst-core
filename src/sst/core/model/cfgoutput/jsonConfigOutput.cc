@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/cfgoutput/jsonConfigOutput.h"
+#include "sst/core/model/cfgoutput/jsonConfigOutput.h"
 
 #include "sst/core/config.h"
 #include "sst/core/params.h"

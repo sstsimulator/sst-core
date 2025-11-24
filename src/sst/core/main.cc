@@ -66,11 +66,11 @@ REENABLE_WARNING
 #include <time.h>
 
 // Configuration Graph Generation Options
-#include "sst/core/cfgoutput/dotConfigOutput.h"
-#include "sst/core/cfgoutput/jsonConfigOutput.h"
-#include "sst/core/cfgoutput/pythonConfigOutput.h"
 #include "sst/core/configGraphOutput.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/model/cfgoutput/dotConfigOutput.h"
+#include "sst/core/model/cfgoutput/jsonConfigOutput.h"
+#include "sst/core/model/cfgoutput/pythonConfigOutput.h"
 
 using namespace SST::Core;
 using namespace SST::Partition;

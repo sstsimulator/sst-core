@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include "dotConfigOutput.h"
+#include "sst/core/model/cfgoutput/dotConfigOutput.h"
 
 #include "sst/core/config.h"
 #include "sst/core/configGraphOutput.h"
