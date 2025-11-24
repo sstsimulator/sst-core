@@ -8,6 +8,12 @@
 sst_core_sources += \
 	model/sstmodel.h \
 	model/sstmodel.cc \
+	model/configComponent.h \
+	model/configComponent.cc \
+	model/configGraph.h \
+	model/configGraph.cc \
+	model/configStatistic.h \
+	model/configStatistic.cc \
 	model/element_python.h \
 	model/element_python.cc \
 	model/restart/sstcptmodel.h \

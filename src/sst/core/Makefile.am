@@ -185,7 +185,6 @@ sst_core_sources = \
 	configBase.cc \
 	configBaseSer.cc \
 	configShared.cc \
-	configGraph.cc \
 	configGraphOutput.cc \
 	cfgoutput/pythonConfigOutput.cc \
 	cfgoutput/dotConfigOutput.cc \
