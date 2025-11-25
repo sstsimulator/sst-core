@@ -11,9 +11,9 @@
 
 #include "sst_config.h"
 
-#include "sst/core/configLink.h"
+#include "sst/core/model/configLink.h"
 
-#include "sst/core/model/configStatistic.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/warnmacros.h"
 
@@ -23,6 +23,7 @@
 #include <string>
 #include <utility>
 
+namespace SST {
 std::map<std::string, uint32_t> ConfigLink::lat_to_index;
 
 uint32_t
@@ -99,4 +100,5 @@ ConfigLink::updateLatencies()
         latency[1] = ConfigLink::getLatencyFromIndex(latency[1]);
     }
 }
+
 } // namespace SST

@@ -11,6 +11,8 @@ sst_core_sources += \
 	model/configComponent.h \
 	model/configComponent.cc \
 	model/configGraph.cc \
+	model/configLink.h \
+	model/configLink.cc \
 	model/configStatistic.h \
 	model/configStatistic.cc \
 	model/element_python.h \
