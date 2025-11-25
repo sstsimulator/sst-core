@@ -26,32 +26,52 @@ namespace SST::Core::Serialization {
 template <class T>
 class serialize_impl<std::atomic<T>>
 {
+    // Proxy class which represents a reference to std::atomic<T>, is copyable, convertible to T, and assignable from T
+    //
+    // This is only used in mapping mode
+    class atomic_reference
+    {
+        std::atomic<T>& ref;
+
+    public:
+        explicit atomic_reference(std::atomic<T>& ref) :
+            ref(ref)
+        {}
+
+        // Set the referenced atomic to a value
+        atomic_reference& operator=(const T& value)
+        {
+            ref.store(value);
+            return *this;
+        }
+
+        // Convert the referenced atomic to its value
+        operator T() const { return ref.load(); }
+    };
+
     void operator()(std::atomic<T>& v, serializer& ser, ser_opt_t UNUSED(options))
     {
         switch ( ser.mode() ) {
         case serializer::SIZER:
-        {
-            T t = v.load();
-            SST_SER(t);
-            // ser.size(t);
-            break;
-        }
         case serializer::PACK:
         {
-            T t = v.load();
-            SST_SER(t);
+            T value { v.load() };
+            SST_SER(value);
             break;
         }
         case serializer::UNPACK:
         {
-            T val {};
-            SST_SER(val);
-            v.store(val);
+            T value {};
+            SST_SER(value);
+            v.store(value);
             break;
         }
         case serializer::MAP:
         {
-            // TODO: Add support for mapping mode
+            // Create an ObjectMapFundamentalReference referring to a atomic_reference proxy wrapper class
+            ser.mapper().map_hierarchy_start(ser.getMapName(),
+                new ObjectMapFundamentalReference<T, atomic_reference, std::atomic<T>>(atomic_reference(v)));
+            ser.mapper().map_hierarchy_end();
             break;
         }
         }
