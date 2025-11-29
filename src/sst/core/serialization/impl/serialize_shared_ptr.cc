@@ -28,21 +28,23 @@ template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[], in
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[], int[], int>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[], int[], size_t>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[], size_t>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[], int>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[], size_t>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, size_t>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], int, std::shared_ptr<int[]>>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], int>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], size_t, std::shared_ptr<int[]>>>;
-template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], size_t>>;
-
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int, int[10], int>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int, int[10], size_t>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[10], int>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[10], int[10], int>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[10], int[10], size_t>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::shared_ptr, int[10], size_t>>;
+
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, size_t>>;
+
+#if SST_SERIALIZE_WEAK_PTR_ARRAY
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[], int>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[], size_t>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], int, std::shared_ptr<int[]>>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], int>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], size_t, std::shared_ptr<int[]>>>;
+template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[], int[], size_t>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[10], int>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int, int[10], size_t>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[10], int[10], int, std::shared_ptr<int[10]>>>;
@@ -50,5 +52,7 @@ template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[10], in
 template class serialize_impl<
     pvt::shared_ptr_wrapper<std::weak_ptr, int[10], int[10], size_t, std::shared_ptr<int[10]>>>;
 template class serialize_impl<pvt::shared_ptr_wrapper<std::weak_ptr, int[10], int[10], size_t>>;
+
+#endif // SST_SERIALIZE_WEAK_PTR_ARRAY
 
 } // namespace SST::Core::Serialization
