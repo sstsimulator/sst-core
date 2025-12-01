@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include "xmlConfigOutput.h"
+#include "sst/core/model/cfgoutput/xmlConfigOutput.h"
 
 #include "sst/core/configGraphOutput.h"
 #include "sst/core/warnmacros.h"

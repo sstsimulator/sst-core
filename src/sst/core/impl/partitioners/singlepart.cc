@@ -13,7 +13,7 @@
 
 #include "sst/core/impl/partitioners/singlepart.h"
 
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/warnmacros.h"
 
 using namespace SST::IMPL::Partition;

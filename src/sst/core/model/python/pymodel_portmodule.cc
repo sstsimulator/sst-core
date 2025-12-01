@@ -15,7 +15,7 @@
 
 #include "sst/core/model/python/pymodel_portmodule.h"
 
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_stat.h"

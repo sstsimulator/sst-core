@@ -16,10 +16,10 @@
 
 #include "sst/core/component.h"
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/factory.h"
 #include "sst/core/memuse.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"

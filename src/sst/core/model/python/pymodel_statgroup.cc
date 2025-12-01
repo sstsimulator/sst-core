@@ -16,7 +16,7 @@
 #include "sst/core/model/python/pymodel_statgroup.h"
 
 #include "sst/core/component.h"
-#include "sst/core/configGraph.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_comp.h"
