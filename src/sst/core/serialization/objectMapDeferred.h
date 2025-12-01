@@ -34,7 +34,7 @@ public:
 
        @return empty type of object
      */
-    std::string getType() override { return type_; }
+    std::string getType() const final { return type_; }
 
     /**
        Returns nullptr since there is no underlying object being
@@ -42,7 +42,7 @@ public:
 
        @return nullptr
      */
-    void* getAddr() override { return static_cast<void*>(addr_); }
+    void* getAddr() const final { return addr_; }
 
 
     /**
@@ -52,7 +52,7 @@ public:
        ObjectMap's child variables. pair.first is the name of the
        variable in the context of this object.
      */
-    const std::multimap<std::string, ObjectMap*>& getVariables() override { return obj_->getVariables(); }
+    const std::multimap<std::string, ObjectMap*>& getVariables() const final { return obj_->getVariables(); }
 
     /**
        For the Deferred Build, the only variable that gets added will
@@ -61,7 +61,7 @@ public:
        @param name Name of the object
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) override
+    void addVariable(const std::string& name, ObjectMap* obj) final
     {
         // This should be the real ObjectMap for the class we are
         // representing. We will check it by making sure the name
@@ -84,10 +84,10 @@ public:
     ~ObjectMapDeferred() override { delete obj_; }
 
 protected:
-    void activate_callback() override
+    void activate_callback() final
     {
         // On activate, we need to create the ObjectMap data structure
-        if ( obj_ != nullptr ) return;
+        if ( obj_ ) return;
 
         SST::Core::Serialization::serializer ser;
         ser.enable_pointer_tracking();
@@ -96,7 +96,7 @@ protected:
         SST_SER_NAME(addr_, "!proxy!");
     }
 
-    void deactivate_callback() override
+    void deactivate_callback() final
     {
         // On deactivate, need to delete obj_;
         obj_->decRefCount();
@@ -117,7 +117,7 @@ private:
 
     /**
        Type of the variable as given by the demangled version of
-       typeif<T>.name() for the type.
+       typeid(T).name() for the type.
      */
     std::string type_ = "";
 };

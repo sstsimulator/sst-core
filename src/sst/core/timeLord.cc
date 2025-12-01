@@ -194,7 +194,7 @@ protected:
 
 public:
     // We'll treat this as a period when printing
-    std::string get() override
+    std::string get() const final
     {
         if ( nullptr == *addr_ ) return "nullptr";
         TimeLord*   timelord = Simulation_impl::getTimeLord();
@@ -206,14 +206,14 @@ public:
     void set_impl(const std::string& UNUSED(value)) override { return; }
 
     // We'll act like we're a fundamental type
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of varaible
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const final { return addr_; }
 
     explicit ObjectMapFundamental(TimeConverter** addr) :
         ObjectMap(),
@@ -222,7 +222,7 @@ public:
         setReadOnly(true);
     }
 
-    std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
+    std::string getType() const final { return demangle_name(typeid(TimeConverter).name()); }
 };
 
 template <>
@@ -236,7 +236,7 @@ protected:
 
 public:
     // We'll treat this as a period when printing
-    std::string get() override
+    std::string get() const final
     {
         TimeLord*   timelord = Simulation_impl::getTimeLord();
         UnitAlgebra base     = timelord->getTimeBase();
@@ -244,17 +244,17 @@ public:
         return base.toStringBestSI();
     }
 
-    void set_impl(const std::string& UNUSED(value)) override { return; }
+    void set_impl(const std::string& UNUSED(value)) final { return; }
 
     // We'll act like we're a fundamental type
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of varaible
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const final { return addr_; }
 
     explicit ObjectMapFundamental(TimeConverter* addr) :
         ObjectMap(),
@@ -263,7 +263,7 @@ public:
         setReadOnly(true);
     }
 
-    std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
+    std::string getType() const final { return demangle_name(typeid(TimeConverter).name()); }
 };
 
 void
