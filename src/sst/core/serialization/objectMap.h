@@ -626,7 +626,6 @@ public:
     const std::multimap<std::string, ObjectMap*>& getVariables() override { return variables_; }
 };
 
-
 /**
    ObjectMap object to create a level of hierarchy that doesn't
    represent a specific object.  This can be used to create views of
@@ -739,23 +738,21 @@ public:
 /**
    Template implementation of ObjectMapComparison for <var> <op> <value>
  */
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectMapComparison_impl : public ObjectMapComparison
 {
 public:
-    ObjectMapComparison_impl(const std::string& name, T* var, Op op, const std::string& value) :
+    ObjectMapComparison_impl(const std::string& name, REF* var, Op op, const std::string& value) :
         ObjectMapComparison(name),
         var_(var),
         op_(op)
     {
-        // If we are looking for changes, get the current value as the
-        // comp_value_
         if ( op_ == Op::CHANGED ) {
-            comp_value_ = *var_;
+            // If we are looking for changes, get the current value as the comp_value_
+            comp_value_ = static_cast<T>(*var_);
         }
-        // Otherwise, we have to have a valid value.  If the value is
-        // not valid, it will throw an exception.
         else {
+            // Otherwise, we have to have a valid value.  If the value is not valid, it will throw an exception.
             comp_value_ = SST::Core::from_string<T>(value);
         }
     }
@@ -810,9 +807,9 @@ public:
     }
 
 private:
-    T* var_        = nullptr;
-    T  comp_value_ = T();
-    Op op_         = Op::INVALID;
+    REF* var_ = nullptr;
+    Op   op_  = Op::INVALID;
+    T    comp_value_;
 }; // class ObjectMapComparison_impl
 
 /**
@@ -1007,11 +1004,11 @@ private:
 
 }; // class ObjectBuffer
 
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectBuffer_impl : public ObjectBuffer
 {
 public:
-    ObjectBuffer_impl(const std::string& name, T* varPtr, size_t sz) :
+    ObjectBuffer_impl(const std::string& name, REF* varPtr, size_t sz) :
         ObjectBuffer(name, sz),
         varPtr_(varPtr)
     {
@@ -1030,10 +1027,9 @@ public:
 
 
 private:
-    T*             varPtr_ = nullptr;
+    REF* const     varPtr_;
     std::vector<T> objectBuffer_;
-    T              triggerVal;
-
+    T              triggerVal {};
 }; // class ObjectBuffer_impl
 
 
@@ -1259,15 +1255,18 @@ public:
    desired to be treated as a fundamental.  The specialization will
    need to provide the functions for getting and setting the values as
    a string.
+
+   REF defaults to T, but may be a type like std::vector<bool>::reference
+   or std::bitset<N>::reference indicating a proxy reference to the object.
 */
-template <typename T>
+template <typename T, typename REF = T>
 class ObjectMapFundamental : public ObjectMap
 {
 protected:
     /**
        Address of the variable for reading and writing
      */
-    T* addr_ = nullptr;
+    REF* addr_ = nullptr;
 
 public:
     /**
@@ -1278,23 +1277,16 @@ public:
      */
     virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
 
-    virtual bool checkValue(const std::string& value) override
+    bool checkValue(const std::string& value) override
     {
-        bool ret = false;
         try {
-            T v = SST::Core::from_string<T>(value);
-            ret = static_cast<bool>(v);
+            *addr_ = SST::Core::from_string<T>(value);
+            return true;
         }
-        catch ( const std::invalid_argument& e ) {
-            std::cerr << "Error: Invalid value: " << value << std::endl;
+        catch ( const std::exception& e ) {
+            std::cerr << e.what() << ": " << value << std::endl;
             return false;
         }
-        catch ( const std::out_of_range& e ) {
-            std::cerr << "Error: Value is out of range: " << value << std::endl;
-            return false;
-        }
-        ret = true;
-        return ret;
     }
 
     /**
@@ -1316,7 +1308,7 @@ public:
      */
     void* getAddr() override { return (void*)addr_; }
 
-    explicit ObjectMapFundamental(T* addr) :
+    explicit ObjectMapFundamental(REF* addr) :
         addr_(addr)
     {}
 
@@ -1346,7 +1338,7 @@ public:
     ObjectMapComparison* getComparison(
         const std::string& name, ObjectMapComparison::Op UNUSED(op), const std::string& value) override
     {
-        return new ObjectMapComparison_impl<T>(name, addr_, op, value);
+        return new ObjectMapComparison_impl<T, REF>(name, addr_, op, value);
     }
 
     ObjectMapComparison* getComparisonVar(
@@ -1374,79 +1366,73 @@ public:
         if ( std::is_arithmetic_v<T> ) {
             if ( type == "int" ) {
                 int* addr2 = static_cast<int*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, int>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, int>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned int" ) {
                 unsigned int* addr2 = static_cast<unsigned int*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned int>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned int>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long" ) {
                 long* addr2 = static_cast<long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned long" ) {
                 unsigned long* addr2 = static_cast<unsigned long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "char" ) {
                 char* addr2 = static_cast<char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "signed char" ) {
                 signed char* addr2 = static_cast<signed char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, signed char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, signed char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned char" ) {
                 unsigned char* addr2 = static_cast<unsigned char*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned char>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned char>(name, addr_, op, name2, addr2);
             }
             else if ( type == "short" ) {
                 short* addr2 = static_cast<short*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, short>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, short>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned short" ) {
                 unsigned short* addr2 = static_cast<unsigned short*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned short>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned short>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long long" ) {
                 long long* addr2 = static_cast<long long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, long long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "unsigned long long" ) {
                 unsigned long long* addr2 = static_cast<unsigned long long*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, unsigned long long>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, unsigned long long>(name, addr_, op, name2, addr2);
             }
             else if ( type == "bool" ) {
                 bool* addr2 = static_cast<bool*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, bool>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, bool>(name, addr_, op, name2, addr2);
             }
             else if ( type == "float" ) {
                 float* addr2 = static_cast<float*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, float>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, float>(name, addr_, op, name2, addr2);
             }
             else if ( type == "double" ) {
                 double* addr2 = static_cast<double*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, double>(name, addr_, op, name2, addr2);
+                return new ObjectMapComparison_var<REF, double>(name, addr_, op, name2, addr2);
             }
             else if ( type == "long double" ) {
                 long double* addr2 = static_cast<long double*>(var2->getAddr());
-                return new ObjectMapComparison_var<T, long double>(name, addr_, op, name2, addr2);
-            }
-
-            else {
-                std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-                return nullptr;
+                return new ObjectMapComparison_var<REF, long double>(name, addr_, op, name2, addr2);
             }
         } // end if first var is arithmetic
-        else {
-            std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
-            return nullptr;
-        }
+
+        std::cout << "Invalid type for comparison: " << name2 << "(" << type << ")\n";
+        return nullptr;
     }
 
     ObjectBuffer* getObjectBuffer(const std::string& name, size_t sz) override
     {
-        return new ObjectBuffer_impl<T>(name, addr_, sz);
+        return new ObjectBuffer_impl<T, REF>(name, addr_, sz);
     }
 };
 
@@ -1491,6 +1477,36 @@ public:
     ~ObjectMapArray() override = default;
 };
 
+// ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
+// atomic_reference, whose referenced types cannot be copied or pointed to with pointers, but whose
+// underlying values are ordinary fundamental types.
+//
+//     T is the underlying fundamental type, such as bool, which is the type in which values are read and written.
+//   REF is the type of the proxy reference class, which is copyable, convertible to T, and assignable from T.
+// PTYPE is the type to print, which defaults to T, but might be a decorated class name like std::atomic<T>.
+template <typename T, typename REF, typename PTYPE = T>
+class ObjectMapFundamentalReference : public ObjectMapFundamental<T, REF>
+{
+    REF ref;
+
+    static_assert(std::is_copy_constructible_v<REF> && std::is_convertible_v<REF, T> && std::is_assignable_v<REF, T>,
+        "ObjectMapFundamentalReference<T, REF, PTYPE>: REF must be copyable, implicitly convertible to T, and "
+        "assignable from T.");
+
+public:
+    // std::addressof is used because some libraries overload REF::operator&()
+    explicit ObjectMapFundamentalReference(const REF& ref) :
+        ObjectMapFundamental<T, REF>(std::addressof(this->ref)),
+        ref(ref)
+    {}
+
+    // Although this is a fundamental type of underlying type T, PTYPE can be something like std::atomic<T>
+    std::string getType() override { return this->demangle_name(typeid(PTYPE).name()); }
+
+    ObjectMapFundamentalReference(const ObjectMapFundamentalReference&)            = default;
+    ObjectMapFundamentalReference& operator=(const ObjectMapFundamentalReference&) = delete;
+    ~ObjectMapFundamentalReference() override                                      = default;
+};
 
 } // namespace SST::Core::Serialization
 

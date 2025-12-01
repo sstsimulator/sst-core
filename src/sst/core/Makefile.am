@@ -30,10 +30,6 @@ nobase_dist_sst_HEADERS = \
 	configShared.h \
 	configGraph.h \
 	configGraphOutput.h \
-	cfgoutput/pythonConfigOutput.h \
-	cfgoutput/dotConfigOutput.h \
-	cfgoutput/xmlConfigOutput.h \
-	cfgoutput/jsonConfigOutput.h \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
@@ -110,6 +106,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/impl/serialize_insertable.h \
 	serialization/impl/serialize_optional.h \
 	serialization/impl/ser_shared_ptr_tracker.h \
+	serialization/impl/serialize_shared_ptr.h \
 	serialization/impl/serialize_tuple.h \
 	serialization/impl/serialize_unique_ptr.h \
 	serialization/impl/serialize_utility.h \
@@ -162,8 +159,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statnull.h \
 	threadsafe.h \
 	cputimer.h \
-	warnmacros.h \
-	model/element_python.h
+	warnmacros.h
 
 
 deprecated_nobase_dist_sst_headers =
@@ -185,12 +181,7 @@ sst_core_sources = \
 	configBase.cc \
 	configBaseSer.cc \
 	configShared.cc \
-	configGraph.cc \
 	configGraphOutput.cc \
-	cfgoutput/pythonConfigOutput.cc \
-	cfgoutput/dotConfigOutput.cc \
-	cfgoutput/xmlConfigOutput.cc \
-	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
 	eli/elibase.cc \
@@ -243,6 +234,7 @@ sst_core_sources = \
 	serialization/impl/mapper.cc \
 	serialization/impl/serialize_array.cc \
 	serialization/impl/serialize_trivial.cc \
+	serialization/impl/serialize_shared_ptr.cc \
 	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/stdMem.cc \
