@@ -1264,7 +1264,15 @@ public:
        @param value Value to set the underlying object to, represented
        as a string
      */
-    virtual void set_impl(const std::string& value) override { *addr_ = SST::Core::from_string<T>(value); }
+    virtual void set_impl(const std::string& value) override
+    {
+        try {
+            *addr_ = SST::Core::from_string<T>(value);
+        }
+        catch ( const std::exception& e ) {
+            std::cerr << e.what() << ": " << value << std::endl;
+        }
+    }
 
     bool checkValue(const std::string& value) const override
     {
