@@ -32,7 +32,6 @@ REENABLE_WARNING
 #include "sst/core/activity.h"
 #include "sst/core/checkpointAction.h"
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"
@@ -41,6 +40,7 @@ REENABLE_WARNING
 #include "sst/core/mempool.h"
 #include "sst/core/mempoolAccessor.h"
 #include "sst/core/memuse.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/objectComms.h"
 #include "sst/core/rankInfo.h"
@@ -66,11 +66,11 @@ REENABLE_WARNING
 #include <time.h>
 
 // Configuration Graph Generation Options
-#include "sst/core/cfgoutput/dotConfigOutput.h"
-#include "sst/core/cfgoutput/jsonConfigOutput.h"
-#include "sst/core/cfgoutput/pythonConfigOutput.h"
 #include "sst/core/configGraphOutput.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/model/cfgoutput/dotConfigOutput.h"
+#include "sst/core/model/cfgoutput/jsonConfigOutput.h"
+#include "sst/core/model/cfgoutput/pythonConfigOutput.h"
 
 using namespace SST::Core;
 using namespace SST::Partition;

@@ -30,10 +30,6 @@ nobase_dist_sst_HEADERS = \
 	configShared.h \
 	configGraph.h \
 	configGraphOutput.h \
-	cfgoutput/pythonConfigOutput.h \
-	cfgoutput/dotConfigOutput.h \
-	cfgoutput/xmlConfigOutput.h \
-	cfgoutput/jsonConfigOutput.h \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
@@ -163,8 +159,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statnull.h \
 	threadsafe.h \
 	cputimer.h \
-	warnmacros.h \
-	model/element_python.h
+	warnmacros.h
 
 
 deprecated_nobase_dist_sst_headers =
@@ -186,12 +181,7 @@ sst_core_sources = \
 	configBase.cc \
 	configBaseSer.cc \
 	configShared.cc \
-	configGraph.cc \
 	configGraphOutput.cc \
-	cfgoutput/pythonConfigOutput.cc \
-	cfgoutput/dotConfigOutput.cc \
-	cfgoutput/xmlConfigOutput.cc \
-	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
 	eli/elibase.cc \

@@ -16,11 +16,11 @@
 #include "sst/core/model/python/pymodel.h"
 
 #include "sst/core/component.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
 #include "sst/core/memuse.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/element_python.h"
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel_comp.h"
