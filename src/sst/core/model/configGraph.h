@@ -231,7 +231,6 @@ public:
 
 private:
     friend class Simulation_impl;
-    friend class SSTSDLModelDefinition;
 
     Output output;
 
