@@ -52,7 +52,7 @@ public:
        ObjectMap's child variables. pair.first is the name of the
        variable in the context of this object.
      */
-    const std::multimap<std::string, ObjectMap*>& getVariables() const final { return obj_->getVariables(); }
+    const ObjectMultimap& getVariables() const final { return obj_->getVariables(); }
 
     /**
        For the Deferred Build, the only variable that gets added will

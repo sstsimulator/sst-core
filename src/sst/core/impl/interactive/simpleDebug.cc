@@ -1004,25 +1004,20 @@ SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
 Core::Serialization::ObjectMapComparison*
 parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj, std::string& name)
 {
-
-    std::string                                  var("");
-    Core::Serialization::ObjectMapComparison::Op op = Core::Serialization::ObjectMapComparison::Op::INVALID;
-    std::string                                  v2("");
-    std::string                                  name2("");
-    std::string                                  opstr("");
-
     // Get first comparison
-    var = tokens[index++];
-    if ( index == tokens.size() ) {
+    std::string var = tokens[index++];
+    if ( index >= tokens.size() ) {
         printf("Invalid format for trigger test\n");
         return nullptr;
     }
-    opstr = tokens[index++];
-    op    = Core::Serialization::ObjectMapComparison::getOperationFromString(opstr);
+    std::string                                  opstr = tokens[index++];
+    Core::Serialization::ObjectMapComparison::Op op =
+        Core::Serialization::ObjectMapComparison::getOperationFromString(opstr);
+
+    std::string v2;
     if ( op != Core::Serialization::ObjectMapComparison::Op::CHANGED ) {
-        if ( index == tokens.size() ) {
-            printf("Invalid format for trigger test. Valid formats are <var> changed"
-                   " and <var> <op> <val>\n");
+        if ( index >= tokens.size() ) {
+            printf("Invalid format for trigger test. Valid formats are <var> changed and <var> <op> <val>\n");
             return nullptr;
         }
         v2 = tokens[index++];
@@ -1054,6 +1049,17 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
 
     name = obj->getFullName() + "/" + var;
 
+    // In changed mode, we do not use v2
+    if ( op == Core::Serialization::ObjectMapComparison::Op::CHANGED ) {
+        try {
+            return map->getComparison(name, op, ""); // Can throw an exception
+        }
+        catch ( std::exception& e ) {
+            printf("Invalid argument passed to trigger test: %s %s\n", var.c_str(), opstr.c_str());
+            return nullptr;
+        }
+    }
+
     // Check if v2 is a variable
     Core::Serialization::ObjectMap* map2 = obj->findVariable(v2);
 
@@ -1069,7 +1075,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
             return nullptr;
         }
 
-        name2 = obj->getFullName() + "/" + v2;
+        std::string name2 = obj->getFullName() + "/" + v2;
         try {
             auto* c = map->getComparisonVar(name, op, name2, map2); // Can throw an exception
             return c;
@@ -1082,8 +1088,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
     else { // V2 is value string
         // printf("v2 is value string\n");
         try {
-            auto* c = map->getComparison(name, op, v2); // Can throw an exception
-            return c;
+            return map->getComparison(name, op, v2); // Can throw an exception
         }
         catch ( std::exception& e ) {
             printf("Invalid argument passed to trigger test: %s %s %s\n", var.c_str(), opstr.c_str(), v2.c_str());
