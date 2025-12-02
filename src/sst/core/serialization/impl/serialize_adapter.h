@@ -43,13 +43,19 @@ class serialize_impl<T, std::enable_if_t<is_adapter_v<T>>>
         switch ( ser.mode() ) {
         case serializer::MAP:
             ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<T>(&v));
-            SST_SER_NAME(static_cast<S&>(v).c, "container",
-                options | SerOption::map_read_only); // serialize the underlying container
+
+            // For std::priority_queue, mark the underlying container read-only
+            if constexpr ( is_same_type_template_v<T, std::priority_queue> ) options |= SerOption::map_read_only;
+
+            // serialize the underlying container
+            SST_SER_NAME(static_cast<S&>(v).c, "container", options);
+
             ser.mapper().map_hierarchy_end();
             break;
 
         default:
-            SST_SER(static_cast<S&>(v).c, options); // serialize the underlying container
+            // serialize the underlying container
+            SST_SER(static_cast<S&>(v).c, options);
             break;
         }
     }
