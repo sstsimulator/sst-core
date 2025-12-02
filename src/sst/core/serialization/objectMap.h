@@ -1279,53 +1279,64 @@ public:
         // Only support arithmetic types for now
         if constexpr ( std::is_arithmetic_v<T> ) {
             if ( type == "int" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<int*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, int>(
+                    name, addr_, op, name2, static_cast<int*>(var2->getAddr()));
             }
-            else if ( type == "unsigned int" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<unsigned*>(var2->getAddr()));
+            else if ( type == "unsigned" || type == "unsigned int" ) {
+                return new ObjectMapComparison_var<REF, unsigned>(
+                    name, addr_, op, name2, static_cast<unsigned*>(var2->getAddr()));
             }
             else if ( type == "long" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<long*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, long>(
+                    name, addr_, op, name2, static_cast<long*>(var2->getAddr()));
             }
             else if ( type == "unsigned long" ) {
-                return new ObjectMapComparison_var(
+                return new ObjectMapComparison_var<REF, unsigned long>(
                     name, addr_, op, name2, static_cast<unsigned long*>(var2->getAddr()));
             }
             else if ( type == "char" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<char*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, char>(
+                    name, addr_, op, name2, static_cast<char*>(var2->getAddr()));
             }
             else if ( type == "signed char" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<signed char*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, signed char>(
+                    name, addr_, op, name2, static_cast<signed char*>(var2->getAddr()));
             }
             else if ( type == "unsigned char" ) {
-                return new ObjectMapComparison_var(
+                return new ObjectMapComparison_var<REF, unsigned char>(
                     name, addr_, op, name2, static_cast<unsigned char*>(var2->getAddr()));
             }
             else if ( type == "short" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<short*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, short>(
+                    name, addr_, op, name2, static_cast<short*>(var2->getAddr()));
             }
             else if ( type == "unsigned short" ) {
-                return new ObjectMapComparison_var(
+                return new ObjectMapComparison_var<REF, unsigned short>(
                     name, addr_, op, name2, static_cast<unsigned short*>(var2->getAddr()));
             }
             else if ( type == "long long" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<long long*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, long long>(
+                    name, addr_, op, name2, static_cast<long long*>(var2->getAddr()));
             }
             else if ( type == "unsigned long long" ) {
-                return new ObjectMapComparison_var(
+                return new ObjectMapComparison_var<REF, unsigned long long>(
                     name, addr_, op, name2, static_cast<unsigned long long*>(var2->getAddr()));
             }
             else if ( type == "bool" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<bool*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, bool>(
+                    name, addr_, op, name2, static_cast<bool*>(var2->getAddr()));
             }
             else if ( type == "float" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<float*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, float>(
+                    name, addr_, op, name2, static_cast<float*>(var2->getAddr()));
             }
             else if ( type == "double" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<double*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, double>(
+                    name, addr_, op, name2, static_cast<double*>(var2->getAddr()));
             }
             else if ( type == "long double" ) {
-                return new ObjectMapComparison_var(name, addr_, op, name2, static_cast<long double*>(var2->getAddr()));
+                return new ObjectMapComparison_var<REF, long double>(
+                    name, addr_, op, name2, static_cast<long double*>(var2->getAddr()));
             }
         } // end if first var is arithmetic
 
