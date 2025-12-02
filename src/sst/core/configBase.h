@@ -737,7 +737,7 @@ from_string(T& var, std::string arg)
     try {
         var = SST::Core::from_string<T>(arg);
     }
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         fprintf(stderr, "ERROR: For option \"%s\", failed to parse argument: \"%s\"\n",
             ConfigBase::currently_parsing_option.c_str(), arg.c_str());
         return -1;
@@ -759,7 +759,7 @@ from_string_default(T& var, std::string arg, const T& default_value)
         try {
             var = SST::Core::from_string<T>(arg);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             fprintf(stderr, "ERROR: For option \"%s\", failed to parse argument: \"%s\"\n",
                 ConfigBase::currently_parsing_option.c_str(), arg.c_str());
             return -1;

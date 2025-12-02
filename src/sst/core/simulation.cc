@@ -990,7 +990,7 @@ Simulation_impl::run()
                 act->setDeliveryTime(currentSimCycle + offset);
                 timeVortex->insert(act);
             }
-            catch ( std::exception& e ) {
+            catch ( const std::exception& e ) {
                 sim_output.fatal(CALL_INFO, 1, "Invalid format for time in interactive start: %s\n", e.what());
             }
         }
