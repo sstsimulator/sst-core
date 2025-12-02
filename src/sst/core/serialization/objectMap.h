@@ -59,7 +59,7 @@ struct ObjectMultimapCmp
                 if ( *eb == '\0' && errno == 0 ) return na < nb;
             }
         }
-        return std::less()(a, b);
+        return std::less<>()(a, b);
     }
 };
 
