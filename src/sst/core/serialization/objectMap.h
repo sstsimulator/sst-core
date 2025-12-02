@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <type_traits>
