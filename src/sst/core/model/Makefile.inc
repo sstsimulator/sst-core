@@ -8,12 +8,9 @@
 sst_core_sources += \
 	model/sstmodel.h \
 	model/sstmodel.cc \
-	model/configComponent.h \
 	model/configComponent.cc \
 	model/configGraph.cc \
-	model/configLink.h \
 	model/configLink.cc \
-	model/configStatistic.h \
 	model/configStatistic.cc \
 	model/element_python.h \
 	model/element_python.cc \
@@ -30,7 +27,10 @@ sst_core_sources += \
 
 
 nobase_dist_sst_HEADERS += \
+	model/configComponent.h \
 	model/configGraph.h \
+	model/configLink.h \
+	model/configStatistic.h \
 	model/element_python.h
 
 
