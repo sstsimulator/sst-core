@@ -86,7 +86,7 @@ flag_default_true(bool& var, std::string arg)
         try {
             var = SST::Core::from_string<bool>(arg);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             fprintf(stderr, "ERROR: For option \"%s\", failed to parse \"%s\" as a boolean\n",
                 ConfigBase::currently_parsing_option.c_str(), arg.c_str());
             return -1;
@@ -105,7 +105,7 @@ flag_default_false(bool& var, std::string arg)
         try {
             var = SST::Core::from_string<bool>(arg);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             fprintf(stderr, "ERROR: For option \"%s\", failed to parse \"%s\" as a boolean\n",
                 ConfigBase::currently_parsing_option.c_str(), arg.c_str());
             return -1;

@@ -376,7 +376,7 @@ SimpleDebugger::cmd_verbose(std::vector<std::string>& tokens)
         try {
             verbosity = SST::Core::from_string<uint32_t>(tokens[1]);
         }
-        catch ( std::invalid_argument& e ) {
+        catch ( const std::invalid_argument& e ) {
             std::cout << "Invalid mask " << tokens[1] << std::endl;
         }
     }
@@ -521,7 +521,7 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
             try {
                 recurse = SST::Core::from_string<int>(num);
             }
-            catch ( std::invalid_argument& e ) {
+            catch ( const std::invalid_argument& e ) {
                 printf("Invalid number format specified with -r: %s\n", tok.c_str());
                 return;
             }
@@ -617,7 +617,7 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
     try {
         var->set(value);
     }
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         printf("Invalid format: %s\n", tokens[2].c_str());
     }
     var->selectParent();
@@ -640,7 +640,7 @@ SimpleDebugger::cmd_run(std::vector<std::string>& tokens)
             std::string    msg = format_string("Ran clock for %" PRI_SIMTIME " sim cycles", tc->getFactor());
             schedule_interactive(tc->getFactor(), msg);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             printf("Unknown time in call to run: %s\n", tokens[1].c_str());
             return;
         }
@@ -928,7 +928,7 @@ SimpleDebugger::cmd_history(std::vector<std::string>& tokens)
         try {
             recs = (int)SST::Core::from_string<int>(tokens[1]);
         }
-        catch ( std::invalid_argument& e ) {
+        catch ( const std::invalid_argument& e ) {
             std::cout << "history: Ignoring arg1 (" << tokens[1] << ")" << std::endl;
         }
     }
@@ -1004,25 +1004,20 @@ SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
 Core::Serialization::ObjectMapComparison*
 parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj, std::string& name)
 {
-
-    std::string                                  var("");
-    Core::Serialization::ObjectMapComparison::Op op = Core::Serialization::ObjectMapComparison::Op::INVALID;
-    std::string                                  v2("");
-    std::string                                  name2("");
-    std::string                                  opstr("");
-
     // Get first comparison
-    var = tokens[index++];
-    if ( index == tokens.size() ) {
+    std::string var = tokens[index++];
+    if ( index >= tokens.size() ) {
         printf("Invalid format for trigger test\n");
         return nullptr;
     }
-    opstr = tokens[index++];
-    op    = Core::Serialization::ObjectMapComparison::getOperationFromString(opstr);
+    std::string                                  opstr = tokens[index++];
+    Core::Serialization::ObjectMapComparison::Op op =
+        Core::Serialization::ObjectMapComparison::getOperationFromString(opstr);
+
+    std::string v2;
     if ( op != Core::Serialization::ObjectMapComparison::Op::CHANGED ) {
-        if ( index == tokens.size() ) {
-            printf("Invalid format for trigger test. Valid formats are <var> changed"
-                   " and <var> <op> <val>\n");
+        if ( index >= tokens.size() ) {
+            printf("Invalid format for trigger test. Valid formats are <var> changed and <var> <op> <val>\n");
             return nullptr;
         }
         v2 = tokens[index++];
@@ -1054,6 +1049,17 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
 
     name = obj->getFullName() + "/" + var;
 
+    // In changed mode, we do not use v2
+    if ( op == Core::Serialization::ObjectMapComparison::Op::CHANGED ) {
+        try {
+            return map->getComparison(name, op, ""); // Can throw an exception
+        }
+        catch ( const std::exception& e ) {
+            printf("Invalid argument passed to trigger test: %s %s\n", var.c_str(), opstr.c_str());
+            return nullptr;
+        }
+    }
+
     // Check if v2 is a variable
     Core::Serialization::ObjectMap* map2 = obj->findVariable(v2);
 
@@ -1069,12 +1075,11 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
             return nullptr;
         }
 
-        name2 = obj->getFullName() + "/" + v2;
+        std::string name2 = obj->getFullName() + "/" + v2;
         try {
-            auto* c = map->getComparisonVar(name, op, name2, map2); // Can throw an exception
-            return c;
+            return map->getComparisonVar(name, op, name2, map2); // Can throw an exception
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             printf("Invalid argument passed to trigger test: %s %s %s\n", var.c_str(), opstr.c_str(), v2.c_str());
             return nullptr;
         }
@@ -1082,10 +1087,9 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
     else { // V2 is value string
         // printf("v2 is value string\n");
         try {
-            auto* c = map->getComparison(name, op, v2); // Can throw an exception
-            return c;
+            return map->getComparison(name, op, v2); // Can throw an exception
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             printf("Invalid argument passed to trigger test: %s %s %s\n", var.c_str(), opstr.c_str(), v2.c_str());
             return nullptr;
         }
@@ -1262,7 +1266,7 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
             return;
         }
     } // try/catch  TODO: need to revisit what can actually throw an exception
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         printf("Invalid format for watch command\n");
         return;
     }
@@ -1346,7 +1350,7 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
     try {
         index = (long unsigned int)SST::Core::from_string<int>(tokens[1]);
     }
-    catch ( std::invalid_argument& e ) {
+    catch ( const std::invalid_argument& e ) {
         printf("Invalid index format specified. The unwatch command requires that "
                "one of the index shown when "
                "\"watch\" is run with no arguments be specified\n");
@@ -1423,7 +1427,7 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
         // Setup Trace Buffer
         return new Core::Serialization::TraceBuffer(obj, bufsize, pdelay);
     }
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         std::cout << "Invalid buffer argument passed to trace command\n";
         return nullptr;
     }
@@ -1559,7 +1563,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
             return;
         }
     }
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         printf("Invalid format for trace command\n");
         return;
     }
@@ -1705,7 +1709,7 @@ CommandHistoryBuffer::findEvent(const std::string& s, std::string& newcmd)
     try {
         event = (int)SST::Core::from_string<int>(s);
     }
-    catch ( std::invalid_argument& e ) {
+    catch ( const std::invalid_argument& e ) {
         // std::cout << "history: invalid event: " << s << std::endl;
         return false;
     }
@@ -1734,7 +1738,7 @@ CommandHistoryBuffer::findOffset(const std::string& s, std::string& newcmd)
     try {
         offset = (int)SST::Core::from_string<int>(s);
     }
-    catch ( std::invalid_argument& e ) {
+    catch ( const std::invalid_argument& e ) {
         std::cout << "history: invalid offset: " << s << std::endl;
         return false;
     }

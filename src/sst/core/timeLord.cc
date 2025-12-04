@@ -124,7 +124,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         nano = getTimeConverter("1ns");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         nano = nullptr;
@@ -133,7 +133,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         micro = getTimeConverter("1us");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         micro = nullptr;
@@ -142,7 +142,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         milli = getTimeConverter("1ms");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         milli = nullptr;

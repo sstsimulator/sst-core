@@ -344,7 +344,7 @@ UnitAlgebra::init(const std::string& val)
     try {
         value = sst_big_num(number);
     }
-    catch ( std::runtime_error& e ) {
+    catch ( const std::runtime_error& e ) {
         throw InvalidNumberString(number);
     }
 

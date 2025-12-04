@@ -85,7 +85,7 @@ private:
             val                 = value;
             return 0;
         }
-        catch ( std::invalid_argument& e ) {
+        catch ( const std::invalid_argument& e ) {
             fprintf(stderr, "Failed to parse '%s' as number for option --verbose\n", arg.c_str());
             return -1;
         }
