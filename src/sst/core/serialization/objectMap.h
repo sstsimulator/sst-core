@@ -607,7 +607,7 @@ public:
 
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) final { variables_.emplace(name, obj); }
+    void addVariable(const std::string& name, ObjectMap* obj) final override { variables_.emplace(name, obj); }
 
     /**
        Get the list of child variables contained in this ObjectMap
@@ -616,7 +616,7 @@ public:
        child variables. pair.first is the name of the variable in the
        context of this object. pair.second is a pointer to the ObjectMap.
      */
-    const std::multimap<std::string, ObjectMap*>& getVariables() const final { return variables_; }
+    const std::multimap<std::string, ObjectMap*>& getVariables() const final override { return variables_; }
 }; // class ObjectMapWithChildren
 
 /**
@@ -1289,7 +1289,7 @@ public:
 
        @return true
      */
-    bool isFundamental() const final { return true; }
+    bool isFundamental() const final override { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
@@ -1439,7 +1439,7 @@ public:
     explicit ObjectMapContainer(T* addr) :
         addr_(addr)
     {}
-    bool        isContainer() const final { return true; }
+    bool        isContainer() const final override { return true; }
     std::string getType() const override { return demangle_name(typeid(T).name()); }
     void*       getAddr() const override { return addr_; }
     ~ObjectMapContainer() override = default;

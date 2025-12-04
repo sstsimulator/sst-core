@@ -415,25 +415,25 @@ protected:
     UnitAlgebra* addr_ = nullptr;
 
 public:
-    std::string get() const final { return addr_->toStringBestSI(); }
-    void        set_impl(const std::string& value) override { addr_->init(value); }
+    std::string get() const final override { return addr_->toStringBestSI(); }
+    void        set_impl(const std::string& value) final override { addr_->init(value); }
 
     // We'll act like we're a fundamental type
-    bool isFundamental() const final { return true; }
+    bool isFundamental() const final override { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of varaible
      */
-    void* getAddr() const final { return addr_; }
+    void* getAddr() const final override { return addr_; }
 
     explicit ObjectMapFundamental(UnitAlgebra* addr) :
         ObjectMap(),
         addr_(addr)
     {}
 
-    std::string getType() const final { return demangle_name(typeid(UnitAlgebra).name()); }
+    std::string getType() const override { return demangle_name(typeid(UnitAlgebra).name()); }
 };
 
 template <>
