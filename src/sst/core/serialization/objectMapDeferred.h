@@ -34,7 +34,7 @@ public:
 
        @return empty type of object
      */
-    std::string getType() const final { return type_; }
+    std::string getType() const final override { return type_; }
 
     /**
        Returns nullptr since there is no underlying object being
@@ -42,7 +42,7 @@ public:
 
        @return nullptr
      */
-    void* getAddr() const final { return addr_; }
+    void* getAddr() const final override { return addr_; }
 
 
     /**
@@ -52,7 +52,7 @@ public:
        ObjectMap's child variables. pair.first is the name of the
        variable in the context of this object.
      */
-    const ObjectMultimap& getVariables() const final { return obj_->getVariables(); }
+    const std::multimap<std::string, ObjectMap*>& getVariables() const final override { return obj_->getVariables(); }
 
     /**
        For the Deferred Build, the only variable that gets added will
@@ -61,7 +61,7 @@ public:
        @param name Name of the object
        @param obj ObjectMap to add as a variable
      */
-    void addVariable(const std::string& name, ObjectMap* obj) final
+    void addVariable(const std::string& name, ObjectMap* obj) final override
     {
         // This should be the real ObjectMap for the class we are
         // representing. We will check it by making sure the name
@@ -84,7 +84,7 @@ public:
     ~ObjectMapDeferred() override { delete obj_; }
 
 protected:
-    void activate_callback() final
+    void activate_callback() final override
     {
         // On activate, we need to create the ObjectMap data structure
         if ( obj_ ) return;
@@ -96,7 +96,7 @@ protected:
         SST_SER_NAME(addr_, "!proxy!");
     }
 
-    void deactivate_callback() final
+    void deactivate_callback() final override
     {
         // On deactivate, need to delete obj_;
         obj_->decRefCount();
