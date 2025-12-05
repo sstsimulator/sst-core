@@ -569,7 +569,7 @@ public:
                     }
                     ret.push_back(tool);
                 }
-                catch ( std::out_of_range& e ) {
+                catch ( const std::out_of_range& e ) {
                     // This shouldn't happen.  If it does, then something
                     // didn't get initialized correctly.
                     Output::getDefaultObject().fatal(CALL_INFO_LONG, 1,
@@ -578,7 +578,7 @@ public:
                 }
             }
         }
-        catch ( std::out_of_range& e ) {
+        catch ( const std::out_of_range& e ) {
             // point not turned on, return nullptr
             return ret;
         }

@@ -614,7 +614,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
         TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
         ret               = getCurrentSimTime(*tc);
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // base is too small for the core timebase, fall back to using UnitAlgebra
         ret = processCurrentTimeWithUnderflowedBase(base);
     }

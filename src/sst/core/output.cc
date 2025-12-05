@@ -528,7 +528,7 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
         try {
             sim = Simulation_impl::getSimulation();
         }
-        catch ( std::out_of_range& e ) {
+        catch ( const std::out_of_range& e ) {
             // do nothing
         }
 

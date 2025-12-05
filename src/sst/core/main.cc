@@ -332,7 +332,7 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
         try {
             model_name = extension_map.at(extension);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
             SST_Exit(EXIT_FAILURE);
         }
@@ -356,7 +356,7 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
         try {
             graph = modelGen->createConfigGraph();
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
         }
     }
@@ -373,7 +373,7 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
         try {
             Comms::broadcast(cfg, 0);
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             g_output.fatal(CALL_INFO, -1, "Error encountered broadcasting configuration object: %s\n", e.what());
         }
     }
@@ -418,7 +418,7 @@ start_partitioning(const RankInfo& world_size, const RankInfo& myRank, Factory* 
                 delete pgraph;
             }
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
         }
 
@@ -1200,7 +1200,7 @@ main(int argc, char* argv[])
                 delete your_graph;
             }
         }
-        catch ( std::exception& e ) {
+        catch ( const std::exception& e ) {
             g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
         }
     }
@@ -1333,7 +1333,7 @@ main(int argc, char* argv[])
 
         Simulation_impl::shutdown();
     }
-    catch ( std::exception& e ) {
+    catch ( const std::exception& e ) {
         g_output.fatal(CALL_INFO, -1, "Error encountered during simulation: %s\n", e.what());
     }
     Simulation_impl::basicPerf.endRegion("execute");
