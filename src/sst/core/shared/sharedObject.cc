@@ -45,8 +45,7 @@ getNumRanks()
 void
 SharedObjectDataManager::updateState(bool finalize)
 {
-    // Wait for both mtx and update_mtx to be locked before updating state
-    std::scoped_lock lock(mtx, update_mtx);
+    std::lock_guard<std::mutex> lock(update_mtx);
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Exchange data between ranks
