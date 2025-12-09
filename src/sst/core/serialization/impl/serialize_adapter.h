@@ -31,22 +31,45 @@ constexpr bool is_adapter_v = is_same_type_template_v<T, std::stack> || is_same_
 
 // Serialize adapter classes std::stack, std::queue, std::priority_queue
 template <typename T>
-class serialize_impl<T, std::enable_if_t<is_adapter_v<std::remove_pointer_t<T>>>>
+class serialize_impl<T, std::enable_if_t<is_adapter_v<T>>>
 {
-    struct S : std::remove_pointer_t<T>
+    struct S : T
     {
-        using std::remove_pointer_t<T>::c; // access protected container
+        using T::c; // access protected container
     };
 
     void operator()(T& v, serializer& ser, ser_opt_t options)
     {
-        if constexpr ( std::is_pointer_v<T> ) {
-            if ( ser.mode() == serializer::UNPACK ) v = new std::remove_pointer_t<T>;
-            SST_SER(static_cast<S&>(*v).c, options); // serialize the underlying container
+        switch ( ser.mode() ) {
+        case serializer::MAP:
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<T>(&v));
+
+            // For std::priority_queue, mark the underlying container read-only
+            if constexpr ( is_same_type_template_v<T, std::priority_queue> ) options |= SerOption::map_read_only;
+
+            // serialize the underlying container
+            SST_SER_NAME(static_cast<S&>(v).c, "container", options);
+
+            ser.mapper().map_hierarchy_end();
+            break;
+
+        default:
+            // serialize the underlying container
+            SST_SER(static_cast<S&>(v).c, options);
+            break;
         }
-        else {
-            SST_SER(static_cast<S&>(v).c, options); // serialize the underlying container
-        }
+    }
+
+    SST_FRIEND_SERIALIZE();
+};
+
+template <typename T>
+class serialize_impl<T*, std::enable_if_t<is_adapter_v<T>>>
+{
+    void operator()(T*& obj, serializer& ser, ser_opt_t options)
+    {
+        if ( ser.mode() == serializer::UNPACK ) obj = new T;
+        SST_SER(*obj, options);
     }
     SST_FRIEND_SERIALIZE();
 };
