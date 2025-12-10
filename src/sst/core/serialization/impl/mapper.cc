@@ -16,8 +16,6 @@
 #undef SST_INCLUDING_SERIALIZER_H
 #include "sst/core/serialization/objectMap.h"
 
-#include <iostream>
-
 namespace SST::Core::Serialization::pvt {
 
 void

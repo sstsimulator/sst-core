@@ -12,22 +12,23 @@
 #ifndef SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 #define SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
 
-// clang-format off
 #include "sst/core/eli/elementinfo.h"
-#include <cstdint>
-#include <ostream>
-#include <sstream>
-#include <sst/core/interactiveConsole.h>
-#include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/impl/interactive/cmdLineEditor.h"
-#include <sst/core/watchPoint.h>
+#include "sst/core/interactiveConsole.h"
+#include "sst/core/serialization/objectMapDeferred.h"
+#include "sst/core/watchPoint.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <functional>
+#include <list>
 #include <map>
+#include <ostream>
+#include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
-// clang-format on
 
 namespace SST::IMPL::Interactive {
 
