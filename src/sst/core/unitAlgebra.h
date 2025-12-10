@@ -26,6 +26,7 @@
 #include <mutex>
 #include <ostream>
 #include <string>
+#include <typeinfo>
 #include <vector>
 
 namespace SST {

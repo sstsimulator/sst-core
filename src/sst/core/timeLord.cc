@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
+#include <typeinfo>
 
 namespace SST {
 
