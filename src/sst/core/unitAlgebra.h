@@ -451,9 +451,7 @@ class serialize_impl<UnitAlgebra>
         case serializer::MAP:
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
-            if ( options & SerOption::map_read_only ) {
-                ser.mapper().setNextObjectReadOnly();
-            }
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
             ser.mapper().map_primitive(ser.getMapName(), obj_map);
             break;
         }

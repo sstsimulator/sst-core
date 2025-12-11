@@ -64,7 +64,7 @@ class serialize_impl<T,
                     obj_map = new ObjectMapFundamental<std::remove_pointer_t<T>>(t);
                 else
                     obj_map = new ObjectMapFundamental<T>(&t);
-                if ( SerOption::is_set(options, SerOption::map_read_only) ) ser.mapper().setNextObjectReadOnly();
+                if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
                 ser.mapper().map_primitive(ser.getMapName(), obj_map);
             }
             else {
