@@ -20,6 +20,7 @@
 #include "sst/core/serialization/serializer.h"
 
 #include <optional>
+#include <string>
 
 namespace SST::Core::Serialization {
 
@@ -27,18 +28,57 @@ namespace SST::Core::Serialization {
 template <typename T>
 class serialize_impl<std::optional<T>>
 {
+    // ObjectMap class representing has_value state of a std::optional
+    // If this ObjectMap is changed, the std::optional's has_value state is changed
+    // This is only used in mapping mode
+    class ObjectMapOptionalHasValue : public ObjectMapFundamental<bool>
+    {
+        std::optional<T>& obj;
+        bool              has_value;
+        ObjectMap* const  parent;
+
+    public:
+        ObjectMapOptionalHasValue(std::optional<T>& obj, ObjectMap* parent) :
+            ObjectMapFundamental<bool>(&has_value),
+            obj(obj),
+            has_value(obj),
+            parent(parent)
+        {}
+
+        void set_impl(const std::string& value) override
+        {
+            bool old = has_value;
+            ObjectMapFundamental<bool>::set_impl(value);
+            if ( has_value == old ) return;
+
+            if ( has_value ) {
+                obj.emplace();
+                parent->addVariable("value", ObjectMapSerialization(*obj, "value"));
+            }
+            else {
+                obj.reset();
+                parent->removeVariable("value");
+            }
+        }
+    };
+
     void operator()(std::optional<T>& obj, serializer& ser, ser_opt_t options)
     {
-        bool has_value = false;
+        bool has_value = obj.has_value();
 
         switch ( ser.mode() ) {
+        case serializer::MAP:
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<std::optional<T>>(&obj));
+            ser.mapper().map_primitive("has_value", new ObjectMapOptionalHasValue(obj, ser.mapper().get_top()));
+            if ( obj ) ser.mapper().map_primitive("value", ObjectMapSerialization(*obj, "value"));
+            ser.mapper().map_hierarchy_end();
+            return;
+
         case serializer::SIZER:
-            has_value = obj.has_value();
             ser.size(has_value);
             break;
 
         case serializer::PACK:
-            has_value = obj.has_value();
             ser.pack(has_value);
             break;
 
@@ -49,12 +89,6 @@ class serialize_impl<std::optional<T>>
             else
                 obj.reset();
             break;
-
-        case serializer::MAP:
-        {
-            // TODO: how to map std::optional ?
-            return;
-        }
         }
 
         // Serialize the optional object if it is present

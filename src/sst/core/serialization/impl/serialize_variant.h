@@ -29,17 +29,72 @@ namespace SST::Core::Serialization {
 template <typename... Types>
 class serialize_impl<std::variant<Types...>>
 {
+    // ObjectMap class representing index of a std::variant
+    // If this ObjectMap is changed, the std::variant's active member is changed
+    // This is only used in mapping mode
+    class ObjectMapVariantIndex : public ObjectMapFundamental<size_t>
+    {
+        std::variant<Types...>& obj;
+        size_t                  index;
+        ObjectMap* const        parent;
+
+    public:
+        ObjectMapVariantIndex(std::variant<Types...>& obj, ObjectMap* parent) :
+            ObjectMapFundamental<size_t>(&index),
+            obj(obj),
+            index(obj.index()),
+            parent(parent)
+        {}
+
+        void set_impl(const std::string& value) override
+        {
+            size_t old = index;
+            ObjectMapFundamental<size_t>::set_impl(value);
+            if ( index == old ) return;
+
+            // An index of std::variant_npos (or -1 converted to size_t, usually the same) indicates
+            // valueless_by_exception
+            if ( index == std::variant_npos || index == -size_t { 1 } ) {
+                parent->removeVariable("value");
+                return;
+            }
+
+            // If the new index is invalid, exit early with an error message
+            if ( index >= sizeof...(Types) ) {
+                printf("Index out of range\n");
+                return;
+            }
+
+            // Remove the value member
+            parent->removeVariable("value");
+
+            // Change the variant's active index
+            set_index<std::index_sequence_for<Types...>>::array.at(index)(obj);
+
+            // Add a value member of the variant's new alternative
+            std::visit([&](auto& x) { parent->addVariable("value", ObjectMapSerialization(x, "value")); }, obj);
+        }
+    };
+
     void operator()(std::variant<Types...>& obj, serializer& ser, ser_opt_t UNUSED(options))
     {
-        size_t index = std::variant_npos;
+        size_t index = obj.index();
+
         switch ( ser.mode() ) {
+        case serializer::MAP:
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<std::variant<Types...>>(&obj));
+            ser.mapper().map_primitive("index", new ObjectMapVariantIndex(obj, ser.mapper().get_top()));
+            if ( index != std::variant_npos )
+                std::visit(
+                    [&](auto& x) { ser.mapper().map_primitive("value", ObjectMapSerialization(x, "value")); }, obj);
+            ser.mapper().map_hierarchy_end();
+            return;
+
         case serializer::SIZER:
-            index = obj.index();
             ser.size(index);
             break;
 
         case serializer::PACK:
-            index = obj.index();
             ser.pack(index);
             break;
 
@@ -50,12 +105,6 @@ class serialize_impl<std::variant<Types...>>
             // We cannot portably restore valueless_by_exception but we do nothing in that case.
             if ( index != std::variant_npos ) set_index<std::index_sequence_for<Types...>>::array.at(index)(obj);
             break;
-
-        case serializer::MAP:
-        {
-            // TODO -- how to handle mapping of std::variant ?
-            return;
-        }
         }
 
         // std::visit instantiates the generic lambda [&](auto& x) { SST_SER(x); } for each variant
