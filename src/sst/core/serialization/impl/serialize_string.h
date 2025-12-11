@@ -74,10 +74,9 @@ class serialize_impl<T, std::enable_if_t<std::is_same_v<std::remove_pointer_t<T>
         const auto& sPtr = get_ptr(str);
         const auto  mode = ser.mode();
         if ( mode == serializer::MAP ) {
-            if ( options & SerOption::map_read_only ) {
-                ser.mapper().setNextObjectReadOnly();
-            }
-            ser.mapper().map_primitive(ser.getMapName(), new ObjectMapString(sPtr));
+            ObjectMap* obj_map = new ObjectMapString(sPtr);
+            if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
+            ser.mapper().map_primitive(ser.getMapName(), obj_map);
         }
         else {
             if constexpr ( std::is_pointer_v<T> ) {
