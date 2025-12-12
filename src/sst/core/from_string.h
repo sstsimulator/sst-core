@@ -112,14 +112,16 @@ std::enable_if_t<!std::is_enum_v<T>, std::string>
 to_string(const T& input)
 {
     if constexpr ( std::is_floating_point_v<T> ) {
-        std::stringstream s;
-        T                 abs_val = input < 0 ? -input : input;
+        std::ostringstream s;
+        T                  abs_val = input < 0 ? -input : input;
         if ( abs_val > (T)10e6 || abs_val < (T)10e-6 )
             s << std::scientific << std::setprecision(std::numeric_limits<double>::max_digits10) << input;
         else
             s << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << input;
-        return s.str().c_str();
+        return s.str();
     }
+    else if constexpr ( std::is_same_v<T, bool> )
+        return input ? "true" : "false";
     else if constexpr ( std::is_arithmetic_v<T> )
         return std::to_string(input);
     else
