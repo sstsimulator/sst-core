@@ -391,7 +391,7 @@ public:
 
     /**
        Adds a variable to this ObjectMap.  NOTE: calls to this
-       function will be ignore if isFundamental() returns true.
+       function will be ignored if isFundamental() returns true.
 
        @param name Name of the object in the context of the parent class
 
@@ -399,6 +399,15 @@ public:
 
      */
     virtual void addVariable(const std::string& UNUSED(name), ObjectMap* UNUSED(obj)) {}
+
+    /**
+       Removes a variable from this ObjectMap.  NOTE: calls to this
+       function will be ignored if isFundamental() returns true.
+
+       @param name Name of the object in the context of the parent class
+    */
+
+    virtual void removeVariable(const std::string& UNUSED(name)) {}
 
     /************ Functions for getting/setting Object's Value *************/
 
@@ -448,7 +457,7 @@ public:
        classes for fundamentals will know how to convert the string to
        a value of the approproprite type.  NOTE: this function is only
        valid for ObjectMaps that represent non-fundamental types or
-       classes not treated as fundamentatl types (i.e. they must have
+       classes not treated as fundamental types (i.e. they must have
        children).
 
        @param var Name of variable
@@ -587,6 +596,17 @@ private:
 }; // class ObjectMap
 
 /**
+   Dump an ObjectMap structure in a formatted way to a stream
+**/
+std::ostream& dumpObjectMap(std::ostream& os, const ObjectMap& obj, size_t indent = 0);
+
+inline std::ostream&
+operator<<(std::ostream& os, const ObjectMap& obj)
+{
+    return dumpObjectMap(os, obj);
+}
+
+/**
    ObjectMap object for non-fundamental, non-container types.  This
    class allows for child variables.
  */
@@ -634,6 +654,13 @@ public:
        @param obj ObjectMap to add as a variable
      */
     void addVariable(const std::string& name, ObjectMap* obj) final override { variables_.emplace(name, obj); }
+
+    /**
+       Removes a variable from this ObjectMap
+
+       @param name Name of the object in the context of this ObjectMap
+     */
+    void removeVariable(const std::string& name) final override { variables_.erase(name); }
 
     /**
        Get the list of child variables contained in this ObjectMap

@@ -36,6 +36,8 @@ public:
         obj_ { object }
     {}
 
+    ObjectMap* get_top() const { return obj_.back(); }
+
     void map_primitive(const std::string& name, ObjectMap* map) { obj_.back()->addVariable(name, map); }
 
     void map_container(const std::string& name, ObjectMap* map) { obj_.back()->addVariable(name, map); }
