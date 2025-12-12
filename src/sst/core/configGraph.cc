@@ -738,7 +738,8 @@ ConfigComponent::checkPorts() const
     for ( unsigned int i = 0; i < links.size(); i++ ) {
         const ConfigLink* link = graph_links[links[i]];
         for ( int j = 0; j < 2; j++ ) {
-
+            // If this is a nonlocal link, then there is no port to check for index 1
+            if ( link->nonlocal && j == 1 ) continue;
             if ( link->component[j] == id ) {
                 // If port is not found, print an error
                 if ( !Factory::getFactory()->isPortNameValid(type, link->port[j]) ) {
