@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
+#include <typeinfo>
 
 namespace SST {
 
@@ -124,7 +125,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         nano = getTimeConverter("1ns");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         nano = nullptr;
@@ -133,7 +134,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         micro = getTimeConverter("1us");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         micro = nullptr;
@@ -142,7 +143,7 @@ TimeLord::init(const std::string& _timeBaseString)
     try {
         milli = getTimeConverter("1ms");
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
         milli = nullptr;
@@ -194,7 +195,7 @@ protected:
 
 public:
     // We'll treat this as a period when printing
-    std::string get() override
+    std::string get() const final override
     {
         if ( nullptr == *addr_ ) return "nullptr";
         TimeLord*   timelord = Simulation_impl::getTimeLord();
@@ -203,17 +204,17 @@ public:
         return base.toStringBestSI();
     }
 
-    void set_impl(const std::string& UNUSED(value)) override { return; }
+    void set_impl(const std::string& UNUSED(value)) final override { return; }
 
     // We'll act like we're a fundamental type
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final override { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of varaible
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const final override { return addr_; }
 
     explicit ObjectMapFundamental(TimeConverter** addr) :
         ObjectMap(),
@@ -222,7 +223,7 @@ public:
         setReadOnly(true);
     }
 
-    std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
+    std::string getType() const override { return demangle_name(typeid(TimeConverter).name()); }
 };
 
 template <>
@@ -236,7 +237,7 @@ protected:
 
 public:
     // We'll treat this as a period when printing
-    std::string get() override
+    std::string get() const final override
     {
         TimeLord*   timelord = Simulation_impl::getTimeLord();
         UnitAlgebra base     = timelord->getTimeBase();
@@ -244,17 +245,17 @@ public:
         return base.toStringBestSI();
     }
 
-    void set_impl(const std::string& UNUSED(value)) override { return; }
+    void set_impl(const std::string& UNUSED(value)) final override { return; }
 
     // We'll act like we're a fundamental type
-    bool isFundamental() override { return true; }
+    bool isFundamental() const final override { return true; }
 
     /**
        Get the address of the variable represented by the ObjectMap
 
        @return Address of varaible
      */
-    void* getAddr() override { return addr_; }
+    void* getAddr() const final override { return addr_; }
 
     explicit ObjectMapFundamental(TimeConverter* addr) :
         ObjectMap(),
@@ -263,7 +264,7 @@ public:
         setReadOnly(true);
     }
 
-    std::string getType() override { return demangle_name(typeid(TimeConverter).name()); }
+    std::string getType() const override { return demangle_name(typeid(TimeConverter).name()); }
 };
 
 void
@@ -278,9 +279,7 @@ serialize_impl<TimeConverter>::operator()(TimeConverter& s, serializer& ser, ser
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter>(&s);
-        if ( options & SerOption::map_read_only ) {
-            ser.mapper().setNextObjectReadOnly();
-        }
+        if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }
@@ -321,9 +320,7 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, s
     case serializer::MAP:
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
-        if ( options & SerOption::map_read_only ) {
-            ser.mapper().setNextObjectReadOnly();
-        }
+        if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
         ser.mapper().map_primitive(ser.getMapName(), obj_map);
         break;
     }

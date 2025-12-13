@@ -19,17 +19,8 @@
 
 namespace SST::Core::Serialization {
 
-// Static variable instantiation
-const std::multimap<std::string, ObjectMap*> ObjectMap::emptyVars;
-
 std::string
-ObjectMap::getName()
-{
-    return mdata_ ? mdata_->name : "";
-}
-
-std::string
-ObjectMap::getFullName()
+ObjectMap::getFullName() const
 {
     if ( !mdata_ ) return "";
 
@@ -231,6 +222,21 @@ ObjectMap::listRecursive(const std::string& name, int level, int recurse)
         }
     }
     return ret;
+}
+
+std::ostream&
+dumpObjectMap(std::ostream& os, const ObjectMap& obj, size_t indent)
+{
+    for ( const auto& [name, value] : obj.getVariables() ) {
+        os << std::string(indent * 4, ' ');
+        if ( value->isFundamental() )
+            os << name << " = " << value->get() << " (" << value->getType() << ")\n";
+        else {
+            os << name << "/ (" << value->getType() << ")\n";
+            dumpObjectMap(os, *value, indent + 1);
+        }
+    }
+    return os;
 }
 
 } // namespace SST::Core::Serialization

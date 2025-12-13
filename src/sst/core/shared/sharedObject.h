@@ -17,6 +17,7 @@
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
 
+#include <cstddef>
 #include <map>
 #include <mutex>
 #include <string>
@@ -29,6 +30,8 @@ namespace SST {
 class Simulation_impl;
 
 namespace Shared {
+
+using namespace SST::Core::Serialization;
 
 namespace Private {
 Output&  getSimulationOutput();
@@ -45,7 +48,7 @@ class SharedObjectDataManager;
    shared data on each rank.  This data will be serialized and shared
    with all ranks in the simulation.
  */
-class SharedObjectChangeSet : public SST::Core::Serialization::serializable
+class SharedObjectChangeSet : public serializable
 {
 
 public:
@@ -78,7 +81,7 @@ public:
     const std::string& getName() { return name; }
 
 protected:
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
+    void serialize_order(serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectChangeSet);
 
@@ -90,7 +93,7 @@ private:
    Base class for holding SharedObject data.  The base class is needed
    so that we can have an API to manage unknown types of objects.
 */
-class SharedObjectData : public SST::Core::Serialization::serializable
+class SharedObjectData : public serializable
 {
 
     friend class SharedObjectDataManager;
@@ -211,19 +214,19 @@ protected:
      */
     virtual ~SharedObjectData() {}
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(name); }
+    void serialize_order(serializer& ser) override { SST_SER(name); }
 
     ImplementVirtualSerializable(SharedObjectData);
 };
 
-class SharedObjectDataManager //: public SST::Core::Serialization::serializable
+class SharedObjectDataManager //: public serializable
 {
 
     std::map<std::string, SharedObjectData*> shared_data;
 
     // Mutex for locking across threads
-    static std::mutex mtx;
-    static std::mutex update_mtx;
+    static inline std::mutex mtx;
+    static inline std::mutex update_mtx;
 
     bool locked;
 
@@ -270,10 +273,10 @@ public:
 
     void updateState(bool finalize);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) { SST_SER(shared_data); }
+    void serialize_order(serializer& ser) { SST_SER(shared_data); }
 };
 
-class SharedObject : public SST::Core::Serialization::serializable
+class SharedObject : public serializable
 {
 
 public:
@@ -285,8 +288,8 @@ public:
     SharedObject() {}
     virtual ~SharedObject() {}
 
-    virtual void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
-    ImplementSerializable(SST::Shared::SharedObject)
+    virtual void serialize_order(serializer& UNUSED(ser)) override {}
+    ImplementSerializable(SharedObject)
 
 protected:
     friend class SST::Simulation_impl;
@@ -294,7 +297,7 @@ protected:
     // To enable main to initialize manager on restart
     friend int ::main(int argc, char** argv);
 
-    static SharedObjectDataManager manager;
+    static inline SharedObjectDataManager manager;
 
     void incPublishCount(SharedObjectData* data) { data->incPublishCount(); }
 

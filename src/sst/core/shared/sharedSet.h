@@ -194,40 +194,49 @@ public:
     */
     inline const_iterator mutex_find(const valT& value) const { return data->mutex_find(value); }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    void serialize_order(serializer& ser) override
     {
-        SST::Shared::SharedObject::serialize_order(ser);
-        SST_SER(published);
-        bool initialized = (data != nullptr);
-        SST_SER(initialized);
+        SharedObject::serialize_order(ser);
 
-        if ( !initialized ) return;
+        const auto mode = ser.mode();
+        initialized     = data != nullptr;
 
-        switch ( ser.mode() ) {
-        case SST::Core::Serialization::serializer::SIZER:
-        case SST::Core::Serialization::serializer::PACK:
+        if ( mode == serializer::MAP )
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<SharedSet>(this));
+
+        SST_SER(published, SerOption::map_read_only);
+        SST_SER(initialized, SerOption::map_read_only);
+
+        switch ( mode ) {
+        case serializer::SIZER:
+        case serializer::PACK:
         {
+            if ( !initialized ) return;
             std::string name = data->getName();
             SST_SER(name);
             break;
         }
-        case SST::Core::Serialization::serializer::UNPACK:
+        case serializer::UNPACK:
         {
+            if ( !initialized ) return;
             std::string name;
             SST_SER(name);
             data = manager.getSharedObjectData<Data>(name);
             break;
         }
-        case SST::Core::Serialization::serializer::MAP:
-            // Add your code here
+        case serializer::MAP:
+            if ( initialized ) SST_SER_NAME(data->set, "data");
+            ser.mapper().map_hierarchy_end();
             break;
-        };
+        }
     }
-    ImplementSerializable(SST::Shared::SharedSet<valT>)
+
+    ImplementSerializable(SharedSet<valT>)
 
 private:
-    bool  published;
-    Data* data = nullptr;
+    bool  published   = false;
+    Data* data        = nullptr;
+    bool  initialized = false;
 
     class Data : public SharedObjectData
     {
@@ -320,13 +329,13 @@ private:
         virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
         virtual void                   resetChangeSet() override { change_set->clear(); }
 
-        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        void serialize_order(serializer& ser) override
         {
             SharedObjectData::serialize_order(ser);
             SST_SER(set);
         }
 
-        ImplementSerializable(SST::Shared::SharedSet<valT>::Data);
+        ImplementSerializable(SharedSet<valT>::Data);
 
     private:
         class ChangeSet : public SharedObjectChangeSet
@@ -335,14 +344,14 @@ private:
             std::set<valT> changes;
             verify_type    verify;
 
-            void serialize_order(SST::Core::Serialization::serializer& ser) override
+            void serialize_order(serializer& ser) override
             {
                 SharedObjectChangeSet::serialize_order(ser);
                 SST_SER(changes);
                 SST_SER(verify);
             }
 
-            ImplementSerializable(SST::Shared::SharedSet<valT>::Data::ChangeSet);
+            ImplementSerializable(SharedSet<valT>::Data::ChangeSet);
 
         public:
             // For serialization

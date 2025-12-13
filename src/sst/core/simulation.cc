@@ -17,7 +17,6 @@
 #include "sst/core/checkpointAction.h"
 #include "sst/core/clock.h"
 #include "sst/core/config.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"
 #include "sst/core/heartbeat.h"
@@ -25,6 +24,7 @@
 #include "sst/core/interactiveConsole.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/output.h"
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
@@ -990,7 +990,7 @@ Simulation_impl::run()
                 act->setDeliveryTime(currentSimCycle + offset);
                 timeVortex->insert(act);
             }
-            catch ( std::exception& e ) {
+            catch ( const std::exception& e ) {
                 sim_output.fatal(CALL_INFO, 1, "Invalid format for time in interactive start: %s\n", e.what());
             }
         }

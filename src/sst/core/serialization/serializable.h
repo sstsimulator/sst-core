@@ -16,6 +16,7 @@
 #include "sst/core/serialization/serialize.h"
 
 #include <cstdint>
+#include <limits>
 #include <type_traits>
 
 namespace SST::Core::Serialization {

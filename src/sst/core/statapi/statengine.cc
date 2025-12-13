@@ -14,10 +14,10 @@
 #include "sst/core/statapi/statengine.h"
 
 #include "sst/core/baseComponent.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/factory.h"
 #include "sst/core/impl/oneshotManager.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/output.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statbase.h"

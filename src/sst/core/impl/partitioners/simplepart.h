@@ -12,8 +12,8 @@
 #ifndef SST_CORE_IMPL_PARTITONERS_SIMPLEPART_H
 #define SST_CORE_IMPL_PARTITONERS_SIMPLEPART_H
 
-#include "sst/core/configGraph.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sstpart.h"
 

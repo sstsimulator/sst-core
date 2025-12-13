@@ -16,11 +16,11 @@
 #include "sst/core/model/python/pymodel.h"
 
 #include "sst/core/component.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
 #include "sst/core/memuse.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/model/element_python.h"
 #include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel_comp.h"
@@ -1216,7 +1216,7 @@ SSTPythonModelDefinition::initModel(
             try {
                 enablePythonCoverage = SST::Core::from_string<bool>(value);
             }
-            catch ( std::invalid_argument& e ) {
+            catch ( const std::invalid_argument& e ) {
                 output->fatal(CALL_INFO, 1,
                     "ERROR: Invalid format for SST_CONFIG_PYTHON_COVERAGE. Valid boolean pairs are true/false, t/f, "
                     "yes/no, y/n, on/off, or 1/0\n");

@@ -228,18 +228,18 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
 
         case serializer::MAP:
         {
-            using SST::Core::to_string;
             const std::string& name = ser.getMapName();
             ser.mapper().map_hierarchy_start(name, new ObjectMapContainer<OBJ>(&obj));
 
             if constexpr ( is_vector_bool_v<OBJ> ) {
                 // std::vector<bool>
-                size_t i = 0;
-                for ( bool e : obj )
-                    SST_SER_NAME(e, to_string(i++).c_str());
+                // Serialize reference wrappers to each bit.
+                for ( size_t i = 0; i < obj.size(); ++i )
+                    SST_SER_NAME(pvt::bit_reference_wrapper<OBJ>(obj[i]), std::to_string(i).c_str());
             }
             else if constexpr ( is_simple_map_v<OBJ> ) {
                 // non-multi maps with a simple key
+                using SST::Core::to_string;
                 for ( auto& [key, value] : obj )
                     SST_SER_NAME(value, to_string(key).c_str());
             }
@@ -251,7 +251,7 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                 size_t i = 0;
                 for ( auto& e : obj )
                     SST_SER_NAME(
-                        const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), to_string(i++).c_str());
+                        const_cast<value_type&>(reinterpret_cast<const value_type&>(e)), std::to_string(i++).c_str());
             }
             ser.mapper().map_hierarchy_end();
             break;
@@ -273,6 +273,21 @@ class serialize_impl<OBJ*, std::enable_if_t<is_insertable_v<OBJ>>>
 
     SST_FRIEND_SERIALIZE();
 };
+
+// Serialize a std::vector<bool> bit using the pvt::bit_reference_wrapper<std::vector<bool>>
+// This is only used in mapping mode
+template <typename ALLOC>
+class serialize_impl<pvt::bit_reference_wrapper<std::vector<bool, ALLOC>>>
+{
+    void operator()(pvt::bit_reference_wrapper<std::vector<bool, ALLOC>>& t, serializer& ser, ser_opt_t UNUSED(options))
+    {
+        ser.mapper().map_hierarchy_start(ser.getMapName(),
+            new ObjectMapFundamentalReference<bool, typename std::vector<bool, ALLOC>::reference>(t.ref));
+        ser.mapper().map_hierarchy_end();
+    }
+    SST_FRIEND_SERIALIZE();
+};
+
 
 } // namespace SST::Core::Serialization
 

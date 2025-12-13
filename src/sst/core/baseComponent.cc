@@ -14,10 +14,10 @@
 #include "sst/core/baseComponent.h"
 
 #include "sst/core/component.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/portModule.h"
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
@@ -614,7 +614,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
         TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
         ret               = getCurrentSimTime(*tc);
     }
-    catch ( std::underflow_error& e ) {
+    catch ( const std::underflow_error& e ) {
         // base is too small for the core timebase, fall back to using UnitAlgebra
         ret = processCurrentTimeWithUnderflowedBase(base);
     }

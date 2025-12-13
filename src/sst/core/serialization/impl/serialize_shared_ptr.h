@@ -12,6 +12,15 @@
 #ifndef SST_CORE_SERIALIZATION_IMPL_SERIALIZE_SHARED_PTR_H
 #define SST_CORE_SERIALIZATION_IMPL_SERIALIZE_SHARED_PTR_H
 
+// libc++ versions before 15 define std::weak_ptr<T>::element_type as T instead of std::remove_extent_t<T>, so we must
+// disable serialization of std::weak_ptr arrays.
+// https://reviews.llvm.org/D112092  https://cplusplus.github.io/LWG/issue3001
+#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 150000
+#define SST_SERIALIZE_WEAK_PTR_ARRAY 0
+#else
+#define SST_SERIALIZE_WEAK_PTR_ARRAY 1
+#endif
+
 #ifndef SST_INCLUDING_SERIALIZE_H
 #warning \
     "The header file sst/core/serialization/impl/serialize_shared_ptr.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
@@ -83,7 +92,10 @@ template <template <class> class PTR_TEMPLATE, class PTR_TYPE>
 std::pair<size_t, bool>
 get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& ptr, serializer& ser)
 {
+
+#if SST_SERIALIZE_WEAK_PTR_ARRAY
     // Workaround for libstdc++ bug 120561 which prevents converting std::weak_ptr<array> to std::weak_ptr<const void>
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120561
     if constexpr ( std::conjunction_v<is_same_template<PTR_TEMPLATE, std::weak_ptr>, std::is_array<PTR_TYPE>> ) {
         // We set weak_ptr on a separate statement so that ptr's shared_ptr refcount is restored before return statement
         std::weak_ptr<const void> weak_ptr = ptr.lock();
@@ -91,7 +103,10 @@ get_shared_ptr_owner_tag(const PTR_TEMPLATE<PTR_TYPE>& ptr, serializer& ser)
         // Return this function using the newly cast std::weak_ptr<const void> instead of std::weak_ptr<array>
         return get_shared_ptr_owner_tag(weak_ptr, ser);
     }
-    else {
+    else
+#endif // SST_SERIALIZE_WEAK_PTR_ARRAY
+
+    {
         if ( ser.mode() == serializer::SIZER )
             return ser.sizer().get_shared_ptr_owner_tag(ptr);
         else
@@ -386,8 +401,13 @@ class serialize_impl<std::shared_ptr<PTR_TYPE>,
 // For std::weak_ptr to unbounded arrays with runtime size, the wrapper function must be used.
 // std::weak_ptr to functions is not supported.
 template <class PTR_TYPE>
-class serialize_impl<std::weak_ptr<PTR_TYPE>,
-    std::enable_if_t<!is_unbounded_array_v<PTR_TYPE> && !std::is_function_v<PTR_TYPE>>>
+class serialize_impl<std::weak_ptr<PTR_TYPE>, std::enable_if_t<
+#if SST_SERIALIZE_WEAK_PTR_ARRAY
+                                                  !is_unbounded_array_v<PTR_TYPE>
+#else
+                                                  !std::is_array_v<PTR_TYPE>
+#endif
+                                                  && !std::is_function_v<PTR_TYPE>>>
 {
     void operator()(std::weak_ptr<PTR_TYPE>& ptr, serializer& ser, ser_opt_t opt)
     {
@@ -519,6 +539,8 @@ shared_ptr(std::shared_ptr<PTR_TYPE>& ptr)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::weak_ptr wrappers
 
+#if SST_SERIALIZE_WEAK_PTR_ARRAY
+
 // SST_SER( SST::Core::Serialization::weak_ptr( std::weak_ptr&, std::shared:ptr& ) ) serializes a std::weak_ptr with a
 // parent std::shared_ptr managing the owned object.
 template <class PTR_TYPE, class PARENT_TYPE>
@@ -549,6 +571,20 @@ weak_ptr(std::weak_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent, SIZ
 {
     return { ptr, parent, size };
 }
+
+#else // SST_SERIALIZE_WEAK_PTR_ARRAY
+
+// SST_SER( SST::Core::Serialization::weak_ptr( std::weak_ptr&, std::shared:ptr& ) ) serializes a std::weak_ptr with a
+// parent std::shared_ptr managing the owned object.
+template <class PTR_TYPE, class PARENT_TYPE>
+std::enable_if_t<!std::is_array_v<PARENT_TYPE>, pvt::shared_ptr_wrapper<std::weak_ptr, PTR_TYPE, PARENT_TYPE>>
+weak_ptr(std::weak_ptr<PTR_TYPE>& ptr, std::shared_ptr<PARENT_TYPE>& parent)
+{
+    return { ptr, parent };
+}
+
+
+#endif // SST_SERIALIZE_WEAK_PTR_ARRAY
 
 // Identity operation for consistency -- SST_SER( SST::Core::Serialization::weak_ptr(ptr) ) is same as SST_SER(ptr).
 template <class PTR_TYPE>
