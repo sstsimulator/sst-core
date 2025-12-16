@@ -79,7 +79,11 @@ class serialize_impl<pvt::unique_ptr_wrapper<PTR_TYPE, DELETER, SIZE_T>>
         const auto mode = ser.mode();
 
         if ( mode == serializer::MAP ) {
-            // TODO: Mapping std::unique_ptr
+            auto* ptr_value = ptr.ptr.get();
+            if constexpr ( is_unbounded_array_v<PTR_TYPE> )
+                SST_SER_NAME(SST::Core::Serialization::array(ptr_value, ptr.size), ser.getMapName());
+            else
+                SST_SER_NAME(ptr_value, ser.getMapName());
             return;
         }
 
