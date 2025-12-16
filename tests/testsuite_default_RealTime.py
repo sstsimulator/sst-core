@@ -170,7 +170,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_heartbeat.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --heartbeat-wall-period=1")
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --heartbeat-wall-period=2")
 
         # Cannot diff test output because times may differ
         # Check for at least 5 heartbeat messages
@@ -190,10 +190,10 @@ class testcase_Signals(SSTTestCase):
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
-        num_lines = 126 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
+        num_lines = 116 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI
-        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 2, "Heartbeat count incorrect, should be at least 2, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 

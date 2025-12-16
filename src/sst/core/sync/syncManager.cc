@@ -15,6 +15,7 @@
 
 #include "sst/core/checkpointAction.h"
 #include "sst/core/exit.h"
+#include "sst/core/interactiveConsole.h"
 #include "sst/core/objectComms.h"
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/realtime.h"
@@ -30,8 +31,11 @@
 #include <atomic>
 #include <cinttypes>
 #include <sys/time.h>
+#include <unistd.h>
 
 namespace SST {
+
+class InteractiveConsole;
 
 // Static data members
 RankSync*                 SyncManager::rankSync_ = nullptr;
@@ -324,8 +328,11 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTim
 
     exit_       = sim_->getExit();
     checkpoint_ = sim_->getCheckpointAction();
+    ic_barrier_.resize(num_ranks_.thread);
 
     setPriority(SYNCPRIORITY);
+
+    // sim_->getSimulationOutput().output("skk:syncmgr:constructor: T%d\n", rank_.thread);
 }
 
 SyncManager::SyncManager()
@@ -366,6 +373,143 @@ SyncManager::exchangeLinkInfo()
 }
 
 void
+SyncManager::handleShutdown()
+{
+#if 0
+    // Check for shutdown
+    Output& out = sim_->getSimulationOutput();
+    out.output("skk:syncmgr:handleShutdown:Before T%d:endSim=%d, shutdown_mode=%d, enter_shutdown=%d, \n", rank_.thread,
+        sim_->endSim, sim_->shutdown_mode_, sim_->enter_shutdown_);
+#endif
+    // If my thread's enter_shutdown_ is true, then set shared enter_shutdown
+    if ( sim_->enter_shutdown_ == true ) {
+        enter_shutdown_.fetch_or(true);
+        endSim_.fetch_or(true);
+        if ( sim_->shutdown_mode_ == true ) {
+            shutdown_mode_.store(true);
+        }
+    }
+    ic_barrier_.wait();
+    if ( endSim_ == true ) {
+        sim_->setEndSim();
+    }
+}
+
+void
+SyncManager::handleInteractiveConsole()
+{
+    ic_barrier_.wait(); // SKK This one may not be necessary...
+
+    // Handle interactive console for multithreaded runs
+    // Serial execution handles this in simulation run so it happens right away
+    if ( num_ranks_.thread > 1 ) {
+
+        // 1) Check local enter_interactive_ and set mask if needed (could use mask to show triggers)
+        if ( sim_->enter_interactive_ == true ) {
+            unsigned bit = 1UL << rank_.thread;
+            enter_interactive_mask_.fetch_or(bit);
+        }
+        ic_barrier_.wait(); // Ensure everyone has written the mask before checking
+
+        // If enter interactive set for any thread, set shared ic_mask
+        unsigned ic_mask = enter_interactive_mask_.load();
+#if 0
+        Output& out = sim_->getSimulationOutput();
+        out.output("skk:syncmgr:execute: T%d: check enter_interactive_=%d\n", rank_.thread, sim_->enter_interactive_);
+        out.output("skk:syncmgr:execute: T%d: enter_interactive_mask_=0x%x\n", rank_.thread, ic_mask);
+#endif
+        if ( ic_mask ) {
+            // 2) Print list of threads (in order) and whether triggered
+            for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
+                if ( rank_.thread == tindex ) {
+                    if ( rank_.thread == 0 ) std::cout << "\nINTERACTIVE CONSOLE\n";
+                    std::cout << "  Rank:" << rank_.rank << "/" << num_ranks_.rank << " Thread:" << rank_.thread << "/"
+                              << num_ranks_.thread;
+                    if ( sim_->enter_interactive_ ) {
+                        std::cout << " (Triggered)\n";
+                    }
+                    else {
+                        std::cout << " (Not Triggered)\n";
+                    }
+#if 0 // Print component summary? - will be at whatever level was last (maybe print PWD instead?)
+                    if (sim_->interactive_ != nullptr) {
+                        sim_->interactive_->summary();
+                    }
+#endif
+                }
+                ic_barrier_.wait();
+            }
+
+            // 3) T0: Invoke IC for T0 (or Query which thread to inspect?)
+#if 1
+            if ( rank_.thread == 0 ) {
+                current_ic_thread_.store(0);
+            }
+            ic_barrier_.wait(); // Ensure store is complete before everyone checks
+#else
+            if ( rank_.thread == 0 ) {
+                current_ic_thread_ = num_ranks_.thread;
+                std::cout << "\n---- Enter thread ID (0 to " << num_ranks_.thread - 1
+                          << ") to inspect in interactive console or " << num_ranks_.thread
+                          << " to continue simulation\n";
+                std::cin >> current_ic_thread_;
+                std::cout << "skk: set tid to " << current_ic_thread_ << std::endl;
+            }
+            ic_barrier_.wait();
+#endif
+            // 4) Tj: Invoke IC for current thread, with ability to change to new thread
+            unsigned int tid      = current_ic_thread_.load();
+            int          ic_state = 0;
+            while ( ic_state != InteractiveConsole::ICretcode::DONE ) {
+                if ( (rank_.thread == tid) && (sim_->interactive_ != nullptr) ) {
+                    // Invoke IC for the thread and capture return state
+                    int result = sim_->interactive_->execute(sim_->interactive_msg_);
+
+                    if ( result >= 0 ) { // change thread to threadID <result>
+                        current_ic_thread_.store(result);
+                        current_ic_state_.store(0);
+                    }
+                    else { // DONE (-1) or Print SUMMARY (-2)
+                        current_ic_state_.store(result);
+                    }
+                }
+                ic_barrier_.wait();
+                handleShutdown(); // Check if console issued shutdown command
+
+                tid      = current_ic_thread_.load();
+                ic_state = current_ic_state_.load();
+                // out.output("T%d: tid %d, ic_state %d\n", rank_.thread, tid, ic_state);
+                if ( ic_state == InteractiveConsole::ICretcode::SUMMARY ) { // Print thread info summary
+                    for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
+                        if ( rank_.thread == tindex ) {
+                            std::cout << "Rank:" << rank_.rank << " Thread:" << rank_.thread
+                                      << " (Process:" << getppid() << ") ";
+                            // Print component summary
+                            if ( sim_->interactive_ != nullptr ) {
+                                sim_->interactive_->summary();
+                            }
+                        }
+                        ic_barrier_.wait();
+                    }
+                    current_ic_state_.store(0);
+                } // if state == SUMMARY, print thread info summary
+            }
+
+            // 5) When done, clear interactive mask and enter interactive flags for next round
+            if ( rank_.thread == 0 ) {
+                enter_interactive_mask_.store(0);
+            }
+            sim_->enter_interactive_ = false;
+            ic_barrier_.wait();
+            ic_mask = enter_interactive_mask_.load();
+            // out.output("skk:syncmgr:execute: T%d: After: check enter_interactive_=%d\n", rank_.thread,
+            // sim_->enter_interactive_); out.output("skk:syncmgr:execute: T%d: AFter: enter_interactive_mask_=0x%x\n",
+            // rank_.thread, ic_mask);
+        }
+    } // end if num_ranks_.thread > 1: Handle interactive console
+}
+
+void
 SyncManager::execute()
 {
     SST_SYNC_PROFILE_START
@@ -376,6 +520,7 @@ SyncManager::execute()
     int  sig_end;
     int  sig_usr;
     int  sig_alrm;
+
 
     SimTime_t next_checkpoint_time = MAX_SIMTIME_T;
 
@@ -423,8 +568,22 @@ SyncManager::execute()
             if ( sig_alrm ) real_time_->performSignal(sig_alrm);
         }
 
+
         // Generate checkpoint if needed
         next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+
+
+#if 1
+        // Handle interactive console
+        if ( rank_.thread == 0 ) {
+            // std::cout << "skk: syncmgr rank: t0: interactive execute\n";
+            if ( sim_->enter_interactive_ == true ) {
+                sim_->enter_interactive_ = false; // IC may schedule IC again
+                if ( sim_->interactive_ != nullptr ) sim_->interactive_->execute(sim_->interactive_msg_);
+            }
+        }
+
+#endif
 
         // No barrier needed. Either the check failed and no
         // checkpoint happened, so no global activity, or the
@@ -445,11 +604,16 @@ SyncManager::execute()
             real_time_->getSignals(sig_end, sig_usr, sig_alrm);
             threadSync_->setSignals(sig_end, sig_usr, sig_alrm);
         }
-        threadSync_->execute();
+        threadSync_->execute(); // exchange event queues
 
         // Handle signals for multi-threaded runs/no MPI
         if ( num_ranks_.rank == 1 ) {
             signals_received = threadSync_->getSignals(sig_end, sig_usr, sig_alrm);
+#if 0
+            Output& out = sim_->getSimulationOutput();
+            out.output("skk:syncmgr:execute: T%d: sig_end=%d, sig_usr=%d, sig_alrm=%d, received=%d\n", rank_.thread,
+                sig_end, sig_usr, sig_alrm, signals_received);
+#endif
             if ( sig_end )
                 real_time_->performSignal(sig_end);
             else if ( signals_received ) {
@@ -457,19 +621,21 @@ SyncManager::execute()
                 if ( sig_alrm ) real_time_->performSignal(sig_alrm);
             }
             next_checkpoint_time = checkpoint_->check(getDeliveryTime());
-        }
+
+            handleShutdown();           // Check if any thread set shutdown
+            handleInteractiveConsole(); // Check of any thread set interactive console
+
+        } // if num_ranks_.rank == 1 i.e. only multithreading
 
         if ( /*num_ranks_+.rank == 1*/ min_part_ == MAX_SIMTIME_T ) {
             if ( exit_->getRefCount() == 0 ) {
                 endSimulation(exit_->getEndTime());
             }
         }
-
-
         break;
     default:
         break;
-    }
+    } // end switch
     computeNextInsert(next_checkpoint_time);
     RankExecBarrier_[4].wait();
 
@@ -563,5 +729,14 @@ SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
     if ( !profile_tools_ ) profile_tools_ = new SyncProfileToolList();
     profile_tools_->addProfileTool(tool);
 }
+
+std::atomic<unsigned>     SyncManager::enter_interactive_mask_ { 0 };
+std::atomic<int>          SyncManager::current_ic_thread_ { 0 };
+std::atomic<int>          SyncManager::current_ic_state_ { 0 };
+std::atomic<unsigned>     SyncManager::enter_shutdown_ { 0 };
+std::atomic<unsigned>     SyncManager::endSim_ { false };
+std::atomic<unsigned>     SyncManager::shutdown_mode_ { false };
+Core::ThreadSafe::Barrier SyncManager::ic_barrier_;
+
 
 } // namespace SST

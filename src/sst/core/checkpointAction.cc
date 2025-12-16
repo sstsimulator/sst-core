@@ -331,6 +331,14 @@ initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank)
     std::string checkpoint_dir_name = "";
 
     if ( myRank == 0 ) {
+        // Verify prefix format (no '/')
+        const std::string prefix   = cfg->checkpoint_prefix();
+        size_t            foundPos = prefix.find('/');
+        if ( foundPos != std::string::npos ) {
+            throw std::invalid_argument("Invalid checkpoint prefix: " + prefix);
+        }
+
+        // Create checkpoint directory path
         SST::Util::Filesystem& fs = Simulation_impl::getSimulation()->filesystem;
         checkpoint_dir_name       = fs.createUniqueDirectory(cfg->checkpoint_prefix());
     }

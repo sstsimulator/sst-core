@@ -114,7 +114,9 @@ InteractiveConsole::getComponentObjectMap()
 void
 InteractiveConsole::simulationShutdown()
 {
-    Simulation_impl::getSimulation()->endSimulation();
+    // Simulation_impl::getSimulation()->endSimulation();  // Only works for single thread
+    std::cout << "Simulation shutdown\n";
+    Simulation_impl::getSimulation()->signalShutdown(false);
 }
 
 

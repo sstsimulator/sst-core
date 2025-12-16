@@ -1136,7 +1136,7 @@ public:
             return;
         }
         if ( state_ != CLEAR ) {
-            std::cout << "TriggerRecord:@cycle" << triggerCycle << ": samples lost = " << samplesLost_ << ": ";
+            std::cout << "LastTriggerRecord:@cycle" << triggerCycle << ": SamplesLost=" << samplesLost_ << ": ";
             for ( size_t obj = 0; obj < numObjects; obj++ ) {
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
                 std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
