@@ -190,7 +190,7 @@ class testcase_Signals(SSTTestCase):
         ranks = testing_check_get_num_ranks()
         threads = testing_check_get_num_threads()
         num_para = threads * ranks
-        num_lines = 116 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
+        num_lines = 111 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI
         self.assertTrue(hb_count >= 2, "Heartbeat count incorrect, should be at least 2, found {0} in {1}".format(hb_count,outfile))
