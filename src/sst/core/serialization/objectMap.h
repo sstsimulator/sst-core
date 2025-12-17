@@ -1201,7 +1201,7 @@ protected:
     /**
        Address of the variable for reading and writing
      */
-    REF* addr_ = nullptr;
+    REF* const addr_;
 
 public:
     /**

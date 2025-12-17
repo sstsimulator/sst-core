@@ -205,6 +205,9 @@ ComponentInfo::serialize_comp(SST::Core::Serialization::serializer& ser)
 void
 ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
 {
+    // For now, do nothing in mapping mode
+    if ( ser.mode() == SST::Core::Serialization::serializer::MAP ) return;
+
     // The ComponentInfo for the Component will make sure all of the
     // hierarchy of ComponentInfos are serialized before serializing
     // any components, which includes serializing links because they
@@ -258,6 +261,15 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
         }
     }
     else {
+        // is_null is passed by reference to SST_SER, and in mapping mode, its address is stored in an
+        // ObjectMapFundamental and creates a dangling pointer which will go away at the end of this block. If mapping
+        // mode ever needs to be supported for ComponentInfo, these is_null values need to be supported another way,
+        // such as:
+        // 1. Make each is_null instance a separate bool member of the ComponentInfo class, setting it here before
+        // serializing it, and deserializing them in the code above
+        // 2. Add an ObjectMapFundamentalReadOnlyCopy or similarly-named class which holds a read-only copy of the value
+        // 3. Add a helper ObjectMap-derived class which handles ComponentInfo and all of its properties specially
+
         bool is_null = stat_configs_ == nullptr;
         SST_SER(is_null);
         if ( !is_null ) SST_SER(*stat_configs_);
