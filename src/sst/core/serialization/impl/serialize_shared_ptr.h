@@ -371,7 +371,43 @@ public:
 
         case serializer::MAP:
         {
-            // TODO: Mapping std::shared_ptr or std::weak_ptr
+            // Reference class which holds a reference to ptr to be used for use_count() operations
+            // The parent ObjectMapFundamentalReference is read-only so this is only used for getting use_count()
+            class SharedPtrUseCount
+            {
+                PTR_TEMPLATE<PTR_TYPE>& ptr;
+
+            public:
+                explicit SharedPtrUseCount(PTR_TEMPLATE<PTR_TYPE>& ptr) :
+                    ptr(ptr)
+                {}
+                operator size_t() const { return ptr.use_count(); }
+                SharedPtrUseCount(const SharedPtrUseCount&) = default;
+                SharedPtrUseCount& operator=(size_t) { return *this; }
+            };
+
+            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<PTR_TEMPLATE<PTR_TYPE>>(&ptr));
+
+            // Read-only ObjectMap representing the use_count()
+            ObjectMap* use_count = new ObjectMapFundamentalReference<size_t, SharedPtrUseCount>(SharedPtrUseCount(ptr));
+            use_count->setReadOnly();
+            ser.mapper().map_primitive("use_count", use_count);
+
+            // If this is a std::weak_ptr, we have to temporarily lock it to obtain the address
+            auto* ptr_value = [&] {
+                if constexpr ( is_same_template_v<PTR_TEMPLATE, std::weak_ptr> )
+                    return ptr.lock().get();
+                else
+                    return ptr.get();
+            }();
+
+            // Handle unbounded arrays with a size parameter, else handle type regularly
+            if constexpr ( is_unbounded_array_v<PTR_TYPE> )
+                SST_SER_NAME(SST::Core::Serialization::array(ptr_value, *size), "get");
+            else
+                SST_SER_NAME(*reinterpret_cast<PTR_TYPE*>(ptr_value), "get");
+
+            ser.mapper().map_hierarchy_end();
             break;
         }
         }

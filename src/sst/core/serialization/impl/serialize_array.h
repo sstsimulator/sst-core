@@ -81,7 +81,7 @@ struct serialize_impl_fixed_array
         const auto& aPtr     = get_ptr(ary); // reference to ary if it's a pointer; &ary otherwise
         switch ( ser.mode() ) {
         case serializer::MAP:
-            serialize_array_map(ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapArray<ELEM_T>(&(*aPtr)[0], SIZE),
+            serialize_array_map(ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapBoundedArray<ELEM_T, SIZE>(&(*aPtr)[0]),
                 serialize_array_map_element<ELEM_T>);
             break;
 
