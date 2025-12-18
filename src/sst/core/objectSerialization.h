@@ -29,8 +29,7 @@ serialize(dataType& data)
 
     size_t size = ser.size();
 
-    std::vector<char> buffer;
-    buffer.resize(size);
+    std::vector<char> buffer(size);
 
     ser.start_packing(buffer.data(), size);
     SST_SER(data);
