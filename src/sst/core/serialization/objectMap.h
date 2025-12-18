@@ -1411,7 +1411,18 @@ public:
         ObjectMapContainer<T>(addr),
         size(size)
     {}
+    std::string getType() const override { return this->demangle_name(typeid(T[]).name()); }
     ~ObjectMapArray() override = default;
+};
+
+template <class T, size_t SIZE>
+struct ObjectMapBoundedArray : public ObjectMapContainer<T>
+{
+    ObjectMapBoundedArray(T* addr) :
+        ObjectMapContainer<T>(addr)
+    {}
+    std::string getType() const override { return this->demangle_name(typeid(T[SIZE]).name()); }
+    ~ObjectMapBoundedArray() override = default;
 };
 
 // ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
