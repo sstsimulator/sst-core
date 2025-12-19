@@ -17,9 +17,10 @@
     "The header file sst/core/serialization/impl/serialize_utility.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include "sst/core/sst_complex.h"
+
 #include <bitset>
 #include <cfloat>
-#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -188,12 +189,12 @@ constexpr size_t nfields = pvt_nfields::nfields<C>;
 
 namespace pvt_trivial {
 
-// If it's not a trivially copyable, standard layout aggregate without a serialize_order() method, it needs to
-// be an integer, floating-point, enum or member object pointer, or one of the specializations listed later.
-// std::conjunction_v and std::disjunction_v are used to short-circuit and speed up instead of using && and ||.
+// If it's not a trivially copyable, standard layout aggregate without a serialize_order() method, it needs to be an
+// integer, floating-point, complex, enum or member object pointer, or one of the specializations listed later.
 template <class C, bool = std::conjunction_v<std::is_aggregate<C>, std::is_trivially_copyable<C>,
                        std::is_standard_layout<C>, std::negation<has_serialize_order<C>>>>
 constexpr bool is_trivially_serializable_v =
+    complex_properties<C>::is_complex ||
     std::disjunction_v<std::is_arithmetic<C>, std::is_enum<C>, std::is_member_object_pointer<C>>;
 
 // glob_ts is convertible to any trivially serializable type
@@ -220,21 +221,6 @@ constexpr bool is_trivially_serializable_v<C, true> = has_ts_fields<C, std::make
 // std::bitset is trivially serializable
 template <size_t N>
 constexpr bool is_trivially_serializable_v<std::bitset<N>, false> = true;
-
-// Complex numbers are trivially serializable
-template <class C>
-constexpr bool is_trivially_serializable_v<std::complex<C>, false> = true;
-
-#ifndef __STDC_NO_COMPLEX__
-template <>
-inline constexpr bool is_trivially_serializable_v<float _Complex, false> = true;
-
-template <>
-inline constexpr bool is_trivially_serializable_v<double _Complex, false> = true;
-
-template <>
-inline constexpr bool is_trivially_serializable_v<long double _Complex, false> = true;
-#endif
 
 // Other floating-point types not covered by std::is_floating_point
 #ifdef FLT16_MIN
