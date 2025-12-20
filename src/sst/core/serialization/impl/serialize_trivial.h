@@ -52,18 +52,15 @@ class serialize_impl<T,
     std::enable_if_t<std::conjunction_v<std::negation<is_trivially_serializable_excluded<std::remove_pointer_t<T>>>,
         is_trivially_serializable<std::remove_pointer_t<T>>>>>
 {
-    void operator()(T& t, serializer& ser, ser_opt_t UNUSED(options))
+    void operator()(T& t, serializer& ser, ser_opt_t options)
     {
+        const auto& tPtr = get_ptr(t);
         switch ( const auto mode = ser.mode() ) {
         case serializer::MAP:
-            // Right now only arithmetic and enum types are handled in mapping mode without custom serializer
-            if constexpr ( std::is_arithmetic_v<std::remove_pointer_t<T>> ||
-                           std::is_enum_v<std::remove_pointer_t<T>> ) {
-                ObjectMap* obj_map;
-                if constexpr ( std::is_pointer_v<T> )
-                    obj_map = new ObjectMapFundamental<std::remove_pointer_t<T>>(t);
-                else
-                    obj_map = new ObjectMapFundamental<T>(&t);
+            // Right now only arithmetic, enum and complex types are handled in mapping mode without custom serializer
+            if constexpr ( std::is_arithmetic_v<std::remove_pointer_t<T>> || std::is_enum_v<std::remove_pointer_t<T>> ||
+                           complex_properties<std::remove_pointer_t<T>>::is_complex ) {
+                ObjectMap* obj_map = new ObjectMapFundamental<std::remove_pointer_t<T>>(tPtr);
                 if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
                 ser.mapper().map_primitive(ser.getMapName(), obj_map);
             }
@@ -73,14 +70,12 @@ class serialize_impl<T,
             }
             break;
 
+        case serializer::UNPACK:
+            if constexpr ( std::is_pointer_v<T> ) t = new std::remove_pointer_t<T>();
+            [[fallthrough]];
+
         default:
-            if constexpr ( std::is_pointer_v<T> ) {
-                if ( mode == serializer::UNPACK ) t = new std::remove_pointer_t<T> {};
-                ser.primitive(*t);
-            }
-            else {
-                ser.primitive(t);
-            }
+            ser.primitive(*tPtr);
             break;
         }
     }

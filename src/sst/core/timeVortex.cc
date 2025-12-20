@@ -24,7 +24,7 @@ namespace TV::pvt {
 void
 pack_timevortex(TimeVortex*& s, SST::Core::Serialization::serializer& ser)
 {
-    std::string type = Simulation_impl::getSimulation()->timeVortexType;
+    std::string& type = Simulation_impl::getSimulation()->timeVortexType;
     SST_SER(type);
     s->serialize_order(ser);
 }

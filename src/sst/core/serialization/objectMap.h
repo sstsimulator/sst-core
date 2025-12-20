@@ -787,6 +787,13 @@ constexpr bool have_common_type_v = false;
 template <class T1, class T2>
 constexpr bool have_common_type_v<T1, T2, std::void_t<std::common_type_t<T1, T2>>> = true;
 
+// Whether a type is ordered
+template <class T, class = void>
+constexpr bool is_ordered_v = false;
+
+template <class T>
+constexpr bool is_ordered_v<T, std::void_t<decltype(T {} < T {})>> = true;
+
 // Comparison of two variables if they are convertible to a common type
 // See https://en.cppreference.com/w/cpp/language/usual_arithmetic_conversions.html
 template <typename T1, typename T2>
@@ -796,13 +803,25 @@ cmp(T1 t1, ObjectMapComparison::Op op, T2 t2)
     using T = std::common_type_t<T1, T2>;
     switch ( op ) {
     case ObjectMapComparison::Op::LT:
-        return static_cast<T>(t1) < static_cast<T>(t2);
+        if constexpr ( is_ordered_v<T> )
+            return static_cast<T>(t1) < static_cast<T>(t2);
+        else
+            return false;
     case ObjectMapComparison::Op::LTE:
-        return static_cast<T>(t1) <= static_cast<T>(t2);
+        if constexpr ( is_ordered_v<T> )
+            return static_cast<T>(t1) <= static_cast<T>(t2);
+        else
+            return false;
     case ObjectMapComparison::Op::GT:
-        return static_cast<T>(t1) > static_cast<T>(t2);
+        if constexpr ( is_ordered_v<T> )
+            return static_cast<T>(t1) > static_cast<T>(t2);
+        else
+            return false;
     case ObjectMapComparison::Op::GTE:
-        return static_cast<T>(t1) >= static_cast<T>(t2);
+        if constexpr ( is_ordered_v<T> )
+            return static_cast<T>(t1) >= static_cast<T>(t2);
+        else
+            return false;
     case ObjectMapComparison::Op::EQ:
         return static_cast<T>(t1) == static_cast<T>(t2);
     case ObjectMapComparison::Op::NEQ:

@@ -891,7 +891,7 @@ BaseComponent::initiateInteractive(const std::string& msg)
 void
 BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
-    SST_SER(my_info_);
+    SST_SER(my_info_, SerOption::no_map);
     SST_SER(component_state_);
 
     switch ( ser.mode() ) {
@@ -1166,7 +1166,6 @@ SerializeBaseComponentHelper::map_basecomponent(serializable_base*& s, serialize
             name_str += it->second.getSlotName() + "[" + std::to_string(it->second.getSlotNum()) + "]";
         }
         SST_SER_NAME(it->second.component, name_str.c_str());
-        it->second.serialize_comp(ser);
     }
 
     // Put in ComponentInfo data
