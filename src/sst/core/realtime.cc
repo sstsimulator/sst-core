@@ -635,6 +635,12 @@ RealTimeManager::notifySignal()
     }
 
     if ( sig_alrm_from_os_ ) {
+#if 0
+        Output   sim_output = Simulation_impl::getSimulation()->getSimulationOutput();
+        RankInfo rank = Simulation_impl::getSimulation()->getRank();
+        sim_output.output(
+            "skk:T%d: realtime: sig_alrm_from_os\n", rank.thread);
+#endif
         sig_alrm_from_os_ = 0;
         if ( serial_exec_ ) {
             signal_actions_[SIGALRM]->execute();

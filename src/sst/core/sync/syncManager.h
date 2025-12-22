@@ -190,6 +190,7 @@ private:
 
     RealTimeManager*                 real_time_;
     CheckpointAction*                checkpoint_;
+    static std::atomic<unsigned>     ckpt_generate_;
     static std::atomic<unsigned>     enter_interactive_mask_;
     static std::atomic<int>          current_ic_thread_;
     static std::atomic<int>          current_ic_state_;

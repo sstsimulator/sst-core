@@ -154,6 +154,7 @@ CheckpointAction::execute()
 void
 CheckpointAction::createCheckpoint(Simulation_impl* sim)
 {
+
     if ( 0 == rank_.rank && 0 == rank_.thread ) {
         const double now = sst_get_cpu_time();
         sim->getSimulationOutput().output(
@@ -212,9 +213,11 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
     // No need to barrier here since rank 0 thread 0 will be the first
     // to execute in the loop below and everything else will wait
     for ( uint32_t r = 0; r < num_ranks.rank; ++r ) {
+
         if ( r == rank_.rank ) {
             // If this is my rank go ahead
             for ( uint32_t t = 0; t < num_ranks.thread; ++t ) {
+                
                 // If this is my thread go ahead
                 if ( t == rank_.thread ) {
                     sim->checkpoint_append_registry(directory + "/" + registry_name, filename);
@@ -253,13 +256,18 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 // SyncManager check whether a checkpoint needs to be generated
 SimTime_t
 CheckpointAction::check(SimTime_t current_time)
-{
+{ 
+#if 0
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    sim->getSimulationOutput().output(
+        "skk:T %d: checkpointAction.cc: check()\n", rank_.thread);
+#endif
     // The if-logic is a little weird, but it's trying to minimize the
     // number of branches in the normal case of no checkpoint being
     // initiated.  This will also handle the case where both a sim and
     // real-time trigger happened at the same time
     if ( (current_time == next_sim_time_) || generate_ ) {
-        Simulation_impl* sim = Simulation_impl::getSimulation();
+        Simulation_impl* sim = Simulation_impl::getSimulation();  
         createCheckpoint(sim);
         generate_ = false;
         // Only add to the simulation-interval checkpoint time if it
@@ -271,6 +279,11 @@ CheckpointAction::check(SimTime_t current_time)
     return next_sim_time_;
 }
 
+bool
+CheckpointAction::getCheckpoint()
+{
+    return generate_;
+}
 void
 CheckpointAction::setCheckpoint()
 {

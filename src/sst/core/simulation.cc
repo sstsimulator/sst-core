@@ -1715,6 +1715,10 @@ Simulation_impl::getComponentObjectMap()
 void
 Simulation_impl::scheduleCheckpoint()
 {
+#if 0
+    sim_output.output(
+        "skk: simulation: scheduleCheckpoint\n");
+#endif
     checkpoint_action_->setCheckpoint();
 
     // Trigger checkpoint immediately in serial simulations

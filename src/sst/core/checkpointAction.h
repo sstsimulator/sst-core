@@ -76,6 +76,9 @@ public:
      */
     void insertIntoTimeVortex(Simulation_impl* sim);
 
+    /** Get checkpoint flag */
+    bool getCheckpoint();
+
     /** Generate a checkpoint next time check() is called */
     void setCheckpoint();
 

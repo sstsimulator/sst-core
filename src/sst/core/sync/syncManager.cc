@@ -618,9 +618,28 @@ SyncManager::execute()
                 real_time_->performSignal(sig_end);
             else if ( signals_received ) {
                 if ( sig_usr ) real_time_->performSignal(sig_usr);
+#if 0
                 if ( sig_alrm ) real_time_->performSignal(sig_alrm);
+#else
+                if (sig_alrm) {
+                    //out.output("skk:syncmgr:execute: T%d: in sigalrm\n", rank_.thread);
+                    real_time_->performSignal(sig_alrm);
+                }
+#endif
+            }
+
+            // Check local checkpoint generate flag and set shared generate if needed. 
+            if (checkpoint_->getCheckpoint() == true) {
+                ckpt_generate_.store(1);
+            }
+            // Ensure everyone has written the mask before updating local generate_
+            ic_barrier_.wait();  
+            if (ckpt_generate_.load()) {
+                checkpoint_->setCheckpoint();
             }
             next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+            ckpt_generate_.store(0);
+
 
             handleShutdown();           // Check if any thread set shutdown
             handleInteractiveConsole(); // Check of any thread set interactive console
@@ -730,6 +749,7 @@ SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
     profile_tools_->addProfileTool(tool);
 }
 
+std::atomic<unsigned>     SyncManager::ckpt_generate_ { 0 };
 std::atomic<unsigned>     SyncManager::enter_interactive_mask_ { 0 };
 std::atomic<int>          SyncManager::current_ic_thread_ { 0 };
 std::atomic<int>          SyncManager::current_ic_state_ { 0 };
