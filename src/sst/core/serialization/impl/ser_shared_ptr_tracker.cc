@@ -54,7 +54,7 @@ ser_shared_ptr_unpacker::get_shared_ptr_owner(size_t tag)
     }
 
     Output::getDefaultObject().fatal(
-        __LINE__, __FILE__, __func__, 1, "Serialization Error: std::shared_ptr ownership tag is out of order");
+        CALL_INFO, 1, "Serialization Error: std::shared_ptr ownership tag is out of order");
 }
 
 } // namespace SST::Core::Serialization::pvt
