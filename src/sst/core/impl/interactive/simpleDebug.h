@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <fstream>
 #include <functional>
 #include <list>
@@ -53,7 +54,7 @@ class ConsoleCommand
 {
 public:
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<void(std::vector<std::string>& tokens)> func) :
+        std::function<bool(std::vector<std::string>& tokens)> func) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
@@ -64,7 +65,7 @@ public:
     const std::string&         str_short() const { return str_short_; }
     const std::string&         str_help() const { return str_help_; }
     const ConsoleCommandGroup& group() const { return group_; }
-    void                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
+    bool                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
     bool                       match(const std::string& token)
     {
         std::string lctoken = toLower(token);
@@ -84,7 +85,7 @@ private:
     std::string                                           str_short_;
     std::string                                           str_help_;
     ConsoleCommandGroup                                   group_;
-    std::function<void(std::vector<std::string>& tokens)> func_;
+    std::function<bool(std::vector<std::string>& tokens)> func_;
     std::string                                           toLower(std::string s)
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -149,10 +150,13 @@ private:
     // any ObjectMap because they could change during execution.
     // After running, this will allow us to recreate the working
     // directory as far as we can.
-    std::vector<std::string> name_stack;
+    std::deque<std::string> name_stack;
 
     SST::Core::Serialization::ObjectMap* obj_ = nullptr;
     bool                                 done = false;
+
+    void save_name_stack();
+    void cd_name_stack();
 
     bool autoCompleteEnable = true;
 
@@ -180,49 +184,49 @@ private:
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
     // Navigation
-    void cmd_help(std::vector<std::string>& UNUSED(tokens));
-    void cmd_verbose(std::vector<std::string>&(tokens));
-    void cmd_pwd(std::vector<std::string>& UNUSED(tokens));
-    void cmd_ls(std::vector<std::string>& UNUSED(tokens));
-    void cmd_cd(std::vector<std::string>& tokens);
+    bool cmd_help(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_verbose(std::vector<std::string>&(tokens));
+    bool cmd_pwd(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_ls(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_cd(std::vector<std::string>& tokens);
 
     // Variable Access
-    void cmd_print(std::vector<std::string>& tokens);
-    void cmd_set(std::vector<std::string>& tokens);
-    void cmd_time(std::vector<std::string>& tokens);
-    void cmd_watch(std::vector<std::string>& tokens);
-    void cmd_unwatch(std::vector<std::string>& tokens);
+    bool cmd_print(std::vector<std::string>& tokens);
+    bool cmd_set(std::vector<std::string>& tokens);
+    bool cmd_time(std::vector<std::string>& tokens);
+    bool cmd_watch(std::vector<std::string>& tokens);
+    bool cmd_unwatch(std::vector<std::string>& tokens);
 
     // Simulation Control
-    void cmd_run(std::vector<std::string>& tokens);
-    void cmd_shutdown(std::vector<std::string>& tokens);
-    void cmd_exit(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_run(std::vector<std::string>& tokens);
+    bool cmd_shutdown(std::vector<std::string>& tokens);
+    bool cmd_exit(std::vector<std::string>& UNUSED(tokens));
 
     // Watch/Trace
-    void cmd_watchlist(std::vector<std::string>& tokens);
-    void cmd_trace(std::vector<std::string>& tokens);
-    void cmd_setHandler(std::vector<std::string>& tokens);
-    void cmd_addTraceVar(std::vector<std::string>& tokens);
-    void cmd_resetTraceBuffer(std::vector<std::string>& tokens);
-    void cmd_printTrace(std::vector<std::string>& tokens);
-    void cmd_printWatchpoint(std::vector<std::string>& tokens);
-    void cmd_setConfirm(std::vector<std::string>& tokens);
+    bool cmd_watchlist(std::vector<std::string>& tokens);
+    bool cmd_trace(std::vector<std::string>& tokens);
+    bool cmd_setHandler(std::vector<std::string>& tokens);
+    bool cmd_addTraceVar(std::vector<std::string>& tokens);
+    bool cmd_resetTraceBuffer(std::vector<std::string>& tokens);
+    bool cmd_printTrace(std::vector<std::string>& tokens);
+    bool cmd_printWatchpoint(std::vector<std::string>& tokens);
+    bool cmd_setConfirm(std::vector<std::string>& tokens);
 
     // Logging/Replay
-    void cmd_logging(std::vector<std::string>& tokens);
-    void cmd_replay(std::vector<std::string>& tokens);
-    void cmd_history(std::vector<std::string>& tokens);
+    bool cmd_logging(std::vector<std::string>& tokens);
+    bool cmd_replay(std::vector<std::string>& tokens);
+    bool cmd_history(std::vector<std::string>& tokens);
 
     // Auto-completion toggle
-    void cmd_autoComplete(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_autoComplete(std::vector<std::string>& UNUSED(tokens));
 
     // Reset terminal
-    void cmd_clear(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_clear(std::vector<std::string>& UNUSED(tokens));
 
     // LLDB/GDB helper
-    void cmd_spinThread(std::vector<std::string>& tokens);
+    bool cmd_spinThread(std::vector<std::string>& tokens);
 
-    void dispatch_cmd(std::string& cmd);
+    bool dispatch_cmd(std::string& cmd);
 
     // Command Registry
     std::vector<ConsoleCommand> cmdRegistry;
