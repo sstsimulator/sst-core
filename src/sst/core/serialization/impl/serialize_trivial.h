@@ -62,7 +62,7 @@ class serialize_impl<T,
                            complex_properties<std::remove_pointer_t<T>>::is_complex ) {
                 ObjectMap* obj_map = new ObjectMapFundamental<std::remove_pointer_t<T>>(tPtr);
                 if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
-                ser.mapper().map_primitive(ser.getMapName(), obj_map);
+                ser.mapper().map_object(ser.getMapName(), obj_map);
             }
             else {
                 // TODO: Handle mapping mode for trivially serializable types without from_string() methods which do not

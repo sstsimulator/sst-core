@@ -386,12 +386,13 @@ public:
                 SharedPtrUseCount& operator=(size_t) { return *this; }
             };
 
-            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<PTR_TEMPLATE<PTR_TYPE>>(&ptr));
+            ser.mapper().map_hierarchy_start(
+                ser.getMapName(), new ObjectMapClass(&ptr, typeid(PTR_TEMPLATE<PTR_TYPE>).name()));
 
             // Read-only ObjectMap representing the use_count()
             ObjectMap* use_count = new ObjectMapFundamentalReference<size_t, SharedPtrUseCount>(SharedPtrUseCount(ptr));
             use_count->setReadOnly();
-            ser.mapper().map_primitive("use_count", use_count);
+            ser.mapper().map_object("use_count", use_count);
 
             // If this is a std::weak_ptr, we have to temporarily lock it to obtain the address
             auto* ptr_value = [&] {

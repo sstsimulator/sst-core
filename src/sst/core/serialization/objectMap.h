@@ -15,7 +15,6 @@
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
 
-#include <bitset>
 #include <cassert>
 #include <cctype>
 #include <cerrno>
@@ -557,6 +556,11 @@ public:
         return nullptr;
     }
 
+    /**
+       Refresh the ObjectMap, reconstructing children
+    */
+    virtual void refresh() {}
+
 private:
     /**
        Called to activate this ObjectMap.  This will create the
@@ -632,11 +636,8 @@ public:
      */
     ~ObjectMapWithChildren() override
     {
-        for ( auto& obj : variables_ ) {
-            if ( obj.second != nullptr ) {
-                obj.second->decRefCount();
-            }
-        }
+        for ( const auto& [name, child] : variables_ )
+            if ( child != nullptr ) child->decRefCount();
     }
 
     /**
@@ -670,6 +671,17 @@ public:
        context of this object. pair.second is a pointer to the ObjectMap.
      */
     const ObjectMultimap& getVariables() const final override { return variables_; }
+
+
+    /**
+       Refresh the children
+    */
+    void refresh() override
+    {
+        for ( const auto& [name, child] : variables_ )
+            if ( child != nullptr ) child->refresh();
+    }
+
 }; // class ObjectMapWithChildren
 
 /**
@@ -1396,6 +1408,10 @@ public:
     }
 };
 
+// Forward declaration of ObjectMapSerialization
+template <typename T>
+ObjectMap* ObjectMapSerialization(T&& obj);
+
 /**
    Class used to map containers
  */
@@ -1412,36 +1428,19 @@ public:
     bool        isContainer() const final override { return true; }
     std::string getType() const override { return demangle_name(typeid(T).name()); }
     void*       getAddr() const override { return addr_; }
+    void        refresh() override
+    {
+        // Decrement the reference count of all children, which will be replaced
+        for ( const auto& [name, child] : variables_ )
+            if ( child != nullptr ) child->decRefCount();
+
+        // Replace the children with new children by re-serializing the container
+        // ObjectMapSerialization(*addr_) returns an ObjectMap* to a new serialization of the container
+        // dynamic_cast<ObjectMapContainer&> downcasts the returned ObjectMap to this ObjectMapContainer
+        // std::move improves performance, by shallow-moving the new variables_ into this class's variables_
+        variables_ = std::move(dynamic_cast<ObjectMapContainer&>(*ObjectMapSerialization(*addr_)).variables_);
+    }
     ~ObjectMapContainer() override = default;
-};
-
-/**
-   Class used to map arrays
- */
-template <class T>
-class ObjectMapArray : public ObjectMapContainer<T>
-{
-protected:
-    size_t size;
-
-public:
-    virtual size_t getSize() const { return size; }
-    ObjectMapArray(T* addr, size_t size) :
-        ObjectMapContainer<T>(addr),
-        size(size)
-    {}
-    std::string getType() const override { return this->demangle_name(typeid(T[]).name()); }
-    ~ObjectMapArray() override = default;
-};
-
-template <class T, size_t SIZE>
-struct ObjectMapBoundedArray : public ObjectMapContainer<T>
-{
-    ObjectMapBoundedArray(T* addr) :
-        ObjectMapContainer<T>(addr)
-    {}
-    std::string getType() const override { return this->demangle_name(typeid(T[SIZE]).name()); }
-    ~ObjectMapBoundedArray() override = default;
 };
 
 // ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,

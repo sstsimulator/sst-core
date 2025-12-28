@@ -432,14 +432,14 @@ sst_ser_or_helper(Args... args)
 // Serialize an object and return an ObjectMap which represents it
 template <typename T>
 ObjectMap*
-ObjectMapSerialization(T& obj, const char* name, ser_opt_t options = SerOption::none)
+ObjectMapSerialization(T&& obj)
 {
     ObjectMapClass root;
     serializer     ser;
     ser.enable_pointer_tracking();
     ser.start_mapping(&root);
-    SST_SER_NAME(obj, name, options);
-    ObjectMap* ret = root.findVariable(name);
+    SST_SER_NAME(obj, "_proxy_object_");
+    ObjectMap* ret = root.findVariable("_proxy_object_");
     if ( ret ) ret->incRefCount();
     return ret;
 }

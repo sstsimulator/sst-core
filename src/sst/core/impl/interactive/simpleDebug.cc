@@ -194,7 +194,10 @@ SimpleDebugger::execute(const std::string& msg)
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 
-    // cd into the old position on the name stack
+    // Create a new ObjectMap
+    obj_ = getComponentObjectMap();
+
+    // Descend into the name_stack
     cd_name_stack();
 
     done = false;
@@ -246,6 +249,7 @@ SimpleDebugger::execute(const std::string& msg)
         }
     }
 
+    // Save the position on the name_stack, and clear obj_
     save_name_stack();
 }
 
@@ -255,16 +259,22 @@ SimpleDebugger::save_name_stack()
 {
     name_stack.clear();
     for ( ;; ) {
+        // Get the name of the current node
         std::string name = obj_->getName();
 
+        // Get the parent of the current node
         Core::Serialization::ObjectMap* parent = obj_->selectParent();
+
+        // If the parent is nullptr, we have reached the top and can stop
         if ( !parent ) break;
 
-        name_stack.push_front(name);
+        // Push the name on the name_stack
+        name_stack.push_front(std::move(name));
 
         // See if this is the top level component, and if so, set it to nullptr
         if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
 
+        // Move up to the parent
         obj_ = parent;
     }
 
@@ -276,10 +286,6 @@ SimpleDebugger::save_name_stack()
 void
 SimpleDebugger::cd_name_stack()
 {
-    // Create a new ObjectMap
-    obj_ = getComponentObjectMap();
-
-    // Descend into the name_stack
     for ( const std::string& name : name_stack ) {
         std::vector<std::string> tokens { "cd", name };
         if ( !cmd_cd(tokens) ) break; // Stop if we cannot descend any further
@@ -502,8 +508,8 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
             printf("Already at top of object hierarchy\n");
             return false;
         }
-        // See if this is the top level component, and if so, set it
-        // to nullptr
+
+        // See if this is the top level component, and if so, set it to nullptr
         if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
 
         obj_ = parent;

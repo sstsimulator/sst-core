@@ -43,6 +43,64 @@ struct raw_ptr_wrapper
     ELEM_T*& ptr;
 };
 
+} // namespace pvt
+
+// Wrapper functions
+
+template <typename ELEM_T, typename SIZE_T>
+pvt::array_wrapper<ELEM_T, SIZE_T>
+array(ELEM_T*& ptr, SIZE_T& size)
+{
+    return { ptr, size };
+}
+
+template <typename SIZE_T>
+pvt::array_wrapper<void, SIZE_T>
+buffer(void*& ptr, SIZE_T& size)
+{
+    return { ptr, size };
+}
+
+template <typename ELEM_T>
+pvt::raw_ptr_wrapper<ELEM_T>
+raw_ptr(ELEM_T*& ptr)
+{
+    return { ptr };
+}
+
+/**
+   Class used to map unbounded arrays with runtime size
+ */
+template <class ELEM_T, class SIZE_T>
+class ObjectMapArray : public ObjectMapContainer<ELEM_T>
+{
+protected:
+    SIZE_T& size_;
+
+public:
+    virtual size_t getSize() const { return size_; }
+    ObjectMapArray(ELEM_T* addr, SIZE_T& size) :
+        ObjectMapContainer<ELEM_T>(addr),
+        size_(size)
+    {}
+    void refresh() override
+    {
+        // Decrement the reference count of all children, which will be replaced
+        for ( const auto& [name, child] : this->variables_ )
+            if ( child != nullptr ) child->decRefCount();
+
+        // Replace the children with new children by re-serializing the array
+        // ObjectMapSerialization(array(this->addr_, size_)) returns an ObjectMap* to a new serialization of the array
+        // dynamic_cast<ObjectMapArray&> downcasts the returned ObjectMap to this ObjectMapArray
+        // std::move improves performance, by shallow-moving the new variables_ into this class's variables_
+        this->variables_ =
+            std::move(dynamic_cast<ObjectMapArray&>(*ObjectMapSerialization(array(this->addr_, size_))).variables_);
+    }
+    ~ObjectMapArray() override = default;
+};
+
+namespace pvt {
+
 // Functions for serializing arrays element by element
 void serialize_array(serializer& ser, void* data, ser_opt_t opt, size_t size,
     void serialize_array_element(serializer& ser, void* data, ser_opt_t opt, size_t index));
@@ -77,18 +135,18 @@ struct serialize_impl_fixed_array
 {
     void operator()(OBJ_TYPE& ary, serializer& ser, ser_opt_t opt)
     {
+        using T              = std::remove_pointer_t<OBJ_TYPE>;
         ser_opt_t   elem_opt = SerOption::is_set(opt, SerOption::as_ptr_elem) ? SerOption::as_ptr : SerOption::none;
         const auto& aPtr     = get_ptr(ary); // reference to ary if it's a pointer; &ary otherwise
         switch ( ser.mode() ) {
         case serializer::MAP:
-            serialize_array_map(ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapBoundedArray<ELEM_T, SIZE>(&(*aPtr)[0]),
-                serialize_array_map_element<ELEM_T>);
+            serialize_array_map(
+                ser, &(*aPtr)[0], elem_opt, SIZE, new ObjectMapContainer<T>(aPtr), serialize_array_map_element<ELEM_T>);
             break;
 
         case serializer::UNPACK:
             if constexpr ( std::is_pointer_v<OBJ_TYPE> ) {
                 // for pointers to fixed arrays, we allocate the storage
-                using T = std::remove_pointer_t<OBJ_TYPE>;
                 if constexpr ( std::is_array_v<T> )
                     ary = reinterpret_cast<OBJ_TYPE>(new std::remove_extent_t<T>[std::extent_v<T>]);
                 else
@@ -151,23 +209,27 @@ class serialize_impl<pvt::array_wrapper<ELEM_T, SIZE_T>>
                                             "cannot fit inside size_t. size_t should be used for array sizes.\n");
 
         if ( mode == serializer::MAP ) {
-            if constexpr ( !std::is_void_v<ELEM_T> ) {
-                pvt::serialize_array_map(ser, ary.ptr, elem_opt, size, new ObjectMapArray<ELEM_T>(ary.ptr, size),
-                    pvt::serialize_array_map_element<ELEM_T>);
-            }
+            if constexpr ( !std::is_void_v<ELEM_T> )
+                pvt::serialize_array_map(ser, ary.ptr, elem_opt, size,
+                    new ObjectMapArray<ELEM_T, SIZE_T>(ary.ptr, ary.size), pvt::serialize_array_map_element<ELEM_T>);
+            else
+                ser.binary(ary.ptr, ary.size);
             return;
         }
 
         // TODO: How to handle array-of-array
         // is_trivially_serializable_excluded_v<ELEM_T> can be added to exclude arrays-of-arrays from the fast path
         if constexpr ( std::is_void_v<ELEM_T> || is_trivially_serializable_v<ELEM_T> )
-            ser.binary(ary.ptr, size);
+            ser.binary(ary.ptr, ary.size);
         else {
-            ser.primitive(size);
-            if ( mode == serializer::UNPACK ) ary.ptr = new ELEM_T[size];
+            ser.primitive(ary.size);
+            if ( mode == serializer::UNPACK ) {
+                size = get_array_size(ary.size, "Serialization Error: Array size in SST::Core::Serialization::array() "
+                                                "cannot fit inside size_t. size_t should be used for array sizes.\n");
+                ary.ptr = new ELEM_T[size];
+            }
             pvt::serialize_array(ser, ary.ptr, elem_opt, size, pvt::serialize_array_element<ELEM_T>);
         }
-        if ( mode == serializer::UNPACK ) ary.size = static_cast<SIZE_T>(size);
     }
 
     SST_FRIEND_SERIALIZE();
@@ -185,29 +247,6 @@ struct serialize_impl<pvt::raw_ptr_wrapper<ELEM_T>>
     void operator()(pvt::raw_ptr_wrapper<ELEM_T>& a, serializer& ser, ser_opt_t UNUSED(opt)) { ser.primitive(a.ptr); }
     SST_FRIEND_SERIALIZE();
 };
-
-// Wrapper functions
-
-template <typename ELEM_T, typename SIZE_T>
-pvt::array_wrapper<ELEM_T, SIZE_T>
-array(ELEM_T*& ptr, SIZE_T& size)
-{
-    return { ptr, size };
-}
-
-template <typename SIZE_T>
-pvt::array_wrapper<void, SIZE_T>
-buffer(void*& ptr, SIZE_T& size)
-{
-    return { ptr, size };
-}
-
-template <typename ELEM_T>
-pvt::raw_ptr_wrapper<ELEM_T>
-raw_ptr(ELEM_T*& ptr)
-{
-    return { ptr };
-}
 
 } // namespace SST::Core::Serialization
 
