@@ -54,6 +54,10 @@ protected:
     Config*      config_     = nullptr;
     ConfigGraph* graph_      = nullptr;
     double       start_time_ = 0.0;
+
+    std::string version_ = "";
+    std::string arch_    = "";
+    std::string os_      = "";
 };
 
 } // namespace SST::Core

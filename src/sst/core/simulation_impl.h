@@ -666,6 +666,9 @@ public:
     uint32_t                                   checkpoint_id_       = 0;
     std::string                                checkpoint_prefix_   = "";
     std::string                                globalOutputFileName = "";
+    std::string                                version_             = "";
+    std::string                                arch_                = "";
+    std::string                                os_                  = "";
     bool                                       serial_restart_      = false;
 
     // Config object used by the simulation
