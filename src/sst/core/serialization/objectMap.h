@@ -1315,8 +1315,8 @@ public:
         return new ObjectMapComparison_impl<T, REF>(name, addr_, op, value);
     }
 
-    ObjectMapComparison* getComparisonVar(
-        const std::string& name, ObjectMapComparison::Op op, const std::string& name2, ObjectMap* var2) const override
+    ObjectMapComparison* getComparisonVar(const std::string& name, ObjectMapComparison::Op UNUSED(op),
+        const std::string& name2, ObjectMap* var2) const override
     {
         // Ensure var2 is fundamental type
         if ( !var2->isFundamental() ) {
