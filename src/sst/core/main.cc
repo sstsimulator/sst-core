@@ -57,13 +57,13 @@ REENABLE_WARNING
 #include "sst/core/unitAlgebra.h"
 
 #include <cinttypes>
+#include <csignal>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <signal.h>
 #include <sys/resource.h>
-#include <time.h>
 
 // Configuration Graph Generation Options
 #include "sst/core/configGraphOutput.h"
@@ -1322,7 +1322,7 @@ main(int argc, char* argv[])
         }
 
         /* Unblock signals on thread 0 */
-        pthread_sigmask(SIG_UNBLOCK, &maskset, NULL);
+        pthread_sigmask(SIG_UNBLOCK, &maskset, nullptr);
         // Call start_simulation for the main thread
         start_simulation(0, threadInfo[0], mainBarrier, graph->cpt_currentSimCycle, graph->cpt_currentPriority);
 

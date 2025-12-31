@@ -17,8 +17,8 @@
 
 #include "sst/core/event.h"
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 using namespace SST;
 using namespace SST::CoreTestPerfComponent;

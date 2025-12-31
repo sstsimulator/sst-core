@@ -16,9 +16,9 @@
 #include "sst/core/model/configGraph.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdlib>
 #include <map>
 #include <memory>
-#include <stdlib.h>
 #include <vector>
 
 namespace SST::IMPL::Partition {

@@ -23,7 +23,7 @@
 #include "sst/core/rng/uniform.h"
 #include "sst/core/rng/xorshift.h"
 
-#include <assert.h>
+#include <cassert>
 #include <cinttypes>
 
 using namespace SST;

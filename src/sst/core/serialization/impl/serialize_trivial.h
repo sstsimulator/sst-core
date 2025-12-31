@@ -55,7 +55,7 @@ class serialize_impl<T,
     void operator()(T& t, serializer& ser, ser_opt_t options)
     {
         const auto& tPtr = get_ptr(t);
-        switch ( const auto mode = ser.mode() ) {
+        switch ( ser.mode() ) {
         case serializer::MAP:
             // Right now only arithmetic, enum and complex types are handled in mapping mode without custom serializer
             if constexpr ( std::is_arithmetic_v<std::remove_pointer_t<T>> || std::is_enum_v<std::remove_pointer_t<T>> ||

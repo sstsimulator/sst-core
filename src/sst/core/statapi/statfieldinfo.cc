@@ -60,9 +60,9 @@ StatisticFieldTypeBase::getField(fieldType_t id)
 fieldType_t
 StatisticFieldTypeBase::getField(const char* field_short_name)
 {
-    for ( auto iter = fields_->begin(); iter != fields_->end(); iter++ ) {
-        if ( strcmp(iter->second->shortName(), field_short_name) ) {
-            return iter->first;
+    for ( auto& field : *fields_ ) {
+        if ( !strcmp(field.second->shortName(), field_short_name) ) {
+            return field.first;
         }
     }
     Simulation_impl::getSimulationOutput().fatal(

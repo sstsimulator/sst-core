@@ -131,11 +131,11 @@ template void trivially_serializable_test<test_union_ptr_2nd, true>();
 template void trivially_serializable_test<void, false>();
 template void trivially_serializable_test<void*, false>();
 
-typedef void (*fptr)(int, int);
+using fptr = void (*)(int, int);
 template void trivially_serializable_test<fptr, false>();
 
-typedef test_complex_double* test_complex_double_array_ptr[1000];
-template void                trivially_serializable_test<test_complex_double_array_ptr, false>();
+using test_complex_double_array_ptr = test_complex_double* [1000];
+template void trivially_serializable_test<test_complex_double_array_ptr, false>();
 
 template void trivially_serializable_test<std::vector<int>, false>();
 
