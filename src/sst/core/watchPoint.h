@@ -56,7 +56,7 @@ public:
         uint32_t    verbosity = 0;
         inline void msg(const std::string& msg)
         {
-            if ( WatchPoint::VMASK & verbosity ) std::cout << msg << std::endl;
+            if ( WatchPoint::VMASK & verbosity ) std::cout << msg << '\n';
         }
     }; // class WPAction
 
@@ -163,7 +163,7 @@ public:
     }
     inline void msg(const std::string& msg)
     {
-        if ( VMASK & verbosity ) std::cout << msg << std::endl;
+        if ( VMASK & verbosity ) std::cout << msg << '\n';
     }
     void        setHandler(unsigned handlerType);
     std::string handlerToString(HANDLER h);

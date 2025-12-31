@@ -161,18 +161,18 @@ dump_partition(ConfigGraph* graph, const RankInfo& size)
 
         for ( uint32_t i = 0; i < size.rank; i++ ) {
             for ( uint32_t t = 0; t < size.thread; t++ ) {
-                graph_file << "Rank: " << i << "." << t << " Component List:" << std::endl;
+                graph_file << "Rank: " << i << "." << t << " Component List:\n";
 
                 RankInfo r(i, t);
                 for ( ConfigComponentMap_t::const_iterator j = component_map.begin(); j != component_map.end(); ++j ) {
                     auto c = *j;
                     if ( c->rank == r ) {
-                        graph_file << "   " << c->name << " (ID=" << c->id << ")" << std::endl;
-                        graph_file << "      -> type      " << c->type << std::endl;
-                        graph_file << "      -> weight    " << c->weight << std::endl;
-                        graph_file << "      -> linkcount " << c->links.size() << std::endl;
-                        graph_file << "      -> rank      " << c->rank.rank << std::endl;
-                        graph_file << "      -> thread    " << c->rank.thread << std::endl;
+                        graph_file << "   " << c->name << " (ID=" << c->id << ")" << '\n';
+                        graph_file << "      -> type      " << c->type << '\n';
+                        graph_file << "      -> weight    " << c->weight << '\n';
+                        graph_file << "      -> linkcount " << c->links.size() << '\n';
+                        graph_file << "      -> rank      " << c->rank.rank << '\n';
+                        graph_file << "      -> thread    " << c->rank.thread << '\n';
                     }
                 }
             }
@@ -333,14 +333,13 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
             model_name = extension_map.at(extension);
         }
         catch ( const std::exception& e ) {
-            std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
+            std::cerr << "Unsupported SDL file type: \"" << extension << "\"\n";
             SST_Exit(EXIT_FAILURE);
         }
 
         // If doing parallel load, make sure this model is parallel capable
         if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
-            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
-                      << std::endl;
+            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading.\n";
             SST_Exit(EXIT_FAILURE);
         }
 
@@ -1113,7 +1112,7 @@ main(int argc, char* argv[])
         // we need to put in a sync interval to look for the exit
         // conditions being met.
         // if ( min_part == MAX_SIMTIME_T ) {
-        //     // std::cout << "No links cross rank boundary" << std::endl;
+        //     // std::cout << "No links cross rank boundary\n";
         //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
         // }
 

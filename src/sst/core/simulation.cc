@@ -784,7 +784,7 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
     graph.comps_.clear();
     */
     wireUpFinished_ = true;
-    // std::cout << "Done with performWireUp" << std::endl;
+    // std::cout << "Done with performWireUp\n";
 
     // Need to finalize stats engine configuration
     stat_engine.finalizeInitialization();
@@ -918,7 +918,7 @@ Simulation_impl::prepare_for_run()
     // just end
     if ( independent ) {
         if ( compInfoMap.empty() ) {
-            // std::cout << "Thread " << my_rank.thread << " is exiting with nothing to do" << std::endl;
+            // std::cout << "Thread " << my_rank.thread << " is exiting with nothing to do\n";
             StopAction* sa = new StopAction();
             sa->setDeliveryTime(0);
             timeVortex->insert(sa);
@@ -1811,14 +1811,12 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 
     /* Section 1: Checkpoint info */
     fs_reg << "## Checkpoint #" << checkpoint_id << " at time " << currentSimCycle << " ("
-           << getElapsedSimTime().toStringBestSI() << ")\n"
-           << std::endl;
+           << getElapsedSimTime().toStringBestSI() << ")\n\n";
 
     /* Section 2: Config options */
-    fs_reg << "## Configuration Options" << std::endl;
-    fs_reg << "## Note: Values in this section are for information only, editing values will not affect restart"
-           << std::endl;
-#define WR(var) fs_reg << #var << " = " << var << std::endl;
+    fs_reg << "## Configuration Options\n";
+    fs_reg << "## Note: Values in this section are for information only, editing values will not affect restart\n";
+#define WR(var) fs_reg << #var << " = " << var << '\n';
     WR(num_ranks.rank);
     WR(num_ranks.thread);
     WR(timeLord.timeBaseString);
@@ -1830,10 +1828,10 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
     WR(globalOutputFileName);
     std::string checkpoint_prefix = checkpoint_prefix_;
     WR(checkpoint_prefix);
-    fs_reg << std::endl;
+    fs_reg << '\n';
 #undef WR
 
-    fs_reg << "** (globals): " << globals_filename << std::endl;
+    fs_reg << "** (globals): " << globals_filename << '\n';
 
     fs_reg.close();
 }
@@ -1852,10 +1850,10 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
     std::ofstream fs = filesystem.ofstream(registry_name, std::ios::out | std::ios::app);
 
     // Write out the component offsets
-    fs << "\n** (" << my_rank.rank << ":" << my_rank.thread << "): " << blob_name << std::endl;
+    fs << "\n** (" << my_rank.rank << ":" << my_rank.thread << "): " << blob_name << '\n';
     for ( auto x : component_blob_offsets_ ) {
         std::string name = getComponent(x.first)->getName();
-        fs << x.first << " : " << x.second << " (" << name << ")" << std::endl;
+        fs << x.first << " : " << x.second << " (" << name << ")\n";
     }
     fs.close();
 }

@@ -133,7 +133,7 @@ TimingOutput::renderJSON()
 {
     json::ordered_json json_o;
     for ( auto kv : u64map_ ) {
-        // std::cout << key2cstr.at(kv.first) << " = " << std::dec << kv.second << std::endl;
+        // std::cout << key2cstr.at(kv.first) << " = " << std::dec << kv.second << '\n';
         json_o["timing-info"][key2cstr.at(kv.first)] = kv.second;
     }
     for ( auto kv : dmap_ ) {
@@ -144,7 +144,7 @@ TimingOutput::renderJSON()
     }
 
     std::stringstream ss;
-    ss << std::setw(2) << json_o << std::endl;
+    ss << std::setw(2) << json_o << '\n';
 
     // Avoid potential lifetime issues
     std::string outputString = ss.str();

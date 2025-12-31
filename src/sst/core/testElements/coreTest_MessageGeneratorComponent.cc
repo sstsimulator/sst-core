@@ -22,7 +22,7 @@ coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent(ComponentId
     Component(id)
 {
     clock_frequency_str = params.find<std::string>("clock", "1GHz");
-    std::cout << "Clock is configured for: " << clock_frequency_str << std::endl;
+    std::cout << "Clock is configured for: " << clock_frequency_str << '\n';
 
     total_message_send_count = params.find<int64_t>("sendcount", 1000);
     output_message_info      = params.find<int64_t>("outputinfo", 1);
@@ -56,8 +56,7 @@ coreTestMessageGeneratorComponent::handleEvent(Event* event)
     message_counter_recv++;
 
     if ( output_message_info ) {
-        std::cout << "Received message: " << message_counter_recv << " (time=" << getCurrentSimTimeMicro() << "us)"
-                  << std::endl;
+        std::cout << "Received message: " << message_counter_recv << " (time=" << getCurrentSimTimeMicro() << "us)\n";
     }
 
     delete event;
@@ -77,8 +76,7 @@ coreTestMessageGeneratorComponent::tick(Cycle_t)
     remote_component->send(msg);
 
     if ( output_message_info ) {
-        std::cout << "Sent message: " << message_counter_sent << " (time=" << getCurrentSimTimeMicro() << "us)"
-                  << std::endl;
+        std::cout << "Sent message: " << message_counter_sent << " (time=" << getCurrentSimTimeMicro() << "us)\n";
     }
 
     message_counter_sent++;

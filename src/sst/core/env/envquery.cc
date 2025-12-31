@@ -87,7 +87,7 @@ SST::Core::Environment::populateEnvironmentConfig(
         else if ( '[' == lineBuffer[0] ) {
             if ( lineBuffer[strlen(lineBuffer) - 1] != ']' ) {
                 std::cerr << "SST: Error reading configuration file at line number: " << currentLine
-                          << ", no matching ]" << std::endl;
+                          << ", no matching ]\n";
                 exit(-1);
             }
 
@@ -129,7 +129,7 @@ SST::Core::Environment::populateEnvironmentConfig(
 
     if ( nullptr == configFile ) {
         if ( errorOnNotOpen ) {
-            std::cerr << "SST: Unable to open configuration file \'" << path << "\'" << std::endl;
+            std::cerr << "SST: Unable to open configuration file \'" << path << "\'\n";
             exit(-1);
         }
         else {

@@ -108,16 +108,16 @@ Params::print_all_params(std::ostream& os, const std::string& prefix) const
     int                                   level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
-            if ( !map->empty() ) os << "Local params:" << std::endl;
+            if ( !map->empty() ) os << "Local params:\n";
             level++;
         }
         else if ( level == 1 ) {
-            os << "Shared params:" << std::endl;
+            os << "Shared params:\n";
             level++;
         }
 
         for ( auto value : *map ) {
-            os << "  " << prefix << "key=" << keyMapReverse[value.first] << ", value=" << value.second << std::endl;
+            os << "  " << prefix << "key=" << keyMapReverse[value.first] << ", value=" << value.second << '\n';
         }
     }
 }
@@ -151,16 +151,16 @@ Params::toString(const std::string& prefix) const
     int                                   level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
-            if ( !map->empty() ) str << "Local params:" << std::endl;
+            if ( !map->empty() ) str << "Local params:\n";
             level++;
         }
         else if ( level == 1 ) {
-            str << "Shared params:" << std::endl;
+            str << "Shared params:\n";
             level++;
         }
 
         for ( auto value : *map ) {
-            str << "  " << prefix << "key=" << keyMapReverse[value.first] << ", value=" << value.second << std::endl;
+            str << "  " << prefix << "key=" << keyMapReverse[value.first] << ", value=" << value.second << '\n';
         }
     }
     return str.str();

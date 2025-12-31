@@ -145,7 +145,7 @@ ConfigShared::getLibPath(bool exclude_ext_paths) const
     }
 
     // if ( verbose_ ) {
-    //     std::cout << "SST-Core: Configuration Library Path will read from: " << fullLibPath << std::endl;
+    //     std::cout << "SST-Core: Configuration Library Path will read from: " << fullLibPath << '\n';
     // }
 
     return fullLibPath;

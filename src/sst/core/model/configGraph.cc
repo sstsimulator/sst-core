@@ -888,11 +888,11 @@ PartitionComponent::print(std::ostream& os, const PartitionGraph* graph) const
     for ( ComponentIdMap_t::const_iterator git = group.begin(); git != group.end(); ++git ) {
         os << *git << " ";
     }
-    os << ")" << std::endl;
-    os << "  weight = " << weight << std::endl;
-    os << "  rank = " << rank.rank << std::endl;
-    os << "  thread = " << rank.thread << std::endl;
-    os << "  Links:" << std::endl;
+    os << ")\n";
+    os << "  weight = " << weight << '\n';
+    os << "  rank = " << rank.rank << '\n';
+    os << "  thread = " << rank.thread << '\n';
+    os << "  Links:\n";
     for ( LinkIdMap_t::const_iterator it = links.begin(); it != links.end(); ++it ) {
         graph->getLink(*it).print(os);
     }

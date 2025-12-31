@@ -60,7 +60,7 @@ send(int dest, int tag, dataType& data)
     std::vector<char> buffer = Comms::serialize<dataType>(data);
 
     // Now send the data.  Send size first, then payload
-    // std::cout<< sizeof(buffer.size()) << std::endl;
+    // std::cout<< sizeof(buffer.size()) << '\n';
     int64_t size = buffer.size();
     MPI_Send(&size, 1, MPI_INT64_T, dest, tag, MPI_COMM_WORLD);
 

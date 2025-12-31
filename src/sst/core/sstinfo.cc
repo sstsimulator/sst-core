@@ -157,7 +157,7 @@ main(int argc, char* argv[])
 
     // Run interactive mode
     if ( g_configuration.interactiveEnabled() ) {
-        std::cout << "Curses library not found. Run SST-Info without the -i flag." << std::endl;
+        std::cout << "Curses library not found. Run SST-Info without the -i flag.\n";
     }
 
     return 0;
@@ -601,13 +601,13 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
         fprintf(stderr, "**** CHECK: Do not include the prefix or file extension when using the lib option.\n");
         fprintf(stderr, "**** EXAMPLE: 'sst-info -l PaintShop' to display model information from libPaintShop.so\n");
         if ( g_configuration.debugEnabled() ) {
-            std::cerr << err_sstr.str() << std::endl;
+            std::cerr << err_sstr.str() << '\n';
         }
     }
     else {
         fprintf(stderr, "**** %s not Found!\n", lib.c_str());
         // regardless of debug - force error printing
-        std::cerr << err_sstr.str() << std::endl;
+        std::cerr << err_sstr.str() << '\n';
     }
 }
 
@@ -788,9 +788,7 @@ void
 SSTInfoConfig::outputUsage()
 {
     using std::cout;
-    using std::endl;
-    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
-         << " [options]" << endl;
+    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] [options]\n";
     cout << "  -h, --help               Print Help Message\n";
     cout << "  -v, --version            Print SST Package Release Version\n";
     cout << "  -d, --debug              Enabled debugging messages\n";
@@ -798,8 +796,7 @@ SSTInfoConfig::outputUsage()
     cout << "  -x, --xml                Generate XML data - default is off\n";
     cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
     cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library(s) to process\n";
-    cout << "  -q, --quiet              Quiet/print summary only\n";
-    cout << endl;
+    cout << "  -q, --quiet              Quiet/print summary only\n\n";
 }
 
 void
@@ -878,10 +875,9 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
 void
 SSTLibraryInfo::outputText(std::stringstream& outputStream)
 {
-    using std::endl;
     if ( this->m_libraryFilter ) {
         outputStream << "\n================================================================================\n";
-        outputStream << "ELEMENT LIBRARY: " << this->m_name << endl;
+        outputStream << "ELEMENT LIBRARY: " << this->m_name << '\n';
 
         // Loop over component types
         for ( auto& pair : this->m_components ) {
@@ -896,20 +892,20 @@ SSTLibraryInfo::outputText(std::stringstream& outputStream)
                 bool filtered = std::find(m_componentFilters.begin(), m_componentFilters.end(),
                                     component.componentName) != m_componentFilters.end();
                 if ( (m_componentFilters.size() == 0) || filtered ) {
-                    outputStream << "  " << componentType << " " << idx << ": " << component.componentName << endl;
+                    outputStream << "  " << componentType << " " << idx << ": " << component.componentName << '\n';
 
                     // Iterate through infoMap using the string indexer
                     for ( auto key : component.stringIndexer ) {
                         std::string val = component.infoMap[key];
 
                         if ( val == "" ) {
-                            outputStream << key << endl;
+                            outputStream << key << '\n';
                         }
                         else {
-                            outputStream << key << ": " << val << endl;
+                            outputStream << key << ": " << val << '\n';
                         }
                     }
-                    outputStream << endl;
+                    outputStream << '\n';
                 }
             }
         }
@@ -1065,7 +1061,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
                     if ( g_configuration.doVerbose() ) pair.second->toString(os);
                 }
                 if ( print ) ++idx;
-                if ( print ) os << std::endl;
+                if ( print ) os << '\n';
             }
         }
     }

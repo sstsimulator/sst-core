@@ -30,35 +30,35 @@ DISABLE_WARN_MISSING_NORETURN
 bool
 UninitializedQueue::empty()
 {
-    std::cout << message << std::endl;
+    std::cout << message << '\n';
     abort();
 }
 
 int
 UninitializedQueue::size()
 {
-    std::cout << message << std::endl;
+    std::cout << message << '\n';
     abort();
 }
 
 void
 UninitializedQueue::insert(Activity* UNUSED(activity))
 {
-    std::cout << message << std::endl;
+    std::cout << message << '\n';
     abort();
 }
 
 Activity*
 UninitializedQueue::pop()
 {
-    std::cout << message << std::endl;
+    std::cout << message << '\n';
     abort();
 }
 
 Activity*
 UninitializedQueue::front()
 {
-    std::cout << message << std::endl;
+    std::cout << message << '\n';
     abort();
 }
 REENABLE_WARNING

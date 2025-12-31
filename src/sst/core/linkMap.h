@@ -174,7 +174,7 @@ public:
 
         //         if ( !checkPort(name) ) {
         // #ifdef USE_PARAM_WARNINGS
-        //             std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
+        //             std::cerr << "Warning:  Using undocumented port '" << name << "'.\n";
         // #endif
         //         }
         std::map<std::string, Link*>::iterator it = linkMap.find(name);

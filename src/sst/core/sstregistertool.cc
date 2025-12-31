@@ -236,10 +236,10 @@ listModels(int option)
 
                 if ( s.find("/") != std::string::npos ) { // check to see if there is a path
                     if ( validModel(s) ) {
-                        std::cout << count << ". " << std::setw(25) << std::left << strNew << "VALID" << std::endl;
+                        std::cout << count << ". " << std::setw(25) << std::left << strNew << "VALID\n";
                     }
                     else {
-                        std::cout << count << ". " << std::setw(25) << std::left << strNew << "INVALID" << std::endl;
+                        std::cout << count << ". " << std::setw(25) << std::left << strNew << "INVALID\n";
                         if ( option == 2 ) // if option = 2, then we only push the invalid models into the vector
                             elements.push_back(strNew);
                     }

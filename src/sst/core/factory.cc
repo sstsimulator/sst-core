@@ -159,7 +159,7 @@ Factory::isPortNameValid(const std::string& type, const std::string& port_name)
         for ( auto& pair : lib->getMap() ) {
             err << pair.first << "\n";
         }
-        std::cerr << err.str() << std::endl;
+        std::cerr << err.str() << '\n';
         out.fatal(CALL_INFO, 1, "can't find requested component or subcomponent '%s'\n ", tmp.c_str());
         return false;
     }

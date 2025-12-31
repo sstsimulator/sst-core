@@ -76,8 +76,8 @@ ObjectMap::selectVariable(std::string name, bool& loop_detected)
 // #define _DEBUG_NULL_META_
 #ifdef _DEBUG_NULL_META_
             std::cout << "current: &" << current->getName() << " = " << &current << "parent &" << parent->getName()
-                      << " = " << &parent << std::endl;
-            std::cout << "setting current=parent" << std::endl;
+                      << " = " << &parent << '\n';
+            std::cout << "setting current=parent\n";
 #endif
             // TODO: check for parent == nullptr, which
             // would be the case where we didn't detect
@@ -94,7 +94,7 @@ ObjectMap::selectVariable(std::string name, bool& loop_detected)
             // > set d 0.1
             if ( !current->mdata_ ) {
 #if _DEBUG_NULL_META_
-                std::cout << "mdata is null. Returning " << var->getName() << std::endl;
+                std::cout << "mdata is null. Returning " << var->getName() << '\n';
 #endif
                 return var;
             }

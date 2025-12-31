@@ -359,13 +359,13 @@ UnitAlgebra::UnitAlgebra(const std::string& val)
 void
 UnitAlgebra::print(std::ostream& stream, int32_t precision)
 {
-    stream << value.toString(precision) << " " << unit.toString() << std::endl;
+    stream << value.toString(precision) << " " << unit.toString() << '\n';
 }
 
 void
 UnitAlgebra::printWithBestSI(std::ostream& stream, int32_t precision)
 {
-    stream << toStringBestSI(precision) << std::endl;
+    stream << toStringBestSI(precision) << '\n';
 }
 
 std::string

@@ -30,6 +30,8 @@
 
 namespace SST::IMPL::Interactive {
 
+// NOLINTBEGIN(performance-avoid-endl)
+
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
@@ -1799,5 +1801,7 @@ SimpleDebugger::msg(VERBOSITY_MASK mask, std::string message)
     if ( (!static_cast<uint32_t>(mask)) & verbosity ) return;
     std::cout << message << std::endl;
 }
+
+// NOLINTEND(performance-avoid-endl)
 
 } // namespace SST::IMPL::Interactive

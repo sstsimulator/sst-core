@@ -604,52 +604,52 @@ struct HandlerTest : public SST::Core::Serialization::serializable
     // Need 8 combinations to cover void and non-void for return type,
     // arg type and metadata type
 
-    void call_000() { std::cout << "internal value: " << value << std::endl; }
+    void call_000() { std::cout << "internal value: " << value << '\n'; }
 
     void call_001(float f)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "metadata value: " << f << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "metadata value: " << f << '\n';
     }
 
     void call_010(int in)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "parameter value: " << in << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "parameter value: " << in << '\n';
     }
 
     void call_011(int in, float f)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "parameter value: " << in << std::endl;
-        std::cout << "metadata value: " << f << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "parameter value: " << in << '\n';
+        std::cout << "metadata value: " << f << '\n';
     }
 
     int call_100()
     {
-        std::cout << "internal value: " << value << std::endl;
+        std::cout << "internal value: " << value << '\n';
         return 4;
     }
 
     int call_101(float f)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "metadata value: " << f << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "metadata value: " << f << '\n';
         return 5;
     }
 
     int call_110(int in)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "parameter value: " << in << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "parameter value: " << in << '\n';
         return 6;
     }
 
     int call_111(int in, float f)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "parameter value: " << in << std::endl;
-        std::cout << "metadata value: " << f << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "parameter value: " << in << '\n';
+        std::cout << "metadata value: " << f << '\n';
         return 7;
     }
 
@@ -672,9 +672,9 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
 
     int call(int input, float f)
     {
-        std::cout << "internal value: " << value << std::endl;
-        std::cout << "parameter value: " << input << std::endl;
-        std::cout << "metadata value: " << f << std::endl;
+        std::cout << "internal value: " << value << '\n';
+        std::cout << "parameter value: " << input << '\n';
+        std::cout << "metadata value: " << f << '\n';
         return 101;
     }
 
@@ -1552,46 +1552,42 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // args -                 returnT, argT,       dataT
         auto* h000 = new SSTHandler2<void, void, HandlerTest, void, &HandlerTest::call_000>(t1);
         (*h000)();
-        std::cout << std::endl;
+        std::cout << '\n';
 
         // args -                 returnT, argT,       dataT
         auto* h001 = new SSTHandler2<void, void, HandlerTest, float, &HandlerTest::call_001>(t1, 1.2);
         (*h001)();
-        std::cout << std::endl;
+        std::cout << '\n';
 
         // args -                 returnT, argT,       dataT
         auto* h010 = new SSTHandler2<void, int, HandlerTest, void, &HandlerTest::call_010>(t1);
         (*h010)(52);
-        std::cout << std::endl;
+        std::cout << '\n';
 
         // args -                 returnT, argT,       dataT
         auto* h011 = new SSTHandler2<void, int, HandlerTest, float, &HandlerTest::call_011>(t1, 3.4);
         (*h011)(53);
-        std::cout << std::endl;
+        std::cout << '\n';
 
         // args -                returnT, argT,       dataT
         auto* h100 = new SSTHandler2<int, void, HandlerTest, void, &HandlerTest::call_100>(t2);
         int   ret  = (*h100)();
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         // args -                returnT, argT,       dataT
         auto* h101 = new SSTHandler2<int, void, HandlerTest, float, &HandlerTest::call_101>(t2, 5.6);
         ret        = (*h101)();
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         // args -                returnT, argT,       dataT
         auto* h110 = new SSTHandler2<int, int, HandlerTest, void, &HandlerTest::call_110>(t2);
         ret        = (*h110)(62);
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         // args -                returnT, argT,       dataT
         auto* h111 = new SSTHandler2<int, int, HandlerTest, float, &HandlerTest::call_111>(t2, 7.8);
         ret        = (*h111)(63);
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         // // Serialize and deserialize
         SST::Core::Serialization::serializer ser;
@@ -1666,37 +1662,32 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         SST_SER(h110_out);
         SST_SER(h111_out);
 
-        std::cout << "Internal value for t1: " << t1_out->value << std::endl;
-        std::cout << std::endl;
+        std::cout << "Internal value for t1: " << t1_out->value << "\n\n";
         t1_out->value = 100;
 
         (*h000_out)();
-        std::cout << std::endl;
+        std::cout << '\n';
 
         (*h001_out)();
-        std::cout << std::endl;
+        std::cout << '\n';
 
         (*h010_out)(52);
-        std::cout << std::endl;
+        std::cout << '\n';
 
         (*h011_out)(53);
-        std::cout << std::endl;
+        std::cout << '\n';
 
         ret = (*h100_out)();
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         ret = (*h101_out)();
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         ret = (*h110_out)(62);
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
         ret = (*h111_out)(63);
-        std::cout << "Return value: " << ret << std::endl;
-        std::cout << std::endl;
+        std::cout << "Return value: " << ret << "\n\n";
 
 
         // Test recursive serialization using handlers (i.e. the handler

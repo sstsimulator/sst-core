@@ -57,9 +57,9 @@ serializable_factory::add_builder(serializable_builder* builder, const char* nam
     if ( current != nullptr ) {
         // std::cerr << sprockit::printf(
         //   "amazingly %s and %s both hash to same serializable id %u",
-        //   current->name(), builder->name(), hash) << std::endl;
+        //   current->name(), builder->name(), hash) << '\n';
         std::cerr << "amazingly " << current->name() << " and " << builder->name()
-                  << " both hash to same serializable id " << hash << std::endl;
+                  << " both hash to same serializable id " << hash << '\n';
         abort();
     }
     current = builder;
@@ -78,7 +78,7 @@ serializable_factory::get_serializable(uint32_t cls_id)
 {
     builder_map::const_iterator it = builders_->find(cls_id);
     if ( it == builders_->end() ) {
-        std::cerr << "class id " << cls_id << " is not a valid serializable id" << std::endl;
+        std::cerr << "class id " << cls_id << " is not a valid serializable id\n";
         // spkt_throw_printf(value_error,
         //                  "class id %ld is not a valid serializable id",
         //                  cls_id);

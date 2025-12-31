@@ -103,10 +103,10 @@ ProvidesStats::toString(std::ostream& os) const
 void
 ProvidesDefaultInfo::toString(std::ostream& os) const
 {
-    if ( !getAlias().empty() ) os << "      " << getName() << " is aliased as: " << getAlias() << std::endl;
-    os << "      Description: " << getDescription() << std::endl;
-    os << "      ELI version: " << getELIVersionString() << std::endl;
-    os << "      Compiled using file: " << getCompileFile() << std::endl;
+    if ( !getAlias().empty() ) os << "      " << getName() << " is aliased as: " << getAlias() << '\n';
+    os << "      Description: " << getDescription() << '\n';
+    os << "      ELI version: " << getELIVersionString() << '\n';
+    os << "      Compiled using file: " << getCompileFile() << '\n';
 }
 
 void

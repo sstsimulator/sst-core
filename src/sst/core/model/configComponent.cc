@@ -142,27 +142,27 @@ ConfigPortModule::enableStatistic(const std::string& statistic_name, const SST::
 void
 ConfigComponent::print(std::ostream& os) const
 {
-    os << "Component " << name << " (id = " << std::hex << id << std::dec << ")" << std::endl;
-    os << "  slot_num = " << slot_num << std::endl;
-    os << "  type = " << type << std::endl;
-    os << "  weight = " << weight << std::endl;
-    os << "  rank = " << rank.rank << std::endl;
-    os << "  thread = " << rank.thread << std::endl;
-    os << "  Links:" << std::endl;
+    os << "Component " << name << " (id = " << std::hex << id << std::dec << ")\n";
+    os << "  slot_num = " << slot_num << '\n';
+    os << "  type = " << type << '\n';
+    os << "  weight = " << weight << '\n';
+    os << "  rank = " << rank.rank << '\n';
+    os << "  thread = " << rank.thread << '\n';
+    os << "  Links:\n";
     for ( size_t i = 0; i != links.size(); ++i ) {
         os << "    " << links[i];
     }
-    os << std::endl;
-    os << "  Params:" << std::endl;
+    os << '\n';
+    os << "  Params:" << '\n';
     params.print_all_params(os, "    ");
-    os << "  statLoadLevel = " << (uint32_t)statLoadLevel << std::endl;
-    os << "  enabledAllStats = " << enabledAllStats << std::endl;
-    os << "    Params:" << std::endl;
+    os << "  statLoadLevel = " << (uint32_t)statLoadLevel << '\n';
+    os << "  enabledAllStats = " << enabledAllStats << '\n';
+    os << "    Params:\n";
     allStatConfig.params.print_all_params(os, "      ");
-    os << "  Statistics:" << std::endl;
+    os << "  Statistics:\n";
     for ( auto& pair : enabledStatNames ) {
-        os << "    " << pair.first << std::endl;
-        os << "      Params:" << std::endl;
+        os << "    " << pair.first << '\n';
+        os << "      Params:\n";
         auto iter = statistics_.find(pair.second);
         iter->second.params.print_all_params(os, "      ");
     }

@@ -264,7 +264,7 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
         err_os << "Error: unable to find \"" << elemlib << "\" element library\n";
         if ( !verbose ) {
             for ( auto& x : error_msgs ) {
-                err_os << x << std::endl;
+                err_os << x << '\n';
             }
         }
     }
@@ -276,7 +276,7 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
                    << " was successfully loaded, but there was a failed attempt at loading a different version of the "
                       "library before the successful load.  Error message follows:\n";
             for ( auto& x : error_msgs ) {
-                err_os << x << std::endl;
+                err_os << x << '\n';
             }
         }
     }

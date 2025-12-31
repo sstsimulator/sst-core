@@ -138,7 +138,7 @@ Clock::schedule()
     }
 
     // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " <<
-    // sim->getCurrentSimCycle() << std::endl;
+    // sim->getCurrentSimCycle() << '\n';
     sim->insertActivity(next, this);
     scheduled = true;
 }

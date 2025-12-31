@@ -85,9 +85,9 @@ isDirectoryWritable(const std::string& path)
     // Attempt to create and write to the file
     std::ofstream test_file(test_file_path.string());
     if ( test_file ) {
-        test_file << "This is a test file." << std::endl; // Write something to the file
-        test_file.close();                                // Close the file
-        fs::remove(test_file_path);                       // Clean up by removing the file
+        test_file << "This is a test file.\n"; // Write something to the file
+        test_file.close();                     // Close the file
+        fs::remove(test_file_path);            // Clean up by removing the file
 
         return true; // Directory is writable
     }

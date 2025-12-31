@@ -34,9 +34,9 @@ coreTestDistribComponent::finish()
     if ( bin_results ) {
         std::map<int64_t, uint64_t>::iterator map_itr;
 
-        std::cout << "Bin:" << std::endl;
+        std::cout << "Bin:\n";
         for ( map_itr = bins->begin(); map_itr != bins->end(); map_itr++ ) {
-            std::cout << map_itr->first << " " << map_itr->second << std::endl;
+            std::cout << map_itr->first << " " << map_itr->second << '\n';
         }
     }
 }
@@ -106,7 +106,7 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
         comp_distrib = new SSTDiscreteDistribution(probs, prob_count, new MersenneRNG(10111));
     }
     else {
-        std::cerr << "Unknown distribution type." << std::endl;
+        std::cerr << "Unknown distribution type.\n";
         exit(-1);
     }
 

@@ -78,12 +78,12 @@ public:
     /** Print the configuration graph */
     void print(std::ostream& os) const
     {
-        os << "Printing graph" << std::endl;
-        os << "Components:" << std::endl;
+        os << "Printing graph\n";
+        os << "Components:\n";
         for ( ConfigComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
             (*i)->print(os);
         }
-        os << "Links:" << std::endl;
+        os << "Links:\n";
         for ( auto i = links_.begin(); i != links_.end(); ++i ) {
             (*i)->print(os);
         }
@@ -305,7 +305,7 @@ public:
     /** Print the configuration graph */
     void print(std::ostream& os) const
     {
-        os << "Printing graph" << std::endl;
+        os << "Printing graph\n";
         for ( PartitionComponentMap_t::const_iterator i = comps_.begin(); i != comps_.end(); ++i ) {
             (*i)->print(os, this);
         }

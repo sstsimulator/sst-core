@@ -27,7 +27,7 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
     clock_frequency_str = params.find<std::string>("clock", "1GHz");
     clock_count         = params.find<int64_t>("clockcount", 1000);
 
-    std::cout << "Clock is configured for: " << clock_frequency_str << std::endl;
+    std::cout << "Clock is configured for: " << clock_frequency_str << '\n';
 
     // tell the simulator not to end without us
     registerAsPrimaryComponent();
@@ -39,12 +39,12 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
 
     // Set some other clocks
     // Second Clock (5ns)
-    std::cout << "REGISTER CLOCK #2 at 5 ns" << std::endl;
+    std::cout << "REGISTER CLOCK #2 at 5 ns\n";
     registerClock("5 ns",
         new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
 
     // Third Clock (15ns)
-    std::cout << "REGISTER CLOCK #3 at 15 ns" << std::endl;
+    std::cout << "REGISTER CLOCK #3 at 15 ns\n";
     Clock3Handler =
         new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
     tc = registerClock("15 ns", Clock3Handler);
@@ -75,7 +75,7 @@ bool
 coreTestClockerComponent::Clock2Tick(SST::Cycle_t CycleNum, uint32_t Param)
 {
     // NOTE: THIS IS THE 5NS CLOCK
-    std::cout << "  CLOCK #2 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
+    std::cout << "  CLOCK #2 - TICK Num " << CycleNum << "; Param = " << Param << '\n';
 
     // return false so we keep going or true to stop
     if ( CycleNum == 15 ) {
@@ -90,10 +90,10 @@ bool
 coreTestClockerComponent::Clock3Tick(SST::Cycle_t CycleNum, uint32_t Param)
 {
     // NOTE: THIS IS THE 15NS CLOCK
-    std::cout << "  CLOCK #3 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
+    std::cout << "  CLOCK #3 - TICK Num " << CycleNum << "; Param = " << Param << '\n';
 
     //    if ((CycleNum == 1) || (CycleNum == 4))  {
-    //        std::cout << "*** REGISTERING ONESHOTS " << std::endl ;
+    //        std::cout << "*** REGISTERING ONESHOTS\n";
     //        registerOneShot("10ns", callback1Handler);
     //        registerOneShot("18ns", callback2Handler);
     //    }
@@ -110,13 +110,13 @@ coreTestClockerComponent::Clock3Tick(SST::Cycle_t CycleNum, uint32_t Param)
 void
 coreTestClockerComponent::Oneshot1Callback(uint32_t Param)
 {
-    std::cout << "-------- ONESHOT #1 CALLBACK; Param = " << Param << std::endl;
+    std::cout << "-------- ONESHOT #1 CALLBACK; Param = " << Param << '\n';
 }
 
 void
 coreTestClockerComponent::Oneshot2Callback()
 {
-    std::cout << "-------- ONESHOT #2 CALLBACK" << std::endl;
+    std::cout << "-------- ONESHOT #2 CALLBACK\n";
 }
 
 // Serialization

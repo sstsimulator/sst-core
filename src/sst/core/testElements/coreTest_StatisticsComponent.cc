@@ -105,7 +105,7 @@ bool
 StatisticsComponentInt::Clock1Tick(Cycle_t UNUSED(CycleNum))
 {
     // NOTE: THIS IS THE 1NS CLOCK
-    //    std::cout << "@ " << CycleNum << std::endl;
+    //    std::cout << "@ " << CycleNum << '\n';
 
     uint32_t U32 = rng->generateNextUInt32();
     uint64_t U64 = rng->generateNextUInt64();

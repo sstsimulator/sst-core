@@ -1061,7 +1061,7 @@ public:
 #ifdef _OBJMAP_DEBUG_
         std::cout << "    Sample:" << handler << ": numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
                   << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
-                  << " samplesLost:" << samplesLost_ << std::endl;
+                  << " samplesLost:" << samplesLost_ << '\n';
 #endif
         cycleBuffer_[cur_]   = cycle;
         handlerBuffer_[cur_] = handler;
@@ -1128,7 +1128,7 @@ public:
         else {
             end = cur_ - 1;
         }
-        // std::cout << "start=" << start << " end=" << end << std::endl;
+        // std::cout << "start=" << start << " end=" << end << '\n';
 
         for ( int j = start;; j++ ) {
             size_t i = j % bufSize_;
@@ -1140,7 +1140,7 @@ public:
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
                 std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->get(i) << " ";
             }
-            std::cout << std::endl;
+            std::cout << '\n';
 
             if ( i == end ) {
                 break;
@@ -1151,7 +1151,7 @@ public:
     void dumpTriggerRecord()
     {
         if ( numRecs_ == 0 ) {
-            std::cout << "No trace samples in current buffer" << std::endl;
+            std::cout << "No trace samples in current buffer\n";
             return;
         }
         if ( state_ != CLEAR ) {
@@ -1160,7 +1160,7 @@ public:
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
                 std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
             }
-            std::cout << std::endl;
+            std::cout << '\n';
         }
     }
 
@@ -1235,7 +1235,7 @@ public:
             *addr_ = SST::Core::from_string<T>(value);
         }
         catch ( const std::exception& e ) {
-            std::cerr << e.what() << ": " << value << std::endl;
+            std::cerr << e.what() << ": " << value << '\n';
         }
     }
 
@@ -1246,7 +1246,7 @@ public:
             return true;
         }
         catch ( const std::exception& e ) {
-            std::cerr << e.what() << ": " << value << std::endl;
+            std::cerr << e.what() << ": " << value << '\n';
             return false;
         }
     }
@@ -1314,11 +1314,11 @@ public:
 
         std::string type = var2->getType();
 #if 0
-        std::cout << "In ObjectMapComparison_var: " << name << " " << name2 << std::endl;
-        // std::cout << "typeid(T): " << demangle_name(typeid(T).name()) << std::endl;
+        std::cout << "In ObjectMapComparison_var: " << name << " " << name2 << '\n';
+        // std::cout << "typeid(T): " << demangle_name(typeid(T).name()) << '\n';
         std::string type1 = getType();
-        std::cout << "getType(v1): " << type1 << std::endl;
-        std::cout << "getType(v2): " << type << std::endl;
+        std::cout << "getType(v1): " << type1 << '\n';
+        std::cout << "getType(v2): " << type << '\n';
 #endif
 
         // Create ObjectMapComparison_var which compares two variables

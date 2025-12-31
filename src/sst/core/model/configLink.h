@@ -185,14 +185,14 @@ public:
     */
     void print(std::ostream& os) const
     {
-        os << "Link " << name << " (id = " << id << ")" << std::endl;
-        os << "  nonlocal = " << nonlocal << std::endl;
-        os << "  component[0] = " << component[0] << std::endl;
-        os << "  port[0] = " << port[0] << std::endl;
-        os << "  latency[0] = " << latency[0] << std::endl;
-        os << "  component[1] = " << component[1] << std::endl;
-        os << "  port[1] = " << port[1] << std::endl;
-        os << "  latency[1] = " << latency[1] << std::endl;
+        os << "Link " << name << " (id = " << id << ")\n";
+        os << "  nonlocal = " << nonlocal << '\n';
+        os << "  component[0] = " << component[0] << '\n';
+        os << "  port[0] = " << port[0] << '\n';
+        os << "  latency[0] = " << latency[0] << '\n';
+        os << "  component[1] = " << component[1] << '\n';
+        os << "  port[1] = " << port[1] << '\n';
+        os << "  latency[1] = " << latency[1] << '\n';
     }
 
     /* Do not use.  For serialization only */
@@ -277,11 +277,11 @@ public:
     /** Print the Link information */
     void print(std::ostream& os) const
     {
-        os << "    Link " << id << std::endl;
-        os << "      component[0] = " << component[0] << std::endl;
-        os << "      latency[0] = " << latency[0] << std::endl;
-        os << "      component[1] = " << component[1] << std::endl;
-        os << "      latency[1] = " << latency[1] << std::endl;
+        os << "    Link " << id << '\n';
+        os << "      component[0] = " << component[0] << '\n';
+        os << "      latency[0] = " << latency[0] << '\n';
+        os << "      component[1] = " << component[1] << '\n';
+        os << "      latency[1] = " << latency[1] << '\n';
     }
 };
 

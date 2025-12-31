@@ -17,6 +17,8 @@
 #include <iterator>
 #include <sstream>
 
+// NOLINTBEGIN(performance-avoid-endl)
+
 // #define _KEYB_DEBUG_
 
 // only use termios read/write functions for console!
@@ -374,3 +376,5 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
     newcmd = history[index];
     writeStr("\n");
 }
+
+// NOLINTEND(performance-avoid-endl)

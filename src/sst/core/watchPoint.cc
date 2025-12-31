@@ -340,7 +340,7 @@ WatchPoint::printWatchpoint()
         std::cout << " : ";
     }
     printAction();
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 void
@@ -456,7 +456,7 @@ WatchPoint::check()
     s << "    WatchPoint " << name_.c_str() << " tests:\n";
     s << "      ";
     cmpObjects_[0]->print(s);
-    s << " -> " << result << std::endl;
+    s << " -> " << result << '\n';
 
     for ( size_t i = 1; i < numCmpObj_; i++ ) {
         bool result2 = false;
@@ -465,16 +465,16 @@ WatchPoint::check()
         }
         s << "      ";
         cmpObjects_[i]->print(s);
-        s << " -> " << result2 << std::endl;
+        s << " -> " << result2 << '\n';
         // printf("      comparison%ld = %d\n", i, result2);
 
         if ( logicOps_[i - 1] == LogicOp::AND ) {
             result = result && result2;
-            s << "        AND -> " << result << std::endl;
+            s << "        AND -> " << result << '\n';
         }
         else if ( logicOps_[i - 1] == LogicOp::OR ) {
             result = result || result2;
-            s << "        OR -> " << result << std::endl;
+            s << "        OR -> " << result << '\n';
         }
         else {
             s << "    ERROR: invalid LogicOp\n";
