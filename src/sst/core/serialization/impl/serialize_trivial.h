@@ -17,11 +17,14 @@
     "The header file sst/core/serialization/impl/serialize_trivial.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serialize.h"
 #endif
 
+#include "sst/core/output.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <array>
 #include <bitset>
+#include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 
 namespace SST::Core::Serialization {
@@ -54,24 +57,56 @@ class serialize_impl<T,
 {
     void operator()(T& t, serializer& ser, ser_opt_t options)
     {
+        using U          = std::remove_pointer_t<T>;
         const auto& tPtr = get_ptr(t);
-        switch ( const auto mode = ser.mode() ) {
+        switch ( ser.mode() ) {
         case serializer::MAP:
-            // Right now only arithmetic, enum and complex types are handled in mapping mode without custom serializer
-            if constexpr ( std::is_arithmetic_v<std::remove_pointer_t<T>> || std::is_enum_v<std::remove_pointer_t<T>> ||
-                           complex_properties<std::remove_pointer_t<T>>::is_complex ) {
-                ObjectMap* obj_map = new ObjectMapFundamental<std::remove_pointer_t<T>>(tPtr);
+            // Arithmetic, enum, complex types, and types constructible from std::string and convertible to std::string,
+            // are handled in mapping mode without a custom serializer
+            if constexpr ( std::is_arithmetic_v<U> || std::is_enum_v<U> || complex_properties<U>::is_complex ||
+                           (std::is_constructible_v<U, std::string> && std::is_convertible_v<U, std::string>)) {
+                ObjectMap* obj_map = new ObjectMapFundamental<U>(tPtr);
                 if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
                 ser.mapper().map_object(ser.getMapName(), obj_map);
             }
             else {
-                // TODO: Handle mapping mode for trivially serializable types without from_string() methods which do not
-                // define their own serialization methods.
+                // Print warning at verbose levels >= 2, but only print it once for each type
+                // This reduces surprise when a variable is not added to the ObjectMap
+                static int UNUSED(once) = [] {
+                    Output& output = Output::getDefaultObject();
+                    if ( output.getVerboseLevel() >= 2 ) {
+                        std::string typestr = ObjectMap::demangle_name(typeid(U).name());
+                        const char* type    = typestr.c_str();
+                        if constexpr ( std::is_class_v<U> )
+                            output.verbose(CALL_INFO, 0, 0,
+                                "Warning: Trivially serializable class type %s does not automatically have an "
+                                "ObjectMap created for it.\nTo create an ObjectMap for %s, use one of these "
+                                "methods:\n1. Add a serialize_order() method to %s.\n2. Define a serialize_impl<%s> "
+                                "specialization.\n3. Add a constructor taking a std::string and an operator "
+                                "std::string() const to %s, to allow conversion from/to std::string.\n\n",
+                                type, type, type, type, type);
+                        else if constexpr ( std::is_union_v<U> )
+                            output.verbose(CALL_INFO, 0, 0,
+                                "Warning: Trivially serializable union type %s does not automatically have an "
+                                "ObjectMap created for it.\nTo create an ObjectMap for %s, use one of these "
+                                "methods:\n1. Define a serialize_impl<%s> specialization.\n2. Add a constructor "
+                                "taking a std::string and an operator std::string() const to %s, to allow "
+                                "conversion from/to std::string.\n\n",
+                                type, type, type, type);
+                        else
+                            output.verbose(CALL_INFO, 0, 0,
+                                "Warning: Trivially serializable type %s does not automatically have an ObjectMap "
+                                "created for it.\nTo create an ObjectMap for %s, define a serialize_impl<%s> "
+                                "specialization.\n\n",
+                                type, type, type);
+                    }
+                    return 0;
+                }();
             }
             break;
 
         case serializer::UNPACK:
-            if constexpr ( std::is_pointer_v<T> ) t = new std::remove_pointer_t<T>();
+            if constexpr ( std::is_pointer_v<T> ) t = new U();
             [[fallthrough]];
 
         default:

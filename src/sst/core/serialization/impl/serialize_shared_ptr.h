@@ -142,7 +142,7 @@ pack_shared_ptr_address(
         const void* parent_addr = parent.get();
 
         if ( !parent_addr )
-            Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
+            Output::getDefaultObject().fatal(CALL_INFO, 1,
                 "Serialization Error: Serialized std::%s has a non-null stored pointer, but the parent specified by %s "
                 "has a null stored pointer.\nThere is no way to know how this raw pointer should be serialized.\n",
                 ptr_string<PTR_TEMPLATE>, wrapper_string<PTR_TEMPLATE, PARENT_TYPE>);
@@ -159,7 +159,7 @@ pack_shared_ptr_address(
 
         // Make sure that the address offset is inside of the parent or one byte past the end
         if ( offset < 0 || static_cast<size_t>(offset) > parent_size )
-            Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
+            Output::getDefaultObject().fatal(CALL_INFO, 1,
                 "Serialization Error: Serialized std::%s has a stored pointer outside of the bounds of the parent "
                 "specified by %s.\nThere is no way to know how this raw pointer should be serialized.\n",
                 ptr_string<PTR_TEMPLATE>, wrapper_string<PTR_TEMPLATE, PARENT_TYPE>);
@@ -309,7 +309,7 @@ public:
 
             // If ptr is an expired std::weak_ptr, expect parent to be an empty pointer for the purposes of this test
             if ( ptr.use_count() ? owner_ne(parent, ptr) : owner_ne(parent, PTR_TEMPLATE<PTR_TYPE>()) )
-                Output::getDefaultObject().fatal(__LINE__, __FILE__, __func__, 1,
+                Output::getDefaultObject().fatal(CALL_INFO, 1,
                     "Serialization Error: Serialized std::%s does not have the same owning control block as the parent "
                     "specified by %s.\n",
                     ptr_string<PTR_TEMPLATE>, wrapper_string<PTR_TEMPLATE, PARENT_TYPE>);
