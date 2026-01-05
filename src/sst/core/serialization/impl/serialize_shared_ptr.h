@@ -173,7 +173,7 @@ pack_shared_ptr_address(
 // Pack the parent owner of a shared pointer, which is done the first time an ownership tag is seen
 template <class PARENT_TYPE>
 void
-pack_shared_ptr_parent(const std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t opt)
+pack_shared_ptr_parent(const std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t UNUSED(opt))
 {
     // OWNER_TYPE is PARENT_TYPE with cv-qualifiers removed so that it can be serialized
     using OWNER_TYPE = std::remove_cv_t<PARENT_TYPE>;
@@ -215,7 +215,8 @@ pack_shared_ptr_parent(const std::shared_ptr<PARENT_TYPE>& parent, size_t* size,
 // Unpack a shared pointer owner, finding or creating a std::shared_ptr owner with a particular tag
 template <class PARENT_TYPE>
 const std::shared_ptr<void>&
-unpack_shared_ptr_owner(size_t tag, std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t opt)
+unpack_shared_ptr_owner(
+    size_t tag, std::shared_ptr<PARENT_TYPE>& parent, size_t* size, serializer& ser, ser_opt_t UNUSED(opt))
 {
     // OWNER_TYPE is PARENT_TYPE with cv-qualifiers removed so that it can be deserialized
     using OWNER_TYPE = std::remove_cv_t<PARENT_TYPE>;
@@ -386,12 +387,13 @@ public:
                 SharedPtrUseCount& operator=(size_t) { return *this; }
             };
 
-            ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<PTR_TEMPLATE<PTR_TYPE>>(&ptr));
+            ser.mapper().map_hierarchy_start(
+                ser.getMapName(), new ObjectMapClass(&ptr, typeid(PTR_TEMPLATE<PTR_TYPE>).name()));
 
             // Read-only ObjectMap representing the use_count()
             ObjectMap* use_count = new ObjectMapFundamentalReference<size_t, SharedPtrUseCount>(SharedPtrUseCount(ptr));
             use_count->setReadOnly();
-            ser.mapper().map_primitive("use_count", use_count);
+            ser.mapper().map_object("use_count", use_count);
 
             // If this is a std::weak_ptr, we have to temporarily lock it to obtain the address
             auto* ptr_value = [&] {

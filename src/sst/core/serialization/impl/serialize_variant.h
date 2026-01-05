@@ -72,7 +72,7 @@ class serialize_impl<std::variant<Types...>>
             set_index<std::index_sequence_for<Types...>>::array.at(index)(obj);
 
             // Add a value member of the variant's new alternative
-            std::visit([&](auto& x) { parent->addVariable("value", ObjectMapSerialization(x, "value")); }, obj);
+            std::visit([&](auto& x) { parent->addVariable("value", ObjectMapSerialization(x)); }, obj);
         }
     };
 
@@ -83,10 +83,9 @@ class serialize_impl<std::variant<Types...>>
         switch ( ser.mode() ) {
         case serializer::MAP:
             ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<std::variant<Types...>>(&obj));
-            ser.mapper().map_primitive("index", new ObjectMapVariantIndex(obj, ser.mapper().get_top()));
+            ser.mapper().map_object("index", new ObjectMapVariantIndex(obj, ser.mapper().get_top()));
             if ( index != std::variant_npos )
-                std::visit(
-                    [&](auto& x) { ser.mapper().map_primitive("value", ObjectMapSerialization(x, "value")); }, obj);
+                std::visit([&](auto& x) { ser.mapper().map_object("value", ObjectMapSerialization(x)); }, obj);
             ser.mapper().map_hierarchy_end();
             return;
 

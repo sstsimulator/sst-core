@@ -452,7 +452,7 @@ class serialize_impl<UnitAlgebra>
         {
             ObjectMap* obj_map = new ObjectMapFundamental<UnitAlgebra>(&ua);
             if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
-            ser.mapper().map_primitive(ser.getMapName(), obj_map);
+            ser.mapper().map_object(ser.getMapName(), obj_map);
             break;
         }
         }

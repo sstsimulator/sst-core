@@ -280,7 +280,7 @@ serialize_impl<TimeConverter>::operator()(TimeConverter& s, serializer& ser, ser
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter>(&s);
         if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
-        ser.mapper().map_primitive(ser.getMapName(), obj_map);
+        ser.mapper().map_object(ser.getMapName(), obj_map);
         break;
     }
     }
@@ -321,7 +321,7 @@ serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, s
     {
         ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
         if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
-        ser.mapper().map_primitive(ser.getMapName(), obj_map);
+        ser.mapper().map_object(ser.getMapName(), obj_map);
         break;
     }
     }
