@@ -7,6 +7,9 @@ if ! root=$(git rev-parse --show-toplevel); then
     exit 2
 fi
 
+[[ -n ${MAKEFLAGS:-} ]] && echo "Warning: MAKEFLAGS is ignored" >&2
+unset MAKEFLAGS  # We do not want parallel builds when running bear
+
 cd "${root}"
 
 rebuild=0
@@ -58,8 +61,9 @@ EOF
         exit 2
     fi
     cd build
-    rm -rf clang-tidy.out compile_commands.json src
+    rm -rf clang-tidy.out compile_commands.json
     make -j clean
+    rm -rf src
     bear -- make install
     cd ..
 fi
