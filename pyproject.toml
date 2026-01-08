@@ -2,7 +2,7 @@
 cache_dir = "build/.mypy_cache"
 explicit_package_bases = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src/sst/core/testingframework"
-python_version = "3.6"
+python_version = "3.9"
 
 strict = true
 warn_unused_ignores = true
@@ -22,13 +22,12 @@ module = [
 ignore_missing_imports = true
 
 [tool.pyright]
-pythonVersion = "3.6"
+pythonVersion = "3.9"
 
 [tool.ruff]
 cache-dir = "build/.ruff_cache"
 line-length = 100
-# This should be 3.6 but is not supported with the newest versions of ruff.
-target-version = "py37"
+target-version = "py39"
 
 [tool.ruff.lint]
 ignore = [
