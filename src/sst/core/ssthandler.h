@@ -604,8 +604,6 @@ public:
 
         for ( auto& x : attached_tools->attach_tools )
             x.first->afterHandler(x.second);
-
-        return;
     }
 
 
@@ -1159,7 +1157,7 @@ public:
 
     returnT operator_impl(argT arg) override { return (object->*member)(arg, data); }
 
-    NotSerializable(SSTHandler)
+    NotSerializable(SSTHandler);
 };
 
 
@@ -1190,7 +1188,7 @@ public:
 
     returnT operator_impl(argT arg) override { return (object->*member)(arg); }
 
-    NotSerializable(SSTHandler)
+    NotSerializable(SSTHandler);
 };
 
 
@@ -1224,7 +1222,7 @@ public:
 
     void operator_impl() override { return (object->*member)(data); }
 
-    NotSerializable(SSTHandlerNoArgs)
+    NotSerializable(SSTHandlerNoArgs);
 };
 
 
@@ -1255,7 +1253,7 @@ public:
 
     void operator_impl() override { return (object->*member)(); }
 
-    NotSerializable(SSTHandlerNoArgs)
+    NotSerializable(SSTHandlerNoArgs);
 };
 
 

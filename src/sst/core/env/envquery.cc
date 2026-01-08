@@ -184,8 +184,7 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
     }
 
     if ( nullptr != envConfigPaths ) {
-        char* envConfigPathBuffer = (char*)malloc(sizeof(char) * (strlen(envConfigPaths) + 1));
-        strcpy(envConfigPathBuffer, envConfigPaths);
+        char* envConfigPathBuffer = strdup(envConfigPaths);
 
         char* nextToken = strtok(envConfigPathBuffer, envConfigPathSep);
 

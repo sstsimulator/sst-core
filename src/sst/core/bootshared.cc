@@ -91,6 +91,7 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
     fflush(stdout);
 
     int launch_sst = execve(real_binary_path, argv, environ);
+    free(real_binary_path);
 
     if ( launch_sst == -1 ) {
         switch ( errno ) {

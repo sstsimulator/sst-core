@@ -129,10 +129,12 @@ sstRegister(char* argv[])
     SST::Core::Environment::EnvironmentConfiguration* database = new SST::Core::Environment::EnvironmentConfiguration();
 
     FILE* cfgFile = fopen(cfgPath, "r+");
-    populateEnvironmentConfig(cfgFile, database, true);
+    if ( cfgFile ) {
+        populateEnvironmentConfig(cfgFile, database, true);
 
-    database->getGroupByName(groupName)->setValue(key, value);
-    fclose(cfgFile);
+        database->getGroupByName(groupName)->setValue(key, value);
+        fclose(cfgFile);
+    }
 
     cfgFile = fopen(cfgPath, "w+");
 
@@ -300,12 +302,9 @@ validModel(const std::string& s)
 {
     std::size_t locationStart = s.find("/");
     std::string str1          = s.substr(locationStart); // grabs the rest of the line from / to the end
-    char*       path          = new char[str1.length() + 1];
-    std::strcpy(path, str1.c_str());
 
     struct stat statbuf;
-    if ( stat(path, &statbuf) != -1 ) {
-        delete[] path;
+    if ( stat(str1.c_str(), &statbuf) != -1 ) {
         if ( S_ISDIR(statbuf.st_mode) ) return true;
     }
 

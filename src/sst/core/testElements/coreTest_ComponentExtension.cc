@@ -17,7 +17,7 @@
 
 #include "sst/core/event.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace SST;
 using namespace SST::CoreTestComponent;

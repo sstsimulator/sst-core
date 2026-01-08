@@ -273,6 +273,7 @@ public:
      */
     decimal_fixedpoint& operator=(const decimal_fixedpoint& v)
     {
+        if ( &v == this ) return *this;
         negative = v.negative;
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = v.data[i];

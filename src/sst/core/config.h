@@ -140,7 +140,7 @@ public:
     static int parseVersion(std::string UNUSED(arg))
     {
         printf("SST-Core Version (" PACKAGE_VERSION);
-        if ( strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION) ) {
+        if ( strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION) != 0 ) {
             printf(", git branch : " SSTCORE_GIT_BRANCH);
             printf(", SHA: " SSTCORE_GIT_HEADSHA);
         }

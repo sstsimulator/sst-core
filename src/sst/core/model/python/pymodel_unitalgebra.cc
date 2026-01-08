@@ -20,8 +20,8 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstring>
 #include <sstream>
-#include <string.h>
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
@@ -391,7 +391,7 @@ unitAlgebraIsValueZero(PyObject* self, PyObject* UNUSED(args))
 static PyObject*
 unitAlgebraHasUnits(PyObject* self, PyObject* args)
 {
-    char* units = NULL;
+    char* units = nullptr;
 
     if ( PyArg_ParseTuple(args, "s", &units) ) {
         UnitAlgebraPy_t* ua = (UnitAlgebraPy_t*)self;
@@ -445,7 +445,7 @@ static PyMethodDef unitAlgebraMethods[] = {
     { "bestSI", unitAlgebraBestSI, METH_VARARGS, "Returns a string representation of the UnitAlgebra using SI units" },
     { "precision", unitAlgebraPrecision, METH_VARARGS,
         "Returns a string representation of the UnitAlgebra with the requested precision" },
-    { NULL, NULL, 0, NULL }
+    { nullptr, nullptr, 0, nullptr }
 };
 
 #if PY_MAJOR_VERSION == 3

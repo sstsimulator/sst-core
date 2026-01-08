@@ -37,6 +37,7 @@ vformat_string(const char* format, va_list args)
     va_list args_copy;
     va_copy(args_copy, args);
     size_t length = vsnprintf(buf, 256, format, args_copy);
+    va_end(args_copy);
 
     if ( length < 256 ) return std::string(buf);
 

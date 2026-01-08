@@ -181,7 +181,7 @@ public:                                                                         
         throw_exc();                                                                                               \
         return ::SST::Core::Serialization::serializable_base::NullClsId;                                           \
     }                                                                                                              \
-    static obj* construct_deserialize_stub()                                                                       \
+    static obj* construct_deserialize_stub() /* NOLINT(bugprone-macro-parentheses) */                              \
     {                                                                                                              \
         throw_exc();                                                                                               \
         return 0;                                                                                                  \
@@ -208,9 +208,9 @@ public:                                                                         
     {                                                                                     \
         return SST::Core::Serialization::serializable_builder_impl<obj>::static_cls_id(); \
     }                                                                                     \
-    static obj* construct_deserialize_stub()                                              \
+    static obj* construct_deserialize_stub() /* NOLINT(bugprone-macro-parentheses) */     \
     {                                                                                     \
-        return new obj;                                                                   \
+        return new obj; /* NOLINT(bugprone-macro-parentheses) */                          \
     }                                                                                     \
     virtual std::string serialization_name() const override                               \
     {                                                                                     \

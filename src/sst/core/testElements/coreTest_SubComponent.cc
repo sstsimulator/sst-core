@@ -137,7 +137,7 @@ SubCompSender::SubCompSender(ComponentId_t id, Params& params) :
         totalMsgSent = registerStatistic<uint32_t>("totalSent", "");
     }
     else {
-        totalMsgSent = NULL;
+        totalMsgSent = nullptr;
     }
     nToSend = params.find<uint32_t>("sendCount", 10);
     out     = new SST::Output("", params.find<uint32_t>("verbose", 0), 0, SST::Output::output_location_t::STDOUT);
