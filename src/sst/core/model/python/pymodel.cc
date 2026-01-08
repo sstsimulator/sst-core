@@ -1194,13 +1194,13 @@ SSTPythonModelDefinition::initModel(
                        "    found_loader = loader.find_module(fullname)\n"
                        "    if found_loader:  return importlib.machinery.ModuleSpec(fullname, found_loader)\n"
                        "    else: return None\n"
-                       "sys.meta_path.append(SSTModuleFinder())\n"
-                       "sys.path.append(\".\")");
+                       "sys.meta_path.append(SSTModuleFinder())\n");
 
+// https://github.com/sstsimulator/sst-core/issues/1531
 #if PY_MINOR_VERSION >= 11
-    // // For 3.11 and on, we need to append the current working
-    // // directory to the path
-    PyRun_SimpleString("sys.meta_path.append(sst.ModuleLoader())\n");
+    // For 3.11 and on, we need to append the current working
+    // directory to the path
+    PyRun_SimpleString("sys.path.append(\".\")");
 #endif
 
 
