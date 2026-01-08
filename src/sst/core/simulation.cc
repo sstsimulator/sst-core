@@ -1697,7 +1697,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
 SST::Core::Serialization::ObjectMap*
 Simulation_impl::getComponentObjectMap()
 {
-    SST::Core::Serialization::serializer      ser;
+    // SST::Core::Serialization::serializer      ser;
     SST::Core::Serialization::ObjectMapClass* obj_map = new SST::Core::Serialization::ObjectMapClass();
     // ser.enable_pointer_tracking();
     // ser.start_mapping(obj_map);

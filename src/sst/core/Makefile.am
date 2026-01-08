@@ -62,6 +62,7 @@ nobase_dist_sst_HEADERS = \
 	realtime.h \
 	realtimeAction.h \
 	sparseVectorMap.h \
+	sst_complex.h \
 	sst_types.h \
 	sstpart.h \
 	ssthandler.h \

@@ -40,78 +40,73 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     if ( sstReplayFilePath.size() > 0 ) injectedCommand << "replay " << sstReplayFilePath << std::endl;
 
     // Populate the command registry
-    // cmdRegistry = std::vector<ConsoleCommand>({
     cmdRegistry = CommandRegistry({
         { "help", "?", "<[CMD]>: show this help or detailed command help", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { cmd_help(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_help(tokens); } },
         { "verbose", "v", "[mask]: set verbosity mask or print if no mask specified", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { cmd_verbose(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_verbose(tokens); } },
         { "info", "info", "\"current\"|\"all\" print summary for current thread or all threads",
-            ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens) { cmd_info(tokens); } },
+            ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens) { return cmd_info(tokens); } },
         { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { cmd_thread(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_thread(tokens); } },
         { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { cmd_setConfirm(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_setConfirm(tokens); } },
         { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { cmd_pwd(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_pwd(tokens); } },
         { "chdir", "cd", "change 1 directory level in the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { cmd_cd(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_cd(tokens); } },
         { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { cmd_ls(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_ls(tokens); } },
         { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { cmd_time(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_time(tokens); } },
         { "print", "p", "[-rN] [<obj>]: print objects at the current level", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { cmd_print(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_print(tokens); } },
         { "set", "s", "var value: set value for a variable at the current level", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { cmd_set(tokens); } },
-#ifdef __CT_RECURSE__
-        { "examine", "e", "<obj> prints object in the current scope. See SimpleDebugger::cmd_examine",
-            ConsoleCommandGroup::STATE, [this](std::vector<std::string>& tokens) { cmd_examine(tokens); } },
-#endif
+            [this](std::vector<std::string>& tokens) { return cmd_set(tokens); } },
         { "watch", "w", "<trig>: adds watchpoint to the watchlist", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_watch(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_watch(tokens); } },
         { "trace", "t", "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_trace(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_trace(tokens); } },
         { "watchlist", "wl", "prints the current list of watchpoints", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_watchlist(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_watchlist(tokens); } },
         { "addTraceVar", "add", "<watchpointIndex> <var1> ... <varN>", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_addTraceVar(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_addTraceVar(tokens); } },
         { "printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_printWatchpoint(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_printWatchpoint(tokens); } },
         { "printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_printTrace(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_printTrace(tokens); } },
         { "resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_resetTraceBuffer(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_resetTraceBuffer(tokens); } },
         { "setHandler", "shn", "<idx> <t1> ... <t2>: trigger check/sampling handler", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_setHandler(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_setHandler(tokens); } },
         { "unwatch", "uw", "<watchpointIndex>: remove 1 or all watchpoints", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { cmd_unwatch(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_unwatch(tokens); } },
         { "run", "r", "[TIME]: continues the simulation", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { cmd_run(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); } },
         { "continue", "c", "alias for run", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { cmd_run(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); } },
         { "exit", "e", "exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { cmd_exit(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); } },
         { "quit", "q", "alias for exit", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { cmd_exit(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); } },
         { "shutdown", "shutd", "exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { cmd_shutdown(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_shutdown(tokens); } },
         { "logging", "log", "<filepath>: log command line entires to file", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { cmd_logging(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_logging(tokens); } },
         { "replay", "rep", "<filepath>: run commands from a file. See also: sst --replay", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { cmd_replay(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_replay(tokens); } },
         { "history", "h", "[N]: display all or last N unique commands", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { cmd_history(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_history(tokens); } },
         { "autoComplete", "ac", "toggle command line auto-completion enable", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { cmd_autoComplete(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_autoComplete(tokens); } },
         { "clear", "clr", "reset terminal", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { cmd_clear(tokens); } },
-        { "spinThread", "spin", "enter spin loop. See SimpleDebugger::cmd_spinThread", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { cmd_spinThread(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_clear(tokens); } },
         { "define", "def", "define a user command sequence", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { cmd_define(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_define(tokens); } },
         { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { cmd_document(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_document(tokens); } },
+        { "spinThread", "spin", "enter spin loop. See SimpleDebugger::cmd_spinThread", ConsoleCommandGroup::MISC,
+            [this](std::vector<std::string>& tokens) { return cmd_spinThread(tokens); } },
     });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
@@ -257,12 +252,14 @@ SimpleDebugger::execute(const std::string& msg)
         getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 
-    if ( nullptr == obj_ ) {
-        obj_ = getComponentObjectMap();
-    }
-    done     = false;
-    retState = DONE;
+    // Create a new ObjectMap
+    obj_ = getComponentObjectMap();
 
+    // Descend into the name_stack
+    cd_name_stack();
+
+    done = false;
+    retState = DONE;
 
     // Select the input source and next command line
     std::string line;
@@ -330,26 +327,67 @@ SimpleDebugger::execute(const std::string& msg)
             std::cout << "Parsing error. Ignoring " << line << std::endl;
         }
     }
+    // Save the position on the name_stack, and clear obj_
+    save_name_stack();
     return retState;
+}
+
+// Save the name stack of the current position, and clear obj_
+void
+SimpleDebugger::save_name_stack()
+{
+    name_stack.clear();
+    for ( ;; ) {
+        // Get the name of the current node
+        std::string name = obj_->getName();
+
+        // Get the parent of the current node
+        Core::Serialization::ObjectMap* parent = obj_->selectParent();
+
+        // If the parent is nullptr, we have reached the top and can stop
+        if ( !parent ) break;
+
+        // Push the name on the name_stack
+        name_stack.push_front(std::move(name));
+
+        // See if this is the top level component, and if so, set it to nullptr
+        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
+
+        // Move up to the parent
+        obj_ = parent;
+    }
+
+    obj_->decRefCount();
+    obj_ = nullptr;
+}
+
+// Descend into the name_stack
+void
+SimpleDebugger::cd_name_stack()
+{
+    for ( const std::string& name : name_stack ) {
+        std::vector<std::string> tokens { "cd", name };
+        if ( !cmd_cd(tokens) ) break; // Stop if we cannot descend any further
+    }
 }
 
 // Invoke the command.
 // Substitution actions (!!, !?, ...) can modify the command.
 // This ensure the final, resolved, command is captured in the command log
-void
+bool
 SimpleDebugger::dispatch_cmd(std::string& cmd)
 {
     // empty command
-    if ( cmd.size() == 0 ) return;
+    if ( cmd.size() == 0 ) return true;
 
     std::vector<std::string> tokens;
     tokenize(tokens, cmd);
 
     // just whitespace
-    if ( tokens.size() == 0 ) return;
+    if ( tokens.size() == 0 ) return true;
 
     // comment
-    if ( tokens[0][0] == '#' ) return;
+    if ( tokens[0][0] == '#' ) return true;
 
     // History !! and friends
     if ( tokens[0][0] == '!' ) {
@@ -360,7 +398,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
             cmd = newcmd;
             std::cout << cmd << std::endl;
             cmdHistoryBuf.append(cmd);
-            return;
+            return true;
         }
         else if ( rc == CommandHistoryBuffer::BANG_RC::EXEC ) {
             // replace and print new command then let it flow through
@@ -371,7 +409,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         }
         else if ( rc == CommandHistoryBuffer::BANG_RC::NOP ) {
             // invalid search, just return
-            return;
+            return true;
         }
     }
 
@@ -388,7 +426,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
 
         line_entry_mode = LINE_ENTRY_MODE::NORMAL;
         std::cout << "[ returning to normal line entry mode ]" << std::endl;
-        return;
+        return true;
     }
 
     // Do the right thing based on the entry mode
@@ -398,40 +436,40 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         // normal execution
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
-            consoleCommand.first.exec(tokens);
+            bool succeed = consoleCommand.first.exec(tokens);
             cmdHistoryBuf.append(cmd);
-            return;
+            return succeed;
         }
         // user defined entry
         consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::USER);
         if ( consoleCommand.second ) {
             cmdHistoryBuf.append(cmd);
             // Do nothing if user command is empty
-            if ( cmdRegistry.commandIsEmpty(tokens[0]) ) return;
+            if ( cmdRegistry.commandIsEmpty(tokens[0]) ) return true;
             // save current context
             eStack.push(eState);
             // new context for user call
             eState = { consoleCommand.first, tokens, cmdRegistry.userCommandInsts(tokens[0]) };
             // History capture disabled when stack size > 0
             cmdHistoryBuf.enable(false);
-            return;
+            return true;
         }
 
         // No matching command found but keep in history so we can fix it
         std::cout << "Unknown command: " << tokens[0].c_str() << std::endl;
         cmdHistoryBuf.append(cmd);
-        return;
+        return false;
     }
     case LINE_ENTRY_MODE::DEFINE:
         // entering a user defined command
         cmdRegistry.appendUserCommand(tokens[0], cmd);
-        return;
+        return true;
     case LINE_ENTRY_MODE::DOCUMENT:
         cmdRegistry.appendDocCommand(cmd);
-        return;
+        return true;
     default:
-        std::cout << "ERROR: unhandled line entry mode" << std::endl;
-        assert(false);
+        std::cout << "INTERNAL ERROR: unhandled line entry mode" << std::endl;
+        return false;
     } // switch (line_entry_mode)
 }
 
@@ -459,7 +497,7 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
     return tokens;
 }
 
-void
+bool
 SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
 {
     // First check for specific command help
@@ -492,7 +530,7 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
         }
         std::cout << "\t" << s.str() << std::endl;
         std::cout << std::endl;
-        return;
+        return true;
     }
 
     if ( tokens.size() > 1 ) {
@@ -506,9 +544,10 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
             }
         }
     }
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_verbose(std::vector<std::string>& tokens)
 {
     if ( tokens.size() > 1 ) {
@@ -517,6 +556,7 @@ SimpleDebugger::cmd_verbose(std::vector<std::string>& tokens)
         }
         catch ( const std::invalid_argument& e ) {
             std::cout << "Invalid mask " << tokens[1] << std::endl;
+            return false;
         }
     }
 #if 1
@@ -530,15 +570,16 @@ SimpleDebugger::cmd_verbose(std::vector<std::string>& tokens)
     for ( auto& x : watch_points_ ) {
         if ( x.first ) x.first->setVerbosity(verbosity);
     }
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_info(std::vector<std::string>& UNUSED(tokens))
 {
 
     if ( tokens.size() != 2 ) {
         printf("Invalid format for info command (info \"current\"|\"all\")\n");
-        return;
+        return false;
     }
 
     RankInfo info   = getRank();
@@ -560,18 +601,19 @@ SimpleDebugger::cmd_info(std::vector<std::string>& UNUSED(tokens))
     }
     else {
         printf("Invalid argument for info command: %s (info \"current\"|\"all\")\n", tokens[1].c_str());
-        return;
+        return false;
     }
+    return true;
 }
 
 // thread <threadID> : switches to new thread
-void
+bool
 SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
 {
 
     if ( tokens.size() != 2 ) {
         printf("Invalid format for thread command (thread <threadID>)\n");
-        return;
+        return false;
     }
 
     RankInfo info   = getRank();
@@ -584,17 +626,17 @@ SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cout << "Invalid argument for threadID: " << tokens[1] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cout << "Out of range for threadID: " << tokens[1] << std::endl;
-        return;
+        return false;
     }
 
     // Check if valid threadID
     if ( threadID < 0 || threadID >= static_cast<int>(nRanks.thread) ) {
         printf("ThreadID %d out of range (0:%d)\n", threadID, nRanks.thread - 1);
-        return;
+        return false;
     }
 
     // If not current thread, set retState and done flag
@@ -602,12 +644,12 @@ SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
         retState = threadID;
         done     = true;
     }
-    return;
+    return true;
 }
 
 
 // pwd: print current working directory
-void
+bool
 SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 {
     // std::string path = obj_->getName();
@@ -620,10 +662,11 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
     // }
 
     std::cout << obj_->getFullName() << " (" << obj_->getType() << ")\n";
+    return true;
 }
 
 // ls: list current directory
-void
+bool
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
 {
     auto& vars = obj_->getVariables();
@@ -635,6 +678,7 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
             std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
     }
+    return true;
 }
 
 // callback for autofill of object string (similar to ls)
@@ -654,13 +698,13 @@ SimpleDebugger::get_listing_strings(std::list<std::string>& list)
 
 
 // cd <path>: change to new directory
-void
+bool
 SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
 {
 #if 1
     if ( tokens.size() != 2 ) {
         printf("Invalid format for cd command (cd <obj>)\n");
-        return;
+        return false;
     }
 #else
     // skk This works but doesn't delete/deactivate like objmap selectParent
@@ -679,29 +723,27 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
         auto* parent = obj_->selectParent();
         if ( parent == nullptr ) {
             printf("Already at top of object hierarchy\n");
-            return;
+            return false;
         }
-        // See if this is the top level component, and if so, set it
-        // to nullptr
-        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) {
-            base_comp_ = nullptr;
-        }
+
+        // See if this is the top level component, and if so, set it to nullptr
+        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
+
         obj_ = parent;
-        return;
+        return true;
     }
 
     bool                                 loop_detected = false;
     SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected);
-    assert(new_obj);
     if ( !new_obj || (new_obj == obj_) ) {
         printf("Unknown object in cd command: %s\n", selection.c_str());
-        return;
+        return false;
     }
 
     if ( new_obj->isFundamental() ) {
         printf("Object %s is a fundamental type so you cannot cd into it\n", selection.c_str());
         new_obj->selectParent();
-        return;
+        return false;
     }
 
     if ( loop_detected ) {
@@ -718,10 +760,11 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
             dynamic_cast<Core::Serialization::ObjectMapDeferred<BaseComponent>*>(obj_);
         if ( base_comp ) base_comp_ = base_comp;
     }
+    return true;
 }
 
 // print [-rN] [<obj>]: print object
-void
+bool
 SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
 {
     // Index in tokens array where we may find the variable name
@@ -729,46 +772,59 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
 
     if ( tokens.size() < 2 ) {
         printf("Invalid format for print command (print [-rN] [<obj>])\n");
-        return;
+        return false;
     }
 
     // See if have a -r or not
     int         recurse = 0;
     std::string tok     = tokens[1];
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
-        // Got a -r
-        if ( tok.size() == 2 ) {
-            recurse = 4;
-        }
-        else {
-            std::string num = tok.substr(2);
-            if ( num.size() != 0 ) {
-                try {
-                    recurse = SST::Core::from_string<int>(num);
-                }
-                catch ( std::invalid_argument& e ) {
-                    printf("Invalid number format specified with -r: %s\n", tok.c_str());
-                    return;
-                }
-            }
-        }
-        var_index = 2;
+      // Got a -r
+      std::string num = tok.substr(2);
+      if ( num.size() != 0 ) {
+	try {
+	  recurse = SST::Core::from_string<int>(num);
+	}
+	catch ( const std::invalid_argument& e ) {
+	  printf("Invalid number format specified with -r: %s\n", tok.c_str());
+	  return false;
+	}
+      } else {
+	std::string num = tok.substr(2);
+	if ( num.size() != 0 ) {
+	  try {
+	    recurse = SST::Core::from_string<int>(num);
+	  }
+	  catch ( std::invalid_argument& e ) {
+	    printf("Invalid number format specified with -r: %s\n", tok.c_str());
+	    return false;
+	  }
+	}
+      }
+      var_index = 2;
+    }
+
+    if ( tokens.size() == var_index ) {
+        // Print current object
+        obj_->list(recurse);
+        return true;
     }
 
     if ( tokens.size() != (var_index + 1) ) {
         printf("Invalid format for print command (print [-rN] [<obj>])\n");
-        return;
+        return false;
     }
 
     bool        found;
     std::string listing = obj_->listVariable(tokens[var_index], found, recurse);
     if ( !found ) {
-        printf("Unknown object in print command: %s\n", tokens[var_index].c_str());
-        return;
+        printf("Unknown object in print command: %s\n", tokens[1].c_str());
+        return false;
     }
     else {
         printf("%s", listing.c_str());
     }
+    return true;
 }
 
 #ifdef __CT_RECURSE__
@@ -828,12 +884,12 @@ SimpleDebugger::cmd_examine(std::vector<std::string>& tokens)
 #endif
 
 // set <obj> <value>: set object to value
-void
+bool
 SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
 {
     if ( tokens.size() < 3 ) {
         printf("Invalid format for set command (set <obj> <value>)\n");
-        return;
+        return false;
     }
     // kg It may be safer to check for  exactly 3 params but because
     //    of strings we allow for more (until parser handled quoted strings)
@@ -846,10 +902,16 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
         bool found     = false;
         bool read_only = false;
         obj_->set(tokens[1], tokens[2], found, read_only);
-        if ( !found ) printf("Unknown object in set command for container: %s\n", tokens[1].c_str());
-        if ( read_only ) printf("Object specified in set command is read-only for container: %s\n", tokens[1].c_str());
+        if ( !found ) {
+            printf("Unknown object in set command for container: %s\n", tokens[1].c_str());
+            return false;
+        }
+        if ( read_only ) {
+            printf("Object specified in set command is read-only for container: %s\n", tokens[1].c_str());
+            return false;
+        }
         // TODO do we need var->selectParent() here?
-        return;
+        return true;
     }
 
     bool  loop_detected = false;
@@ -858,7 +920,7 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
     if ( !var || (var == obj_) ) {
         printf("Unknown object in set command: %s\n", tokens[1].c_str());
         // TODO make sure selectVariable hasn't altered any state.
-        return;
+        return false;
     }
 
     // Once we have a valid object, be sure to use var->selectParent() or
@@ -867,13 +929,13 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
     if ( var->isReadOnly() ) {
         printf("Object specified in set command is read-only: %s\n", tokens[1].c_str());
         var->selectParent();
-        return;
+        return false;
     }
 
     if ( !var->isFundamental() ) {
         printf("Invalid object in set command: %s is not a fundamental type\n", tokens[1].c_str());
         var->selectParent();
-        return;
+        return false;
     }
     std::string value = tokens[2];
     if ( var->getType() == "std::string" ) {
@@ -890,19 +952,22 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
     }
     catch ( const std::exception& e ) {
         printf("Invalid format: %s\n", tokens[2].c_str());
+        return false;
     }
     var->selectParent();
+    return true;
 }
 
 // time: print current simulation cycle
-void
+bool
 SimpleDebugger::cmd_time(std::vector<std::string>& UNUSED(tokens))
 {
     printf("current time = %" PRI_SIMTIME "\n", getCurrentSimCycle());
+    return true;
 }
 
 // run <time>: run simulation for time
-void
+bool
 SimpleDebugger::cmd_run(std::vector<std::string>& tokens)
 {
     if ( tokens.size() == 2 ) {
@@ -913,7 +978,7 @@ SimpleDebugger::cmd_run(std::vector<std::string>& tokens)
         }
         catch ( const std::exception& e ) {
             printf("Unknown time in call to run: %s\n", tokens[1].c_str());
-            return;
+            return false;
         }
     }
     else if ( tokens.size() == 3 ) {
@@ -925,25 +990,26 @@ SimpleDebugger::cmd_run(std::vector<std::string>& tokens)
         }
         catch ( std::exception& e ) {
             printf("Unknown time in call to run: %s\n", time.c_str());
-            return;
+            return false;
         }
     }
     else if ( tokens.size() != 1 ) {
         printf("Too many arguments for 'run <time>'\n");
+        return false;
     }
 
     done = true;
-    return;
+    return true;
 }
 
 // setHandler <wpIndex> <handlerType1> ... <handlerTypeN>
 // set where to do trigger checks and sampling (before/after clock/event handler)
-void
+bool
 SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
 {
     if ( tokens.size() < 3 ) {
         printf("Invalid format: setHandler <watchpointIndex> <handlerType1> ... <handlerTypeN>\n");
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     try {
@@ -951,21 +1017,21 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
     printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
 
@@ -989,18 +1055,20 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
         else
             printf(" Invalid handler type: %s\n", type.c_str());
     }
-
-    wp->setHandler(handler);
-    return;
+    if ( handler ) {
+        wp->setHandler(handler);
+        return true;
+    }
+    return false;
 }
 
 // addTraceVar <wpIndex> <var1> ... <varN>
-void
+bool
 SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
 {
     if ( tokens.size() < 3 ) {
         printf("Invalid format: addTraceVar <watchpointIndex> <var1> ... <varN>\n");
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     try {
@@ -1008,21 +1076,21 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
         std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
         std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
     printf("WP %ld - %s\n", wpIndex, wp->getName().c_str());
 
@@ -1036,7 +1104,7 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
         Core::Serialization::ObjectMap* map = obj_->findVariable(tvar);
         if ( nullptr == map ) {
             printf("Unknown variable: %s\n", tvar.c_str());
-            return;
+            return false;
         }
 
         // Is variable fundamental
@@ -1044,26 +1112,26 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
             printf("Traces can only be placed on fundamental types; %s is not "
                    "fundamental\n",
                 tvar.c_str());
-            return;
+            return false;
         }
         size_t bufsize = wp->getBufferSize();
         if ( bufsize == 0 ) {
             printf("Watchpoint %ld does not have tracing enabled\n", wpIndex);
-            return;
+            return false;
         }
         auto* ob = map->getObjectBuffer(obj_->getFullName() + "/" + tvar, bufsize);
         wp->addObjectBuffer(ob);
     }
-    return;
+    return true;
 }
 
 // resetTraceBuffer <wpIndex>
-void
+bool
 SimpleDebugger::cmd_resetTraceBuffer(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid format: resetTraceBuffer <watchpointIndex>\n";
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     try {
@@ -1071,34 +1139,34 @@ SimpleDebugger::cmd_resetTraceBuffer(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
     wp->resetTraceBuffer();
 
-    return;
+    return true;
 }
 
 // printTrace <wpIndex>
-void
+bool
 SimpleDebugger::cmd_printTrace(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
         printf("Invalid format: printTrace <watchpointIndex>\n");
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     try {
@@ -1106,35 +1174,35 @@ SimpleDebugger::cmd_printTrace(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cerr << "Invalid argument for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cerr << "Out of range for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     wp->printTrace();
 
-    return;
+    return true;
 }
 
 // printWatchpoint <wpIndex>
-void
+bool
 SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid format: printWatchpoint <watchpointIndex>\n";
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     try {
@@ -1142,38 +1210,38 @@ SimpleDebugger::cmd_printWatchpoint(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     catch ( const std::out_of_range& e ) {
         std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
-        return;
+        return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
-        return;
+        return false;
     }
     else {
         std::cout << "WP" << wpIndex << ": ";
         wp->printWatchpoint();
     }
 
-    return;
+    return true;
 }
 
 
 // logging <filepath>
-void
+bool
 SimpleDebugger::cmd_logging(std::vector<std::string>& tokens)
 {
     if ( loggingFile.is_open() ) {
         std::cout << "Logging file is already set to " << loggingFilePath << std::endl;
-        return;
+        return false;
     }
     if ( tokens.size() > 1 ) {
         loggingFilePath = tokens[1];
@@ -1182,31 +1250,34 @@ SimpleDebugger::cmd_logging(std::vector<std::string>& tokens)
     loggingFile.open(loggingFilePath);
     if ( !loggingFile.is_open() ) {
         std::cout << "Could not open %s\n" << loggingFilePath.c_str() << std::endl;
-        return;
+        return false;
     }
     std::cout << "sst console commands will be logged to " << loggingFilePath << std::endl;
-    return;
+    return true;
 }
 
 // replay <filepath>
-void
+bool
 SimpleDebugger::cmd_replay(std::vector<std::string>& tokens)
 {
     if ( replayFile.is_open() ) {
         std::cout << "Replay file is already set to " << replayFilePath << std::endl;
-        return;
+        return false;
     }
     if ( tokens.size() > 1 ) {
         replayFilePath = tokens[1];
     }
 
     replayFile.open(replayFilePath);
-    if ( !replayFile.is_open() ) std::cout << "Could not open replay file: " << replayFilePath << std::endl;
+    if ( !replayFile.is_open() ) {
+        std::cout << "Could not open replay file: " << replayFilePath << std::endl;
+        return false;
+    }
 
-    return;
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_history(std::vector<std::string>& tokens)
 {
     int recs = 0; // 0 indicates all history
@@ -1219,6 +1290,7 @@ SimpleDebugger::cmd_history(std::vector<std::string>& tokens)
         }
     }
     cmdHistoryBuf.print(recs);
+    return true;
 }
 
 WatchPoint::LogicOp
@@ -1236,7 +1308,7 @@ getLogicOpFromString(const std::string& opStr)
 }
 
 // watchlist
-void
+bool
 SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
 {
     // Print the watch points
@@ -1252,48 +1324,56 @@ SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
             x.first->printWatchpoint();
         }
     }
-    return;
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_autoComplete(std::vector<std::string>& UNUSED(tokens))
 {
     autoCompleteEnable = !autoCompleteEnable;
     std::cout << "auto completion is now " << autoCompleteEnable << std::endl;
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_clear(std::vector<std::string>& UNUSED(tokens))
 {
     // clear screen and move cursor to (0,0)
     std::cout << "\033[2J\033[1;1H";
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_define(std::vector<std::string>& UNUSED(tokens))
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid\nsyntax: define <cmd_name>" << std::endl;
-        return;
+        return false;
     }
 
     // Create a user command entry (or clear existing one)
-    if ( cmdRegistry.beginUserCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DEFINE;
+    if ( cmdRegistry.beginUserCommand(tokens[1]) )
+        line_entry_mode = LINE_ENTRY_MODE::DEFINE;
+
+    return true;
 }
 
-void
+bool
 SimpleDebugger::cmd_document(std::vector<std::string>& tokens)
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid\nsyntax: document <cmd_name>" << std::endl;
-        return;
+        return false;
     }
-    if ( cmdRegistry.beginDocCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DOCUMENT;
+    if ( cmdRegistry.beginDocCommand(tokens[1]) ) 
+        line_entry_mode = LINE_ENTRY_MODE::DOCUMENT;
+
+    return true;
 }
 
 // gdb helper. Recommended SST configuration
 // CXXFLAGS="-g3 -O0" CFLAGS="-g3 -O0"  ../configure --prefix=$SST_CORE_HOME --enable-debug'
-void
+bool
 SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
 {
     // Print the watch points
@@ -1306,7 +1386,7 @@ SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
     }
     spinner = 1; // reset spinner
     std::cout << std::endl;
-    return;
+    return true;
 }
 
 Core::Serialization::ObjectMapComparison*
@@ -1493,7 +1573,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 //  watch size > max
 //  watch size > 90 && value == 100
 //  watch size changed || value == 100 && index == 55
-void
+bool
 SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
 {
     size_t      index = 1;
@@ -1501,14 +1581,14 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
 
     if ( tokens.size() < 3 ) {
         printf("Invalid format for watch command\n");
-        return;
+        return false;
     }
     try {
         // Get first comparison
         Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
         if ( c == nullptr ) {
             printf("Invalid comparison argument passed to watch command\n");
-            return;
+            return false;
         }
         size_t wpIndex = watch_points_.size();
         auto*  pt      = new WatchPoint(wpIndex, name, c);
@@ -1529,21 +1609,21 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
             WatchPoint::LogicOp logicOp = getLogicOpFromString(tokens[index++]);
             if ( logicOp == WatchPoint::LogicOp::UNDEFINED ) {
                 std::cout << "Invalid logic operator: " << tokens[index - 1] << std::endl;
-                return;
+                return false;
             }
             else {
                 pt->addLogicOp(logicOp);
             }
             if ( index == tokens.size() ) {
                 printf("Invalid format for watch command\n");
-                return;
+                return false;
             }
 
             // Get next comparison
             Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
             if ( c == nullptr ) {
                 printf("Invalid comparison argument passed to watch command\n");
-                return;
+                return false;
             }
             pt->addComparison(c);
 
@@ -1554,7 +1634,7 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         WatchPoint::WPAction* actionObj = new WatchPoint::InteractiveWPAction();
         if ( actionObj == nullptr ) {
             printf("Error in action: %s\n", action.c_str());
-            return;
+            return false;
         }
         else {
             // Every action gets the same verbosity as the console object
@@ -1571,40 +1651,44 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
         }
         else {
             printf("Not a component\n");
-            return;
+            return false;
         }
     } // try/catch  TODO: need to revisit what can actually throw an exception
     catch ( const std::exception& e ) {
         printf("Invalid format for watch command\n");
-        return;
+        return false;
     }
 
     // Check for extra arguments
     if ( index != tokens.size() ) {
         printf("Invalid format for watch command: too many arguments\n");
-        return;
+        return false;
     }
+
+    return true;
 }
 
 // confirm <true/false>
-void
+bool
 SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens)
 {
 
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid format for confirm command: confirm <true/false>\n";
-        return;
+        return false;
     }
 
     if ( (tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1") ) {
         confirm = true;
+        return true;
     }
     else if ( (tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0") ) {
         confirm = false;
+        return true;
     }
-    else {
-        std::cout << "Invalid argument for confirm: must be true or false" << tokens[1] << std::endl;
-    }
+
+    std::cout << "Invalid argument for confirm: must be true or false" << tokens[1] << std::endl;
+    return false;
 }
 
 bool
@@ -1638,19 +1722,19 @@ SimpleDebugger::clear_watchlist()
 
 
 // unwatch <wpIndex>
-void
+bool
 SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
 {
     // If no arguments, unwatch all watchpoints
     if ( tokens.size() == 1 ) {
         clear_watchlist();
         std::cout << "Watchlist cleared\n";
-        return;
+        return true;
     }
 
     if ( tokens.size() != 2 ) {
         printf("Invalid format for unwatch command\n");
-        return;
+        return false;
     }
 
     long unsigned int index = 0;
@@ -1662,14 +1746,14 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
         printf("Invalid index format specified. The unwatch command requires that "
                "one of the index shown when "
                "\"watch\" is run with no arguments be specified\n");
-        return;
+        return false;
     }
 
     if ( watch_points_.size() <= index ) {
         printf("Watch point %s not found. The unwatch command requires that one of "
                "the index shown when \"watchlist\" is run be specified\n",
             tokens[1].c_str());
-        return;
+        return false;
     }
 
     WatchPoint* pt = watch_points_[index].first;
@@ -1681,7 +1765,7 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
         watch_points_[index].first  = nullptr;
         watch_points_[index].second = nullptr;
     }
-    return;
+    return true;
 }
 
 
@@ -1765,13 +1849,13 @@ parseTraceVar(std::string& tvar, Core::Serialization::ObjectMap* obj, Core::Seri
 // <action> to execute on trigger
 // Could also consider having multiple actions and/or default buffer config
 // TODO check at each step that we haven't exceeded token size
-void
+bool
 SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
 {
     if ( tokens.size() < 9 ) {
         printf("Invalid format: trace <var> <op> <value> : <bufsize> <postdelay> : "
                "<v1> ... <vN> : <action>\n");
-        return;
+        return false;
     }
 
     size_t      index = 1;
@@ -1781,7 +1865,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
     Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
     if ( c == nullptr ) {
         printf("Invalid argument passed in comparison trigger command\n");
-        return;
+        return false;
     }
     size_t wpIndex = watch_points_.size();
     auto*  pt      = new WatchPoint(wpIndex, name, c);
@@ -1797,21 +1881,21 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         WatchPoint::LogicOp logicOp = getLogicOpFromString(tokens[index++]);
         if ( logicOp == WatchPoint::LogicOp::UNDEFINED ) {
             std::cout << "Invalid logic operator: " << tokens[index - 1] << std::endl;
-            return;
+            return false;
         }
         else {
             pt->addLogicOp(logicOp);
         }
         if ( index == tokens.size() ) {
             std::cout << "Invalid format for trace command\n";
-            return;
+            return false;
         }
 
         // Get next comparison
         Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
         if ( c == nullptr ) {
             std::cout << "Invalid argument in comparison of trace command\n";
-            return;
+            return false;
         }
         pt->addComparison(c);
 
@@ -1821,7 +1905,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         auto* tb = parseTraceBuffer(tokens, index, obj_);
         if ( tb == nullptr ) {
             std::cout << "Invalid trace buffer argument in trace command\n";
-            return;
+            return false;
         }
         pt->addTraceBuffer(tb);
 
@@ -1836,7 +1920,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
             auto* objBuf = parseTraceVar(tvar, obj_, tb);
             if ( objBuf == nullptr ) {
                 std::cout << "Invalid trace variable argument passed to trace command\n";
-                return;
+                return false;
             }
             pt->addObjectBuffer(objBuf);
         } // end while get trace vars
@@ -1847,7 +1931,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         WatchPoint::WPAction* actionObj = parseAction(tokens, index, obj_);
         if ( actionObj == nullptr ) {
             std::cout << "Error in action: " << action << std::endl;
-            return;
+            return false;
         }
         else {
             pt->setAction(actionObj);
@@ -1856,7 +1940,7 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         // Check for extra arguments
         if ( index != tokens.size() ) {
             printf("Error, too many arguments\n");
-            return;
+            return false;
         }
 
         // Get the top level component to set the watch point
@@ -1868,17 +1952,18 @@ SimpleDebugger::cmd_trace(std::vector<std::string>& tokens)
         }
         else {
             std::cout << "Not a component\n";
-            return;
+            return false;
         }
     }
     catch ( const std::exception& e ) {
         printf("Invalid format for trace command\n");
-        return;
+        return false;
     }
+    return true;
 };
 
 // exit OR quit
-void
+bool
 SimpleDebugger::cmd_exit(std::vector<std::string>& UNUSED(tokens))
 {
     // Remove all watchpoints
@@ -1890,18 +1975,18 @@ SimpleDebugger::cmd_exit(std::vector<std::string>& UNUSED(tokens))
         std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
     }
     done = true;
-    return;
+    return true;
 }
 
 
 // shutdown
-void
+bool
 SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
 {
     simulationShutdown();
     done = true;
     printf("Exiting ObjectExplorer and shutting down simulation\n");
-    return;
+    return true;
 }
 
 void

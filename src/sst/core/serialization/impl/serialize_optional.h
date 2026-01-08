@@ -53,7 +53,7 @@ class serialize_impl<std::optional<T>>
 
             if ( has_value ) {
                 obj.emplace();
-                parent->addVariable("value", ObjectMapSerialization(*obj, "value"));
+                parent->addVariable("value", ObjectMapSerialization(*obj));
             }
             else {
                 obj.reset();
@@ -69,8 +69,8 @@ class serialize_impl<std::optional<T>>
         switch ( ser.mode() ) {
         case serializer::MAP:
             ser.mapper().map_hierarchy_start(ser.getMapName(), new ObjectMapContainer<std::optional<T>>(&obj));
-            ser.mapper().map_primitive("has_value", new ObjectMapOptionalHasValue(obj, ser.mapper().get_top()));
-            if ( obj ) ser.mapper().map_primitive("value", ObjectMapSerialization(*obj, "value"));
+            ser.mapper().map_object("has_value", new ObjectMapOptionalHasValue(obj, ser.mapper().get_top()));
+            if ( obj ) ser.mapper().map_object("value", ObjectMapSerialization(*obj));
             ser.mapper().map_hierarchy_end();
             return;
 

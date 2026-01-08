@@ -2198,7 +2198,7 @@ def os_extract_tar(tarfilepath: str, targetdir: str = ".") -> bool:
         # The filter argument was added in 3.12, but some distributions
         # backport the addition, so a version check is not sufficient.
         if "filter" in signature(this_tar.extractall).parameters:
-            this_tar.extractall(targetdir, filter="data")  # type: ignore [call-arg]
+            this_tar.extractall(targetdir, filter="data")
         else:
             this_tar.extractall(targetdir)
         this_tar.close()
