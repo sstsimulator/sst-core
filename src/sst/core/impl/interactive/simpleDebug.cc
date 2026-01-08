@@ -776,7 +776,7 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     }
 
     // See if have a -r or not
-    int         recurse = 0;
+    int         recurse = 4; // default -r depth
     std::string tok     = tokens[1];
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
       // Got a -r
@@ -826,62 +826,6 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     }
     return true;
 }
-
-#ifdef __CT_RECURSE__
-static void
-recursive_examine(
-    SimpleDebugger& debugger, SST::Core::Serialization::ObjectMap& self, std::string const& name, int level)
-{
-    std::string ret;
-    std::string indent = std::string(level, ' ');
-    if ( self.isFundamental() ) {
-        printf("%s%s = %s (%s)\n", indent.c_str(), name.c_str(), self.get().c_str(), self.getType().c_str());
-        return;
-    }
-
-    printf("%s%s = (%s)\n", indent.c_str(), name.c_str(), self.get().c_str());
-    auto vars = self.getVariables();
-
-    for ( auto var : vars ) {
-        if ( nullptr == var.second->mdata_ ) {
-            var.second->activate(&self, var.first);
-            recursive_examine(debugger, *var.second, var.first, level + 1);
-            var.second->deactivate();
-        }
-    }
-}
-#endif
-
-/*
- * feature to assist with debugging serialization - recursively prints the contents
- * of the object map to make sure what is in the object map is consistent with expectations
- * we've had issues previously with serialization not supporting specific types and this
- * feature provides the foundation to simplify the object map's verification process. this
- * feature avoids creating a situation where the team needs to create an exhaustive list
- * of bash scripts to perform the verification of the object map.
- *
- * [examine,e] [<obj>] : prints object in the current scope
- */
-
-#ifdef __CT_RECURSE__
-void
-SimpleDebugger::cmd_examine(std::vector<std::string>& tokens)
-{
-    if ( tokens.size() < 2 ) {
-        printf("Invalid format for set command (examine <obj>)\n");
-        return;
-    }
-
-    if ( obj_ == nullptr ) {
-        printf("objectMap is null\n");
-        return;
-    }
-
-    recursive_examine(*this, *obj_, tokens[1], 0);
-
-    return;
-}
-#endif
 
 // set <obj> <value>: set object to value
 bool
