@@ -347,6 +347,72 @@ Simulation_impl::Simulation_impl(
     interactive_type_  = config.interactive_console();
     interactive_start_ = config.interactive_start_time();
     replay_file_       = config.replay_file();
+
+    // Version info for checkpointing
+    version_ = PACKAGE_STRING;
+
+#if defined(__x86_64__) || defined(_M_X64)
+    arch_ = "x86_64";
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+    arch_ = "x86_32";
+#elif defined(__ARM_ARCH_2__)
+    arch_ = "ARM2";
+#elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
+    arch_ = "ARM3";
+#elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
+    arch_ = "ARM4T";
+#elif defined(__ARM_ARCH_5_) || defined(__ARM_ARCH_5E_)
+    arch_ = "ARM5"
+#elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2_)
+    arch_ = "ARM6T2";
+#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
+    defined(__ARM_ARCH_6ZK__)
+    arch_ = "ARM6";
+#elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
+    defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7";
+#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7A";
+#elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7R";
+#elif defined(__ARM_ARCH_7M__)
+    arch_ = "ARM7M";
+#elif defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7S";
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    arch_ = "ARM64";
+#elif defined(mips) || defined(__mips__) || defined(__mips)
+    arch_ = "MIPS";
+#elif defined(__sh__)
+    arch_ = "SUPERH";
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
+    defined(__ppc__) || defined(__PPC__) || defined(_ARCH_PPC)
+    arch_ = "POWERPC";
+#elif defined(__PPC64__) || defined(__ppc64__) || defined(_ARCH_PPC64)
+    arch_ = "POWERPC64";
+#elif defined(__sparc__) || defined(__sparc)
+    arch_ = "SPARC";
+#elif defined(__m68k__)
+    arch_ = "M68K";
+#elif defined(__riscv__) || defined(_riscv) || defined(__riscv)
+    arch_ = "RISCV";
+#else
+    arch_ = "UNKNOWN";
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+    os_ = "OS_WINDOWS";
+#elif defined(__APPLE__) && defined(__MACH__)
+    os_ = "OS_MACOS";
+#elif defined(__linux__)
+    os_ = "OS_LINUX";
+#elif defined(__unix__) || defined(__unix)
+    os_ = "OS_UNIX";
+#elif defined(__FreeBSD__)
+    os_ = "OS_FREEBSD";
+#else
+        os_ = "OS_UNKNOWN";
+#endif
 }
 
 void
@@ -1689,7 +1755,6 @@ Simulation_impl::scheduleCheckpoint()
     }
 }
 
-
 void
 Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_directory,
     const std::string& registry_filename, const std::string& globals_filename)
@@ -1738,6 +1803,10 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
     factory->getLoadedLibraryNames(libnames);
     SST_SER(libnames);
 
+    SST_SER(version_);
+    SST_SER(arch_);
+    SST_SER(os_);
+
     size = ser.size();
     buffer.resize(size);
 
@@ -1752,6 +1821,10 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 
     // Add list of loaded libraries
     SST_SER(libnames);
+
+    SST_SER(version_);
+    SST_SER(arch_);
+    SST_SER(os_);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer.data(), size);
