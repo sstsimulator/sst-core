@@ -24,6 +24,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
 #include <cstdint>
@@ -84,331 +85,464 @@ public:
     BaseComponent(const BaseComponent&)            = delete;
     BaseComponent& operator=(const BaseComponent&) = delete;
 
+    /**
+       Gets the ELI type for this BaseComponent
+
+       @return ELI type as a string
+    */
     const std::string& getType() const { return my_info_->getType(); }
 
-    /** Returns unique component ID */
+    /**
+       Get the unique component ID
+
+       @return ID of BaseComponent
+    */
     inline ComponentId_t getId() const { return my_info_->id_; }
 
-    /** Returns Component Statistic load level */
+    /**
+       Get the BaseComponent Statistic load level
+
+       @return statistic load level of BaseComponent
+    */
     inline uint8_t getStatisticLoadLevel() const { return my_info_->statLoadLevel; }
 
-    /** Called when SIGINT or SIGTERM has been seen.
-     * Allows components opportunity to clean up external state.
-     */
+    /**
+       Called when SIGINT or SIGTERM has been seen.  Allows components opportunity to clean up external state.
+    */
     virtual void emergencyShutdown() {}
 
-    /** Returns Component/SubComponent Name */
+    /**
+       Get the name of the BaseComponent
+
+       @return BaseComponent's name
+    */
     inline const std::string& getName() const { return my_info_->getName(); }
 
-    /** Returns the name of the parent Component, or, if called on a
-     * Component, the name of that Component. */
+    /**
+       Get the name of the parent Component for the Component tree. If called on a Component, returns the name of that
+       Component.
+
+       @return The name of the parent Component for the Component tree.
+    */
     inline const std::string& getParentComponentName() const { return my_info_->getParentComponentName(); }
 
-    /** Used during the init phase.  The method will be called each
-     phase of initialization.  Initialization ends when no components
-     have sent any data. */
+    /**
+       Used during the init phase.  The method will be called each phase of initialization.  Initialization ends when no
+       components have sent any data.
+
+       @param phase Current phase number
+    */
     virtual void init(unsigned int UNUSED(phase)) {}
-    /** Used during the complete phase after the end of simulation.
-     The method will be called each phase of complete. Complete phase
-     ends when no components have sent any data. */
+
+    /**
+       Used during the complete phase after the end of simulation.  The method will be called each phase of
+       complete. Complete phase ends when no components have sent any data.
+
+       @param phase Current phase number
+    */
     virtual void complete(unsigned int UNUSED(phase)) {}
-    /** Called after all components have been constructed and
-    initialization has completed, but before simulation time has
-    begun. */
+
+    /**
+       Called after all components have been constructed and initialization has completed, but before simulation time
+       has begun.
+    */
     virtual void setup() {}
-    /** Called after complete phase, but before objects are
-     destroyed. A good place to print out statistics. */
+
+    /**
+       Called after complete phase, but before objects are destroyed. A good place to print out statistics.
+    */
     virtual void finish() {}
 
     /** Currently unused function */
     virtual bool Status() { return 0; }
 
     /**
-     * Called by the Simulation to request that the component
-     * print it's current status.  Useful for debugging.
-     * @param out The Output class which should be used to print component status.
+       Called by the Simulation to request that the component print it's current status.  Useful for debugging.
+
+       @param out The Output class which should be used to print component status.
      */
     virtual void printStatus(Output& UNUSED(out)) {}
 
-    /** Get the core timebase */
-    UnitAlgebra getCoreTimeBase() const;
-    /** Return the current simulation time as a cycle count*/
-    SimTime_t   getCurrentSimCycle() const;
-    /** Return the current priority */
-    int         getCurrentPriority() const;
-    /** Return the elapsed simulation time as a time */
-    UnitAlgebra getElapsedSimTime() const;
-    /** Return the end simulation time as a cycle count*/
-    SimTime_t   getEndSimCycle() const;
-    /** Return the end simulation time as a time */
-    UnitAlgebra getEndSimTime() const;
-    /** Get this instance's parallel rank */
-    RankInfo    getRank() const;
-    /** Get the number of parallel ranks in the simulation */
-    RankInfo    getNumRanks() const;
-    /** Return the base simulation Output class instance */
-    Output&     getSimulationOutput() const;
-
     /**
-       Return the simulated time since the simulation began in units specified by
-       the parameter.
+       Get the core timebase
 
-       @param tc TimeConverter specifying the units
+       @return Core timebase set at the beginning of the simulation.  Returned as a UnitAlgebra
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
-                 "(i.e., no pointer) instead.")]]
-    SimTime_t getCurrentSimTime(TimeConverter* tc) const;
-    SimTime_t getCurrentSimTime(TimeConverter tc) const;
+    UnitAlgebra getCoreTimeBase() const;
 
     /**
-       Return the simulated time since the simulation began in the
-       default timebase
+       Get the current simulation time as a cycle count
+
+       @return current simulation cycle for the simulation
+    */
+    SimTime_t getCurrentSimCycle() const;
+
+    /**
+       Get the current priority
+
+       @return current priority for the simulation
+    */
+    int getCurrentPriority() const;
+
+    /**
+       get the elapsed simulation time as a UnitAlgebra
+
+       @return time in seconds as a UnitAlgebra
+    */
+    UnitAlgebra getElapsedSimTime() const;
+
+    /**
+       Get the end simulation time as a cycle count
+
+       @return end simulation time as cycle count
+    */
+    SimTime_t getEndSimCycle() const;
+
+    /**
+       Get the end simulation time as a UnitAlgebra
+
+       @return end time in seconds as a UnitAlgebra
+    */
+    UnitAlgebra getEndSimTime() const;
+
+    /**
+       Get this instance's parallel rank
+
+       @return Get the rank for this objects partition
+    */
+    RankInfo getRank() const;
+
+    /**
+       Get the number of parallel ranks in the simulation
+
+       @return number of ranks in simulation
+    */
+    RankInfo getNumRanks() const;
+
+    /**
+       Get the default simulation Output class instance.  Elements do not have to use this Output object and can create
+       their own to use instead.
+
+       @return Default Output object for this partition
+    */
+    Output& getSimulationOutput() const;
+
+    /**
+       Return the simulated time since the simulation began in the default timebase
     */
     inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info_->defaultTimeBase); }
 
     /**
-       Return the simulated time since the simulation began in
-       timebase specified
+       Get the simulated time since the simulation began in units specified by
+       the parameter.
+
+       @param tc TimeConverter specifying the units
+
+       @return current time as a cycle count based on the provided timebase
+    */
+    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
+                 "(i.e., no pointer) instead.")]]
+    SimTime_t getCurrentSimTime(TimeConverter* base) const;
+    SimTime_t getCurrentSimTime(TimeConverter base) const;
+
+    /**
+       Return the simulated time since the simulation began in the specified timebase.
+
+       NOTE: This version of getCurrentSimTime() can accept a time base that is not normally representable because it is
+       smaller than the global time base set by the user. If this happens, the underlying code will use UnitAlgebra to
+       compute the cycle count.  Because UnitAlgebra is computationally intense, it is best to avoid this case during
+       the run loop of the simulation.
 
        @param base Timebase frequency in SI Units
+
+       @return current time as a cycle count based on the provided timebase
+
     */
     SimTime_t getCurrentSimTime(const std::string& base) const;
 
-    /** Utility function to return the time since the simulation began in nanoseconds */
+    /**
+       Return the simulated time since the simulation began in the specified timebase
+
+       NOTE: This version of getCurrentSimTime() exists because both std::string and TimeConverter can be implicitly
+       created with a const char*.  Having this implementation removes ambiguity and ensures that a const char* is
+       passed through the std::string version, which can accept time bases that are not representable with TimeConverter
+       due to being smaller than the global timebase.
+
+       @param base Timebase frequency in SI Units
+
+       @return current time as a cycle count based on the provided timebase
+    */
+    SimTime_t getCurrentSimTime(const char* base) const { return getCurrentSimTime(std::string(base)); }
+
+    /**
+       Utility function to return the time since the simulation began in nanoseconds
+
+       @return current time as a count of nanoseconds expired in the simulation
+    */
     SimTime_t getCurrentSimTimeNano() const;
-    /** Utility function to return the time since the simulation began in microseconds */
+
+    /**
+       Utility function to return the time since the simulation began in microseconds
+
+       @return current time as a count of microseconds expired in the simulation
+    */
     SimTime_t getCurrentSimTimeMicro() const;
-    /** Utility function to return the time since the simulation began in milliseconds */
+
+    /**
+       Utility function to return the time since the simulation began in milliseconds
+
+       @return current time as a count of milliseconds expired in the simulation
+    */
     SimTime_t getCurrentSimTimeMilli() const;
 
-    /** Get the amount of real-time spent executing the run phase of
-     * the simulation.
-     *
-     * @return real-time in seconds spent executing the run phase
-     */
+    /**
+       Get the amount of real-time spent executing the run phase of the simulation.
+
+      @return real-time in seconds spent executing the run phase
+    */
     double getRunPhaseElapsedRealTime() const;
 
-    /** Get the amount of real-time spent executing the init phase of
-     * the simulation.
-     *
-     * @return real-time in seconds spent executing the init phase
-     */
+    /**
+       Get the amount of real-time spent executing the init phase of the simulation.
+
+      @return real-time in seconds spent executing the init phase
+    */
     double getInitPhaseElapsedRealTime() const;
 
-    /** Get the amount of real-time spent executing the complete phase of
-     * the simulation.
-     *
-     * @return real-time in seconds spent executing the complete phase
-     */
+    /**
+       Get the amount of real-time spent executing the complete phase of the simulation.
+
+       @return real-time in seconds spent executing the complete phase
+    */
     double getCompletePhaseElapsedRealTime() const;
 
 
-    /** Add a watch point to all handlers in the Component Tree
-     */
+    /**
+       Add a watch point to all handlers in the Component Tree
+    */
     void addWatchPoint(WatchPoint* pt);
 
-    /** Remove a watch point from all handlers in the Component Tree
-     */
+    /**
+       Remove a watch point from all handlers in the Component Tree
+    */
     void removeWatchPoint(WatchPoint* pt);
 
 
 private:
-    /** Recursively add Watch point to myself and all my children
-     */
+    /**
+       Recursively add Watch point to myself and all my children
+    */
     void addWatchPointRecursive(WatchPoint* pt);
 
-    /** Recursively removes a Watch point from myself and all my
-     * children
-     */
+    /**
+       Recursively removes a Watch point from myself and all my children
+    */
     void removeWatchPointRecursive(WatchPoint* pt);
 
 protected:
-    /** Check to see if the run mode was set to INIT
-        @return true if simulation run mode is set to INIT
-     */
+    /**
+       Check to see if the run mode was set to INIT
+
+       @return true if simulation run mode is set to INIT
+    */
     bool isSimulationRunModeInit() const;
 
-    /** Check to see if the run mode was set to RUN
-        @return true if simulation run mode is set to RUN
-     */
+    /**
+       Check to see if the run mode was set to RUN
+
+       @return true if simulation run mode is set to RUN
+    */
     bool isSimulationRunModeRun() const;
 
-    /** Check to see if the run mode was set to BOTH
-        @return true if simulation run mode is set to BOTH
-     */
+    /**
+       Check to see if the run mode was set to BOTH
+
+       @return true if simulation run mode is set to BOTH
+    */
     bool isSimulationRunModeBoth() const;
 
-    /** Returns the output directory of the simulation
-     *  @return Directory in which simulation outputs should be
-     *  placed.  Returns empty string if output directory not set by
-     *  user.
+    /**
+       Returns the output directory of the simulation
+
+        @return Directory in which simulation outputs should be placed.  Returns empty string if output directory not
+        set by user.
      */
     std::string& getOutputDirectory() const;
 
-    /** Signifies that a library is required for this simulation.
-     *  Causes the Factory to verify that the required library is
-     *  loaded.
-     *
-     *  NOTE: This function should rarely be required, as most
-     *  dependencies are automatically detected in the simulator core.
-     *  However, if the component uses an event from another library
-     *  that is not wholly defined in a header file, this call may be
-     *  required to ensure that all the code from the event is loaded.
-     *  Similarly, if you use a class from another library that does
-     *  not have ELI information, this call may also be required to
-     *  make sure all dependencies are loaded.
-     *
-     *  @param name Name of library this BaseComponent depends on
-     */
+    /**
+       Signifies that a library is required for this simulation.  Causes the Factory to verify that the required library
+       is loaded.
+
+       NOTE: This function should rarely be required, as most dependencies are automatically detected in the simulator
+       core.  However, if the component uses an event from another library that is not wholly defined in a header file,
+       this call may be required to ensure that all the code from the event is loaded.  Similarly, if you use a class
+       from another library that does not have ELI information, this call may also be required to make sure all
+       dependencies are loaded.
+
+       @param name Name of library this BaseComponent depends on
+    */
     void requireLibrary(const std::string& name);
 
 
-    /** Determine if a port name is connected to any links */
+    /**
+       Determine if a port name is connected to any links
+    */
     bool isPortConnected(const std::string& name) const;
 
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link.  If nullptr is passed in, then it
-     * will use the Component defaultTimeBase
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
+    /**
+       Configure a Link
+
+       @param name - Port Name on which the link to configure is attached.
+
+       @param time_base - Time Base of the link provided as either a std::string, SST::UnitAlgebra, or
+       SST::TimeConverter
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    Link* configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr)
+    {
+        return configureLink_impl(name, time_base.getFactor(), handler);
+    }
+
+    /**
+       Configure a Link
+
+       @param name - Port Name on which the link to configure is attached.
+
+       @param time_base - Time Base of the link.  If nullptr is passed in, then it will use the Component
+       defaultTimeBase
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
      */
 
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'configureLink(const std::string& name, TimeConverter "
         "time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
     Link* configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
-    Link* configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link as a string
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
-    Link* configureLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link as a UnitAlgebra
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
-    Link* configureLink(const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
+
+    /**
+       Configure a Link
+
+       @param name - Port Name on which the link to configure is attached.
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
      */
     Link* configureLink(const std::string& name, Event::HandlerBase* handler = nullptr);
 
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link.  If nullptr is passed in, then it
-     * will use the Component defaultTimeBase
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
+    /**
+       Configure a SelfLink  (Loopback link)
+
+       @param name - Name of the self-link port
+
+       @param time_base - Time Base of the link.  If nullptr is passed in, then it will use the Component
+       defaultTimeBase
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
                  "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
     Link* configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
-    Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr);
 
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link as a string
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
-    Link* configureSelfLink(
-        const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link as a UnitAlgebra
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
-    Link* configureSelfLink(
-        const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or nullptr if an error occured.
-     */
+    /**
+       Configure a SelfLink  (Loopback link)
+
+       @param name - Name of the self-link port
+
+       @param time_base - Time Base of the link.  Timebase can be a std::string, SST::UnitAlgebra or SST::TimeConverter
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr)
+    {
+        addSelfLink(name);
+        return configureLink(name, time_base, handler);
+    }
+
+
+    /**
+       Configure a SelfLink (Loopback link) that uses the (Sub)Component's defaultTimeBase
+
+       @param name - Name of the self-link port
+
+       @param handler - Optional Handler to be called when an Event is received
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
     Link* configureSelfLink(const std::string& name, Event::HandlerBase* handler = nullptr);
 
-    /** Registers a clock for this component.
-        @param freq Frequency for the clock in SI units
-        @param handler Pointer to Clock::HandlerBase which is to be invoked
-        at the specified interval
-        @param regAll Should this clock period be used as the default
-        time base for all of the links connected to this component
-        @return the TimeConverter object representing the clock frequency
-    */
-    TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, bool regAll = true);
 
-    /** Registers a clock for this component.
-        @param freq Frequency for the clock as a UnitAlgebra object
-        @param handler Pointer to Clock::HandlerBase which is to be invoked
-        at the specified interval
-        @param regAll Should this clock period be used as the default
-        time base for all of the links connected to this component
-        @return the TimeConverter object representing the clock frequency
-    */
-    TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll = true);
+    /**
+       Registers a clock for this component.  @param tc TimeConverter object specifying the clock frequency.  May be
+       specified as a TimeConverter, std::string or UnitAlgebra
 
-    /** Registers a clock for this component.
-        @param tc TimeConverter object specifying the clock frequency
-        @param handler Pointer to Clock::HandlerBase which is to be invoked
-        at the specified interval
-        @param regAll Should this clock period be used as the default
-        time base for all of the links connected to this component
-        @return the TimeConverter object representing the clock frequency
+       @param handler Pointer to Clock::HandlerBase which is to be invoked at the specified interval
+
+       @param regAll Should this clock period be used as the default time base for all of the links connected to this
+       component
+
+       @return the TimeConverter object representing the clock frequency
     */
+    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll = true);
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'registerClock(TimeConverter tc, Clock::HandlerBase* "
         "handler, bool regAll)' (i.e., no TimeConverter pointer) instead.")]]
     TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
-    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll = true);
 
-    /** Removes a clock handler from the component */
+    /**
+       Removes a clock handler from the component
+    */
+    void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'unregisterClock(TimeConverter tc, "
                  "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
-    void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
 
-    /** Reactivates an existing Clock and Handler
-     * @return time of next time clock handler will fire
-     *
-     * Note: If called after the simulation run loop (e.g., in finish() or complete()),
-     * will return the next time of the clock past when the simulation ended. There can
-     * be a small lag between simulation end and detection of simulation end during which
-     * clocks can run a few extra cycles. As a result, the return value just prior to
-     * simulation end may be greater than the value returned after simulation end.
-     */
+    /**
+       Reactivates an existing Clock and Handler
+
+       @return time of next time clock handler will fire
+
+       Note: If called after the simulation run loop (e.g., in finish() or complete()), will return the next time of the
+       clock past when the simulation ended. There can be a small lag between simulation end and detection of simulation
+       end during which clocks can run a few extra cycles. As a result, the return value just prior to simulation end
+       may be greater than the value returned after simulation end.
+    */
+    Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'reregisterClock(TimeConverter freq, "
                  "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
     Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
-    Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
 
-    /** Returns the next Cycle that the TimeConverter would fire
-        If called prior to the simulation run loop, next Cycle is 0.
-        If called after the simulation run loop completes (e.g., during
-        complete() or finish()), next  Cycle is one past the end time of
-        the simulation. See Note in reregisterClock() for additional guidance
-        when calling this function after simulation ends.
-     */
+    /**
+       Returns the next Cycle that the TimeConverter would fire If called prior to the simulation run loop, next Cycle
+       is 0.  If called after the simulation run loop completes (e.g., during complete() or finish()), next Cycle is one
+       past the end time of the simulation. See Note in reregisterClock() for additional guidance when calling this
+       function after simulation ends.
+    */
+    Cycle_t getNextClockCycle(TimeConverter freq);
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'getNextClockCycle(TimeConverter freq)' (i.e., "
         "no TimeConverter pointer) instead.")]]
     Cycle_t getNextClockCycle(TimeConverter* freq);
-    Cycle_t getNextClockCycle(TimeConverter freq);
 
-    /** Registers a default time base for the component and optionally
-        sets the the component's links to that timebase. Useful for
-        components which do not have a clock, but would like a default
-        timebase.
-        @param base Frequency for the clock in SI units
-        @param regAll Should this clock period be used as the default
-        time base for all of the links connected to this component
+    /**
+       Registers a default time base for the component and optionally
+       sets the the component's links to that timebase. Useful for
+       components which do not have a clock, but would like a default
+       timebase.
+
+       @param base Frequency for the clock in SI units
+
+       @param regAll Should this clock period be used as the default time base for all of the links connected to this
+       component
     */
     TimeConverter* registerTimeBase(const std::string& base, bool regAll = true);
 
@@ -430,6 +564,11 @@ protected:
         }
     }
 
+    /**
+       Tell the simulation object to initiate interactive mode (if currently turned on)
+
+       @param msg Message to print when interactive mode is entered
+    */
     void initiateInteractive(const std::string& msg);
 
 private:
@@ -438,8 +577,7 @@ private:
 
 
     /**
-       Handles the profile points, default time base, handler tracking
-       and checkpointing.
+       Handles the profile points, default time base, handler tracking and checkpointing.
      */
     void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll);
 
@@ -449,13 +587,17 @@ private:
     Link* configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler = nullptr);
 
     /**
-     * @brief createStatistic Helper function used to create an enabled statistic. For explicitly-enabled
-     * statistics, this must be called on the parent component. For enable-all, it can be called on the enabling
-     * component.
-     * @param cpp_params Any parameters given in C++ specific to this statistic
-     * @param name The name (different from type) for this statistic
-     * @param stat_sub_id An optional sub ID for this statistic to differentiate instances of the same stat
-     * @return The statistic created
+       createStatistic Helper function used to create an enabled statistic. For explicitly-enabled
+       statistics, this must be called on the parent component. For enable-all, it can be called on the enabling
+       component.
+
+       @param cpp_params Any parameters given in C++ specific to this statistic
+
+       @param name The name (different from type) for this statistic
+
+       @param stat_sub_id An optional sub ID for this statistic to differentiate instances of the same stat
+
+       @return The statistic created
      */
     template <typename T>
     Statistics::Statistic<T>* createStatistic(
@@ -496,11 +638,11 @@ private:
     }
 
     /**
-     * Internal registration function for statistics. Determines if a statistic is enabled or not.
-     * It first locates the component that should "own" the stat based on both ELI and statistic enable parameters.
-     * If enabled, it calls createStatistic<T> on the owning component.
-     * If disabled, it returns a disabled statistic from the statistic engine.
-     */
+       Internal registration function for statistics. Determines if a statistic is enabled or not.
+       It first locates the component that should "own" the stat based on both ELI and statistic enable parameters.
+       If enabled, it calls createStatistic<T> on the owning component.
+       If disabled, it returns a disabled statistic from the statistic engine.
+    */
     template <typename T>
     Statistics::Statistic<T>* registerStatistic_impl(
         SST::Params& params, const std::string& stat_name, const std::string& stat_sub_id, uint8_t level = 255)
@@ -551,22 +693,23 @@ private:
     }
 
 protected:
-    /** Registers a statistic.
-        If Statistic is allowed to run (controlled by Python runtime parameters),
-        then a statistic will be created and returned. If not allowed to run,
-        then a NullStatistic will be returned.  In either case, the returned
-        value should be used for all future Statistic calls.  The type of
-        Statistic and the Collection Rate is set by Python runtime parameters.
-        If no type is defined, then an Accumulator Statistic will be provided
-        by default.  If rate set to 0 or not provided, then the statistic will
-        output results only at end of sim (if output is enabled).
-        @param params Parameter set to be passed to the statistic constructor.
-        @param stat_name Primary name of the statistic.  This name must match the
-               defined ElementInfoStatistic in the component, and must also
-               be enabled in the Python input file.
-        @param stat_sub_id An additional sub name for the statistic
-        @return Either a created statistic of desired type or a NullStatistic
-                depending upon runtime settings.
+    /**
+       Registers a statistic.
+
+       If Statistic is allowed to run (controlled by Python runtime parameters), then a statistic will be created and
+       returned. If not allowed to run, then a NullStatistic will be returned.  In either case, the returned value
+       should be used for all future Statistic calls.  The type of Statistic and the Collection Rate is set by Python
+       runtime parameters.  If no type is defined, then an Accumulator Statistic will be provided by default.  If rate
+       set to 0 or not provided, then the statistic will output results only at end of sim (if output is enabled).
+
+       @param params Parameter set to be passed to the statistic constructor.
+
+       @param stat_name Primary name of the statistic.  This name must match the defined ElementInfoStatistic in the
+       component, and must also be enabled in the Python input file.
+
+       @param stat_sub_id An additional sub name for the statistic
+
+       @return Either a created statistic of desired type or a NullStatistic depending upon runtime settings.
     */
     template <typename T>
     Statistics::Statistic<T>* registerStatistic(
@@ -603,22 +746,31 @@ protected:
         return registerStatistic<T>(std::string(stat_name), std::string(stat_sub_id));
     }
 
-    /** Called by the Components and Subcomponent to perform a statistic Output.
-     * @param stat - Pointer to the statistic.
-     */
+    /**
+       Called by the Components and Subcomponent to perform a statistic Output.
+
+       @param stat - Pointer to the statistic.
+    */
     void performStatisticOutput(Statistics::StatisticBase* stat);
 
-    /** Performs a global statistic Output.
-     * This routine will force ALL Components and Subcomponents to output their statistic information.
-     * This may lead to unexpected results if the statistic counts or data is reset on output.
-     * NOTE: Currently, this function will only output statistics that are on the same rank.
+    /**
+       Performs a global statistic Output.
+
+       This routine will force ALL Components and Subcomponents to output their statistic information.  This may lead to
+       unexpected results if the statistic counts or data is reset on output.
+
+       NOTE: Currently, this function will only output statistics that are on the same rank.
      */
     void performGlobalStatisticOutput();
 
-    /** Registers a profiling point.
-        This function will register a profiling point.
-        @param point Point to resgister
-        @return Either a pointer to a created T::ProfilePoint or nullptr if not enabled.
+    /**
+       Registers a profiling point.
+
+       This function will register a profiling point.
+
+       @param point Point to register
+
+       @return Either a pointer to a created T::ProfilePoint or nullptr if not enabled.
     */
     template <typename T>
     typename T::ProfilePoint* registerProfilePoint(const std::string& pointName)
@@ -640,11 +792,15 @@ protected:
         return ret;
     }
 
-    /** Loads a module from an element Library
-     * @param type Fully Qualified library.moduleName
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or nullptr on failure.
-     */
+    /**
+       Loads a module from an element Library
+
+       @param type Fully Qualified library.moduleName
+
+       @param params Parameters the module should use for configuration
+
+       @return handle to new instance of module, or nullptr on failure.
+    */
     template <class T, class... ARGS>
     T* loadModule(const std::string& type, Params& params, ARGS... args)
     {
@@ -669,8 +825,9 @@ protected:
        Check to see if a given element type is loadable with a particular API
 
        @param name - Name of element to check in lib.name format
+
        @return True if loadable as the API specified as the template parameter
-     */
+    */
     template <class T>
     bool isSubComponentLoadableUsingAPI(const std::string& type)
     {
@@ -684,8 +841,9 @@ protected:
        please use the SubComponentSlotInfo.
 
        @param slot_name - Name of slot to check
+
        @return True if loadable as the API specified as the template parameter
-     */
+    */
     template <class T>
     bool isUserSubComponentLoadableUsingAPI(const std::string& slot_name)
     {
@@ -713,20 +871,22 @@ protected:
     }
 
     /**
-       Loads an anonymous subcomponent (not defined in input file to
-       SST run).
+       Loads an anonymous subcomponent (not defined in input file to SST run).
 
-       @param type tyupe of subcomponent to load in lib.name format
+       @param type type of subcomponent to load in lib.name format
+
        @param slot_name name of the slot to load subcomponent into
-       @param slot_num  index of the slot to load subcomponent into
-       @param share_flags Share flags to be used by subcomponent
-       @param params Params object to be passed to subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param slot_num  index of the slot to load subcomponent into
+
+       @param share_flags Share flags to be used by subcomponent
+
+       @param params Params object to be passed to subcomponent
+
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <class T, class... ARGS>
     T* loadAnonymousSubComponent(const std::string& type, const std::string& slot_name, int slot_num,
@@ -749,15 +909,13 @@ protected:
     }
 
     /**
-       Loads a user defined subcomponent (defined in input file to SST
-       run).  This version does not allow share flags (set to
-       SHARE_NONE) or constructor arguments.
+       Loads a user defined subcomponent (defined in input file to SST run).  This version does not allow share flags
+       (set to SHARE_NONE) or constructor arguments.
 
        @param slot_name name of the slot to load subcomponent into
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <class T>
     T* loadUserSubComponent(const std::string& slot_name)
@@ -770,13 +928,13 @@ protected:
        run).
 
        @param slot_name name of the slot to load subcomponent into
-       @param share_flags Share flags to be used by subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param share_flags Share flags to be used by subcomponent
+
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <class T, class... ARGS>
     T* loadUserSubComponent(const std::string& slot_name, uint64_t share_flags, ARGS... args)
@@ -805,53 +963,56 @@ protected:
         return loadUserSubComponentByIndex<T, ARGS...>(slot_name, index, share_flags, args...);
     }
 
-    /** Convenience function for reporting fatal conditions.  The
-        function will create a new Output object and call fatal()
-        using the supplied parameters.  Before calling
-        Output::fatal(), the function will also print other
-        information about the (sub)component that called fatal and
-        about the simulation state.
+    /**
+       Convenience function for reporting fatal conditions.  The function will create a new Output object and call
+       fatal() using the supplied parameters.  Before calling Output::fatal(), the function will also print other
+       information about the (sub)component that called fatal and about the simulation state.
 
-        From Output::fatal: Message will be sent to the output
-        location and to stderr.  The output will be prepended with the
-        expanded prefix set in the object.
-        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+       From Output::fatal: Message will be sent to the output location and to stderr.  The output will be prepended with
+       the expanded prefix set in the object.
 
-        @param line Line number of calling function (use CALL_INFO macro)
-        @param file File name calling function (use CALL_INFO macro)
-        @param func Function name calling function (use CALL_INFO macro)
-        @param exit_code The exit code used for termination of simulation.
-               will be passed to MPI_Abort()
-        @param format Format string.  All valid formats for printf are available.
-        @param ... Arguments for format.
-     */
+       NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+       @param line Line number of calling function (use CALL_INFO macro)
+
+       @param file File name calling function (use CALL_INFO macro)
+
+       @param func Function name calling function (use CALL_INFO macro)
+
+       @param exit_code The exit code used for termination of simulation.  will be passed to MPI_Abort()
+
+       @param format Format string.  All valid formats for printf are available.
+
+       @param ... Arguments for format.
+    */
     [[noreturn]]
     void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
         __attribute__((format(printf, 6, 7)));
 
-    /** Convenience function for testing for and reporting fatal
-        conditions.  If the condition holds, fatal() will be called,
-        otherwise, the function will return.  The function will create
-        a new Output object and call fatal() using the supplied
-        parameters.  Before calling Output::fatal(), the function will
-        also print other information about the (sub)component that
-        called fatal and about the simulation state.
+    /**
+       Convenience function for testing for and reporting fatal conditions.  If the condition holds, fatal() will be
+       called, otherwise, the function will return.  The function will create a new Output object and call fatal() using
+       the supplied parameters.  Before calling Output::fatal(), the function will also print other information about
+       the (sub)component that called fatal and about the simulation state.
 
-        From Output::fatal: Message will be sent to the output
-        location and to stderr.  The output will be prepended with the
-        expanded prefix set in the object.
-        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+       From Output::fatal: Message will be sent to the output location and to stderr.  The output will be prepended with
+       the expanded prefix set in the object.  NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
 
-        @param condition on which to call fatal(); fatal() is called
-        if the bool is false.
-        @param line Line number of calling function (use CALL_INFO macro)
-        @param file File name calling function (use CALL_INFO macro)
-        @param func Function name calling function (use CALL_INFO macro)
-        @param exit_code The exit code used for termination of simulation.
-               will be passed to MPI_Abort()
-        @param format Format string.  All valid formats for printf are available.
-        @param ... Arguments for format.
-     */
+
+       @param condition on which to call fatal(); fatal() is called if the bool is false.
+
+       @param line Line number of calling function (use CALL_INFO macro)
+
+       @param file File name calling function (use CALL_INFO macro)
+
+       @param func Function name calling function (use CALL_INFO macro)
+
+       @param exit_code The exit code used for termination of simulation.  will be passed to MPI_Abort()
+
+       @param format Format string.  All valid formats for printf are available.
+
+       @param ... Arguments for format.
+    */
     void sst_assert(bool condition, uint32_t line, const char* file, const char* func, int exit_code,
         const char* format, ...) const __attribute__((format(printf, 7, 8)));
 
@@ -859,13 +1020,18 @@ private:
     SimTime_t processCurrentTimeWithUnderflowedBase(const std::string& base) const;
 
     /**
-     * @brief findExplicitlyEnabledStatistic
-     * @param params
-     * @param id
-     * @param name
-     * @param stat_sub_id
-     * @return that matching stat if the stat already was created for the given ID, otherwise nullptr
-     */
+       findExplicitlyEnabledStatistic
+
+       @param params
+
+       @param id
+
+       @param name
+
+       @param stat_sub_id
+
+       @return that matching stat if the stat already was created for the given ID, otherwise nullptr
+    */
     Statistics::StatisticBase* createExplicitlyEnabledStatistic(SST::Params& params, StatisticId_t id,
         const std::string& name, const std::string& stat_sub_id, StatCreateFunction create);
 
@@ -917,7 +1083,9 @@ private:
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
 
-    /** Retrieve the X,Y,Z coordinates of this component */
+    /**
+       Retrieve the X,Y,Z coordinates of this component
+    */
     const std::vector<double>& getCoordinates() const { return my_info_->coordinates; }
 
 protected:
@@ -928,7 +1096,9 @@ protected:
 
     bool isUser() { return my_info_->isUser(); }
 
-    /** Manually set the default defaultTimeBase */
+    /**
+       Manually set the default defaultTimeBase
+    */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
                  "(i.e., no TimeConverter pointer) instead.")]]
     void setDefaultTimeBase(TimeConverter* tc)
@@ -936,7 +1106,9 @@ protected:
         my_info_->defaultTimeBase = tc;
     }
 
-    /** Manually set the default defaultTimeBase */
+    /**
+       Manually set the default defaultTimeBase
+    */
     void setDefaultTimeBase(TimeConverter tc) { my_info_->defaultTimeBase = tc; }
 
     // Can change this back to inline once we move completely away
@@ -954,43 +1126,35 @@ protected:
     /**** Primary Component API ****/
 
     /**
-       Register as a primary component, which allows the component to
-       specify when it is and is not OK to end simulation.  The
-       simulator will not end simulation through use of the Exit
-       object while any primary component has specified
-       primaryComponentDoNotEndSim().  However, it is still possible
-       for Actions other than Exit to end simulation.  Once all
-       primary components have specified primaryComponentOKToEndSim(),
-       the Exit object will trigger and end simulation.
+       Register as a primary component, which allows the component to specify when it is and is not OK to end
+       simulation.  The simulator will not end simulation through use of the Exit object while any primary component has
+       specified primaryComponentDoNotEndSim().  However, it is still possible for Actions other than Exit to end
+       simulation.  Once all primary components have specified primaryComponentOKToEndSim(), the Exit object will
+       trigger and end simulation.
 
-       This must be called during simulation wireup (i.e during the
-       constructor for the component), or a fatal error will occur.
+       This must be called during simulation wireup (i.e during the constructor for the component), or a fatal error
+       will occur.
 
-       If no component registers as a primary component, then the Exit
-       object will not be used for that simulation and simulation
-       termination must be accomplished through some other mechanism
-       (e.g. --stopAt flag, or some other Action object).
+       If no component registers as a primary component, then the Exit object will not be used for that simulation and
+       simulation termination must be accomplished through some other mechanism (e.g. --stopAt flag, or some other
+       Action object).
 
-        @sa BaseComponent::primaryComponentDoNotEndSim()
-        @sa BaseComponent::primaryComponentOKToEndSim()
+       @sa BaseComponent::primaryComponentDoNotEndSim()
+       @sa BaseComponent::primaryComponentOKToEndSim()
     */
     void registerAsPrimaryComponent();
 
     /**
-       Tells the simulation that it should not exit.  The component
-       will remain in this state until a call to
-       primaryComponentOKToEndSim(). A component may reenter the DoNotEndSime state
-       by calling this function after calling
-       primaryComponentOKToEndSim(), in which case, another call to
-       primaryComponentOKToEndSim() will need to be called to end the
-       simulation.
+       Tells the simulation that it should not exit.  The component will remain in this state until a call to
+       primaryComponentOKToEndSim(). A component may reenter the DoNotEndSime state by calling this function after
+       calling primaryComponentOKToEndSim(), in which case, another call to primaryComponentOKToEndSim() will need to be
+       called to end the simulation.
 
-       Calls to this function when already in the DoNotEndSime state,
-       will be functionally ignored, but will generate a warning if
-       verbose is turned on.
+       Calls to this function when already in the DoNotEndSime state, will be functionally ignored, but will generate a
+       warning if verbose is turned on.
 
-       Calls to this function on non-primary components will be
-       ignored and will generate a warning if verbose is turned on.
+       Calls to this function on non-primary components will be ignored and will generate a warning if verbose is turned
+       on.
 
        @sa BaseComponent::registerAsPrimaryComponent()
        @sa BaseComponent::primaryComponentOKToEndSim()
@@ -998,16 +1162,14 @@ protected:
     void primaryComponentDoNotEndSim();
 
     /**
-       Tells the simulation that it is now OK to end simulation.
-       Simulation will not end until all primary components that have
-       called primaryComponentDoNotEndSim() have called this function.
+       Tells the simulation that it is now OK to end simulation.  Simulation will not end until all primary components
+       that have called primaryComponentDoNotEndSim() have called this function.
 
-       Calls to this function when already in the OKToEndSim state,
-       will be functionally ignored, but will generate a warning if
-       verbose is turned on.
+       Calls to this function when already in the OKToEndSim state, will be functionally ignored, but will generate a
+       warning if verbose is turned on.
 
-       Calls to this function on non-primary components will be
-       ignored and will generate a warning if verbose is turned on.
+       Calls to this function on non-primary components will be ignored and will generate a warning if verbose is turned
+       on.
 
        @sa BaseComponent::registerAsPrimaryComponent()
        @sa BaseComponent::primaryComponentDoNotEndSim()
@@ -1031,7 +1193,7 @@ private:
        Check for Primary state
 
        @return true if component_state_ includes Primary, false otherwise
-     */
+    */
     bool isStatePrimary()
     {
         return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::Primary);
@@ -1041,7 +1203,7 @@ private:
        Check for DoNotEndSim state. This state is mutually exclusive with OKToEndSim
 
        @return true if component_state_ includes DoNotEndSim, false otherwise
-     */
+    */
     bool isStateDoNotEndSim()
     {
         return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::DoNotEndSim);
@@ -1051,7 +1213,7 @@ private:
        Check for OKToEndSim state. This state is mutually exclusive with DoNotEndSim
 
        @return true if component_state_ includes OKToEndSim
-     */
+    */
     bool isStateOKToEndSim()
     {
         return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::OKToEndSim);
@@ -1061,7 +1223,7 @@ private:
        Check for Extension state
 
        @return true if component_state_ includes Extension, false otherwise
-     */
+    */
     bool isExtension()
     {
         return static_cast<uint8_t>(component_state_) & static_cast<uint8_t>(ComponentState::Extension);
@@ -1071,10 +1233,9 @@ private:
     /**
        Adds Primary to the component_state_
 
-       NOTE: This function does not check to see if the component is
-       in the proper stage of simulation, that check should be done
-       before calling this function.
-     */
+       NOTE: This function does not check to see if the component is in the proper stage of simulation, that check
+       should be done before calling this function.
+    */
     void setStateAsPrimary()
     {
         component_state_ = static_cast<ComponentState>(
@@ -1082,13 +1243,11 @@ private:
     }
 
     /**
-       Adds DoNotEndSim and removes OKToEndSim to/from the
-       component_state_
+       Adds DoNotEndSim and removes OKToEndSim to/from the component_state_
 
-       NOTE: This function does not check to see if
-       registerAsPrimaryComponent() has been properly called, that
-       check should be done before calling this function.
-     */
+       NOTE: This function does not check to see if registerAsPrimaryComponent() has been properly called, that check
+       should be done before calling this function.
+    */
     void setStateDoNotEndSim()
     {
         component_state_ = static_cast<ComponentState>(
@@ -1098,13 +1257,11 @@ private:
     }
 
     /**
-       Adds OKToEndSim and removes DoNotEndSim to/from the
-       component_state_
+       Adds OKToEndSim and removes DoNotEndSim to/from the component_state_
 
-       NOTE: This function does not check to see if
-       registerAsPrimaryComponent() has been properly called, that
-       check should be done before calling this function.
-     */
+       NOTE: This function does not check to see if registerAsPrimaryComponent() has been properly called, that check
+       should be done before calling this function.
+    */
     void setStateOKToEndSim()
     {
         component_state_ = static_cast<ComponentState>(
@@ -1115,7 +1272,7 @@ private:
 
     /**
        Adds Extension to the component_state_
-     */
+    */
     void setAsExtension()
     {
         component_state_ = static_cast<ComponentState>(
@@ -1129,7 +1286,7 @@ private:
     ComponentInfo*   my_info_ = nullptr;
     Simulation_impl* sim_     = nullptr;
 
-    // component_state_ is intialized as NotPrimary and !Extension
+    // component_state_ is initialized as NotPrimary and !Extension
     ComponentState component_state_ = ComponentState::None;
     // bool             isExtension = false;
 
@@ -1158,6 +1315,9 @@ private:
                                           // been registered.
     StatNameMap enabled_all_stats_;
 
+    /**
+       Get the ultimate parent Component for this BaseComponent.  Will return this is caller is a Component
+    */
     BaseComponent* getParentComponent()
     {
         ComponentInfo* base_info = my_info_;
@@ -1169,9 +1329,8 @@ private:
 };
 
 /**
-   Used to load SubComponents when multiple SubComponents are loaded
-   into a single slot (will also also work when a single SubComponent
-   is loaded).
+   Used to load SubComponents when multiple SubComponents are loaded into a single slot (will also also work when a
+   single SubComponent is loaded).
  */
 class SubComponentSlotInfo
 {
@@ -1220,12 +1379,13 @@ public:
     int getMaxPopulatedSlotNumber() const { return max_slot_index; }
 
     /**
-       Check to see if the element type loaded by the user into the
-       specified slot index is loadable with a particular API.
+       Check to see if the element type loaded by the user into the specified slot index is loadable with a particular
+       API.
 
        @param slot_num Slot index to check
+
        @return True if loadable as the API specified as the template parameter
-     */
+    */
     template <class T>
     bool isLoadableUsingAPI(int slot_num)
     {
@@ -1235,39 +1395,33 @@ public:
     // Create functions that support the new API
 
     /**
-       Create a user defined subcomponent (defined in input file to
-       SST run).  This call will pass SHARE_NONE to the new
-       subcomponent and will not take constructor arguments.  If
-       constructor arguments are needed for the API that is being
-       loaded, the full call to create will need to be used
-       create(slot_num, share_flags, args...).
+       Create a user defined subcomponent (defined in input file to SST run).  This call will pass SHARE_NONE to the new
+       subcomponent and will not take constructor arguments.  If constructor arguments are needed for the API that is
+       being loaded, the full call to create will need to be used create(slot_num, share_flags, args...).
 
        @param slot_num Slot index from which to load subcomponent
 
-       This function supports the new API, but is identical to an
-       existing API call.  It will try to load using new API and will
-       fallback to old if unsuccessful.
+       This function supports the new API, but is identical to an existing API call.  It will try to load using new API
+       and will fallback to old if unsuccessful.
     */
     template <typename T>
     T* create(int slot_num) const
     {
         Params empty;
         return comp->loadUserSubComponentByIndex<T>(slot_name, slot_num, ComponentInfo::SHARE_NONE);
-        // return private_create<T>(slot_num, empty);
     }
 
     /**
-       Create a user defined subcomponent (defined in input file to SST
-       run).
+       Create a user defined subcomponent (defined in input file to SST run).
 
        @param slot_num Slot index from which to load subcomponent
-       @param share_flags Share flags to be used by subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param share_flags Share flags to be used by subcomponent
+
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <class T, class... ARGS>
     T* create(int slot_num, uint64_t share_flags, ARGS... args) const
@@ -1276,22 +1430,18 @@ public:
     }
 
     /**
-       Create all user defined subcomponents (defined in input file to SST
-       run) for the slot.
+       Create all user defined subcomponents (defined in input file to SST run) for the slot.
 
-       @param vec Vector of T* that will hold the pointers to the new
-       subcomponents.  If an index is not occupied, a nullptr will be
-       put in it's place.  All components will be added to the end of
-       the vector, so index N will be at vec.length() + N, where
-       vec.length() is the length of the vector when it is passed to
-       the call.
+       @param vec Vector of T* that will hold the pointers to the new subcomponents.  If an index is not occupied, a
+       nullptr will be put in it's place.  All components will be added to the end of the vector, so index N will be at
+       vec.length() + N, where vec.length() is the length of the vector when it is passed to the call.
+
        @param share_flags Share flags to be used by subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <typename T, class... ARGS>
     void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const
@@ -1306,18 +1456,16 @@ public:
        Create all user defined subcomponents (defined in input file to SST
        run) for the slot.
 
-       @param vec Vector of pair<int,T*> that will hold the pointers
-       to the new subcomponents.  The int will hold the index from
-       which the subcomponent wass loaded.  Unoccupied indexes will be
-       skipped.  All components will be added to the end of the
-       vector.
-       @param share_flags Share flags to be used by subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
+       @param vec Vector of pair<int,T*> that will hold the pointers to the new subcomponents.  The int will hold the
+       index from which the subcomponent was loaded.  Unoccupied indexes will be skipped.  All components will be added
+       to the end of the vector.
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param share_flags Share flags to be used by subcomponent
+
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <typename T, class... ARGS>
     void createAllSparse(std::vector<std::pair<int, T*>>& vec, uint64_t share_flags, ARGS... args) const
@@ -1329,20 +1477,17 @@ public:
     }
 
     /**
-       Create all user defined subcomponents (defined in input file to SST
-       run) for the slot.
+       Create all user defined subcomponents (defined in input file to SST run) for the slot.
 
-       @param vec Vector of T* that will hold the pointers
-       to the new subcomponents.  Unoccupied indexes will be
-       skipped.  All components will be added to the end of the
-       vector.
+       @param vec Vector of T* that will hold the pointers to the new subcomponents.  Unoccupied indexes will be
+       skipped.  All components will be added to the end of the vector.
+
        @param share_flags Share flags to be used by subcomponent
-       @param args Arguments to be passed to constructor.  This
-       signature is defined in the API definition
 
-       For ease in backward compatibility to old API, this call will
-       try to load using new API and will fallback to old if
-       unsuccessful.
+       @param args Arguments to be passed to constructor.  This signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will try to load using new API and will fallback to old
+       if unsuccessful.
     */
     template <typename T, class... ARGS>
     void createAllSparse(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const

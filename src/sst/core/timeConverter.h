@@ -56,6 +56,34 @@ public:
     TimeConverter() {}
 
     /**
+       Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports
+       a unit of Hz, which will give you the time for the period of that frequency.  You may also use an SI prefix as
+       part of the unit.
+
+       @param time Time to base the TimeConverter on
+     */
+    TimeConverter(const std::string& time); // Implmenented in timeLord.cc
+
+    /**
+       Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports
+       a unit of Hz, which will give you the time for the period of that frequency.
+
+       @param time Time to base the TimeConverter on
+     */
+    TimeConverter(const UnitAlgebra& time); // Implmenented in timeLord.cc
+
+    /**
+       Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports
+       a unit of Hz, which will give you the time for the period of that frequency.  You may also use an SI prefix as
+       part of the unit.
+
+       @param time Time to base the TimeConverter on
+     */
+    TimeConverter(const char* time) :
+        TimeConverter(std::string(time))
+    {}
+
+    /**
        Converts from the component's view to the core's view of time.
        @param time time to convert to core time
      */

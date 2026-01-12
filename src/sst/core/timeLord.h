@@ -44,38 +44,57 @@ class TimeLord
 public:
     /**
         Create a new TimeConverter object using specified SI Units. For
-        example, "1 Ghz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).
+        example, "1 GHz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).
 
         @param ts String indicating the base unit for this object. The
         string should be a floating point number followed by a prefix,
         and then frequency (i.e. Hz) or time unit (s). Allowable seconds
-        prefixes are: 'f' (fempto), 'p' (pico), 'n' (nano), 'u' (micro),
+        prefixes are: 'f' (femto), 'p' (pico), 'n' (nano), 'u' (micro),
         'm' (milli). Allowable frequency prefixes are 'k' (kilo), 'M'
         (mega), and 'G' (giga).
-     */
+    */
     TimeConverter* getTimeConverter(const std::string& ts);
+
     /**
-     * Create a new TimeConverter object using the specified units.
-     *
-     * @param ts UnitAlgebra object indicating the base unit for this object.
-     */
+       Create a new TimeConverter object using the specified units.
+
+       @param ts UnitAlgebra object indicating the base unit for this object.
+    */
     TimeConverter* getTimeConverter(const UnitAlgebra& ts);
 
     /**
-     * @return Time Base of the TimeLord
-     */
-    UnitAlgebra getTimeBase() const { return timeBase; }
+       Get the global TimeBase as a UnitAlgebra
 
-    /** @return TimeConverter which represents Nanoseconds */
-    TimeConverter* getNano() { return nano; }
-    /** @return TimeConverter which represents Microseconds */
-    TimeConverter* getMicro() { return micro; }
-    /** @return TimeConverter which represents Milliseconds */
-    TimeConverter* getMilli() { return milli; }
+       @return Time Base of the TimeLord
+    */
+    UnitAlgebra getTimeBase() const { return timeBase_; }
 
-    /** Not a Public API.
-     * Returns the number of raw simulation cycles given by a specified time string
-     */
+    /**
+       Get the TimeConverter representing a nanosecond
+
+       @return TimeConverter which represents Nanoseconds
+    */
+    TimeConverter* getNano() { return nano_; }
+
+    /**
+       Get the TimeConverter representing a microsecond
+
+       @return TimeConverter which represents Microseconds
+    */
+    TimeConverter* getMicro() { return micro_; }
+
+    /**
+       Get the TimeConverter representing a millisecond
+
+       @return TimeConverter which represents Milliseconds
+    */
+    TimeConverter* getMilli() { return milli_; }
+
+    /**
+       Not a Public API.
+
+       Returns the number of raw simulation cycles given by a specified time string
+    */
     SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
 
 private:
@@ -83,6 +102,7 @@ private:
     friend class SST::Simulation_impl;
     friend class SST::Link;
     friend class SST::BaseComponent;
+    friend class SST::TimeConverter;
 
     friend int ::main(int argc, char** argv);
 
@@ -92,27 +112,30 @@ private:
     // TimeConverter object.
     TimeConverter* getTimeConverter(SimTime_t simCycles);
 
+    SimTime_t getFactorForTime(const std::string& time);
+    SimTime_t getFactorForTime(const UnitAlgebra& time);
+
     TimeLord() :
-        initialized(false)
+        initialized_(false)
     {}
     ~TimeLord();
 
     TimeLord(const TimeLord&)            = delete; // Don't Implement
     TimeLord& operator=(const TimeLord&) = delete; // Don't Implement
 
-    bool                 initialized;
-    std::recursive_mutex slock;
+    bool                 initialized_;
+    std::recursive_mutex slock_;
 
-    std::string        timeBaseString;
-    TimeConverterMap_t tcMap;
-    UnitAlgebra        timeBase;
+    std::string        timeBaseString_;
+    TimeConverterMap_t tcMap_;
+    UnitAlgebra        timeBase_;
 
     // double sec_factor;
-    StringToTCMap_t parseCache;
+    StringToTCMap_t parseCache_;
 
-    TimeConverter* nano;
-    TimeConverter* micro;
-    TimeConverter* milli;
+    TimeConverter* nano_;
+    TimeConverter* micro_;
+    TimeConverter* milli_;
 };
 
 } // namespace SST
