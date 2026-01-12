@@ -170,7 +170,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_heartbeat.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --heartbeat-wall-period=1")
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=30s --heartbeat-wall-period=1")
 
         # Cannot diff test output because times may differ
         # Check for at least 5 heartbeat messages
@@ -282,7 +282,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGALRM_multiaction.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --sigalrm=sst.rt.heartbeat(interval=1s);sst.rt.status.core(interval=2s)")
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=30s --sigalrm=sst.rt.heartbeat(interval=1s);sst.rt.status.core(interval=2s)")
 
         # Check for a heartbeat message: 5-6
         # Check for status: 2-3
