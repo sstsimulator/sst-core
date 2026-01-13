@@ -20,8 +20,7 @@
 #include <cmath>
 #include <limits>
 
-namespace SST {
-namespace Statistics {
+namespace SST::Statistics {
 
 // NOTE: When calling base class members of classes derived from
 //       a templated base class.  The user must use "this->" in
@@ -209,7 +208,6 @@ private:
     inline static const std::string stat_type_ = "Accumulator";
 };
 
-} // namespace Statistics
-} // namespace SST
+} // namespace SST::Statistics
 
 #endif // SST_CORE_STATAPI_STATACCUMULATOR_H

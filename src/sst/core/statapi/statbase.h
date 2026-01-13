@@ -515,7 +515,7 @@ private:
     SST_ELI_INTERFACE_INFO(interface)                                                           \
     virtual std::string getELIName() const override                                  \
     {                                                                                \
-        return std::string(lib) + "." + name;                                        \
+        return std::string(lib) + "." + (name);                                      \
     }
 
 #define SST_ELI_DECLARE_STATISTIC_TEMPLATE_DERIVED(cls, field, lib, name, version, desc, interface)          \

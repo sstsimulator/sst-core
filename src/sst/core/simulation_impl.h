@@ -79,11 +79,6 @@ class StatisticOutput;
 class StatisticProcessingEngine;
 } // namespace Statistics
 
-namespace Serialization {
-class ObjectMap;
-} // namespace Serialization
-
-
 namespace pvt {
 
 /**
@@ -490,6 +485,18 @@ public:
 
     friend class SyncManager;
 
+    // TODO: Reorder data members to reduce excessive padding (currently 42 bytes padding; 2 bytes of padding possible)
+    //
+    // Optimal fields order: timeVortex, threadMinPartTC, current_activity, interThreadMinLatency, syncManager,
+    // m_heartbeat, checkpoint_action_, real_time_, interactive_, stop_at_, clockDivisor, currentSimCycle, endSimCycle,
+    // run_phase_start_time_, run_phase_total_time_, init_phase_start_time_, init_phase_total_time_,
+    // complete_phase_start_time_, complete_phase_total_time_, my_rank, num_ranks, interThreadLatencies,
+    // component_blob_offsets_, timeVortexType, interactive_type_, interactive_start_, replay_file_, interactive_msg_,
+    // tv_sort_, clockResolution, output_directory, checkpoint_prefix_, globalOutputFileName, clockMap, profile_tools,
+    // profiler_map, link_restart_tracking, event_handler_restart_tracking, compInfoMap, one_shot_manager_, stat_engine,
+    // untimed_phase, signal_arrived_, shutdown_mode_, runMode, currentPriority, checkpoint_id_, direct_interthread,
+    // endSim, independent, wireUpFinished_, enter_interactive_, serial_restart_
+
     TimeVortex*             timeVortex = nullptr;
     std::string             timeVortexType;  // Required for checkpoint
     TimeConverter           threadMinPartTC; // Unused...?
@@ -666,6 +673,9 @@ public:
     uint32_t                                   checkpoint_id_       = 0;
     std::string                                checkpoint_prefix_   = "";
     std::string                                globalOutputFileName = "";
+    std::string                                version_             = "";
+    std::string                                arch_                = "";
+    std::string                                os_                  = "";
     bool                                       serial_restart_      = false;
 
     // Config object used by the simulation

@@ -128,7 +128,7 @@ public:
      * print it's current status.  Useful for debugging.
      * @param out The Output class which should be used to print component status.
      */
-    virtual void printStatus(Output& UNUSED(out)) { return; }
+    virtual void printStatus(Output& UNUSED(out)) {}
 
     /** Get the core timebase */
     UnitAlgebra getCoreTimeBase() const;

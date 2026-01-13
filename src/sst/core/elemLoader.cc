@@ -110,15 +110,13 @@ static std::vector<std::string>
 splitPath(const std::string& searchPaths)
 {
     std::vector<std::string> paths;
-    char*                    pathCopy = new char[searchPaths.length() + 1];
-    std::strcpy(pathCopy, searchPaths.c_str());
-    char* brkb = nullptr;
-    char* p    = nullptr;
+    char*                    pathCopy = strdup(searchPaths.c_str());
+    char*                    brkb     = nullptr;
+    char*                    p        = nullptr;
     for ( p = strtok_r(pathCopy, ":", &brkb); p; p = strtok_r(nullptr, ":", &brkb) ) {
         paths.push_back(p);
     }
-
-    delete[] pathCopy;
+    free(pathCopy);
     return paths;
 }
 

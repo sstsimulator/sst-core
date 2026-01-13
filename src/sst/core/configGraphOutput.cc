@@ -17,8 +17,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/util/filesystem.h"
 
-namespace SST {
-namespace Core {
+namespace SST::Core {
 
 ConfigGraphOutput::ConfigGraphOutput(const char* path)
 {
@@ -26,6 +25,4 @@ ConfigGraphOutput::ConfigGraphOutput(const char* path)
     outputFile                       = filesystem.fopen(path, "wt");
 }
 
-
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core

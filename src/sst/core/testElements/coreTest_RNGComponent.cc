@@ -17,7 +17,7 @@
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/xorshift.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace SST;
 using namespace SST::RNG;

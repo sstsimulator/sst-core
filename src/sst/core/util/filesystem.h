@@ -22,8 +22,8 @@
 // REMOVE ME
 #include <filesystem>
 
-namespace SST {
-namespace Util {
+
+namespace SST::Util {
 
 
 /**
@@ -217,7 +217,6 @@ private:
 
 void test_filesystem();
 
-} // end namespace Util
-} // end namespace SST
+} // namespace SST::Util
 
 #endif // SST_CORE_FILESYSTEM_H
