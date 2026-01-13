@@ -239,6 +239,9 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
     writeStr(prompt_line.str());
     curpos = history[index].size() + prompt.size() + 1;
 
+    // EOF
+    bool end_of_file = false;
+
     // Start checking for keys
     char              c;
     int               bytesRead = 1;
@@ -313,11 +316,16 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
             redraw_line(history[index]);
         }
         else if ( c == ctrl_d ) {
-            // delete character at cursor
-            int position = curpos - prompt.size() - 1;
-            if ( position < 0 || position >= (int)history[index].size() ) {
-                continue;
+           int position = curpos - prompt.size() - 1;
+            if (position == 0 && history[index].size() == 0 ) {
+                // if the line is empty then quit (tactcomplabs/sst-core #32)
+                end_of_file = true;
+                break;
             }
+            if ( position < 0 || position >= (int)history[index].size() ) {
+                continue; // Something went wrong
+            }
+            // delete the next character
             history[index].erase(position, 1);
             redraw_line(history[index]);
         }
@@ -371,6 +379,10 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
     this->restoreTermMode();
 
     // set the new line info
-    newcmd = history[index];
+    if (end_of_file)
+        newcmd = "quit";
+    else 
+        newcmd = history[index];
+
     writeStr("\n");
 }
