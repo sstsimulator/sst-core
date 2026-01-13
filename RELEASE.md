@@ -1,5 +1,14 @@
 # SST 15.1 Release Notes
 
+SST 15.1.1 Bug Fix Release - 2026-Jan
+===========================================
+
+## SST-Core
+* Fixed bug that occurred in rare cases in parallel loaded simulations when checking ports on nonlocal links.
+
+SST 15.1.0 Release - 2025-Nov
+===========================================
+
 ## General
 * This release has several performance improvements and bug fixes.
 * The experimental debug console that allows online introspection of elements is significantly more capable.
@@ -9,13 +18,13 @@
 
 ## Deprecation and Removal Notices
 * There are no new deprecations added in this point release. The following list is copied from the 15.0 release.
-* Use of shared TimeConverters (via pointers returned from Core API functions) is deprecated. Core APIs that accepted a `TimeConverter*` have been updated to accept a `TimeConverter` instead. 
-  In SST 16.0, Core APIs that return TimeConverter pointers will be changed to return a TimeConverter instance instead. To prepare for this switch, change code to construct a local 
+* Use of shared TimeConverters (via pointers returned from Core API functions) is deprecated. Core APIs that accepted a `TimeConverter*` have been updated to accept a `TimeConverter` instead.
+  In SST 16.0, Core APIs that return TimeConverter pointers will be changed to return a TimeConverter instance instead. To prepare for this switch, change code to construct a local
   TimeConverter instance from  a returned TimeConverter pointer as shown.
 ```
         // Old code
         TimeConverter* tc = registerClock(...);
-         
+
         // New code
         TimeConverter tc = registerClock(...);
 ```
@@ -23,9 +32,9 @@
 * Reminder: The Event::Handler and Clock::Handler handler types were deprecated in SST 14.0. Use Event::Handler2 and Clock::Handler2 instead.
     * The Handler signatures will be switched to match Handler2 in SST 16.0.
     * The name Handler2 will be deprecated at SST 16.0 and removed in SST 17.0.
-    * Update all elements to use the new signatures before or at SST 16.0. Switching before SST 16.0 will require changing (`Handler<class>` -> `Handler2<class,&class::callback_function>`) prior to SST 16.0 and then to (`Handler<class, &class::callback_function>`) after 16.0. 
+    * Update all elements to use the new signatures before or at SST 16.0. Switching before SST 16.0 will require changing (`Handler<class>` -> `Handler2<class,&class::callback_function>`) prior to SST 16.0 and then to (`Handler<class, &class::callback_function>`) after 16.0.
       Waiting until SST 16.0 to switch will cause your code to break in SST 16.0 until you change the definition of (`Handler<class>` -> `Handler<class, &class::callback_function>`).
-* SST-Macro is a maintenance-only development effort. Due to increasing divergence between the SST-Core and SST-Macro, we will no longer be ensuring that the SST-Core and SST-Macro devel branches stay in sync. 
+* SST-Macro is a maintenance-only development effort. Due to increasing divergence between the SST-Core and SST-Macro, we will no longer be ensuring that the SST-Core and SST-Macro devel branches stay in sync.
   However, we will continue to ensure that the master  branches and releases of SST-Macro work with SST-Core. Where possible, we recommend using the mercury element instead of SST-Macro.
   If mercury is missing key functionality present in SST-Macro that is not found elsewhere in SST-Elements, please let us know.
 
