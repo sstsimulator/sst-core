@@ -35,25 +35,25 @@ TimeLord::getTimeConverter(const std::string& ts)
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock_);
-    if ( parseCache_.find(ts) == parseCache_.end() ) {
+    if ( parse_cache_.find(ts) == parse_cache_.end() ) {
         TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
-        parseCache_[ts]   = tc;
+        parse_cache_[ts]  = tc;
         return tc;
     }
-    return parseCache_[ts];
+    return parse_cache_[ts];
 }
 
 TimeConverter*
-TimeLord::getTimeConverter(SimTime_t simCycles)
+TimeLord::getTimeConverter(SimTime_t sim_cycles)
 {
     // Check to see if we already have a TimeConverter with this value
     std::lock_guard<std::recursive_mutex> lock(slock_);
-    if ( tcMap_.find(simCycles) == tcMap_.end() ) {
-        TimeConverter* tc = new TimeConverter(simCycles);
-        tcMap_[simCycles] = tc;
+    if ( tc_map_.find(sim_cycles) == tc_map_.end() ) {
+        TimeConverter* tc   = new TimeConverter(sim_cycles);
+        tc_map_[sim_cycles] = tc;
         return tc;
     }
-    return tcMap_[simCycles];
+    return tc_map_[sim_cycles];
 }
 
 TimeConverter*
@@ -63,17 +63,17 @@ TimeLord::getTimeConverter(const UnitAlgebra& ts)
     if ( !initialized_ ) {
         abort.fatal(CALL_INFO, 1, "Time Lord has not yet been initialized!");
     }
-    SimTime_t      simCycles = getFactorForTime(ts);
-    TimeConverter* tc        = getTimeConverter(simCycles);
+    SimTime_t      sim_cycles = getFactorForTime(ts);
+    TimeConverter* tc         = getTimeConverter(sim_cycles);
     return tc;
 }
 
 void
-TimeLord::init(const std::string& _timeBaseString)
+TimeLord::init(const std::string& timebase_string)
 {
-    initialized_    = true;
-    timeBaseString_ = _timeBaseString;
-    timeBase_       = UnitAlgebra(timeBaseString_);
+    initialized_     = true;
+    timebase_string_ = timebase_string;
+    timebase_        = UnitAlgebra(timebase_string_);
 
     try {
         nano_ = getTimeConverter("1ns");
@@ -107,13 +107,13 @@ TimeLord::~TimeLord()
 {
     // Delete all the TimeConverter objects
     std::map<ComponentId_t, LinkMap*>::iterator it;
-    for ( TimeConverterMap_t::iterator it = tcMap_.begin(); it != tcMap_.end(); ++it ) {
+    for ( TimeConverterMap_t::iterator it = tc_map_.begin(); it != tc_map_.end(); ++it ) {
         delete it->second;
     }
-    tcMap_.clear();
+    tc_map_.clear();
 
     // Clear the contents of the cache
-    parseCache_.clear();
+    parse_cache_.clear();
 }
 
 SimTime_t
@@ -121,12 +121,12 @@ TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock_);
-    if ( parseCache_.find(ts) == parseCache_.end() ) {
+    if ( parse_cache_.find(ts) == parse_cache_.end() ) {
         TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
-        parseCache_[ts]   = tc;
+        parse_cache_[ts]  = tc;
         return tc->getFactor();
     }
-    return parseCache_[ts]->getFactor();
+    return parse_cache_[ts]->getFactor();
 }
 
 UnitAlgebra
@@ -142,27 +142,27 @@ TimeLord::getFactorForTime(const std::string& time)
 
     // See if this is in the cache
     std::scoped_lock<std::recursive_mutex> lock(slock_);
-    if ( parseCache_.find(time) == parseCache_.end() ) {
-        TimeConverter* tc = getTimeConverter(UnitAlgebra(time));
-        parseCache_[time] = tc;
+    if ( parse_cache_.find(time) == parse_cache_.end() ) {
+        TimeConverter* tc  = getTimeConverter(UnitAlgebra(time));
+        parse_cache_[time] = tc;
         return tc->factor;
     }
-    return parseCache_[time]->factor;
+    return parse_cache_[time]->factor;
 }
 
 SimTime_t
 TimeLord::getFactorForTime(const UnitAlgebra& time)
 {
-    SimTime_t   simCycles;
+    SimTime_t   sim_cycles;
     UnitAlgebra period = time;
-    UnitAlgebra uaFactor;
+    UnitAlgebra ua_factor;
     // Need to differentiate between Hz and s.
     if ( period.hasUnits("s") ) {
-        uaFactor = period / timeBase_;
+        ua_factor = period / timebase_;
     }
     else if ( period.hasUnits("Hz") ) {
-        UnitAlgebra temp = timeBase_;
-        uaFactor         = temp.invert() / period;
+        UnitAlgebra temp = timebase_;
+        ua_factor        = temp.invert() / period;
     }
     else {
         throw std::invalid_argument("Error:  TimeConverter creation requires "
@@ -170,21 +170,21 @@ TimeLord::getFactorForTime(const UnitAlgebra& time)
                                     time.toStringBestSI() + " was passed to call");
     }
     // Check to see if number is too big or too small
-    if ( uaFactor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
+    if ( ua_factor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
         throw std::overflow_error("Error:  Attempting to get TimeConverter for a time (" + time.toStringBestSI() +
                                   ") "
                                   "which is too large for the timebase (" +
-                                  timeBase_.toStringBestSI() + ")");
+                                  timebase_.toStringBestSI() + ")");
     }
     // Check to see if period is too short (0 is special cased to not fail)
-    if ( uaFactor.getValue() < 1 && uaFactor.getValue() != 0 ) {
+    if ( ua_factor.getValue() < 1 && ua_factor.getValue() != 0 ) {
         throw std::underflow_error("Error:  Attempting to get TimeConverter for a time (" + time.toStringBestSI() +
                                    ") "
                                    "which has too small of a period to be represented by the timebase (" +
-                                   timeBase_.toStringBestSI() + ")");
+                                   timebase_.toStringBestSI() + ")");
     }
-    simCycles = uaFactor.getRoundedValue();
-    return simCycles;
+    sim_cycles = ua_factor.getRoundedValue();
+    return sim_cycles;
 }
 
 

@@ -370,12 +370,12 @@ BaseComponent::isPortConnected(const std::string& name) const
 }
 
 Link*
-BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler)
 {
-    // Lookup core-owned time_base in case it differs from the one passed in (unlikely but possible)
+    // Lookup core-owned timebase in case it differs from the one passed in (unlikely but possible)
     SimTime_t factor = 0;
-    if ( nullptr != time_base )
-        factor = time_base->getFactor();
+    if ( nullptr != timebase )
+        factor = timebase->getFactor();
     else if ( my_info_->defaultTimeBase.isInitialized() )
         factor = my_info_->defaultTimeBase.getFactor();
 
@@ -390,10 +390,10 @@ BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handle
 }
 
 Link*
-BaseComponent::configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureSelfLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler)
 {
     addSelfLink(name);
-    return configureLink(name, *time_base, handler);
+    return configureLink(name, *timebase, handler);
 }
 
 Link*
@@ -405,18 +405,18 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
 
 
 TimeConverter*
-BaseComponent::registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll)
+BaseComponent::registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all)
 {
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
-    registerClock_impl(tcRet, handler, regAll);
+    registerClock_impl(tcRet, handler, reg_all);
     return tcRet;
 }
 
 TimeConverter*
-BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
+BaseComponent::registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all)
 {
     TimeConverter* tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
-    registerClock_impl(tcRet, handler, regAll);
+    registerClock_impl(tcRet, handler, reg_all);
     return tcRet;
 }
 
@@ -459,13 +459,13 @@ BaseComponent::getNextClockCycle(TimeConverter* freq)
 
 
 TimeConverter*
-BaseComponent::registerTimeBase(const std::string& base, bool regAll)
+BaseComponent::registerTimeBase(const std::string& base, bool reg_all)
 {
     TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
 
-    // if regAll is true set tc as the default for the component and
+    // if reg_all is true set tc as the default for the component and
     // for all the links
-    if ( regAll ) {
+    if ( reg_all ) {
         setDefaultTimeBaseForLinks(tc);
         my_info_->defaultTimeBase = tc;
     }
@@ -557,7 +557,7 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 
 
 void
-BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll)
+BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all)
 {
     // Add this clock to our registered_clocks_ set
     registered_clocks_.insert(tc->getFactor());
@@ -581,9 +581,9 @@ BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler
         handler->attachTool(tool, mdata);
     }
 
-    // if regAll is true set tc as the default for the component and
+    // if reg_all is true set tc as the default for the component and
     // for all the links
-    if ( regAll ) {
+    if ( reg_all ) {
         setDefaultTimeBaseForLinks(tc);
         my_info_->defaultTimeBase = tc;
     }
@@ -591,7 +591,7 @@ BaseComponent::registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler
 
 
 Link*
-BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink_impl(const std::string& name, SimTime_t timebase, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info_->getLinkMap();
 
@@ -685,7 +685,7 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t time_base, 
                 }
             }
         }
-        tmp->setDefaultTimeBase(time_base);
+        tmp->setDefaultTimeBase(timebase);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info_->getName(), my_info_->getType(), name);
 #endif

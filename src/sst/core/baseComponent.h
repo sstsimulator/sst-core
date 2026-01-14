@@ -102,7 +102,7 @@ public:
     /**
        Get the BaseComponent Statistic load level
 
-       @return statistic load level of BaseComponent
+       @return Statistic load level of BaseComponent
     */
     inline uint8_t getStatisticLoadLevel() const { return my_info_->statLoadLevel; }
 
@@ -157,7 +157,7 @@ public:
     virtual bool Status() { return 0; }
 
     /**
-       Called by the Simulation to request that the component print it's current status.  Useful for debugging.
+       Called by the Simulation to request that the component print its current status.  Useful for debugging.
 
        @param out The Output class which should be used to print component status.
      */
@@ -173,35 +173,35 @@ public:
     /**
        Get the current simulation time as a cycle count
 
-       @return current simulation cycle for the simulation
+       @return Current simulation cycle for the simulation
     */
     SimTime_t getCurrentSimCycle() const;
 
     /**
        Get the current priority
 
-       @return current priority for the simulation
+       @return Current priority for the simulation
     */
     int getCurrentPriority() const;
 
     /**
        get the elapsed simulation time as a UnitAlgebra
 
-       @return time in seconds as a UnitAlgebra
+       @return Time in seconds as a UnitAlgebra
     */
     UnitAlgebra getElapsedSimTime() const;
 
     /**
        Get the end simulation time as a cycle count
 
-       @return end simulation time as cycle count
+       @return End simulation time as cycle count
     */
     SimTime_t getEndSimCycle() const;
 
     /**
        Get the end simulation time as a UnitAlgebra
 
-       @return end time in seconds as a UnitAlgebra
+       @return End time in seconds as a UnitAlgebra
     */
     UnitAlgebra getEndSimTime() const;
 
@@ -215,7 +215,7 @@ public:
     /**
        Get the number of parallel ranks in the simulation
 
-       @return number of ranks in simulation
+       @return Number of ranks in simulation
     */
     RankInfo getNumRanks() const;
 
@@ -238,7 +238,7 @@ public:
 
        @param tc TimeConverter specifying the units
 
-       @return current time as a cycle count based on the provided timebase
+       @return Current time as a cycle count based on the provided timebase
     */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
                  "(i.e., no pointer) instead.")]]
@@ -248,14 +248,14 @@ public:
     /**
        Return the simulated time since the simulation began in the specified timebase.
 
-       NOTE: This version of getCurrentSimTime() can accept a time base that is not normally representable because it is
-       smaller than the global time base set by the user. If this happens, the underlying code will use UnitAlgebra to
+       NOTE: This version of getCurrentSimTime() can accept a timebase that is not normally representable because it is
+       smaller than the global timebase set by the user. If this happens, the underlying code will use UnitAlgebra to
        compute the cycle count.  Because UnitAlgebra is computationally intense, it is best to avoid this case during
        the run loop of the simulation.
 
        @param base Timebase frequency in SI Units
 
-       @return current time as a cycle count based on the provided timebase
+       @return Current time as a cycle count based on the provided timebase
 
     */
     SimTime_t getCurrentSimTime(const std::string& base) const;
@@ -265,54 +265,54 @@ public:
 
        NOTE: This version of getCurrentSimTime() exists because both std::string and TimeConverter can be implicitly
        created with a const char*.  Having this implementation removes ambiguity and ensures that a const char* is
-       passed through the std::string version, which can accept time bases that are not representable with TimeConverter
+       passed through the std::string version, which can accept timebases that are not representable with TimeConverter
        due to being smaller than the global timebase.
 
        @param base Timebase frequency in SI Units
 
-       @return current time as a cycle count based on the provided timebase
+       @return Current time as a cycle count based on the provided timebase
     */
     SimTime_t getCurrentSimTime(const char* base) const { return getCurrentSimTime(std::string(base)); }
 
     /**
        Utility function to return the time since the simulation began in nanoseconds
 
-       @return current time as a count of nanoseconds expired in the simulation
+       @return Current time as a count of nanoseconds expired in the simulation
     */
     SimTime_t getCurrentSimTimeNano() const;
 
     /**
        Utility function to return the time since the simulation began in microseconds
 
-       @return current time as a count of microseconds expired in the simulation
+       @return Current time as a count of microseconds expired in the simulation
     */
     SimTime_t getCurrentSimTimeMicro() const;
 
     /**
        Utility function to return the time since the simulation began in milliseconds
 
-       @return current time as a count of milliseconds expired in the simulation
+       @return Current time as a count of milliseconds expired in the simulation
     */
     SimTime_t getCurrentSimTimeMilli() const;
 
     /**
        Get the amount of real-time spent executing the run phase of the simulation.
 
-      @return real-time in seconds spent executing the run phase
+      @return Real time in seconds spent executing the run phase
     */
     double getRunPhaseElapsedRealTime() const;
 
     /**
        Get the amount of real-time spent executing the init phase of the simulation.
 
-      @return real-time in seconds spent executing the init phase
+      @return Real time in seconds spent executing the init phase
     */
     double getInitPhaseElapsedRealTime() const;
 
     /**
        Get the amount of real-time spent executing the complete phase of the simulation.
 
-       @return real-time in seconds spent executing the complete phase
+       @return Real time in seconds spent executing the complete phase
     */
     double getCompletePhaseElapsedRealTime() const;
 
@@ -343,21 +343,21 @@ protected:
     /**
        Check to see if the run mode was set to INIT
 
-       @return true if simulation run mode is set to INIT
+       @return True if simulation run mode is set to INIT
     */
     bool isSimulationRunModeInit() const;
 
     /**
        Check to see if the run mode was set to RUN
 
-       @return true if simulation run mode is set to RUN
+       @return True if simulation run mode is set to RUN
     */
     bool isSimulationRunModeRun() const;
 
     /**
        Check to see if the run mode was set to BOTH
 
-       @return true if simulation run mode is set to BOTH
+       @return True if simulation run mode is set to BOTH
     */
     bool isSimulationRunModeBoth() const;
 
@@ -386,50 +386,54 @@ protected:
 
     /**
        Determine if a port name is connected to any links
+
+       @param name Name of the port
+
+       @return True if port is connected, false otherwise
     */
     bool isPortConnected(const std::string& name) const;
 
     /**
        Configure a Link
 
-       @param name - Port Name on which the link to configure is attached.
+       @param name Port Name on which the link to configure is attached.
 
-       @param time_base - Time Base of the link provided as either a std::string, SST::UnitAlgebra, or
+       @param timebase Timebase of the link provided as either a std::string, SST::UnitAlgebra, or
        SST::TimeConverter
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    Link* configureLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr)
+    Link* configureLink(const std::string& name, TimeConverter timebase, Event::HandlerBase* handler = nullptr)
     {
-        return configureLink_impl(name, time_base.getFactor(), handler);
+        return configureLink_impl(name, timebase.getFactor(), handler);
     }
 
     /**
        Configure a Link
 
-       @param name - Port Name on which the link to configure is attached.
+       @param name Port Name on which the link to configure is attached.
 
-       @param time_base - Time Base of the link.  If nullptr is passed in, then it will use the Component
+       @param timebase Timebase of the link.  If nullptr is passed in, then it will use the Component
        defaultTimeBase
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
      */
 
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'configureLink(const std::string& name, TimeConverter "
-        "time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    Link* configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+        "timebase, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    Link* configureLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler = nullptr);
 
     /**
        Configure a Link
 
-       @param name - Port Name on which the link to configure is attached.
+       @param name Port Name on which the link to configure is attached.
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
      */
@@ -438,43 +442,43 @@ protected:
     /**
        Configure a SelfLink  (Loopback link)
 
-       @param name - Name of the self-link port
+       @param name Name of the self-link port
 
-       @param time_base - Time Base of the link.  If nullptr is passed in, then it will use the Component
+       @param timebase Timebase of the link.  If nullptr is passed in, then it will use the Component
        defaultTimeBase
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
-                 "TimeConverter time_base, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    Link* configureSelfLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
+                 "TimeConverter timebase, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
+    Link* configureSelfLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler = nullptr);
 
     /**
        Configure a SelfLink  (Loopback link)
 
-       @param name - Name of the self-link port
+       @param name Name of the self-link port
 
-       @param time_base - Time Base of the link.  Timebase can be a std::string, SST::UnitAlgebra or SST::TimeConverter
+       @param timebase Timebase of the link.  Timebase can be a std::string, SST::UnitAlgebra or SST::TimeConverter
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    Link* configureSelfLink(const std::string& name, TimeConverter time_base, Event::HandlerBase* handler = nullptr)
+    Link* configureSelfLink(const std::string& name, TimeConverter timebase, Event::HandlerBase* handler = nullptr)
     {
         addSelfLink(name);
-        return configureLink(name, time_base, handler);
+        return configureLink(name, timebase, handler);
     }
 
 
     /**
        Configure a SelfLink (Loopback link) that uses the (Sub)Component's defaultTimeBase
 
-       @param name - Name of the self-link port
+       @param name Name of the self-link port
 
-       @param handler - Optional Handler to be called when an Event is received
+       @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
@@ -482,24 +486,34 @@ protected:
 
 
     /**
-       Registers a clock for this component.  @param tc TimeConverter object specifying the clock frequency.  May be
-       specified as a TimeConverter, std::string or UnitAlgebra
+       Registers a clock for this component.
+
+       @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
+       or UnitAlgebra
 
        @param handler Pointer to Clock::HandlerBase which is to be invoked at the specified interval
 
-       @param regAll Should this clock period be used as the default time base for all of the links connected to this
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
 
-       @return the TimeConverter object representing the clock frequency
+       @return The TimeConverter object representing the clock frequency
     */
-    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool regAll = true);
+    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all = true);
     [[deprecated(
         "Use of shared TimeConverter objects is deprecated. Use 'registerClock(TimeConverter tc, Clock::HandlerBase* "
-        "handler, bool regAll)' (i.e., no TimeConverter pointer) instead.")]]
-    TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll = true);
+        "handler, bool reg_all)' (i.e., no TimeConverter pointer) instead.")]]
+    TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all = true);
 
     /**
        Removes a clock handler from the component
+
+       NOTE: This operation needs to search the list until it finds the specified handler, which can be a slow operation
+       for long lists.  Consider using the return value from the clock handler to control whether a handler is removed
+       from the list or not.
+
+       @param tc TimeConverter representing the period of the clock
+
+       @param handler Handler to remove from the list
     */
     void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
     [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'unregisterClock(TimeConverter tc, "
@@ -509,7 +523,7 @@ protected:
     /**
        Reactivates an existing Clock and Handler
 
-       @return time of next time clock handler will fire
+       @return Time of next time clock handler will fire
 
        Note: If called after the simulation run loop (e.g., in finish() or complete()), will return the next time of the
        clock past when the simulation ended. There can be a small lag between simulation end and detection of simulation
@@ -534,17 +548,17 @@ protected:
     Cycle_t getNextClockCycle(TimeConverter* freq);
 
     /**
-       Registers a default time base for the component and optionally
+       Registers a default timebase for the component and optionally
        sets the the component's links to that timebase. Useful for
        components which do not have a clock, but would like a default
        timebase.
 
        @param base Frequency for the clock in SI units
 
-       @param regAll Should this clock period be used as the default time base for all of the links connected to this
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
     */
-    TimeConverter* registerTimeBase(const std::string& base, bool regAll = true);
+    TimeConverter* registerTimeBase(const std::string& base, bool reg_all = true);
 
     TimeConverter* getTimeConverter(const std::string& base) const;
     TimeConverter* getTimeConverter(const UnitAlgebra& base) const;
@@ -577,19 +591,31 @@ private:
 
 
     /**
-       Handles the profile points, default time base, handler tracking and checkpointing.
+       Handles the profile points, default timebase, handler tracking and checkpointing.
+
+       @param tc TimeConverter representing the period of the clock
+
+       @param handler Handler to add to the list
+
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
+       component
      */
-    void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool regAll);
+    void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all);
 
     /**
         Handles default timebase setup
+
+        @param name Name of the port on which to configure the link
+
+        @param timebase Default timebase for the Link
+
+        @param handler Handler to call on event delivery.  If no handler is provided, this will be a polling link
     */
-    Link* configureLink_impl(const std::string& name, SimTime_t time_base, Event::HandlerBase* handler = nullptr);
+    Link* configureLink_impl(const std::string& name, SimTime_t timebase, Event::HandlerBase* handler = nullptr);
 
     /**
-       createStatistic Helper function used to create an enabled statistic. For explicitly-enabled
-       statistics, this must be called on the parent component. For enable-all, it can be called on the enabling
-       component.
+       Helper function used to create an enabled statistic. For explicitly-enabled statistics, this must be called on
+       the parent component. For enable-all, it can be called on the enabling component.
 
        @param cpp_params Any parameters given in C++ specific to this statistic
 
@@ -749,7 +775,7 @@ protected:
     /**
        Called by the Components and Subcomponent to perform a statistic Output.
 
-       @param stat - Pointer to the statistic.
+       @param stat Pointer to the statistic.
     */
     void performStatisticOutput(Statistics::StatisticBase* stat);
 
@@ -768,14 +794,14 @@ protected:
 
        This function will register a profiling point.
 
-       @param point Point to register
+       @param point_name Name of point to register
 
        @return Either a pointer to a created T::ProfilePoint or nullptr if not enabled.
     */
     template <typename T>
-    typename T::ProfilePoint* registerProfilePoint(const std::string& pointName)
+    typename T::ProfilePoint* registerProfilePoint(const std::string& point_name)
     {
-        std::string full_point_name = getType() + "." + pointName;
+        std::string full_point_name = getType() + "." + point_name;
         auto        tools           = getComponentProfileTools(full_point_name);
         if ( tools.size() == 0 ) return nullptr;
 
@@ -785,9 +811,9 @@ protected:
             if ( nullptr == tool ) {
                 //  Not the right type, fatal
                 fatal(CALL_INFO_LONG, 1, "ERROR: wrong type of profiling tool for profiling point %s)\n",
-                    pointName.c_str());
+                    point_name.c_str());
             }
-            ret->registerProfilePoint(tool, pointName, getId(), getName(), getType());
+            ret->registerProfilePoint(tool, point_name, getId(), getName(), getType());
         }
         return ret;
     }
@@ -799,7 +825,7 @@ protected:
 
        @param params Parameters the module should use for configuration
 
-       @return handle to new instance of module, or nullptr on failure.
+       @return Handle to new instance of module, or nullptr on failure.
     */
     template <class T, class... ARGS>
     T* loadModule(const std::string& type, Params& params, ARGS... args)
@@ -824,7 +850,7 @@ protected:
     /**
        Check to see if a given element type is loadable with a particular API
 
-       @param name - Name of element to check in lib.name format
+       @param name Name of element to check in lib.name format
 
        @return True if loadable as the API specified as the template parameter
     */
@@ -840,7 +866,7 @@ protected:
        only check slot index 0.  If you need to check other slots,
        please use the SubComponentSlotInfo.
 
-       @param slot_name - Name of slot to check
+       @param slot_name Name of slot to check
 
        @return True if loadable as the API specified as the template parameter
     */
@@ -1030,7 +1056,7 @@ private:
 
        @param stat_sub_id
 
-       @return that matching stat if the stat already was created for the given ID, otherwise nullptr
+       @return That matching stat if the stat already was created for the given ID, otherwise nullptr
     */
     Statistics::StatisticBase* createExplicitlyEnabledStatistic(SST::Params& params, StatisticId_t id,
         const std::string& name, const std::string& stat_sub_id, StatCreateFunction create);
@@ -1192,7 +1218,7 @@ private:
     /**
        Check for Primary state
 
-       @return true if component_state_ includes Primary, false otherwise
+       @return True if component_state_ includes Primary, false otherwise
     */
     bool isStatePrimary()
     {
@@ -1202,7 +1228,7 @@ private:
     /**
        Check for DoNotEndSim state. This state is mutually exclusive with OKToEndSim
 
-       @return true if component_state_ includes DoNotEndSim, false otherwise
+       @return True if component_state_ includes DoNotEndSim, false otherwise
     */
     bool isStateDoNotEndSim()
     {
@@ -1212,7 +1238,7 @@ private:
     /**
        Check for OKToEndSim state. This state is mutually exclusive with DoNotEndSim
 
-       @return true if component_state_ includes OKToEndSim
+       @return True if component_state_ includes OKToEndSim
     */
     bool isStateOKToEndSim()
     {
@@ -1222,7 +1248,7 @@ private:
     /**
        Check for Extension state
 
-       @return true if component_state_ includes Extension, false otherwise
+       @return True if component_state_ includes Extension, false otherwise
     */
     bool isExtension()
     {
@@ -1433,7 +1459,7 @@ public:
        Create all user defined subcomponents (defined in input file to SST run) for the slot.
 
        @param vec Vector of T* that will hold the pointers to the new subcomponents.  If an index is not occupied, a
-       nullptr will be put in it's place.  All components will be added to the end of the vector, so index N will be at
+       nullptr will be put in its place.  All components will be added to the end of the vector, so index N will be at
        vec.length() + N, where vec.length() is the length of the vector when it is passed to the call.
 
        @param share_flags Share flags to be used by subcomponent

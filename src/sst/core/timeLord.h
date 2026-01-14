@@ -65,9 +65,9 @@ public:
     /**
        Get the global TimeBase as a UnitAlgebra
 
-       @return Time Base of the TimeLord
+       @return Timebase of the TimeLord
     */
-    UnitAlgebra getTimeBase() const { return timeBase_; }
+    UnitAlgebra getTimeBase() const { return timebase_; }
 
     /**
        Get the TimeConverter representing a nanosecond
@@ -106,7 +106,7 @@ private:
 
     friend int ::main(int argc, char** argv);
 
-    void init(const std::string& timeBaseString);
+    void init(const std::string& timebase_string);
 
     // Needed by the simulator to turn minPart back into a
     // TimeConverter object.
@@ -126,12 +126,12 @@ private:
     bool                 initialized_;
     std::recursive_mutex slock_;
 
-    std::string        timeBaseString_;
-    TimeConverterMap_t tcMap_;
-    UnitAlgebra        timeBase_;
+    std::string        timebase_string_;
+    TimeConverterMap_t tc_map_;
+    UnitAlgebra        timebase_;
 
     // double sec_factor;
-    StringToTCMap_t parseCache_;
+    StringToTCMap_t parse_cache_;
 
     TimeConverter* nano_;
     TimeConverter* micro_;
