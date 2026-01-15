@@ -621,20 +621,20 @@ SyncManager::execute()
 #if 0
                 if ( sig_alrm ) real_time_->performSignal(sig_alrm);
 #else
-                if (sig_alrm) {
-                    //out.output("skk:syncmgr:execute: T%d: in sigalrm\n", rank_.thread);
+                if ( sig_alrm ) {
+                    // out.output("skk:syncmgr:execute: T%d: in sigalrm\n", rank_.thread);
                     real_time_->performSignal(sig_alrm);
                 }
 #endif
             }
 
-            // Check local checkpoint generate flag and set shared generate if needed. 
-            if (checkpoint_->getCheckpoint() == true) {
+            // Check local checkpoint generate flag and set shared generate if needed.
+            if ( checkpoint_->getCheckpoint() == true ) {
                 ckpt_generate_.store(1);
             }
             // Ensure everyone has written the mask before updating local generate_
-            ic_barrier_.wait();  
-            if (ckpt_generate_.load()) {
+            ic_barrier_.wait();
+            if ( ckpt_generate_.load() ) {
                 checkpoint_->setCheckpoint();
             }
             next_checkpoint_time = checkpoint_->check(getDeliveryTime());

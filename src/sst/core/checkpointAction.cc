@@ -217,7 +217,7 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
         if ( r == rank_.rank ) {
             // If this is my rank go ahead
             for ( uint32_t t = 0; t < num_ranks.thread; ++t ) {
-                
+
                 // If this is my thread go ahead
                 if ( t == rank_.thread ) {
                     sim->checkpoint_append_registry(directory + "/" + registry_name, filename);
@@ -256,7 +256,7 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 // SyncManager check whether a checkpoint needs to be generated
 SimTime_t
 CheckpointAction::check(SimTime_t current_time)
-{ 
+{
 #if 0
     Simulation_impl* sim = Simulation_impl::getSimulation();
     sim->getSimulationOutput().output(
@@ -267,7 +267,7 @@ CheckpointAction::check(SimTime_t current_time)
     // initiated.  This will also handle the case where both a sim and
     // real-time trigger happened at the same time
     if ( (current_time == next_sim_time_) || generate_ ) {
-        Simulation_impl* sim = Simulation_impl::getSimulation();  
+        Simulation_impl* sim = Simulation_impl::getSimulation();
         createCheckpoint(sim);
         generate_ = false;
         // Only add to the simulation-interval checkpoint time if it
