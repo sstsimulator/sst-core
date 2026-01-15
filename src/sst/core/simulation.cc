@@ -1344,7 +1344,7 @@ Simulation_impl::registerClock(TimeConverter& tc_freq, Clock::HandlerBase* handl
         ce->schedule();
     }
     clockMap[mapKey]->registerHandler(handler);
-    return &tc_freq;
+    return tc_global;
 }
 
 TimeConverter*

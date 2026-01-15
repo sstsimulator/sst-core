@@ -62,7 +62,7 @@ public:
 
        @param time Time to base the TimeConverter on
      */
-    TimeConverter(const std::string& time); // Implmenented in timeLord.cc
+    TimeConverter(const std::string& time); // Implemented in timeLord.cc
 
     /**
        Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports
@@ -70,7 +70,7 @@ public:
 
        @param time Time to base the TimeConverter on
      */
-    TimeConverter(const UnitAlgebra& time); // Implmenented in timeLord.cc
+    TimeConverter(const UnitAlgebra& time); // Implemented in timeLord.cc
 
     /**
        Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports

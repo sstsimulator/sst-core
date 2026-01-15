@@ -229,6 +229,8 @@ public:
 
     /**
        Return the simulated time since the simulation began in the default timebase
+
+       @return Current simulation time in units of the default timebase for the object
     */
     inline SimTime_t getCurrentSimTime() const { return getCurrentSimTime(my_info_->defaultTimeBase); }
 
@@ -536,10 +538,14 @@ protected:
     Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
 
     /**
-       Returns the next Cycle that the TimeConverter would fire If called prior to the simulation run loop, next Cycle
+       Returns the next Cycle that the TimeConverter would fire. If called prior to the simulation run loop, next Cycle
        is 0.  If called after the simulation run loop completes (e.g., during complete() or finish()), next Cycle is one
        past the end time of the simulation. See Note in reregisterClock() for additional guidance when calling this
        function after simulation ends.
+
+       @param freq Frequency of the clock
+
+       @return Cycle count that will be passed into the next call to this clock's handler functions
     */
     Cycle_t getNextClockCycle(TimeConverter freq);
     [[deprecated(
@@ -599,7 +605,7 @@ private:
 
        @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
-     */
+    */
     void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all);
 
     /**
