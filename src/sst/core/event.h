@@ -210,9 +210,9 @@ private:
        local links, delivery_info contains the delivery functor.
        @return void
      */
-    inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
+    inline void setDeliveryInfo(uint32_t order_tag, uintptr_t delivery_info)
     {
-        setOrderTag(tag);
+        setOrderTag(order_tag);
         this->delivery_info = delivery_info;
     }
 
@@ -227,9 +227,6 @@ private:
 
     /** Gets the link id used for delivery.  For use by SST Core only */
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
-
-    /** Gets the link id associated with this event.  For use by SST Core only */
-    inline LinkId_t getTag() const { return getOrderTag(); }
 
 
     /** Holds the delivery information.  This is stored as a

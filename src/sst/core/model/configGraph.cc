@@ -204,8 +204,8 @@ ConfigGraph::postCreationCleanup()
     // Need to assign the link delivery order.  This is done
     // alphabetically by link name. To save memory, we'll sort links_
     // by name, then sort it back by link_id
-    std::sort(links_.begin(), links_.end(),
-        [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
+    // std::sort(links_.begin(), links_.end(),
+    //     [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
 
     LinkId_t count = 1;
     for ( auto* link : links_ ) {
@@ -213,7 +213,7 @@ ConfigGraph::postCreationCleanup()
         count++;
     }
 
-    links_.sort();
+    // links_.sort();
 
     /* Force component / statistic registration for Group stats */
     for ( auto& cfg : getStatGroups() ) {

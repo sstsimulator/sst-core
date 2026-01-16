@@ -63,7 +63,7 @@ protected:
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
     friend class Component;
-    ImplementSerializable(SST::SubComponent)
+    ImplementSerializable(SST::SubComponent);
 };
 
 } // namespace SST

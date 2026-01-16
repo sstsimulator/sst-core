@@ -61,6 +61,10 @@ using volts  = double;
 #define UNLIKELY(x) __builtin_expect((int)(x), 0)
 #endif
 
+/* Template to get the maximum value of a type */
+template <typename T>
+inline constexpr T type_max = std::numeric_limits<T>::max();
+
 enum class SimulationRunMode {
     UNKNOWN, /*!< Unknown mode - Invalid for running */
     INIT,    /*!< Initialize-only.  Useful for debugging initialization and graph generation */

@@ -127,6 +127,7 @@ public:
     friend class Simulation_impl;
     friend class SyncManager;
     friend class ComponentInfo;
+    friend class BaseComponent;
 
     ~Link();
 
@@ -245,15 +246,15 @@ public:
      */
     TimeConverter* getDefaultTimeBase();
 
-    /** Return the default Time Base for this link
-     * @return the default Time Base for this link
-     */
-    const TimeConverter* getDefaultTimeBase() const;
-
     /** Return the ID of this link
      * @return the unique ID for this link
      */
     LinkId_t getId() { return tag; }
+
+    /** Return the default Time Base for this link
+     * @return the default Time Base for this link
+     */
+    const TimeConverter* getDefaultTimeBase() const;
 
     /** Send data during the init() or complete() phase.
      * @param data event to send
@@ -294,6 +295,21 @@ protected:
        Set the delivery_info for the link
      */
     void setDeliveryInfo(uintptr_t info) { delivery_info = info; }
+
+    /**
+       Set the tag field for event link ordering
+     */
+    void setTag(uint32_t new_tag)
+    {
+        if ( tag != type_max<uint32_t> ) pair_link->tag = new_tag;
+
+        // Interleaved links
+        // pair_link->tag = new_tag;
+
+        // Ordered SelfLinks
+        // if ( tag != type_max<uint32_t> ) pair_link->tag = new_tag;
+        // else pair_link->tag = 0x80000000 | new_tag;
+    }
 
     /** Send an event over the link with additional delay. Sends an event
      * over a link with an additional delay specified with a
@@ -362,7 +378,7 @@ private:
     SimTime_t& current_time;
     Type_t     type;
     Mode_t     mode;
-    LinkId_t   tag;
+    uint32_t   tag;
 
     /** Create a new link with a given tag
 
@@ -376,7 +392,7 @@ private:
         value used for enforce_link_order (if that feature is
         enabled).
      */
-    explicit Link(LinkId_t tag);
+    explicit Link(uint32_t tag);
 
     Link(const Link& l);
 
