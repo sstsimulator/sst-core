@@ -1344,7 +1344,7 @@ Simulation_impl::registerClock(TimeConverter& tc_freq, Clock::HandlerBase* handl
         ce->schedule();
     }
     clockMap[mapKey]->registerHandler(handler);
-    return &tc_freq;
+    return tc_global;
 }
 
 TimeConverter*
@@ -1894,7 +1894,7 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 #define WR(var) fs_reg << #var << " = " << var << std::endl;
     WR(num_ranks.rank);
     WR(num_ranks.thread);
-    WR(timeLord.timeBaseString);
+    WR(timeLord.timebase_string_);
     WR(output_directory);
     std::string output_prefix = sim_output.getPrefix();
     WR(output_prefix);
