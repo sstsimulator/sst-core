@@ -90,12 +90,16 @@ WatchPoint::ShutdownWPAction::invokeAction(WatchPoint* wp)
     return;
 }
 
-WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
+WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj,
+    Core::Serialization::ObjectMap* noWatchObjMap) :
     Clock::HandlerBase::AttachPoint(),
     Event::HandlerBase::AttachPoint(),
     name_(name),
-    wpIndex(index)
+    wpIndex(index),
+    noWatchObjMap_(noWatchObjMap)
 {
+    // TODO explore how we may refresh containers to support watchpoints
+    assert(noWatchObjMap == nullptr);
     addComparison(obj);
 }
 
@@ -447,6 +451,14 @@ void
 WatchPoint::check()
 {
     bool result = false;
+
+#if 0
+    //TODO if (noWatchObjMap_.dirty()...)
+    if (noWatchObjMap_) {
+        noWatchObjMap_->refresh();
+        // TODO update references in watchpoints
+    }
+#endif
 
     if ( cmpObjects_[0]->compare() ) {
         result = true;

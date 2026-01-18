@@ -509,6 +509,12 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
             return false;
         }
 
+        // Check if we are leaving the 'nowatch' object
+        if ( !obj_->isWatchable() ) {
+            assert(parent->isWatchable()); // development paranoia check
+            nowatch_objmap = nullptr;
+        }
+
         // See if this is the top level component, and if so, set it to nullptr
         if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
 
@@ -543,6 +549,10 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
             dynamic_cast<Core::Serialization::ObjectMapDeferred<BaseComponent>*>(obj_);
         if ( base_comp ) base_comp_ = base_comp;
     }
+
+    // Check for highest level non-watchable object map
+    if ( nullptr == nowatch_objmap && !new_obj->isWatchable() ) nowatch_objmap = new_obj;
+
     return true;
 }
 
@@ -1253,6 +1263,12 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 bool
 SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
 {
+
+    if ( nowatch_objmap ) {
+        printf("Setting a watchpoint within a container currently not supported\n");
+        return false;
+    }
+
     size_t      index = 1;
     std::string name  = "";
 
@@ -1268,7 +1284,11 @@ SimpleDebugger::cmd_watch(std::vector<std::string>& tokens)
             return false;
         }
         size_t wpIndex = watch_points_.size();
-        auto*  pt      = new WatchPoint(wpIndex, name, c);
+#if 0
+        auto*  pt      = new WatchPoint(wpIndex, name, c, nowatch_objmap);
+#else
+        auto* pt = new WatchPoint(wpIndex, name, c, nullptr);
+#endif
 
 #if 0 // watch variables currently don't trace, but they could automatically
       // trace test vars
