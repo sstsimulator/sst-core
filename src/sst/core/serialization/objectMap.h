@@ -14,6 +14,9 @@
 
 #include "sst/core/from_string.h"
 #include "sst/core/warnmacros.h"
+#define SST_INCLUDING_SERIALIZE_H
+#include "sst/core/serialization/impl/serialize_utility.h"
+#undef SST_INCLUDING_SERIALIZE_H
 
 #include <cassert>
 #include <cctype>
@@ -29,6 +32,8 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <queue>
+#include <stack>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -486,6 +491,14 @@ public:
        otherwise
      */
     virtual bool isContainer() const { return false; }
+
+    /**
+       Check to see if this ObjectMap can be used with watchpoints
+
+       @return true if this ObjectMap supports watchpoints, false
+       otherwise
+     */
+    virtual bool isWatchable() const { return true; }
 
     /**
        Destructor.  NOTE: delete should not be called directly on
@@ -1425,7 +1438,13 @@ public:
     explicit ObjectMapContainer(T* addr) :
         addr_(addr)
     {}
-    bool        isContainer() const final override { return true; }
+    bool isContainer() const final override { return true; }
+    bool isWatchable() const final override
+    {
+        // This is equivalenet to 'is_adapter_v' defined in serialize_adapter.h
+        return !(is_same_type_template_v<T, std::stack> || is_same_type_template_v<T, std::queue> ||
+                 is_same_type_template_v<T, std::priority_queue>);
+    }
     std::string getType() const override { return demangle_name(typeid(T).name()); }
     void*       getAddr() const override { return addr_; }
     void        refresh() override

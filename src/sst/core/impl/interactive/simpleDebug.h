@@ -176,6 +176,10 @@ private:
     // Keep a pointer to the ObjectMap for the top level Component
     SST::Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp_ = nullptr;
 
+    // Keep a pointer to the ObjectMap for the first container object. Manipulating
+    // containers can cause internal references to become invalidated requiring a refresh
+    SST::Core::Serialization::ObjectMap* nowatch_objmap = nullptr;
+
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
     bool                                                clear_watchlist();

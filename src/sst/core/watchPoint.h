@@ -124,7 +124,8 @@ public:
     }; // class ShutdownWPAction
 
     // Construction
-    WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj);
+    WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj,
+        Core::Serialization::ObjectMap* noWatchObjMap = nullptr);
     ~WatchPoint();
 
     // Inherited from both Event and Clock handler AttachPoints.
@@ -206,6 +207,8 @@ private:
     HANDLER                                                triggerHandler = HANDLER::NONE;
     bool                                                   reset_         = false;
     WPAction*                                              wpAction;
+    [[maybe_unused]]
+    Core::Serialization::ObjectMap* noWatchObjMap_ = nullptr; // TODO
 
     void     setBufferReset();
     void     check();
