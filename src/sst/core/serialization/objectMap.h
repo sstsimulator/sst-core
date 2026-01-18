@@ -32,6 +32,8 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <queue>
+#include <stack>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
