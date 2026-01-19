@@ -207,11 +207,11 @@ ConfigGraph::postCreationCleanup()
     // std::sort(links_.begin(), links_.end(),
     //     [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
 
-    LinkId_t count = 1;
-    for ( auto* link : links_ ) {
-        link->order = count;
-        count++;
-    }
+    // LinkId_t count = 1;
+    // for ( auto* link : links_ ) {
+    //     link->order = count;
+    //     count++;
+    // }
 
     // links_.sort();
 
