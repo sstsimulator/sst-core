@@ -190,8 +190,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
                 if ( 0 == stat(full_path, &sb) ) {
                     // File found, record error
                     error_msgs.emplace_back("SST-DL: Loading failed for ");
-                    error_msgs.back() =
-                        error_msgs.back() + std::string(full_path) + ", error:\n" + std::string(dlerror());
+                    error_msgs.back() += full_path;
+                    error_msgs.back() += ", error:\n";
+                    error_msgs.back() += dlerror();
                 }
             }
         }
@@ -229,8 +230,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
                 if ( 0 == stat(full_path, &sb) ) {
                     // File found, record error
                     error_msgs.emplace_back("SST-DL: Loading failed for ");
-                    error_msgs.back() =
-                        error_msgs.back() + std::string(full_path) + ", error: " + std::string(dlerror());
+                    error_msgs.back() += full_path;
+                    error_msgs.back() += ", error: ";
+                    error_msgs.back() += dlerror();
                 }
             }
         }

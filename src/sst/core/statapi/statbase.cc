@@ -119,12 +119,10 @@ std::string
 StatisticBase::buildStatisticFullName(
     const std::string& comp_name, const std::string& stat_name, const std::string& stat_sub_id)
 {
-    std::string stat_full_name_rtn;
-
-    stat_full_name_rtn = comp_name + ".";
+    std::string stat_full_name_rtn = comp_name + ".";
     stat_full_name_rtn += stat_name;
     if ( stat_sub_id != "" ) {
-        stat_full_name_rtn += ".";
+        stat_full_name_rtn += '.';
         stat_full_name_rtn += stat_sub_id;
     }
     return stat_full_name_rtn;

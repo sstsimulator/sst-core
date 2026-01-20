@@ -1008,7 +1008,8 @@ Simulation_impl::run()
 {
 #if SST_PERFORMANCE_INSTRUMENTING
     std::string filename = "rank_" + std::to_string(my_rank.rank);
-    filename += "_thread_" + std::to_string(my_rank.thread);
+    filename += "_thread_";
+    filename += std::to_string(my_rank.thread);
     fp = fopen(filename.c_str(), "w");
 #endif
 
@@ -2069,7 +2070,10 @@ Simulation_impl::restart()
         for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
             if ( !serial_restart_ && (my_rank.rank != r || my_rank.thread != t) ) continue;
             search_str = "** (";
-            search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
+            search_str += std::to_string(r);
+            search_str += ':';
+            search_str += std::to_string(t);
+            search_str += "): ";
             while ( std::getline(fs, line) ) {
                 size_t pos = line.find(search_str);
                 if ( pos == 0 ) {
@@ -2218,7 +2222,7 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 void
 Simulation_impl::printSimulationState()
 {
-    std::string tmp_str = "";
+    std::string tmp_str;
     sim_output.output("Printing simulation state\n");
 
     sim_output.output("num_ranks: %" PRIu32 ", %" PRIu32 "\n", num_ranks.rank, num_ranks.thread);
@@ -2228,9 +2232,10 @@ Simulation_impl::printSimulationState()
     sim_output.output("minPart: %" PRIu64 "\n", minPart);
     sim_output.output("minPartTC: %" PRIu64 "\n", minPartTC.getFactor());
     for ( auto i : interThreadLatencies ) {
-        tmp_str = tmp_str + " " + std::to_string(i);
+        tmp_str += ' ';
+        tmp_str += std::to_string(i);
     }
-    tmp_str += " ";
+    tmp_str += ' ';
     sim_output.output("interThreadLatencies: [%s]\n", tmp_str.c_str());
     sim_output.output("interThreadMinlatency: %" PRIu64 "\n", interThreadMinLatency);
     sim_output.output("endSim: %s\n", endSim ? "true" : "false");

@@ -262,7 +262,8 @@ coreTestSharedObjectsComponent::setup()
                     out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n");
                 }
                 if ( checkpoint ) {
-                    arrstr += std::to_string(x) + " ";
+                    arrstr += std::to_string(x);
+                    arrstr += ' ';
                 }
             }
             if ( checkpoint ) {
@@ -302,7 +303,11 @@ coreTestSharedObjectsComponent::setup()
                     out.fatal(CALL_INFO, 100, "ERROR: SharedArray data is messed up\n");
                 }
                 if ( checkpoint ) {
-                    mapstr += "(" + std::to_string(x.first) + "," + std::to_string(x.second) + ") ";
+                    mapstr += '(';
+                    mapstr += std::to_string(x.first);
+                    mapstr += ',';
+                    mapstr += std::to_string(x.second);
+                    mapstr += ") ";
                 }
             }
             if ( checkpoint ) {
@@ -321,7 +326,8 @@ coreTestSharedObjectsComponent::setup()
                     out.fatal(CALL_INFO, 100, "ERROR: SharedSet data is messed up\n");
                 }
                 if ( checkpoint ) {
-                    setstr += std::to_string(x.key) + " ";
+                    setstr += std::to_string(x.key);
+                    setstr += ' ';
                 }
             }
             if ( checkpoint ) {
@@ -342,7 +348,8 @@ coreTestSharedObjectsComponent::finish()
     if ( test_array ) {
         std::string arrstr;
         for ( auto x : array ) {
-            arrstr += std::to_string(x) + " ";
+            arrstr += std::to_string(x);
+            arrstr += ' ';
         }
         out.output("@ Finish, Array = %s\n", arrstr.c_str());
     }
@@ -356,14 +363,19 @@ coreTestSharedObjectsComponent::finish()
     else if ( test_map ) {
         std::string mapstr;
         for ( auto x : map ) {
-            mapstr += "(" + std::to_string(x.first) + "," + std::to_string(x.second) + ") ";
+            mapstr += '(';
+            mapstr += std::to_string(x.first);
+            mapstr += ',';
+            mapstr += std::to_string(x.second);
+            mapstr += ") ";
         }
         out.output("@ Finish, Map = %s\n", mapstr.c_str());
     }
     else if ( test_set ) {
         std::string setstr;
         for ( auto x : set ) {
-            setstr += std::to_string(x.key) + " ";
+            setstr += std::to_string(x.key);
+            setstr += ' ';
         }
         out.output("@ Finish, Set = %s\n", setstr.c_str());
     }

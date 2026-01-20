@@ -130,14 +130,14 @@ ComponentInfo::ComponentInfo(
 
     for ( auto sc : ccomp->subComponents ) {
         std::string sub_name(name);
-        sub_name += ":";
+        sub_name += ':';
         sub_name += sc->name;
         // If there is more than one subcomponent in this slot, need
         // to add [index] to the end.
         if ( counts[sc->name] > 1 ) {
-            sub_name += "[";
+            sub_name += '[';
             sub_name += std::to_string(sc->slot_num);
-            sub_name += "]";
+            sub_name += ']';
         }
         subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(sc->id),
             std::forward_as_tuple(sc, sub_name, this, new LinkMap()));

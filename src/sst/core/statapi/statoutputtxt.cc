@@ -88,7 +88,7 @@ StatisticOutputTextBase::startOfSimulation()
         while ( it_v != getFieldInfoArray().end() ) {
             statField = *it_v;
             m_outputBuffer += statField->getStatName();
-            m_outputBuffer += ".";
+            m_outputBuffer += '.';
             m_outputBuffer += statField->getFieldName();
 
             // Increment the iterator
