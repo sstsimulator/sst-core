@@ -136,7 +136,7 @@ public:
         ClockHandlerProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
-    ~ClockHandlerProfileToolTimeHighResolution() {}
+    ~ClockHandlerProfileToolTimeHighResolution() = default;
 
     SST_ELI_EXPORT(ClockHandlerProfileToolTimeHighResolution)
 };
@@ -157,7 +157,7 @@ public:
         ClockHandlerProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
-    ~ClockHandlerProfileToolTimeSteady() {}
+    ~ClockHandlerProfileToolTimeSteady() = default;
 
     SST_ELI_EXPORT(ClockHandlerProfileToolTimeSteady)
 };

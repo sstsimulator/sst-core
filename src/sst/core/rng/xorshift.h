@@ -82,7 +82,7 @@ public:
     /**
         Destructor for Xorshift
     */
-    ~XORShiftRNG();
+    ~XORShiftRNG() = default;
 
     /**
      * Serialization function for checkpoint

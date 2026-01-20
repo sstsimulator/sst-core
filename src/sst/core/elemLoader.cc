@@ -137,8 +137,6 @@ ElemLoader::ElemLoader(const std::string& searchPaths) :
     }
 }
 
-ElemLoader::~ElemLoader() {}
-
 void
 ElemLoader::updateSearchPaths(const std::string& paths)
 {

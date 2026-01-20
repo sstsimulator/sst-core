@@ -74,14 +74,14 @@ public:
      * @param multiplier Value by which to multiply to get to this unit
      */
     Units(const std::string& units, sst_big_num& multiplier);
-    Units() {}
-    virtual ~Units() {}
+    Units()          = default;
+    virtual ~Units() = default;
 
     /** Copy constructor */
     Units(const Units&) = default;
 
     /** Assignment operator */
-    Units& operator=(const Units& v);
+    Units& operator=(const Units& v) = default;
     /** Self-multiplication operator */
     Units& operator*=(const Units& v);
     /** Self-division operator */

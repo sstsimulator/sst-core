@@ -176,7 +176,7 @@ public:
         EventHandlerProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
-    ~EventHandlerProfileToolTimeHighResolution() {}
+    ~EventHandlerProfileToolTimeHighResolution() = default;
 
     SST_ELI_EXPORT(EventHandlerProfileToolTimeHighResolution)
 };
@@ -197,7 +197,7 @@ public:
         EventHandlerProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
-    ~EventHandlerProfileToolTimeSteady() {}
+    ~EventHandlerProfileToolTimeSteady() = default;
 
     SST_ELI_EXPORT(EventHandlerProfileToolTimeSteady)
 };

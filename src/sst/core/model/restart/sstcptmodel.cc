@@ -33,9 +33,6 @@ SSTCPTModelDefinition::SSTCPTModelDefinition(
     config_(config)
 {}
 
-SSTCPTModelDefinition::~SSTCPTModelDefinition() {}
-
-
 ConfigGraph*
 SSTCPTModelDefinition::createConfigGraph()
 {

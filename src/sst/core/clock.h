@@ -35,7 +35,7 @@ class Clock : public Action
 public:
     /** Create a new clock with a specified period */
     Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
-    ~Clock();
+    ~Clock() = default; // Handlers are owned by BaseComponent and are deleted there
 
     /**
        Base handler for clock functions.

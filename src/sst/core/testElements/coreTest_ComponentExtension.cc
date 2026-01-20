@@ -232,7 +232,7 @@ coreTestComponentExtMain::coreTestComponentExtMain(ComponentId_t id, Params& par
     primaryComponentDoNotEndSim();
 }
 
-coreTestComponentExtMain::~coreTestComponentExtMain() {}
+coreTestComponentExtMain::~coreTestComponentExtMain() = default;
 
 void
 coreTestComponentExtMain::serialize_order(SST::Core::Serialization::serializer& ser)
