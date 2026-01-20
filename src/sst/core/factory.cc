@@ -656,7 +656,7 @@ Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
 std::pair<std::string, std::string>
 Factory::parseLoadName(const std::string& wholename)
 {
-    std::size_t found = wholename.find_first_of(".");
+    std::size_t found = wholename.find_first_of('.');
     if ( found == std::string::npos ) {
         if ( wholename.empty() ) {
             out.output(CALL_INFO, "Warning: got empty element library. "

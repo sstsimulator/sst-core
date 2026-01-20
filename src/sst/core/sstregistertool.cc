@@ -236,7 +236,7 @@ listModels(int option)
                 // check if the model is valid by confirming it is located in the path registered in the sst config file
                 getline(infile, s); // grab the next line containing the model location
 
-                if ( s.find("/") != std::string::npos ) { // check to see if there is a path
+                if ( s.find('/') != std::string::npos ) { // check to see if there is a path
                     if ( validModel(s) ) {
                         std::cout << count << ". " << std::setw(25) << std::left << strNew << "VALID" << std::endl;
                     }
@@ -300,7 +300,7 @@ sstUnregisterMultiple(std::vector<std::string> elementsArray)
 bool
 validModel(const std::string& s)
 {
-    std::size_t locationStart = s.find("/");
+    std::size_t locationStart = s.find('/');
     std::string str1          = s.substr(locationStart); // grabs the rest of the line from / to the end
 
     struct stat statbuf;

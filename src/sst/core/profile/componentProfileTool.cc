@@ -56,7 +56,7 @@ ComponentProfileTool::getKeyForCodeSegment(
         break;
     case Profile_Level::Component:
         // Get just the component name, no subcomponents
-        key = name.substr(0, name.find(":"));
+        key = name.substr(0, name.find(':'));
         break;
     case Profile_Level::Subcomponent:
         key = name;

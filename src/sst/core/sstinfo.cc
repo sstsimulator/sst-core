@@ -808,7 +808,7 @@ SSTInfoConfig::addFilter(const std::string& name_str)
     std::string name(name_str);
     if ( name.size() > 3 && name.substr(0, 3) == "lib" ) name = name.substr(3);
 
-    size_t dotLoc = name.find(".");
+    size_t dotLoc = name.find('.');
     if ( dotLoc == std::string::npos ) {
         m_filters.insert(std::make_pair(name, ""));
     }
