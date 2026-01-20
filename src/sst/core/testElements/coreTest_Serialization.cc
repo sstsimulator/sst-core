@@ -560,7 +560,7 @@ public:
     explicit pointed_to_class(int val) :
         value(val)
     {}
-    pointed_to_class() {}
+    pointed_to_class() = default;
 
     int  getValue() { return value; }
     void setValue(int val) { value = val; }
@@ -580,7 +580,7 @@ public:
         value(val),
         pointed_to(ptc)
     {}
-    shell() {}
+    shell() = default;
 
     int  getValue() { return value; }
     void setValue(int val) { value = val; }
@@ -658,7 +658,7 @@ struct HandlerTest : public SST::Core::Serialization::serializable
     explicit HandlerTest(int in) :
         value(in)
     {}
-    HandlerTest() {}
+    HandlerTest() = default;
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(value); }
     ImplementSerializable(HandlerTest)
@@ -681,7 +681,7 @@ struct RecursiveSerializationTest : public SST::Core::Serialization::serializabl
     Handler<RecursiveSerializationTest, &RecursiveSerializationTest::call, float>* handler;
     int                                                                            value;
 
-    RecursiveSerializationTest() {}
+    RecursiveSerializationTest() = default;
     explicit RecursiveSerializationTest(int in) :
         value(in)
     {

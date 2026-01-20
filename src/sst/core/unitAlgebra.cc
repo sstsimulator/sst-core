@@ -216,14 +216,6 @@ Units::Units(const std::string& units, sst_big_num& multiplier)
 }
 
 Units&
-Units::operator=(const Units& v)
-{
-    numerator   = v.numerator;
-    denominator = v.denominator;
-    return *this;
-}
-
-Units&
 Units::operator*=(const Units& v)
 {
 

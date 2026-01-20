@@ -82,7 +82,7 @@ public:
         SyncProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
-    ~SyncProfileToolTimeHighResolution() {}
+    ~SyncProfileToolTimeHighResolution() = default;
 
     SST_ELI_EXPORT(SyncProfileToolTimeHighResolution)
 };
@@ -103,7 +103,7 @@ public:
         SyncProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
-    ~SyncProfileToolTimeSteady() {}
+    ~SyncProfileToolTimeSteady() = default;
 
     SST_ELI_EXPORT(SyncProfileToolTimeSteady)
 };
