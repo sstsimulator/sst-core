@@ -53,8 +53,8 @@ RankSyncSerialSkip::RankSyncSerialSkip(RankInfo num_ranks) :
 
 RankSyncSerialSkip::~RankSyncSerialSkip()
 {
-    for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
-        delete i->second.squeue;
+    for ( auto& i : comm_map ) {
+        delete i.second.squeue;
     }
     comm_map.clear();
 
@@ -124,8 +124,8 @@ uint64_t
 RankSyncSerialSkip::getDataSize() const
 {
     size_t count = 0;
-    for ( comm_map_t::const_iterator it = comm_map.begin(); it != comm_map.end(); ++it ) {
-        count += (it->second.squeue->getDataSize() + it->second.local_size);
+    for ( const auto& it : comm_map ) {
+        count += (it.second.squeue->getDataSize() + it.second.local_size);
     }
     return count;
 }

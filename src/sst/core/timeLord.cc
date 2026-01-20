@@ -106,10 +106,8 @@ TimeLord::init(const std::string& timebase_string)
 TimeLord::~TimeLord()
 {
     // Delete all the TimeConverter objects
-    std::map<ComponentId_t, LinkMap*>::iterator it;
-    for ( TimeConverterMap_t::iterator it = tc_map_.begin(); it != tc_map_.end(); ++it ) {
-        delete it->second;
-    }
+    for ( auto& [time, conv] : tc_map_ )
+        delete conv;
     tc_map_.clear();
 
     // Clear the contents of the cache

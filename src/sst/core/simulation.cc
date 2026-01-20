@@ -578,8 +578,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     }
     // Get the minimum latencies for links between the various threads
     interThreadLatencies.resize(num_ranks.thread);
-    for ( size_t i = 0; i < interThreadLatencies.size(); i++ ) {
-        interThreadLatencies[i] = MAX_SIMTIME_T;
+    for ( unsigned long& interThreadLatencie : interThreadLatencies ) {
+        interThreadLatencie = MAX_SIMTIME_T;
     }
 
     interThreadMinLatency      = MAX_SIMTIME_T;
@@ -589,8 +589,7 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         ConfigComponentMap_t comps = graph.getComponentMap();
         ConfigLinkMap_t      links = graph.getLinkMap();
         // Find the minimum latency across a partition
-        for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
-            ConfigLink* clink = *iter;
+        for ( auto clink : links ) {
             // If link is nonlocal, then doesn't affect interthread latencies
             if ( clink->nonlocal ) continue;
 
@@ -670,8 +669,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it, then populate the
     // LinkMaps
-    for ( ConfigComponentMap_t::const_iterator iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
-        ConfigComponent* ccomp = *iter;
+    for ( auto ccomp : graph.comps_ ) {
         if ( ccomp->rank == myRank ) {
             compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
         }
@@ -828,9 +826,7 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
 
 
     // Now, build all the components
-    for ( auto iter = graph.comps_.begin(); iter != graph.comps_.end(); ++iter ) {
-        ConfigComponent* ccomp = *iter;
-
+    for ( auto ccomp : graph.comps_ ) {
         if ( ccomp->rank == myRank ) {
             Component* tmp;
 
@@ -879,8 +875,8 @@ Simulation_impl::initialize()
         if ( my_rank.thread == 0 ) untimed_msg_count = 0;
         initBarrier.wait();
 
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            (*iter)->getComponent()->init(untimed_phase);
+        for ( auto iter : compInfoMap ) {
+            iter->getComponent()->init(untimed_phase);
         }
 
         initBarrier.wait();
@@ -932,8 +928,8 @@ Simulation_impl::complete()
         if ( my_rank.thread == 0 ) untimed_msg_count = 0;
         completeBarrier.wait();
 
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            (*iter)->getComponent()->complete(untimed_phase);
+        for ( auto iter : compInfoMap ) {
+            iter->getComponent()->complete(untimed_phase);
         }
 
         completeBarrier.wait();
@@ -960,8 +956,8 @@ Simulation_impl::setup()
 
     setupBarrier.wait();
 
-    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        (*iter)->getComponent()->setup();
+    for ( auto iter : compInfoMap ) {
+        iter->getComponent()->setup();
     }
 
     setupBarrier.wait();
@@ -1230,8 +1226,8 @@ void
 Simulation_impl::finish()
 {
 
-    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        (*iter)->getComponent()->finish();
+    for ( auto iter : compInfoMap ) {
+        iter->getComponent()->finish();
     }
 
     finishBarrier.wait();
@@ -1275,8 +1271,8 @@ Simulation_impl::printStatus(bool fullStatus)
     if ( fullStatus ) {
         timeVortex->print(out);
         out.output("---- Components: ----\n");
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            (*iter)->getComponent()->printStatus(out);
+        for ( auto iter : compInfoMap ) {
+            iter->getComponent()->printStatus(out);
         }
     }
 }
@@ -1733,8 +1729,7 @@ Simulation_impl::getComponentObjectMap()
     SST::Core::Serialization::ObjectMapClass* obj_map = new SST::Core::Serialization::ObjectMapClass();
     // ser.enable_pointer_tracking();
     // ser.start_mapping(obj_map);
-    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
-        ComponentInfo* compinfo = *comp;
+    for ( auto compinfo : compInfoMap ) {
         // // SST_SER(compinfo->component);
         // sst_map_object(ser, compinfo->component, compinfo->getName().c_str());
         obj_map->addVariable(compinfo->getName(), new SST::Core::Serialization::ObjectMapDeferred<BaseComponent>(
@@ -1976,9 +1971,8 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     component_blob_offsets_.clear();
 
     // Serialize component blobs individually
-    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
+    for ( auto compinfo : compInfoMap ) {
         ser.start_sizing();
-        ComponentInfo* compinfo = *comp;
         SST_SER(compinfo);
         size = ser.size();
         buffer.resize(size);
@@ -2255,9 +2249,9 @@ Simulation_impl::printSimulationState()
     // instanceMap
 
     sim_output.output("\n\nPrinting ComponentInfoMap:\n");
-    for ( auto comp = compInfoMap.begin(); comp != compInfoMap.end(); comp++ ) {
-        (*comp)->test_printComponentInfoHierarchy();
-        (*comp)->getComponent()->printStatus(sim_output);
+    for ( auto comp : compInfoMap ) {
+        comp->test_printComponentInfoHierarchy();
+        comp->getComponent()->printStatus(sim_output);
     }
 
     /*

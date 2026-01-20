@@ -202,15 +202,15 @@ Units::Units(const std::string& units, sst_big_num& multiplier)
     split(s_numerator, "-", tokens);
 
     // Add all the numerators
-    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        addUnit(tokens[i], multiplier, false);
+    for ( const auto& token : tokens ) {
+        addUnit(token, multiplier, false);
     }
     tokens.clear();
     split(s_denominator, "-", tokens);
 
     // Add all the denominators
-    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        addUnit(tokens[i], multiplier, true);
+    for ( const auto& token : tokens ) {
+        addUnit(token, multiplier, true);
     }
     reduce();
 }

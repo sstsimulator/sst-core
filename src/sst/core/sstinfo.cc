@@ -632,8 +632,8 @@ processSSTElementFiles()
 
     // Store info strings for interactive mode
     if ( g_configuration.interactiveEnabled() ) {
-        for ( size_t x = 0; x < g_libInfoArray.size(); x++ ) {
-            g_libInfoArray[x].setAllLibraryInfo();
+        for ( auto& x : g_libInfoArray ) {
+            x.setAllLibraryInfo();
         }
     }
     else {
@@ -789,8 +789,7 @@ SSTInfoConfig::outputUsage()
 {
     using std::cout;
     using std::endl;
-    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
-         << " [options]" << endl;
+    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] " << " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
     cout << "  -v, --version            Print SST Package Release Version\n";
     cout << "  -d, --debug              Enabled debugging messages\n";
@@ -1080,8 +1079,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
 
     os << "================================================================================\n";
-    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
-       << "\n";
+    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")" << "\n";
 
     outputHumanReadable<Component>(os, enableFullElementOutput);
     outputHumanReadable<SubComponent>(os, enableFullElementOutput);

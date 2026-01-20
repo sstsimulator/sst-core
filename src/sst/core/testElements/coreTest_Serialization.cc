@@ -1038,8 +1038,8 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     else if ( test == "array" ) {
         {
             int32_t array_in[10];
-            for ( size_t i = 0; i < 10; ++i )
-                array_in[i] = rng->generateNextInt32();
+            for ( int& i : array_in )
+                i = rng->generateNextInt32();
             passed = checkFixedArraySerializeDeserialize(array_in);
             if ( !passed ) out.output("ERROR: int32_t[10] did not serialize/deserialize properly\n");
         }

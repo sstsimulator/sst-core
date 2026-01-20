@@ -29,9 +29,9 @@ SSTRoundRobinPartition::performPartition(PartitionGraph* graph)
     PartitionComponentMap_t& compMap = graph->getComponentMap();
     RankInfo                 rank(0, 0);
 
-    for ( PartitionComponentMap_t::iterator compItr = compMap.begin(); compItr != compMap.end(); compItr++ ) {
+    for ( auto& compItr : compMap ) {
 
-        (*compItr)->rank = rank;
+        compItr->rank = rank;
 
         rank.rank++;
         if ( rank.rank == world_size.rank ) {

@@ -116,8 +116,8 @@ RankSyncQueue::getData()
     SST_SER(activities);
 
     // Delete all the events
-    for ( unsigned int i = 0; i < activities.size(); i++ ) {
-        delete activities[i];
+    for ( auto& activitie : activities ) {
+        delete activitie;
     }
     activities.clear();
 

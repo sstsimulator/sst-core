@@ -102,8 +102,8 @@ TimeVortexPQBase<TS>::dbg_print(Output& out) const
 
     //  STL's priority_queue does not support iteration.
     const std::vector<Activity*>& act = getContainer();
-    for ( auto it = act.begin(); it != act.end(); it++ ) {
-        (*it)->print("  ", out);
+    for ( auto it : act ) {
+        it->print("  ", out);
     }
 }
 

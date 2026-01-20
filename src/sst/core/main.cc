@@ -164,8 +164,7 @@ dump_partition(ConfigGraph* graph, const RankInfo& size)
                 graph_file << "Rank: " << i << "." << t << " Component List:" << std::endl;
 
                 RankInfo r(i, t);
-                for ( ConfigComponentMap_t::const_iterator j = component_map.begin(); j != component_map.end(); ++j ) {
-                    auto c = *j;
+                for ( auto c : component_map ) {
                     if ( c->rank == r ) {
                         graph_file << "   " << c->name << " (ID=" << c->id << ")" << std::endl;
                         graph_file << "      -> type      " << c->type << std::endl;
@@ -311,10 +310,10 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
 
     // Create a map of extensions to the model that supports them
     std::map<std::string, std::string> extension_map;
-    for ( auto x : models ) {
+    for ( const auto& x : models ) {
         // auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
         auto extensions = SSTModelDescription::getElementSupportedExtensions(x);
-        for ( auto y : extensions ) {
+        for ( const auto& y : extensions ) {
             extension_map[y] = x;
         }
     }

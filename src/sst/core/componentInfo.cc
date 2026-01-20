@@ -197,8 +197,8 @@ ComponentInfo::serialize_comp(SST::Core::Serialization::serializer& ser)
 {
     SST_SER(component);
     SST_SER(link_map);
-    for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
-        it->second.serialize_comp(ser);
+    for ( auto& subComponent : subComponents ) {
+        subComponent.second.serialize_comp(ser);
     }
 }
 

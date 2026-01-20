@@ -928,7 +928,6 @@ BaseComponent::getComponentProfileTools(const std::string& point)
     return sim_->getProfileTool<Profile::ComponentProfileTool>(point);
 }
 
-
 /**** Primary Component API ****/
 
 void

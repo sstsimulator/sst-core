@@ -102,14 +102,13 @@ ConfigShared::getLibPath(bool exclude_ext_paths) const
         std::set<std::string> configGroups = envConfig->getGroupNames();
 
         // iterate over groups of settings
-        for ( auto groupItr = configGroups.begin(); groupItr != configGroups.end(); groupItr++ ) {
-            SST::Core::Environment::EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(*groupItr);
+        for ( const auto& configGroup : configGroups ) {
+            SST::Core::Environment::EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(configGroup);
             std::set<std::string>                           groupKeys    = currentGroup->getKeys();
 
             // find which keys have a LIBDIR at the END of the key we
             // recognize these may house elements
-            for ( auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++ ) {
-                const std::string& key   = *keyItr;
+            for ( const auto& key : groupKeys ) {
                 const std::string& value = currentGroup->getValue(key);
 
                 if ( key.size() >= 6 ) {

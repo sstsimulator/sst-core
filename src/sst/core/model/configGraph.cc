@@ -145,16 +145,16 @@ ConfigGraph::getNumComponentsInMPIRank(uint32_t rank)
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
-        (*iter)->setRank(rank);
+    for ( auto& comp : comps_ ) {
+        comp->setRank(rank);
     }
 }
 
 bool
 ConfigGraph::containsComponentInRank(RankInfo rank)
 {
-    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
-        if ( (*iter)->rank == rank ) return true;
+    for ( auto& comp : comps_ ) {
+        if ( comp->rank == rank ) return true;
     }
     return false;
 }
@@ -238,9 +238,7 @@ ConfigGraph::checkForStructuralErrors()
     // making sure there are components on both sides of the link.
 
     bool found_error = false;
-    for ( ConfigLinkMap_t::iterator iter = links_.begin(); iter != links_.end(); ++iter ) {
-        ConfigLink* clink = *iter;
-
+    for ( auto clink : links_ ) {
         // First check to see if the link is completely unused
         if ( clink->order == 0 ) {
             output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
@@ -264,8 +262,7 @@ ConfigGraph::checkForStructuralErrors()
     // used once
 
     // Loop over all the Components
-    for ( ConfigComponentMap_t::iterator iter = comps_.begin(); iter != comps_.end(); ++iter ) {
-        ConfigComponent* ccomp = *iter;
+    for ( auto ccomp : comps_ ) {
         ccomp->checkPorts();
     }
 
@@ -695,15 +692,11 @@ ConfigGraph::getPartitionGraph()
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap
-    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
-        const ConfigComponent* comp = *it;
-
+    for ( auto comp : comps_ ) {
         pcomps.insert(new PartitionComponent(comp));
     }
 
-    for ( ConfigLinkMap_t::iterator it = links_.begin(); it != links_.end(); ++it ) {
-        const ConfigLink* link = *it;
-
+    for ( auto link : links_ ) {
         const ConfigComponent* comp0 = comps_[COMPONENT_ID_MASK(link->component[0])];
         const ConfigComponent* comp1 = comps_[COMPONENT_ID_MASK(link->component[1])];
 
@@ -726,8 +719,8 @@ ConfigGraph::getCollapsedPartitionGraph()
     PartitionLinkMap_t&      plinks = graph->getLinkMap();
 
     // Mark all Components as not visited
-    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it )
-        (*it)->visited = false;
+    for ( auto& comp : comps_ )
+        comp->visited = false;
 
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
@@ -736,8 +729,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     // Use an ordered set so that when we insert the ids for the group
     // into a SparseVectorMap, we are inserting in order.
     std::set<ComponentId_t> group;
-    for ( ConfigComponentMap_t::iterator it = comps_.begin(); it != comps_.end(); ++it ) {
-        auto comp = *it;
+    for ( auto comp : comps_ ) {
         // If this component ended up in a connected group we already
         // looked at, skip it
         if ( comp->visited ) continue;
@@ -783,16 +775,15 @@ ConfigGraph::getCollapsedPartitionGraph()
     // to the set by passing the ConfigLink into the constructor.
     // This will insert in order since the iterator is from a
     // SparseVectorMap.
-    for ( ConfigLinkMap_t::iterator i = links_.begin(); i != links_.end(); ++i ) {
-        if ( deleted_links.find((*i)->id) == deleted_links.end() ) plinks.insert(*(*i));
+    for ( auto& link : links_ ) {
+        if ( deleted_links.find(link->id) == deleted_links.end() ) plinks.insert(*link);
     }
 
     // Just need to fix up the component fields for the links.  Do
     // this by walking through the components and checking each of it's
     // links to see if it points to something in the group.  If so,
     // change ID to point to super group.
-    for ( PartitionComponentMap_t::iterator i = pcomps.begin(); i != pcomps.end(); ++i ) {
-        PartitionComponent* pcomp = *i;
+    for ( auto pcomp : pcomps ) {
         for ( LinkIdMap_t::iterator j = pcomp->links.begin(); j != pcomp->links.end(); ++j ) {
             PartitionLink& plink = plinks[*j];
             if ( pcomp->group.contains(plink.component[0]) ) plink.component[0] = pcomp->id;
@@ -808,9 +799,7 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
 {
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
 
-    for ( PartitionComponentMap_t::iterator it = pcomps.begin(); it != pcomps.end(); ++it ) {
-        const PartitionComponent* comp = *it;
-
+    for ( auto comp : pcomps ) {
         for ( ComponentIdMap_t::const_iterator c_iter = comp->group.begin(); c_iter != comp->group.end(); ++c_iter ) {
             comps_[*c_iter]->setRank(comp->rank);
         }
@@ -885,16 +874,16 @@ void
 PartitionComponent::print(std::ostream& os, const PartitionGraph* graph) const
 {
     os << "Component " << id << "  ( ";
-    for ( ComponentIdMap_t::const_iterator git = group.begin(); git != group.end(); ++git ) {
-        os << *git << " ";
+    for ( unsigned long git : group ) {
+        os << git << " ";
     }
     os << ")" << std::endl;
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
     os << "  thread = " << rank.thread << std::endl;
     os << "  Links:" << std::endl;
-    for ( LinkIdMap_t::const_iterator it = links.begin(); it != links.end(); ++it ) {
-        graph->getLink(*it).print(os);
+    for ( unsigned int link : links ) {
+        graph->getLink(link).print(os);
     }
 }
 

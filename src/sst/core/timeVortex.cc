@@ -61,8 +61,8 @@ TimeVortex::print(Output& out) const
 
     std::sort(contents.begin(), contents.end(), Activity::less<true, true, true>());
 
-    for ( auto it = contents.begin(); it != contents.end(); it++ ) {
-        (*it)->print("  ", out);
+    for ( auto& content : contents ) {
+        content->print("  ", out);
     }
 }
 

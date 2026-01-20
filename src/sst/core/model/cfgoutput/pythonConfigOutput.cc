@@ -471,8 +471,8 @@ PythonConfigGraphOutput::isMultiLine(const std::string& check) const
 {
     bool isMultiLine = false;
 
-    for ( size_t i = 0; i < check.size(); i++ ) {
-        if ( check.at(i) == '\n' || check.at(i) == '\r' || check.at(i) == '\f' ) {
+    for ( char i : check ) {
+        if ( i == '\n' || i == '\r' || i == '\f' ) {
             isMultiLine = true;
             break;
         }

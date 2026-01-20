@@ -126,8 +126,8 @@ main(int argc, char* argv[])
 
         std::set<std::string> groupKeys = group->getKeys();
 
-        for ( auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++ ) {
-            if ( key == (*keyItr) ) {
+        for ( const auto& groupKey : groupKeys ) {
+            if ( key == groupKey ) {
                 printf("%s\n", group->getValue(key).c_str());
                 keyFound = true;
                 break;
