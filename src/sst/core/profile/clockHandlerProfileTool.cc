@@ -56,7 +56,7 @@ ClockHandlerProfileTool::getKeyForHandler(const AttachPointMetaData& mdata)
         break;
     case Profile_Level::Component:
         // Get just the component name, no subcomponents
-        key = data.comp_name.substr(0, data.comp_name.find(":"));
+        key = data.comp_name.substr(0, data.comp_name.find(':'));
         break;
     case Profile_Level::Subcomponent:
         key = data.comp_name;

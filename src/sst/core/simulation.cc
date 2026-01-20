@@ -503,7 +503,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
     }
 
     // Check for parameters and parse if needed
-    if ( handler.find("(") != std::string::npos ) { // Handler has parameters type(...)
+    if ( handler.find('(') != std::string::npos ) { // Handler has parameters type(...)
         if ( handler.substr(handler.size() - 1, 1) != ")" ) {
             sim_output.fatal(CALL_INFO, 1,
                 "ERROR: Invalid format for parsing signal handler option string. Found '(' in '%s' but string does not "
@@ -512,7 +512,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
         }
 
         // Split string and remove open/close parentheses
-        delim                = handler.find("(");
+        delim                = handler.find('(');
         std::string paramstr = handler.substr(delim + 1, handler.length() - delim - 2);
         handler              = handler.substr(0, delim);
 
@@ -1635,7 +1635,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
 
         // Need to get the profiler type and parameters
         start = 0;
-        end   = profiler_info.find("(", start);
+        end   = profiler_info.find('(', start);
         if ( end == std::string::npos ) {
             // No parameters
             type = profiler_info;
@@ -1645,7 +1645,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             trim(type);
 
             start = end + 1;
-            end   = profiler_info.find(")", start);
+            end   = profiler_info.find(')', start);
             if ( end == std::string::npos ) {
                 // Format error, not end paran
             }
@@ -1687,7 +1687,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             // Check to see if this is a valid profile point
             std::string p(tok);
             SST::trim(p);
-            auto index = p.find_last_of(".");
+            auto index = p.find_last_of('.');
 
             bool valid = false;
             if ( index == std::string::npos ) {
@@ -2001,7 +2001,7 @@ Simulation_impl::restart()
 {
     std::ifstream fs(config.configFile());
 
-    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of("/"));
+    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of('/'));
 
     std::string line;
 

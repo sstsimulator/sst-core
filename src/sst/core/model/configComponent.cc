@@ -458,18 +458,18 @@ ConfigComponent::findSubComponent(ComponentId_t sid) const
 ConfigComponent*
 ConfigComponent::findSubComponentByName(const std::string& name)
 {
-    size_t      colon_index = name.find(":");
+    size_t      colon_index = name.find(':');
     std::string slot        = name.substr(0, colon_index);
 
     // Get the slot number
     int    slot_num      = 0;
-    size_t bracket_index = slot.find("[");
+    size_t bracket_index = slot.find('[');
     if ( bracket_index == std::string::npos ) {
         // No brackets, slot_num 0
         slot_num = 0;
     }
     else {
-        size_t close_index = slot.find("]");
+        size_t close_index = slot.find(']');
         size_t length      = close_index - bracket_index - 1;
         slot_num           = Core::from_string<int>(slot.substr(bracket_index + 1, length));
         slot               = slot.substr(0, bracket_index);

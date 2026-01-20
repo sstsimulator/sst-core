@@ -345,7 +345,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
     while ( std::string::npos != findindex ) {
 
         // Find the next '@' from the starting index
-        findindex = m_outputPrefix.find("@", startindex);
+        findindex = m_outputPrefix.find('@', startindex);
 
         // Check to see if we found anything
         if ( std::string::npos != findindex ) {
