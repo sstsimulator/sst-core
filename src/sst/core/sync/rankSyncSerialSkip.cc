@@ -67,7 +67,7 @@ ActivityQueue*
 RankSyncSerialSkip::registerLink(
     const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), const std::string& name, Link* link)
 {
-    std::lock_guard<Core::ThreadSafe::Spinlock> slock(lock);
+    std::scoped_lock slock(lock);
 
     RankSyncQueue* queue;
     if ( comm_map.count(to_rank.rank) == 0 ) {

@@ -91,11 +91,11 @@ Units::reduce()
 void
 Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
 {
-    std::lock_guard<std::recursive_mutex> lock(unit_lock);
+    std::scoped_lock lock(unit_lock);
     // Check to see if the unit matches one of the registered unit
     // names.  If not, check for SI units and strip them, then check
     // again.
-    int                                   si_length = 0;
+    int              si_length = 0;
     if ( valid_base_units.find(units) == valid_base_units.end() &&
          valid_compound_units.find(units) == valid_compound_units.end() ) {
         // Now get the si prefix
@@ -165,7 +165,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
 void
 Units::registerBaseUnit(const std::string& u)
 {
-    std::lock_guard<std::recursive_mutex> lock(unit_lock);
+    std::scoped_lock lock(unit_lock);
     if ( valid_base_units.find(u) != valid_base_units.end() ) return;
     valid_base_units[u] = count;
     unit_strings[count] = u;
@@ -176,7 +176,7 @@ Units::registerBaseUnit(const std::string& u)
 void
 Units::registerCompoundUnit(const std::string& u, const std::string& v)
 {
-    std::lock_guard<std::recursive_mutex> lock(unit_lock);
+    std::scoped_lock lock(unit_lock);
     if ( valid_compound_units.find(u) != valid_compound_units.end() ) return;
     sst_big_num multiplier = 1;
     Units       unit(v, multiplier);
@@ -269,7 +269,7 @@ Units::invert()
 std::string
 Units::toString() const
 {
-    std::lock_guard<std::recursive_mutex> lock(unit_lock);
+    std::scoped_lock lock(unit_lock);
     if ( numerator.size() == 0 && denominator.size() == 0 ) return "";
 
     // Special case Hz

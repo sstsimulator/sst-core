@@ -104,8 +104,8 @@ Params::count(const key_type& k) const
 void
 Params::print_all_params(std::ostream& os, const std::string& prefix) const
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    int                                   level = 0;
+    std::scoped_lock lock(keyLock);
+    int              level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) os << "Local params:" << std::endl;
@@ -125,8 +125,8 @@ Params::print_all_params(std::ostream& os, const std::string& prefix) const
 void
 Params::print_all_params(Output& out, const std::string& prefix) const
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    int                                   level = 0;
+    std::scoped_lock lock(keyLock);
+    int              level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) out.output("%sLocal params:\n", prefix.c_str());
@@ -146,9 +146,9 @@ Params::print_all_params(Output& out, const std::string& prefix) const
 std::string
 Params::toString(const std::string& prefix) const
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    std::stringstream                     str;
-    int                                   level = 0;
+    std::scoped_lock  lock(keyLock);
+    std::stringstream str;
+    int               level = 0;
     for ( auto map : data ) {
         if ( level == 0 ) {
             if ( !map->empty() ) str << "Local params:" << std::endl;
@@ -170,7 +170,7 @@ Params::toString(const std::string& prefix) const
 void
 Params::insert(const std::string& key, const std::string& value, bool overwrite)
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    std::scoped_lock lock(keyLock);
     if ( overwrite ) {
         my_data[getKey(key)] = value;
     }
@@ -183,7 +183,7 @@ Params::insert(const std::string& key, const std::string& value, bool overwrite)
 void
 Params::insert(const Params& params)
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    std::scoped_lock lock(keyLock);
     my_data.insert(params.my_data.begin(), params.my_data.end());
     for ( size_t i = 1; i < params.data.size(); ++i ) {
         bool already_there = false;
@@ -197,8 +197,8 @@ Params::insert(const Params& params)
 std::set<std::string>
 Params::getKeys() const
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    std::set<std::string>                 ret;
+    std::scoped_lock      lock(keyLock);
+    std::set<std::string> ret;
     for ( auto map : data ) {
         for ( auto value : *map ) {
             ret.insert(keyMapReverse[value.first]);
@@ -210,8 +210,8 @@ Params::getKeys() const
 Params
 Params::get_scoped_params(const std::string& scope) const
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    Params                                ret;
+    std::scoped_lock lock(keyLock);
+    Params           ret;
     ret.enableVerify(false);
 
     std::string prefix = scope + ".";
@@ -282,7 +282,7 @@ Params::verifyParam(const key_type& k) const
 const std::string&
 Params::getParamName(uint32_t id)
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
+    std::scoped_lock lock(keyLock);
     return keyMapReverse[id];
 }
 
@@ -356,8 +356,8 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
 uint32_t
 Params::getKey(const std::string& str)
 {
-    std::lock_guard<std::recursive_mutex> lock(keyLock);
-    auto                                  i = keyMap.find(str);
+    std::scoped_lock lock(keyLock);
+    auto             i = keyMap.find(str);
     if ( i == keyMap.end() ) {
         uint32_t id = nextKeyID++;
         keyMap.insert(std::make_pair(str, id));
@@ -372,7 +372,7 @@ Params::getKey(const std::string& str)
 void
 Params::addSharedParamSet(const std::string& set)
 {
-    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
+    std::scoped_lock lock(sharedLock);
     if ( shared_params.count(set) == 0 ) {
         shared_params[set][0] = set;
     }
@@ -383,7 +383,7 @@ Params::addSharedParamSet(const std::string& set)
 void
 Params::insert_shared(const std::string& shared_key, const std::string& key, const std::string& value, bool overwrite)
 {
-    std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(sharedLock);
+    std::scoped_lock lock(sharedLock);
     if ( shared_params.count(shared_key) == 0 ) {
         shared_params[shared_key][0] = shared_key;
     }
