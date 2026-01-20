@@ -63,8 +63,8 @@ class OverflowFreeList
 public:
     void insert(size_t size, std::vector<void*>& list)
     {
-        std::lock_guard<ThreadSafe::Spinlock> slock(lock);
-        bool                                  found = false;
+        std::scoped_lock slock(lock);
+        bool             found = false;
         for ( auto& x : store ) {
             if ( x.size == size ) {
                 found = true;
@@ -79,8 +79,8 @@ public:
 
     bool remove(size_t size, std::vector<void*>& list)
     {
-        std::lock_guard<ThreadSafe::Spinlock> slock(lock);
-        bool                                  found = false;
+        std::scoped_lock slock(lock);
+        bool             found = false;
         for ( auto& x : store ) {
             if ( x.size == size ) {
                 if ( !x.lists.empty() ) {

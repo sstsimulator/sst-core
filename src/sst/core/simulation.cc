@@ -251,7 +251,7 @@ Simulation_impl::createSimulation(
     std::thread::id  tid      = std::this_thread::get_id();
     Simulation_impl* instance = new Simulation_impl(my_rank, num_ranks, restart, currentSimCycle, currentPriority);
 
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
@@ -754,7 +754,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             // Need to mutex to access cross_thread_links
             {
-                std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(cross_thread_lock);
+                std::scoped_lock lock(cross_thread_lock);
                 if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
                     // The other side already initialized.  Hook them
                     // together as a pair.
@@ -1167,7 +1167,7 @@ Simulation_impl::run()
 void
 Simulation_impl::emergencyShutdown()
 {
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
 
     for ( auto&& instance : instanceVec_ ) {
         instance->shutdown_mode_ = SHUTDOWN_EMERGENCY;

@@ -222,7 +222,7 @@ Factory::CreateComponent(ComponentId_t id, const std::string& type, Params& para
     std::stringstream sstr;
     requireLibrary(elemlib, sstr);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
 
@@ -261,7 +261,7 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     std::stringstream error_os;
     requireLibrary(elemlib, error_os);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
 
     // Check to see if library is loaded into new ElementLibraryDatabase
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
@@ -305,7 +305,7 @@ Factory::GetStatisticValidityAndEnableLevel(const std::string& comp_type, const 
     std::stringstream error_os;
     requireLibrary(elemlib, error_os);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
 
     // Check if elemlib is a component and if so, get ELI
     auto* comp_lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
@@ -371,7 +371,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& comp_type, const
     std::stringstream error_os;
     requireLibrary(elemlib, error_os);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
@@ -510,10 +510,10 @@ Factory::doesSubComponentExist(const std::string& type)
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto*                                 lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    auto*            lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
     if ( lib ) {
         auto* info = lib->getInfo(elem);
         if ( info ) return true;
@@ -647,7 +647,7 @@ bool
 Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
 {
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::scoped_lock lock(factoryMutex);
     if ( loaded_libraries.count(elemlib) == 1 ) return true;
 
     return loadLibrary(elemlib, err_os);
