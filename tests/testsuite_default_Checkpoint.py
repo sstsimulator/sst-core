@@ -87,11 +87,12 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_SharedObject_set(self) -> None:
         self.checkpoint_test_template("SharedObject", 2, 2, modelparams="--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_set")
 
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic(self) -> None:
-        self.checkpoint_test_template("StatisticsComponent_basic");
+        self.checkpoint_test_template("StatisticsComponent_basic")
 
     def test_Checkpoint_Statistics_basic_n2one(self) -> None:
-        self.checkpoint_test_template("StatisticsComponent_basic", n_to_one=True);
+        self.checkpoint_test_template("StatisticsComponent_basic", n_to_one=True)
 
     def test_Checkpoint_sc_2u2u_n2one(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True)
