@@ -107,7 +107,7 @@ class EnvironmentConfiguration
 {
 
 public:
-    EnvironmentConfiguration();
+    EnvironmentConfiguration() = default;
     ~EnvironmentConfiguration();
 
     EnvironmentConfigGroup* createGroup(const std::string& groupName);

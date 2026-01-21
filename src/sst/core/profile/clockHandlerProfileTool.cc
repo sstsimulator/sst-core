@@ -56,7 +56,7 @@ ClockHandlerProfileTool::getKeyForHandler(const AttachPointMetaData& mdata)
         break;
     case Profile_Level::Component:
         // Get just the component name, no subcomponents
-        key = data.comp_name.substr(0, data.comp_name.find(":"));
+        key = data.comp_name.substr(0, data.comp_name.find(':'));
         break;
     case Profile_Level::Subcomponent:
         key = data.comp_name;
@@ -136,7 +136,7 @@ public:
         ClockHandlerProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
-    ~ClockHandlerProfileToolTimeHighResolution() {}
+    ~ClockHandlerProfileToolTimeHighResolution() = default;
 
     SST_ELI_EXPORT(ClockHandlerProfileToolTimeHighResolution)
 };
@@ -157,7 +157,7 @@ public:
         ClockHandlerProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
-    ~ClockHandlerProfileToolTimeSteady() {}
+    ~ClockHandlerProfileToolTimeSteady() = default;
 
     SST_ELI_EXPORT(ClockHandlerProfileToolTimeSteady)
 };

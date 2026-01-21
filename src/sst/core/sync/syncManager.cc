@@ -81,8 +81,8 @@ public:
     {
         nextSyncTime = MAX_SIMTIME_T;
     }
-    EmptyRankSync() {} // For serialization
-    ~EmptyRankSync() {}
+    EmptyRankSync()  = default; // For serialization
+    ~EmptyRankSync() = default;
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank),
@@ -146,8 +146,8 @@ public:
     {
         nextSyncTime = MAX_SIMTIME_T;
     }
-    EmptyThreadSync() {} // For serialization
-    ~EmptyThreadSync() {}
+    EmptyThreadSync()  = default; // For serialization
+    ~EmptyThreadSync() = default;
 
     void before() override {}
     void after() override {}
@@ -245,7 +245,7 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 class SyncProfileToolList
 {
 public:
-    SyncProfileToolList() {}
+    SyncProfileToolList() = default;
 
     void syncManagerStart()
     {

@@ -43,21 +43,21 @@ RankSyncQueue::RankSyncQueue(RankInfo to_rank) :
 bool
 RankSyncQueue::empty()
 {
-    std::lock_guard<Spinlock> lock(slock);
+    std::scoped_lock lock(slock);
     return activities.empty();
 }
 
 int
 RankSyncQueue::size()
 {
-    std::lock_guard<Spinlock> lock(slock);
+    std::scoped_lock lock(slock);
     return activities.size();
 }
 
 void
 RankSyncQueue::insert(Activity* activity)
 {
-    std::lock_guard<Spinlock> lock(slock);
+    std::scoped_lock lock(slock);
     activities.push_back(activity);
 }
 
@@ -83,14 +83,14 @@ RankSyncQueue::front()
 void
 RankSyncQueue::clear()
 {
-    std::lock_guard<Spinlock> lock(slock);
+    std::scoped_lock lock(slock);
     activities.clear();
 }
 
 char*
 RankSyncQueue::getData()
 {
-    std::lock_guard<Spinlock> lock(slock);
+    std::scoped_lock lock(slock);
 
     serializer ser;
 

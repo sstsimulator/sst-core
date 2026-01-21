@@ -251,7 +251,7 @@ Simulation_impl::createSimulation(
     std::thread::id  tid      = std::this_thread::get_id();
     Simulation_impl* instance = new Simulation_impl(my_rank, num_ranks, restart, currentSimCycle, currentPriority);
 
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
@@ -503,7 +503,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
     }
 
     // Check for parameters and parse if needed
-    if ( handler.find("(") != std::string::npos ) { // Handler has parameters type(...)
+    if ( handler.find('(') != std::string::npos ) { // Handler has parameters type(...)
         if ( handler.substr(handler.size() - 1, 1) != ")" ) {
             sim_output.fatal(CALL_INFO, 1,
                 "ERROR: Invalid format for parsing signal handler option string. Found '(' in '%s' but string does not "
@@ -512,7 +512,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
         }
 
         // Split string and remove open/close parentheses
-        delim                = handler.find("(");
+        delim                = handler.find('(');
         std::string paramstr = handler.substr(delim + 1, handler.length() - delim - 2);
         handler              = handler.substr(0, delim);
 
@@ -754,7 +754,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             // Need to mutex to access cross_thread_links
             {
-                std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(cross_thread_lock);
+                std::scoped_lock lock(cross_thread_lock);
                 if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
                     // The other side already initialized.  Hook them
                     // together as a pair.
@@ -1167,7 +1167,7 @@ Simulation_impl::run()
 void
 Simulation_impl::emergencyShutdown()
 {
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
 
     for ( auto&& instance : instanceVec_ ) {
         instance->shutdown_mode_ = SHUTDOWN_EMERGENCY;
@@ -1635,7 +1635,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
 
         // Need to get the profiler type and parameters
         start = 0;
-        end   = profiler_info.find("(", start);
+        end   = profiler_info.find('(', start);
         if ( end == std::string::npos ) {
             // No parameters
             type = profiler_info;
@@ -1645,7 +1645,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             trim(type);
 
             start = end + 1;
-            end   = profiler_info.find(")", start);
+            end   = profiler_info.find(')', start);
             if ( end == std::string::npos ) {
                 // Format error, not end paran
             }
@@ -1687,7 +1687,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             // Check to see if this is a valid profile point
             std::string p(tok);
             SST::trim(p);
-            auto index = p.find_last_of(".");
+            auto index = p.find_last_of('.');
 
             bool valid = false;
             if ( index == std::string::npos ) {
@@ -2001,7 +2001,7 @@ Simulation_impl::restart()
 {
     std::ifstream fs(config.configFile());
 
-    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of("/"));
+    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of('/'));
 
     std::string line;
 

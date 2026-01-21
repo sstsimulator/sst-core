@@ -56,7 +56,7 @@ ComponentProfileTool::getKeyForCodeSegment(
         break;
     case Profile_Level::Component:
         // Get just the component name, no subcomponents
-        key = name.substr(0, name.find(":"));
+        key = name.substr(0, name.find(':'));
         break;
     case Profile_Level::Subcomponent:
         key = name;
@@ -148,7 +148,7 @@ public:
         ComponentCodeSegmentProfileToolTime<std::chrono::high_resolution_clock>(name, params)
     {}
 
-    ~ComponentCodeSegmentProfileToolTimeHighResolution() {}
+    ~ComponentCodeSegmentProfileToolTimeHighResolution() = default;
 
     SST_ELI_EXPORT(ComponentCodeSegmentProfileToolTimeHighResolution)
 };
@@ -169,7 +169,7 @@ public:
         ComponentCodeSegmentProfileToolTime<std::chrono::steady_clock>(name, params)
     {}
 
-    ~ComponentCodeSegmentProfileToolTimeSteady() {}
+    ~ComponentCodeSegmentProfileToolTimeSteady() = default;
 
     SST_ELI_EXPORT(ComponentCodeSegmentProfileToolTimeSteady)
 };

@@ -296,7 +296,7 @@ StatisticOutputTextBase::openFile()
         std::string rankstr = "_" + std::to_string(rank);
 
         // Search for any extension
-        size_t index = filename.find_last_of(".");
+        size_t index = filename.find_last_of('.');
         if ( std::string::npos != index ) {
             // We found a . at the end of the file, insert the rank string
             filename.insert(index, rankstr);

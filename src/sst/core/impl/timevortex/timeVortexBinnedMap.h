@@ -136,7 +136,10 @@ private:
 
 public:
     explicit TimeVortexBinnedMapBase(Params& params);
-    ~TimeVortexBinnedMapBase();
+
+    // Activities in TimeVortex all need to be deleted, but that
+    // happens when the TimeUnit pool goes out of scope.
+    ~TimeVortexBinnedMapBase() = default;
 
     bool      empty() override;
     int       size() override;

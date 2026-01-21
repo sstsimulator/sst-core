@@ -33,9 +33,6 @@ SSTCPTModelDefinition::SSTCPTModelDefinition(
     config_(config)
 {}
 
-SSTCPTModelDefinition::~SSTCPTModelDefinition() {}
-
-
 ConfigGraph*
 SSTCPTModelDefinition::createConfigGraph()
 {
@@ -59,7 +56,7 @@ SSTCPTModelDefinition::createConfigGraph()
         SST_Exit(-1);
     }
 
-    std::string checkpoint_directory = cfg.configFile().substr(0, cfg.configFile().find_last_of("/"));
+    std::string checkpoint_directory = cfg.configFile().substr(0, cfg.configFile().find_last_of('/'));
 
     std::string line;
 

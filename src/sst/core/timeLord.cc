@@ -34,7 +34,7 @@ TimeConverter*
 TimeLord::getTimeConverter(const std::string& ts)
 {
     // See if this is in the cache
-    std::lock_guard<std::recursive_mutex> lock(slock_);
+    std::scoped_lock lock(slock_);
     if ( parse_cache_.find(ts) == parse_cache_.end() ) {
         TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
         parse_cache_[ts]  = tc;
@@ -47,7 +47,7 @@ TimeConverter*
 TimeLord::getTimeConverter(SimTime_t sim_cycles)
 {
     // Check to see if we already have a TimeConverter with this value
-    std::lock_guard<std::recursive_mutex> lock(slock_);
+    std::scoped_lock lock(slock_);
     if ( tc_map_.find(sim_cycles) == tc_map_.end() ) {
         TimeConverter* tc   = new TimeConverter(sim_cycles);
         tc_map_[sim_cycles] = tc;
@@ -120,7 +120,7 @@ SimTime_t
 TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
 {
     // See if this is in the cache
-    std::lock_guard<std::recursive_mutex> lock(slock_);
+    std::scoped_lock lock(slock_);
     if ( parse_cache_.find(ts) == parse_cache_.end() ) {
         TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
         parse_cache_[ts]  = tc;

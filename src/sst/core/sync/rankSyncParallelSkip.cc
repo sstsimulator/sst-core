@@ -87,7 +87,7 @@ ActivityQueue*
 RankSyncParallelSkip::registerLink(
     const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
 {
-    std::lock_guard<Core::ThreadSafe::Spinlock> slock(lock);
+    std::scoped_lock slock(lock);
 
     // For sends, we track the remote rank and thread ID
     RankSyncQueue* queue;
