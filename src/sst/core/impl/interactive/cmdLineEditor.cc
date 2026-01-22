@@ -11,6 +11,8 @@
 
 #include "sst/core/impl/interactive/cmdLineEditor.h"
 
+#include "cmdLineEditor.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
@@ -119,16 +121,50 @@ CmdLineEditor::selectMatches(const std::list<std::string>& list, const std::stri
         newtoken = matches[0] + " ";
         return true;
     }
-    else if ( matches.size() > 0 ) {
-        // list all matching strings
-        writeStr("\n");
-        for ( const std::string& s : matches ) {
-            writeStr(s);
-            writeStr(" ");
-        }
-        writeStr("\n");
+    if ( matches.size() == 0 ) return false;
+
+    if ( tab_state == TAB_STATE::FILL_COMMON ) {
+        // find and fill in the longest common string
+        newtoken  = findLongestCommonPrefix(matches);
+        tab_state = TAB_STATE::LIST_COMMON;
+#ifdef _KEYB_DEBUG_
+        dbgFile << "tab_state <- LIST_COMMON" << std::endl;
+#endif
+        return true;
     }
+
+    // Handle TAB_STATE::LIST_COMMON)
+    writeStr("\n");
+    for ( const std::string& s : matches ) {
+        writeStr(s);
+        writeStr(" ");
+    }
+    writeStr("\n");
+
     return false;
+}
+
+std::string
+CmdLineEditor::findLongestCommonPrefix(const std::vector<std::string>& strings)
+{
+    if ( strings.empty() ) return "";
+    const std::string& first_str     = strings[0];
+    int                prefix_length = 0;
+    for ( size_t i = 0; i < first_str.length(); ++i ) {
+        char currentChar = first_str[i];
+        bool allMatch    = true;
+        for ( size_t j = 1; j < strings.size(); ++j ) {
+            if ( i >= strings[j].length() || strings[j][i] != currentChar ) {
+                allMatch = false;
+                break;
+            }
+        }
+        if ( allMatch )
+            prefix_length++;
+        else
+            break;
+    }
+    return first_str.substr(0, prefix_length);
 }
 
 void
@@ -167,8 +203,8 @@ CmdLineEditor::auto_complete(std::string& cmd)
     else if ( tokens.size() == 1 && !hasTrailingSpace ) {
         // find all matching command strings starting with tokens[0]
         std::vector<std::string> matches;
-        bool                     exact_match = selectMatches(cmdStrings, tokens[0], matches, cmd);
-        if ( exact_match ) {
+        bool                     fill_line = selectMatches(cmdStrings, tokens[0], matches, cmd);
+        if ( fill_line ) {
             curpos = cmd.size() + prompt.size() + 1;
 #ifdef _KEYB_DEBUG_
 // dbgFile << "prompt&" << &prompt << "'" << prompt << "'(" << prompt.size() << ") "
@@ -195,8 +231,8 @@ CmdLineEditor::auto_complete(std::string& cmd)
         else {
             std::vector<std::string> matches;
             std::string              newtoken;
-            bool                     exact_match = selectMatches(listing, tokens[tokens.size() - 1], matches, newtoken);
-            if ( exact_match ) {
+            bool                     fill_line = selectMatches(listing, tokens[tokens.size() - 1], matches, newtoken);
+            if ( fill_line ) {
                 std::stringstream s;
                 for ( size_t i = 0; i < tokens.size() - 1; i++ )
                     s << tokens[i] << " ";
@@ -250,6 +286,15 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
 #ifdef _KEYB_DEBUG_
         dbgFile << std::hex << (int)c << std::endl;
 #endif
+        // Always reset TAB behavior if tab key not entered
+        if ( c != tab_char ) {
+            tab_state = TAB_STATE::FILL_COMMON;
+#ifdef _KEYB_DEBUG_
+            dbgFile << "tab_state <- FILL_COMMON" << std::endl;
+#endif
+        }
+
+        // Handle the key pressed
         if ( c == lf_char ) {
             // Done if line feed
             break;
@@ -316,8 +361,8 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
             redraw_line(history[index]);
         }
         else if ( c == ctrl_d ) {
-           int position = curpos - prompt.size() - 1;
-            if (position == 0 && history[index].size() == 0 ) {
+            int position = curpos - prompt.size() - 1;
+            if ( position == 0 && history[index].size() == 0 ) {
                 // if the line is empty then quit (tactcomplabs/sst-core #32)
                 end_of_file = true;
                 break;
@@ -379,9 +424,9 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
     this->restoreTermMode();
 
     // set the new line info
-    if (end_of_file)
+    if ( end_of_file )
         newcmd = "quit";
-    else 
+    else
         newcmd = history[index];
 
     writeStr("\n");
