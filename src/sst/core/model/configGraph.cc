@@ -241,19 +241,22 @@ ConfigGraph::checkForStructuralErrors()
     for ( ConfigLinkMap_t::iterator iter = links_.begin(); iter != links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
 
-        // First check to see if the link is completely unused
-        if ( clink->order == 0 ) {
-            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
-            found_error = true;
-        }
+        /*
+          Two conditions we need to look for:
 
-        // If component[0] is not initialized, this is an unused link
-        if ( clink->component[0] == ULONG_MAX ) {
-            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+          1 - Unused link.  This happens when order == 0 and we are NOT a nonlocal link
+
+          2 - Dangling link.  This happens when order == 0 and we are a nonlocal link, or when order == 0 and we are NOT
+              a nonlocal link
+        */
+        if ( clink->order == 0 ) {
+            if ( !clink->nonlocal )
+                output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+            else
+                output.output("WARNING:  Found dangling nonlocal link: %s\n", clink->name.c_str());
             found_error = true;
         }
-        // If component[1] is not initialized, this is a dangling link
-        else if ( clink->component[1] == ULONG_MAX ) {
+        else if ( clink->order == 1 && !clink->nonlocal ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
                 clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
             found_error = true;
