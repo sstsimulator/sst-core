@@ -17,7 +17,7 @@
 
 #include "sst/core/event.h"
 
-#include <assert.h>
+#include <cassert>
 
 using namespace SST;
 using namespace SST::CoreTestComponent;
@@ -232,7 +232,7 @@ coreTestComponentExtMain::coreTestComponentExtMain(ComponentId_t id, Params& par
     primaryComponentDoNotEndSim();
 }
 
-coreTestComponentExtMain::~coreTestComponentExtMain() {}
+coreTestComponentExtMain::~coreTestComponentExtMain() = default;
 
 void
 coreTestComponentExtMain::serialize_order(SST::Core::Serialization::serializer& ser)

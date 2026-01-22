@@ -33,9 +33,6 @@ SSTCPTModelDefinition::SSTCPTModelDefinition(
     config_(config)
 {}
 
-SSTCPTModelDefinition::~SSTCPTModelDefinition() {}
-
-
 ConfigGraph*
 SSTCPTModelDefinition::createConfigGraph()
 {
@@ -59,7 +56,7 @@ SSTCPTModelDefinition::createConfigGraph()
         SST_Exit(-1);
     }
 
-    std::string checkpoint_directory = cfg.configFile().substr(0, cfg.configFile().find_last_of("/"));
+    std::string checkpoint_directory = cfg.configFile().substr(0, cfg.configFile().find_last_of('/'));
 
     std::string line;
 
@@ -112,7 +109,6 @@ SSTCPTModelDefinition::createConfigGraph()
     SST_SER(graph->cpt_currentSimCycle);
     SST_SER(graph->cpt_currentPriority);
 
-
     // Deserialization continues below
 
     ////// Check to make sure we have the right parallelism in the restart
@@ -143,6 +139,97 @@ SSTCPTModelDefinition::createConfigGraph()
     // Get set of loaded libraries
     SST_SER(*(graph->cpt_libnames.get()));
 
+    // Get the checkpoint system info
+    SST_SER(version_);
+    SST_SER(arch_);
+    SST_SER(os_);
+
+    ////// Check to make sure we have the right SSTCore version, architecture and operating system
+    if ( version_ != PACKAGE_STRING ) {
+        Output::getDefaultObject().fatal(CALL_INFO, 1,
+            "Version mismatch in SST checkpoint file.  SSTCore version is %s. "
+            "Checkpoint version is %s\n",
+            PACKAGE_VERSION, version_.c_str());
+    }
+
+    std::string tmp_arch = "";
+#if defined(__x86_64__) || defined(_M_X64)
+    tmp_arch = "x86_64";
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+    tmp_arch = "x86_32";
+#elif defined(__ARM_ARCH_2__)
+    tmp_arch = "ARM2";
+#elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
+    tmp_arch = "ARM3";
+#elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
+    tmp_arch = "ARM4T";
+#elif defined(__ARM_ARCH_5_) || defined(__ARM_ARCH_5E_)
+    tmp_arch = "ARM5"
+#elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2_)
+    tmp_arch = "ARM6T2";
+#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
+    defined(__ARM_ARCH_6ZK__)
+    tmp_arch = "ARM6";
+#elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
+    defined(__ARM_ARCH_7S__)
+    tmp_arch = "ARM7";
+#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    tmp_arch = "ARM7A";
+#elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    tmp_arch = "ARM7R";
+#elif defined(__ARM_ARCH_7M__)
+    tmp_arch = "ARM7M";
+#elif defined(__ARM_ARCH_7S__)
+    tmp_arch = "ARM7S";
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    tmp_arch = "ARM64";
+#elif defined(mips) || defined(__mips__) || defined(__mips)
+    tmp_arch = "MIPS";
+#elif defined(__sh__)
+    tmp_arch = "SUPERH";
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
+    defined(__ppc__) || defined(__PPC__) || defined(_ARCH_PPC)
+    tmp_arch = "POWERPC";
+#elif defined(__PPC64__) || defined(__ppc64__) || defined(_ARCH_PPC64)
+    tmp_arch = "POWERPC64";
+#elif defined(__sparc__) || defined(__sparc)
+    tmp_arch = "SPARC";
+#elif defined(__m68k__)
+    tmp_arch = "M68K";
+#elif defined(__riscv__) || defined(_riscv) || defined(__riscv)
+    tmp_arch = "RISCV";
+#else
+    tmp_arch = "UNKNOWN";
+#endif
+
+    if ( arch_ != tmp_arch ) {
+        Output::getDefaultObject().fatal(CALL_INFO, 1,
+            "Architecture mismatch in SST checkpoint file.  Current architecture is %s. "
+            "Checkpointed architecture is %s\n",
+            tmp_arch.c_str(), arch_.c_str());
+    }
+
+    std::string tmp_os = "";
+#if defined(_WIN32) || defined(_WIN64)
+    tmp_os = "OS_WINDOWS";
+#elif defined(__APPLE__) && defined(__MACH__)
+    tmp_os = "OS_MACOS";
+#elif defined(__linux__)
+    tmp_os = "OS_LINUX";
+#elif defined(__unix__) || defined(__unix)
+    tmp_os = "OS_UNIX";
+#elif defined(__FreeBSD__)
+    tmp_os = "OS_FREEBSD";
+#else
+    tmp_os = "OS_UNKNOWN";
+#endif
+
+    if ( os_ != tmp_os ) {
+        Output::getDefaultObject().fatal(CALL_INFO, 1,
+            "Operating system mismatch in SST checkpoint file.  Current OS is %s. "
+            "Checkpointed OS is %s\n",
+            tmp_os.c_str(), os_.c_str());
+    }
 
     // factory->loadUnloadedLibraries(libnames);
 

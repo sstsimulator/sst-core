@@ -52,13 +52,6 @@ TimeVortexBinnedMapBase<TS>::TimeVortexBinnedMapBase(Params& UNUSED(params)) :
 }
 
 template <bool TS>
-TimeVortexBinnedMapBase<TS>::~TimeVortexBinnedMapBase()
-{
-    // Activities in TimeVortex all need to be deleted, but that
-    // happens when the TimeUnit pool goes out of scope.
-}
-
-template <bool TS>
 bool
 TimeVortexBinnedMapBase<TS>::empty()
 {

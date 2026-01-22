@@ -251,7 +251,7 @@ Simulation_impl::createSimulation(
     std::thread::id  tid      = std::this_thread::get_id();
     Simulation_impl* instance = new Simulation_impl(my_rank, num_ranks, restart, currentSimCycle, currentPriority);
 
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
     instanceMap[tid] = instance;
     instanceVec_.resize(num_ranks.thread);
     instanceVec_[my_rank.thread] = instance;
@@ -347,6 +347,72 @@ Simulation_impl::Simulation_impl(
     interactive_type_  = config.interactive_console();
     interactive_start_ = config.interactive_start_time();
     replay_file_       = config.replay_file();
+
+    // Version info for checkpointing
+    version_ = PACKAGE_STRING;
+
+#if defined(__x86_64__) || defined(_M_X64)
+    arch_ = "x86_64";
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+    arch_ = "x86_32";
+#elif defined(__ARM_ARCH_2__)
+    arch_ = "ARM2";
+#elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
+    arch_ = "ARM3";
+#elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
+    arch_ = "ARM4T";
+#elif defined(__ARM_ARCH_5_) || defined(__ARM_ARCH_5E_)
+    arch_ = "ARM5"
+#elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2_)
+    arch_ = "ARM6T2";
+#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
+    defined(__ARM_ARCH_6ZK__)
+    arch_ = "ARM6";
+#elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
+    defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7";
+#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7A";
+#elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7R";
+#elif defined(__ARM_ARCH_7M__)
+    arch_ = "ARM7M";
+#elif defined(__ARM_ARCH_7S__)
+    arch_ = "ARM7S";
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    arch_ = "ARM64";
+#elif defined(mips) || defined(__mips__) || defined(__mips)
+    arch_ = "MIPS";
+#elif defined(__sh__)
+    arch_ = "SUPERH";
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
+    defined(__ppc__) || defined(__PPC__) || defined(_ARCH_PPC)
+    arch_ = "POWERPC";
+#elif defined(__PPC64__) || defined(__ppc64__) || defined(_ARCH_PPC64)
+    arch_ = "POWERPC64";
+#elif defined(__sparc__) || defined(__sparc)
+    arch_ = "SPARC";
+#elif defined(__m68k__)
+    arch_ = "M68K";
+#elif defined(__riscv__) || defined(_riscv) || defined(__riscv)
+    arch_ = "RISCV";
+#else
+    arch_ = "UNKNOWN";
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+    os_ = "OS_WINDOWS";
+#elif defined(__APPLE__) && defined(__MACH__)
+    os_ = "OS_MACOS";
+#elif defined(__linux__)
+    os_ = "OS_LINUX";
+#elif defined(__unix__) || defined(__unix)
+    os_ = "OS_UNIX";
+#elif defined(__FreeBSD__)
+    os_ = "OS_FREEBSD";
+#else
+        os_ = "OS_UNKNOWN";
+#endif
 }
 
 void
@@ -437,7 +503,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
     }
 
     // Check for parameters and parse if needed
-    if ( handler.find("(") != std::string::npos ) { // Handler has parameters type(...)
+    if ( handler.find('(') != std::string::npos ) { // Handler has parameters type(...)
         if ( handler.substr(handler.size() - 1, 1) != ")" ) {
             sim_output.fatal(CALL_INFO, 1,
                 "ERROR: Invalid format for parsing signal handler option string. Found '(' in '%s' but string does not "
@@ -446,7 +512,7 @@ Simulation_impl::parseSignalString(std::string& arg, std::string& name, Params& 
         }
 
         // Split string and remove open/close parentheses
-        delim                = handler.find("(");
+        delim                = handler.find('(');
         std::string paramstr = handler.substr(delim + 1, handler.length() - delim - 2);
         handler              = handler.substr(0, delim);
 
@@ -688,7 +754,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             // Need to mutex to access cross_thread_links
             {
-                std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(cross_thread_lock);
+                std::scoped_lock lock(cross_thread_lock);
                 if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
                     // The other side already initialized.  Hook them
                     // together as a pair.
@@ -1120,7 +1186,7 @@ Simulation_impl::run()
 void
 Simulation_impl::emergencyShutdown()
 {
-    std::lock_guard<std::mutex> lock(simulationMutex);
+    std::scoped_lock lock(simulationMutex);
 
     for ( auto&& instance : instanceVec_ ) {
         instance->shutdown_mode_ = SHUTDOWN_EMERGENCY;
@@ -1312,7 +1378,7 @@ Simulation_impl::registerClock(TimeConverter& tc_freq, Clock::HandlerBase* handl
         ce->schedule();
     }
     clockMap[mapKey]->registerHandler(handler);
-    return &tc_freq;
+    return tc_global;
 }
 
 TimeConverter*
@@ -1603,7 +1669,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
 
         // Need to get the profiler type and parameters
         start = 0;
-        end   = profiler_info.find("(", start);
+        end   = profiler_info.find('(', start);
         if ( end == std::string::npos ) {
             // No parameters
             type = profiler_info;
@@ -1613,7 +1679,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             trim(type);
 
             start = end + 1;
-            end   = profiler_info.find(")", start);
+            end   = profiler_info.find(')', start);
             if ( end == std::string::npos ) {
                 // Format error, not end paran
             }
@@ -1655,7 +1721,7 @@ Simulation_impl::initializeProfileTools(const std::string& config)
             // Check to see if this is a valid profile point
             std::string p(tok);
             SST::trim(p);
-            auto index = p.find_last_of(".");
+            auto index = p.find_last_of('.');
 
             bool valid = false;
             if ( index == std::string::npos ) {
@@ -1727,7 +1793,6 @@ Simulation_impl::scheduleCheckpoint()
     }
 }
 
-
 void
 Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_directory,
     const std::string& registry_filename, const std::string& globals_filename)
@@ -1776,6 +1841,10 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
     factory->getLoadedLibraryNames(libnames);
     SST_SER(libnames);
 
+    SST_SER(version_);
+    SST_SER(arch_);
+    SST_SER(os_);
+
     size = ser.size();
     buffer.resize(size);
 
@@ -1790,6 +1859,10 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 
     // Add list of loaded libraries
     SST_SER(libnames);
+
+    SST_SER(version_);
+    SST_SER(arch_);
+    SST_SER(os_);
 
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(buffer.data(), size);
@@ -1859,7 +1932,7 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 #define WR(var) fs_reg << #var << " = " << var << std::endl;
     WR(num_ranks.rank);
     WR(num_ranks.thread);
-    WR(timeLord.timeBaseString);
+    WR(timeLord.timebase_string_);
     WR(output_directory);
     std::string output_prefix = sim_output.getPrefix();
     WR(output_prefix);
@@ -1966,7 +2039,7 @@ Simulation_impl::restart()
 {
     std::ifstream fs(config.configFile());
 
-    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of("/"));
+    std::string checkpoint_directory = config.configFile().substr(0, config.configFile().find_last_of('/'));
 
     std::string line;
 

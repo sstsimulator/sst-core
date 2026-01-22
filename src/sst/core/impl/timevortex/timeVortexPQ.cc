@@ -129,8 +129,8 @@ public:
     explicit TimeVortexPQ(Params& params) :
         TimeVortexPQBase<false>(params)
     {}
-    TimeVortexPQ() = delete;
-    ~TimeVortexPQ() {}
+    TimeVortexPQ()  = delete;
+    ~TimeVortexPQ() = default;
 
     SST_ELI_EXPORT(TimeVortexPQ)
 };
@@ -151,8 +151,8 @@ public:
     explicit TimeVortexPQ_ts(Params& params) :
         TimeVortexPQBase<true>(params)
     {}
-    TimeVortexPQ_ts() = delete;
-    ~TimeVortexPQ_ts() {}
+    TimeVortexPQ_ts()  = delete;
+    ~TimeVortexPQ_ts() = default;
 
     SST_ELI_EXPORT(TimeVortexPQ_ts)
 };

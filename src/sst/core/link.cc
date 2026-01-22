@@ -463,10 +463,8 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
 class NullEvent : public Event
 {
 public:
-    NullEvent() :
-        Event()
-    {}
-    ~NullEvent() {}
+    NullEvent()  = default;
+    ~NullEvent() = default;
 
     void execute() override
     {

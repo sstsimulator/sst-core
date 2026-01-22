@@ -96,7 +96,7 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
     // to make sure there was no more than one directory separator (/)
     // and that no invalid % sequences were used.
     std::string format = cfg->checkpoint_name_format();
-    size_t      split  = format.find("/");
+    size_t      split  = format.find('/');
     if ( split == format.npos ) {
         dir_format_  = format;
         file_format_ = format;

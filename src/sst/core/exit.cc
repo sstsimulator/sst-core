@@ -45,7 +45,7 @@ Exit::~Exit()
 void
 Exit::refInc(uint32_t thread)
 {
-    std::lock_guard<Spinlock> lock(slock_);
+    std::scoped_lock lock(slock_);
     ++ref_count_;
     ++thread_counts_[thread];
 }
@@ -53,7 +53,7 @@ Exit::refInc(uint32_t thread)
 void
 Exit::refDec(uint32_t thread)
 {
-    std::lock_guard<Spinlock> lock(slock_);
+    std::scoped_lock lock(slock_);
     if ( ref_count_ == 0 ) {
         Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "ref_count is already 0\n");
     }

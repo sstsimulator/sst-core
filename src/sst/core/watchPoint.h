@@ -125,7 +125,7 @@ public:
 
     // Construction
     WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj);
-    ~WatchPoint();
+    ~WatchPoint() = default;
 
     // Inherited from both Event and Clock handler AttachPoints.
     // WatchPoint doesn't use the key, so just return 0

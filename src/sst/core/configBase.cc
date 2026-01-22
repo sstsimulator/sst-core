@@ -241,7 +241,7 @@ ConfigBase::addOption(
 void
 ConfigBase::addHeading(const char* desc)
 {
-    struct option     opt = { "", optional_argument, 0, 0 };
+    struct option     opt = { "", optional_argument, nullptr, 0 };
     std::vector<bool> vec;
     options.emplace_back(opt, "", desc, true, vec, nullptr);
 }
@@ -284,9 +284,10 @@ ConfigBase::printUsage()
         MAX_WIDTH = size.ws_col;
     }
 
-    if ( getenv("COLUMNS") ) {
+    char* columns = getenv("COLUMNS");
+    if ( columns ) {
         errno      = E_OK;
-        uint32_t x = strtoul(getenv("COLUMNS"), nullptr, 0);
+        uint32_t x = strtoul(columns, nullptr, 0);
         if ( errno == E_OK ) MAX_WIDTH = x;
     }
 

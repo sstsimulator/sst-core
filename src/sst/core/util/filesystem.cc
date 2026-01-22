@@ -145,7 +145,7 @@ bool
 Filesystem::ensureDirectoryExists(std::filesystem::path p, bool strip_filename)
 {
     // Can only be in one function that may create a directory at a time
-    std::lock_guard<std::mutex> guard(create_mutex_);
+    std::scoped_lock guard(create_mutex_);
 
     // If strip_filename is true, then this is a filename and we need
     // to strip it off to get the path

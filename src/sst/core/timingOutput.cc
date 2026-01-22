@@ -25,8 +25,8 @@
 
 namespace json = ::nlohmann;
 
-namespace SST {
-namespace Core {
+
+namespace SST::Core {
 
 TimingOutput::TimingOutput(const SST::Output& output, int print_verbosity) :
     output_(output),
@@ -151,5 +151,4 @@ TimingOutput::renderJSON()
     fprintf(outputFile, "%s", outputString.c_str());
 }
 
-} // namespace Core
-} // namespace SST
+} // namespace SST::Core

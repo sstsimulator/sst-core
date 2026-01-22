@@ -57,13 +57,13 @@ REENABLE_WARNING
 #include "sst/core/unitAlgebra.h"
 
 #include <cinttypes>
+#include <csignal>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <signal.h>
 #include <sys/resource.h>
-#include <time.h>
 
 // Configuration Graph Generation Options
 #include "sst/core/configGraphOutput.h"
@@ -239,7 +239,7 @@ do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInf
 static std::string
 addRankToFileName(std::string& file_name, int rank)
 {
-    auto        index = file_name.find_last_of(".");
+    auto        index = file_name.find_last_of('.');
     std::string base;
     std::string ext;
     // If there is an extension, add it before the extension
@@ -326,7 +326,7 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
 
     if ( cfg.configFile() != "NONE" ) {
         // Get the file extension by finding the last .
-        std::string extension = cfg.configFile().substr(cfg.configFile().find_last_of("."));
+        std::string extension = cfg.configFile().substr(cfg.configFile().find_last_of('.'));
 
         std::string model_name;
         try {
@@ -1320,7 +1320,7 @@ main(int argc, char* argv[])
         }
 
         /* Unblock signals on thread 0 */
-        pthread_sigmask(SIG_UNBLOCK, &maskset, NULL);
+        pthread_sigmask(SIG_UNBLOCK, &maskset, nullptr);
         // Call start_simulation for the main thread
         start_simulation(0, threadInfo[0], mainBarrier, graph->cpt_currentSimCycle, graph->cpt_currentPriority);
 

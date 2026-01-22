@@ -139,8 +139,6 @@ XORShiftRNG::seed(uint64_t seed)
     z = 0;
 }
 
-XORShiftRNG::~XORShiftRNG() {}
-
 void
 XORShiftRNG::serialize_order(SST::Core::Serialization::serializer& ser)
 {

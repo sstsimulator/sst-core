@@ -95,8 +95,6 @@ SST::Core::Environment::EnvironmentConfigGroup::writeTo(FILE* outFile)
     }
 }
 
-SST::Core::Environment::EnvironmentConfiguration::EnvironmentConfiguration() {}
-
 SST::Core::Environment::EnvironmentConfiguration::~EnvironmentConfiguration()
 {
     // Delete all the groups we have created

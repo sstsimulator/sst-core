@@ -30,11 +30,6 @@ Clock::Clock(TimeConverter* period, int priority) :
     setPriority(priority);
 }
 
-Clock::~Clock()
-{
-    // Handlers are owned by BaseComponent and are deleted there
-}
-
 bool
 Clock::registerHandler(Clock::HandlerBase* handler)
 {

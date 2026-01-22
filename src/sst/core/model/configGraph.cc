@@ -435,7 +435,7 @@ ConfigComponent*
 ConfigGraph::findComponentByName(const std::string& name)
 {
     std::string origname(name);
-    auto        index    = origname.find(":");
+    auto        index    = origname.find(':');
     std::string compname = origname.substr(0, index);
     auto        itr      = comps_by_name_.find(compname);
 

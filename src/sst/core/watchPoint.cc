@@ -101,8 +101,6 @@ WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serializatio
     addComparison(obj);
 }
 
-WatchPoint::~WatchPoint() {}
-
 void
 WatchPoint::genericHandler(HANDLER h)
 {
