@@ -74,9 +74,9 @@ cost_external_links(ComponentId_t* setA, const int lengthA, ComponentId_t* setB,
 
     for ( int i = 0; i < lengthA; i++ ) {
         auto* compMap = timeTable[setA[i]];
-        for ( auto compMapItr = compMap->cbegin(); compMapItr != compMap->cend(); compMapItr++ ) {
-            if ( findIndex(setB, lengthB, compMapItr->first) > -1 ) {
-                cost += compMapItr->second;
+        for ( auto compMapItr : *compMap ) {
+            if ( findIndex(setB, lengthB, compMapItr.first) > -1 ) {
+                cost += compMapItr.second;
             }
         }
     }
@@ -186,10 +186,9 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
     PartitionComponentMap_t& component_map = graph->getComponentMap();
 
     if ( total_parts == 1 ) {
-        for ( PartitionComponentMap_t::iterator compItr = component_map.begin(); compItr != component_map.end();
-            ++compItr ) {
+        for ( auto& compItr : component_map ) {
 
-            (*compItr)->rank = RankInfo(0, 0);
+            compItr->rank = RankInfo(0, 0);
         }
     }
     else {
@@ -211,10 +210,9 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
 
         // size_t nComp = component_map.size();
         // for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
-        for ( PartitionComponentMap_t::iterator compItr = component_map.begin(); compItr != component_map.end();
-            ++compItr ) {
+        for ( auto& compItr : component_map ) {
 
-            ComponentId_t theComponent = (*compItr)->id;
+            ComponentId_t theComponent = compItr->id;
 
             auto compConnectMap = timeTable[theComponent] = new std::map<ComponentId_t, SimTime_t>();
 
@@ -225,15 +223,14 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
                 setB[indexB++] = theComponent;
             }
 
-            LinkIdMap_t component_links = (*compItr)->links;
+            LinkIdMap_t component_links = compItr->links;
 
             PartitionLinkMap_t& linkMap = graph->getLinkMap();
 
-            for ( LinkIdMap_t::const_iterator linkItr = component_links.begin(); linkItr != component_links.end();
-                linkItr++ ) {
+            for ( unsigned int component_link : component_links ) {
 
                 // ConfigLink* theLink = (*linkItr);
-                PartitionLink& theLink = linkMap[*linkItr];
+                PartitionLink& theLink = linkMap[component_link];
                 compConnectMap->insert(
                     std::pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()));
             }

@@ -197,7 +197,7 @@ SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::st
     }
 
     // NEXT - override paths
-    for ( std::string nextPath : overridePaths ) {
+    for ( const std::string& nextPath : overridePaths ) {
         populateEnvironmentConfig(nextPath, envConfig, true);
     }
 

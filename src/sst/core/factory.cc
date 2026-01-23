@@ -632,8 +632,8 @@ Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
 void
 Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
 {
-    for ( std::set<std::string>::const_iterator i = lib_names.begin(); i != lib_names.end(); ++i ) {
-        findLibrary(*i);
+    for ( const auto& lib_name : lib_names ) {
+        findLibrary(lib_name);
     }
 }
 

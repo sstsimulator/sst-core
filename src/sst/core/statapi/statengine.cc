@@ -92,8 +92,8 @@ StatisticProcessingEngine::restart()
     for ( auto group : stat_default_groups_ ) {
         group.second.output = stat_outputs_[0];
     }
-    for ( std::vector<StatisticGroup>::iterator it = stat_groups_.begin(); it != stat_groups_.end(); it++ ) {
-        it->restartGroup(this);
+    for ( auto& stat_group : stat_groups_ ) {
+        stat_group.restartGroup(this);
     }
 }
 

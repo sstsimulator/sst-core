@@ -107,11 +107,10 @@ ThreadSyncSimpleSkip::before()
 {
     SimTime_t current_cycle = sim->getCurrentSimCycle();
     // Empty all the queues and send events on the links
-    for ( size_t i = 0; i < queues.size(); i++ ) {
-        ThreadSyncQueue*        queue = queues[i];
-        std::vector<Activity*>& vec   = queue->getVector();
-        for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event*    ev    = static_cast<Event*>(vec[j]);
+    for ( auto queue : queues ) {
+        std::vector<Activity*>& vec = queue->getVector();
+        for ( auto& j : vec ) {
+            Event*    ev    = static_cast<Event*>(j);
             SimTime_t delay = ev->getDeliveryTime() - current_cycle;
             getDeliveryLink(ev)->send(delay, ev);
         }
@@ -150,8 +149,8 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
     for ( int i = 0; i < num_threads; i++ ) {
         ThreadSyncQueue*        queue = queues[i];
         std::vector<Activity*>& vec   = queue->getVector();
-        for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event* ev = static_cast<Event*>(vec[j]);
+        for ( auto& j : vec ) {
+            Event* ev = static_cast<Event*>(j);
             sendUntimedData_sync(getDeliveryLink(ev), ev);
         }
         queue->clear();
@@ -161,16 +160,16 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
 void
 ThreadSyncSimpleSkip::finalizeLinkConfigurations()
 {
-    for ( auto i = link_map.begin(); i != link_map.end(); ++i ) {
-        finalizeConfiguration(i->second);
+    for ( auto& i : link_map ) {
+        finalizeConfiguration(i.second);
     }
 }
 
 void
 ThreadSyncSimpleSkip::prepareForComplete()
 {
-    for ( auto i = link_map.begin(); i != link_map.end(); ++i ) {
-        prepareForCompleteInt(i->second);
+    for ( auto& i : link_map ) {
+        prepareForCompleteInt(i.second);
     }
 }
 

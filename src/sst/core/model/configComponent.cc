@@ -149,8 +149,8 @@ ConfigComponent::print(std::ostream& os) const
     os << "  rank = " << rank.rank << std::endl;
     os << "  thread = " << rank.thread << std::endl;
     os << "  Links:" << std::endl;
-    for ( size_t i = 0; i != links.size(); ++i ) {
-        os << "    " << links[i];
+    for ( unsigned int link : links ) {
+        os << "    " << link;
     }
     os << std::endl;
     os << "  Params:" << std::endl;
@@ -575,8 +575,8 @@ ConfigComponent::checkPorts() const
     auto& graph_links = graph->getLinkMap();
 
     // Loop over all the links
-    for ( unsigned int i = 0; i < links.size(); i++ ) {
-        const ConfigLink* link = graph_links[links[i]];
+    for ( unsigned int i : links ) {
+        const ConfigLink* link = graph_links[i];
         for ( int j = 0; j < 2; j++ ) {
             // If this is a nonlocal link, then there is no port to check for index 1
             if ( link->nonlocal && j == 1 ) continue;

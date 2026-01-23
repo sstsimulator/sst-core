@@ -18,8 +18,8 @@ namespace SST {
 PollingLinkQueue::~PollingLinkQueue()
 {
     // Need to delete any events left in the queue
-    for ( auto it = data.begin(); it != data.end(); ++it ) {
-        delete *it;
+    for ( auto it : data ) {
+        delete it;
     }
     data.clear();
 }

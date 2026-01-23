@@ -38,12 +38,12 @@ XMLConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
     const auto compMap = graph->getComponentMap();
     const auto linkMap = graph->getLinkMap();
 
-    for ( auto compItr = compMap.begin(); compItr != compMap.end(); compItr++ ) {
-        generateXML("      ", (*compItr), linkMap);
+    for ( auto compItr : compMap ) {
+        generateXML("      ", compItr, linkMap);
     }
 
-    for ( auto linkItr = linkMap.begin(); linkItr != linkMap.end(); linkItr++ ) {
-        generateXML("      ", (*linkItr), compMap);
+    for ( auto linkItr : linkMap ) {
+        generateXML("      ", linkItr, compMap);
     }
 
     fprintf(outputFile, "   </component>\n");
@@ -60,9 +60,9 @@ XMLConfigGraphOutput::generateXML(
 
     // for(auto paramsItr = comp->params.begin(); paramsItr != comp->params.end(); paramsItr++) {
     auto keys = comp->params.getKeys();
-    for ( auto paramsItr = keys.begin(); paramsItr != keys.end(); paramsItr++ ) {
-        std::string paramName  = *paramsItr;
-        std::string paramValue = comp->params.find<std::string>(*paramsItr);
+    for ( const auto& key : keys ) {
+        std::string paramName  = key;
+        std::string paramValue = comp->params.find<std::string>(key);
 
         fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n", indent.c_str(), "   ", paramName.c_str(),
             paramValue.c_str());

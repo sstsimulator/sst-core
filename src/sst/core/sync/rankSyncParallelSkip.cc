@@ -65,13 +65,13 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks) :
 
 RankSyncParallelSkip::~RankSyncParallelSkip()
 {
-    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
-        delete i->second.squeue;
+    for ( auto& i : comm_send_map ) {
+        delete i.second.squeue;
     }
     comm_send_map.clear();
 
-    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-        delete[] i->second.rbuf;
+    for ( auto& i : comm_recv_map ) {
+        delete[] i.second.rbuf;
     }
     comm_recv_map.clear();
 
@@ -163,12 +163,12 @@ uint64_t
 RankSyncParallelSkip::getDataSize() const
 {
     size_t count = 0;
-    for ( auto it = comm_send_map.begin(); it != comm_send_map.end(); ++it ) {
-        count += it->second.squeue->getDataSize();
+    for ( const auto& it : comm_send_map ) {
+        count += it.second.squeue->getDataSize();
     }
 
-    for ( auto it = comm_recv_map.begin(); it != comm_recv_map.end(); ++it ) {
-        count += it->second.local_size;
+    for ( const auto& it : comm_recv_map ) {
+        count += it.second.local_size;
     }
     return count;
 }
@@ -228,8 +228,8 @@ RankSyncParallelSkip::exchange_slave(int thread)
             // comm_recv_pair* recv = link_send_queue[thread].remove();
             my_recv_count--;
 
-            for ( size_t i = 0; i < recv->activity_vec.size(); i++ ) {
-                Event*    ev    = static_cast<Event*>(recv->activity_vec[i]);
+            for ( auto& i : recv->activity_vec ) {
+                Event*    ev    = static_cast<Event*>(i);
                 SimTime_t delay = ev->getDeliveryTime() - current_cycle;
                 getDeliveryLink(ev)->send(delay, ev);
             }

@@ -140,8 +140,8 @@ public:
 
     ~MemPoolNoMutex()
     {
-        for ( std::list<uint8_t*>::iterator i = arenas.begin(); i != arenas.end(); ++i ) {
-            ::free(*i);
+        for ( auto& arena : arenas ) {
+            ::free(arena);
         }
     }
 
@@ -381,9 +381,9 @@ MemPoolAccessor::printUndeletedMemPoolItems(const std::string& header, Output& o
             size_t                     arenaSize = entry.pool->getArenaSize();
             size_t                     allocSize = entry.pool->getAllocSize();
             size_t                     nelem     = arenaSize / allocSize;
-            for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
+            for ( auto arena : arenas ) {
                 for ( size_t j = 0; j < nelem; j++ ) {
-                    uint64_t* ptr = (uint64_t*)((*iter) + (allocSize * j));
+                    uint64_t* ptr = (uint64_t*)(arena + (allocSize * j));
                     if ( *ptr != 0 ) {
                         MemPoolItem* act = (MemPoolItem*)(ptr + 1);
                         act->print(header, out);

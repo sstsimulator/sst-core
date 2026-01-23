@@ -38,8 +38,8 @@ SST::Core::Environment::EnvironmentConfigGroup::getKeys() const
 {
     std::set<std::string> retKeys;
 
-    for ( auto mapItr = params.begin(); mapItr != params.end(); mapItr++ ) {
-        retKeys.insert(mapItr->first);
+    for ( const auto& param : params ) {
+        retKeys.insert(param.first);
     }
 
     return retKeys;
@@ -80,8 +80,8 @@ SST::Core::Environment::EnvironmentConfigGroup::print()
 
     printf("\n");
 
-    for ( auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++ ) {
-        printf("%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
+    for ( auto& param : params ) {
+        printf("%s=%s\n", param.first.c_str(), param.second.c_str());
     }
 }
 
@@ -90,16 +90,16 @@ SST::Core::Environment::EnvironmentConfigGroup::writeTo(FILE* outFile)
 {
     fprintf(outFile, "\n[%s]\n", groupName.c_str());
 
-    for ( auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++ ) {
-        fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
+    for ( auto& param : params ) {
+        fprintf(outFile, "%s=%s\n", param.first.c_str(), param.second.c_str());
     }
 }
 
 SST::Core::Environment::EnvironmentConfiguration::~EnvironmentConfiguration()
 {
     // Delete all the groups we have created
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        delete groupItr->second;
+    for ( auto& group : groups ) {
+        delete group.second;
     }
 }
 
@@ -134,8 +134,8 @@ SST::Core::Environment::EnvironmentConfiguration::getGroupNames()
 {
     std::set<std::string> groupNames;
 
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        groupNames.insert(groupItr->first);
+    for ( auto& group : groups ) {
+        groupNames.insert(group.first);
     }
 
     return groupNames;
@@ -150,8 +150,8 @@ SST::Core::Environment::EnvironmentConfiguration::getGroupByName(const std::stri
 void
 SST::Core::Environment::EnvironmentConfiguration::print()
 {
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        groupItr->second->print();
+    for ( auto& group : groups ) {
+        group.second->print();
     }
 }
 
@@ -171,8 +171,8 @@ SST::Core::Environment::EnvironmentConfiguration::writeTo(const std::string& fil
     // exclusive since no one else should muck with it)
     flock(outputFD, LOCK_EX);
 
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        groupItr->second->writeTo(output);
+    for ( auto& group : groups ) {
+        group.second->writeTo(output);
     }
 
     flock(outputFD, LOCK_UN);
@@ -182,7 +182,7 @@ SST::Core::Environment::EnvironmentConfiguration::writeTo(const std::string& fil
 void
 SST::Core::Environment::EnvironmentConfiguration::writeTo(FILE* output)
 {
-    for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {
-        groupItr->second->writeTo(output);
+    for ( auto& group : groups ) {
+        group.second->writeTo(output);
     }
 }

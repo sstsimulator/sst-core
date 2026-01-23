@@ -356,8 +356,8 @@ BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
 
         // Create prefix string
         std::wstring prefix;
-        for ( size_t i = 0; i < region_stack.size(); ++i ) {
-            if ( region_stack[i].second )
+        for ( auto& i : region_stack ) {
+            if ( i.second )
                 prefix += L"│ ";
             else
                 prefix += L"  ";
