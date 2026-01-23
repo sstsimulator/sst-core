@@ -434,10 +434,10 @@ ConfigGraph::findComponent(ComponentId_t id) const
 ConfigComponent*
 ConfigGraph::findComponentByName(const std::string& name)
 {
-    std::string origname(name);
-    auto        index    = origname.find(':');
-    std::string compname = origname.substr(0, index);
-    auto        itr      = comps_by_name_.find(compname);
+    const std::string& origname(name);
+    auto               index    = origname.find(':');
+    std::string        compname = origname.substr(0, index);
+    auto               itr      = comps_by_name_.find(compname);
 
     // Check to see if component was found
     if ( itr == comps_by_name_.end() ) return nullptr;
