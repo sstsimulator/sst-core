@@ -277,9 +277,6 @@ private:
 
     static bool autoCompleteEnable; // skk = true;
 
-    // gdb/lldb thread spin support
-    uint64_t spinner = 1;
-
     // logging support
     static std::ofstream loggingFile;
     static std::ifstream replayFile;
@@ -349,9 +346,6 @@ private:
     // User defined commands
     bool cmd_define(std::vector<std::string>& tokens);
     bool cmd_document(std::vector<std::string>& tokens);
-
-    // LLDB/GDB helper
-    bool cmd_spinThread(std::vector<std::string>& tokens);
 
     // command entry point
     bool dispatch_cmd(std::string& cmd);

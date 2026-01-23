@@ -113,8 +113,6 @@ SimpleDebugger::SimpleDebugger(Params& params) :
             [this](std::vector<std::string>& tokens) { return cmd_define(tokens); } },
         { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
             [this](std::vector<std::string>& tokens) { return cmd_document(tokens); } },
-        { "spinThread", "spin", "enter spin loop. See SimpleDebugger::cmd_spinThread", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_spinThread(tokens); } },
     });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
@@ -183,14 +181,9 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                      "\ttab: auto-completion\n"
                      "\tctrl-a: move cursor to beginning of line\n"
                      "\tctrl-b: move cursor to the left\n"
-                     "\tctrl-d: delete character at cursor\n"
+                     "\tctrl-d: delete character at cursor or quit debugger\n"
                      "\tctrl-e: move cursor to end of line\n"
                      "\tctrl-f: move cursor to the right\n" },
-        { "spinThread", ": (Deprecated) Put current thread in an infinite loop to allow\n"
-                        "an external debug to attach. The debugger can clear the spin\n"
-                        "condition and continue execution. On entry, the process id will\n"
-                        "be printed. Once in the the debugger, set the breakpoint in\n"
-                        "SimpleDebugger::cmd_spinThread (see code comments for more info)\n" },
         { "define", "<cmd-name>: enter a command sequence for a user defined command.\n"
                     "Terminate the sequence by typing \"end\"\n" },
         { "document", "<cmd-name>: provide help documentation for a user defined command.\n"
@@ -1321,24 +1314,6 @@ SimpleDebugger::cmd_document(std::vector<std::string>& tokens)
     }
     if ( cmdRegistry.beginDocCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DOCUMENT;
 
-    return true;
-}
-
-// gdb helper. Recommended SST configuration
-// CXXFLAGS="-g3 -O0" CFLAGS="-g3 -O0"  ../configure --prefix=$SST_CORE_HOME --enable-debug'
-bool
-SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
-{
-    // Print the watch points
-    std::cout << "Spinning PID " << getpid() << std::endl;
-    while ( spinner > 0 ) {
-        spinner++;
-        usleep(100000);
-        // set debug breakpoint here and set spinner to 0 to continue
-        if ( spinner % 10 == 0 ) std::cout << "." << std::flush;
-    }
-    spinner = 1; // reset spinner
-    std::cout << std::endl;
     return true;
 }
 
