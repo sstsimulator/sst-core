@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <utility>
 
 // #include "nlohmann/json.hpp"
 // using json = nlohmann::json;
@@ -27,9 +28,9 @@
 namespace SST::Core {
 
 SSTCPTModelDefinition::SSTCPTModelDefinition(
-    const std::string& script_file, int UNUSED(verbosity), Config* config, double UNUSED(start_time)) :
+    std::string script_file, int UNUSED(verbosity), Config* config, double UNUSED(start_time)) :
     SSTModelDescription(config),
-    manifest_(script_file),
+    manifest_(std::move(script_file)),
     config_(config)
 {}
 

@@ -20,13 +20,14 @@
 
 #include <cinttypes>
 #include <cstdio>
+#include <utility>
 
 namespace SST {
 
-ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
+ComponentInfo::ComponentInfo(ComponentId_t id, std::string name) :
     id_(id),
     parent_info(nullptr),
-    name(name),
+    name(std::move(name)),
     type(""),
     link_map(nullptr),
     component(nullptr),
@@ -81,12 +82,12 @@ ComponentInfo::ComponentInfo() :
 // }
 
 // Constructor used for Anonymous SubComponents
-ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type,
-    const std::string& slot_name, int slot_num, uint64_t share_flags /*, const Params& params_in*/) :
+ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, std::string type, std::string slot_name,
+    int slot_num, uint64_t share_flags /*, const Params& params_in*/) :
     id_(id),
     parent_info(parent_info),
     name(""),
-    type(type),
+    type(std::move(type)),
     link_map(nullptr),
     component(nullptr),
     params(/*new Params()*/ nullptr),
@@ -97,7 +98,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const
     statLoadLevel(0),
     coordinates(parent_info->coordinates),
     subIDIndex(1),
-    slot_name(slot_name),
+    slot_name(std::move(slot_name)),
     slot_num(slot_num),
     share_flags(share_flags)
 {
@@ -387,11 +388,10 @@ ComponentInfo::hasLinks() const
 
 ////  Functions for testing serialization
 
-ComponentInfo::ComponentInfo(
-    ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter tv) :
+ComponentInfo::ComponentInfo(ComponentId_t id, std::string name, std::string slot_name, TimeConverter tv) :
     id_(id),
     parent_info(nullptr),
-    name(name),
+    name(std::move(name)),
     type(""),
     link_map(nullptr),
     component(nullptr),
@@ -403,7 +403,7 @@ ComponentInfo::ComponentInfo(
     all_stat_config_(nullptr),
     coordinates(3, 0.0),
     subIDIndex(1),
-    slot_name(slot_name),
+    slot_name(std::move(slot_name)),
     slot_num(-1),
     share_flags(0)
 {}

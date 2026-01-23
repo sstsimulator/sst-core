@@ -30,6 +30,7 @@
 #include <atomic>
 #include <cinttypes>
 #include <sys/time.h>
+#include <utility>
 
 namespace SST {
 
@@ -309,11 +310,11 @@ SyncManager::setupSyncObjects()
     }
 }
 
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
+SyncManager::SyncManager(RankInfo rank, RankInfo num_ranks, SimTime_t min_part,
     const std::vector<SimTime_t>& UNUSED(interThreadLatencies), RealTimeManager* real_time) :
     Action(),
-    rank_(rank),
-    num_ranks_(num_ranks),
+    rank_(std::move(rank)),
+    num_ranks_(std::move(num_ranks)),
     threadSync_(nullptr),
     min_part_(min_part),
     real_time_(real_time)

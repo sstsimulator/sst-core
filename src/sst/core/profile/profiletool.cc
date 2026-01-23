@@ -16,14 +16,15 @@
 #include "sst/core/sst_types.h"
 
 #include <atomic>
+#include <utility>
 
 namespace SST::Profile {
 
 SST_ELI_DEFINE_INFO_EXTERN(ProfileTool)
 SST_ELI_DEFINE_CTOR_EXTERN(ProfileTool)
 
-ProfileTool::ProfileTool(const std::string& name) :
-    name(name)
+ProfileTool::ProfileTool(std::string name) :
+    name(std::move(name))
 {}
 
 } // namespace SST::Profile

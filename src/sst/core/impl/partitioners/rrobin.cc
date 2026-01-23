@@ -16,11 +16,13 @@
 #include "sst/core/model/configGraph.h"
 #include "sst/core/warnmacros.h"
 
+#include <utility>
+
 namespace SST::IMPL::Partition {
 
 SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
     SSTPartitioner(),
-    world_size(world_size)
+    world_size(std::move(world_size))
 {}
 
 void
