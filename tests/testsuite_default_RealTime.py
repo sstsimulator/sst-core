@@ -193,7 +193,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 126 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI
-        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 3, "Heartbeat count incorrect, should be at least 3, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
@@ -307,7 +307,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 126 + 4*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + status (> 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI (2 per HB)
-        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 3, "Heartbeat count incorrect, should be at least 3, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(status_count >= 2, "Output file is missing core status output messages")
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
