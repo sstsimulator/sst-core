@@ -597,6 +597,12 @@ private:
 
 
     /**
+       Gets the next value or the order field of the link.  The ordering of events based on links will be based on
+       the order that configureLink() is called.
+    */
+    virtual uint32_t getNextLinkOrder();
+
+    /**
        Handles the profile points, default timebase, handler tracking and checkpointing.
 
        @param tc TimeConverter representing the period of the clock
