@@ -2257,7 +2257,7 @@ def _read_os_release(filepath: str) -> Tuple[str, str]:
     for line in lines:
         if line.strip() and not line.startswith("#"):
             key, value = line.strip().split("=", 1)
-            entries[key] = value
+            entries[key] = value.strip("\"")
     return entries["ID"], entries.get("VERSION_ID", "")
 
 
