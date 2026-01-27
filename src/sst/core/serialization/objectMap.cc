@@ -47,12 +47,12 @@ ObjectMap::selectParent()
 }
 
 ObjectMap*
-ObjectMap::selectVariable(std::string name, bool& loop_detected)
+ObjectMap::selectVariable(std::string name, bool& loop_detected, bool confirm)
 {
     // kg maybe there is a way we can go through this to detect problems
     //    before changing objmap state to avoid memory corruption bugs.
     loop_detected  = false;
-    ObjectMap* var = findVariable(name);
+    ObjectMap* var = findVariable(name, confirm);
 
     // TODO Would prefer this be a simple nullptr to avoid confusion (bugs)
     //  If we get nullptr back, then it didn't exist.  Just return this

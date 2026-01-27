@@ -31,13 +31,14 @@
 namespace SST::IMPL::Interactive {
 
 // Static Initialization
+//TODO kg is there a naming convention for static vars?
 bool          SimpleDebugger::autoCompleteEnable = true;
 std::ofstream SimpleDebugger::loggingFile;
 std::ifstream SimpleDebugger::replayFile;
 std::string   SimpleDebugger::loggingFilePath = "sst-console.out";
 std::string   SimpleDebugger::replayFilePath  = "sst-console.in";
 bool          SimpleDebugger::enLogging       = false;
-bool          SimpleDebugger::confirm         = true;
+bool          SimpleDebugger::confirm_        = true;
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
@@ -736,7 +737,7 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
     }
 
     bool                                 loop_detected = false;
-    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected);
+    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected, confirm_);
     if ( !new_obj || (new_obj == obj_) ) {
         printf("Unknown object in cd command: %s\n", selection.c_str());
         return false;
@@ -1607,15 +1608,15 @@ SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens)
     }
 
     if ( (tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1") ) {
-        confirm = true;
+        confirm_ = true;
         return true;
     }
     else if ( (tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0") ) {
-        confirm = false;
+        confirm_ = false;
         return true;
     }
 
-    std::cout << "Invalid argument for confirm: must be true or false" << tokens[1] << std::endl;
+    std::cout << "Invalid argument for confirm: must be true or false. <" << tokens[1] << ">" << std::endl;
     return false;
 }
 
@@ -1623,7 +1624,7 @@ bool
 SimpleDebugger::clear_watchlist()
 {
 
-    if ( confirm ) {
+    if ( confirm_ ) {
         std::string line;
         std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
         std::getline(std::cin, line);

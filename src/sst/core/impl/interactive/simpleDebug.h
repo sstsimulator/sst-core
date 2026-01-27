@@ -297,7 +297,7 @@ private:
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
     bool                                                clear_watchlist();
-    static bool confirm; // skk = true; // Ask for confirmation to clear watchlist
+    static bool confirm_; // skk = true; // Ask for confirmation to clear watchlist
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
