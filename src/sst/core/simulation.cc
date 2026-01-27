@@ -592,12 +592,12 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink* clink = *iter;
             // If link is nonlocal, then doesn't affect interthread latencies
-            if ( clink->nonlocal ) continue;
+            if ( clink->nonlocal_ ) continue;
 
             // If link is not nonlocal, see if it crosses a thread boundary
             RankInfo rank[2];
-            rank[0] = comps[COMPONENT_ID_MASK(clink->component[0])]->rank;
-            rank[1] = comps[COMPONENT_ID_MASK(clink->component[1])]->rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink->component_[0])]->rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink->component_[1])]->rank;
             // We only care about links that are on my rank, but
             // different threads
 
@@ -683,13 +683,13 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
     for ( ConfigLinkMap_t::const_iterator iter = graph.links_.begin(); iter != graph.links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
         RankInfo    rank[2];
-        rank[0] = graph.comps_[COMPONENT_ID_MASK(clink->component[0])]->rank;
-        if ( clink->nonlocal ) {
-            rank[1].rank   = clink->component[1];
-            rank[1].thread = clink->latency[1];
+        rank[0] = graph.comps_[COMPONENT_ID_MASK(clink->component_[0])]->rank;
+        if ( clink->nonlocal_ ) {
+            rank[1].rank   = clink->component_[1];
+            rank[1].thread = clink->latency_[1];
         }
         else {
-            rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component[1])]->rank;
+            rank[1] = graph.comps_[COMPONENT_ID_MASK(clink->component_[1])]->rank;
         }
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
@@ -699,43 +699,43 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
         // Same rank, same thread
         else if ( rank[0] == rank[1] ) {
             // Check to see if this is loopback link
-            if ( clink->component[0] == clink->component[1] && clink->port[0] == clink->port[1] ) {
+            if ( clink->component_[0] == clink->component_[1] && clink->port_[0] == clink->port_[1] ) {
                 // This is a loopback, so there is only one link
-                Link* link      = new Link(clink->order);
+                Link* link      = new Link(clink->id_);
                 link->pair_link = link;
-                link->setLatency(clink->latency[0]);
+                link->setLatency(clink->latency_[0]);
 
                 // Add this link to the appropriate LinkMap
-                ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
+                ComponentInfo* cinfo = compInfoMap.getByID(clink->component_[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
-                        clink->component[0]);
+                        clink->component_[0]);
                 }
-                cinfo->getLinkMap()->insertLink(clink->port[0], link);
+                cinfo->getLinkMap()->insertLink(clink->port_[0], link);
             }
             else {
                 // Create a LinkPair to represent this link
-                LinkPair lp(clink->order);
+                LinkPair lp(clink->id_);
 
-                lp.getLeft()->setLatency(clink->latency[0]);
-                lp.getRight()->setLatency(clink->latency[1]);
+                lp.getLeft()->setLatency(clink->latency_[0]);
+                lp.getRight()->setLatency(clink->latency_[1]);
 
                 // Add this link to the appropriate LinkMap
-                ComponentInfo* cinfo = compInfoMap.getByID(clink->component[0]);
+                ComponentInfo* cinfo = compInfoMap.getByID(clink->component_[0]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map. component ID = %" PRIx64 "\n",
-                        clink->component[0]);
+                        clink->component_[0]);
                 }
-                cinfo->getLinkMap()->insertLink(clink->port[0], lp.getLeft());
+                cinfo->getLinkMap()->insertLink(clink->port_[0], lp.getLeft());
 
-                cinfo = compInfoMap.getByID(clink->component[1]);
+                cinfo = compInfoMap.getByID(clink->component_[1]);
                 if ( cinfo == nullptr ) {
                     // This shouldn't happen and is an error
                     sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
                 }
-                cinfo->getLinkMap()->insertLink(clink->port[1], lp.getRight());
+                cinfo->getLinkMap()->insertLink(clink->port_[1], lp.getRight());
             }
         }
         // If we are on same rank, different threads and we are doing
@@ -749,33 +749,33 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
                 local = 1;
             }
 
-            Link* link = new Link(clink->order);
-            link->setLatency(clink->latency[local]);
+            Link* link = new Link(clink->id_);
+            link->setLatency(clink->latency_[local]);
 
             // Need to mutex to access cross_thread_links
             {
                 std::scoped_lock lock(cross_thread_lock);
-                if ( cross_thread_links.find(clink->id) != cross_thread_links.end() ) {
+                if ( cross_thread_links.find(clink->id_) != cross_thread_links.end() ) {
                     // The other side already initialized.  Hook them
                     // together as a pair.
-                    Link* other_link      = cross_thread_links[clink->id];
+                    Link* other_link      = cross_thread_links[clink->id_];
                     link->pair_link       = other_link;
                     other_link->pair_link = link;
                     // Remove entry from map
-                    cross_thread_links.erase(clink->id);
+                    cross_thread_links.erase(clink->id_);
                 }
                 else {
                     // Nothing to do until the other side is created.
                     // Just add myself to the map so the other side can
                     // find me later.
-                    cross_thread_links[clink->id] = link;
+                    cross_thread_links[clink->id_] = link;
                 }
             }
-            ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
+            ComponentInfo* cinfo = compInfoMap.getByID(clink->component_[local]);
             if ( cinfo == nullptr ) {
                 sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
             }
-            cinfo->getLinkMap()->insertLink(clink->port[local], link);
+            cinfo->getLinkMap()->insertLink(clink->port_[local], link);
         }
         // If the components are not in the same thread, then the
         // SyncManager will handle things
@@ -791,26 +791,26 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
 
             // Create a LinkPair to represent this link
-            LinkPair lp(clink->order);
+            LinkPair lp(clink->id_);
 
-            lp.getLeft()->setLatency(clink->latency[local]);
+            lp.getLeft()->setLatency(clink->latency_[local]);
             lp.getRight()->setLatency(0);
             lp.getRight()->setDefaultTimeBase(minPartToTC(1));
 
             // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink->component[local]);
+            ComponentInfo* cinfo = compInfoMap.getByID(clink->component_[local]);
             if ( cinfo == nullptr ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map.");
             }
-            cinfo->getLinkMap()->insertLink(clink->port[local], lp.getLeft());
+            cinfo->getLinkMap()->insertLink(clink->port_[local], lp.getLeft());
 
             // Need to register with both of the syncs (the ones for
             // both local and remote thread)
 
             // For local, just register link with threadSync object so
             // it can map link_id to link*
-            ActivityQueue* sync_q = syncManager->registerLink(rank[remote], rank[local], clink->name, lp.getRight());
+            ActivityQueue* sync_q = syncManager->registerLink(rank[remote], rank[local], clink->name_, lp.getRight());
 
             lp.getLeft()->send_queue = sync_q;
             lp.getRight()->setAsSyncLink();

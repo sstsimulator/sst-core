@@ -54,23 +54,23 @@ JSONConfigGraphOutput::outputLinks(ConfigGraph* graph, std::ofstream& ofs)
             count++;
 
             // general link key:val pairs
-            linkRecord["name"]     = linkItr->name;
-            linkRecord["noCut"]    = linkItr->no_cut;
-            linkRecord["nonlocal"] = linkItr->nonlocal;
+            linkRecord["name"]     = linkItr->name_;
+            linkRecord["noCut"]    = linkItr->no_cut_;
+            linkRecord["nonlocal"] = linkItr->nonlocal_;
 
             // left link
-            linkRecord["left"]["component"] = graph->findComponent(linkItr->component[0])->getFullName();
-            linkRecord["left"]["port"]      = linkItr->port[0];
+            linkRecord["left"]["component"] = graph->findComponent(linkItr->component_[0])->getFullName();
+            linkRecord["left"]["port"]      = linkItr->port_[0];
             linkRecord["left"]["latency"]   = linkItr->latency_str(0);
 
             // right link
-            if ( linkItr->nonlocal ) {
-                linkRecord["right"]["rank"]   = linkItr->component[1];
-                linkRecord["right"]["thread"] = linkItr->latency[1];
+            if ( linkItr->nonlocal_ ) {
+                linkRecord["right"]["rank"]   = linkItr->component_[1];
+                linkRecord["right"]["thread"] = linkItr->latency_[1];
             }
             else {
-                linkRecord["right"]["component"] = graph->findComponent(linkItr->component[1])->getFullName();
-                linkRecord["right"]["port"]      = linkItr->port[1];
+                linkRecord["right"]["component"] = graph->findComponent(linkItr->component_[1])->getFullName();
+                linkRecord["right"]["port"]      = linkItr->port_[1];
                 linkRecord["right"]["latency"]   = linkItr->latency_str(1);
             }
 

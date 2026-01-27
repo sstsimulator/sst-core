@@ -431,7 +431,7 @@ private:
        If it sends to a TimeVortex (or DirectLinkQueue), it is the value used for enforce_link_order (if that feature is
        enabled).
     */
-    explicit Link(uint32_t tag);
+    explicit Link(LinkId_t id);
 
     Link(const Link& l);
 

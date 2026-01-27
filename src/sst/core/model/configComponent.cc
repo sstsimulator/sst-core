@@ -580,27 +580,27 @@ ConfigComponent::checkPorts() const
         const ConfigLink* link = graph_links[links[i]];
         for ( int j = 0; j < 2; j++ ) {
             // If this is a nonlocal link, then there is no port to check for index 1
-            if ( link->nonlocal && j == 1 ) continue;
-            if ( link->component[j] == id ) {
+            if ( link->nonlocal_ && j == 1 ) continue;
+            if ( link->component_[j] == id ) {
                 // If port is not found, print an error
-                if ( !Factory::getFactory()->isPortNameValid(type, link->port[j]) ) {
+                if ( !Factory::getFactory()->isPortNameValid(type, link->port_[j]) ) {
                     // For now this is not a fatal error
                     // found_error = true;
                     Output::getDefaultObject().fatal(CALL_INFO, 1,
                         "ERROR:  Attempting to connect to unknown port: %s, "
                         "in component %s of type %s.\n",
-                        link->port[j].c_str(), name.c_str(), type.c_str());
+                        link->port_[j].c_str(), name.c_str(), type.c_str());
                 }
 
                 // Check for multiple links hooked to port
-                auto ret = ports.insert(std::make_pair(link->port[j], link->name));
+                auto ret = ports.insert(std::make_pair(link->port_[j], link->name_));
                 if ( !ret.second ) {
                     // Check to see if this is a loopback link
-                    if ( ret.first->second != link->name )
+                    if ( ret.first->second != link->name_ )
                         // Not a loopback link, fatal...
                         Output::getDefaultObject().fatal(CALL_INFO, 1,
-                            "ERROR: Port %s of Component %s connected to two links: %s, %s.\n", link->port[j].c_str(),
-                            name.c_str(), link->name.c_str(), ret.first->second.c_str());
+                            "ERROR: Port %s of Component %s connected to two links: %s, %s.\n", link->port_[j].c_str(),
+                            name.c_str(), link->name_.c_str(), ret.first->second.c_str());
                 }
             }
         }

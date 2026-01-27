@@ -173,21 +173,21 @@ ConfigGraph::checkRanks(RankInfo ranks)
     for ( auto& link : links_ ) {
         RankInfo r0(-1, -1);
         RankInfo r1(-1, -1);
-        r0 = comps_[COMPONENT_ID_MASK(link->component[0])]->rank;
+        r0 = comps_[COMPONENT_ID_MASK(link->component_[0])]->rank;
 
-        if ( link->nonlocal ) {
-            r1.rank   = link->component[1];
-            r1.thread = link->latency[1];
+        if ( link->nonlocal_ ) {
+            r1.rank   = link->component_[1];
+            r1.thread = link->latency_[1];
         }
         else {
-            r1 = comps_[COMPONENT_ID_MASK(link->component[1])]->rank;
+            r1 = comps_[COMPONENT_ID_MASK(link->component_[1])]->rank;
         }
 
         if ( r0.rank != r1.rank ) {
-            link->cross_rank = true;
+            link->cross_rank_ = true;
         }
         else if ( r0.thread != r1.thread ) {
-            link->cross_thread = true;
+            link->cross_thread_ = true;
         }
     }
 
@@ -244,21 +244,22 @@ ConfigGraph::checkForStructuralErrors()
         /*
           Two conditions we need to look for:
 
-          1 - Unused link.  This happens when order == 0 and we are NOT a nonlocal link
+          1 - Unused link.  This happens when component_[0] is unset and we are NOT a nonlocal link
 
-          2 - Dangling link.  This happens when order == 0 and we are a nonlocal link, or when order == 0 and we are NOT
-              a nonlocal link
+          2 - Dangling link.  This happens when component_[0] is unset and we are a nonlocal link, or when component_[0]
+              is set and component_[1] is unset and we are NOT a nonlocal link
         */
-        if ( clink->order == 0 ) {
-            if ( !clink->nonlocal )
-                output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+        if ( clink->component_[0] == UNSET_COMPONENT_ID ) {
+            if ( !clink->nonlocal_ )
+                output.output("WARNING:  Found unused link: %s\n", clink->name_.c_str());
             else
-                output.output("WARNING:  Found dangling nonlocal link: %s\n", clink->name.c_str());
+                output.output("WARNING:  Found dangling nonlocal link: %s\n", clink->name_.c_str());
             found_error = true;
         }
-        else if ( clink->order == 1 && !clink->nonlocal ) {
+        // If we do this check, we know component_[0] is set
+        else if ( clink->component_[1] == UNSET_COMPONENT_ID && !clink->nonlocal_ ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
-                clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
+                clink->name_.c_str(), comps_[clink->component_[0]]->name.c_str());
             found_error = true;
         }
     }
@@ -331,31 +332,31 @@ ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, 
 
     // Check to make sure the link has not been referenced too many
     // times.
-    if ( link->order >= 2 ) {
-        output.fatal(
-            CALL_INFO, 1, "ERROR: Parsing SDL file: Link %s referenced more than two times\n", link->name.c_str());
-    }
-    else if ( link->order == 1 && link->nonlocal ) {
+    if ( link->component_[0] != UNSET_COMPONENT_ID && link->nonlocal_ ) {
         output.fatal(CALL_INFO, 1,
             "ERROR: Parsing SDL file: Attempting to connect second component to link %s which is set as non-local\n",
-            link->name.c_str());
+            link->name_.c_str());
+    }
+    else if ( link->component_[0] != UNSET_COMPONENT_ID && link->component_[1] != UNSET_COMPONENT_ID ) {
+        output.fatal(
+            CALL_INFO, 1, "ERROR: Parsing SDL file: Link %s referenced more than two times\n", link->name_.c_str());
     }
 
     // Check to make sure that a latency was specified, either in the
     // call or at ConfigLink construct time
-    if ( nullptr == latency_str && link->latency[0] == 0 ) {
+    if ( nullptr == latency_str && link->latency_[0] == 0 ) {
         output.fatal(CALL_INFO, 1, "ERROR: Parsing SDL file: Connecting link with no latency assigned: %s\n",
-            link->name.c_str());
+            link->name_.c_str());
     }
 
     // Update link information
-    int index              = link->order++;
-    link->component[index] = comp_id;
-    link->port[index]      = port;
+    int index               = link->component_[0] == UNSET_COMPONENT_ID ? 0 : 1;
+    link->component_[index] = comp_id;
+    link->port_[index]      = port;
 
     // A nullptr for latency_str means use the latency specified at
     // link creation
-    if ( latency_str ) link->latency[index] = ConfigLink::getIndexForLatency(latency_str);
+    if ( latency_str ) link->latency_[index] = ConfigLink::getIndexForLatency(latency_str);
 
     // Need to add this link to the ConfigComponent's link list.
     // Check to make sure the link doesn't already exist in the
@@ -364,9 +365,9 @@ ConfigGraph::addLink(ComponentId_t comp_id, LinkId_t link_id, const char* port, 
     // first reference to the link, or if link->component[0] is not
     // equal to the current component sent into this call, then it is
     // not already in the list.
-    if ( link->order == 1 || link->component[0] != comp_id ) {
+    if ( index == 0 || link->component_[0] != comp_id ) {
         auto compLinks = &findComponent(comp_id)->links;
-        compLinks->push_back(link->id);
+        compLinks->push_back(link->id_);
     }
 }
 
@@ -374,19 +375,19 @@ void
 ConfigGraph::addNonLocalLink(LinkId_t link_id, int rank, int thread)
 {
     ConfigLink* link = links_[link_id];
-    if ( link->nonlocal ) {
+    if ( link->nonlocal_ ) {
         output.fatal(CALL_INFO, 1,
             "ERROR: Parsing SDL file: Trying to set link %s as as non-local, which is already set to non-local\n",
-            link->name.c_str());
+            link->name_.c_str());
     }
-    else if ( link->order == 2 ) {
+    else if ( link->component_[1] != UNSET_COMPONENT_ID ) {
         output.fatal(CALL_INFO, 1,
             "ERROR: Parsing SDL file: Link %s being set as non-local, but is already connected to two components\n",
-            link->name.c_str());
+            link->name_.c_str());
     }
-    link->nonlocal     = true;
-    link->component[1] = rank;
-    link->latency[1]   = thread;
+    link->nonlocal_     = true;
+    link->component_[1] = rank;
+    link->latency_[1]   = thread;
 }
 
 
@@ -398,9 +399,9 @@ ConfigGraph::createLink(const char* name, const char* latency)
     ConfigLink* link = new ConfigLink(id, name);
     links_.insert(link);
     if ( latency ) {
-        uint32_t index   = ConfigLink::getIndexForLatency(latency);
-        link->latency[0] = index;
-        link->latency[1] = index;
+        uint32_t index    = ConfigLink::getIndexForLatency(latency);
+        link->latency_[0] = index;
+        link->latency_[1] = index;
     }
     return id;
 }
@@ -408,7 +409,7 @@ ConfigGraph::createLink(const char* name, const char* latency)
 void
 ConfigGraph::setLinkNoCut(LinkId_t link_id)
 {
-    links_[link_id]->no_cut = true;
+    links_[link_id]->no_cut_ = true;
 }
 
 bool
@@ -477,12 +478,12 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
     // Need to see if the link is connected to components in the
     // old and/or new graph
     RankInfo ranks[2];
-    ranks[0] = ograph_->findComponent(link->component[0])->rank;
-    if ( link->nonlocal ) {
+    ranks[0] = ograph_->findComponent(link->component_[0])->rank;
+    if ( link->nonlocal_ ) {
         ranks[1].rank = -1;
     }
     else {
-        ranks[1] = ograph_->findComponent(link->component[1])->rank;
+        ranks[1] = ograph_->findComponent(link->component_[1])->rank;
     }
 
     // Check to see which components are in which sets
@@ -509,7 +510,7 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         // Connected in original graph, not in new. Just return it
 
         // See if link needs to be set as nonlocal
-        if ( !link->nonlocal && (c0_in_orig ^ c1_in_orig) ) {
+        if ( !link->nonlocal_ && (c0_in_orig ^ c1_in_orig) ) {
             // Only one side is in the set. Figure out which one and set the link as nonlocal
             int index = c0_in_orig ? 0 : 1;
             link->setAsNonLocal(index, ranks[(index + 1) % 2]);
@@ -521,7 +522,7 @@ ConfigGraph::GraphFilter::operator()(ConfigLink* link)
         ngraph_->links_.insert(link);
 
         // See if link needs to be set as nonlocal
-        if ( !link->nonlocal && (c0_in_new ^ c1_in_new) ) {
+        if ( !link->nonlocal_ && (c0_in_new ^ c1_in_new) ) {
             // Only one side is in the set. Figure out which one and set the link as nonlocal
             int index = c0_in_new ? 0 : 1;
             link->setAsNonLocal(index, ranks[(index + 1) % 2]);
@@ -675,7 +676,7 @@ ConfigGraph::getMinimumPartitionLatency()
     SimTime_t graph_min_part = std::numeric_limits<SimTime_t>::max();
 
     for ( auto& link : links_ ) {
-        if ( link->cross_rank ) {
+        if ( link->cross_rank_ ) {
             SimTime_t min_lat = link->getMinLatency();
             if ( min_lat < graph_min_part ) {
                 graph_min_part = min_lat;
@@ -706,13 +707,13 @@ ConfigGraph::getPartitionGraph()
     for ( ConfigLinkMap_t::iterator it = links_.begin(); it != links_.end(); ++it ) {
         const ConfigLink* link = *it;
 
-        const ConfigComponent* comp0 = comps_[COMPONENT_ID_MASK(link->component[0])];
-        const ConfigComponent* comp1 = comps_[COMPONENT_ID_MASK(link->component[1])];
+        const ConfigComponent* comp0 = comps_[COMPONENT_ID_MASK(link->component_[0])];
+        const ConfigComponent* comp1 = comps_[COMPONENT_ID_MASK(link->component_[1])];
 
         plinks.insert(PartitionLink(*link));
 
-        pcomps[comp0->id]->links.push_back(link->id);
-        pcomps[comp1->id]->links.push_back(link->id);
+        pcomps[comp0->id]->links.push_back(link->id_);
+        pcomps[comp1->id]->links.push_back(link->id_);
     }
     return graph;
 }
@@ -767,12 +768,12 @@ ConfigGraph::getCollapsedPartitionGraph()
             for ( LinkId_t id : comp->allLinks() ) {
                 const ConfigLink* link = links_[id];
 
-                if ( group.find(COMPONENT_ID_MASK(link->component[0])) == group.end() ||
-                     group.find(COMPONENT_ID_MASK(link->component[1])) == group.end() ) {
-                    pcomp->links.push_back(link->id);
+                if ( group.find(COMPONENT_ID_MASK(link->component_[0])) == group.end() ||
+                     group.find(COMPONENT_ID_MASK(link->component_[1])) == group.end() ) {
+                    pcomp->links.push_back(link->id_);
                 }
                 else {
-                    deleted_links.insert(link->id);
+                    deleted_links.insert(link->id_);
                 }
             }
         }
@@ -786,7 +787,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     // This will insert in order since the iterator is from a
     // SparseVectorMap.
     for ( ConfigLinkMap_t::iterator i = links_.begin(); i != links_.end(); ++i ) {
-        if ( deleted_links.find((*i)->id) == deleted_links.end() ) plinks.insert(*(*i));
+        if ( deleted_links.find((*i)->id_) == deleted_links.end() ) plinks.insert(*(*i));
     }
 
     // Just need to fix up the component fields for the links.  Do
@@ -797,8 +798,8 @@ ConfigGraph::getCollapsedPartitionGraph()
         PartitionComponent* pcomp = *i;
         for ( LinkIdMap_t::iterator j = pcomp->links.begin(); j != pcomp->links.end(); ++j ) {
             PartitionLink& plink = plinks[*j];
-            if ( pcomp->group.contains(plink.component[0]) ) plink.component[0] = pcomp->id;
-            if ( pcomp->group.contains(plink.component[1]) ) plink.component[1] = pcomp->id;
+            if ( pcomp->group.contains(plink.component_[0]) ) plink.component_[0] = pcomp->id;
+            if ( pcomp->group.contains(plink.component_[1]) ) plink.component_[1] = pcomp->id;
         }
     }
 
@@ -834,10 +835,10 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
 
         // If this is a no_cut link, need to follow it to next
         // component if next component is not already in group
-        if ( link->no_cut ) {
+        if ( link->no_cut_ ) {
             ComponentId_t id = COMPONENT_ID_MASK(
-                (COMPONENT_ID_MASK(link->component[0]) == COMPONENT_ID_MASK(start) ? link->component[1]
-                                                                                   : link->component[0]));
+                (COMPONENT_ID_MASK(link->component_[0]) == COMPONENT_ID_MASK(start) ? link->component_[1]
+                                                                                    : link->component_[0]));
             // Check to see if this id is already in the group.  We
             // can do it one of two ways: check the visited variable,
             // or see if it is in the group set already.  We look in
