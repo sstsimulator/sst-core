@@ -127,7 +127,9 @@ public:
     InteractiveRealTimeAction();
     void execute() override;
     bool isValidSigalrmAction() override { return false; }
-    bool canInitiateCheckpoint() override { return true; }
+    // Separate --checkpoint-enable flag is currently used to control checkpointing for interactive console
+    // If we set canInitiateCheckpoint to true here, it will ALWAYS set up checkpointing and the flag is unnecessary
+    bool canInitiateCheckpoint() override { return false; }
 };
 
 /* Wrapper for RealTimeActions that occur on a time interval */

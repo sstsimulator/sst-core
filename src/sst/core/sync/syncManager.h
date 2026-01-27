@@ -146,6 +146,8 @@ public:
     ActivityQueue* registerLink(
         const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
     void exchangeLinkInfo();
+    void handleShutdown();
+    void handleInteractiveConsole();
     void execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
@@ -186,8 +188,16 @@ private:
     sync_type_t next_sync_type_;
     SimTime_t   min_part_;
 
-    RealTimeManager*  real_time_;
-    CheckpointAction* checkpoint_;
+    RealTimeManager*                 real_time_;
+    CheckpointAction*                checkpoint_;
+    static std::atomic<unsigned>     ckpt_generate_;
+    static std::atomic<unsigned>     enter_interactive_mask_;
+    static std::atomic<int>          current_ic_thread_;
+    static std::atomic<int>          current_ic_state_;
+    static std::atomic<unsigned>     enter_shutdown_;
+    static std::atomic<unsigned>     endSim_;
+    static std::atomic<unsigned>     shutdown_mode_;
+    static Core::ThreadSafe::Barrier ic_barrier_;
 
     SyncProfileToolList* profile_tools_ = nullptr;
 

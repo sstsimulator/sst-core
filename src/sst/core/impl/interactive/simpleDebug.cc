@@ -30,6 +30,15 @@
 
 namespace SST::IMPL::Interactive {
 
+// Static Initialization
+//TODO kg is there a naming convention for static vars?
+bool          SimpleDebugger::autoCompleteEnable = true;
+std::ofstream SimpleDebugger::loggingFile;
+std::ifstream SimpleDebugger::replayFile;
+std::string   SimpleDebugger::loggingFilePath = "sst-console.out";
+std::string   SimpleDebugger::replayFilePath  = "sst-console.in";
+bool          SimpleDebugger::enLogging       = false;
+bool          SimpleDebugger::confirm_        = true;
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
@@ -40,11 +49,15 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     if ( sstReplayFilePath.size() > 0 ) injectedCommand << "replay " << sstReplayFilePath << std::endl;
 
     // Populate the command registry
-    cmdRegistry = {
+    cmdRegistry = CommandRegistry({
         { "help", "?", "<[CMD]>: show this help or detailed command help", ConsoleCommandGroup::GENERAL,
             [this](std::vector<std::string>& tokens) { return cmd_help(tokens); } },
         { "verbose", "v", "[mask]: set verbosity mask or print if no mask specified", ConsoleCommandGroup::GENERAL,
             [this](std::vector<std::string>& tokens) { return cmd_verbose(tokens); } },
+        { "info", "info", "\"current\"|\"all\" print summary for current thread or all threads",
+            ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens) { return cmd_info(tokens); } },
+        { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL,
+            [this](std::vector<std::string>& tokens) { return cmd_thread(tokens); } },
         { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
             [this](std::vector<std::string>& tokens) { return cmd_setConfirm(tokens); } },
         { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
@@ -97,12 +110,14 @@ SimpleDebugger::SimpleDebugger(Params& params) :
             [this](std::vector<std::string>& tokens) { return cmd_autoComplete(tokens); } },
         { "clear", "clr", "reset terminal", ConsoleCommandGroup::MISC,
             [this](std::vector<std::string>& tokens) { return cmd_clear(tokens); } },
-        { "spinThread", "spin", "enter spin loop. See SimpleDebugger::cmd_spinThread", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_spinThread(tokens); } },
-    };
+        { "define", "def", "define a user command sequence", ConsoleCommandGroup::MISC,
+            [this](std::vector<std::string>& tokens) { return cmd_define(tokens); } },
+        { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
+            [this](std::vector<std::string>& tokens) { return cmd_document(tokens); } },
+    });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
-    cmdHelp = {
+    cmdRegistry.cmdHelp = {
         { "verbose", "[mask]: set verbosity mask or print if no mask specified\n"
                      "\tA mask is used to select which features to enable verbosity.\n"
                      "\tTo turn on all features set the mask to 0xffffffff\n"
@@ -112,6 +127,7 @@ SimpleDebugger::SimpleDebugger(Params& params) :
         { "set", "<obj> <value>: sets an object in the current scope to the provided value\n"
                  "\tobject must be a 'fundamental type' (arithmetic or string)\n"
                  "\t e.g. set mystring hello world" },
+        { "examine", "[e][<obj>]: prints object in the current scope\n" },
         { "watchpoints",
             "Manage watchpoints (with or without tracing)\n"
             "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
@@ -123,7 +139,9 @@ SimpleDebugger::SimpleDebugger(Params& params) :
             "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
             "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
             "\tAvailable actions include: \n"
-            "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown" },
+            "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown"
+            "\t  Note: checkpoint action must be enabled at startup via the '--checkpoint-enable' command line "
+            "option\n" },
         { "watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
                    "\tExample: watch var1 > 90 && var2 < 100 || var3 changed" },
         { "trace",
@@ -164,19 +182,25 @@ SimpleDebugger::SimpleDebugger(Params& params) :
                      "\ttab: auto-completion\n"
                      "\tctrl-a: move cursor to beginning of line\n"
                      "\tctrl-b: move cursor to the left\n"
-                     "\tctrl-d: delete character at cursor\n"
+                     "\tctrl-d: delete character at cursor or quit debugger\n"
                      "\tctrl-e: move cursor to end of line\n"
                      "\tctrl-f: move cursor to the right\n" },
+        { "define", "<cmd-name>: enter a command sequence for a user defined command.\n"
+                    "Terminate the sequence by typing \"end\"\n" },
+        { "document", "<cmd-name>: provide help documentation for a user defined command.\n"
+                      "The first line will be summarized in the short help text.\n"
+                      "Remaining lines will be provided in detailed help\n"
+                      "Terminate the sequence by typing \"end\"\n" },
     };
 
     // Command autofill strings
     std::list<std::string> cmdStrings;
-    for ( const ConsoleCommand& c : cmdRegistry ) {
+    for ( const ConsoleCommand& c : cmdRegistry.getRegistryVector() ) {
         cmdStrings.emplace_back(c.str_long());
         cmdStrings.emplace_back(c.str_short());
     }
     cmdStrings.sort();
-    cmdLineEditor.set_cmd_strings(cmdStrings); // could also realize as callback to generalize
+    cmdLineEditor.set_cmd_strings(cmdStrings);
 
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
@@ -189,9 +213,46 @@ SimpleDebugger::~SimpleDebugger()
 }
 
 void
+SimpleDebugger::summary()
+{
+#if 0
+    RankInfo info = getRank();
+    RankInfo nRanks = getNumRanks();
+    std::count << "\n(Rank:" << info.rank << " / " << nRanks.rank
+        << " Thread:" << info.thread << "/" << nRanks.thread
+        << ")\n";
+    std::cout << " -- Trigger Status\n";
+#endif
+
+    std::cout << " -- Component Summary\n";
+#if 0
+    std::vector<std::string> tokens;
+    if (nullptr == obj_) {
+        obj_ = getComponentObjectMap();
+    }
+    cmd_ls(tokens);
+#else
+    SST::Core::Serialization::ObjectMap* baseObj = getComponentObjectMap();
+    auto&                                vars    = baseObj->getVariables();
+    for ( auto& x : vars ) {
+        if ( x.second->isFundamental() ) {
+            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+        }
+        else {
+            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+        }
+    }
+    std::cout << std::endl;
+#endif
+}
+
+int
 SimpleDebugger::execute(const std::string& msg)
 {
-    printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
+    RankInfo info   = getRank();
+    RankInfo nRanks = getNumRanks();
+    printf("\n---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", info.rank, info.thread,
+        getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 
     // Create a new ObjectMap
@@ -200,19 +261,39 @@ SimpleDebugger::execute(const std::string& msg)
     // Descend into the name_stack
     cd_name_stack();
 
-    done = false;
+    done     = false;
+    retState = DONE;
+
+    // Select the input source and next command line
     std::string line;
     while ( !done ) {
-
         try {
+            // User input prompt (except during user command)
+            if ( eStack.size() == 0 ) std::cout << "> " << std::flush;
+
+            // Logging disable has edge cases for stack push/pop
+            bool squashLogging = false;
+
             // User input prompt
-            std::cout << "> " << std::flush;
+            // std::cout << "R" << info.rank << ":T" << info.thread << "> " << std::flush;
 
             if ( !injectedCommand.str().empty() ) {
-                // Injected command stream (currently just one command)
+                // Injected commands allow sst command line options to cause actions (currently only replay)
                 line = injectedCommand.str();
                 injectedCommand.str("");
                 std::cout << line << std::endl;
+            }
+            else if ( eStack.size() > 0 ) {
+                // Do no log internals of user defined command
+                squashLogging = true;
+                // Execute next instruction in a user defined command
+                line          = eState.next();
+                if ( eState.ret() ) {
+                    eState = eStack.top();
+                    eStack.pop();
+                    // back to normal command entry
+                    if ( eStack.size() == 0 ) cmdHistoryBuf.enable(true);
+                }
             }
             else if ( replayFile.is_open() ) {
                 // Replay commands from file
@@ -237,10 +318,11 @@ SimpleDebugger::execute(const std::string& msg)
                     std::getline(std::cin, line);
             }
 
+            // We have a constructed command line. Ship it
             dispatch_cmd(line);
 
-            // Command Logging
-            if ( enLogging ) loggingFile << line.c_str() << std::endl;
+            // Log commands if enabled and not executing a user defined command
+            if ( enLogging && !squashLogging ) loggingFile << line.c_str() << std::endl;
             // This prevents logging the 'logging' command
             if ( loggingFile.is_open() ) enLogging = true;
         }
@@ -248,9 +330,9 @@ SimpleDebugger::execute(const std::string& msg)
             std::cout << "Parsing error. Ignoring " << line << std::endl;
         }
     }
-
     // Save the position on the name_stack, and clear obj_
     save_name_stack();
+    return retState;
 }
 
 // Save the name stack of the current position, and clear obj_
@@ -334,19 +416,64 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         }
     }
 
-    // Search for the requested command and execute it if found.
-    for ( auto consoleCommand : cmdRegistry ) {
-        if ( consoleCommand.match(tokens[0]) ) {
-            bool succeed = consoleCommand.exec(tokens);
+    // Check for 'end' string to terminate special line entry modes
+    if ( (line_entry_mode != LINE_ENTRY_MODE::NORMAL) && (cmd == "end") ) {
+        if ( line_entry_mode == LINE_ENTRY_MODE::DEFINE )
+            cmdRegistry.commitUserCommand();
+        else if ( line_entry_mode == LINE_ENTRY_MODE::DOCUMENT )
+            cmdRegistry.commitDocCommand();
+        else {
+            std::cout << "Error: unknown line entry mode" << std::endl;
+            assert(false);
+        }
+
+        line_entry_mode = LINE_ENTRY_MODE::NORMAL;
+        std::cout << "[ returning to normal line entry mode ]" << std::endl;
+        return true;
+    }
+
+    // Do the right thing based on the entry mode
+    switch ( line_entry_mode ) {
+    case LINE_ENTRY_MODE::NORMAL:
+    {
+        // normal execution
+        auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
+        if ( consoleCommand.second ) {
+            bool succeed = consoleCommand.first.exec(tokens);
             cmdHistoryBuf.append(cmd);
             return succeed;
         }
-    }
+        // user defined entry
+        consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::USER);
+        if ( consoleCommand.second ) {
+            cmdHistoryBuf.append(cmd);
+            // Do nothing if user command is empty
+            if ( cmdRegistry.commandIsEmpty(tokens[0]) ) return true;
+            // save current context
+            eStack.push(eState);
+            // new context for user call
+            eState = { consoleCommand.first, tokens, cmdRegistry.userCommandInsts(tokens[0]) };
+            // History capture disabled when stack size > 0
+            cmdHistoryBuf.enable(false);
+            return true;
+        }
 
-    // No matching command found
-    std::cout << "Unknown command: " << tokens[0].c_str() << std::endl;
-    cmdHistoryBuf.append(cmd); // want garbled command so we can fix using command line editor
-    return false;
+        // No matching command found but keep in history so we can fix it
+        std::cout << "Unknown command: " << tokens[0].c_str() << std::endl;
+        cmdHistoryBuf.append(cmd);
+        return false;
+    }
+    case LINE_ENTRY_MODE::DEFINE:
+        // entering a user defined command
+        cmdRegistry.appendUserCommand(tokens[0], cmd);
+        return true;
+    case LINE_ENTRY_MODE::DOCUMENT:
+        cmdRegistry.appendDocCommand(cmd);
+        return true;
+    default:
+        std::cout << "INTERNAL ERROR: unhandled line entry mode" << std::endl;
+        return false;
+    } // switch (line_entry_mode)
 }
 
 //
@@ -379,14 +506,24 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
     // First check for specific command help
     if ( tokens.size() == 1 ) {
         for ( const auto& g : GroupText ) {
-            std::cout << "--- " << g.second << " ---" << std::endl;
-            for ( const auto& c : cmdRegistry ) {
-                if ( g.first == c.group() ) std::cout << c << std::endl;
+            if ( g.first != ConsoleCommandGroup::USER ) {
+                std::cout << "--- " << g.second << " ---" << std::endl;
+                for ( const auto& c : cmdRegistry.getRegistryVector() ) {
+                    if ( g.first == c.group() ) std::cout << c << std::endl;
+                }
+            }
+            else if ( cmdRegistry.getUserRegistryVector().size() > 0 ) {
+                std::cout << "--- " << g.second << " ---" << std::endl;
+                for ( const auto& c : cmdRegistry.getUserRegistryVector() ) {
+                    if ( g.first == c.group() ) {
+                        std::cout << c << std::endl;
+                    }
+                }
             }
         }
-        std::cout << "\nMore detailed help also available for:\n";
+        std::cout << "\nMore detailed help available for:\n";
         std::stringstream s;
-        for ( const auto& pair : cmdHelp ) {
+        for ( const auto& pair : cmdRegistry.cmdHelp ) {
             if ( (s.str().length() + pair.first.length() > 39) ) {
                 std::cout << "\t" << s.str() << std::endl;
                 s.str("");
@@ -401,11 +538,11 @@ SimpleDebugger::cmd_help(std::vector<std::string>& tokens)
 
     if ( tokens.size() > 1 ) {
         std::string c = tokens[1];
-        if ( cmdHelp.find(c) != cmdHelp.end() ) {
-            std::cout << c << " " << cmdHelp.at(c) << std::endl;
+        if ( cmdRegistry.cmdHelp.find(c) != cmdRegistry.cmdHelp.end() ) {
+            std::cout << c << " " << cmdRegistry.cmdHelp.at(c) << std::endl;
         }
         else {
-            for ( auto& creg : cmdRegistry ) {
+            for ( auto& creg : cmdRegistry.getRegistryVector() ) {
                 if ( creg.match(c) ) std::cout << creg << std::endl;
             }
         }
@@ -438,6 +575,81 @@ SimpleDebugger::cmd_verbose(std::vector<std::string>& tokens)
     }
     return true;
 }
+
+bool
+SimpleDebugger::cmd_info(std::vector<std::string>& UNUSED(tokens))
+{
+
+    if ( tokens.size() != 2 ) {
+        printf("Invalid format for info command (info \"current\"|\"all\")\n");
+        return false;
+    }
+
+    RankInfo info   = getRank();
+    RankInfo nRanks = getNumRanks();
+    if ( tokens[1] == "current" ) {
+        std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
+                  << " (Process " << getppid() << ")" << std::endl;
+    }
+    else if ( tokens[1] == "all" ) {
+        if ( nRanks.rank == 1 && nRanks.thread == 1 ) {
+            std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/"
+                      << nRanks.thread << " (Process " << getppid() << ")" << std::endl;
+        }
+        else {
+            // Return to syncmanager to print summary for all threads
+            retState = SUMMARY; // summary info
+            done     = true;
+        }
+    }
+    else {
+        printf("Invalid argument for info command: %s (info \"current\"|\"all\")\n", tokens[1].c_str());
+        return false;
+    }
+    return true;
+}
+
+// thread <threadID> : switches to new thread
+bool
+SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
+{
+
+    if ( tokens.size() != 2 ) {
+        printf("Invalid format for thread command (thread <threadID>)\n");
+        return false;
+    }
+
+    RankInfo info   = getRank();
+    RankInfo nRanks = getNumRanks();
+    int      threadID;
+
+    // Get threadID
+    try {
+        threadID = std::stoi(tokens[1]);
+    }
+    catch ( const std::invalid_argument& e ) {
+        std::cout << "Invalid argument for threadID: " << tokens[1] << std::endl;
+        return false;
+    }
+    catch ( const std::out_of_range& e ) {
+        std::cout << "Out of range for threadID: " << tokens[1] << std::endl;
+        return false;
+    }
+
+    // Check if valid threadID
+    if ( threadID < 0 || threadID >= static_cast<int>(nRanks.thread) ) {
+        printf("ThreadID %d out of range (0:%d)\n", threadID, nRanks.thread - 1);
+        return false;
+    }
+
+    // If not current thread, set retState and done flag
+    if ( threadID != static_cast<int>(info.thread) ) {
+        retState = threadID;
+        done     = true;
+    }
+    return true;
+}
+
 
 // pwd: print current working directory
 bool
@@ -492,10 +704,18 @@ SimpleDebugger::get_listing_strings(std::list<std::string>& list)
 bool
 SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
 {
+#if 1
     if ( tokens.size() != 2 ) {
         printf("Invalid format for cd command (cd <obj>)\n");
         return false;
     }
+#else
+    // skk This works but doesn't delete/deactivate like objmap selectParent
+    if ( tokens.size() == 1 ) {
+        obj_ = getComponentObjectMap();
+        return;
+    }
+#endif
 
     // Allow for trailing '/'
     std::string selection = tokens[1];
@@ -517,7 +737,7 @@ SimpleDebugger::cmd_cd(std::vector<std::string>& tokens)
     }
 
     bool                                 loop_detected = false;
-    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected);
+    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected, confirm_);
     if ( !new_obj || (new_obj == obj_) ) {
         printf("Unknown object in cd command: %s\n", selection.c_str());
         return false;
@@ -559,9 +779,9 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
     }
 
     // See if have a -r or not
-    int         recurse = 0;
+    int         recurse = 4; // default -r depth
     std::string tok     = tokens[1];
-    if ( tok.size() >= 2 && tok[0] == '-' && tok[1] == 'r' ) {
+    if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
         // Got a -r
         std::string num = tok.substr(2);
         if ( num.size() != 0 ) {
@@ -574,9 +794,17 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
             }
         }
         else {
-            recurse = 4; // default -r depth
+            std::string num = tok.substr(2);
+            if ( num.size() != 0 ) {
+                try {
+                    recurse = SST::Core::from_string<int>(num);
+                }
+                catch ( std::invalid_argument& e ) {
+                    printf("Invalid number format specified with -r: %s\n", tok.c_str());
+                    return false;
+                }
+            }
         }
-
         var_index = 2;
     }
 
@@ -593,7 +821,6 @@ SimpleDebugger::cmd_print(std::vector<std::string>& tokens)
 
     bool        found;
     std::string listing = obj_->listVariable(tokens[var_index], found, recurse);
-
     if ( !found ) {
         printf("Unknown object in print command: %s\n", tokens[1].c_str());
         return false;
@@ -701,6 +928,22 @@ SimpleDebugger::cmd_run(std::vector<std::string>& tokens)
             printf("Unknown time in call to run: %s\n", tokens[1].c_str());
             return false;
         }
+    }
+    else if ( tokens.size() == 3 ) {
+        std::string time = tokens[1] + tokens[2];
+        try {
+            TimeConverter* tc  = getTimeConverter(time);
+            std::string    msg = format_string("Running clock %" PRI_SIMTIME " sim cycles", tc->getFactor());
+            schedule_interactive(tc->getFactor(), msg);
+        }
+        catch ( std::exception& e ) {
+            printf("Unknown time in call to run: %s\n", time.c_str());
+            return false;
+        }
+    }
+    else if ( tokens.size() != 1 ) {
+        printf("Too many arguments for 'run <time>'\n");
+        return false;
     }
 
     done = true;
@@ -1016,8 +1259,9 @@ getLogicOpFromString(const std::string& opStr)
 bool
 SimpleDebugger::cmd_watchlist(std::vector<std::string>& UNUSED(tokens))
 {
+    RankInfo info = getRank();
     // Print the watch points
-    printf("Current watch points:\n");
+    printf("R%d,T%d: Current watch points:\n", info.rank, info.thread);
     int count = 0;
     for ( auto& x : watch_points_ ) {
         // printf("  %d - %s\n", count++, x.first->getName().c_str());
@@ -1048,21 +1292,29 @@ SimpleDebugger::cmd_clear(std::vector<std::string>& UNUSED(tokens))
     return true;
 }
 
-// gdb helper. Recommended SST configuration
-// CXXFLAGS="-g3 -O0" CFLAGS="-g3 -O0"  ../configure --prefix=$SST_CORE_HOME --enable-debug'
 bool
-SimpleDebugger::cmd_spinThread(std::vector<std::string>& UNUSED(tokens))
+SimpleDebugger::cmd_define(std::vector<std::string>& UNUSED(tokens))
 {
-    // Print the watch points
-    std::cout << "Spinning PID " << getpid() << std::endl;
-    while ( spinner > 0 ) {
-        spinner++;
-        usleep(100000);
-        // set debug breakpoint here and set spinner to 0 to continue
-        if ( spinner % 10 == 0 ) std::cout << "." << std::flush;
+    if ( tokens.size() != 2 ) {
+        std::cout << "Invalid\nsyntax: define <cmd_name>" << std::endl;
+        return false;
     }
-    spinner = 1; // reset spinner
-    std::cout << std::endl;
+
+    // Create a user command entry (or clear existing one)
+    if ( cmdRegistry.beginUserCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DEFINE;
+
+    return true;
+}
+
+bool
+SimpleDebugger::cmd_document(std::vector<std::string>& tokens)
+{
+    if ( tokens.size() != 2 ) {
+        std::cout << "Invalid\nsyntax: document <cmd_name>" << std::endl;
+        return false;
+    }
+    if ( cmdRegistry.beginDocCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DOCUMENT;
+
     return true;
 }
 
@@ -1356,15 +1608,15 @@ SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens)
     }
 
     if ( (tokens[1] == "true") || (tokens[1] == "t") || (tokens[1] == "T") || (tokens[1] == "1") ) {
-        confirm = true;
+        confirm_ = true;
         return true;
     }
     else if ( (tokens[1] == "false") || (tokens[1] == "f") || (tokens[1] == "F") || (tokens[1] == "0") ) {
-        confirm = false;
+        confirm_ = false;
         return true;
     }
 
-    std::cout << "Invalid argument for confirm: must be true or false" << tokens[1] << std::endl;
+    std::cout << "Invalid argument for confirm: must be true or false. <" << tokens[1] << ">" << std::endl;
     return false;
 }
 
@@ -1372,7 +1624,7 @@ bool
 SimpleDebugger::clear_watchlist()
 {
 
-    if ( confirm ) {
+    if ( confirm_ ) {
         std::string line;
         std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
         std::getline(std::cin, line);
@@ -1669,6 +1921,7 @@ SimpleDebugger::cmd_shutdown(std::vector<std::string>& UNUSED(tokens))
 void
 CommandHistoryBuffer::append(std::string s)
 {
+    if ( !en_ ) return;
     buf_[nxt_] = std::make_pair(count_++, s);
     sz_        = sz_ < MAX_CMDS - 1 ? sz_ + 1 : MAX_CMDS;
     cur_       = nxt_;
@@ -1871,5 +2124,141 @@ SimpleDebugger::msg(VERBOSITY_MASK mask, std::string message)
     if ( (!static_cast<uint32_t>(mask)) & verbosity ) return;
     std::cout << message << std::endl;
 }
+
+std::pair<ConsoleCommand, bool> const
+CommandRegistry::seek(std::string token, SEARCH_TYPE search_type)
+{
+    last_seek_command.second = false;
+    if ( search_type == SEARCH_TYPE::ALL || search_type == SEARCH_TYPE::BUILTIN ) {
+        for ( auto consoleCommand : registry ) {
+            if ( consoleCommand.match(token) ) {
+                last_seek_command.first  = consoleCommand;
+                last_seek_command.second = true;
+                return last_seek_command;
+            }
+        }
+    }
+    if ( search_type == SEARCH_TYPE::ALL || search_type == SEARCH_TYPE::USER ) {
+        for ( auto consoleCommand : user_registry ) {
+            if ( consoleCommand.match(token) ) {
+                last_seek_command.first  = consoleCommand;
+                last_seek_command.second = true;
+                return last_seek_command;
+            }
+        }
+    }
+
+    return last_seek_command;
+}
+
+bool
+CommandRegistry::beginUserCommand(std::string name)
+{
+    // Make sure not a built-in command
+    auto res = seek(name, CommandRegistry::SEARCH_TYPE::BUILTIN);
+    if ( res.second ) {
+        std::cout << "Cannot overwrite built-in command \"" << name << "\"" << std::endl;
+        return false;
+    }
+    user_command_wip                        = name;
+    // Create or overwrite existing user defined command
+    user_defined_commands[user_command_wip] = {};
+    std::cout << "Enter commands for \"" << user_command_wip << "\" terminated by \"end\"" << std::endl;
+    return true;
+}
+
+void
+CommandRegistry::appendUserCommand(std::string token0, std::string line)
+{
+    // No recursion
+    if ( token0 == user_command_wip ) {
+        std::cout << token0 << " cannot call itself" << std::endl;
+        return;
+    }
+
+    // Commands not allowed: define, document, replay
+    std::pair<ConsoleCommand, bool> res = seek(token0, CommandRegistry::SEARCH_TYPE::BUILTIN);
+    if ( res.second ) {
+        // Disallow nested `define` or `document` since these change user_command_wip
+        if ( res.first.str_long() == "define" || res.first.str_long() == "document" ) {
+            std::cout << "Ignoring entry: " << res.first.str_long() << "/" << res.first.str_short() << std::endl;
+            return;
+        }
+        // Replay support requires changes to dispatch_cmd
+        if ( res.first.str_long() == "replay" ) {
+            std::cout << "Ignoring entry: " << res.first.str_long() << "/" << res.first.str_short() << std::endl;
+            return;
+        }
+    }
+    user_defined_commands[user_command_wip].emplace_back(line);
+}
+
+void
+CommandRegistry::commitUserCommand()
+{
+    std::cout << "Committing definition for " << user_command_wip << std::endl;
+    user_registry.emplace_back(ConsoleCommand(user_command_wip));
+    user_command_wip = "";
+}
+
+bool
+CommandRegistry::beginDocCommand(std::string name)
+{
+    // Make sure not a built-in command
+    auto res = seek(name, CommandRegistry::SEARCH_TYPE::BUILTIN);
+    if ( res.second ) {
+        std::cout << "Cannot overwrite built-in command \"" << name << "\"" << std::endl;
+        return false;
+    }
+    // Make sure user command is defined
+    res = seek(name, CommandRegistry::SEARCH_TYPE::USER);
+    if ( !res.second ) {
+        std::cout << "\"" << name << "\" must be defined before documenting" << std::endl;
+        return false;
+    }
+
+    user_command_wip = name;
+    user_doc_wip     = {};
+    std::cout << "Enter documentation for \"" << user_command_wip << "\" terminated by \"end\"" << std::endl;
+    return true;
+}
+
+void
+CommandRegistry::appendDocCommand(std::string line)
+{
+    user_doc_wip.emplace_back(line);
+}
+
+void
+CommandRegistry::commitDocCommand()
+{
+    bool found = false;
+    for ( ConsoleCommand& consoleCommand : user_registry ) {
+        if ( consoleCommand.match(user_command_wip) ) {
+            std::cout << "Committing documentation for " << user_command_wip << std::endl;
+            consoleCommand.setUserHelp(user_doc_wip[0]);
+            addHelp(user_command_wip, user_doc_wip);
+            found = true;
+        }
+    }
+
+    if ( !found )
+        std::cout << "Unable to commit documentation. Could not locate definition for " << user_command_wip
+                  << std::endl;
+
+    user_command_wip = "";
+    user_doc_wip     = {};
+}
+
+void
+CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
+{
+    std::stringstream s;
+    for ( const auto& line : vec )
+        s << line << "\n";
+    cmdHelp[key] = s.str();
+    ;
+}
+
 
 } // namespace SST::IMPL::Interactive

@@ -1004,6 +1004,63 @@ Simulation_impl::prepare_for_run()
 }
 
 void
+Simulation_impl::setup_interactive_mode()
+{
+
+
+    // Start just with multithreading right now
+    if ( num_ranks.rank == 1 ) {
+        // std::cout << "skk: run: setup interactive\n";
+        if ( interactive_type_ != "" ) {
+            // --interactive-console used to override default
+            initialize_interactive_console(interactive_type_);
+        }
+        else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
+                  (config.sigusr2() == "sst.rt.interactive") ) {
+            // use default interactive console
+            interactive_type_ = "sst.interactive.simpledebug";
+            initialize_interactive_console(interactive_type_);
+        }
+
+        if ( interactive_start_ != "" ) {
+            // std::cout << "skk: run: interactive start\n";
+            if ( nullptr == interactive_ ) { // Should never get here
+                sim_output.fatal(CALL_INFO, 1,
+                    "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
+                    "interactive action that should be used.\n");
+            }
+            SimTime_t offset;
+            try {
+                UnitAlgebra time(interactive_start_);
+                printf("%s\n", time.toStringBestSI().c_str());
+
+                if ( time.isValueZero() ) {
+                    offset = 0;
+                }
+                else {
+                    TimeConverter* tc = timeLord.getTimeConverter(time);
+                    offset            = tc->getFactor();
+                }
+            }
+            catch ( std::exception& e ) {
+                sim_output.fatal(CALL_INFO, 1, "Invalid format for time in interactive start: %s\n", e.what());
+            }
+
+            // Special case, invoke interactive console now rather than wait for sync
+            if ( num_ranks.thread > 1 && offset == 0 ) {
+                enter_interactive_ = true;
+                syncManager->handleInteractiveConsole();
+            }
+            else {
+                InteractiveAction* act =
+                    new InteractiveAction(this, format_string("Interactive start at %" PRI_SIMTIME, offset));
+                act->insertIntoTimeVortex(currentSimCycle + offset);
+            }
+        }
+    }
+}
+
+void
 Simulation_impl::run()
 {
 #if SST_PERFORMANCE_INSTRUMENTING
@@ -1020,47 +1077,7 @@ Simulation_impl::run()
 #endif
 #endif
 
-    // Setup interactive mode (only in serial jobs for now)
-    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
-        if ( interactive_type_ != "" ) {
-            // --interactive-console used to override default
-            initialize_interactive_console(interactive_type_);
-        }
-        else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
-                  (config.sigusr2() == "sst.rt.interactive") ) {
-            // use default interactive console
-            interactive_type_ = "sst.interactive.simpledebug";
-            initialize_interactive_console(interactive_type_);
-        }
-
-        if ( interactive_start_ != "" ) {
-            if ( nullptr == interactive_ ) { // Should never get here
-                sim_output.fatal(CALL_INFO, 1,
-                    "ERROR: Specified --interactive-start, but did not specify --interactive-mode to set the "
-                    "interactive action that should be used.\n");
-            }
-            try {
-                UnitAlgebra time(interactive_start_);
-                printf("%s\n", time.toStringBestSI().c_str());
-                SimTime_t offset;
-                if ( time.isValueZero() ) {
-                    offset = 0;
-                }
-                else {
-                    TimeConverter* tc = timeLord.getTimeConverter(time);
-                    offset            = tc->getFactor();
-                }
-
-                InteractiveAction* act =
-                    new InteractiveAction(this, format_string("Interactive start at %" PRI_SIMTIME, offset));
-                act->setDeliveryTime(currentSimCycle + offset);
-                timeVortex->insert(act);
-            }
-            catch ( const std::exception& e ) {
-                sim_output.fatal(CALL_INFO, 1, "Invalid format for time in interactive start: %s\n", e.what());
-            }
-        }
-    }
+    setup_interactive_mode();
 
     run_phase_start_time_ = sst_get_cpu_time();
 
@@ -1100,10 +1117,13 @@ Simulation_impl::run()
                 signal_arrived_ = 0;
                 real_time_->notifySignal();
             }
-            if ( enter_interactive_ ) {
-                enter_interactive_ = false;
-                if ( interactive_ != nullptr ) interactive_->execute(interactive_msg_);
-            }
+            // If serial execution (1 rank, 1 thread)
+            if ( (num_ranks.rank == 1) && (num_ranks.thread == 1) ) {
+                if ( enter_interactive_ ) {
+                    enter_interactive_ = false;
+                    if ( interactive_ != nullptr ) interactive_->execute(interactive_msg_);
+                }
+            } // Otherwise handled in sync manager
         }
 
 #if SST_PERIODIC_PRINT
@@ -1134,7 +1154,6 @@ Simulation_impl::run()
     }
 
     /* We shouldn't need to do this, but to be safe... */
-
     runBarrier.wait(); // TODO<- Is this needed?
 
     run_phase_total_time_ = sst_get_cpu_time() - run_phase_start_time_;
@@ -1189,6 +1208,21 @@ Simulation_impl::signalShutdown(bool abnormal)
     else {
         shutdown_mode_ = SHUTDOWN_CLEAN;
     }
+
+    if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
+        // Set endsim right away if serial
+        endSim = true;
+    }
+    else {
+        // Otherwise handle shutdown in sync
+        enter_shutdown_ = true;
+    }
+}
+
+void
+Simulation_impl::setEndSim()
+{
+    // Called from sync
     endSim = true;
 }
 
@@ -1747,6 +1781,10 @@ Simulation_impl::getComponentObjectMap()
 void
 Simulation_impl::scheduleCheckpoint()
 {
+#if 0
+    sim_output.output(
+        "skk: simulation: scheduleCheckpoint\n");
+#endif
     checkpoint_action_->setCheckpoint();
 
     // Trigger checkpoint immediately in serial simulations
@@ -2212,6 +2250,14 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
     if ( replay_file_.size() > 0 ) p.insert("replayFile", replay_file_);
 
     interactive_ = factory->Create<InteractiveConsole>(actual_type, p);
+}
+
+void
+Simulation_impl::scheduleInteractiveConsole(const std::string& msg)
+{
+    // std::cout << "skk: scheduleIC\n";
+    enter_interactive_ = true;
+    interactive_msg_   = msg;
 }
 
 

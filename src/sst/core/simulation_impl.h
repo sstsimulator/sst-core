@@ -237,6 +237,8 @@ public:
 
     void prepare_for_run();
 
+    void setup_interactive_mode();
+
     void run();
 
     void finish();
@@ -398,6 +400,7 @@ public:
 
     std::string initializeCheckpointInfrastructure(const std::string& prefix);
     void        scheduleCheckpoint();
+    void        scheduleInteractiveConsole(const std::string& msg);
 
     /**
        Write the partition specific checkpoint data
@@ -472,6 +475,11 @@ public:
      */
     void signalShutdown(bool abnormal);
 
+    /** Set EndSim
+     * Called by SyncMgr when interactive console ready to shutdown
+     */
+    void setEndSim();
+
     /** Normal Shutdown
      */
     void endSimulation();
@@ -518,6 +526,7 @@ public:
     unsigned int            untimed_phase;
     volatile sig_atomic_t   signal_arrived_; // true if a signal has arrived
     ShutdownMode_t          shutdown_mode_;
+    bool                    enter_shutdown_ = false;
     bool                    wireUpFinished_;
     RealTimeManager*        real_time_;
     std::string             interactive_type_  = "";
