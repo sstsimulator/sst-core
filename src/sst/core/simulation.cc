@@ -2201,8 +2201,8 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 {
 
     // Need to parse the type string to see if there are any parameters
-    std::string actual_type = type;
-    SST::Params p {};
+    const std::string& actual_type = type;
+    SST::Params        p {};
     // For now, just ignore parameters
     // size_t index = type.find_first_of('(');
     // if ( index != std::string::npos ) {
