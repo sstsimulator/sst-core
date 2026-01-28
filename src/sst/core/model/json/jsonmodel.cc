@@ -52,7 +52,7 @@ SSTConfigSaxHandler::getCurrentPath() const
 {
     std::string path;
     for ( size_t i = 0; i < path_stack.size(); ++i ) {
-        if ( i > 0 ) path += ".";
+        if ( i > 0 ) path += '.';
         path += path_stack[i];
     }
     return path;

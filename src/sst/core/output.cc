@@ -157,9 +157,9 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
 {
     va_list     arg1;
     va_list     arg2;
-    std::string newFmt;
-
-    newFmt = std::string("FATAL: ") + buildPrefixString(line, file, func) + format;
+    std::string newFmt("FATAL: ");
+    newFmt += buildPrefixString(line, file, func);
+    newFmt += format;
 
     // Get the argument list
     va_start(arg1, format);
@@ -370,7 +370,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 break;
             case 'r':
                 if ( 1 == getMPIWorldSize() ) {
-                    rtnstring += "";
+                    //                    rtnstring += "";
                 }
                 else {
                     snprintf(tempBuf, 256, "%d", getMPIWorldRank());
@@ -380,7 +380,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 break;
             case 'R':
                 if ( 1 == getMPIWorldSize() ) {
-                    rtnstring += "0";
+                    rtnstring += '0';
                 }
                 else {
                     snprintf(tempBuf, 256, "%d", getMPIWorldRank());
@@ -390,7 +390,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 break;
             case 'i':
                 if ( 1 == getNumThreads() ) {
-                    rtnstring += "";
+                    //                    rtnstring += "";
                 }
                 else {
                     snprintf(tempBuf, 256, "%u", getThreadRank());
@@ -423,7 +423,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
 
             default:
                 // This character is not one of our tokens, so just copy it
-                rtnstring += "@";
+                rtnstring += '@';
                 startindex = findindex + 1;
                 break;
             }

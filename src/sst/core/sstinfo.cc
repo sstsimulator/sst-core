@@ -409,7 +409,8 @@ findLibraryInfo(std::list<std::string> args)
                 searchTerm += arg;
             }
             else {
-                searchTerm += arg + " ";
+                searchTerm += arg;
+                searchTerm += ' ';
             }
         }
 
@@ -530,28 +531,55 @@ getErrorText(std::string command, std::list<std::string> args)
 
                 if ( library != closest_lib ) {
                     if ( component != closest_comp ) {
-                        output += " - `" + library + "." + component + "` --- Did you mean '" + closest_lib + "." +
-                                  closest_comp + "'?\n";
+                        output += " - `";
+                        output += library;
+                        output += '.';
+                        output += component;
+                        output += "` --- Did you mean '";
+                        output += closest_lib;
+                        output += '.';
+                        output += closest_comp;
+                        output += "'?\n";
                     }
                     else {
-                        output += " - `" + library + "`." + component + "` --- Did you mean '" + closest_lib + "'?\n";
+                        output += " - `";
+                        output += library;
+                        output += "`.";
+                        output += component;
+                        output += "` --- Did you mean '";
+                        output += closest_lib;
+                        output += "'?\n";
                     }
                 }
                 else {
                     if ( component != closest_comp ) {
-                        output += " - " + library + ".`" + component + "` --- Did you mean '" + closest_comp + "'?\n";
+                        output += " - ";
+                        output += library;
+                        output += ".`";
+                        output += component;
+                        output += "` --- Did you mean '";
+                        output += closest_comp;
+                        output += "'?\n";
                     }
                     else {
-                        output += " - " + arg + "\n";
+                        output += " - ";
+                        output += arg;
+                        output += '\n';
                     }
                 }
             }
             else {
                 if ( library != closest_lib ) {
-                    output += " - `" + library + "` --- Did you mean '" + closest_lib + "'?\n";
+                    output += " - `";
+                    output += library;
+                    output += "` --- Did you mean '";
+                    output += closest_lib;
+                    output += "'?\n";
                 }
                 else {
-                    output += " - " + arg + "\n";
+                    output += " - ";
+                    output += arg;
+                    output += '\n';
                 }
             }
         }
@@ -789,8 +817,7 @@ SSTInfoConfig::outputUsage()
 {
     using std::cout;
     using std::endl;
-    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
-         << " [options]" << endl;
+    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] " << " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
     cout << "  -v, --version            Print SST Package Release Version\n";
     cout << "  -d, --debug              Enabled debugging messages\n";
@@ -956,7 +983,10 @@ SSTLibraryInfo::filterSearch(std::stringstream& outputStream, std::string tag, s
                             component.infoMap[mapTag].insert(foundSecondIdx + searchTerm.size() + 1, "`");
                         }
 
-                        searchString += mapTag + ": " + component.infoMap[mapTag] + "\n";
+                        searchString += mapTag;
+                        searchString += ": ";
+                        searchString += component.infoMap[mapTag];
+                        searchString += '\n';
                     }
                     else {
                         if ( found ) {
@@ -1080,8 +1110,7 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
     bool enableFullElementOutput = !doesLibHaveFilters(getLibraryName());
 
     os << "================================================================================\n";
-    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")"
-       << "\n";
+    os << "ELEMENT LIBRARY " << LibIndex << " = " << getLibraryName() << " (" << getLibraryDescription() << ")\n";
 
     outputHumanReadable<Component>(os, enableFullElementOutput);
     outputHumanReadable<SubComponent>(os, enableFullElementOutput);

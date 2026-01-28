@@ -217,7 +217,10 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
             for ( uint32_t t = 0; t < num_ranks.thread; ++t ) {
                 // If this is my thread go ahead
                 if ( t == rank_.thread ) {
-                    sim->checkpoint_append_registry(directory + "/" + registry_name, filename);
+                    std::string dir(directory);
+                    dir += '/';
+                    dir += registry_name;
+                    sim->checkpoint_append_registry(std::move(dir), filename);
                     barrier.wait();
                 }
                 else {

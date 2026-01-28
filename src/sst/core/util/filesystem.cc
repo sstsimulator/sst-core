@@ -184,10 +184,10 @@ Filesystem::createUniqueDirectory(std::filesystem::path dir_name)
         do {
             ++num;
             p2 = path;
-            p2 += fs::path(std::string("_") + std::to_string(num));
+            p2 += fs::path("_" + std::to_string(num));
         } while ( exists(p2) ); // Ensure the new directory name is unique
 
-        path += fs::path(std::string("_") + std::to_string(num));
+        path += fs::path("_" + std::to_string(num));
     }
 
     // This will throw an exception if the path is not writeable

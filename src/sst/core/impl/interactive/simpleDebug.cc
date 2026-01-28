@@ -661,7 +661,8 @@ SimpleDebugger::cmd_set(std::vector<std::string>& tokens)
     std::string value = tokens[2];
     if ( var->getType() == "std::string" ) {
         for ( size_t index = 3; index < tokens.size(); index++ ) {
-            value = value + " " + tokens[index];
+            value += ' ';
+            value += tokens[index];
         }
     }
     else {

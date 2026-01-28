@@ -291,7 +291,9 @@ StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
         /* Ignore - group already exists.*/
     }
 
-    std::string statName = objName + "/" + statistic->getStatName();
+    std::string statName = objName;
+    statName += "/";
+    statName += statistic->getStatName();
 
     if ( statistic->getStatSubId().length() > 0 ) {
         try {
@@ -302,7 +304,8 @@ StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
         catch ( const H5::FileIException& ie ) {
             /* Ignore - group already exists. */
         }
-        statName += "/" + statistic->getStatSubId();
+        statName += '/';
+        statName += statistic->getStatSubId();
     }
 
     /* Create dataspace & Dataset */
@@ -544,7 +547,8 @@ StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, Statistic
         catch ( const H5::FileIException& ie ) {
             /* Ignore - group already exists. */
         }
-        statPath += "/" + stat->getStatSubId();
+        statPath += '/';
+        statPath += stat->getStatSubId();
     }
 }
 

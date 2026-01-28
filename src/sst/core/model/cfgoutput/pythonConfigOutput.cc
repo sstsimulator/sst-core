@@ -593,31 +593,21 @@ PythonConfigGraphOutput::strncmp(const char* a, const char* b, const size_t n) c
 char*
 PythonConfigGraphOutput::makeEscapeSafe(const std::string& input) const
 {
-
-    std::string escapedInput = "";
-    auto        inputLength  = input.size();
-
-    for ( size_t i = 0; i < inputLength; i++ ) {
-        const char nextChar = input.at(i);
-
+    std::string escapedInput;
+    for ( char nextChar : input ) {
         switch ( nextChar ) {
         case '\"':
-            escapedInput = escapedInput + "\\\"";
+            escapedInput += "\\\"";
             break;
         case '\'':
-            escapedInput = escapedInput + "\\\'";
+            escapedInput += "\\\'";
             break;
         case '\n':
-            escapedInput = escapedInput + "\\n";
+            escapedInput += "\\n";
             break;
         default:
-            escapedInput.push_back(nextChar);
+            escapedInput += nextChar;
         }
     }
-
-    size_t slen          = 1 + escapedInput.size();
-    char*  escapedBuffer = (char*)malloc(sizeof(char) * slen);
-    snprintf(escapedBuffer, slen, "%s", escapedInput.c_str());
-
-    return escapedBuffer;
+    return strdup(escapedInput.c_str());
 }

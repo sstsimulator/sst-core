@@ -110,7 +110,10 @@ public:
     inline const std::string getFullStatName() const
     {
         std::string stat_full_name_rtn = getCompName() + "." + stat_name_;
-        if ( stat_sub_id_ != "" ) stat_full_name_rtn += "." + stat_sub_id_;
+        if ( stat_sub_id_ != "" ) {
+            stat_full_name_rtn += '.';
+            stat_full_name_rtn += stat_sub_id_;
+        }
         return stat_full_name_rtn;
     } // Return comp_name.stat_name.sub_id or comp_name.stat_name
 

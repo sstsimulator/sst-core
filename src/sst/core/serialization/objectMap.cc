@@ -28,7 +28,7 @@ ObjectMap::getFullName() const
     std::string        slash("/");
     ObjectMapMetaData* curr = mdata_->parent->mdata_;
     while ( curr != nullptr ) {
-        fullname = curr->name + slash + fullname;
+        fullname = curr->name + slash + fullname; // NOLINT(performance-inefficient-string-concatenation)
         curr     = curr->parent->mdata_;
     }
     return fullname;
