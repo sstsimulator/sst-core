@@ -25,7 +25,7 @@ namespace SST::IMPL::Partition {
 
 SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
     SSTPartitioner(),
-    world_size(total_ranks),
+    world_size(std::move(total_ranks)),
     total_parts(world_size.rank * world_size.thread)
 {}
 

@@ -24,6 +24,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 #ifdef HAVE_DLFCN_H
@@ -120,8 +121,8 @@ splitPath(const std::string& searchPaths)
     return paths;
 }
 
-ElemLoader::ElemLoader(const std::string& searchPaths) :
-    searchPaths(searchPaths),
+ElemLoader::ElemLoader(std::string searchPaths) :
+    searchPaths(std::move(searchPaths)),
     verbose(false),
     bindPolicy(RTLD_LAZY | RTLD_GLOBAL)
 {

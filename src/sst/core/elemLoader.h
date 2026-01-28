@@ -24,7 +24,7 @@ class ElemLoader
 {
 public:
     /** Create a new ElementLoader with a given searchpath of directories */
-    explicit ElemLoader(const std::string& searchPaths);
+    explicit ElemLoader(std::string searchPaths);
     ~ElemLoader() = default;
 
     /**

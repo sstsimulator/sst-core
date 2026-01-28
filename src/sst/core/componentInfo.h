@@ -158,7 +158,7 @@ private:
     // inline void setParent(BaseComponent* comp) { parent = comp; }
 
     /* Lookup Key style constructor */
-    ComponentInfo(ComponentId_t id, const std::string& name);
+    ComponentInfo(ComponentId_t id, std::string name);
     void finalizeLinkConfiguration() const;
     void prepareForComplete() const;
 
@@ -181,8 +181,8 @@ public:
     ComponentInfo(const std::string& type, const Params* params, const ComponentInfo* parent_info);
 
     /* Anonymous SubComponent */
-    ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
-        int slot_num, uint64_t share_flags /*, const Params& params_in*/);
+    ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, std::string type, std::string slot_name, int slot_num,
+        uint64_t share_flags /*, const Params& params_in*/);
 
     /* New ELI Style */
     ComponentInfo(ConfigComponent* ccomp, const std::string& name, ComponentInfo* parent_info, LinkMap* link_map);
@@ -272,8 +272,7 @@ public:
     /**
        (DO NOT USE) Constructor used only for serialization testing
      */
-    ComponentInfo(
-        ComponentId_t id, const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());
+    ComponentInfo(ComponentId_t id, std::string name, std::string slot_name, TimeConverter tv = TimeConverter());
 
     ComponentInfo* test_addSubComponentInfo(
         const std::string& name, const std::string& slot_name, TimeConverter tv = TimeConverter());

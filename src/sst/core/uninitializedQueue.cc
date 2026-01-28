@@ -18,12 +18,13 @@
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
+#include <utility>
 
 namespace SST {
 
-UninitializedQueue::UninitializedQueue(const std::string& message) :
+UninitializedQueue::UninitializedQueue(std::string message) :
     ActivityQueue(),
-    message(message)
+    message(std::move(message))
 {}
 
 DISABLE_WARN_MISSING_NORETURN

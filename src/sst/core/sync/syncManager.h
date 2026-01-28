@@ -137,7 +137,7 @@ protected:
 class SyncManager : public Action
 {
 public:
-    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTime_t min_part,
+    SyncManager(RankInfo rank, RankInfo num_ranks, SimTime_t min_part,
         const std::vector<SimTime_t>& interThreadLatencies, RealTimeManager* real_time);
     SyncManager(); // For serialization only
     virtual ~SyncManager() = default;

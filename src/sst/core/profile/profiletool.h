@@ -39,7 +39,7 @@ public:
         ELI::ProvidesInterface,
         ELI::ProvidesParams)
 
-    explicit ProfileTool(const std::string& name);
+    explicit ProfileTool(std::string name);
 
     virtual ~ProfileTool() {}
 
