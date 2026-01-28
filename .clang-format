@@ -10,7 +10,6 @@ AlignConsecutiveAssignments:
   AcrossEmptyLines: false
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
   AlignFunctionPointers: false
   PadOperators:    true
 AlignConsecutiveBitFields:
@@ -18,7 +17,6 @@ AlignConsecutiveBitFields:
   AcrossEmptyLines: false
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
   AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveDeclarations:
@@ -26,7 +24,6 @@ AlignConsecutiveDeclarations:
   AcrossEmptyLines: false
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: true
   AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveMacros:
@@ -34,39 +31,13 @@ AlignConsecutiveMacros:
   AcrossEmptyLines: false
   AcrossComments:  true
   AlignCompound:   false
-  AlignFunctionDeclarations: false
   AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveShortCaseStatements:
   Enabled:         false
   AcrossEmptyLines: false
   AcrossComments:  false
-  AlignCaseArrows: false
   AlignCaseColons: false
-AlignConsecutiveTableGenBreakingDAGArgColons:
-  Enabled:         false
-  AcrossEmptyLines: false
-  AcrossComments:  false
-  AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
-  PadOperators:    false
-AlignConsecutiveTableGenCondOperatorColons:
-  Enabled:         false
-  AcrossEmptyLines: false
-  AcrossComments:  false
-  AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
-  PadOperators:    false
-AlignConsecutiveTableGenDefinitionColons:
-  Enabled:         false
-  AcrossEmptyLines: false
-  AcrossComments:  false
-  AlignCompound:   false
-  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
-  PadOperators:    false
 AlignEscapedNewlines: Left
 AlignOperands:   Align
 AlignTrailingComments:
@@ -77,7 +48,6 @@ AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
 AllowShortBlocksOnASingleLine: Empty
-AllowShortCaseExpressionOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
@@ -85,15 +55,12 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: false
-AllowShortNamespacesOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None #deprecated
-#AlwaysBreakAfterReturnType: TopLevelDefinitions # deprecated
+AlwaysBreakAfterReturnType: TopLevelDefinitions
 AlwaysBreakBeforeMultilineStrings: false
-#AlwaysBreakTemplateDeclarations: Yes #deprecated
+AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros:
   - __capability
 BinPackArguments: true
-BinPackParameters: BinPack
 BitFieldColonSpacing: Both
 BraceWrapping:
   AfterCaseLabel:  true
@@ -116,7 +83,6 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakAdjacentStringLiterals: true
 BreakAfterAttributes: Always
-BreakAfterReturnType: TopLevelDefinitions
 BreakArrays:     true # currently json only
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom #defined in BraceWrapping above
@@ -124,12 +90,9 @@ BreakBeforeConceptDeclarations: Always
 BreakBeforeInlineASMColon: OnlyMultiline
 BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true
-BreakBinaryOperations: Never
 BreakConstructorInitializers: AfterColon
-BreakFunctionDefinitionParameters: false
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
-BreakTemplateDeclarations: Yes
 ColumnLimit:     120
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
@@ -150,12 +113,12 @@ ForEachMacros:
   - BOOST_FOREACH
 IfMacros:
   - KJ_IF_MAYBE
-#updated to force the re-sort as specified below in IncludeCategories
+#updated to force the re-sort as specified below in IncludeCategories 
 IncludeBlocks: Regroup
 #sst_config.h always first, so set to negative priority to be above 'main' include (priority 0)
 #main header included after - main include assumed to have no suffix
 #prioritize all headers in "sst/core" next
-#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name
+#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name 
 #finally include all system headers - characterized as headers wrapped with '< >'
 IncludeCategories:
   - Regex:           '(<.*>)'
@@ -177,7 +140,6 @@ IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: false
-IndentExportBlock: true
 IndentExternBlock: AfterExternBlock
 IndentGotoLabels: false
 IndentPPDirectives: None
@@ -196,16 +158,10 @@ IntegerLiteralSeparator:
   HexMinDigits:    0
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
-KeepEmptyLines:
-  AtEndOfFile:     false
-  AtStartOfBlock:  true
-  AtStartOfFile:   true
-KeepFormFeed:    false
 LambdaBodyIndentation: Signature
 LineEnding:      DeriveLF
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
-MainIncludeChar: Quote
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: None
 ObjCBinPackProtocolList: Auto
@@ -222,13 +178,11 @@ PenaltyBreakFirstLessLess: 120
 PenaltyBreakString: 1000
 PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
-PenaltyReturnTypeOnItsOwnLine: 60
+#PenaltyReturnTypeOnItsOwnLine: 60
 PointerAlignment: Left
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer
-ReflowComments:  Always
 RemoveBracesLLVM: false
-RemoveEmptyLinesInUnwrappedLines: false
 RemoveParentheses: Leave
 RemoveSemicolon: false
 RequiresClausePosition: OwnLine
@@ -271,7 +225,6 @@ SpacesInLineCommentPrefix:
   Maximum:         -1
 SpacesInParens:  Custom
 SpacesInParensOptions:
-  ExceptDoubleParentheses: false
   InCStyleCasts:   false
   InConditionalStatements: true
   InEmptyParentheses: false
@@ -285,7 +238,6 @@ StatementMacros:
   - ImplementSerializable
   - NotSerializable
 TabWidth:        4
-TableGenBreakInsideDAGArg: DontBreak
 UseTab:          Never
 
 # Can't get the ELI macros to format properly,
@@ -300,7 +252,6 @@ WhitespaceSensitiveMacros:
   - SST_ELI_DECLARE_INFO_EXTERN
   - SST_ELI_DECLARE_NEW_BASE
   - SST_ELI_DECLARE_STATISTIC_TEMPLATE
-  - SST_ELI_DECLARE_STATISTIC_TEMPLATE_DERIVED
   - SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS
   - SST_ELI_DOCUMENT_PARAMS
   - SST_ELI_DOCUMENT_PORTS
@@ -326,7 +277,6 @@ WhitespaceSensitiveMacros:
   - SST_ELI_REGISTER_REALTIME_ACTION
   - SST_ELI_REGISTER_PORTMODULE
   - SST_ELI_REGISTER_INTERACTIVE_CONSOLE
-  - SST_ELI_IS_CHECKPOINTABLE
   - STRINGIZE
   - PP_STRINGIZE
   - BOOST_PP_STRINGIZE
