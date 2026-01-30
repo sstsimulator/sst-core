@@ -14,10 +14,10 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/impl/interactive/cmdLineEditor.h"
+#include "sst/core/impl/interactive/debugStream.h"
 #include "sst/core/interactiveConsole.h"
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/watchPoint.h"
-#include "sst/core/impl/interactive/debugStream.h"
 
 #include <cstddef>
 #include <cstdint>

@@ -31,7 +31,6 @@
 namespace SST::IMPL::Interactive {
 
 
-
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole(),
     dout(std::cout, 50, 160)

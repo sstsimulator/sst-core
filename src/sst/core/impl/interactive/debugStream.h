@@ -22,8 +22,9 @@
 
 namespace SST::IMPL::Interactive {
 
-class DebuggerStreamBuf : public std::streambuf {
-    private:
+class DebuggerStreamBuf : public std::streambuf
+{
+private:
     std::streambuf* dest_;
     unsigned        linesPerScreen_;
     unsigned        curLines_;
@@ -32,54 +33,67 @@ class DebuggerStreamBuf : public std::streambuf {
     unsigned        charsPerLine_;
     unsigned        curChars_;
 
-    protected:
+protected:
     virtual int_type overflow(int_type c) override;
-    virtual int sync() override;
+    virtual int      sync() override;
 
 
-    public:
-    DebuggerStreamBuf(std::streambuf* dest, unsigned linesPerScreen, unsigned charsPerLine) 
-        : dest_(dest), linesPerScreen_(linesPerScreen), curLines_(0),
-          paginate_(true), quit_(false), charsPerLine_(charsPerLine), curChars_(0) {}
+public:
+    DebuggerStreamBuf(std::streambuf* dest, unsigned linesPerScreen, unsigned charsPerLine) :
+        dest_(dest),
+        linesPerScreen_(linesPerScreen),
+        curLines_(0),
+        paginate_(true),
+        quit_(false),
+        charsPerLine_(charsPerLine),
+        curChars_(0)
+    {}
 
-    void reset(){
-            paginate_ = true;
-            quit_     = false;
-            curLines_ = 0;
-            curChars_ = 0;
+    void reset()
+    {
+        paginate_ = true;
+        quit_     = false;
+        curLines_ = 0;
+        curChars_ = 0;
     }
-    void setLineWidth(const unsigned w){charsPerLine_ = w;}
-
+    void setLineWidth(const unsigned w) { charsPerLine_ = w; }
 };
 
-class DebuggerStream : public std::ostream {
-    private:
+class DebuggerStream : public std::ostream
+{
+private:
     DebuggerStreamBuf buf_;
 
-    public:
-    DebuggerStream(std::ostream& dest, unsigned linesPerScreen, unsigned charsPerLine)
-        : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen, charsPerLine) {}
+public:
+    DebuggerStream(std::ostream& dest, unsigned linesPerScreen, unsigned charsPerLine) :
+        std::ostream(&buf_),
+        buf_(dest.rdbuf(), linesPerScreen, charsPerLine)
+    {}
 
-    void reset(){
+    void reset()
+    {
         buf_.reset();
         clear();
     }
 
-    void setLineWidth(const unsigned w){ buf_.setLineWidth(w);}
-
+    void setLineWidth(const unsigned w) { buf_.setLineWidth(w); }
 };
 
-inline DebuggerStream& operator<<(DebuggerStream& stream, DebuggerStream& (*func)(DebuggerStream&)) {
+inline DebuggerStream&
+operator<<(DebuggerStream& stream, DebuggerStream& (*func)(DebuggerStream&))
+{
     return func(stream);
 }
 
-inline DebuggerStream& dreset(DebuggerStream& stream) {
+inline DebuggerStream&
+dreset(DebuggerStream& stream)
+{
     stream.reset();
     stream.flush();
     return stream;
 }
 
 
-}
+} // namespace SST::IMPL::Interactive
 
 #endif
