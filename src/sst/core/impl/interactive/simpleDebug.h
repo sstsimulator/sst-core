@@ -148,7 +148,7 @@ class DebuggerStream : public std::ostream {
     DebuggerStreamBuf buf_;
 
     public:
-    DebuggerStream(std::ostream& dest, unsigned linesPerScreen = 25, unsigned charsPerLine = 80)
+    DebuggerStream(std::ostream& dest, unsigned linesPerScreen, unsigned charsPerLine)
         : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen, charsPerLine) {}
 
     void reset(){
