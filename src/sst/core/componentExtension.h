@@ -37,7 +37,7 @@ protected:
     ComponentExtension() = default; // For serialization only
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::ComponentExtension)
+    ImplementSerializable(SST::ComponentExtension);
 };
 
 } // namespace SST

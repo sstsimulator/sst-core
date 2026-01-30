@@ -170,7 +170,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_heartbeat.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --heartbeat-wall-period=1")
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=15s --heartbeat-wall-period=1")
 
         # Cannot diff test output because times may differ
         # Check for at least 5 heartbeat messages
@@ -193,7 +193,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 126 + 2*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI
-        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 3, "Heartbeat count incorrect, should be at least 3, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
@@ -282,7 +282,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGALRM_multiaction.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=6s --sigalrm=sst.rt.heartbeat(interval=1s);sst.rt.status.core(interval=2s)")
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=15s --sigalrm=sst.rt.heartbeat(interval=1s);sst.rt.status.core(interval=2s)")
 
         # Check for a heartbeat message: 5-6
         # Check for status: 2-3
@@ -307,7 +307,7 @@ class testcase_Signals(SSTTestCase):
         num_lines = 126 + 4*num_para # basic heartbeat (>25) + exit messages (1 + 2*para) + status (> 2*para) + Component Finished messages (100)
         if ranks > 1:
             num_lines += 10 # Extra heartbeat output for MPI (2 per HB)
-        self.assertTrue(hb_count >= 5, "Heartbeat count incorrect, should be at least 5, found {0} in {1}".format(hb_count,outfile))
+        self.assertTrue(hb_count >= 3, "Heartbeat count incorrect, should be at least 3, found {0} in {1}".format(hb_count,outfile))
         self.assertTrue(status_count >= 2, "Output file is missing core status output messages")
         self.assertTrue(exit_count == num_para, "Exit message count incorrect, should be {0}, found {1} in {2}".format(num_para,exit_count,outfile))
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))

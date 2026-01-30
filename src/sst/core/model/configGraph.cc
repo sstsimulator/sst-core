@@ -204,16 +204,16 @@ ConfigGraph::postCreationCleanup()
     // Need to assign the link delivery order.  This is done
     // alphabetically by link name. To save memory, we'll sort links_
     // by name, then sort it back by link_id
-    std::sort(links_.begin(), links_.end(),
-        [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
+    // std::sort(links_.begin(), links_.end(),
+    //     [](const ConfigLink* lhs, const ConfigLink* rhs) -> bool { return lhs->name < rhs->name; });
 
-    LinkId_t count = 1;
-    for ( auto* link : links_ ) {
-        link->order = count;
-        count++;
-    }
+    // LinkId_t count = 1;
+    // for ( auto* link : links_ ) {
+    //     link->order = count;
+    //     count++;
+    // }
 
-    links_.sort();
+    // links_.sort();
 
     /* Force component / statistic registration for Group stats */
     for ( auto& cfg : getStatGroups() ) {
@@ -241,19 +241,22 @@ ConfigGraph::checkForStructuralErrors()
     for ( ConfigLinkMap_t::iterator iter = links_.begin(); iter != links_.end(); ++iter ) {
         ConfigLink* clink = *iter;
 
-        // First check to see if the link is completely unused
-        if ( clink->order == 0 ) {
-            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
-            found_error = true;
-        }
+        /*
+          Two conditions we need to look for:
 
-        // If component[0] is not initialized, this is an unused link
-        if ( clink->component[0] == ULONG_MAX ) {
-            output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+          1 - Unused link.  This happens when order == 0 and we are NOT a nonlocal link
+
+          2 - Dangling link.  This happens when order == 0 and we are a nonlocal link, or when order == 0 and we are NOT
+              a nonlocal link
+        */
+        if ( clink->order == 0 ) {
+            if ( !clink->nonlocal )
+                output.output("WARNING:  Found unused link: %s\n", clink->name.c_str());
+            else
+                output.output("WARNING:  Found dangling nonlocal link: %s\n", clink->name.c_str());
             found_error = true;
         }
-        // If component[1] is not initialized, this is a dangling link
-        else if ( clink->component[1] == ULONG_MAX ) {
+        else if ( clink->order == 1 && !clink->nonlocal ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",
                 clink->name.c_str(), comps_[clink->component[0]]->name.c_str());
             found_error = true;
@@ -434,10 +437,10 @@ ConfigGraph::findComponent(ComponentId_t id) const
 ConfigComponent*
 ConfigGraph::findComponentByName(const std::string& name)
 {
-    std::string origname(name);
-    auto        index    = origname.find(':');
-    std::string compname = origname.substr(0, index);
-    auto        itr      = comps_by_name_.find(compname);
+    const std::string& origname(name);
+    auto               index    = origname.find(':');
+    std::string        compname = origname.substr(0, index);
+    auto               itr      = comps_by_name_.find(compname);
 
     // Check to see if component was found
     if ( itr == comps_by_name_.end() ) return nullptr;

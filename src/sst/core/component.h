@@ -16,6 +16,7 @@
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/sst_types.h"
 
+#include <cstdint>
 #include <map>
 
 using namespace SST::Statistics;
@@ -58,6 +59,12 @@ public:
 protected:
     friend class SubComponent;
     Component() = default; // For Serialization only
+
+private:
+
+    uint32_t getNextLinkOrder() override { return next_event_order_++; }
+
+    uint32_t next_event_order_ = 1;
 };
 
 } // namespace SST
