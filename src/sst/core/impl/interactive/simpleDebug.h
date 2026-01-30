@@ -17,6 +17,7 @@
 #include "sst/core/interactiveConsole.h"
 #include "sst/core/serialization/objectMapDeferred.h"
 #include "sst/core/watchPoint.h"
+#include "sst/core/impl/interactive/debugStream.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -117,58 +118,6 @@ private:
     bool                     searchFirst(const std::string& s, std::string& newcmd);
     bool                     searchAny(const std::string& s, std::string& newcmd);
 };
-
-class DebuggerStreamBuf : public std::streambuf {
-    private:
-    std::streambuf* dest_;
-    unsigned        linesPerScreen_;
-    unsigned        curLines_;
-    bool            paginate_;
-    bool            quit_;
-    unsigned        charsPerLine_;
-    unsigned        curChars_;
-
-    protected:
-    virtual int_type overflow(int_type c) override;
-    virtual int sync() override;
-
-
-    public:
-    DebuggerStreamBuf(std::streambuf* dest, unsigned linesPerScreen, unsigned charsPerLine) 
-        : dest_(dest), linesPerScreen_(linesPerScreen), curLines_(0),
-          paginate_(true), quit_(false), charsPerLine_(charsPerLine), curChars_(0) {}
-
-    void reset();
-    void setLineWidth(const unsigned w){charsPerLine_ = w;}
-
-};
-
-class DebuggerStream : public std::ostream {
-    private:
-    DebuggerStreamBuf buf_;
-
-    public:
-    DebuggerStream(std::ostream& dest, unsigned linesPerScreen, unsigned charsPerLine)
-        : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen, charsPerLine) {}
-
-    void reset(){
-        buf_.reset();
-        clear();
-    }
-
-    void setLineWidth(const unsigned w){ buf_.setLineWidth(w);}
-
-};
-
-inline DebuggerStream& operator<<(DebuggerStream& stream, DebuggerStream& (*func)(DebuggerStream&)) {
-    return func(stream);
-}
-
-inline DebuggerStream& dreset(DebuggerStream& stream) {
-    stream.reset();
-    stream.flush();
-    return stream;
-}
 
 class SimpleDebugger : public SST::InteractiveConsole
 {
