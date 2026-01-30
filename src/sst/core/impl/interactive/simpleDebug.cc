@@ -30,8 +30,46 @@
 
 namespace SST::IMPL::Interactive {
 
+std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c) {
+        if(quit_){
+            return EOF;
+        }
+
+        if('\n' == c){
+            curLines_++;
+            if(paginate_ && (curLines_ % linesPerScreen_ == 0)){
+                dest_->sputc('\n');
+                dest_->pubsync();
+                std::cout << "--Type <RET> for more, q to quit, c to continue without paging--" << std::endl;
+                char cmd = std::cin.get();
+                if(('q' == cmd) || ('Q' == cmd)){
+                    quit_ = true;
+                    return EOF;
+                }else if( ('c' == cmd ) || ('C' == cmd)){
+                    paginate_ = false;
+                    std::cin.ignore(1000, '\n');
+                }else{
+                    if('\n' != cmd) std::cin.ignore(1000, '\n');
+                }
+                return c;
+            }
+        } 
+        return dest_->sputc(c);
+    }
+
+    int DebuggerStreamBuf::sync() {
+        return dest_->pubsync();
+    }
+
+    void DebuggerStreamBuf::reset(){
+            paginate_ = true;
+            quit_ = false;
+            curLines_ = 0;
+    }
+
 SimpleDebugger::SimpleDebugger(Params& params) :
-    InteractiveConsole()
+    InteractiveConsole(),
+    dout(std::cout, 25)
 {
     // registerAsPrimaryComponent();
 
@@ -461,14 +499,30 @@ bool
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
 {
     auto& vars = obj_->getVariables();
+    unsigned lines = 0;
+    bool paginate = true;
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
-            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+            dout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
         }
         else {
-            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+            dout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
+        /*lines++;
+        if(paginate && lines > 25){
+            std::string line;
+            std::cout << "--Type <RET> for more, q to quit, c to continue without paging--" << std::endl;
+            std::getline(std::cin, line);
+            std::vector<std::string> tokens;
+            tokenize(tokens, line);
+            if(0 == tokens.size()){lines = 0; continue;}
+            else if("\n" == tokens[0]){lines = 0; continue;}
+            else if("q" == tokens[0]){ return true;}
+            else if("c" == tokens[0]){paginate = false; continue;}
+            else {lines = 0; continue;}
+        } */
     }
+    dout << dreset;
     return true;
 }
 

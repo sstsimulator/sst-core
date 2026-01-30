@@ -118,6 +118,53 @@ private:
     bool                     searchAny(const std::string& s, std::string& newcmd);
 };
 
+class DebuggerStreamBuf : public std::streambuf {
+    private:
+    std::streambuf* dest_;
+    unsigned        linesPerScreen_;
+    unsigned        curLines_;
+    bool            paginate_;
+    bool            quit_;
+
+    protected:
+    virtual int_type overflow(int_type c) override;
+    virtual int sync() override;
+
+
+    public:
+    DebuggerStreamBuf(std::streambuf* dest, int linesPerScreen = 25) 
+        : dest_(dest), linesPerScreen_(linesPerScreen), curLines_(0),
+          paginate_(true), quit_(false) {}
+
+    void reset();
+
+};
+
+class DebuggerStream : public std::ostream {
+    private:
+    DebuggerStreamBuf buf_;
+
+    public:
+    DebuggerStream(std::ostream& dest, int linesPerScreen = 25)
+        : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen) {}
+
+    void reset(){
+        buf_.reset();
+        clear();
+    }
+
+};
+
+inline DebuggerStream& operator<<(DebuggerStream& stream, DebuggerStream& (*func)(DebuggerStream&)) {
+    return func(stream);
+}
+
+inline DebuggerStream& dreset(DebuggerStream& stream) {
+    stream.reset();
+    stream.flush();
+    return stream;
+}
+
 class SimpleDebugger : public SST::InteractiveConsole
 {
 
@@ -243,6 +290,8 @@ private:
     // Verbosity controlled console printing
     uint32_t verbosity = 0;
     void     msg(VERBOSITY_MASK mask, std::string message);
+
+    DebuggerStream dout;
 };
 
 } // namespace SST::IMPL::Interactive
