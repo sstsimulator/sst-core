@@ -79,7 +79,7 @@ std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c)
 
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole(),
-    dout(std::cout, 25)
+    dout(std::cout, 25, 80)
 {
     // registerAsPrimaryComponent();
 
