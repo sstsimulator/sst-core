@@ -30,8 +30,10 @@
 
 namespace SST::IMPL::Interactive {
 
+
 SimpleDebugger::SimpleDebugger(Params& params) :
-    InteractiveConsole()
+    InteractiveConsole(),
+    dout(std::cout, 50, 160)
 {
     // registerAsPrimaryComponent();
 
@@ -463,12 +465,13 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     auto& vars = obj_->getVariables();
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
-            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+            dout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
         }
         else {
-            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+            dout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
     }
+    dout << dreset;
     return true;
 }
 
