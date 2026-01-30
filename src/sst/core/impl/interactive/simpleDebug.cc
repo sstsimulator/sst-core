@@ -35,8 +35,10 @@ std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c)
             return EOF;
         }
 
+        curChars_++;
         if('\n' == c){
             curLines_++;
+            curChars_=0;
             if(paginate_ && (curLines_ % linesPerScreen_ == 0)){
                 dest_->sputc('\n');
                 dest_->pubsync();
@@ -44,6 +46,7 @@ std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c)
                 char cmd = std::cin.get();
                 if(('q' == cmd) || ('Q' == cmd)){
                     quit_ = true;
+                    std::cin.ignore(1000, '\n');
                     return EOF;
                 }else if( ('c' == cmd ) || ('C' == cmd)){
                     paginate_ = false;
@@ -53,7 +56,13 @@ std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c)
                 }
                 return c;
             }
-        } 
+        } else if( curChars_ == charsPerLine_){
+            dest_->sputc('.');
+            dest_->sputc('.');
+            return dest_->sputc('.');
+        }else if( curChars_ > charsPerLine_){
+            return c;
+        }
         return dest_->sputc(c);
     }
 
@@ -63,8 +72,9 @@ std::streambuf::int_type DebuggerStreamBuf::overflow(std::streambuf::int_type c)
 
     void DebuggerStreamBuf::reset(){
             paginate_ = true;
-            quit_ = false;
+            quit_     = false;
             curLines_ = 0;
+            curChars_ = 0;
     }
 
 SimpleDebugger::SimpleDebugger(Params& params) :
@@ -499,8 +509,6 @@ bool
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
 {
     auto& vars = obj_->getVariables();
-    unsigned lines = 0;
-    bool paginate = true;
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
             dout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
@@ -508,19 +516,6 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
         else {
             dout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
-        /*lines++;
-        if(paginate && lines > 25){
-            std::string line;
-            std::cout << "--Type <RET> for more, q to quit, c to continue without paging--" << std::endl;
-            std::getline(std::cin, line);
-            std::vector<std::string> tokens;
-            tokenize(tokens, line);
-            if(0 == tokens.size()){lines = 0; continue;}
-            else if("\n" == tokens[0]){lines = 0; continue;}
-            else if("q" == tokens[0]){ return true;}
-            else if("c" == tokens[0]){paginate = false; continue;}
-            else {lines = 0; continue;}
-        } */
     }
     dout << dreset;
     return true;

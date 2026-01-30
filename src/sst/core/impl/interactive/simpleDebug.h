@@ -125,6 +125,8 @@ class DebuggerStreamBuf : public std::streambuf {
     unsigned        curLines_;
     bool            paginate_;
     bool            quit_;
+    unsigned        charsPerLine_;
+    unsigned        curChars_;
 
     protected:
     virtual int_type overflow(int_type c) override;
@@ -132,11 +134,12 @@ class DebuggerStreamBuf : public std::streambuf {
 
 
     public:
-    DebuggerStreamBuf(std::streambuf* dest, int linesPerScreen = 25) 
+    DebuggerStreamBuf(std::streambuf* dest, unsigned linesPerScreen, unsigned charsPerLine) 
         : dest_(dest), linesPerScreen_(linesPerScreen), curLines_(0),
-          paginate_(true), quit_(false) {}
+          paginate_(true), quit_(false), charsPerLine_(charsPerLine), curChars_(0) {}
 
     void reset();
+    void setLineWidth(const unsigned w){charsPerLine_ = w;}
 
 };
 
@@ -145,13 +148,15 @@ class DebuggerStream : public std::ostream {
     DebuggerStreamBuf buf_;
 
     public:
-    DebuggerStream(std::ostream& dest, int linesPerScreen = 25)
-        : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen) {}
+    DebuggerStream(std::ostream& dest, unsigned linesPerScreen = 25, unsigned charsPerLine = 80)
+        : std::ostream(&buf_), buf_(dest.rdbuf(), linesPerScreen, charsPerLine) {}
 
     void reset(){
         buf_.reset();
         clear();
     }
+
+    void setLineWidth(const unsigned w){ buf_.setLineWidth(w);}
 
 };
 
