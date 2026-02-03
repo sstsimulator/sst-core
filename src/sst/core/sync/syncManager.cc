@@ -33,6 +33,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define SKK 0
+
 namespace SST {
 
 class InteractiveConsole;
@@ -169,6 +171,27 @@ public:
         alrm = 0;
         return false;
     }
+
+    void setShutdownFlags(bool UNUSED(enter_shutdown), 
+                Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override {}
+
+    void setFlags(bool UNUSED(enter_interactive), bool UNUSED(enter_shutdown), 
+                Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override {}
+
+    void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override
+    {
+        enter_shutdown = false;
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+    }
+
+    void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override
+    {
+        enter_interactive = false;
+        getShutdownFlags(enter_shutdown, shutdown_mode);
+    }
+
+     /** Clear interactive flags before next run */
+    void clearFlags() override {}
 
     /** Register a Link which this Sync Object is responsible for */
     void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
@@ -372,27 +395,67 @@ SyncManager::exchangeLinkInfo()
     rankSync_->exchangeLinkInfo(rank_.rank);
 }
 
-void
+ void
+ SyncManager::getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) {
+            
+            // Get sim flags to exchange in threadSync
+            enter_shutdown = sim_->enter_shutdown_;
+            shutdown_mode = sim_->shutdown_mode_;
+ }
+
+ // sim_->getSimFlags(enter_interactive, enter_shutdown, shutdown_mode) checkpoint?
+ void
+ SyncManager::getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) {
+            
+            // Get sim flags to exchange in threadSync
+            enter_interactive = sim_->enter_interactive_;
+            getSimShutdownFlags(enter_shutdown, shutdown_mode);
+            #if 0
+            // Can't clear here because we use to decide whether triggered
+            sim_->enter_interactive_ = false;
+            sim_->enter_shutdown_ = false;
+            sim_->shutdown_mode_ = Simulation_impl::SHUTDOWN_CLEAN;
+            #endif
+ }
+
+void //bool
 SyncManager::handleShutdown()
 {
+    // If console is handled only by thread 0, then only thread 0 needs to check for cmd_shutdown here
+    // The watchpoint action shutdown can be triggered by any thread
 #if 0
     // Check for shutdown
     Output& out = sim_->getSimulationOutput();
     out.output("skk:syncmgr:handleShutdown:Before T%d:endSim=%d, shutdown_mode=%d, enter_shutdown=%d, \n", rank_.thread,
         sim_->endSim, sim_->shutdown_mode_, sim_->enter_shutdown_);
 #endif
-    // If my thread's enter_shutdown_ is true, then set shared enter_shutdown
-    if ( sim_->enter_shutdown_ == true ) {
-        enter_shutdown_.fetch_or(true);
-        endSim_.fetch_or(true);
-        if ( sim_->shutdown_mode_ == true ) {
-            shutdown_mode_.store(true);
-        }
-    }
-    ic_barrier_.wait();
-    if ( endSim_ == true ) {
+
+    //printf("Rank%d, Thread%d: Enter handleShutdown: sim->: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+    //    rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
+
+    //bool enter_interactive;
+    bool enter_shutdown;
+    Simulation_impl::ShutdownMode_t shutdown_mode;
+
+    getSimShutdownFlags(enter_shutdown, shutdown_mode); // get flags from sim_
+    threadSync_->setShutdownFlags(enter_shutdown, shutdown_mode);  // Atomically update shared values in threadSync
+    ic_barrier_.wait(); // barrier
+    threadSync_->getShutdownFlags(enter_shutdown, shutdown_mode);  // Get shared (cumulative) flags from threadSync
+   
+    if ( enter_shutdown ) {
         sim_->setEndSim();
+        //printf("Rank%d, Thread%d: handleShutdown setEndSim: \n", rank_.rank, rank_.thread);
+        // Clear sim flags
+        // SKK May be duplicative for now because this function called directly in sim for --interactive-start=0
+        sim_->enter_interactive_ = false;
+        sim_->enter_shutdown_ = false;
+        // SKK No need to threadSync-> clear because we're just going to shutdown?
+        //return true;
     }
+    
+    //printf("After HandleShutdown: sim: sim_->enter_interactive %d, sim_->enter_shutdown %d, sim_->shutdown_mode %d\n", 
+    //    enter_interactive, enter_shutdown, shutdown_mode);
+    //return false;
 }
 
 void
@@ -402,23 +465,13 @@ SyncManager::handleInteractiveConsole()
 
     // Handle interactive console for multithreaded runs
     // Serial execution handles this in simulation run so it happens right away
-    if ( num_ranks_.thread > 1 ) {
+    assert(num_ranks_.thread != 1); // SKK I should never have a threadSync with a single thread, correct?
 
-        // 1) Check local enter_interactive_ and set mask if needed (could use mask to show triggers)
-        if ( sim_->enter_interactive_ == true ) {
-            unsigned bit = 1UL << rank_.thread;
-            enter_interactive_mask_.fetch_or(bit);
-        }
-        ic_barrier_.wait(); // Ensure everyone has written the mask before checking
-
-        // If enter interactive set for any thread, set shared ic_mask
-        unsigned ic_mask = enter_interactive_mask_.load();
 #if 0
         Output& out = sim_->getSimulationOutput();
         out.output("skk:syncmgr:execute: T%d: check enter_interactive_=%d\n", rank_.thread, sim_->enter_interactive_);
         out.output("skk:syncmgr:execute: T%d: enter_interactive_mask_=0x%x\n", rank_.thread, ic_mask);
 #endif
-        if ( ic_mask ) {
             // 2) Print list of threads (in order) and whether triggered
             for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
                 if ( rank_.thread == tindex ) {
@@ -474,11 +527,14 @@ SyncManager::handleInteractiveConsole()
                     }
                 }
                 ic_barrier_.wait();
-                handleShutdown(); // Check if console issued shutdown command
+                // If console is handled only by thread 0, then only thread 0 needs to check for cmd_shutdown here
+                // Could we handle this directly? If cmd_shutdown, then return SHUTDOWN (-3) and share it across threads?
+                
+                handleShutdown(); // Check if console issued shutdown command  SKK have this return true/false for shutdown to skip next step
 
                 tid      = current_ic_thread_.load();
                 ic_state = current_ic_state_.load();
-                // out.output("T%d: tid %d, ic_state %d\n", rank_.thread, tid, ic_state);
+                //out.output("T%d: tid %d, ic_state %d\n", rank_.thread, tid, ic_state);
                 if ( ic_state == InteractiveConsole::ICretcode::SUMMARY ) { // Print thread info summary
                     for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
                         if ( rank_.thread == tindex ) {
@@ -494,24 +550,51 @@ SyncManager::handleInteractiveConsole()
                     current_ic_state_.store(0);
                 } // if state == SUMMARY, print thread info summary
             }
-
-            // 5) When done, clear interactive mask and enter interactive flags for next round
-            if ( rank_.thread == 0 ) {
-                enter_interactive_mask_.store(0);
-            }
+        
+            // SKK Right now this is called directly for --interactive-start=0, so we need to clear here
             sim_->enter_interactive_ = false;
+            //printf("After while loop: sim: sim_->enter_interactive %d\n", sim_->enter_interactive_);
+            // SKK Do I need to clear outside flags? I should not need shared enter_ic or shutdown inside here
+            // Ensure everyone has latest flags before clearing
             ic_barrier_.wait();
-            ic_mask = enter_interactive_mask_.load();
-            // out.output("skk:syncmgr:execute: T%d: After: check enter_interactive_=%d\n", rank_.thread,
-            // sim_->enter_interactive_); out.output("skk:syncmgr:execute: T%d: AFter: enter_interactive_mask_=0x%x\n",
-            // rank_.thread, ic_mask);
-        }
-    } // end if num_ranks_.thread > 1: Handle interactive console
+            threadSync_->clearFlags();
+        
+}
+
+void
+SyncManager::partitionInfo() {
+    Output& out = sim_->getSimulationOutput();
+    for (uint32_t rindex = 0; rindex < num_ranks_.rank; rindex++ ) {
+        for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
+            if ( rank_.rank == rindex && rank_.thread == tindex ) {
+                out.output("Rank:%d, Thread:%d (Process %d)", rank_.rank, rank_.thread, getppid());
+                // Print component summary
+                if ( sim_->interactive_ != nullptr ) {
+                    sim_->interactive_->summary();
+                }
+            }
+        } 
+    }
 }
 
 void
 SyncManager::execute()
 {
+#if 0   // SKK
+    std::string type = "RANK";
+    if (next_sync_type_ == THREAD)
+        type = "THREAD";
+#if 1
+    Output& out = sim_->getSimulationOutput();
+    out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
+        rank_.rank, rank_.thread, type.c_str());
+#else 
+    std::cout << "SyncManager::execute: Rank " << rank_.rank 
+    << ": Thread " << rank_.thread 
+    << ": Type " << type << std::endl;
+#endif
+#endif // SKK  
+
     SST_SYNC_PROFILE_START
 
     if ( profile_tools_ ) profile_tools_->syncManagerStart();
@@ -573,13 +656,14 @@ SyncManager::execute()
         next_checkpoint_time = checkpoint_->check(getDeliveryTime());
 
 
-#if 1
+#if 0
         // Handle interactive console
         if ( rank_.thread == 0 ) {
             // std::cout << "skk: syncmgr rank: t0: interactive execute\n";
             if ( sim_->enter_interactive_ == true ) {
                 sim_->enter_interactive_ = false; // IC may schedule IC again
-                if ( sim_->interactive_ != nullptr ) sim_->interactive_->execute(sim_->interactive_msg_);
+                //if ( sim_->interactive_ != nullptr ) sim_->interactive_->execute(sim_->interactive_msg_);
+                printf("Rank%d, Thread%d: In RANK interactive console\n", rank_.rank, rank_.thread);
             }
         }
 
@@ -604,7 +688,23 @@ SyncManager::execute()
             real_time_->getSignals(sig_end, sig_usr, sig_alrm);
             threadSync_->setSignals(sig_end, sig_usr, sig_alrm);
         }
-        threadSync_->execute(); // exchange event queues
+
+#if 1  // Move exchange of enter_interactive, shutdown, and checkpoint flags here, similar to getSignals
+        // Not that only thread 0 receives signals so it is the only one to execute above
+        // However, any thread can trigger interactive or shutdown, so need to have all threads store
+        // That is also why the setFlags must be atomic
+        bool enter_interactive;
+        bool enter_shutdown;
+        Simulation_impl::ShutdownMode_t shutdown_mode;
+        if (num_ranks_.rank == 1) {  // SKK Do we need to do this in all cases or does it get handled in RANK? 
+            // Get local sim flags
+            getSimFlags(enter_interactive, enter_shutdown, shutdown_mode);
+            // Each thread atomically sets shared flags in threadSync
+            threadSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
+        }
+
+#endif
+        threadSync_->execute(); // exchange event queues, includes barrier
 
         // Handle signals for multi-threaded runs/no MPI
         if ( num_ranks_.rank == 1 ) {
@@ -618,14 +718,7 @@ SyncManager::execute()
                 real_time_->performSignal(sig_end);
             else if ( signals_received ) {
                 if ( sig_usr ) real_time_->performSignal(sig_usr);
-#if 0
                 if ( sig_alrm ) real_time_->performSignal(sig_alrm);
-#else
-                if ( sig_alrm ) {
-                    // out.output("skk:syncmgr:execute: T%d: in sigalrm\n", rank_.thread);
-                    real_time_->performSignal(sig_alrm);
-                }
-#endif
             }
 
             // Check local checkpoint generate flag and set shared generate if needed.
@@ -640,9 +733,21 @@ SyncManager::execute()
             next_checkpoint_time = checkpoint_->check(getDeliveryTime());
             ckpt_generate_.store(0);
 
+            threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
+            //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+            //    enter_interactive, enter_shutdown, shutdown_mode);
+            if (enter_shutdown) {
+                sim_->setEndSim();
+                ic_barrier_.wait();
+                threadSync_->clearFlags();
+            }
+            else if (enter_interactive) {
+                handleInteractiveConsole(); // Check of any thread set interactive console
+            }
+            //threadSync_->clearFlags(); // SKK May currently be duplicated at end of handleIC for ic-start=0 case 
+            //printf("After threadSync_->clearFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+            //    enter_interactive, enter_shutdown, shutdown_mode);
 
-            handleShutdown();           // Check if any thread set shutdown
-            handleInteractiveConsole(); // Check of any thread set interactive console
 
         } // if num_ranks_.rank == 1 i.e. only multithreading
 
@@ -750,12 +855,9 @@ SyncManager::addProfileTool(Profile::SyncProfileTool* tool)
 }
 
 std::atomic<unsigned>     SyncManager::ckpt_generate_ { 0 };
-std::atomic<unsigned>     SyncManager::enter_interactive_mask_ { 0 };
 std::atomic<int>          SyncManager::current_ic_thread_ { 0 };
 std::atomic<int>          SyncManager::current_ic_state_ { 0 };
-std::atomic<unsigned>     SyncManager::enter_shutdown_ { 0 };
 std::atomic<unsigned>     SyncManager::endSim_ { false };
-std::atomic<unsigned>     SyncManager::shutdown_mode_ { false };
 Core::ThreadSafe::Barrier SyncManager::ic_barrier_;
 
 

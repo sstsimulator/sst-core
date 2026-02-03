@@ -15,6 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/link.h"
 #include "sst/core/rankInfo.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
 
@@ -109,6 +110,15 @@ public:
     /** Return exchanged signals after sync */
     virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
+    /** Set interactive flags to exchange during sync */
+    virtual void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
+    virtual void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
+    /** Return exchanged interactive flags after sync */
+    virtual void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+    virtual void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+     /** Clear interactive flags before next run */
+    virtual void clearFlags() = 0;
+
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
     virtual void      setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
@@ -191,18 +201,18 @@ private:
     RealTimeManager*                 real_time_;
     CheckpointAction*                checkpoint_;
     static std::atomic<unsigned>     ckpt_generate_;
-    static std::atomic<unsigned>     enter_interactive_mask_;
     static std::atomic<int>          current_ic_thread_;
     static std::atomic<int>          current_ic_state_;
-    static std::atomic<unsigned>     enter_shutdown_;
     static std::atomic<unsigned>     endSim_;
-    static std::atomic<unsigned>     shutdown_mode_;
     static Core::ThreadSafe::Barrier ic_barrier_;
 
     SyncProfileToolList* profile_tools_ = nullptr;
 
     void computeNextInsert(SimTime_t next_checkpoint_time = MAX_SIMTIME_T);
     void setupSyncObjects();
+    void getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
+    void getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
+    void partitionInfo();
 };
 
 } // namespace SST

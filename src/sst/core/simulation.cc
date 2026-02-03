@@ -1047,9 +1047,12 @@ Simulation_impl::setup_interactive_mode()
             }
 
             // Special case, invoke interactive console now rather than wait for sync
+            //if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {  // SKK 
             if ( num_ranks.thread > 1 && offset == 0 ) {
                 enter_interactive_ = true;
                 syncManager->handleInteractiveConsole();
+                enter_interactive_ = false;
+                printf("After handleInteractiveConsole: sim_->enter_interactive %d\n", enter_interactive_);
             }
             else {
                 InteractiveAction* act =
