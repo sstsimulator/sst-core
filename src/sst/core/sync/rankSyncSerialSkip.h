@@ -53,9 +53,11 @@ public:
     /** Set interactive flags to exchange during sync */
     // SKK Separated enter_interactive from from shutdown since they may be needed separately
     void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setCkptFlag(bool generate_ckpt) override;
     void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */
     void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getCkptFlag(bool& generate_ckpt) override;
     void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
      /** Clear interactive flags before next run */
     void clearFlags() override;
@@ -102,6 +104,7 @@ private:
     static std::atomic<bool>         enter_interactive_;
     static std::atomic<bool>         enter_shutdown_;
     static std::atomic<unsigned>     shutdown_mode_;
+    static std::atomic<bool>         generate_ckpt_;
 };
 
 } // namespace SST

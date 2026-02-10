@@ -68,9 +68,11 @@ public:
 
     /** Set interactive flags to exchange during sync */
     virtual void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
+    virtual void setCkptFlag(bool generate_ckpt) = 0;
     virtual void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
     /** Return exchanged interactive flags after sync */
     virtual void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+    virtual void getCkptFlag(bool& generate_ckpt) = 0;
     virtual void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
      /** Clear interactive flags before next run */
     virtual void clearFlags() = 0;
@@ -225,7 +227,7 @@ private:
     void computeNextInsert(SimTime_t next_checkpoint_time = MAX_SIMTIME_T);
     void setupSyncObjects();
     void getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
-    void getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
+    void getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode, bool& generate_ckpt);
     void partitionInfo();
 };
 

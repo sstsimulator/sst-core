@@ -173,6 +173,12 @@ RankSyncParallelSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::Shu
     //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
+void
+RankSyncParallelSkip::setCkptFlag(bool generate_ckpt)
+{
+    if (generate_ckpt)
+        generate_ckpt_.store(true);
+}
 
 void
 RankSyncParallelSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
@@ -209,6 +215,12 @@ RankSyncParallelSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::S
     //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
+void
+RankSyncParallelSkip::getCkptFlag(bool& generate_ckpt)
+{
+    generate_ckpt = generate_ckpt_.load();
+}
+
 void 
 RankSyncParallelSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
 {
@@ -226,6 +238,7 @@ RankSyncParallelSkip::clearFlags()
     enter_interactive_.store(false);
     enter_shutdown_.store(false);
     shutdown_mode_.store(0);
+    generate_ckpt_.store(false);
 
     //printf("Clear Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
     //               enter_interactive_, enter_shutdown_, shutdown_mode_);
@@ -284,6 +297,20 @@ RankSyncParallelSkip::shutdownExchange()
     shutdown_mode_ = global_flags[1];
 #endif
 }
+
+#if 0
+void
+RankSyncParallelSkip::ckptExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[1]  = { static_cast<int32_t>(generate_ckpt_) };
+    int32_t global_flags[1] = { 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    generate_ckpt_  = global_flags[0];
+#endif
+}
+#endif
 
 void
 RankSyncParallelSkip::exchange_slave(int thread)
@@ -483,13 +510,15 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     sig_usr_  = global_signals[1];
     sig_alrm_ = global_signals[2];
 
-    int32_t local_flags[3]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_), static_cast<int32_t>(shutdown_mode_) };
-    int32_t global_flags[3] = { 0, 0, 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+    int32_t local_flags[4]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_), 
+        static_cast<int32_t>(shutdown_mode_), static_cast<int32_t>(generate_ckpt_) };
+    int32_t global_flags[4] = { 0, 0, 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 4, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
 
     enter_interactive_  = global_flags[0];
     enter_shutdown_  = global_flags[1];
     shutdown_mode_ = global_flags[2];
+    generate_ckpt_ = global_flags[3];
 
 #endif
 }
@@ -616,5 +645,6 @@ int RankSyncParallelSkip::sig_alrm_(0);
 std::atomic<bool>         RankSyncParallelSkip::enter_interactive_(false);
 std::atomic<bool>         RankSyncParallelSkip::enter_shutdown_(false);
 std::atomic<unsigned>     RankSyncParallelSkip::shutdown_mode_(0);
+std::atomic<bool>         RankSyncParallelSkip::generate_ckpt_(false);
 
 } // namespace SST

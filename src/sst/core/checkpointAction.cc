@@ -257,10 +257,10 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 SimTime_t
 CheckpointAction::check(SimTime_t current_time)
 {
-#if 0
+#if 1
     Simulation_impl* sim = Simulation_impl::getSimulation();
     sim->getSimulationOutput().output(
-        "skk:T %d: checkpointAction.cc: check()\n", rank_.thread);
+        "skk:R %d, T %d: checkpointAction.cc: check()\n", rank_.rank, rank_.thread);
 #endif
     // The if-logic is a little weird, but it's trying to minimize the
     // number of branches in the normal case of no checkpoint being

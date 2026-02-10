@@ -134,11 +134,12 @@ public:
     void setShutdownFlags(bool UNUSED(enter_shutdown), 
                 Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override {}
 
+    void setCkptFlag(bool UNUSED(generate_ckpt)) override {}
     void setFlags(bool UNUSED(enter_interactive), bool UNUSED(enter_shutdown), 
                 Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override {}
 
     void getShutdownFlags( bool& UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override {}
-
+    void getCkptFlag(bool& UNUSED(generate_ckpt)) override {}
     void getFlags( bool& UNUSED(enter_interactive), bool& UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override {}
 
      /** Clear interactive flags before next run */
@@ -410,13 +411,14 @@ SyncManager::exchangeLinkInfo()
             shutdown_mode = sim_->shutdown_mode_;
  }
 
- // sim_->getSimFlags(enter_interactive, enter_shutdown, shutdown_mode) checkpoint?
+ // sim_->getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, checkpoint)
  void
- SyncManager::getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) {
+ SyncManager::getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode, bool& generate_ckpt) {
             
             // Get sim flags to exchange in threadSync
             enter_interactive = sim_->enter_interactive_;
             getSimShutdownFlags(enter_shutdown, shutdown_mode);
+            generate_ckpt = checkpoint_->getCheckpoint();
  }
 
  void
@@ -768,6 +770,7 @@ SyncManager::execute()
     bool enter_interactive;
     bool enter_shutdown;
     Simulation_impl::ShutdownMode_t shutdown_mode;
+    bool generate_ckpt;
 
 
     SimTime_t next_checkpoint_time = MAX_SIMTIME_T;
@@ -795,12 +798,13 @@ SyncManager::execute()
             rankSync_->setSignals(sig_end, sig_usr, sig_alrm);
         }
 #if 1
-        // Get interactive and shutdown flags
+        // Get interactive, shutdown, and checkpoint flags
         printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
                     rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
-        getSimFlags(enter_interactive, enter_shutdown, shutdown_mode);
+        getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
         #if 1
         rankSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
+        rankSync_->setCkptFlag(generate_ckpt);
         printf("1: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
                     rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
      
@@ -836,7 +840,29 @@ SyncManager::execute()
         }
 
         // Generate checkpoint if needed
+#if 1
+        rankSync_->getCkptFlag(generate_ckpt);
+        if ( generate_ckpt ) {
+            checkpoint_->setCheckpoint();
+        }
         next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+#else
+        // Check local checkpoint generate flag and set shared generate if needed.
+            if ( checkpoint_->getCheckpoint() == true ) {
+                ckpt_generate_.store(1);
+            }
+            // Ensure everyone has written the mask before updating local generate_
+            ic_barrier_.wait();
+            printf("2.5: Rank%d, Thread%d: ckpt_generate_ %d\n", 
+                rank_.rank, rank_.thread, ckpt_generate_.load());
+            if ( ckpt_generate_.load() ) {
+                checkpoint_->setCheckpoint();
+            }
+            next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+            ckpt_generate_.store(0);
+
+        //next_checkpoint_time = checkpoint_->check(getDeliveryTime());
+#endif
 
 #if 1
         rankSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
@@ -915,7 +941,7 @@ SyncManager::execute()
        
         if (num_ranks_.rank == 1) {  
             // Get local sim flags
-            getSimFlags(enter_interactive, enter_shutdown, shutdown_mode);
+            getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
             // Each thread atomically sets shared flags in threadSync
             threadSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
         }
