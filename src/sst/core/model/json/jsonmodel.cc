@@ -128,6 +128,7 @@ SSTConfigSaxHandler::processValue(const json& value)
             }
         }
     }
+    path_stack.pop_back();
 }
 
 bool
