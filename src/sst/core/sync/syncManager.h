@@ -66,6 +66,17 @@ public:
     /** Return exchanged signals after sync */
     virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
+    /** Set interactive flags to exchange during sync */
+    virtual void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
+    virtual void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
+    /** Return exchanged interactive flags after sync */
+    virtual void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+    virtual void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+     /** Clear interactive flags before next run */
+    virtual void clearFlags() = 0;
+    virtual void interactiveExchange() = 0;
+    virtual void shutdownExchange() = 0;
+
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
     virtual void setRestartTime(SimTime_t time) { nextSyncTime = time; }
@@ -156,8 +167,11 @@ public:
     ActivityQueue* registerLink(
         const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
     void exchangeLinkInfo();
+    void rankHandleShutdown();
     void handleShutdown();
+    void rankHandleInteractiveConsole();
     void handleInteractiveConsole();
+    void testRankFlagExchange();
     void execute() override;
 
     /** Cause an exchange of Initialization Data to occur */

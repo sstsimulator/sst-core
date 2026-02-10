@@ -120,6 +120,75 @@ RankSyncSerialSkip::getSignals(int& end, int& usr, int& alrm)
     return sig_end_ || sig_usr_ || sig_alrm_;
 }
 
+void
+RankSyncSerialSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    // SKK This must be atomic because it can be set from any thread
+    //printf("Enter rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+    if (enter_shutdown) {
+        enter_shutdown_.store(enter_shutdown);
+        shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
+    }
+    //printf("Exit rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
+}
+
+
+void
+RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    // SKK This must be atomic because it can be set from any thread
+    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+    if (enter_interactive)
+        enter_interactive_.store(enter_interactive);
+
+    setShutdownFlags(enter_shutdown, shutdown_mode);
+
+    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
+}
+
+void 
+RankSyncSerialSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    enter_shutdown  = enter_shutdown_.load();
+    switch (shutdown_mode_) {
+        case 0:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+            break;
+        case 1:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+            break;
+        case 2:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+            break;
+    }
+ 
+    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+}
+
+void 
+RankSyncSerialSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    
+    enter_interactive  = enter_interactive_.load();
+    getShutdownFlags( enter_shutdown, shutdown_mode);
+    
+    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+}
+
+void
+RankSyncSerialSkip::clearFlags()
+{
+    enter_interactive_.store(false);
+    enter_shutdown_.store(false);
+    shutdown_mode_.store(0);
+}
+
 uint64_t
 RankSyncSerialSkip::getDataSize() const
 {
@@ -136,6 +205,31 @@ RankSyncSerialSkip::execute(int thread)
     if ( thread == 0 ) {
         exchange();
     }
+}
+
+void
+RankSyncSerialSkip::interactiveExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[1]  = { static_cast<int32_t>(enter_interactive_) };
+    int32_t global_flags[1] = { 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_interactive_  = global_flags[0];
+#endif
+}
+
+void
+RankSyncSerialSkip::shutdownExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[2]  = { static_cast<int32_t>(enter_shutdown_), static_cast<int32_t>(shutdown_mode_) };
+    int32_t global_flags[2] = { 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 2, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_shutdown_  = global_flags[0];
+    shutdown_mode_ = global_flags[1];
+#endif
 }
 
 void
@@ -262,6 +356,15 @@ RankSyncSerialSkip::exchange()
     sig_end_  = global_signals[0];
     sig_usr_  = global_signals[1];
     sig_alrm_ = global_signals[2];
+
+    int32_t local_flags[3]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_), static_cast<int32_t>(shutdown_mode_) };
+    int32_t global_flags[3] = { 0, 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_interactive_  = global_flags[0];
+    enter_shutdown_  = global_flags[1];
+    shutdown_mode_ = global_flags[2];
+    
 #endif
 }
 
@@ -360,5 +463,8 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
 int RankSyncSerialSkip::sig_end_(0);
 int RankSyncSerialSkip::sig_usr_(0);
 int RankSyncSerialSkip::sig_alrm_(0);
+std::atomic<bool>         RankSyncSerialSkip::enter_interactive_(false);
+std::atomic<bool>         RankSyncSerialSkip::enter_shutdown_(false);
+std::atomic<unsigned>     RankSyncSerialSkip::shutdown_mode_(0);
 
 } // namespace SST

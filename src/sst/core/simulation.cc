@@ -1009,7 +1009,7 @@ Simulation_impl::setup_interactive_mode()
 
 
     // Start just with multithreading right now
-    if ( num_ranks.rank == 1 ) {
+    //if ( num_ranks.rank == 1 ) {
         // std::cout << "skk: run: setup interactive\n";
         if ( interactive_type_ != "" ) {
             // --interactive-console used to override default
@@ -1047,12 +1047,12 @@ Simulation_impl::setup_interactive_mode()
             }
 
             // Special case, invoke interactive console now rather than wait for sync
-            //if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {  // SKK 
-            if ( num_ranks.thread > 1 && offset == 0 ) {
+            if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {  // SKK 
+            //if ( num_ranks.thread > 1 && offset == 0 ) {
                 enter_interactive_ = true;
                 syncManager->handleInteractiveConsole();
                 enter_interactive_ = false;
-                printf("After handleInteractiveConsole: sim_->enter_interactive %d\n", enter_interactive_);
+                //printf("After handleInteractiveConsole in setup_interactive_mode: sim_->enter_interactive %d\n", enter_interactive_);
             }
             else {
                 InteractiveAction* act =
@@ -1060,7 +1060,7 @@ Simulation_impl::setup_interactive_mode()
                 act->insertIntoTimeVortex(currentSimCycle + offset);
             }
         }
-    }
+    //}
 }
 
 void
