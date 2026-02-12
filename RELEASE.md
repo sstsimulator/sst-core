@@ -5,6 +5,7 @@ SST 15.1.2 Bug Fix Release - 2026-Feb
 
 ## SST-Core
 * Reverted JSON parser to 15.0.0 version. This reintroduces 32b file size limits but avoids performance and functional problems seen with the streaming parser introduced in 15.1.0.
+* Fixed new/delete mismatch that could cause fatal errors in array serialization (PR #1477).
 
 SST 15.1.1 Bug Fix Release - 2026-Jan
 ===========================================
