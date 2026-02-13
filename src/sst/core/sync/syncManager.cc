@@ -155,6 +155,8 @@ public:
 
     // Don't want to reset time for Empty Sync
     void setRestartTime(SimTime_t UNUSED(time)) override {}
+
+    void testManager() override {}
 };
 
 class EmptyThreadSync : public ThreadSync
@@ -742,6 +744,28 @@ SyncManager::partitionInfo() {
 }
 
 void
+SyncManager::testProducerConsumer() 
+{
+#if 1
+    rankSync_->testManager();
+#else
+    if (rank_.thread == 0)
+        rankSync_->testManager();
+    else
+        rankSync_->testWorker();
+#endif
+#if 1
+    Output& out = sim_->getSimulationOutput();
+    out.output("**SyncManager::testProducerConsumer: before barrier R%d: T%d\n", 
+        rank_.rank, rank_.thread);
+#endif 
+
+    RankExecBarrier_[0].wait();
+    sim_->setEndSim();
+
+}
+
+void
 SyncManager::execute()
 {
 #if 1  // SKK
@@ -887,9 +911,9 @@ SyncManager::execute()
                     rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
                 partitionInfo();
 
-                #if 0
-                // SKK - this should be rankHandle...
-                rankHandleInteractiveConsole();
+                #if 1
+                // SKK Test Producer/Consumer
+                testProducerConsumer();
                 #else
                 //if (rank_.rank == 0) {  // SKK Temporary to test passing of watchpoint triggers
                 if (rank_.rank == 0 && rank_.thread == 0) { 
