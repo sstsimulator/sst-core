@@ -368,6 +368,8 @@ class SSTTestCase(unittest.TestCase):
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
         if expected_rc:
+            # convert it to a boolean like C: !!rtn
+            rtn = not not rtn
             err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
             self.assertEqual(rtn.result(), expected_rc, err_str)
 
