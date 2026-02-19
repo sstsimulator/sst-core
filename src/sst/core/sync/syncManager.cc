@@ -26,6 +26,7 @@
 #include "sst/core/sync/threadSyncDirectSkip.h"
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
+#include "sst/core/util/bit_util.h"
 
 #include <atomic>
 #include <cinttypes>
@@ -127,8 +128,6 @@ public:
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
-    TimeConverter getMaxPeriod() { return max_period; }
-
     uint64_t getDataSize() const override { return 0; }
 
     // Don't want to reset time for Empty Sync
@@ -176,6 +175,18 @@ public:
     /** Serialization for checkpoint support */
 };
 
+SimTime_t
+ThreadSync::updateMinimumLatency(SimTime_t lat)
+{
+    static Core::ThreadSafe::Spinlock lock;
+    static SimTime_t                  min_latency = bit_util::type_max<SimTime_t>;
+
+    std::scoped_lock slock(lock);
+    if ( lat < min_latency ) min_latency = lat;
+
+    return min_latency;
+}
+
 void
 RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 {
@@ -222,12 +233,10 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
             link->pair_link->setDeliveryInfo(data[x].second);
         }
         data.clear();
-        link_maps[i].clear();
     }
 
     for ( uint32_t i = my_rank + 1; i < num_ranks_.rank; ++i ) {
         // I'm the low rank, so send it first
-        // std::map<std::string, uintptr_t> data;
         std::vector<std::pair<LinkId_t, uintptr_t>> data;
 
         // Sort the links before sending/receiving
@@ -259,9 +268,111 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
             link->pair_link->setDeliveryInfo(data[x].second);
         }
         data.clear();
-        link_maps[i].clear();
     }
 #endif
+}
+
+SimTime_t
+RankSync::findSyncInterval(uint32_t UNUSED_WO_MPI(my_rank))
+{
+    // We need to find the lowest latency link globally.  Get the lowest for this rank, then we'll do a global reduction
+    // to get the final result.
+    SimTime_t low_latency = bit_util::type_max<SimTime_t>;
+
+    // Function will not compile if MPI is not configured
+#ifdef SST_CONFIG_HAVE_MPI
+    // Need to exchange with each partner.  For those with lower
+    // ranks, I will recv first, then send.  For those with higher
+    // ranks, I will send first, then recv.
+    for ( uint32_t i = 0; i < my_rank; ++i ) {
+        // Need to update the data in link_maps with the total send latency on the link and then switch it to contain
+        // the remote link ptr
+        for ( auto& x : link_maps[i] ) {
+            // Get the link ptr
+            Link* local = reinterpret_cast<Link*>(x.second);
+
+            // We are going to get just the send latency, which is contained in local->pair_link.  The local Link will
+            // only have latency if addRecvLatency() was called, but we will account for that later.
+            SimTime_t latency = local->pair_link->latency;
+
+            // Update the data
+            x.first  = latency;
+            // The ptr to the remote link is in pair_link->delivery_info
+            x.second = local->pair_link->delivery_info;
+
+            // We don't need to resort the data because it comes across with a uintptr_t version of the local pointer to
+            // the Link.
+        }
+
+        std::vector<std::pair<SimTime_t, uintptr_t>> data;
+
+        // I'm the high rank, so recv is first
+        Comms::recv(i, 0, data);
+        Comms::send(i, 0, link_maps[i]);
+
+        // Process the data. Get the Link and the send latency and add any addional receive latency that was added with
+        // addRecvLatency(). Compare again current minimum and update if necessary.
+
+        for ( auto& x : data ) {
+            Link* local = reinterpret_cast<Link*>(x.second);
+
+            // Added receive latency is found in local->latency
+            SimTime_t total_latency = x.first + local->latency;
+            if ( total_latency < low_latency ) low_latency = total_latency;
+        }
+        // Clear data for the next iteration
+        data.clear();
+
+        // We're done with the data in link_maps[i]
+        link_maps[i].clear();
+    }
+    for ( uint32_t i = my_rank + 1; i < num_ranks_.rank; ++i ) {
+        // Need to update the data in link_maps with the total send latency on the link and then switch it to contain
+        // the remote link ptr
+        for ( auto& x : link_maps[i] ) {
+            // Get the link ptr
+            Link* local = reinterpret_cast<Link*>(x.second);
+
+            // We are going to get just the send latency, which is contained in local->pair_link.  The local Link will
+            // only have latency if addRecvLatency() was called, but we will account for that later.
+            SimTime_t latency = local->pair_link->latency;
+
+            // Update the data
+            x.first  = latency;
+            // The ptr to the remote link is in pair_link->delivery_info
+            x.second = local->pair_link->delivery_info;
+
+            // We don't need to resort the data because it comes across with a uintptr_t version of the local pointer to
+            // the Link.
+        }
+
+        std::vector<std::pair<SimTime_t, uintptr_t>> data;
+
+        // I'm the low rank, so send is first
+        Comms::send(i, 0, link_maps[i]);
+        Comms::recv(i, 0, data);
+
+        // Process the data. Get the Link and the send latency and add any addional receive latency that was added with
+        // addRecvLatency(). Compare again current minimum and update if necessary.
+
+        for ( auto& x : data ) {
+            Link* local = reinterpret_cast<Link*>(x.second);
+
+            // Added receive latency is found in local->latency
+            SimTime_t total_latency = x.first + local->latency;
+            if ( total_latency < low_latency ) low_latency = total_latency;
+        }
+        // Clear data for the next iteration
+        data.clear();
+
+        // We're done with the data in link_maps[i]
+        link_maps[i].clear();
+    }
+
+    SimTime_t local_low = low_latency;
+    MPI_Allreduce(&local_low, &low_latency, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
+#endif
+    return low_latency;
 }
 
 // Class used to hold the list of profile tools installed in the SyncManager
@@ -386,6 +497,22 @@ void
 SyncManager::exchangeLinkInfo()
 {
     rankSync_->exchangeLinkInfo(rank_.rank);
+}
+
+SimTime_t
+SyncManager::findRankSyncInterval()
+{
+    SimTime_t interval = rankSync_->findSyncInterval(rank_.rank);
+    rankSync_->setMaxPeriod(interval);
+    return interval;
+}
+
+SimTime_t
+SyncManager::findThreadSyncInterval()
+{
+    SimTime_t interval = threadSync_->findSyncInterval();
+    threadSync_->setMaxPeriod(interval);
+    return interval;
 }
 
 void

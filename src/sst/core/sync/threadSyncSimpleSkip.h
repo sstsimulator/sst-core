@@ -64,6 +64,8 @@ public:
 
     uint64_t getDataSize() const;
 
+    SimTime_t findSyncInterval() override;
+
 
     // static void disable() { disabled = true; barrier.disable(); }
 
@@ -74,8 +76,11 @@ private:
     // the link is properly initialized with the remote data.
     std::unordered_map<LinkId_t, Link*> link_map;
 
+    // Need to keep a list of all the Links in order to do the sync interval optimization after the init() phase. After
+    // than optimization pass completes, the vector can be cleared.
+    std::vector<Link*> link_vec;
+
     std::vector<ThreadSyncQueue*>    queues;
-    SimTime_t                        my_max_period;
     int                              num_threads;
     int                              thread;
     static SimTime_t                 localMinimumNextActivityTime;

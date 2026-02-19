@@ -316,6 +316,28 @@ public:
     */
     bool isConfigured() { return type != UNINITIALIZED; }
 
+    /**
+       Get the latency on the link in units of core atomic time base
+
+       NOTE: This is a core only API and not part of the public stable API
+    */
+    SimTime_t getLatency() { return latency; }
+
+    /**
+       Get the delivery_info for the link
+
+       NOTE: This is a core only API and not part of the public stable API
+    */
+    uintptr_t getDeliveryInfo() { return delivery_info; }
+
+    /**
+       Get the pair_link
+
+       NOTE: This is a core only API and not part of the public stable API
+    */
+    Link* getPairLink() { return pair_link; }
+
+
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     void setSendingComponentInfo(const std::string& comp_in, const std::string& type_in, const std::string& port_in)
     {

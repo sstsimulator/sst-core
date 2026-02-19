@@ -1253,6 +1253,18 @@ Simulation_impl::finish()
     stat_engine.endOfSimulation();
 }
 
+void
+Simulation_impl::updateSyncInterval()
+{
+    syncManager->findThreadSyncInterval();
+
+    if ( my_rank.thread == 0 ) {
+        syncManager->findRankSyncInterval();
+    }
+    initBarrier.wait();
+}
+
+
 /* Signal monitor */
 void
 Simulation_impl::notifySignal()

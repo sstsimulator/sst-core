@@ -240,6 +240,8 @@ public:
 
     void finish();
 
+    void updateSyncInterval();
+
     /** Adjust clocks and time to reflect precise simulation end time which
         may differ in parallel simulations from the time simulation end is detected.
      */

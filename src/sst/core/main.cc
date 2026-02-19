@@ -648,6 +648,11 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             barrier.wait();
             if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("init");
 
+            /*
+              After init() we need to check to see if the sync interval has changed
+            */
+            sim->updateSyncInterval();
+
             /* Run Set */
             if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("setup");
             sim->setup();
