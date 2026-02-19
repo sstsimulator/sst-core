@@ -21,6 +21,7 @@
 #include "sst/core/model/configStatistic.h"
 #include "sst/core/namecheck.h"
 #include "sst/core/simulation_impl.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/warnmacros.h"
 
@@ -75,6 +76,7 @@ namespace SST {
 ConfigGraph::ConfigGraph() :
     nextComponentId(0)
 {
+    link_rank_mask = (LinkId_t)SST_MPI_GetRank() << 32;
     links_.clear();
     comps_.clear();
     // Init the statistic output settings
@@ -276,6 +278,42 @@ ConfigGraph::checkForStructuralErrors()
     return found_error;
 }
 
+void
+ConfigGraph::getNonLocalLinks(std::vector<ConfigLink*>& vec)
+{
+    for ( auto* x : links_ ) {
+        if ( x->nonlocal_ ) vec.push_back(x);
+    }
+}
+
+void
+ConfigGraph::updateLinkId(ConfigLink* link, LinkId_t new_id)
+{
+    // First need to change the IDs in any connected components
+    if ( link->component_[0] != UNSET_COMPONENT_ID ) {
+        // Get the component
+        ConfigComponent* comp = findComponent(link->component_[0]);
+        comp->replaceLinkId(link->id_, new_id);
+    }
+
+    if ( !link->nonlocal_ && link->component_[1] != UNSET_COMPONENT_ID ) {
+        // Get the component
+        ConfigComponent* comp = findComponent(link->component_[1]);
+        comp->replaceLinkId(link->id_, new_id);
+    }
+
+    // NOTE: this changes the key for the links_ map, which means we will need to resort the SparseVectorMap before
+    // accessing it
+    link->id_ = new_id;
+}
+
+void
+ConfigGraph::resortLinkMap()
+{
+    links_.sort();
+}
+
+
 ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
@@ -395,7 +433,7 @@ LinkId_t
 ConfigGraph::createLink(const char* name, const char* latency)
 {
     checkForValidLinkName(name);
-    LinkId_t    id   = (LinkId_t)links_.size();
+    LinkId_t    id   = (LinkId_t)links_.size() | link_rank_mask;
     ConfigLink* link = new ConfigLink(id, name);
     links_.insert(link);
     if ( latency ) {

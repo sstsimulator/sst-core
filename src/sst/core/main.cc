@@ -55,6 +55,7 @@ REENABLE_WARNING
 #include "sst/core/timeVortex.h"
 #include "sst/core/timingOutput.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/util/bit_util.h"
 
 #include <cinttypes>
 #include <csignal>
@@ -73,6 +74,7 @@ REENABLE_WARNING
 #include "sst/core/model/cfgoutput/pythonConfigOutput.h"
 
 using namespace SST::Core;
+using namespace SST::bit_util;
 using namespace SST::Partition;
 using namespace SST;
 
@@ -1138,8 +1140,10 @@ main(int argc, char* argv[])
 
         Distribute the graph.  This phase splits up the graph and
         distributes it to all the ranks.  This phase is skipped for
-        serial jobs, normal jobs that were loaded in parallel, and for
-        restarted jobs that have no repartitioning.
+        serial jobs and for restarted jobs that have no repartitioning.
+
+        Normal jobs that were loaded in parallel need to exchange unique
+        Link IDs so that the IDs are shared across partitions.
     ***************************************************************************/
     Simulation_impl::basicPerf.beginRegion("graph-distribution");
 
@@ -1203,6 +1207,152 @@ main(int argc, char* argv[])
         catch ( const std::exception& e ) {
             g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
         }
+    }
+    else if ( cfg.parallel_load() ) {
+        // Get all the nonlocal links from the graph
+        std::vector<ConfigLink*> link_vector;
+        graph->getNonLocalLinks(link_vector);
+
+        // Now sort the list based first on remote rank, then on name.  We know these are all nonlocal, so the remote
+        // rank is stored in component_[1]
+        std::sort(link_vector.begin(), link_vector.end(), [](ConfigLink const* a, ConfigLink const* b) {
+            if ( a->component_[1] != b->component_[1] ) return a->component_[1] < b->component_[1];
+            return a->name_ < b->name_;
+        });
+
+        // For every rank I am "less than", send my info.  For every rank I am "greater than", receive their data.  For
+        // N ranks, I'm "less than" the the N/2 ranks following me (wrapping to zero when necessary) and "greater than"
+        // the N/2 ranks preceding me (wrapping to N-1 when necessary).
+
+        // Stores the data I need to send.  The string is the link name and the LinkId_t is the globally unique ID
+        std::vector<std::pair<std::string, LinkId_t>> send_vec;
+
+        // Buffer to receive data in.  The string is the link name and the LinkId_t is the globally unique ID
+        std::vector<std::pair<std::string, LinkId_t>> recv_vec;
+
+        // Rank I will be sending to.  This will be adjusted at the top of each iteration through the loop
+        uint32_t send_rank = myRank.rank;
+
+        // Rank I will receive from.  This will be adjusted at the top of each iteration through the loop
+        uint32_t recv_rank = myRank.rank;
+
+        // There are two ways the following while look can end:
+        //
+        // 1 - For jobs with an even number of ranks, you can detect the last iteration when send_rank == recv_rank
+        // after incrementing send_rank and decrementing recv_rank. In this case, you still need to send data from half
+        // of the ranks to the other half.  The "lower" rank will send and the "higher" will receive.
+        //
+        // 2 - For jobs with an odd number of ranks, you detect that you are complete by incrementing send_rank and
+        // comparing to recv_rank.  If that are equal, then you've made it all the way around and are done (no more
+        // exchanges needed).
+        bool done = false;
+        while ( !done ) {
+            // Increment the send_rank and check it against recv_rank. If these are equal at this point, then we have an
+            // odd number of ranks and we have completed all of our exchanges
+            ++send_rank;
+            if ( send_rank == world_size.rank ) send_rank = 0;
+            if ( send_rank == recv_rank ) break;
+
+            // Decrement the recv_rank.  If send_rank == recv_rank at this point, then we have an even number of ranks,
+            // we are on our last iteration, and half of the ranks will only send and the other half will only receive.
+            --recv_rank;
+            if ( recv_rank == type_max<uint32_t> ) recv_rank = world_size.rank - 1;
+
+            if ( send_rank == recv_rank ) {
+                // I send if send_rank >= world_size.rank / 2 and receive otherwise
+                if ( send_rank >= world_size.rank / 2 )
+                    recv_rank = type_max<uint32_t>;
+                else
+                    send_rank = type_max<uint32_t>;
+                // End after this time through
+                done = true;
+            }
+
+            // If we are sending, fill send_vec
+            if ( send_rank != type_max<uint32_t> ) {
+                // Find the possible start of links connected to rank send_rank.  Note that if there are no links to
+                // send_rank, that this will return an iterator to the next rank that does have connected links.
+                auto send_lower = std::lower_bound(link_vector.begin(), link_vector.end(), send_rank,
+                    [](ConfigLink const* link, uint32_t r) { return link->component_[1] < r; });
+
+                // Now walk through all the links until we hit one from a rank other than send_rank.  Note that
+                // send_lower could point to a rank other than send_rank if we are not connected to any links on that
+                // rank.  The logic below accounts for that case and will just entirely skip the while loop.
+                while ( send_lower != link_vector.end() && (*send_lower)->component_[1] == send_rank ) {
+                    send_vec.emplace_back((*send_lower)->name_, (*send_lower)->id_);
+                    ++send_lower;
+                }
+
+                // Now send the data
+                Comms::send(send_rank, 0, send_vec);
+                send_vec.clear();
+            }
+
+            // Get data if we are receiving
+            if ( recv_rank != type_max<uint32_t> ) {
+                Comms::recv(recv_rank, 0, recv_vec);
+
+                // Now, fix up the IDs for the received links
+
+                // Get the lower bound for links connected to rank recv_rank.  Note that if no links are connected to
+                // that rank, then recv_lower may point to a Link connected to a different rank than expected
+                auto recv_lower = std::lower_bound(link_vector.begin(), link_vector.end(), recv_rank,
+                    [](ConfigLink const* link, uint32_t r) { return link->component_[1] < r; });
+
+                // Check to see if we are expecting anything from this rank. If not, make sure recv_lower is equal to
+                // end()
+                if ( recv_lower != link_vector.end() && (*recv_lower)->component_[1] != recv_rank )
+                    recv_lower = link_vector.end();
+
+                // Do the first error check.  We have links we're expecting from recv_rank, but it didn't send us any
+                if ( recv_lower != link_vector.end() && recv_vec.size() == 0 ) {
+                    g_output.fatal(CALL_INFO, EXIT_FAILURE,
+                        "Rank %" PRIu32 " expecting a link named %s from rank %" PRIu32 ", but did not get one\n",
+                        myRank.rank, (*recv_lower)->name_.c_str(), recv_rank);
+                }
+
+                for ( auto [remote_name, id] : recv_vec ) {
+                    // If recv_lower == end(), then we ran out of things to check, which means we got an unexpected link
+                    if ( recv_lower == link_vector.end() ) {
+                        g_output.fatal(CALL_INFO, EXIT_FAILURE,
+                            "Rank %" PRIu32 " received unexpected link from rank %" PRIu32 ": %s\n", myRank.rank,
+                            recv_rank, remote_name.c_str());
+                    }
+                    // Check to make sure the names match
+                    std::string const& local_name = (*recv_lower)->name_;
+                    if ( remote_name != local_name ) {
+                        // Two possibilities: Received unexpected link, or didn't receive expected link.  We check by
+                        // looking at which link is alphabetically first
+
+                        if ( remote_name < local_name ) {
+                            g_output.fatal(CALL_INFO, EXIT_FAILURE,
+                                "Rank %" PRIu32 " received unexpected link from rank %" PRIu32 ": %s\n", myRank.rank,
+                                recv_rank, remote_name.c_str());
+                        }
+                        else {
+                            g_output.fatal(CALL_INFO, EXIT_FAILURE,
+                                "Rank %" PRIu32 " did not receive expected link from rank %" PRIu32 ": %s\n",
+                                myRank.rank, recv_rank, local_name.c_str());
+                        }
+                    }
+
+                    // Need to change the link ID in the component and in the link
+                    graph->updateLinkId(*recv_lower, id);
+                    ++recv_lower;
+                }
+
+                // Last error check: See if I'm expecting any more that I didn't get
+                if ( recv_lower != link_vector.end() && (*recv_lower)->component_[1] == recv_rank ) {
+                    g_output.fatal(CALL_INFO, EXIT_FAILURE,
+                        "Rank %" PRIu32 " did not receive expected link from rank %" PRIu32 ": %s\n", myRank.rank,
+                        recv_rank, (*recv_lower)->name_.c_str());
+                }
+                recv_vec.clear();
+            }
+        }
+        // We changed some of the keys in the link map, so we need to force a resort
+        graph->resortLinkMap();
+        SST_MPI_Barrier(MPI_COMM_WORLD);
     }
 #endif
     ////// End Broadcast Graph //////
@@ -1294,7 +1444,7 @@ main(int argc, char* argv[])
     MemPoolAccessor::initializeGlobalData(world_size.thread, cfg.cache_align_mempools());
 #endif
 
-    // On restart, need to intialize SharedObjectManager, stats_config_ and load libraries from the checkpoint
+    // On restart, need to initialize SharedObjectManager, stats_config_ and load libraries from the checkpoint
     if ( restart ) graph->restoreRestartData();
 
     std::vector<std::thread>     threads(world_size.thread);

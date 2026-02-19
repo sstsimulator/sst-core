@@ -27,7 +27,7 @@ namespace SST {
  **********************************************************************/
 using ComponentId_t = uint64_t;
 using StatisticId_t = uint64_t;
-using LinkId_t      = uint32_t;
+using LinkId_t      = uint64_t;
 using HandlerId_t   = uint64_t;
 using Cycle_t       = uint64_t;
 using SimTime_t     = uint64_t;

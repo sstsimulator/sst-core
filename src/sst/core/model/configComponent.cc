@@ -569,6 +569,17 @@ ConfigComponent::clearAllLinks()
 }
 
 void
+ConfigComponent::replaceLinkId(LinkId_t old_id, LinkId_t new_id)
+{
+    for ( auto& x : links ) {
+        if ( x == old_id ) {
+            x = new_id;
+            break;
+        }
+    }
+}
+
+void
 ConfigComponent::checkPorts() const
 {
     std::map<std::string, std::string> ports;

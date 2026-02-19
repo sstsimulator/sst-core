@@ -158,6 +158,11 @@ public:
     /** Return the map of components */
     ConfigComponentMap_t& getComponentMap() { return comps_; }
 
+    void getNonLocalLinks(std::vector<ConfigLink*>& vec);
+
+    void updateLinkId(ConfigLink* link, LinkId_t new_id);
+    void resortLinkMap();
+
     const std::map<std::string, ConfigStatGroup>& getStatGroups() const;
     ConfigStatGroup*                              getStatGroup(const std::string& name);
 
@@ -232,7 +237,8 @@ public:
 private:
     friend class Simulation_impl;
 
-    Output output;
+    Output   output;
+    LinkId_t link_rank_mask = 0;
 
     ComponentId_t nextComponentId;
 

@@ -182,6 +182,15 @@ public:
     */
     std::vector<LinkId_t> clearAllLinks();
 
+    /**
+       Update a Link that has had its ID changed
+
+       @param old_id Old id to replace
+
+       @param new_id New id to use
+    */
+    void replaceLinkId(LinkId_t old_id, LinkId_t new_id);
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST_SER(id);

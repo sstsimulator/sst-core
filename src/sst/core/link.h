@@ -56,7 +56,7 @@ class SST::Core::Serialization::serialize_impl<Link*>
 class alignas(64) Link
 {
     enum Type_t : uint16_t { POLL, HANDLER, SYNC, UNINITIALIZED };
-    enum Mode_t : uint16_t { INIT, RUN, COMPLETE };
+    enum Mode_t : uint8_t { INIT, RUN, COMPLETE };
 
     friend class SST::Core::Serialization::serialize_impl<Link*>;
 
@@ -280,7 +280,13 @@ public:
 
        @return the unique ID for this Link
     */
-    LinkId_t getId() { return tag; }
+    LinkId_t getId()
+    {
+        if ( has_tool_list )
+            return (*attached_tools)[0].second;
+        else
+            return id;
+    }
 
     /**
        Return the default timebase for this Link
@@ -418,6 +424,7 @@ private:
     SimTime_t& current_time;
     Type_t     type;
     Mode_t     mode;
+    bool       has_tool_list = false;
     uint32_t   tag;
 
     /**
@@ -432,8 +439,6 @@ private:
        enabled).
     */
     explicit Link(LinkId_t id);
-
-    Link(const Link& l);
 
     /**
        Specifies that this Link has no callback, and is poll-based only
@@ -458,7 +463,44 @@ private:
 
 
     using ToolList = std::vector<std::pair<AttachPoint*, uintptr_t>>;
-    ToolList* attached_tools;
+
+    /**
+       We need to keep the Link object to 64-bits so we need to keep the ID and the attached tools in the same 8-bytes.
+       This will normally hold the 64-bit id for the link, but if we have attached tools, then the id for the Link will
+       be stored in the first entry of the attached_tools list.
+
+       The has_tool_list member variable stores which data is currently stored in this union.  If has_tool_list is true,
+       then the union's attached_tools variable is currently active.  Otherwise, it is storing the Link id.
+    */
+    union {
+        /**
+           The Link id is a globally unique id.  For serial loads, the ids start at 1 and increment for each new Link.
+
+           On a parallel load, the top 32-bits is filled with the MPI rank and the bottom 32-bits start at 1 and
+           increment for each new rank.  The ids for links that cross a rank boundary need to be reconciled so that the
+           Link objects on both ranks agree on the ID.  This is done by having the "lower" rank send the Link name and
+           it's id for the Link to the "higher" rank, which will then use that id for the Link. "Higher" and "lower" are
+           determined in a way that hopefully spreads out the MPI traffic across all the ranks and isn't just a direct
+           greater/less than comparison. It is determined as follows:
+
+           1 - A rank is lower than the N/2 ranks after it, wrapping around to 0 when needed.
+
+           2 - A rank is higher than the N/2 ranks before it, wrapping around to N-1 when needed.
+
+          The id is used in several places:
+          - When exchanging Link pointers to put in the delivery_info field
+          - As the global name for connecting links on a restart from checkpoint
+
+        */
+        LinkId_t id;
+
+        /**
+           This stores any tools connected to the Link::AttachPoint.  The first entry in the list will always contain
+           the Link id since the pointer to the attached_tools list is now using that memory location.
+         */
+        ToolList* attached_tools;
+    };
+
 
     /**
        Manually set the default time base

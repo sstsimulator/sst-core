@@ -127,6 +127,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
           For self links, no rank info is stored since we don't need
           to create a unique ID
         */
+
         if ( type == SYNC || type == REG ) {
             SST_SER(my_rank);
 
@@ -157,6 +158,13 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 SST_SER(pair_ptr);
             }
         } // if ( type == SYNC || type == REG )
+
+
+        // Serialize the ID for the Link
+        if ( !s->has_tool_list )
+            SST_SER(s->id);
+        else
+            SST_SER((*s->attached_tools)[0].second);
 
         /*
           Store the metadata for this link
@@ -217,24 +225,31 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
 
         // Determine how many serializable tools there are
         Link::ToolList tools;
-        if ( s->attached_tools ) {
-            for ( auto x : *s->attached_tools ) {
-                if ( dynamic_cast<SST::Core::Serialization::serializable*>(x.first) ) {
-                    tools.push_back(x);
+
+        if ( s->has_tool_list ) {
+            for ( auto x = ++s->attached_tools->begin(); x != s->attached_tools->end(); ++x ) {
+                if ( dynamic_cast<SST::Core::Serialization::serializable*>(x->first) ) {
+                    tools.push_back(*x);
                 }
             }
         }
         size_t tool_count = tools.size();
-        SST_SER(tool_count);
-        if ( tool_count > 0 ) {
-            // Serialize each tool, then call
-            // serializeEventAttachPointKey() to serialize any data
-            // associated with the key
-            for ( auto x : tools ) {
-                SST::Core::Serialization::serializable* obj =
-                    dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
-                SST_SER(obj);
-                x.first->serializeEventAttachPointKey(ser, x.second);
+
+        // Need to determine if we'll have any tools attached on restart. We only have tools when tool_count > 0
+        bool restart_tools = (tool_count > 0);
+        SST_SER(restart_tools);
+
+        if ( restart_tools ) {
+            SST_SER(tool_count);
+            if ( tool_count > 0 ) {
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
+                for ( auto x : tools ) {
+                    SST::Core::Serialization::serializable* obj =
+                        dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
+                    SST_SER(obj);
+                    x.first->serializeEventAttachPointKey(ser, x.second);
+                }
             }
         }
 
@@ -339,6 +354,8 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             }
         }
 
+        SST_SER(s->id);
+
         /*
           Get the metadata for the link
         */
@@ -401,13 +418,20 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             s->pair_link->latency += latency;
         }
 
-        /*
-          Restore attached tools
-        */
-        size_t tool_count;
-        SST_SER(tool_count);
-        if ( tool_count > 0 ) {
-            s->attached_tools = new Link::ToolList();
+        SST_SER(s->has_tool_list);
+
+        if ( s->has_tool_list ) {
+            /*
+              Restore attached tools
+            */
+            size_t tool_count;
+            SST_SER(tool_count);
+
+            // If has_tool_list is true, then tool_count is greater than 0
+            Link::ToolList* tools = new Link::ToolList();
+            tools->emplace_back(nullptr, s->id);
+            s->attached_tools = tools;
+            s->has_tool_list  = true;
             for ( size_t i = 0; i < tool_count; ++i ) {
                 SST::Core::Serialization::serializable* tool;
                 uintptr_t                               key;
@@ -417,9 +441,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 s->attached_tools->emplace_back(ap, key);
             }
         }
-        else {
-            s->attached_tools = nullptr;
-        }
+
 
         /*
           Deserialize the events targetting this link
@@ -477,7 +499,7 @@ private:
 };
 
 
-Link::Link(LinkId_t tag) :
+Link::Link(LinkId_t id) :
     send_queue(nullptr),
     delivery_info(0),
     defaultTimeBase(0),
@@ -486,8 +508,8 @@ Link::Link(LinkId_t tag) :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    tag(tag),
-    attached_tools(nullptr)
+    tag(0),
+    id(id)
 {}
 
 Link::Link() :
@@ -499,8 +521,7 @@ Link::Link() :
     current_time(Simulation_impl::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
-    tag(bit_util::type_max<uint32_t>),
-    attached_tools(nullptr)
+    tag(bit_util::type_max<uint32_t>)
 {}
 
 Link::~Link()
@@ -514,7 +535,7 @@ Link::~Link()
         if ( SYNC == pair_link->type ) delete pair_link;
     }
 
-    if ( attached_tools ) delete attached_tools;
+    if ( has_tool_list ) delete attached_tools;
 }
 
 void
@@ -683,9 +704,10 @@ Link::send_impl(SimTime_t delay, Event* event)
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 
-    if ( attached_tools ) {
-        for ( auto& x : *attached_tools ) {
-            x.first->eventSent(x.second, event);
+    if ( has_tool_list ) {
+        // First entry just holds the Link id, so we can skip it
+        for ( auto x = ++attached_tools->begin(); x != attached_tools->end(); ++x ) {
+            x->first->eventSent(x->second, event);
             // Check to see if the event was deleted.  If so, return.
             if ( nullptr == event ) return;
         }
@@ -840,17 +862,23 @@ Link::createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankI
 void
 Link::attachTool(AttachPoint* tool, const AttachPointMetaData& mdata)
 {
-    if ( !attached_tools ) attached_tools = new ToolList();
+    if ( !has_tool_list ) {
+        auto tools = new ToolList();
+        tools->emplace_back(nullptr, id);
+        attached_tools = tools;
+        has_tool_list  = true;
+    }
     auto key = tool->registerLinkAttachTool(mdata);
-    attached_tools->push_back(std::make_pair(tool, key));
+    attached_tools->emplace_back(tool, key);
 }
 
 void
 Link::detachTool(AttachPoint* tool)
 {
-    if ( !attached_tools ) return;
+    if ( !has_tool_list ) return;
 
-    for ( auto x = attached_tools->begin(); x != attached_tools->end(); ++x ) {
+    // First entry just holds the Link id, so we can skip it
+    for ( auto x = ++attached_tools->begin(); x != attached_tools->end(); ++x ) {
         if ( x->first == tool ) {
             attached_tools->erase(x);
             break;
