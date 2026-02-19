@@ -43,7 +43,7 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) :
 
     if ( unnamed_sub != "" ) {
         for ( int i = 0; i < num_subcomps; ++i ) {
-            params.insert("port_name", std::string("port") + std::to_string(i));
+            params.insert("port_name", "port" + std::to_string(i));
             params.insert("verbose", params.find<std::string>("verbose", "0"));
             SubCompInterface* sci = loadAnonymousSubComponent<SubCompInterface>(
                 unnamed_sub, "mySubComp", i, ComponentInfo::SHARE_PORTS | ComponentInfo::INSERT_STATS, params);
@@ -84,7 +84,7 @@ SubCompSlot::SubCompSlot(ComponentId_t id, Params& params) :
 
     if ( unnamed_sub != "" ) {
         for ( int i = 0; i < num_subcomps; ++i ) {
-            params.insert("port_name", std::string("slot_port") + std::to_string(i));
+            params.insert("port_name", "slot_port" + std::to_string(i));
             params.insert("verbose", params.find<std::string>("verbose", "0"));
             SubCompInterface* sci = loadAnonymousSubComponent<SubCompInterface>(
                 unnamed_sub, "mySubCompSlot", i, ComponentInfo::SHARE_PORTS | ComponentInfo::INSERT_STATS, params);

@@ -40,7 +40,7 @@ public:
 
     std::string toString() const override
     {
-        return std::string("MemPoolTestEvent1 to be delivered at ") + std::to_string(getDeliveryTime());
+        return "MemPoolTestEvent1 to be delivered at " + std::to_string(getDeliveryTime());
     }
 
 private:
@@ -64,7 +64,7 @@ public:
 
     std::string toString() const override
     {
-        return std::string("MemPoolTestEvent2 to be delivered at ") + std::to_string(getDeliveryTime());
+        return "MemPoolTestEvent2 to be delivered at " + std::to_string(getDeliveryTime());
     }
 
 private:
@@ -88,7 +88,7 @@ public:
 
     std::string toString() const override
     {
-        return std::string("MemPoolTestEvent3 to be delivered at ") + std::to_string(getDeliveryTime());
+        return "MemPoolTestEvent3 to be delivered at " + std::to_string(getDeliveryTime());
     }
 
 private:
@@ -112,7 +112,7 @@ public:
 
     std::string toString() const override
     {
-        return std::string("MemPoolTestEvent4 to be delivered at ") + std::to_string(getDeliveryTime());
+        return "MemPoolTestEvent4 to be delivered at " + std::to_string(getDeliveryTime());
     }
 
 private:

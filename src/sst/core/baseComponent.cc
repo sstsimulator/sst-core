@@ -707,7 +707,6 @@ BaseComponent::performGlobalStatisticOutput()
     sim_->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
 }
 
-
 void
 BaseComponent::fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
 {

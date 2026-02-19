@@ -68,7 +68,7 @@ StatisticOutputCSV::startOfSimulation()
 
     // Initialize the OutputBufferArray with std::string objects
     for ( FieldInfoArray_t::iterator it_v = getFieldInfoArray().begin(); it_v != getFieldInfoArray().end(); it_v++ ) {
-        m_OutputBufferArray.push_back(std::string(""));
+        m_OutputBufferArray.push_back("");
     }
 
     if ( true == m_outputTopHeader ) {
@@ -109,7 +109,7 @@ StatisticOutputCSV::startOfSimulation()
         while ( it_v != getFieldInfoArray().end() ) {
             statField    = *it_v;
             outputBuffer = statField->getFieldName();
-            outputBuffer += ".";
+            outputBuffer += '.';
             outputBuffer += getFieldTypeShortName(statField->getFieldType());
 
             // Increment the iterator

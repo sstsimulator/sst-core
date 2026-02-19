@@ -174,13 +174,16 @@ mlFindModule(PyObject* self, PyObject* args)
                 return self;
             }
             else {
-                loadErrors += std::string("Succeeded in loading library for ") + (const char*)modName +
-                              " but library does not contain a Python module\n";
+                loadErrors += "Succeeded in loading library for ";
+                loadErrors += modName;
+                loadErrors += " but library does not contain a Python module\n";
                 loadErrors += err_sstr.str();
             }
         }
         else {
-            loadErrors += std::string("No component or Python model registered for ") + (const char*)modName + "\n";
+            loadErrors += "No component or Python model registered for ";
+            loadErrors += modName;
+            loadErrors += '\n';
             loadErrors += err_sstr.str();
         }
     }
@@ -973,7 +976,9 @@ buildOverheadMeasureTest(PyObject* UNUSED(self), PyObject* args)
         gModel->getGraph()->findComponent(curr_comp_id)->addParameter("id", std::to_string(i), true);
 
         // Links
-        std::string link_base_name = std::string("l_") + std::to_string(i) + std::string("_");
+        std::string link_base_name("l_");
+        link_base_name += std::to_string(i);
+        link_base_name += '_';
         std::string link_name;
 
         std::string left("left_");
@@ -1241,7 +1246,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     argv_vector.push_back("sstsim.x");
 
     const int   input_len = configObj->model_options().length();
-    std::string temp      = "";
+    std::string temp;
     bool        in_string = false;
 
     for ( int i = 0; i < input_len; ++i ) {
@@ -1262,7 +1267,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
         }
         else if ( configObj->model_options().substr(i, 1) == " " ) {
             if ( in_string ) {
-                temp += " ";
+                temp += ' ';
             }
             else {
                 if ( !(temp == "") ) {
