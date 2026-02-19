@@ -43,7 +43,7 @@ public:
 
     SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS(".sstcpt")
 
-    SSTCPTModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time);
+    SSTCPTModelDefinition(std::string script_file, int verbosity, Config* config, double start_time);
     ~SSTCPTModelDefinition() = default;
 
     ConfigGraph* createConfigGraph() override;

@@ -26,6 +26,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
 //clang-format on
 
 namespace SST {
@@ -90,10 +91,10 @@ WatchPoint::ShutdownWPAction::invokeAction(WatchPoint* wp)
     return;
 }
 
-WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
+WatchPoint::WatchPoint(size_t index, std::string name, Core::Serialization::ObjectMapComparison* obj) :
     Clock::HandlerBase::AttachPoint(),
     Event::HandlerBase::AttachPoint(),
-    name_(name),
+    name_(std::move(name)),
     wpIndex(index)
 {
     addComparison(obj);

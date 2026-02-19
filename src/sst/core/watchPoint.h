@@ -124,7 +124,7 @@ public:
     }; // class ShutdownWPAction
 
     // Construction
-    WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj);
+    WatchPoint(size_t index, std::string name, Core::Serialization::ObjectMapComparison* obj);
     ~WatchPoint() = default;
 
     // Inherited from both Event and Clock handler AttachPoints.

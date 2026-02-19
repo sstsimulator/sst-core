@@ -28,7 +28,7 @@ public:
     /** Create a new Queue
      * @param message - Message to print when something attempts to use this Queue
      */
-    explicit UninitializedQueue(const std::string& message);
+    explicit UninitializedQueue(std::string message);
     UninitializedQueue()           = default; // Only used for serialization
     ~UninitializedQueue() override = default;
 
