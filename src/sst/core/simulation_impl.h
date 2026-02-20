@@ -422,7 +422,7 @@ public:
        between checkpoint and restart and the original rank info
        stored in the checkpoint should be used.
      */
-    RankInfo getRankForLinkOnRestart(RankInfo rank, uintptr_t UNUSED(tag))
+    RankInfo getRankForLinkOnRestart(RankInfo rank, LinkId_t UNUSED(id))
     {
         if ( serial_restart_ ) return RankInfo(0, 0);
         return RankInfo(rank.rank, rank.thread);
@@ -667,15 +667,15 @@ public:
     static std::vector<Simulation_impl*>                         instanceVec_;
 
     /******** Checkpoint/restart tracking data structures ***********/
-    std::map<std::pair<int, uintptr_t>, Link*> link_restart_tracking;
-    std::map<uintptr_t, uintptr_t>             event_handler_restart_tracking;
-    uint32_t                                   checkpoint_id_       = 0;
-    std::string                                checkpoint_prefix_   = "";
-    std::string                                globalOutputFileName = "";
-    std::string                                version_             = "";
-    std::string                                arch_                = "";
-    std::string                                os_                  = "";
-    bool                                       serial_restart_      = false;
+    std::map<LinkId_t, Link*>      link_restart_tracking;
+    std::map<uintptr_t, uintptr_t> event_handler_restart_tracking;
+    uint32_t                       checkpoint_id_       = 0;
+    std::string                    checkpoint_prefix_   = "";
+    std::string                    globalOutputFileName = "";
+    std::string                    version_             = "";
+    std::string                    arch_                = "";
+    std::string                    os_                  = "";
+    bool                           serial_restart_      = false;
 
     // Config object used by the simulation
     static Config       config;

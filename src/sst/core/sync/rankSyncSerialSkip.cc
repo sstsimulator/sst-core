@@ -64,8 +64,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
 }
 
 ActivityQueue*
-RankSyncSerialSkip::registerLink(
-    const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), const std::string& name, Link* link)
+RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), Link* link)
 {
     std::scoped_lock slock(lock);
 
@@ -80,7 +79,7 @@ RankSyncSerialSkip::registerLink(
         queue = comm_map[to_rank.rank].squeue;
     }
 
-    link_maps[to_rank.rank][name] = reinterpret_cast<uintptr_t>(link);
+    link_maps[to_rank.rank].emplace_back(link->getId(), reinterpret_cast<uintptr_t>(link));
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif
@@ -222,7 +221,6 @@ RankSyncSerialSkip::exchange()
         deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
-
             Event*    ev    = static_cast<Event*>(activities[j]);
             SimTime_t delay = ev->getDeliveryTime() - current_cycle;
             getDeliveryLink(ev)->send(delay, ev);

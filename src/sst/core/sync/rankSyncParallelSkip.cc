@@ -84,8 +84,7 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
 }
 
 ActivityQueue*
-RankSyncParallelSkip::registerLink(
-    const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
+RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link)
 {
     std::scoped_lock slock(lock);
 
@@ -113,7 +112,7 @@ RankSyncParallelSkip::registerLink(
         comm_recv_map[remote_rank_local_thread].local_size   = 4096;
     }
 
-    link_maps[to_rank.rank][name] = reinterpret_cast<uintptr_t>(link);
+    link_maps[to_rank.rank].emplace_back(link->getId(), reinterpret_cast<uintptr_t>(link));
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif

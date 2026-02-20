@@ -51,9 +51,8 @@ public:
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual ActivityQueue* registerLink(
-        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) = 0;
-    void exchangeLinkInfo(uint32_t my_rank);
+    virtual ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link) = 0;
+    void                   exchangeLinkInfo(uint32_t my_rank);
 
     virtual void execute(int thread)                                              = 0;
     virtual void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) = 0;
@@ -78,7 +77,7 @@ protected:
     TimeConverter  max_period;
     const RankInfo num_ranks_;
 
-    std::vector<std::map<std::string, uintptr_t>> link_maps;
+    std::vector<std::vector<std::pair<LinkId_t, uintptr_t>>> link_maps;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
 
@@ -116,8 +115,8 @@ public:
     TimeConverter getMaxPeriod() { return max_period; }
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual void           registerLink(const std::string& name, Link* link)                = 0;
-    virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
+    virtual void           registerLink(Link* link)                = 0;
+    virtual ActivityQueue* registerRemoteLink(int tid, Link* link) = 0;
 
 protected:
     SimTime_t     nextSyncTime;
@@ -143,10 +142,9 @@ public:
     virtual ~SyncManager() = default;
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(
-        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
-    void exchangeLinkInfo();
-    void execute() override;
+    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link);
+    void           exchangeLinkInfo();
+    void           execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkUntimedData(std::atomic<int>& msg_count);

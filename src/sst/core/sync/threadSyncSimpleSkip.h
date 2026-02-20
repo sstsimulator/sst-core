@@ -59,8 +59,8 @@ public:
     void prepareForComplete() override;
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(const std::string& name, Link* link) override;
-    ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) override;
+    void           registerLink(Link* link) override;
+    ActivityQueue* registerRemoteLink(int tid, Link* link) override;
 
     uint64_t getDataSize() const;
 
@@ -72,7 +72,7 @@ private:
     // remote data.  It will hold whichever thread registers the link
     // first and will be removed after the second thread registers and
     // the link is properly initialized with the remote data.
-    std::unordered_map<std::string, Link*> link_map;
+    std::unordered_map<LinkId_t, Link*> link_map;
 
     std::vector<ThreadSyncQueue*>    queues;
     SimTime_t                        my_max_period;

@@ -66,14 +66,14 @@ ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 }
 
 void
-ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
+ThreadSyncSimpleSkip::registerLink(Link* link)
 {
     std::scoped_lock slock(lock);
-    auto             iter = link_map.find(name);
+    auto             iter = link_map.find(link->getId());
     if ( iter == link_map.end() ) {
-        // I have initialized first, so just put the name and link in
+        // I have initialized first, so just put the id and link in
         // the map
-        link_map[name] = link;
+        link_map[link->getId()] = link;
     }
     else {
         // I already have the remote info, so initialize the link data
@@ -84,14 +84,14 @@ ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
 }
 
 ActivityQueue*
-ThreadSyncSimpleSkip::registerRemoteLink(int tid, const std::string& name, Link* link)
+ThreadSyncSimpleSkip::registerRemoteLink(int tid, Link* link)
 {
     std::scoped_lock slock(lock);
-    auto             iter = link_map.find(name);
+    auto             iter = link_map.find(link->getId());
     if ( iter == link_map.end() ) {
-        // I have initialized first, so just put the name and link in
+        // I have initialized first, so just put the id and link in
         // the map
-        link_map[name] = link;
+        link_map[link->getId()] = link;
     }
     else {
         // I already have the local info, so initialize the link data

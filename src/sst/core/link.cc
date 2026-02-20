@@ -80,7 +80,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
     // Need a pointer to my simulation object
     Simulation_impl* sim = Simulation_impl::getSimulation();
 
-    // In order to uniquely identify links on restart, we need to
+    // For restarts that use the same parallelism, we need to
     // track the rank of the link and its pair link.  For regular
     // links, they are the same, but for sync link pairs, the pair
     // link will be on a different rank.  For self links, this
@@ -109,53 +109,14 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
 
         SST_SER(type);
 
-        /*
-          Unique Identifiers
-
-          For non-selflinks, we need to be able to create a unique
-          identifier so we can connect the pairs on restart.  The
-          unique identifiers are created using the MPI rank and point
-          of the link cast as a uintptr_t.
-
-          For regular links, we only store the rank once since both
-          links in the pair are on the same rank.
-
-          For SYNC links, the local link only knows the remote link by
-          it's pair link, so we will use that pointer for the unique
-          ID.
-
-          For self links, no rank info is stored since we don't need
-          to create a unique ID
-        */
-
         if ( type == SYNC || type == REG ) {
             SST_SER(my_rank);
 
-            uintptr_t ptr;
-            if ( type == SYNC )
-                ptr = reinterpret_cast<uintptr_t>(s->pair_link);
-            else
-                ptr = reinterpret_cast<uintptr_t>(s);
-
-            SST_SER(ptr);
-
             if ( type == SYNC ) {
-                // The unique ID for the remote links is constructed from
-                // the rank of the remote pair link and its pointer on
-                // that rank.  The remote pointer is stored in
-                // delivery_info and we can get the remote rank from the
-                // sync queue.
+                // Get rank for pair
                 SyncQueue* q = dynamic_cast<SyncQueue*>(s->send_queue);
                 pair_rank    = q->getToRank();
                 SST_SER(pair_rank);
-                SST_SER(s->delivery_info);
-            }
-            else {
-                // Unique ID for my pair link is my rank and pair_link
-                // pointer.  Rank is already stored, just store pair
-                // pointer
-                uintptr_t pair_ptr = reinterpret_cast<uintptr_t>(s->pair_link);
-                SST_SER(pair_ptr);
             }
         } // if ( type == SYNC || type == REG )
 
@@ -280,35 +241,28 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
         */
         bool is_orig_sync = (type == 3);
 
-        /*
-          Unique identifiers
-
-          Get the ranks and tags for this link and its pair link
-        */
         RankInfo my_restart_rank   = sim->getRank();
         RankInfo pair_restart_rank = my_restart_rank;
 
-        uintptr_t my_tag;
-        uintptr_t pair_tag;
 
         if ( type == SYNC || type == REG ) {
             SST_SER(my_rank);
-            SST_SER(my_tag);
 
             if ( type == SYNC )
                 SST_SER(pair_rank);
             else
                 pair_rank = my_rank;
-
-            SST_SER(pair_tag);
         }
 
+
+        LinkId_t link_id;
+        SST_SER(link_id);
 
         /*
           Determine current sync state
         */
         if ( type != SELF ) {
-            pair_restart_rank = sim->getRankForLinkOnRestart(pair_rank, pair_tag);
+            pair_restart_rank = sim->getRankForLinkOnRestart(pair_rank, link_id);
 
             // If pair_restart_rank.rank == UNASSIGNED, then we have
             // the same paritioning as the checkpoint and the ranks
@@ -317,6 +271,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
         }
 
         bool is_restart_sync = (my_restart_rank != pair_restart_rank);
+
 
         /*
           Create or get link from tracker
@@ -330,14 +285,12 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             ser.unpacker().report_new_pointer(reinterpret_cast<uintptr_t>(s));
         }
         else {
-            auto&                     link_tracker   = sim->link_restart_tracking;
-            std::pair<int, uintptr_t> my_unique_id   = std::make_pair(my_rank.rank, my_tag);
-            std::pair<int, uintptr_t> pair_unique_id = std::make_pair(pair_rank.rank, pair_tag);
+            auto& link_tracker = sim->link_restart_tracking;
 
-            if ( !is_restart_sync && link_tracker.count(my_unique_id) ) {
+            if ( !is_restart_sync && link_tracker.count(link_id) ) {
                 // Get my link and erase it from the map
-                s = link_tracker[my_unique_id];
-                link_tracker.erase(my_unique_id);
+                s = link_tracker[link_id];
+                link_tracker.erase(link_id);
             }
             else {
                 // Create a link pair and set s to the left link
@@ -350,11 +303,11 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
                 s->pair_link->setLatency(0);
 
                 // Put my pair link in the tracking map
-                link_tracker[pair_unique_id] = s->pair_link;
+                link_tracker[link_id] = s->pair_link;
             }
         }
 
-        SST_SER(s->id);
+        s->id = link_id;
 
         /*
           Get the metadata for the link
@@ -462,17 +415,15 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             s->pair_link->tag  = s->tag;
 
             s->pair_link->defaultTimeBase = 1;
+            s->pair_link->id              = s->id;
 
-            // Need to register with the SyncManager, but first
-            // need to create a unique name
-            std::string    uname = s->createUniqueGlobalLinkName(my_rank, my_tag, pair_rank, pair_tag);
-            ActivityQueue* sync_q =
-                sim->syncManager->registerLink(pair_restart_rank, my_restart_rank, uname, s->pair_link);
-            s->send_queue = sync_q;
+            // Need to register with the SyncManager
+            ActivityQueue* sync_q = sim->syncManager->registerLink(pair_restart_rank, my_restart_rank, s->pair_link);
+            s->send_queue         = sync_q;
         }
     } break;
     case serializer::MAP:
-        // TODO: Implement Link mapping mode
+        // No current plans to make Links mappable
         break;
     }
 }

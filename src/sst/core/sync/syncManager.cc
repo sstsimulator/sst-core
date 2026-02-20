@@ -85,8 +85,8 @@ public:
     ~EmptyRankSync() = default;
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank),
-        const std::string& UNUSED(name), Link* UNUSED(link)) override
+    ActivityQueue* registerLink(
+        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), Link* UNUSED(link)) override
     {
         return nullptr;
     }
@@ -167,11 +167,8 @@ public:
     }
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(const std::string& UNUSED(name), Link* UNUSED(link)) override {}
-    ActivityQueue* registerRemoteLink(int UNUSED(tid), const std::string& UNUSED(name), Link* UNUSED(link)) override
-    {
-        return nullptr;
-    }
+    void           registerLink(Link* UNUSED(link)) override {}
+    ActivityQueue* registerRemoteLink(int UNUSED(tid), Link* UNUSED(link)) override { return nullptr; }
 
     // Don't want to reset time for Empty Sync
     void setRestartTime(SimTime_t UNUSED(time)) override {}
@@ -194,22 +191,35 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
     for ( uint32_t i = 0; i < my_rank; ++i ) {
         // I'm the high rank, so recv is first
         // std::map<std::string, uintptr_t> data;
-        std::vector<std::pair<std::string, uintptr_t>> data;
+        std::vector<std::pair<LinkId_t, uintptr_t>> data;
+
+        // Sort the links before sending/receiving
+        std::sort(link_maps[i].begin(), link_maps[i].end(),
+            [](std::pair<LinkId_t, uintptr_t> const& a, std::pair<LinkId_t, uintptr_t> const& b) {
+                return a.first < b.first;
+            });
 
         Comms::recv(i, 0, data);
         Comms::send(i, 0, link_maps[i]);
 
-        // Process the data
-        for ( auto x : data ) {
-            auto it = link_maps[i].find(x.first);
-            if ( it == link_maps[i].end() ) {
-                // No matching link found
-                Simulation_impl::getSimulationOutput().output(
-                    "WARNING: Unmatched link found in rank link exchange: %s (from rank %d to rank %d)\n",
-                    x.first.c_str(), i, my_rank);
+        // Process the data.  Both lists are sorted by ID, so the corresponding entries in the lists should be the same
+        // Link.  For serial loaded and partitioned runs, this should be correct by construction (i.e. we had a valid
+        // ConfigGraph so each partition will have the correct links).  For parallel loads, this was also checked during
+        // the exchange to settle on the link ID for cross partition links.
+
+        // First check to make sure the vectors are the same size
+        if ( data.size() != link_maps[i].size() ) {
+            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                "ERROR: Number of links in link exchange not the same for ranks %d and %d\n", i, my_rank);
+        }
+
+        for ( size_t x = 0; x < data.size(); ++x ) {
+            if ( data[x].first != link_maps[i][x].first ) {
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                    "ERROR: Unmatched links in link exchange for ranks %d and %d\n", i, my_rank);
             }
-            Link* link = reinterpret_cast<Link*>(it->second);
-            link->pair_link->setDeliveryInfo(x.second);
+            Link* link = reinterpret_cast<Link*>(link_maps[i][x].second);
+            link->pair_link->setDeliveryInfo(data[x].second);
         }
         data.clear();
         link_maps[i].clear();
@@ -218,22 +228,35 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
     for ( uint32_t i = my_rank + 1; i < num_ranks_.rank; ++i ) {
         // I'm the low rank, so send it first
         // std::map<std::string, uintptr_t> data;
-        std::vector<std::pair<std::string, uintptr_t>> data;
+        std::vector<std::pair<LinkId_t, uintptr_t>> data;
+
+        // Sort the links before sending/receiving
+        std::sort(link_maps[i].begin(), link_maps[i].end(),
+            [](std::pair<LinkId_t, uintptr_t> const& a, std::pair<LinkId_t, uintptr_t> const& b) {
+                return a.first < b.first;
+            });
 
         Comms::send(i, 0, link_maps[i]);
         Comms::recv(i, 0, data);
 
-        // Process the data
-        for ( auto x : data ) {
-            auto it = link_maps[i].find(x.first);
-            if ( it == link_maps[i].end() ) {
-                // No matching link found
-                Simulation_impl::getSimulationOutput().output(
-                    "WARNING: Unmatched link found in rank link exchange: %s (from rank %d to rank %d)\n",
-                    x.first.c_str(), i, my_rank);
+        // Process the data.  Both lists are sorted by ID, so the corresponding entries in the lists should be the same
+        // Link.  For serial loaded and partitioned runs, this should be correct by construction (i.e. we had a valid
+        // ConfigGraph so each partition will have the correct links).  For parallel loads, this was also checked during
+        // the exchange to settle on the link ID for cross partition links.
+
+        // First check to make sure the vectors are the same size
+        if ( data.size() != link_maps[i].size() ) {
+            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                "ERROR: Number of links in link exchange not the same for ranks %d and %d\n", i, my_rank);
+        }
+
+        for ( size_t x = 0; x < data.size(); ++x ) {
+            if ( data[x].first != link_maps[i][x].first ) {
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                    "ERROR: Unmatched links in link exchange for ranks %d and %d\n", i, my_rank);
             }
-            Link* link = reinterpret_cast<Link*>(it->second);
-            link->pair_link->setDeliveryInfo(x.second);
+            Link* link = reinterpret_cast<Link*>(link_maps[i][x].second);
+            link->pair_link->setDeliveryInfo(data[x].second);
         }
         data.clear();
         link_maps[i].clear();
@@ -335,7 +358,7 @@ SyncManager::SyncManager()
 
 /** Register a Link which this Sync Object is responsible for */
 ActivityQueue*
-SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
+SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link)
 {
     if ( to_rank == from_rank ) {
         return nullptr; // This should never happen
@@ -347,15 +370,15 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, co
         // side of the link
 
         // For the local ThreadSync, just need to register the link
-        threadSync_->registerLink(name, link);
+        threadSync_->registerLink(link);
 
         // Need to get target queue from the remote ThreadSync
         ThreadSync* remoteSync = Simulation_impl::instanceVec_[to_rank.thread]->syncManager->threadSync_;
-        return remoteSync->registerRemoteLink(from_rank.thread, name, link);
+        return remoteSync->registerRemoteLink(from_rank.thread, link);
     }
     else {
         // Different rank.  Send info onto the RankSync
-        return rankSync_->registerLink(to_rank, from_rank, name, link);
+        return rankSync_->registerLink(to_rank, from_rank, link);
     }
 }
 
