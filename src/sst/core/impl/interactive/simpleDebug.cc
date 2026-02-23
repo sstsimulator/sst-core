@@ -25,6 +25,7 @@
 #include <list>
 #include <sstream>
 #include <stdexcept>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
 
@@ -182,6 +183,12 @@ SimpleDebugger::SimpleDebugger(Params& params) :
 
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
+
+    struct winsize size;
+    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
+        dout.setLineWidth(size.ws_col);
+        dout.setLineCount(size.ws_row);
+    }
 }
 
 SimpleDebugger::~SimpleDebugger()
@@ -193,6 +200,13 @@ SimpleDebugger::~SimpleDebugger()
 void
 SimpleDebugger::execute(const std::string& msg)
 {
+
+    struct winsize size;
+    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
+        dout.setLineWidth(size.ws_col);
+        dout.setLineCount(size.ws_row);
+    }
+
     printf("Entering interactive mode at time %" PRI_SIMTIME " \n", getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 

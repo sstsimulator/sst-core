@@ -22,6 +22,13 @@
 
 namespace SST::IMPL::Interactive {
 
+// Overloaded streambuffer for use with DebuggerStream class
+// ** This class is intended for use with the interactive console ONLY **
+// This streambuffer will limit the size, in terms of line width and
+// lines per screen, of output. Wide output (wider than charsPerLine_)
+// will be truncated with a '...' and output that goes beyond
+// linesPerScreen will prompt the user to continue or cancel
+
 class DebuggerStreamBuf : public std::streambuf
 {
 private:
@@ -56,8 +63,13 @@ public:
         curLines_ = 0;
         curChars_ = 0;
     }
-    void setLineWidth(const unsigned w) { charsPerLine_ = w; }
+    void     setLineWidth(const unsigned w) { charsPerLine_ = w; }
+    void     setLineCount(const unsigned c) { linesPerScreen_ = c; }
+    unsigned getLineWidth() { return charsPerLine_; }
 };
+
+// ** This class is intended for use with the interactive console ONLY **
+// When
 
 class DebuggerStream : public std::ostream
 {
@@ -76,14 +88,24 @@ public:
         clear();
     }
 
-    void setLineWidth(const unsigned w) { buf_.setLineWidth(w); }
+    void     setLineWidth(const unsigned w) { buf_.setLineWidth(w); }
+    void     setLineCount(const unsigned c) { buf_.setLineCount(c); }
+    unsigned getLineWidth() { return buf_.getLineWidth(); }
 };
+
+// Overload << to cpature all function pointers, used in conjunction
+// with dreset.
 
 inline DebuggerStream&
 operator<<(DebuggerStream& stream, DebuggerStream& (*func)(DebuggerStream&))
 {
     return func(stream);
 }
+
+// Call this function to reset the DebuggerStreamBuf back to a
+// known good state after each use. This is required to allow it
+// to recover from a potential `EOF` that has been inserted
+// when the user elects to stop output
 
 inline DebuggerStream&
 dreset(DebuggerStream& stream)
