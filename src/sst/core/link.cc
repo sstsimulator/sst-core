@@ -415,7 +415,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             s->pair_link->tag  = s->tag;
 
             s->pair_link->defaultTimeBase = 1;
-            s->pair_link->id              = s->id;
+            s->pair_link->id              = s->getId();
 
             // Need to register with the SyncManager
             ActivityQueue* sync_q = sim->syncManager->registerLink(pair_restart_rank, my_restart_rank, s->pair_link);
