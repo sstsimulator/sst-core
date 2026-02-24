@@ -36,6 +36,10 @@
 #include <utility>
 #include <vector>
 
+#include "sst/core/sst_mpi.h"
+
+#define SKK 1
+
 namespace SST::IMPL::Interactive {
 
 enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER };
@@ -76,6 +80,20 @@ public:
         group_(group),
         func_(func)
     {}
+    
+    // Constructor for parallel execution (e.g. multi-thread and/or multi-rank) adds parallel fcn (funcp_) that takes a string
+    // to simplify passing to other rank/thread
+#if 0
+    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
+        std::function<bool(std::vector<std::string>& tokens)> func, std::function<bool(std::string& cmd_str)> func_par) :
+        str_long_(str_long),
+        str_short_(str_short),
+        str_help_(str_help),
+        group_(group),
+        func_(func),
+        func_par_(func)
+    {}
+#endif
     // Constructor for user-defined commands
     ConsoleCommand(std::string str_long) :
         str_long_(str_long),
@@ -91,6 +109,9 @@ public:
     const ConsoleCommandGroup& group() const { return group_; }
     // Command Execution
     bool                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
+#if 0
+    bool                       exec_par(std::string& cmd_str) { return func_par_(cmd_str); }
+#endif
     bool                       match(const std::string& token)
     {
         std::string lctoken = toLower(token);
@@ -110,6 +131,9 @@ private:
     std::string                                           str_help_;
     ConsoleCommandGroup                                   group_;
     std::function<bool(std::vector<std::string>& tokens)> func_;
+#if 0
+    std::function<bool(std::string& cmd_str)>             func_par_;
+#endif
     std::string                                           toLower(std::string s)
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -363,6 +387,14 @@ private:
     // Verbosity controlled console printing
     uint32_t verbosity = 0;
     void     msg(VERBOSITY_MASK mask, std::string message);
+
+    // Test new rank parallel execute
+    bool handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, std::stringstream& result, 
+        Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier);
+    int packResultBuffer( std::stringstream& result, char** result_buffer);
+    void packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd );
+    void unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid);
+    void rankParallelExecute(); 
 };
 
 } // namespace SST::IMPL::Interactive

@@ -528,6 +528,7 @@ SyncManager::rankHandleInteractiveConsole()
     // Serial execution handles this in simulation run so it happens right away
     //assert(num_ranks_.thread != 1); // SKK I should never have a threadSync with a single thread, correct?, I might in multi-rank
 
+
 #if 0
     Output& out = sim_->getSimulationOutput();
     out.output("skk:syncmgr:execute: T%d: check enter_interactive_=%d\n", rank_.thread, sim_->enter_interactive_);
@@ -623,7 +624,9 @@ SyncManager::rankHandleInteractiveConsole()
     // Ensure everyone has latest flags before clearing
     ic_barrier_.wait();
     rankSync_->clearFlags();
+
 }
+
 
 void
 SyncManager::handleInteractiveConsole()
@@ -913,7 +916,13 @@ SyncManager::execute()
 
                 #if 1
                 // SKK Test Producer/Consumer
-                testProducerConsumer();
+                //testProducerConsumer();
+                //sim_->interactive_->rankParallelExecute();
+                sim_->interactive_->execute(sim_->interactive_msg_);
+                
+                //RankExecBarrier_[0].wait();
+                //Output::getDefaultObject().output("After execute barrier\n");
+                sim_->setEndSim();
                 #else
                 //if (rank_.rank == 0) {  // SKK Temporary to test passing of watchpoint triggers
                 if (rank_.rank == 0 && rank_.thread == 0) { 

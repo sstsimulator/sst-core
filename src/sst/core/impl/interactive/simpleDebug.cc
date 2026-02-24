@@ -64,8 +64,10 @@ SimpleDebugger::SimpleDebugger(Params& params) :
             [this](std::vector<std::string>& tokens) { return cmd_pwd(tokens); } },
         { "chdir", "cd", "change 1 directory level in the object map", ConsoleCommandGroup::NAVIGATION,
             [this](std::vector<std::string>& tokens) { return cmd_cd(tokens); } },
+#if 1
         { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
             [this](std::vector<std::string>& tokens) { return cmd_ls(tokens); } },
+#endif
         { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
             [this](std::vector<std::string>& tokens) { return cmd_time(tokens); } },
         { "print", "p", "[-rN] [<obj>]: print objects at the current level", ConsoleCommandGroup::STATE,
@@ -248,12 +250,18 @@ SimpleDebugger::summary()
 
 int
 SimpleDebugger::execute(const std::string& msg)
+//SimpleDebugger::consoleExecute(const std::string& msg)
 {
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
     printf("\n---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", info.rank, info.thread,
         getCurrentSimCycle());
     printf("%s\n", msg.c_str());
+
+#if 1  // test new structure
+    rankParallelExecute();
+    return DONE;
+#endif
 
     // Create a new ObjectMap
     obj_ = getComponentObjectMap();
@@ -439,7 +447,11 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         // normal execution
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
+#if 0
+            bool succeed = consoleCommand.first.exec_par(cmd);
+#else
             bool succeed = consoleCommand.first.exec(tokens);
+#endif
             cmdHistoryBuf.append(cmd);
             return succeed;
         }
@@ -669,6 +681,37 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 }
 
 // ls: list current directory
+#if 0
+bool
+SimpleDebugger::om_ls(std::string& tokens) {
+    //tokenize string
+
+
+}
+
+bool
+SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens), std::string& cmd)
+{
+    std::cout << "SKK: cmd_ls\n";
+    
+    // if serial ls(tokens)
+    // if thread
+    // if rank
+    auto& vars = obj_->getVariables();
+    for ( auto& x : vars ) {
+        if ( x.second->isFundamental() ) {
+            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+        }
+        else {
+            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+        }
+    }
+    return true;
+
+}
+
+#else
+
 bool
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
 {
@@ -683,6 +726,7 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     }
     return true;
 }
+#endif
 
 // callback for autofill of object string (similar to ls)
 void
@@ -2259,6 +2303,223 @@ CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
     cmdHelp[key] = s.str();
     ;
 }
+
+// Test new rank execute structure
+
+bool
+SimpleDebugger::handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, 
+    std::stringstream& result, Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier) 
+{
+   
+    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
+    // Wait for shared variables to be stored by T0
+    exchange_barrier.wait();
+    // Get shared variables
+    int32_t cmd_local = cmd.load();
+    int32_t tid_local = tid.load();
+    //int32_t done_local = done.load();
+    // If not DONE, process command
+    if (cmd_local != 0) {
+        // If I am target thread, handle the incoming command
+        if (rank_.thread == tid_local) {
+            #if 1
+            //result.store(1);
+            result << "**Worker PRINT: R" << rank_.rank << ", T" << rank_.thread << "\n";
+            //Output::getDefaultObject().output("**Worker PRINT: R%d, T%d\n", rank_.rank, rank_.thread);
+            #else
+            handleCommand(cmd, done, result);
+            #endif
+        }
+       
+    } else {  // DONE
+        //result.store(0);
+        if (rank_.thread == tid_local) {
+            result << "**Worker DONE: R" << rank_.rank << ", T" << rank_.thread << "\n";
+        }
+        //Output::getDefaultObject().output("**Worker R%d T%d DONE\n", 
+         //       rank_.rank, rank_.thread);
+    }
+    // Wait for result to be stored by target thread
+    process_barrier.wait();
+    //if (done_local) {
+    if (cmd_local == 0) {
+        return true;
+    } else { 
+        return false;
+    }
+}
+
+int // ultimately it may return the message buffer size
+SimpleDebugger::packResultBuffer( std::stringstream& result, char** result_buffer) {
+    std::string result_str = result.str();
+    //result_buffer = new char[result_str.length() +1];
+    *result_buffer = (char *) malloc(result_str.length() +1);
+    int length = result_str.length() +1;
+    std::strcpy(*result_buffer, result_str.c_str());
+    //Output::getDefaultObject().output("Result: %s", *result_buffer);
+
+    // Clear result for next time
+    result.str("");
+    result.clear();
+
+    return length;
+}
+
+void // ultimately it may return the message buffer size
+SimpleDebugger::packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd) {
+    cmd_buffer[0] = rank_id;
+    cmd_buffer[1] = thread_id;
+    cmd_buffer[2] = cmd;
+}
+
+void 
+SimpleDebugger::unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid) 
+{
+
+    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
+    //Output::getDefaultObject().output("**Worker R%d T%d Recv: R%d, T%d cmd%d\n", 
+    //    rank_.rank, rank_.thread, cmd_buffer[0], cmd_buffer[1], cmd_buffer[2]);
+    tid.store(cmd_buffer[1]);
+    cmd.store(cmd_buffer[2]);
+         
+}
+
+
+void 
+SimpleDebugger::rankParallelExecute() 
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
+    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
+    int32_t cmd_buffer[3];
+    char* result_buffer = nullptr;
+    int tag = 0;
+    int src;
+    int dst;
+    bool quit = false;
+
+    // Static variables shared between threads within the rank
+    static std::atomic<int32_t> tid = 0;
+    static std::atomic<int32_t> cmd = 0;
+    static std::stringstream result;
+
+    static Core::ThreadSafe::Barrier exchange_barrier(num_ranks_.thread);
+    static Core::ThreadSafe::Barrier process_barrier(num_ranks_.thread);
+
+    //Output::getDefaultObject().output("----ParallelSkip\n");
+
+    if (rank_.rank == 0 && rank_.thread == 0)  { // Handles send of commands
+        
+        // Execute console and get next command
+        int32_t rindex = 1;
+        int32_t tindex = 1;
+        //Output::getDefaultObject().output("**Mgr R%d T%d Send PRINT: Dest R%d, T%d\n", 
+        //    rank_.rank, rank_.thread, rindex, tindex);
+        // Send print command to correct rank and wait for result
+        packCommandBuffer(rindex, tindex, cmd_buffer, 1);
+        dst = rindex;
+        
+        // Local to this rank
+        if (rindex == 0) {  
+            // Store shared variables from cmd_buffer
+            unpackCommandBuffer(cmd_buffer, cmd, tid);
+            // Target thread processes command
+            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
+            assert(!quit);
+            
+            // Pack result buffer
+
+            //Output::getDefaultObject().output("original Result: %s", result.str().c_str());
+            packResultBuffer(result, &result_buffer); 
+            Output::getDefaultObject().output("Result: %s", result_buffer);         
+        }  // end rindex == 0 
+        // Send to other rank for processing
+        else { 
+            MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD );
+            src = rindex;
+            int length;
+            MPI_Status status;
+
+            // Probe for an incoming message to get its length
+            MPI_Probe(src, tag, MPI_COMM_WORLD, &status);
+            // Get the actual number of elements (characters)
+            MPI_Get_count(&status, MPI_CHAR, &length);
+            result_buffer = (char*)malloc(length * sizeof(char));
+            MPI_Recv(result_buffer, length, MPI_CHAR, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            Output::getDefaultObject().output("Result: %s", result_buffer);
+
+        } // end Send to other rank
+       
+
+        // DONE: Send done command to all ranks (can't use Bcast bc others don't know it is coming)
+        for (uint32_t rindex = 0; rindex < num_ranks_.rank; rindex++ ) {
+
+            //Output::getDefaultObject().output("**Mgr R%d T%d Send DONE: Dest R%d\n", 
+            //    rank_.rank, rank_.thread, rindex);
+            // Send done command to correct rank and wait for return
+            packCommandBuffer(rindex, tindex, cmd_buffer, 0);
+            dst = rindex;
+
+            // Local to this rank
+            if (rindex == 0) {  
+                // Store shared variables from cmd_buffer
+                unpackCommandBuffer(cmd_buffer, cmd, tid);
+                // Target thread processes command
+                quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
+                assert(quit);
+ 
+                packResultBuffer(result, &result_buffer);
+                Output::getDefaultObject().output("Result: %s", result_buffer);
+            } 
+            // Send to other rank for processing
+            else {  
+                MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
+                src = rindex;
+                int length;
+                MPI_Status status;
+                // Probe for an incoming message to get its length
+                MPI_Probe(src, tag, MPI_COMM_WORLD, &status);
+                // Get the actual number of elements (characters)
+                MPI_Get_count(&status, MPI_CHAR, &length);
+                result_buffer = (char*)malloc(length * sizeof(char));
+                MPI_Recv(result_buffer, length, MPI_CHAR, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                Output::getDefaultObject().output("ResultN: %s\n", result_buffer);
+
+            } // end else send to other rank
+        } // end for Ranks
+    } // end rank 0
+
+    else if (rank_.rank !=0 && rank_.thread == 0) { // Other ranks, thread 0
+
+        //Output::getDefaultObject().output("**Enter Worker: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
+        src = 0;
+        dst = 0;
+        tag = 0;
+        while (!quit) {
+            // Wait for message
+            MPI_Recv(cmd_buffer, 3, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            // Store shared variables from cmd_buffer
+            unpackCommandBuffer(cmd_buffer, cmd, tid);
+            // Target thread processes command
+            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
+            // Return result
+
+            int length = packResultBuffer(result, &result_buffer);
+            MPI_Send(result_buffer, length, MPI_CHAR, dst, tag, MPI_COMM_WORLD);
+        } // while !done
+    }  // end other ranks
+    else {  // All threads != 0
+        
+        while (!quit) {
+            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
+        }
+        //Output::getDefaultObject().output("**Worker R%d T%d Exit Loop\n", 
+        //            rank_.rank, rank_.thread);   
+    }
+
+#endif  // SST_CONFIG_HAVE_MPI
+}  //end rankParallelExecute
+
 
 
 } // namespace SST::IMPL::Interactive
