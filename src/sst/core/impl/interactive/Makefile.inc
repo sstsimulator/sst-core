@@ -9,5 +9,4 @@ sst_core_sources += \
 	impl/interactive/cmdLineEditor.cc \
 	impl/interactive/cmdLineEditor.h \
 	impl/interactive/debugStream.h  \
-	impl/interactive/debugStream.cc 
-	
+	impl/interactive/debugStream.cc
