@@ -39,6 +39,13 @@ std::string   SimpleDebugger::loggingFilePath = "sst-console.out";
 std::string   SimpleDebugger::replayFilePath  = "sst-console.in";
 bool          SimpleDebugger::enLogging       = false;
 bool          SimpleDebugger::confirm_        = true;
+// New
+int           SimpleDebugger::current_thread  = 0;
+int           SimpleDebugger::current_rank    = 0;
+std::vector<std::string> SimpleDebugger::tokens;
+std::stringstream         SimpleDebugger::result;
+
+
 SimpleDebugger::SimpleDebugger(Params& params) :
     InteractiveConsole()
 {
@@ -51,71 +58,73 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     // Populate the command registry
     cmdRegistry = CommandRegistry({
         { "help", "?", "<[CMD]>: show this help or detailed command help", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { return cmd_help(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_help(tokens); }, true },
         { "verbose", "v", "[mask]: set verbosity mask or print if no mask specified", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { return cmd_verbose(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_verbose(tokens); }, true },
         { "info", "info", "\"current\"|\"all\" print summary for current thread or all threads",
-            ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens) { return cmd_info(tokens); } },
+            ConsoleCommandGroup::GENERAL, [this](std::vector<std::string>& tokens) { return cmd_info(tokens); }, true },
         { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { return cmd_thread(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_thread(tokens); }, false },
+        { "rank", "rank", "[rankID]: switch to specified rank ID, same thread", ConsoleCommandGroup::GENERAL,
+            [this](std::vector<std::string>& tokens) { return cmd_rank(tokens); }, false },
         { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
-            [this](std::vector<std::string>& tokens) { return cmd_setConfirm(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_setConfirm(tokens); }, true },
         { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { return cmd_pwd(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_pwd(tokens); }, false },
         { "chdir", "cd", "change 1 directory level in the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { return cmd_cd(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_cd(tokens); }, false },
 #if 1
         { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
-            [this](std::vector<std::string>& tokens) { return cmd_ls(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_ls(tokens); }, false },
 #endif
         { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { return cmd_time(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_time(tokens); }, true },
         { "print", "p", "[-rN] [<obj>]: print objects at the current level", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { return cmd_print(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_print(tokens); }, false },
         { "set", "s", "var value: set value for a variable at the current level", ConsoleCommandGroup::STATE,
-            [this](std::vector<std::string>& tokens) { return cmd_set(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_set(tokens); }, false },
         { "watch", "w", "<trig>: adds watchpoint to the watchlist", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_watch(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_watch(tokens); }, false },
         { "trace", "t", "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_trace(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_trace(tokens); }, false },
         { "watchlist", "wl", "prints the current list of watchpoints", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_watchlist(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_watchlist(tokens); }, false },
         { "addTraceVar", "add", "<watchpointIndex> <var1> ... <varN>", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_addTraceVar(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_addTraceVar(tokens); }, false },
         { "printWatchPoint", "prw", "<watchpointIndex>: prints a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_printWatchpoint(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_printWatchpoint(tokens); }, false },
         { "printTrace", "prt", "<watchpointIndex>: prints trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_printTrace(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_printTrace(tokens); }, false },
         { "resetTrace", "rst", "<watchpointIndex>: reset trace buffer for a watchpoint", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_resetTraceBuffer(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_resetTraceBuffer(tokens); }, false },
         { "setHandler", "shn", "<idx> <t1> ... <t2>: trigger check/sampling handler", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_setHandler(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_setHandler(tokens); }, false },
         { "unwatch", "uw", "<watchpointIndex>: remove 1 or all watchpoints", ConsoleCommandGroup::WATCH,
-            [this](std::vector<std::string>& tokens) { return cmd_unwatch(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_unwatch(tokens); }, false },
         { "run", "r", "[TIME]: continues the simulation", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); }, true },
         { "continue", "c", "alias for run", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_run(tokens); }, true },
         { "exit", "e", "exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); }, true },
         { "quit", "q", "alias for exit", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_exit(tokens); }, true },
         { "shutdown", "shutd", "exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
-            [this](std::vector<std::string>& tokens) { return cmd_shutdown(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_shutdown(tokens); }, true },
         { "logging", "log", "<filepath>: log command line entires to file", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { return cmd_logging(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_logging(tokens); }, true },
         { "replay", "rep", "<filepath>: run commands from a file. See also: sst --replay", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { return cmd_replay(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_replay(tokens); }, true },
         { "history", "h", "[N]: display all or last N unique commands", ConsoleCommandGroup::LOGGING,
-            [this](std::vector<std::string>& tokens) { return cmd_history(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_history(tokens); }, true },
         { "autoComplete", "ac", "toggle command line auto-completion enable", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_autoComplete(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_autoComplete(tokens); }, true },
         { "clear", "clr", "reset terminal", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_clear(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_clear(tokens); }, true },
         { "define", "def", "define a user command sequence", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_define(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_define(tokens); }, true},
         { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
-            [this](std::vector<std::string>& tokens) { return cmd_document(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_document(tokens); }, true },
     });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
@@ -206,6 +215,13 @@ SimpleDebugger::SimpleDebugger(Params& params) :
 
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
+    
+    #if 0
+    // Initialize barriers
+    RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
+    exchange_barrier(num_ranks_.thread);
+    process_barrier(num_ranks_.thread);
+    #endif
 }
 
 SimpleDebugger::~SimpleDebugger()
@@ -249,8 +265,8 @@ SimpleDebugger::summary()
 }
 
 int
-SimpleDebugger::execute(const std::string& msg)
-//SimpleDebugger::consoleExecute(const std::string& msg)
+//SimpleDebugger::execute(const std::string& msg)
+SimpleDebugger::consoleExecute(const std::string& msg)
 {
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
@@ -258,7 +274,7 @@ SimpleDebugger::execute(const std::string& msg)
         getCurrentSimCycle());
     printf("%s\n", msg.c_str());
 
-#if 1  // test new structure
+#if 0  // test new structure
     rankParallelExecute();
     return DONE;
 #endif
@@ -391,7 +407,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
     // empty command
     if ( cmd.size() == 0 ) return true;
 
-    std::vector<std::string> tokens;
+    //std::vector<std::string> tokens;  // SKK static so shared between threads
     tokenize(tokens, cmd);
 
     // just whitespace
@@ -444,14 +460,31 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
     switch ( line_entry_mode ) {
     case LINE_ENTRY_MODE::NORMAL:
     {
+        bool succeed = true;
         // normal execution
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
-#if 0
-            bool succeed = consoleCommand.first.exec_par(cmd);
-#else
-            bool succeed = consoleCommand.first.exec(tokens);
-#endif
+        // SKK Identify where to execute command (thread/rank)
+            if (consoleCommand.first.console()) {
+                // Console command, execute in this thread
+                Output::getDefaultObject().output("Console command\n");
+                succeed = consoleCommand.first.exec(tokens);
+            } else { 
+                // Thread specific command, execute in target thread
+                if (current_rank == 0) {
+                    // Execute in this rank (multithreading)
+                    // Add handle multithreading here
+                    //succeed = consoleCommand.first.exec(tokens);
+                    handleCommandAll();
+
+                } else {
+                    // Send to remote rank
+                    succeed = true;  // Need to return the succeed value
+                    //Output::getDefaultObject().output("Before sendCommand: cmd:%s\n", cmd.c_str());
+                    sendCommand(current_rank, current_thread, cmd);
+                }
+            }
+
             cmdHistoryBuf.append(cmd);
             return succeed;
         }
@@ -505,6 +538,8 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
     std::istringstream iss(input);
     std::string        token;
 
+    // SKK since tokens is now shared, clear it 
+    tokens.clear();
     while ( iss >> token ) {
         tokens.push_back(token);
     }
@@ -600,10 +635,11 @@ SimpleDebugger::cmd_info(std::vector<std::string>& UNUSED(tokens))
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
     if ( tokens[1] == "current" ) {
-        std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
+
+        std::cout << "Rank " << current_rank << "/" << nRanks.rank << ", Thread " << current_thread << "/" << nRanks.thread
                   << " (Process " << getppid() << ")" << std::endl;
     }
-    else if ( tokens[1] == "all" ) {
+    else if ( tokens[1] == "all" ) {  // SKK Need to update this for multi-rank
         if ( nRanks.rank == 1 && nRanks.thread == 1 ) {
             std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/"
                       << nRanks.thread << " (Process " << getppid() << ")" << std::endl;
@@ -654,11 +690,64 @@ SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
         return false;
     }
 
+#if 1
+    // Set current thread
+    if ( threadID != current_thread ) {
+        current_thread = threadID;
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+#else
     // If not current thread, set retState and done flag
-    if ( threadID != static_cast<int>(info.thread) ) {
+    if ( threadID != static_cast<int>(info.thread) ) { 
         retState = threadID;
         done     = true;
     }
+#endif
+    return true;
+}
+
+// rank <rankID> : switches to new rank (same thread)
+bool
+SimpleDebugger::cmd_rank(std::vector<std::string>& tokens)
+{
+
+    if ( tokens.size() != 2 ) {
+        printf("Invalid format for rankcommand (rank <rankID>)\n");
+        return false;
+    }
+
+    RankInfo info   = getRank();
+    RankInfo nRanks = getNumRanks();
+    int      rankID;
+
+    // Get rankID
+    try {
+        rankID = std::stoi(tokens[1]);
+    }
+    catch ( const std::invalid_argument& e ) {
+        std::cout << "Invalid argument for rankID: " << tokens[1] << std::endl;
+        return false;
+    }
+    catch ( const std::out_of_range& e ) {
+        std::cout << "Out of range for rankID: " << tokens[1] << std::endl;
+        return false;
+    }
+
+    // Check if valid rankID
+    if ( rankID < 0 || rankID >= static_cast<int>(nRanks.rank) ) {
+        printf("RankID %d out of range (0:%d)\n", rankID, nRanks.rank - 1);
+        return false;
+    }
+
+#if 1
+    // Set current thread
+    if ( rankID != current_rank ) {
+        current_rank = rankID;
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+#endif
     return true;
 }
 
@@ -2307,46 +2396,57 @@ CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
 // Test new rank execute structure
 
 bool
-SimpleDebugger::handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, 
-    std::stringstream& result, Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier) 
+SimpleDebugger::handleCommandAll()
 {
-   
+
+    RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
     RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
-    // Wait for shared variables to be stored by T0
+    static Core::ThreadSafe::Barrier exchange_barrier(num_ranks_.thread);
+    static Core::ThreadSafe::Barrier process_barrier(num_ranks_.thread);
+
+    // Wait for shared variables to be stored by T0 (unpack and tokenize)
     exchange_barrier.wait();
     // Get shared variables
-    int32_t cmd_local = cmd.load();
-    int32_t tid_local = tid.load();
-    //int32_t done_local = done.load();
+    //int32_t cmd_local = cmd.load();
+    //int32_t tid_local = tid.load();
+    bool succeed = true; // Change to false once debugged
+
+    if (tokens[0] == "done") {
+        done = true;
+    }
+   
     // If not DONE, process command
-    if (cmd_local != 0) {
+    if (!done) {
         // If I am target thread, handle the incoming command
-        if (rank_.thread == tid_local) {
-            #if 1
+        if (rank_.thread == current_thread) {
+            #if 0
             //result.store(1);
             result << "**Worker PRINT: R" << rank_.rank << ", T" << rank_.thread << "\n";
             //Output::getDefaultObject().output("**Worker PRINT: R%d, T%d\n", rank_.rank, rank_.thread);
             #else
-            handleCommand(cmd, done, result);
+            Output::getDefaultObject().output("**HandleCommand: R%d, T%d\n", 
+                rank_.rank, rank_.thread, tokens[0].c_str());
+            for (const std::string& token : tokens) {
+                Output::getDefaultObject().output("  %s", token.c_str());
+            }
+            Output::getDefaultObject().output("\n");
+            auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
+            succeed = consoleCommand.first.exec(tokens);
+            result << "**Worker CMD: R" << rank_.rank << ", T" << rank_.thread << "\n";
             #endif
-        }
-       
+        }     
     } else {  // DONE
         //result.store(0);
-        if (rank_.thread == tid_local) {
+        if (rank_.thread == current_thread) {
             result << "**Worker DONE: R" << rank_.rank << ", T" << rank_.thread << "\n";
         }
         //Output::getDefaultObject().output("**Worker R%d T%d DONE\n", 
          //       rank_.rank, rank_.thread);
     }
+
     // Wait for result to be stored by target thread
     process_barrier.wait();
-    //if (done_local) {
-    if (cmd_local == 0) {
-        return true;
-    } else { 
-        return false;
-    }
+    return succeed;
 }
 
 int // ultimately it may return the message buffer size
@@ -2365,8 +2465,178 @@ SimpleDebugger::packResultBuffer( std::stringstream& result, char** result_buffe
     return length;
 }
 
+void 
+SimpleDebugger::sendCommand( int32_t rank_id, int32_t thread_id,  std::string cmd) {
+    char* cmd_buffer;  // SKK Could share buffer
+    int str_length;
+    int buf_size;
+    int position = 0;
+    int tag = 0;
+    MPI_Status status;
+    //int result_length;
+    char* result_buffer;
+
+
+    // Pack and Send message
+    str_length = cmd.length() + 1;
+    buf_size = 3 * sizeof(int32_t) + str_length;
+    cmd_buffer = (char*) malloc(buf_size);
+   
+    //Output::getDefaultObject().output("Before R0T0 pack: R%d, T%d, bufsize: %d, strlen: %d, cmd: %s\n", 
+    //            rank_id, thread_id, buf_size, str_length, cmd.c_str());
+    // Pack rank_id, thread_id, cmd str length, and cmd string
+    MPI_Pack(&rank_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+    MPI_Pack(&thread_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+    MPI_Pack(&str_length, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+    MPI_Pack(cmd.c_str(), str_length, MPI_CHAR, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+    // Send command buffer to destination rank
+    //Output::getDefaultObject().output("After R0T0 pack: R%d, T%d, position:%d\n", 
+    //            rank_id, thread_id, position);
+    MPI_Send(cmd_buffer, position, MPI_PACKED, rank_id, tag, MPI_COMM_WORLD);
+    Output::getDefaultObject().output("After R0T0 send: R%d, T%d, position:%d\n", 
+                rank_id, thread_id, position);
+
+    // Receive result string
+    // Probe for incoming message to get its length
+    MPI_Probe(rank_id, tag, MPI_COMM_WORLD, &status);
+    // Get the actual number of elements (characters)
+    MPI_Get_count(&status, MPI_CHAR, &buf_size);
+    result_buffer = (char*) malloc(buf_size * sizeof(char));
+    //Output::getDefaultObject().output("After R0T0 probe: bufsize: %d\n", buf_size);
+    MPI_Recv(result_buffer, buf_size, MPI_CHAR, rank_id, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    Output::getDefaultObject().output("Result: %s", result_buffer);
+}
+
+void 
+SimpleDebugger::receiveCommand() {    
+    //const int default_size = 100;
+    char* cmd_buffer;
+    int buf_size;
+    int position = 0;
+    int src = 0;
+    int dst = 0;
+    int tag = 0;
+    MPI_Status status;
+    int str_length;
+    char* cmd_str;
+    int32_t rank_id, thread_id;
+
+    // Receive the incoming command
+    // Probe for incoming message to get its length
+    MPI_Probe(src, tag, MPI_COMM_WORLD, &status);
+    // Get the actual number of elements (characters)
+    MPI_Get_count(&status, MPI_PACKED, &buf_size);
+    //Output::getDefaultObject().output("After R1T0 probe: bufsize:%d\n", buf_size);
+    cmd_buffer = (char*) malloc(buf_size * sizeof(char));
+    MPI_Recv(cmd_buffer, buf_size, MPI_PACKED, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    Output::getDefaultObject().output("After R1T0 receive\n");
+    // Unpack the rank_id, thread_id, string length, cmd string
+    MPI_Unpack(cmd_buffer, buf_size, &position, &rank_id, 1, MPI_INT32_T, MPI_COMM_WORLD);
+    MPI_Unpack(cmd_buffer, buf_size, &position, &thread_id, 1, MPI_INT32_T, MPI_COMM_WORLD);
+    MPI_Unpack(cmd_buffer, buf_size, &position, &str_length, 1, MPI_INT32_T, MPI_COMM_WORLD);
+    cmd_str = (char*) malloc(str_length * sizeof(char));
+    MPI_Unpack(cmd_buffer, buf_size, &position, cmd_str, str_length, MPI_CHAR, MPI_COMM_WORLD);
+    //Output::getDefaultObject().output("Received: R%d, T%d, Sz%d, %s\n", 
+    //    rank_id, thread_id, str_length, cmd_str);
+    // Target thread processes command
+
+    // Create a new ObjectMap
+    // SKK this needs thought
+    // At a minimum need to get objmap the first time we enter thread
+    // may need to always do this?
+    if (obj_ == nullptr) {
+        obj_ = getComponentObjectMap();
+
+        // Descend into the name_stack
+        cd_name_stack();
+    }
+    // Tokenize
+    //std::vector<std::string> tokens;  // SKK shared so all threads can access
+    std::string cmd(cmd_str);
+    tokenize(tokens, cmd);
+
+    // Exec command fcn
+    if (tokens[0] == "done") {
+        handleCommandAll();
+    } else {
+        auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
+        if ( consoleCommand.second ) {
+            if (consoleCommand.first.console()) {
+                    // Console command, execute in this thread
+                    Output::getDefaultObject().output("Error: Console command at remote rank: %s\n", tokens[0]);
+                    assert(false);
+                } else { 
+                    // Thread specific command, execute in target thread
+                    //bool succeed = consoleCommand.first.exec(tokens);
+                    handleCommandAll();
+                }
+        } else {
+            Output::getDefaultObject().output("Error: Command not found in remote rank: %s\n", tokens[0]);
+            assert(false);
+        }
+    }
+
+    // Send result back to Rank 0 Thread 0
+    char* result_buffer;
+    buf_size = packResultBuffer(result, &result_buffer);
+    MPI_Send(result_buffer, buf_size, MPI_CHAR, dst, tag, MPI_COMM_WORLD);
+    Output::getDefaultObject().output("After R1T0 send\n");
+
+}
+
+void 
+SimpleDebugger::sendDone() {
+    RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
+    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
+    std::string cmd = "done";
+    char* cmd_buffer;  // SKK Could share buffer
+    int str_length;
+    int buf_size;
+    int position = 0;
+    int tag = 0;
+    MPI_Status status;
+    //int result_length;
+    char* result_buffer;
+
+
+    // Pack and Send message
+    str_length = cmd.length() + 1;
+    buf_size = 3 * sizeof(int32_t) + str_length;
+    cmd_buffer = (char*) malloc(buf_size);
+   
+    int32_t thread_id = 0;
+    for (uint32_t rank_id = 1; rank_id < num_ranks_.rank; rank_id++ ) {
+        Output::getDefaultObject().output("sendDone: R%d, T%d, bufsize: %d, strlen: %d, cmd: %s\n", 
+                    rank_id, thread_id, buf_size, str_length, cmd.c_str());
+        // Pack rank_id, thread_id, cmd str length, and cmd string
+        MPI_Pack(&rank_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+        MPI_Pack(&thread_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+        MPI_Pack(&str_length, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+        MPI_Pack(cmd.c_str(), str_length, MPI_CHAR, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
+        // Send command buffer to destination rank
+        //Output::getDefaultObject().output("After R0T0 pack: R%d, T%d, position:%d\n", 
+        //            rank_id, thread_id, position);
+        MPI_Send(cmd_buffer, position, MPI_PACKED, rank_id, tag, MPI_COMM_WORLD);
+        //Output::getDefaultObject().output("After R0T0 send: R%d, T%d, position:%d\n", 
+        //            rank_id, thread_id, position);
+
+        // Receive result string
+        // Probe for incoming message to get its length
+        MPI_Probe(rank_id, tag, MPI_COMM_WORLD, &status);
+        // Get the actual number of elements (characters)
+        MPI_Get_count(&status, MPI_CHAR, &buf_size);
+        result_buffer = (char*) malloc(buf_size * sizeof(char));
+        //Output::getDefaultObject().output("After R0T0 probe: bufsize: %d\n", buf_size);
+        MPI_Recv(result_buffer, buf_size, MPI_CHAR, rank_id, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        //Output::getDefaultObject().output("Result: %s", result_buffer);
+    } // End for each rank
+}
+
+
 void // ultimately it may return the message buffer size
 SimpleDebugger::packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd) {
+
     cmd_buffer[0] = rank_id;
     cmd_buffer[1] = thread_id;
     cmd_buffer[2] = cmd;
@@ -2385,137 +2655,58 @@ SimpleDebugger::unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& 
 }
 
 
-void 
-SimpleDebugger::rankParallelExecute() 
+//void 
+//SimpleDebugger::rankParallelExecute() 
+int
+SimpleDebugger::execute(const std::string& msg)
 {
 #ifdef SST_CONFIG_HAVE_MPI
     RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
     RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
-    int32_t cmd_buffer[3];
-    char* result_buffer = nullptr;
-    int tag = 0;
-    int src;
-    int dst;
-    bool quit = false;
-
-    // Static variables shared between threads within the rank
-    static std::atomic<int32_t> tid = 0;
-    static std::atomic<int32_t> cmd = 0;
-    static std::stringstream result;
-
-    static Core::ThreadSafe::Barrier exchange_barrier(num_ranks_.thread);
-    static Core::ThreadSafe::Barrier process_barrier(num_ranks_.thread);
 
     //Output::getDefaultObject().output("----ParallelSkip\n");
 
-    if (rank_.rank == 0 && rank_.thread == 0)  { // Handles send of commands
+    // -- Rank 0, Thread 0
+    // Executes the console and sends commands to other threads/ranks as needed
+    if (rank_.rank == 0 && rank_.thread == 0)  { 
+     
+        consoleExecute(msg);
         
-        // Execute console and get next command
-        int32_t rindex = 1;
-        int32_t tindex = 1;
-        //Output::getDefaultObject().output("**Mgr R%d T%d Send PRINT: Dest R%d, T%d\n", 
-        //    rank_.rank, rank_.thread, rindex, tindex);
-        // Send print command to correct rank and wait for result
-        packCommandBuffer(rindex, tindex, cmd_buffer, 1);
-        dst = rindex;
-        
-        // Local to this rank
-        if (rindex == 0) {  
-            // Store shared variables from cmd_buffer
-            unpackCommandBuffer(cmd_buffer, cmd, tid);
-            // Target thread processes command
-            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
-            assert(!quit);
-            
-            // Pack result buffer
+        // Set done in local rank threads
+        tokens.clear();
+        tokens[0] = "done";
+        handleCommandAll();    
 
-            //Output::getDefaultObject().output("original Result: %s", result.str().c_str());
-            packResultBuffer(result, &result_buffer); 
-            Output::getDefaultObject().output("Result: %s", result_buffer);         
-        }  // end rindex == 0 
-        // Send to other rank for processing
-        else { 
-            MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD );
-            src = rindex;
-            int length;
-            MPI_Status status;
+        // Send done to remote ranks
+        sendDone();
 
-            // Probe for an incoming message to get its length
-            MPI_Probe(src, tag, MPI_COMM_WORLD, &status);
-            // Get the actual number of elements (characters)
-            MPI_Get_count(&status, MPI_CHAR, &length);
-            result_buffer = (char*)malloc(length * sizeof(char));
-            MPI_Recv(result_buffer, length, MPI_CHAR, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            Output::getDefaultObject().output("Result: %s", result_buffer);
-
-        } // end Send to other rank
-       
-
-        // DONE: Send done command to all ranks (can't use Bcast bc others don't know it is coming)
-        for (uint32_t rindex = 0; rindex < num_ranks_.rank; rindex++ ) {
-
-            //Output::getDefaultObject().output("**Mgr R%d T%d Send DONE: Dest R%d\n", 
-            //    rank_.rank, rank_.thread, rindex);
-            // Send done command to correct rank and wait for return
-            packCommandBuffer(rindex, tindex, cmd_buffer, 0);
-            dst = rindex;
-
-            // Local to this rank
-            if (rindex == 0) {  
-                // Store shared variables from cmd_buffer
-                unpackCommandBuffer(cmd_buffer, cmd, tid);
-                // Target thread processes command
-                quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
-                assert(quit);
- 
-                packResultBuffer(result, &result_buffer);
-                Output::getDefaultObject().output("Result: %s", result_buffer);
-            } 
-            // Send to other rank for processing
-            else {  
-                MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
-                src = rindex;
-                int length;
-                MPI_Status status;
-                // Probe for an incoming message to get its length
-                MPI_Probe(src, tag, MPI_COMM_WORLD, &status);
-                // Get the actual number of elements (characters)
-                MPI_Get_count(&status, MPI_CHAR, &length);
-                result_buffer = (char*)malloc(length * sizeof(char));
-                MPI_Recv(result_buffer, length, MPI_CHAR, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                Output::getDefaultObject().output("ResultN: %s\n", result_buffer);
-
-            } // end else send to other rank
-        } // end for Ranks
-    } // end rank 0
-
+    } // end Rank 0, Thread 0
+    // -- Rank i!=0, Thread 0
+    // Handles incoming/outgoing mpi messages and invokes command with target thread(s)
     else if (rank_.rank !=0 && rank_.thread == 0) { // Other ranks, thread 0
 
         //Output::getDefaultObject().output("**Enter Worker: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
-        src = 0;
-        dst = 0;
-        tag = 0;
-        while (!quit) {
-            // Wait for message
-            MPI_Recv(cmd_buffer, 3, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // Store shared variables from cmd_buffer
-            unpackCommandBuffer(cmd_buffer, cmd, tid);
-            // Target thread processes command
-            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
-            // Return result
-
-            int length = packResultBuffer(result, &result_buffer);
-            MPI_Send(result_buffer, length, MPI_CHAR, dst, tag, MPI_COMM_WORLD);
+        //src = 0;
+        //dst = 0;
+        //tag = 0;
+        //while (!quit) {
+        while (!done) {
+            receiveCommand();
         } // while !done
-    }  // end other ranks
-    else {  // All threads != 0
+    }  // end Rank i!=0, Thread 0
+    // -- Rank i!=0, Thread j!=0
+    // All other threads wait for commands
+    else { 
         
-        while (!quit) {
-            quit = handleCommandAll(tid, cmd, result, exchange_barrier, process_barrier);
+        //while (!quit) {
+        while (!done) {
+            handleCommandAll();
         }
         //Output::getDefaultObject().output("**Worker R%d T%d Exit Loop\n", 
         //            rank_.rank, rank_.thread);   
     }
+
+    return -1; // SKK Fix this later, just return done for now
 
 #endif  // SST_CONFIG_HAVE_MPI
 }  //end rankParallelExecute

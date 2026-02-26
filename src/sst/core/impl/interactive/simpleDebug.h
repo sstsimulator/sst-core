@@ -16,6 +16,7 @@
 #include "sst/core/impl/interactive/cmdLineEditor.h"
 #include "sst/core/interactiveConsole.h"
 #include "sst/core/serialization/objectMapDeferred.h"
+#include "sst/core/threadsafe.h"
 #include "sst/core/watchPoint.h"
 
 #include <atomic>
@@ -73,27 +74,15 @@ class ConsoleCommand
 public:
     // Constructor for built-in commands has callback
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<bool(std::vector<std::string>& tokens)> func) :
+        std::function<bool(std::vector<std::string>& tokens)> func, bool console) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
         group_(group),
-        func_(func)
+        func_(func), 
+        console_(console)
     {}
-    
-    // Constructor for parallel execution (e.g. multi-thread and/or multi-rank) adds parallel fcn (funcp_) that takes a string
-    // to simplify passing to other rank/thread
-#if 0
-    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<bool(std::vector<std::string>& tokens)> func, std::function<bool(std::string& cmd_str)> func_par) :
-        str_long_(str_long),
-        str_short_(str_short),
-        str_help_(str_help),
-        group_(group),
-        func_(func),
-        func_par_(func)
-    {}
-#endif
+
     // Constructor for user-defined commands
     ConsoleCommand(std::string str_long) :
         str_long_(str_long),
@@ -105,6 +94,7 @@ public:
     const std::string&         str_long() const { return str_long_; }
     const std::string&         str_short() const { return str_short_; }
     const std::string&         str_help() const { return str_help_; }
+    const bool                 console() const { return console_; }
     void                       setUserHelp(std::string& help) { str_help_ = help; }
     const ConsoleCommandGroup& group() const { return group_; }
     // Command Execution
@@ -131,8 +121,8 @@ private:
     std::string                                           str_help_;
     ConsoleCommandGroup                                   group_;
     std::function<bool(std::vector<std::string>& tokens)> func_;
-#if 0
-    std::function<bool(std::string& cmd_str)>             func_par_;
+#if 1 
+    bool                                                  console_;
 #endif
     std::string                                           toLower(std::string s)
     {
@@ -330,6 +320,7 @@ private:
     bool cmd_verbose(std::vector<std::string>&(tokens));
     bool cmd_info(std::vector<std::string>& UNUSED(tokens));
     bool cmd_thread(std::vector<std::string>& tokens);
+    bool cmd_rank(std::vector<std::string>& tokens);
     bool cmd_pwd(std::vector<std::string>& UNUSED(tokens));
     bool cmd_ls(std::vector<std::string>& UNUSED(tokens));
     bool cmd_cd(std::vector<std::string>& tokens);
@@ -389,12 +380,24 @@ private:
     void     msg(VERBOSITY_MASK mask, std::string message);
 
     // Test new rank parallel execute
-    bool handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, std::stringstream& result, 
-        Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier);
+    static int current_thread;
+    static int current_rank;
+    static std::vector<std::string> tokens;
+    static std::stringstream result;
+    //static Core::ThreadSafe::Barrier exchange_barrier;
+    //static Core::ThreadSafe::Barrier process_barrier;
+    
+    bool handleCommandAll();
+    //bool handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, std::stringstream& result, 
+    //    Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier);
     int packResultBuffer( std::stringstream& result, char** result_buffer);
     void packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd );
     void unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid);
-    void rankParallelExecute(); 
+    //void rankParallelExecute(); 
+    int consoleExecute(const std::string& msg);
+    void sendCommand( int32_t rank_id, int32_t thread_id,  std::string cmd);
+    void receiveCommand();
+    void sendDone();
 };
 
 } // namespace SST::IMPL::Interactive
