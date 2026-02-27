@@ -79,7 +79,7 @@ class testcase_testengine_testing_frameworks_operation(SSTTestCase):
 ################################################################################
 
 ############################################################################
-# These tests verify operation of the SST UunitTest Support Functions
+# These tests verify operation of the SST UnitTest Support Functions
 ############################################################################
 
 class testcase_testengine_testing_support_functions(SSTTestCase):

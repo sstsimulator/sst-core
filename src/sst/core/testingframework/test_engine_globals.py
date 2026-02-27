@@ -15,7 +15,7 @@
 """
 import os
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, List, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import configparser
@@ -51,6 +51,8 @@ TESTENGINE_CORE_CONFFILE_PARSER: "configparser.RawConfigParser" = None  # type: 
 TESTENGINE_CORE_CONFINCLUDE_DICT: Dict[str, str] = dict()
 TESTENGINE_ELEM_CONFINCLUDE_DICT: Dict[str, str] = dict()
 TESTENGINE_ERRORCOUNT = 0
+TESTENGINE_ALLOWED_TEST_CATEGORIES = ("pr", "nightly", "weekly")
+TESTENGINE_CATEGORIES: Set[str] = set()
 TESTENGINE_SCENARIOSLIST: List[str] = []
 TESTENGINE_TESTNOTESLIST: List[str] = []
 
@@ -80,6 +82,7 @@ def init_test_engine_globals() -> None:
     global TESTENGINE_CORE_CONFINCLUDE_DICT
     global TESTENGINE_ELEM_CONFINCLUDE_DICT
     global TESTENGINE_ERRORCOUNT
+    global TESTENGINE_CATEGORIES
     global TESTENGINE_SCENARIOSLIST
     global TESTENGINE_TESTNOTESLIST
 
@@ -105,5 +108,6 @@ def init_test_engine_globals() -> None:
     TESTENGINE_CORE_CONFINCLUDE_DICT = {}
     TESTENGINE_ELEM_CONFINCLUDE_DICT = {}
     TESTENGINE_ERRORCOUNT = 0
+    TESTENGINE_CATEGORIES = set()
     TESTENGINE_SCENARIOSLIST = []
     TESTENGINE_TESTNOTESLIST = []
