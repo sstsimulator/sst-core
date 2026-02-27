@@ -387,7 +387,7 @@ private:
     //static Core::ThreadSafe::Barrier exchange_barrier;
     //static Core::ThreadSafe::Barrier process_barrier;
     
-    bool handleCommandAll();
+    bool handleCommand();
     //bool handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, std::stringstream& result, 
     //    Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier);
     int packResultBuffer( std::stringstream& result, char** result_buffer);
@@ -396,8 +396,10 @@ private:
     //void rankParallelExecute(); 
     int consoleExecute(const std::string& msg);
     void sendCommand( int32_t rank_id, int32_t thread_id,  std::string cmd);
+    //void sendCommandAll(std::string cmd);
     void receiveCommand();
     void sendDone();
+    void threadInfo();
 };
 
 } // namespace SST::IMPL::Interactive
