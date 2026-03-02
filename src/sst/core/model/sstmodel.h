@@ -24,6 +24,8 @@ namespace SST {
 class Config;
 class ConfigGraph;
 
+#define STATALLFLAG "--ALLSTATS--"
+
 /** Base class for Model Generation
  */
 class SSTModelDescription

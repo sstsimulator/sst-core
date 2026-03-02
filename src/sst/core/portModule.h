@@ -74,7 +74,7 @@ public:
        returned from this function will be passed into the eventSent()
        function.
 
-       The default implemenation will just return 0 and only needs to
+       The default implementation will just return 0 and only needs to
        be overwritten if the module needs any of the metadata and/or
        needs to return a unique key.
 

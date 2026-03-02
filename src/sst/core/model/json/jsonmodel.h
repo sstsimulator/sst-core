@@ -14,12 +14,12 @@
 #ifndef SST_CORE_MODEL_JSON_JSONMODEL_H
 #define SST_CORE_MODEL_JSON_JSONMODEL_H
 
-#include "sst/core/component.h"
 #include "sst/core/config.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/factory.h"
 #include "sst/core/memuse.h"
 #include "sst/core/model/configGraph.h"
+#include "sst/core/model/json/jsonstates.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"
@@ -37,6 +37,8 @@
 #include <vector>
 
 using namespace SST;
+using namespace SST::Core;
+using namespace SST::Core::JSONParser;
 using json = nlohmann::json;
 
 namespace SST::Core {
@@ -63,78 +65,112 @@ public:
     const std::map<std::string, std::string> getProgramOptions();
 
     // error state
-    std::size_t errorPos;
-    std::string errorStr;
+    std::size_t error_pos_;
+    std::string error_str_;
 
 private:
-    // Current parsing state for major sections
-    enum ParseState {
-        ROOT,
-        PROGRAM_OPTIONS,
-        SHARED_PARAMS,
-        STATISTICS_OPTIONS,
-        STATISTICS_GROUP,
-        COMPONENTS,
-        LINKS
-    } current_state = ROOT;
+    // Helpers for constructing objects
+    void constructComponent();
+    void constructSubComponent();
+    void constructPortModule();
 
-    ConfigGraph* graph;
+    // Holds information needed to construct a component or subcomponent
+    struct JSONShadowComponent
+    {
+        std::string           name        = ""; // Component or slot name
+        std::string           type        = ""; // Type
+        unsigned              slot_number = 0;  // Slot number for subcomponents
+        SST::ConfigComponent* comp        = nullptr;
+    };
 
-    std::vector<std::string>           path_stack;
-    std::stack<json::value_t>          context_stack;
-    std::stack<ConfigComponent*>       Parents;
-    std::map<std::string, std::string> ProgramOptions;
+    struct JSONShadowStatistic
+    {
+        std::string name = "";
+        Params      params;
+        bool        shared      = false;
+        std::string shared_name = "";
 
-    std::string current_key;
-    std::string current_shared_name;
-    std::string current_comp_name;
-    std::string current_comp_stat_name;
-    std::string current_subcomp_name;
-    std::string current_subcomp_type;
-    std::string current_grp_stat_name;
-    std::string link_name;
-    std::string left_comp;
-    std::string left_port;
-    std::string left_latency;
-    std::string right_comp;
-    std::string right_port;
-    std::string right_latency;
-    bool        no_cut   = false;
-    bool        nonlocal = false;
-    uint32_t    current_comp_rank;
-    int         subcomp_slot = -1;
-    int         right_rank   = -1;
-    int         right_thread = -1;
+        void reset()
+        {
+            name = "";
+            params.clear();
+            shared      = false;
+            shared_name = "";
+        }
+    };
 
-    // FSM values
-    bool foundComponents            = false;
-    bool in_shared_params_object    = false;
-    bool in_comp_params             = false;
-    bool in_comp_stats              = false;
-    bool in_comp_stats_params       = false;
-    bool in_comp_subcomp            = false;
-    bool in_comp_subsubcomp         = false;
-    bool in_comp_subcomp_params     = false;
-    bool in_grp_stats_output        = false;
-    bool in_grp_stats_output_params = false;
-    bool in_grp_stats_def           = false;
-    bool in_grp_stats_def_params    = false;
-    bool in_grp_stats_comps         = false;
-    bool in_left_link               = false;
-    bool in_right_link              = false;
+    struct JSONShadowLink
+    {
+        std::string        name      = "";
+        bool               nocut     = false;
+        bool               nonlocal  = false;
+        // Left side
+        SST::ComponentId_t leftcomp  = -1;
+        std::string        leftport  = "";
+        std::string        leftlat   = "";
+        // Right side if not nonlocal
+        SST::ComponentId_t rightcomp = -1;
+        std::string        rightport = "";
+        std::string        rightlat  = "";
+        // Right side if nonlocal
+        int                rank      = -1;
+        int                thread    = -1;
 
-    int array_depth = 0;
+        void reset()
+        {
+            name      = "";
+            nocut     = false;
+            nonlocal  = false;
+            leftcomp  = -1;
+            leftport  = "";
+            leftlat   = "";
+            rightcomp = -1;
+            rightport = "";
+            rightlat  = "";
+            rank      = -1;
+            thread    = -1;
+        }
+    };
 
-    ComponentId_t    current_comp_id;
-    ConfigStatGroup* current_stat_group;
-    ConfigComponent* current_component;
-    ConfigComponent* current_sub_component;
-    Params           current_stat_params;
+    struct JSONShadowPortModule
+    {
+        std::string              port = "";
+        std::string              type = "";
+        Params                   params;
+        uint8_t                  stat_load_level = STATISTICLOADLEVELUNINITIALIZED;
+        std::vector<std::string> shared_param_sets;
+        ConfigPortModule*        pm = nullptr;
 
-    // internal parsing methods
-    std::string   getCurrentPath() const;
-    void          processValue(const json& value);
-    ComponentId_t findComponentIdByName(const std::string& Name, bool& success);
+        void reset()
+        {
+            port = "";
+            type = "";
+            params.clear();
+            stat_load_level = STATISTICLOADLEVELUNINITIALIZED;
+            shared_param_sets.clear();
+            pm = nullptr;
+        }
+    };
+
+    ConfigGraph* graph_;
+
+    State                                   current_state_ = State::Entry;
+    std::vector<JSONShadowComponent>        shadow_component_stack_;
+    JSONShadowStatistic                     shadow_statistic_;
+    JSONShadowLink                          shadow_link_;
+    JSONShadowPortModule                    shadow_port_module_;
+    ConfigStatGroup*                        current_stat_group_;
+    std::map<std::string, ConfigStatistic*> current_shared_stats_;
+
+    std::map<std::string, std::string> program_options_;
+
+    std::string current_key_;
+    std::string current_shared_name_;
+    RankInfo    rank_;
+
+    bool found_components_ = false; // components must be declared before links
+
+    ComponentId_t findComponentIdByName(const std::string& name, bool& success);
 };
 
 class SSTJSONModelDefinition : public SSTModelDescription
@@ -156,12 +192,11 @@ public:
     ConfigGraph* createConfigGraph() override;
 
 protected:
-    std::string   scriptName;
-    Output*       output;
-    Config*       config;
-    ConfigGraph*  graph;
-    ComponentId_t nextComponentId;
-    double        start_time;
+    std::string  script_name_;
+    Output*      output_;
+    Config*      config_;
+    ConfigGraph* graph_;
+    double       start_time_;
 };
 
 } // namespace SST::Core

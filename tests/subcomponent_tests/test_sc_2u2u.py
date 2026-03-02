@@ -35,24 +35,24 @@ loader0.enableAllStatistics()
 
 sub0_0 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)
 
-sub0_0_0 = sub0_0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender",0);
+sub0_0_0 = sub0_0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender",0)
 sub0_0_0.addParam("sendCount", 15)
 sub0_0_0.addParam("verbose", verbose)
 sub0_0_0.enableAllStatistics()
 
-sub0_0_1 = sub0_0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender",1);
+sub0_0_1 = sub0_0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender",1)
 sub0_0_1.addParam("sendCount", 15)
 sub0_0_1.addParam("verbose", verbose)
 sub0_0_1.enableAllStatistics()
 
 sub0_1 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",1)
 
-sub0_1_0 = sub0_1.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender_alias",0);
+sub0_1_0 = sub0_1.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender_alias",0)
 sub0_1_0.addParam("sendCount", 15)
 sub0_1_0.addParam("verbose", verbose)
 sub0_1_0.enableAllStatistics()
 
-sub0_1_1 = sub0_1.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender_alias",1);
+sub0_1_1 = sub0_1.setSubComponent("mySubCompSlot","coreTestElement.SubCompSender_alias",1)
 sub0_1_1.addParam("sendCount", 15)
 sub0_1_1.addParam("verbose", verbose)
 sub0_1_1.enableAllStatistics()

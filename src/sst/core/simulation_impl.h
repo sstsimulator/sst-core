@@ -51,7 +51,6 @@ namespace SST {
 void SST_Exit(int exit_code);
 
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
-#define STATALLFLAG            "--ALLSTATS--"
 
 class Activity;
 class CheckpointAction;
