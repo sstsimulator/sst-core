@@ -32,7 +32,7 @@ SSTConfigSaxHandler::findComponentIdByName(const std::string& name, bool& succes
 
     if ( name.length() == 0 ) {
         error_str_ = "Error: Name given to findComponentIdByName is null";
-        success  = false;
+        success    = false;
         return id;
     }
 
@@ -40,7 +40,7 @@ SSTConfigSaxHandler::findComponentIdByName(const std::string& name, bool& succes
     comp = graph_->findComponentByName(name);
     if ( comp == nullptr ) {
         error_str_ = "Error: Unable to locate component by name: " + name;
-        success  = false;
+        success    = false;
         return id;
     }
 
@@ -123,7 +123,7 @@ SSTConfigSaxHandler::boolean(bool val)
         }
         else {
             error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in Link '" + shadow_link_.name + "'";
+                         "' in Link '" + shadow_link_.name + "'";
             return false;
         }
         break;
@@ -137,8 +137,8 @@ SSTConfigSaxHandler::boolean(bool val)
         }
         else {
             error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'statistics' belonging to '" + shadow_component_stack_.front().name +
-                       "' or one of its subcomponents";
+                         "' in 'statistics' belonging to '" + shadow_component_stack_.front().name +
+                         "' or one of its subcomponents";
             return false;
         }
         break;
@@ -150,13 +150,13 @@ SSTConfigSaxHandler::boolean(bool val)
         }
         else {
             error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
     default:
         error_str_ = "Parsed a boolean '" + std::to_string(val) + "'in an unexpected parser state " +
-                   StateString[(int)current_state_] + ". Last key was: " + current_key_;
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
         return false;
     }
     return true;
@@ -172,7 +172,7 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in statistic_options object.";
+                         "' in statistic_options object.";
             return false;
         }
         break;
@@ -185,7 +185,7 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in partition object.";
+                         "' in partition object.";
             return false;
         }
         break;
@@ -195,7 +195,7 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -206,7 +206,7 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -216,7 +216,7 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -229,13 +229,13 @@ SSTConfigSaxHandler::number_integer(json::number_integer_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in right side of link '" + shadow_link_.name + "'.";
+                         "' in right side of link '" + shadow_link_.name + "'.";
             return false;
         }
         break;
     default:
         error_str_ = "Parsed an integer '" + std::to_string(val) + "' in an unexpected parser state " +
-                   StateString[(int)current_state_] + ". Last key was: " + current_key_;
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
         return false;
     }
     return true;
@@ -251,7 +251,7 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in statistic_options object.";
+                         "' in statistic_options object.";
             return false;
         }
         break;
@@ -264,7 +264,7 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in partition object.";
+                         "' in partition object.";
             return false;
         }
         break;
@@ -274,7 +274,7 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -285,7 +285,7 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -295,7 +295,7 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
             return false;
         }
         break;
@@ -308,13 +308,13 @@ SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
         }
         else {
             error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
-                       "' in right side of link '" + shadow_link_.name + "'.";
+                         "' in right side of link '" + shadow_link_.name + "'.";
             return false;
         }
         break;
     default:
         error_str_ = "Parsed an integer '" + std::to_string(val) + "' in an unexpected parser state " +
-                   StateString[(int)current_state_] + ". Last key was: " + current_key_;
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
         return false;
     }
     return true;
@@ -355,7 +355,7 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'statistics_options' object. Expected key 'statistic_output'.";
+                         "' in 'statistics_options' object. Expected key 'statistic_output'.";
             return false;
         }
         break;
@@ -379,8 +379,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'component' object with name (if already parsed): '" +
-                       shadow_component_stack_.back().name + "'. Expected key 'name' or 'type'.";
+                         "' in 'component' object with name (if already parsed): '" +
+                         shadow_component_stack_.back().name + "'. Expected key 'name' or 'type'.";
             return false;
         }
         break;
@@ -393,8 +393,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'subcomponent' object in component '" + shadow_component_stack_[0].name +
-                       "'. Expected key 'slot_name' or 'type'.";
+                         "' in 'subcomponent' object in component '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'slot_name' or 'type'.";
             return false;
         }
         break;
@@ -407,8 +407,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'port_module' object in component '" + shadow_component_stack_[0].name +
-                       "'. Expected key 'port' or 'type'.";
+                         "' in 'port_module' object in component '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'port' or 'type'.";
             return false;
         }
         break;
@@ -437,8 +437,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name +
-                       "'. Expected key 'name' or 'shared_name'.";
+                         "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'name' or 'shared_name'.";
             return false;
         }
         break;
@@ -448,7 +448,7 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'statistics_group' object. Expected key 'name'.";
+                         "' in 'statistics_group' object. Expected key 'name'.";
         }
         break;
     case State::Comp_Stat_Params:
@@ -466,8 +466,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in 'link' object. Link name is (may be blank if not parsed yet): '" + shadow_link_.name +
-                       "'. Expected key 'name'.";
+                         "' in 'link' object. Link name is (may be blank if not parsed yet): '" + shadow_link_.name +
+                         "'. Expected key 'name'.";
             return false;
         }
         break;
@@ -477,8 +477,8 @@ SSTConfigSaxHandler::string(std::string& val)
             shadow_link_.leftcomp = findComponentIdByName(val, success);
             if ( !success ) {
                 error_str_ = "Error: Unable to locate component ID for component '" + val + "' in left side of link '" +
-                           shadow_link_.name +
-                           "'. Ensure components are declared prior to link instantiation in your input file.";
+                             shadow_link_.name +
+                             "'. Ensure components are declared prior to link instantiation in your input file.";
                 return false;
             }
         }
@@ -490,8 +490,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in left side of link named '" + shadow_link_.name +
-                       "'. Expected key 'port', 'latency', or 'component'.";
+                         "' in left side of link named '" + shadow_link_.name +
+                         "'. Expected key 'port', 'latency', or 'component'.";
             return false;
         }
         break;
@@ -500,9 +500,9 @@ SSTConfigSaxHandler::string(std::string& val)
             bool success;
             shadow_link_.rightcomp = findComponentIdByName(val, success);
             if ( !success ) {
-                error_str_ = "Error: Unable to locate component ID for component '" + val + "' in right side of link '" +
-                           shadow_link_.name +
-                           "'. Ensure components are declared prior to link instantiation in your input file.";
+                error_str_ = "Error: Unable to locate component ID for component '" + val +
+                             "' in right side of link '" + shadow_link_.name +
+                             "'. Ensure components are declared prior to link instantiation in your input file.";
                 return false;
             }
         }
@@ -514,8 +514,8 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in right side of link named '" + shadow_link_.name +
-                       "'. Expected key 'port', 'latency', 'component'.";
+                         "' in right side of link named '" + shadow_link_.name +
+                         "'. Expected key 'port', 'latency', 'component'.";
             return false;
         }
         break;
@@ -532,7 +532,7 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in statistics_group. Expected key 'name' or 'frequency'.";
+                         "' in statistics_group. Expected key 'name' or 'frequency'.";
             return false;
         }
         break;
@@ -544,7 +544,7 @@ SSTConfigSaxHandler::string(std::string& val)
         }
         else {
             error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
-                       "' in statistics_group output object. Expected key 'type'.";
+                         "' in statistics_group output object. Expected key 'type'.";
             return false;
         }
         break;
@@ -556,9 +556,10 @@ SSTConfigSaxHandler::string(std::string& val)
         bool success = false;
         current_stat_group_->addComponent(findComponentIdByName(val, success));
         if ( !success ) {
-            error_str_ = "Error: Unable to locate component ID for component '" + val +
-                       "' in statistics group component list for group " + current_stat_group_->name +
-                       ". Ensure components are declared prior to adding them to a statistic group in your input file.";
+            error_str_ =
+                "Error: Unable to locate component ID for component '" + val +
+                "' in statistics group component list for group " + current_stat_group_->name +
+                ". Ensure components are declared prior to adding them to a statistic group in your input file.";
             return false;
         }
         break;
@@ -568,8 +569,8 @@ SSTConfigSaxHandler::string(std::string& val)
         break;
     default:
         error_str_ = "Error: Parser encountered a string token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Key/value pair is '" +
-                   current_key_ + "'/'" + val + "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Key/value pair is '" +
+                     current_key_ + "'/'" + val + "'.";
         return false;
     }
     return true;
@@ -630,10 +631,11 @@ SSTConfigSaxHandler::start_object([[maybe_unused]] std::size_t elements)
     case State::SubComp_Params_key: // Parse params
         // Assert that component/subcomponent is constructed
         if ( shadow_component_stack_.back().comp == nullptr ) {
-            error_str_ = "Error: Encountered new (sub)component section before (sub)component was constructed. Ensure "
-                       "that subcomponent required keys (name, type, slot_name,  etc.) are listed first in the object "
-                       "before other keys. Component tree name is (if already parsed) '" +
-                       shadow_component_stack_[0].name + "'.";
+            error_str_ =
+                "Error: Encountered new (sub)component section before (sub)component was constructed. Ensure "
+                "that subcomponent required keys (name, type, slot_name,  etc.) are listed first in the object "
+                "before other keys. Component tree name is (if already parsed) '" +
+                shadow_component_stack_[0].name + "'.";
             return false;
         }
         break;
@@ -642,8 +644,8 @@ SSTConfigSaxHandler::start_object([[maybe_unused]] std::size_t elements)
         break;
     default:
         error_str_ = "Error: Parser encountered a '{' token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
-                   "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
         return false;
     }
     current_state_ = NextStateObjOrArray[(int)current_state_];
@@ -705,7 +707,7 @@ SSTConfigSaxHandler::end_object()
                     ConfigStatistic* cs = shadow_component_stack_.back().comp->createStatistic();
                     if ( cs == nullptr ) {
                         error_str_ = "Error: Failed to create shared statistic '" + shadow_statistic_.shared_name +
-                                   "' on '" + shadow_component_stack_.back().name + "'.";
+                                     "' on '" + shadow_component_stack_.back().name + "'.";
                         return false;
                     }
                     cs->params.insert(shadow_statistic_.params);
@@ -718,8 +720,8 @@ SSTConfigSaxHandler::end_object()
                 if ( !shadow_component_stack_.back().comp->reuseStatistic(
                          shadow_statistic_.name, cs_iter->second->id) ) {
                     error_str_ = "Error: Attempting to link statistic '" + shadow_statistic_.name + "' to '" +
-                               shadow_statistic_.shared_name + "' in component '" +
-                               shadow_component_stack_.front().name + "' but unable to complete the linking.";
+                                 shadow_statistic_.shared_name + "' in component '" +
+                                 shadow_component_stack_.front().name + "' but unable to complete the linking.";
                     return false;
                 }
             }
@@ -774,8 +776,8 @@ SSTConfigSaxHandler::end_object()
     }
     default:
         error_str_ = "Error: Parser encountered a '}' token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
-                   "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
         return false;
     }
     current_state_ = ParentState[(int)current_state_];
@@ -792,15 +794,16 @@ SSTConfigSaxHandler::start_array([[maybe_unused]] std::size_t elements)
     case State::SubCompArray_key:
         if ( shadow_component_stack_.back().comp == nullptr ) {
             error_str_ = "Error: Encountered (sub)component's subcomponents array before the 'type' and 'name' keys in "
-                       "component '" +
-                       shadow_component_stack_.back().name + "'";
+                         "component '" +
+                         shadow_component_stack_.back().name + "'";
             return false;
         }
         break;
     case State::LinkArray_key:
         if ( !found_components_ ) {
-            error_str_ = "Error: Encountered 'links' section before 'components' section. Put the 'links' section after "
-                       "'components' in your input file";
+            error_str_ =
+                "Error: Encountered 'links' section before 'components' section. Put the 'links' section after "
+                "'components' in your input file";
             return false;
         }
         break;
@@ -817,8 +820,8 @@ SSTConfigSaxHandler::start_array([[maybe_unused]] std::size_t elements)
         break;
     default:
         error_str_ = "Error: Parser encountered a '[' token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
-                   "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
         return false;
     }
     current_state_ = NextStateObjOrArray[(int)current_state_];
@@ -862,8 +865,8 @@ SSTConfigSaxHandler::end_array()
         break;
     default:
         error_str_ = "Error: Parser encountered a ']' token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
-                   "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
         return false;
     }
     return true;
@@ -912,8 +915,8 @@ SSTConfigSaxHandler::key(std::string& val)
         }
         else { // Error: Unexpected key
             error_str_ = "Error: Encountered unexpected key '" + val +
-                       "' in state Root. Expected keys are 'program_options', 'shared_params', 'statistics_options', "
-                       "'statistics_group', 'components', or 'links'.\n";
+                         "' in state Root. Expected keys are 'program_options', 'shared_params', 'statistics_options', "
+                         "'statistics_group', 'components', or 'links'.\n";
             return false;
         }
         break;
@@ -936,9 +939,10 @@ SSTConfigSaxHandler::key(std::string& val)
         break;
     case State::StatGroup:
         if ( !current_stat_group_ && val != "name" ) {
-            error_str_ = "Error: First key/value pair in a statistics_group object must be the group name. Expected key "
-                       "'name' and got '" +
-                       val + "'";
+            error_str_ =
+                "Error: First key/value pair in a statistics_group object must be the group name. Expected key "
+                "'name' and got '" +
+                val + "'";
             return false;
         }
         if ( val == "output" ) {
@@ -982,7 +986,7 @@ SSTConfigSaxHandler::key(std::string& val)
                                   // type & name are encountered
             if ( shadow_component_stack_.back().comp == nullptr ) {
                 error_str_ = "Error: Encountered key '" + val + "' before the 'type' and 'name' keys in component '" +
-                           shadow_component_stack_.back().name + "'.";
+                             shadow_component_stack_.back().name + "'.";
                 return false;
             }
         }
@@ -1058,8 +1062,8 @@ SSTConfigSaxHandler::key(std::string& val)
         break;
     default:
         error_str_ = "Error: Parser encountered a key token in state '" + StateString[(int)current_state_] +
-                   "'. This case is not handled and may be an error in the JSON file. Key is '" + val +
-                   "' and last valid key was '" + current_key_ + "'.";
+                     "'. This case is not handled and may be an error in the JSON file. Key is '" + val +
+                     "' and last valid key was '" + current_key_ + "'.";
         return false;
     }
     current_key_ = val;
@@ -1075,10 +1079,10 @@ SSTConfigSaxHandler::constructSubComponent()
 {
     if ( shadow_component_stack_.back().name == "" || shadow_component_stack_.back().type == "" ) {
         error_str_ = "Error: Unable to construct subcomponent in component '" + shadow_component_stack_[0].name +
-                   "'. Missing name or type ('" + shadow_component_stack_.back().name + "', '" +
-                   shadow_component_stack_.back().type +
-                   "'). The usual cause of this error is failing to place name and type at the beginning of a "
-                   "component object.\n";
+                     "'. Missing name or type ('" + shadow_component_stack_.back().name + "', '" +
+                     shadow_component_stack_.back().type +
+                     "'). The usual cause of this error is failing to place name and type at the beginning of a "
+                     "component object.\n";
         return;
     }
     shadow_component_stack_.back().comp =
@@ -1092,9 +1096,9 @@ SSTConfigSaxHandler::constructPortModule()
 {
     if ( shadow_port_module_.port == "" || shadow_port_module_.type == "" ) {
         error_str_ = "Error: Unable to construct port_module in component tree '" + shadow_component_stack_[0].name +
-                   "'. Missing port or type ('" + shadow_port_module_.port + "', '" + shadow_port_module_.type +
-                   "'). The usual cause of this error is failing to place port and type at the beginning of a "
-                   "port_module object.\n";
+                     "'. Missing port or type ('" + shadow_port_module_.port + "', '" + shadow_port_module_.type +
+                     "'). The usual cause of this error is failing to place port and type at the beginning of a "
+                     "port_module object.\n";
         return;
     }
     size_t pm_id = (shadow_component_stack_.back().comp)
@@ -1112,9 +1116,9 @@ SSTConfigSaxHandler::constructComponent()
 {
     if ( shadow_component_stack_.back().name == "" || shadow_component_stack_.back().type == "" ) {
         error_str_ = "Error: Unable to construct component. Missing name or type ('" +
-                   shadow_component_stack_.back().name + "', '" + shadow_component_stack_.back().type +
-                   "'). The usual cause of this error is failing to place name and type at the beginning of a "
-                   "component object.\n";
+                     shadow_component_stack_.back().name + "', '" + shadow_component_stack_.back().type +
+                     "'). The usual cause of this error is failing to place name and type at the beginning of a "
+                     "component object.\n";
         return;
     }
     ComponentId_t id = graph_->addComponent(shadow_component_stack_.back().name, shadow_component_stack_.back().type);
