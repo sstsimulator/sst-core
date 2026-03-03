@@ -216,12 +216,6 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
     
-    #if 0
-    // Initialize barriers
-    RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
-    exchange_barrier(num_ranks_.thread);
-    process_barrier(num_ranks_.thread);
-    #endif
 }
 
 SimpleDebugger::~SimpleDebugger()
@@ -229,6 +223,49 @@ SimpleDebugger::~SimpleDebugger()
     if ( loggingFile.is_open() ) loggingFile.close();
     if ( replayFile.is_open() ) replayFile.close();
 }
+
+#if 1
+void
+SimpleDebugger::summary()
+{
+    RankInfo info = getRank();
+    RankInfo nRanks = getNumRanks();
+    Simulation_impl* sim_ = Simulation_impl::getSimulation();
+    std::stringstream ss;
+#if 1
+    //std::cout 
+    ss << "** Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
+                  << " (Process " << getppid() << ")";
+    if ( sim_->enter_interactive_ ) {
+        //std::cout 
+        ss << " (Triggered)" << std::endl;
+    }
+    else {
+        //std::cout << 
+        ss << " (Not Triggered)" << std::endl;
+    }
+
+    //std::cout 
+    ss << " -- Component Summary\n";
+    SST::Core::Serialization::ObjectMap* baseObj = getComponentObjectMap();
+    auto&                                vars    = baseObj->getVariables();
+    for ( auto& x : vars ) {
+        if ( x.second->isFundamental() ) {
+            //std::cout 
+            ss << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+        }
+        else {
+            //std::cout 
+            ss << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+        }
+    }
+    //std::cout 
+    ss << std::endl;
+    Output::getDefaultObject().output("%s", ss.str().c_str());
+    #endif
+}
+
+#else
 
 void
 SimpleDebugger::summary()
@@ -263,6 +300,7 @@ SimpleDebugger::summary()
     std::cout << std::endl;
 #endif
 }
+#endif
 
 int
 //SimpleDebugger::execute(const std::string& msg)
@@ -270,14 +308,11 @@ SimpleDebugger::consoleExecute(const std::string& msg)
 {
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
+    current_thread = 0;
+    current_rank = 0;
     printf("\n---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", info.rank, info.thread,
         getCurrentSimCycle());
     printf("%s\n", msg.c_str());
-
-#if 0  // test new structure
-    rankParallelExecute();
-    return DONE;
-#endif
 
     // Create a new ObjectMap
     obj_ = getComponentObjectMap();
@@ -287,6 +322,7 @@ SimpleDebugger::consoleExecute(const std::string& msg)
 
     done     = false;
     retState = DONE;
+
 
     // Select the input source and next command line
     std::string line;
@@ -467,7 +503,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
         // SKK Identify where to execute command (thread/rank)
             if (consoleCommand.first.console()) {
                 // Console command, execute in this thread
-                Output::getDefaultObject().output("Console command\n");
+                //Output::getDefaultObject().output("Console command\n");
                 succeed = consoleCommand.first.exec(tokens);
             } else { 
                 // Thread specific command, execute in target thread
@@ -663,7 +699,7 @@ SimpleDebugger::cmd_info(std::vector<std::string>& tokens)
         for ( current_thread = 0; current_thread < nRanks.thread; current_thread++ ) {
             handleCommand();
         }
-        current_thread == orig_thread;
+        current_thread = orig_thread;
 
         // Print info for other ranks
         std::string cmd = "threadInfoAll";
@@ -742,10 +778,10 @@ SimpleDebugger::cmd_thread(std::vector<std::string>& tokens)
     // Set current thread
     if ( threadID != current_thread ) {
         current_thread = threadID;  
-        
-        // Send to other ranks
-        // Loop like sendDone. Can I share this somehow?
-        // change send DONE to sendCommandAll and just add cmd string?
+        printf("---- Rank%d:Thread%d: Entering interactive mode\n", current_rank, current_thread);
+        // SKK May want to change this to list trigger like summary?
+        // May also need to do something to update the listings
+        // and object map for the first time through
         //std::stringstream ss << tokens[0] << " " << tokens[1];
         //sendCommandAll(ss.str());
     }
@@ -796,6 +832,7 @@ SimpleDebugger::cmd_rank(std::vector<std::string>& tokens)
     // Set current thread
     if ( rankID != current_rank ) {
         current_rank = rankID;
+        printf("---- Rank%d:Thread%d: Entering interactive mode\n", current_rank, current_thread);
         // May also need to do something to update the listings
         // and object map for the first time through
         //std::stringstream ss << tokens[0] << " " << tokens[1];
@@ -824,36 +861,7 @@ SimpleDebugger::cmd_pwd(std::vector<std::string>& UNUSED(tokens))
 }
 
 // ls: list current directory
-#if 0
-bool
-SimpleDebugger::om_ls(std::string& tokens) {
-    //tokenize string
 
-
-}
-
-bool
-SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens), std::string& cmd)
-{
-    std::cout << "SKK: cmd_ls\n";
-    
-    // if serial ls(tokens)
-    // if thread
-    // if rank
-    auto& vars = obj_->getVariables();
-    for ( auto& x : vars ) {
-        if ( x.second->isFundamental() ) {
-            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
-        }
-        else {
-            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
-        }
-    }
-    return true;
-
-}
-
-#else
 
 bool
 SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
@@ -869,7 +877,6 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     }
     return true;
 }
-#endif
 
 // callback for autofill of object string (similar to ls)
 void
@@ -1808,9 +1815,7 @@ SimpleDebugger::cmd_setConfirm(std::vector<std::string>& tokens)
 }
 
 bool
-SimpleDebugger::clear_watchlist()
-{
-
+SimpleDebugger::query_clear_watchlist() {
     if ( confirm_ ) {
         std::string line;
         std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
@@ -1820,8 +1825,16 @@ SimpleDebugger::clear_watchlist()
 
         if ( tokens.size() == 0 ) return false;
         if ( !(tokens[0] == "yes") ) return false;
+        return true;
     }
+    else {
+        return false;
+    }
+}
 
+bool
+SimpleDebugger::clear_watchlist()
+{
     // Remove watchpoints
     // Does this delete the objects correctly?
     for ( std::pair<WatchPoint*, BaseComponent*>& wp : watch_points_ ) {
@@ -1843,8 +1856,11 @@ SimpleDebugger::cmd_unwatch(std::vector<std::string>& tokens)
 {
     // If no arguments, unwatch all watchpoints
     if ( tokens.size() == 1 ) {
-        clear_watchlist();
-        std::cout << "Watchlist cleared\n";
+        if (query_clear_watchlist()) {
+            clear_watchlist();
+            std::cout << "Watchlist cleared\n";
+            return true;
+        }
         return true;
     }
 
@@ -2083,7 +2099,30 @@ bool
 SimpleDebugger::cmd_exit(std::vector<std::string>& UNUSED(tokens))
 {
     // Remove all watchpoints
+#if 1
+    RankInfo nRanks = getNumRanks();
+    bool cleared = query_clear_watchlist();
+    if (cleared) {
+        // Clear watchlists for rank 0 threads
+        int32_t orig_thread = current_thread;
+        tokens.clear();
+        tokens[0] = "clearWatchlist";
+        for ( current_thread = 0; current_thread < nRanks.thread; current_thread++ ) {
+            handleCommand();
+        }
+        current_thread = orig_thread;
+
+        // Clear watchlists for other ranks
+        std::string cmd = "clearWatchlist";
+
+        for ( int32_t rank_id = 0; rank_id < nRanks.rank; rank_id++ ) {
+            sendCommand(rank_id, 0, cmd);
+        }  
+    }   
+    
+#else
     bool cleared = clear_watchlist();
+#endif
     if ( cleared ) {
         std::cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
@@ -2451,7 +2490,6 @@ CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
 
 bool
 SimpleDebugger::handleCommand()
-//(int32_t rank_id, int32_t thread_id)
 {
 
     RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
@@ -2466,10 +2504,10 @@ SimpleDebugger::handleCommand()
     if (tokens[0] == "done") {
         done = true;
     }
-
-    if (tokens[0] == "threadInfo" || tokens[0] == "threadInfoAll") {
+    //else if (tokens[0] == "threadInfo" || tokens[0] == "threadInfoAll") {
+    else if (tokens[0] == "threadInfo") {
         if (rank_.thread == current_thread) {
-#if 1
+#if 0
             Output::getDefaultObject().output("**HandleCommand tinfo: R%d, T%d\n", rank_.rank, rank_.thread);
             for (const std::string& token : tokens) {
                 Output::getDefaultObject().output("  %s", token.c_str());
@@ -2483,19 +2521,65 @@ SimpleDebugger::handleCommand()
                 cd_name_stack();
             }
             threadInfo();
-            result << "**Worker threadInfo: R" << rank_.rank << ", T" << rank_.thread << "\n";
+            if (tokens[0] == "threadInfoAll") { 
+                // ls top-level dir
+                SST::Core::Serialization::ObjectMap* baseObj = getComponentObjectMap();
+                auto&                                vars    = baseObj->getVariables();
+                for ( auto& x : vars ) {
+                    if ( x.second->isFundamental() ) {
+                        std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+                    }
+                    else {
+                        std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+                    }
+                }
+                std::cout << std::endl;
+            }
+            result << "**Worker " << tokens[0] << ": R" << rank_.rank << ", T" << rank_.thread << "\n";
             
         }  else {
             //Output::getDefaultObject().output("Other threads do nothing\n");
         }
         
     }
-   
+    else if (tokens[0] == "threadInfoAll") { //"summary") {
+        if (rank_.thread == current_thread) {
+            if (obj_ == nullptr) {
+                // Create a new ObjectMap
+                obj_ = getComponentObjectMap();
+                // Descend into the name_stack
+                cd_name_stack();
+            }
+            summary();
+            result << "**Worker summary: R" << rank_.rank << ", T" << rank_.thread << "\n";
+        }
+    }
+    else if (tokens[0] == "clearWatchlist" ) {
+        if (rank_.thread == current_thread) {
+#if 0
+            Output::getDefaultObject().output("**HandleCommand tinfo: R%d, T%d\n", rank_.rank, rank_.thread);
+            for (const std::string& token : tokens) {
+                Output::getDefaultObject().output("  %s", token.c_str());
+            }
+            Output::getDefaultObject().output("\n");
+#endif   
+            if (obj_ == nullptr) {
+                // Create a new ObjectMap
+                obj_ = getComponentObjectMap();
+                // Descend into the name_stack
+                cd_name_stack();
+            }
+            clear_watchlist();
+            result << "**Worker clearWatchlist: R" << rank_.rank << ", T" << rank_.thread << "\n";
+            
+        }
+
+    }
     // If not DONE, process command
     else if (!done) {
         // If I am target thread, handle the incoming command
         if (rank_.thread == current_thread) {
-#if 1
+#if 0
             Output::getDefaultObject().output("**HandleCommand: R%d, T%d\n", rank_.rank, rank_.thread);
             for (const std::string& token : tokens) {
                 Output::getDefaultObject().output("  %s", token.c_str());
@@ -2553,7 +2637,6 @@ SimpleDebugger::sendCommand( int32_t rank_id, int32_t thread_id,  std::string cm
     int position = 0;
     int tag = 0;
     MPI_Status status;
-    //int result_length;
     char* result_buffer;
 
 
@@ -2573,8 +2656,8 @@ SimpleDebugger::sendCommand( int32_t rank_id, int32_t thread_id,  std::string cm
     //Output::getDefaultObject().output("After R0T0 pack: R%d, T%d, position:%d\n", 
     //            rank_id, thread_id, position);
     MPI_Send(cmd_buffer, position, MPI_PACKED, rank_id, tag, MPI_COMM_WORLD);
-    Output::getDefaultObject().output("After R0T0 send: R%d, T%d, position:%d\n", 
-                rank_id, thread_id, position);
+    //Output::getDefaultObject().output("After R0T0 send: R%d, T%d, position:%d\n", 
+    //            rank_id, thread_id, position);
 
     // Receive result string
     // Probe for incoming message to get its length
@@ -2584,7 +2667,7 @@ SimpleDebugger::sendCommand( int32_t rank_id, int32_t thread_id,  std::string cm
     result_buffer = (char*) malloc(buf_size * sizeof(char));
     //Output::getDefaultObject().output("After R0T0 probe: bufsize: %d\n", buf_size);
     MPI_Recv(result_buffer, buf_size, MPI_CHAR, rank_id, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    Output::getDefaultObject().output("Result: %s", result_buffer);
+    //Output::getDefaultObject().output("Result: %s", result_buffer);
 }
 
 void 
@@ -2611,7 +2694,7 @@ SimpleDebugger::receiveCommand() {
     cmd_buffer = (char*) malloc(buf_size * sizeof(char));
     MPI_Recv(cmd_buffer, buf_size, MPI_PACKED, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    Output::getDefaultObject().output("After R1T0 receive\n");
+    //Output::getDefaultObject().output("After R1T0 receive\n");
     // Unpack the rank_id, thread_id, string length, cmd string
     MPI_Unpack(cmd_buffer, buf_size, &position, &rank_id, 1, MPI_INT32_T, MPI_COMM_WORLD);
     MPI_Unpack(cmd_buffer, buf_size, &position, &thread_id, 1, MPI_INT32_T, MPI_COMM_WORLD);
@@ -2640,6 +2723,18 @@ SimpleDebugger::receiveCommand() {
             handleCommand();       
         }
     }
+    else if (tokens[0] == "summary") {
+        for ( current_thread = 0; current_thread < num_ranks_.thread; current_thread++ ) {
+            handleCommand();       
+        }
+    }
+    else if (tokens[0] == "clearWatchlist") {
+        int32_t orig_thread = current_thread;
+        for ( current_thread = 0; current_thread < num_ranks_.thread; current_thread++ ) {
+            handleCommand();
+        }
+        current_thread = orig_thread;
+    }
     // Execute command for target thread
     else {
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
@@ -2667,9 +2762,9 @@ SimpleDebugger::receiveCommand() {
 
 }
 
-#if 0
+#if 1
 void 
-SimpleDebugger::sendCommandAll(std::string cmd) {
+SimpleDebugger::sendAll(std::string cmd) {
     RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
     RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
     char* cmd_buffer;  // SKK Could share buffer
@@ -2725,7 +2820,6 @@ SimpleDebugger::sendDone() {
     int position = 0;
     int tag = 0;
     MPI_Status status;
-    //int result_length;
     char* result_buffer;
 
 
@@ -2736,8 +2830,8 @@ SimpleDebugger::sendDone() {
    
     int32_t thread_id = 0;
     for (uint32_t rank_id = 1; rank_id < num_ranks_.rank; rank_id++ ) {
-        Output::getDefaultObject().output("sendDone: R%d, T%d, bufsize: %d, strlen: %d, cmd: %s\n", 
-                    rank_id, thread_id, buf_size, str_length, cmd.c_str());
+        //Output::getDefaultObject().output("sendDone: R%d, T%d, bufsize: %d, strlen: %d, cmd: %s\n", 
+        //            rank_id, thread_id, buf_size, str_length, cmd.c_str());
         // Pack rank_id, thread_id, cmd str length, and cmd string
         MPI_Pack(&rank_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
         MPI_Pack(&thread_id, 1, MPI_INT32_T, cmd_buffer, buf_size, &position, MPI_COMM_WORLD);
@@ -2762,7 +2856,7 @@ SimpleDebugger::sendDone() {
     } // End for each rank
 }
 
-
+#if 0
 void // ultimately it may return the message buffer size
 SimpleDebugger::packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd) {
 
@@ -2782,12 +2876,10 @@ SimpleDebugger::unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& 
     cmd.store(cmd_buffer[2]);
          
 }
+#endif
 
-
-//void 
-//SimpleDebugger::rankParallelExecute() 
 int
-SimpleDebugger::execute(const std::string& msg)
+SimpleDebugger::execute(const std::string& msg)  // rankParallelExecute
 {
 #ifdef SST_CONFIG_HAVE_MPI
     RankInfo num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
@@ -2798,7 +2890,8 @@ SimpleDebugger::execute(const std::string& msg)
     // -- Rank 0, Thread 0
     // Executes the console and sends commands to other threads/ranks as needed
     if (rank_.rank == 0 && rank_.thread == 0)  { 
-     
+
+        // Enter console to handle commands
         consoleExecute(msg);
         
         // Set done in local rank threads
@@ -2815,10 +2908,6 @@ SimpleDebugger::execute(const std::string& msg)
     else if (rank_.rank !=0 && rank_.thread == 0) { // Other ranks, thread 0
 
         //Output::getDefaultObject().output("**Enter Worker: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
-        //src = 0;
-        //dst = 0;
-        //tag = 0;
-        //while (!quit) {
         while (!done) {
             receiveCommand();
         } // while !done
@@ -2826,14 +2915,15 @@ SimpleDebugger::execute(const std::string& msg)
     // -- Rank i!=0, Thread j!=0
     // All other threads wait for commands
     else { 
-        
-        //while (!quit) {
         while (!done) {
             handleCommand();
         }
         //Output::getDefaultObject().output("**Worker R%d T%d Exit Loop\n", 
         //            rank_.rank, rank_.thread);   
     }
+
+    done = false;
+    // SKK Maybe check shutdown here as well?
 
     return -1; // SKK Fix this later, just return done for now
 

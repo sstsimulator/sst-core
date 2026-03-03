@@ -310,6 +310,7 @@ private:
 
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
+    bool                                                query_clear_watchlist();
     bool                                                clear_watchlist();
     static bool confirm_; // skk = true; // Ask for confirmation to clear watchlist
 
@@ -391,13 +392,14 @@ private:
     //bool handleCommandAll(std::atomic<int32_t>& tid, std::atomic<int32_t>& cmd, std::stringstream& result, 
     //    Core::ThreadSafe::Barrier& exchange_barrier, Core::ThreadSafe::Barrier& process_barrier);
     int packResultBuffer( std::stringstream& result, char** result_buffer);
-    void packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd );
-    void unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid);
+    //void packCommandBuffer( int32_t rank_id, int32_t thread_id, int32_t* cmd_buffer, int32_t cmd );
+    //void unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid);
     //void rankParallelExecute(); 
     int consoleExecute(const std::string& msg);
     void sendCommand( int32_t rank_id, int32_t thread_id,  std::string cmd);
     //void sendCommandAll(std::string cmd);
     void receiveCommand();
+    void sendAll(std::string cmd);
     void sendDone();
     void threadInfo();
 };

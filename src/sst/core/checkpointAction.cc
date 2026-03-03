@@ -257,7 +257,7 @@ CheckpointAction::createCheckpoint(Simulation_impl* sim)
 SimTime_t
 CheckpointAction::check(SimTime_t current_time)
 {
-#if 1
+#if 0
     Simulation_impl* sim = Simulation_impl::getSimulation();
     sim->getSimulationOutput().output(
         "skk:R %d, T %d: checkpointAction.cc: check()\n", rank_.rank, rank_.thread);

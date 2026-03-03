@@ -535,6 +535,7 @@ SyncManager::rankHandleInteractiveConsole()
     out.output("skk:syncmgr:execute: T%d: enter_interactive_mask_=0x%x\n", rank_.thread, ic_mask);
 #endif
     // 2) Print list of threads (in order) and whether triggered
+#if 1
     for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
         if ( rank_.thread == tindex ) {
             if ( rank_.thread == 0 ) std::cout << "\nINTERACTIVE CONSOLE\n";
@@ -546,7 +547,8 @@ SyncManager::rankHandleInteractiveConsole()
             else {
                 std::cout << " (Not Triggered)\n";
             }
-#if 0 // Print component summary? - will be at whatever level was last (maybe print PWD instead?)
+#endif
+#if 1 // Print component summary? - will be at whatever level was last (maybe print PWD instead?)
             if (sim_->interactive_ != nullptr) {
                 sim_->interactive_->summary();
             }
@@ -654,7 +656,7 @@ SyncManager::handleInteractiveConsole()
             else {
                 std::cout << " (Not Triggered)\n";
             }
-#if 0 // Print component summary? - will be at whatever level was last (maybe print PWD instead?)
+#if 1       // Print component summary? - will be at whatever level was last (maybe print PWD instead?)
             if (sim_->interactive_ != nullptr) {
                 sim_->interactive_->summary();
             }
@@ -733,16 +735,26 @@ SyncManager::handleInteractiveConsole()
 void
 SyncManager::partitionInfo() {
     Output& out = sim_->getSimulationOutput();
+    if (rank_.rank == 0 && rank_.thread == 0) {
+        out.output("INTERACTIVE CONSOLE\n");
+    }
     for (uint32_t rindex = 0; rindex < num_ranks_.rank; rindex++ ) {
         for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
             if ( rank_.rank == rindex && rank_.thread == tindex ) {
-                out.output("Rank:%d, Thread:%d (Process %d)", rank_.rank, rank_.thread, getppid());
+                #if 0
+                if (rank_.rank == 0 && rank_.thread == 0) {
+                    out.output("INTERACTIVE CONSOLE\n");
+                }
+                #endif
+                //out.output("Rank:%d, Thread:%d (Process %d)", rank_.rank, rank_.thread, getppid());
                 // Print component summary
                 if ( sim_->interactive_ != nullptr ) {
                     sim_->interactive_->summary();
                 }
             }
+            ic_barrier_.wait();
         } 
+        RankExecBarrier_[0].wait();
     }
 }
 
@@ -771,19 +783,20 @@ SyncManager::testProducerConsumer()
 void
 SyncManager::execute()
 {
-#if 1  // SKK
+#if 1 // SKK
     std::string type = "RANK";
     if (next_sync_type_ == THREAD)
         type = "THREAD";
-#if 1
     Output& out = sim_->getSimulationOutput();
-    out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
-        rank_.rank, rank_.thread, type.c_str());
+    //out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
+    //    rank_.rank, rank_.thread, type.c_str());
 #else 
+    std::string type = "RANK";
+    if (next_sync_type_ == THREAD)
+        type = "THREAD";
     std::cout << "SyncManager::execute: Rank " << rank_.rank 
     << ": Thread " << rank_.thread 
     << ": Type " << type << std::endl;
-#endif
 #endif // SKK  
 
     SST_SYNC_PROFILE_START
@@ -826,14 +839,14 @@ SyncManager::execute()
         }
 #if 1
         // Get interactive, shutdown, and checkpoint flags
-        printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
+        //printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+        //            rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
         getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
         #if 1
         rankSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
         rankSync_->setCkptFlag(generate_ckpt);
-        printf("1: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+        //printf("1: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+        //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
      
         #else
         threadSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
@@ -893,8 +906,8 @@ SyncManager::execute()
 
 #if 1
         rankSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-        printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+        //printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+        //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
 
         // Handle shutdown (all threads/ranks)
          if (enter_shutdown) {
@@ -910,19 +923,20 @@ SyncManager::execute()
             // std::cout << "skk: syncmgr rank: t0: interactive execute\n";
             if (enter_interactive == true) {
                 //if ( sim_->interactive_ != nullptr ) sim_->interactive_->execute(sim_->interactive_msg_);
-                printf("3: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+                //printf("3: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+                //    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
                 partitionInfo();
 
                 #if 1
                 // SKK Test Producer/Consumer
                 //testProducerConsumer();
                 //sim_->interactive_->rankParallelExecute();
+                //Output::getDefaultObject().output("R%d, T%d: Before execute \n", rank_.rank, rank_.thread);
                 sim_->interactive_->execute(sim_->interactive_msg_);
                 
                 //RankExecBarrier_[0].wait();
-                //Output::getDefaultObject().output("After execute barrier\n");
-                sim_->setEndSim();
+                //Output::getDefaultObject().output("R%d, T%d: After execute \n", rank_.rank, rank_.thread);
+                //sim_->setEndSim();
                 #else
                 //if (rank_.rank == 0) {  // SKK Temporary to test passing of watchpoint triggers
                 if (rank_.rank == 0 && rank_.thread == 0) { 
