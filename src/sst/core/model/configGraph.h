@@ -166,7 +166,7 @@ public:
     ConfigComponent*       findComponentByName(const std::string& name);
     const ConfigComponent* findComponent(ComponentId_t) const;
 
-    ConfigStatistic* findStatistic(StatisticId_t) const;
+    ConfigStatistic* findStatistic(ComponentId_t, StatisticId_t) const;
 
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() { return links_; }

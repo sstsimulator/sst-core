@@ -457,10 +457,9 @@ ConfigGraph::findComponentByName(const std::string& name)
 }
 
 ConfigStatistic*
-ConfigGraph::findStatistic(StatisticId_t id) const
+ConfigGraph::findStatistic(ComponentId_t comp_id, StatisticId_t stat_id) const
 {
-    ComponentId_t cfg_id = CONFIG_COMPONENT_ID_MASK(id);
-    return findComponent(cfg_id)->findStatistic(id);
+    return findComponent(comp_id)->findStatistic(stat_id);
 }
 
 

@@ -1504,9 +1504,9 @@ SST::Core::pythonToCppParams(PyObject* statParamDict)
 }
 
 PyObject*
-SST::Core::buildStatisticObject(StatisticId_t id)
+SST::Core::buildStatisticObject(ComponentId_t comp_id, StatisticId_t stat_id)
 {
-    PyObject* argList = Py_BuildValue("(k)", id);
+    PyObject* argList = Py_BuildValue("kk", comp_id, stat_id);
     PyObject* statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
     Py_DECREF(argList);
     return statObj;
@@ -1517,7 +1517,7 @@ SST::Core::buildEnabledStatistic(
     ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children)
 {
     ConfigStatistic* cs = cc->enableStatistic(statName, pythonToCppParams(statParamDict), apply_to_children);
-    return buildStatisticObject(cs->id);
+    return buildStatisticObject(cc->id, cs->id);
 }
 
 PyObject*
@@ -1534,7 +1534,7 @@ SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObj
         PyObject*        pyname     = PyObject_Str(pylistitem);
         std::string      name       = SST_ConvertToCppString(pyname);
         ConfigStatistic* cs         = cc->enableStatistic(name, params, apply_to_children);
-        PyObject*        statObj    = buildStatisticObject(cs->id);
+        PyObject*        statObj    = buildStatisticObject(cc->id, cs->id);
         PyList_SetItem(statList, x, statObj);
         Py_XDECREF(pyname);
     }

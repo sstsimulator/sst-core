@@ -201,8 +201,10 @@ ConfigComponent::getNextSubComponentID()
 StatisticId_t
 ConfigComponent::getNextStatisticID()
 {
-    uint16_t statId = nextStatID++;
-    return STATISTIC_ID_CREATE(id, statId);
+    if ( getParent() ) {
+        return getParent()->getNextStatisticID();
+    }
+    return next_stat_id++;
 }
 
 ConfigComponent*
@@ -267,16 +269,14 @@ ConfigComponent::addParameter(const std::string& key, const std::string& value, 
 ConfigStatistic*
 ConfigComponent::createStatistic()
 {
-    StatisticId_t stat_id = getNextStatisticID();
-
-    auto*            parent = getParent();
-    ConfigStatistic* cs     = nullptr;
+    auto* parent = getParent();
     if ( parent ) {
-        cs = parent->insertStatistic(stat_id);
+        return parent->createStatistic();
     }
-    else {
-        cs = &statistics_[stat_id];
-    }
+
+    StatisticId_t    stat_id = getNextStatisticID();
+    ConfigStatistic* cs      = &statistics_[stat_id];
+
     cs->id = stat_id;
     return cs;
 }
@@ -331,9 +331,9 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
 }
 
 bool
-ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t sid)
+ConfigComponent::reuseStatistic(const std::string& statistic_name, StatisticId_t sid)
 {
-    if ( statisticName == STATALLFLAG ) {
+    if ( statistic_name == STATALLFLAG ) {
         // We cannot use reuseStatistic with STATALLFLAG
         Output::getDefaultObject().fatal(CALL_INFO, 1, "Cannot reuse a Statistic with STATALLFLAG as parameter");
         return false;
@@ -344,10 +344,10 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         comp = comp->getParent();
     }
 
-    if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName) ) {
+    if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statistic_name) ) {
         Output::getDefaultObject().fatal(CALL_INFO, 1,
             "Failed to create statistic '%s' on '%s' of type '%s' - this is not a valid statistic\n",
-            statisticName.c_str(), name.c_str(), type.c_str());
+            statistic_name.c_str(), name.c_str(), type.c_str());
         return false;
     }
 
@@ -357,7 +357,7 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         return false;
     }
     else {
-        enabledStatNames[statisticName] = sid;
+        enabledStatNames[statistic_name] = sid;
         return true;
     }
 }

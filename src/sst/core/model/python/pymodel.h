@@ -178,7 +178,7 @@ private:
 
 std::map<std::string, std::string> generateStatisticParameters(PyObject* statParamDict);
 SST::Params                        pythonToCppParams(PyObject* statParamDict);
-PyObject*                          buildStatisticObject(StatisticId_t id);
+PyObject*                          buildStatisticObject(ComponentId_t comp_id, StatisticId_t stat_id);
 PyObject*                          buildEnabledStatistic(
                              ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children);
 PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict, bool apply_to_children);

@@ -104,9 +104,9 @@ public:
 
     std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
-    uint16_t nextSubID;  /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
-    uint16_t nextStatID; /*!< Next statID to use for children */
-    bool     visited;    /*! Used when traversing graph to indicate component was visited already */
+    uint16_t nextSubID;        /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
+    uint64_t next_stat_id = 1; /*!< Next statID to use */
+    bool     visited;          /*! Used when traversing graph to indicate component was visited already */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
@@ -202,7 +202,7 @@ public:
         SST_SER(subComponents);
         SST_SER(coords);
         SST_SER(nextSubID);
-        SST_SER(nextStatID);
+        SST_SER(next_stat_id);
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -230,8 +230,7 @@ private:
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
         enabledAllStats(false),
-        nextSubID(1),
-        nextStatID(1)
+        nextSubID(1)
     {
         coords.resize(3, 0.0);
     }
@@ -247,8 +246,7 @@ private:
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
         enabledAllStats(false),
-        nextSubID(parent_subid),
-        nextStatID(parent_subid)
+        nextSubID(parent_subid)
     {
         coords.resize(3, 0.0);
     }

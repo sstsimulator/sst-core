@@ -31,10 +31,12 @@ struct PyStatistic;
 
 struct PyStatistic
 {
-    StatisticId_t id;
+    ComponentId_t comp_id;
+    StatisticId_t stat_id;
 
-    explicit PyStatistic(StatisticId_t id) :
-        id(id)
+    explicit PyStatistic(ComponentId_t cid, StatisticId_t sid) :
+        comp_id(cid),
+        stat_id(sid)
     {}
     virtual ~PyStatistic() {}
     ConfigStatistic* getStat();

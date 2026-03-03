@@ -37,21 +37,26 @@ extern "C" {
 StatisticId_t
 PyStatistic::getID()
 {
-    return id;
+    return stat_id;
 }
 
 ConfigStatistic*
 PyStatistic::getStat()
 {
-    return gModel->getGraph()->findStatistic(id);
+    // ComponentId_t cid = CONFIG_COMPONENT_ID_MASK(stat_id);
+    return gModel->getGraph()->findStatistic(comp_id, stat_id);
 }
 
 int
 PyStatistic::compare(PyStatistic* other)
 {
-    if ( id < other->id )
+    if ( comp_id < other->comp_id )
         return -1;
-    else if ( id > other->id )
+    else if ( comp_id > other->comp_id )
+        return 1;
+    else if ( stat_id < other->stat_id )
+        return -1;
+    else if ( stat_id > other->stat_id )
         return 1;
     else
         return 0;
@@ -60,14 +65,12 @@ PyStatistic::compare(PyStatistic* other)
 static int
 statInit(StatisticPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 {
-    StatisticId_t id = 0;
-    if ( !PyArg_ParseTuple(args, "k", &id) ) return -1;
+    ComponentId_t sid = 0;
+    StatisticId_t cid = 0;
+    if ( !PyArg_ParseTuple(args, "kk", &cid, &sid) ) return -1;
 
-    PyStatistic* obj = new PyStatistic(id);
+    PyStatistic* obj = new PyStatistic(cid, sid);
     self->obj        = obj;
-
-    // gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n",
-    // getStat((PyObject*)self)->name.c_str());
 
     return 0;
 }
