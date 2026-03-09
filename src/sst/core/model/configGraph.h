@@ -211,6 +211,7 @@ public:
         SST_SER(cpt_minPart);
         SST_SER(cpt_minPartTC);
         SST_SER(cpt_max_event_id);
+        SST_SER(cpt_remap_partitions);
 
         SST_SER(*(cpt_libnames.get()));
         SST_SER(*(cpt_shared_objects.get()));
@@ -225,7 +226,8 @@ public:
     int           cpt_currentPriority = 0;
     SimTime_t     cpt_minPart         = std::numeric_limits<SimTime_t>::max();
     TimeConverter cpt_minPartTC;
-    uint64_t      cpt_max_event_id = 0;
+    uint64_t      cpt_max_event_id     = 0;
+    bool          cpt_remap_partitions = false;
 
     std::shared_ptr<std::set<std::string>> cpt_libnames       = std::make_shared<std::set<std::string>>();
     std::shared_ptr<std::vector<char>>     cpt_shared_objects = std::make_shared<std::vector<char>>();

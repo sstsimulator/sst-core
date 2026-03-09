@@ -33,6 +33,8 @@
 
 namespace SST {
 
+bool Link::is_restart_same_parallelism = false;
+
 void
 SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
     serializer& ser, uintptr_t delivery_info, ActivityQueue* queue)
@@ -270,8 +272,9 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             if ( pair_restart_rank.rank == RankInfo::UNASSIGNED ) pair_restart_rank = pair_rank;
         }
 
-        bool is_restart_sync = (my_restart_rank != pair_restart_rank);
-
+        // Need to know if this link is a sync link or not.  We can only do this if the restart uses the exact
+        // rank/thread counts as the checkpoint.  This info is stored in Link::is_restart_same_parallelism
+        bool is_restart_sync = (Link::is_restart_same_parallelism && my_restart_rank != pair_restart_rank);
 
         /*
           Create or get link from tracker

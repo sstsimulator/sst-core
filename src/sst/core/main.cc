@@ -518,13 +518,24 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     if ( restart ) {
 
         // Finish parsing checkpoint for restart
-        sim->restart();
+        sim->restart(info.graph);
 
         barrier.wait();
 
         if ( info.myRank.thread == 0 ) {
             sim->exchangeLinkInfo();
         }
+
+        barrier.wait();
+
+        // Need to detect the sync intervals
+        if ( info.myRank.thread == 0 ) {
+            sim->findRankSyncInterval();
+        }
+
+        barrier.wait();
+
+        sim->findThreadSyncInterval();
 
         barrier.wait();
 

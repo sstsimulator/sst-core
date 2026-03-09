@@ -218,6 +218,8 @@ public:
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
+    void findRankSyncInterval();
+    void findThreadSyncInterval();
 
     /** Setup external control actions (forced stops, signal handling */
     void setupSimActions();
@@ -416,7 +418,19 @@ public:
      */
     void checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_filename,
         const std::string& registry_filename, const std::string& globals_filename);
-    void restart();
+    void restart(ConfigGraph* graph);
+
+    void discoverRemoteLinks();
+
+    /**** Functions/variables needed for discoverRemoteLinks() ****/
+    Core::ThreadSafe::BoundedQueue<std::vector<std::pair<LinkId_t, RankInfo>>*>  local_discover_queue;
+    Core::ThreadSafe::BoundedQueue<std::vector<std::pair<LinkId_t, RankInfo>>*>* remote_discover_queue;
+    std::vector<std::pair<LinkId_t, RankInfo>>*                                  xfer_vec = nullptr;
+
+    void discoverRemoteLinks_move_data(
+        std::vector<std::pair<LinkId_t, RankInfo>>& send_vec, std::vector<std::pair<LinkId_t, RankInfo>>& recv_vec);
+
+    /**************************************************************/
 
     /**
        Function used to get the rank for a link on restart.  A rank of

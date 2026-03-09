@@ -25,6 +25,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/model/configGraph.h"
+#include "sst/core/objectComms.h"
 #include "sst/core/output.h"
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
@@ -863,6 +864,19 @@ Simulation_impl::exchangeLinkInfo()
 {
     syncManager->exchangeLinkInfo();
 }
+
+void
+Simulation_impl::findRankSyncInterval()
+{
+    syncManager->findRankSyncInterval();
+}
+
+void
+Simulation_impl::findThreadSyncInterval()
+{
+    syncManager->findThreadSyncInterval();
+}
+
 
 void
 Simulation_impl::initialize()
@@ -2009,7 +2023,7 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 }
 
 void
-Simulation_impl::restart()
+Simulation_impl::restart(ConfigGraph* graph)
 {
     std::ifstream fs(config.configFile());
 
@@ -2075,11 +2089,31 @@ Simulation_impl::restart()
     // for current rank
     std::vector<std::string> blob_filenames;
 
+    // Need to set Link::is_restart_same_parallelism flag. If we aren't doing a serial restart or a remap, then we must
+    // have the same parallelism or we would have errored before getting here.  The variable is static, but all threads
+    // will set it since they will all set it to the same thing.  This will avoid the need for a barrier while ensuring
+    // that all threadss will see the proper value.
+    if ( !serial_restart_ && !graph->cpt_remap_partitions ) {
+        Link::is_restart_same_parallelism = true;
+    }
+
+    // Check to see if we are doing a remapping of the partitions (i.e. restart run has same total number of partitions,
+    // but different rank/thread values)
+    uint32_t effective_rank   = my_rank.rank;
+    uint32_t effective_thread = my_rank.thread;
+    if ( graph->cpt_remap_partitions ) {
+        // Need to generate an effective rank and thread as we are remapping partitions because we have the same total
+        // number, but not the same exact ranks and threads.
+        uint32_t index   = (my_rank.rank * num_ranks.thread) + my_rank.thread;
+        effective_rank   = index / graph->cpt_ranks.thread;
+        effective_thread = index % graph->cpt_ranks.thread;
+    }
+
     // Need to do this in the same order as the registry file so we
     // don't have to keep looking from the beginning
     for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
         for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
-            if ( !serial_restart_ && (my_rank.rank != r || my_rank.thread != t) ) continue;
+            if ( !serial_restart_ && (effective_rank != r || effective_thread != t) ) continue;
             search_str = "** (";
             search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
             while ( std::getline(fs, line) ) {
@@ -2111,6 +2145,11 @@ Simulation_impl::restart()
 
         SST_SER(interThreadMinLatency);
         SST_SER(independent);
+
+        if ( graph->cpt_remap_partitions ) {
+            interThreadMinLatency = num_ranks.thread != 1 ? 0 : bit_util::type_max<SimTime_t>;
+            minPart               = num_ranks.rank != 1 ? 0 : bit_util::type_max<SimTime_t>;
+        }
 
         // Set up the syncManager
         syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
@@ -2190,6 +2229,7 @@ Simulation_impl::restart()
     // the sync data structures. This will also cause the SyncManager to
     // compute its next fire time.
     if ( num_ranks.rank > 1 || num_ranks.thread > 1 ) {
+        discoverRemoteLinks();
         syncManager->setRestartTime(currentSimCycle);
         setupBarrier.wait();
         syncManager->finalizeLinkConfigurations();
@@ -2207,6 +2247,194 @@ Simulation_impl::restart()
 
     real_time_->begin();
 }
+
+void
+Simulation_impl::discoverRemoteLinks()
+{
+    // If we are multi-threaded, Need to intialize the necessary data structures
+    if ( num_ranks.thread > 1 ) {
+        // Initialize my local queue.  This will be used to receive data from the previous thread
+        local_discover_queue.initialize(2);
+
+        // Now, get a pointer to the queue on the next thread
+        uint32_t next_thread = my_rank.thread + 1;
+        if ( next_thread == num_ranks.thread ) next_thread = 0;
+        remote_discover_queue = &(instanceVec_[next_thread]->local_discover_queue);
+        initBarrier.wait();
+    }
+
+    // Initialize the vector that we will use to transfer data between threads
+    xfer_vec = new std::vector<std::pair<LinkId_t, RankInfo>>();
+
+    // Need to create a vector we can pass around to get rank info for my remote links
+    std::vector<std::pair<LinkId_t, RankInfo>> local_links;
+    local_links.reserve(link_restart_tracking.size());
+    for ( auto [id, link] : link_restart_tracking ) {
+        local_links.emplace_back(id, my_rank);
+    }
+
+    // Need to sort the info in the vector
+    std::sort(local_links.begin(), local_links.end(),
+        [](std::pair<LinkId_t, RankInfo> const& a, std::pair<LinkId_t, RankInfo> const& b) {
+            return a.first < b.first;
+        });
+
+
+    // Create a vector that will be used to get the remote_data and send data on.  We'll copy local_links into this
+    // vector because we need to keep the original data to compare against.
+    std::vector<std::pair<LinkId_t, RankInfo>> remote_links;
+    remote_links.insert(remote_links.begin(), local_links.begin(), local_links.end());
+
+    for ( size_t i = 0; i < num_ranks.rank * num_ranks.thread - 1; ++i ) {
+        discoverRemoteLinks_move_data(remote_links, remote_links);
+
+        // Process the data.  When we find matches, we will compress both lists
+        auto local_iter   = local_links.begin();
+        auto local_write  = local_links.begin();
+        auto remote_iter  = remote_links.begin();
+        auto remote_write = remote_links.begin();
+
+        // Exit loop once we hit the end of either list
+        while ( local_iter != local_links.end() && remote_iter != remote_links.end() ) {
+            LinkId_t local_id  = local_iter->first;
+            LinkId_t remote_id = remote_iter->first;
+            if ( local_id == remote_id ) {
+                // Found a matching link. Need to register the link with the SyncManager and remove it from both lists.
+                // We do the remove by compacting as we go
+                Link* link = link_restart_tracking[local_id];
+                link->type = Link::SYNC;
+                link->mode = link->pair_link->mode;
+                link->tag  = link->pair_link->tag;
+
+                link->defaultTimeBase = 1;
+                link->id              = link->pair_link->getId();
+                link->pair_link->send_queue =
+                    syncManager->registerLink(remote_iter->second, local_iter->second, link_restart_tracking[local_id]);
+
+                // Remove the link from link_restart_tracking
+                link_restart_tracking.erase(local_id);
+
+                ++local_iter;
+                ++remote_iter;
+                // Do not increment the write iterator (this is how we will compact as we go)
+            }
+            else if ( local_id < remote_id ) {
+                *local_write = *local_iter;
+                ++local_iter;
+                ++local_write;
+            }
+            else {
+                *remote_write = *remote_iter;
+                ++remote_iter;
+                ++remote_write;
+            }
+        }
+
+        // Need to either delete the remaining elements left after compacting if we finished the list, or we need to
+        // delete the spaces left by compacting and move the data up if we didn't finish the list. Do this for both the
+        // local and remote vectors
+
+        // LOCAL
+        if ( local_iter != local_links.end() ) {
+            // Need to remove all the entries from local_write to local_iter
+            local_links.erase(local_write, local_iter);
+        }
+        else {
+            // Need to remove everything from local_write to end()
+            local_links.erase(local_write, local_links.end());
+        }
+
+        // REMOTE
+        if ( remote_iter != remote_links.end() ) {
+            // Need to remove all the entries from local_write to local_iter
+            remote_links.erase(remote_write, remote_iter);
+        }
+        else {
+            // Need to remove everything from local_write to end()
+            remote_links.erase(remote_write, remote_links.end());
+        }
+    }
+
+    // If we are multi-threaded, clean up data structures
+    if ( num_ranks.thread > 1 ) {
+        remote_discover_queue = nullptr;
+
+        // Initialize the vector that we will use to transfer data between threads
+        delete xfer_vec;
+        xfer_vec = nullptr;
+    }
+
+    // When we are done, we should have no links left in local_links;
+    if ( local_links.size() != 0 ) {
+        sim_output.fatal(CALL_INFO_LONG, 1,
+            "ERROR: Found unmatched cross-partition links when restarting from a checkpoint.  This indicates a "
+            "bad/inconsistend set of checkpoint files.");
+    }
+}
+
+
+void
+Simulation_impl::discoverRemoteLinks_move_data(
+    std::vector<std::pair<LinkId_t, RankInfo>>& send_vec, std::vector<std::pair<LinkId_t, RankInfo>>& recv_vec)
+{
+    if ( num_ranks.thread != 1 ) {
+        // First send my data to next thread
+        xfer_vec->swap(send_vec);
+        while ( !remote_discover_queue->try_insert(xfer_vec) )
+            sst_pause();
+        xfer_vec = nullptr;
+
+        // Now get data from previous thread
+        xfer_vec = local_discover_queue.remove();
+
+        if ( my_rank.thread != 0 || num_ranks.rank == 1 ) {
+
+            // Swap the data into the recv_vec
+            xfer_vec->swap(recv_vec);
+            // Leave xfer_vec for the next time
+            return;
+        }
+    }
+    else {
+        xfer_vec->swap(send_vec);
+    }
+
+#ifdef SST_CONFIG_HAVE_MPI
+    // If we get here, we are a multirank job and are thread 0 and we already have the data from the last thread that we
+    // need to send on
+    uint32_t next_rank = my_rank.rank + 1;
+    if ( next_rank == num_ranks.rank ) next_rank = 0;
+    uint32_t prev_rank = my_rank.rank - 1;
+    if ( prev_rank == bit_util::type_max<uint32_t> ) prev_rank = num_ranks.rank - 1;
+
+
+    // First, send the data size to the next thread and get the data size from the previous thread
+    int send_data_size = xfer_vec->size();
+    int recv_data_size = 0;
+
+    MPI_Request req[2];
+    MPI_Status  status[2];
+    MPI_Isend(&send_data_size, 1, MPI_INT, next_rank, 0, MPI_COMM_WORLD, &req[0]);
+    MPI_Irecv(&recv_data_size, 1, MPI_INT, prev_rank, 0, MPI_COMM_WORLD, &req[1]);
+
+    MPI_Waitall(2, req, status);
+
+    // NOTE: This code does not yet support sending more than 2GB of total data
+
+    // Need to send my data
+    MPI_Isend(xfer_vec->data(), send_data_size * sizeof(std::pair<LinkId_t, RankInfo>), MPI_BYTE, next_rank, 1,
+        MPI_COMM_WORLD, &req[0]);
+
+    // Receive the data.  First need to resize vector, then copy in the data
+    recv_vec.resize(recv_data_size);
+    MPI_Irecv(recv_vec.data(), recv_data_size * sizeof(std::pair<LinkId_t, RankInfo>), MPI_BYTE, prev_rank, 1,
+        MPI_COMM_WORLD, &req[1]);
+
+    MPI_Waitall(2, req, status);
+    xfer_vec->clear();
+#endif
+}
+
 
 void
 Simulation_impl::initialize_interactive_console(const std::string& type)

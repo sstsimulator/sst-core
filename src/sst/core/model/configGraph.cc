@@ -627,12 +627,13 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         graph = new ConfigGraph();
 
         // Need to copy over any restart data
-        graph->cpt_ranks           = cpt_ranks;
-        graph->cpt_currentSimCycle = cpt_currentSimCycle;
-        graph->cpt_currentPriority = cpt_currentPriority;
-        graph->cpt_minPart         = cpt_minPart;
-        graph->cpt_minPartTC       = cpt_minPartTC;
-        graph->cpt_max_event_id    = cpt_max_event_id;
+        graph->cpt_ranks            = cpt_ranks;
+        graph->cpt_currentSimCycle  = cpt_currentSimCycle;
+        graph->cpt_currentPriority  = cpt_currentPriority;
+        graph->cpt_minPart          = cpt_minPart;
+        graph->cpt_minPartTC        = cpt_minPartTC;
+        graph->cpt_max_event_id     = cpt_max_event_id;
+        graph->cpt_remap_partitions = cpt_remap_partitions;
 
         graph->cpt_libnames       = cpt_libnames;
         graph->cpt_shared_objects = cpt_shared_objects;

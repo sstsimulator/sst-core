@@ -402,6 +402,12 @@ protected:
         event->updateDeliveryInfo(delivery_info);
     }
 
+    /**
+       Variable used by Link restarts to know whether stored rank data for remote links is still valid (i.e. did we
+       restart with the exact same rank/thread count or not).
+    */
+    static bool is_restart_same_parallelism;
+
     // Since Links are found in pairs, I will keep all the information
     // needed for me to send and deliver an event to the other side of
     // the Link.  That means, that I mostly keep my pair's
