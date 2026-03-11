@@ -235,7 +235,7 @@ SimpleDebugger::summary()
 #if 1
     //std::cout 
     ss << "** Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
-                  << " (Process " << getppid() << ")";
+                  << " (Process " << getpid() << ")";
     if ( sim_->enter_interactive_ ) {
         //std::cout 
         ss << " (Triggered)" << std::endl;
@@ -664,7 +664,7 @@ SimpleDebugger::threadInfo() {
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
     std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
-                  << " (Process " << getppid() << ")" << std::endl;
+                 << " (Process " << getpid() << ")" << std::endl;
 }
 
 bool
@@ -716,14 +716,14 @@ SimpleDebugger::cmd_info(std::vector<std::string>& tokens)
     // SKK Must be executed by target rank because otherwise the process ID won't be correct
     if ( tokens[1] == "current" ) {
             std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/" << nRanks.thread
-                  << " (Process " << getppid() << ")" << std::endl;
+                  << " (Process " << getpid() << ")" << std::endl;
        
     }
     else if ( tokens[1] == "all" ) {  // SKK Need to update this for multi-rank
 
         if ( nRanks.rank == 1 && nRanks.thread == 1 ) {
             std::cout << "Rank " << info.rank << "/" << nRanks.rank << ", Thread " << info.thread << "/"
-                      << nRanks.thread << " (Process " << getppid() << ")" << std::endl;
+                      << nRanks.thread << " (Process " << getpid() << ")" << std::endl;
         }
         else {
             // Need to send to ALL ranks and have each rank print all threads
