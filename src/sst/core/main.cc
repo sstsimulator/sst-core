@@ -1246,6 +1246,19 @@ main(int argc, char* argv[])
         // comparing to recv_rank.  If that are equal, then you've made it all the way around and are done (no more
         // exchanges needed).
         bool done = false;
+
+        // Vector to serialize data into
+        std::vector<char> send_buf;
+
+        // Vector to receive data into
+        std::vector<char> recv_buf;
+
+        // Serializer for packing/unpacking the transfer buffer
+        SST::Core::Serialization::serializer ser;
+
+        // MPI requests for MPI_Waitall. 0 & 1 are send requests, 2 is the bulk receive request
+        MPI_Request req[3];
+
         while ( !done ) {
             // Increment the send_rank and check it against recv_rank. If these are equal at this point, then we have an
             // odd number of ranks and we have completed all of our exchanges
@@ -1278,19 +1291,52 @@ main(int argc, char* argv[])
                 // Now walk through all the links until we hit one from a rank other than send_rank.  Note that
                 // send_lower could point to a rank other than send_rank if we are not connected to any links on that
                 // rank.  The logic below accounts for that case and will just entirely skip the while loop.
-                while ( send_lower != link_vector.end() && (*send_lower)->component_[1] == send_rank ) {
-                    send_vec.emplace_back((*send_lower)->name_, (*send_lower)->id_);
-                    ++send_lower;
+
+                // Need to go through the list twice.  Once to size and once to pack
+                size_t count = 0;
+                for ( int i = 0; i < 2; ++i ) {
+                    auto send_lower_iter = send_lower;
+
+                    // Set the serialization mode
+                    if ( i == 0 ) {
+                        ser.start_sizing();
+                    }
+                    else {
+                        size_t size = ser.size();
+                        send_buf.resize(size);
+                        ser.start_packing(send_buf.data(), size);
+                    }
+                    SST_SER(count);
+                    while ( send_lower_iter != link_vector.end() && (*send_lower_iter)->component_[1] == send_rank ) {
+                        SST_SER((*send_lower_iter)->name_);
+                        SST_SER((*send_lower_iter)->id_);
+                        ++send_lower_iter;
+                        ++count;
+                    }
                 }
 
                 // Now send the data
-                Comms::send(send_rank, 0, send_vec);
-                send_vec.clear();
+                int64_t size = send_buf.size();
+                MPI_Isend(&size, 1, MPI_INT64_T, send_rank, 0, MPI_COMM_WORLD, &req[0]);
+                MPI_Isend(send_buf.data(), size, MPI_BYTE, send_rank, 1, MPI_COMM_WORLD, &req[1]);
             }
 
             // Get data if we are receiving
             if ( recv_rank != type_max<uint32_t> ) {
-                Comms::recv(recv_rank, 0, recv_vec);
+                int64_t    size;
+                MPI_Status status;
+                MPI_Recv(&size, 1, MPI_INT64_T, recv_rank, 0, MPI_COMM_WORLD, &status);
+
+                recv_buf.resize(size);
+                MPI_Irecv(recv_buf.data(), size, MPI_BYTE, recv_rank, 1, MPI_COMM_WORLD, &req[2]);
+
+                // Need to wait for all MPI send/recv to finish.  If we didn't send, only wait on the recvs
+                if ( send_rank == type_max<uint32_t> ) {
+                    MPI_Waitall(1, &req[2], MPI_STATUSES_IGNORE);
+                }
+                else {
+                    MPI_Waitall(3, req, MPI_STATUSES_IGNORE);
+                }
 
                 // Now, fix up the IDs for the received links
 
@@ -1305,14 +1351,23 @@ main(int argc, char* argv[])
                     recv_lower = link_vector.end();
 
                 // Do the first error check.  We have links we're expecting from recv_rank, but it didn't send us any
-                if ( recv_lower != link_vector.end() && recv_vec.size() == 0 ) {
+                if ( recv_lower != link_vector.end() && size == 0 ) {
                     g_output.fatal(CALL_INFO, EXIT_FAILURE,
                         "Rank %" PRIu32 " expecting a link named %s from rank %" PRIu32 ", but did not get one\n",
                         myRank.rank, (*recv_lower)->name_.c_str(), recv_rank);
                 }
 
-                for ( auto [remote_name, id] : recv_vec ) {
-                    // If recv_lower == end(), then we ran out of things to check, which means we got an unexpected link
+                // Get the number of links received
+                size_t count = 0;
+                ser.start_unpacking(recv_buf.data(), size);
+                SST_SER(count);
+
+                for ( size_t i = 0; i < count; ++i ) {
+                    std::string remote_name;
+                    LinkId_t    id = 0;
+                    SST_SER(remote_name);
+                    SST_SER(id);
+
                     if ( recv_lower == link_vector.end() ) {
                         g_output.fatal(CALL_INFO, EXIT_FAILURE,
                             "Rank %" PRIu32 " received unexpected link from rank %" PRIu32 ": %s\n", myRank.rank,
@@ -1348,6 +1403,10 @@ main(int argc, char* argv[])
                         recv_rank, (*recv_lower)->name_.c_str());
                 }
                 recv_vec.clear();
+            }
+            else {
+                // No receives, but we need to wait on the sends
+                MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
             }
         }
         // We changed some of the keys in the link map, so we need to force a resort
