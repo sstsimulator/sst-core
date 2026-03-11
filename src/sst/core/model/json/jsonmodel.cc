@@ -22,7 +22,6 @@ DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST;
 using namespace SST::Core;
-using namespace SST::Core;
 
 ComponentId_t
 SSTConfigSaxHandler::findComponentIdByName(const std::string& name, bool& success)
