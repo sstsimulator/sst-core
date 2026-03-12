@@ -527,6 +527,14 @@ public:
     std::string             interactive_msg_;
     SimTime_t               stop_at_ = 0;
 
+    uint32_t next_link_order_tag_ = 1;
+
+    /**
+       Gets the next value for the order field of the link.  The ordering of events based on links will be based on
+       the order that configureLink() is called.
+    */
+    uint32_t getNextLinkOrderTag() { return next_link_order_tag_++; }
+
     // OneShotManager
     Core::OneShotManager one_shot_manager_;
 

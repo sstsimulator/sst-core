@@ -686,7 +686,7 @@ BaseComponent::configureLink_impl(const std::string& name, SimTime_t timebase, E
             }
         }
         tmp->setDefaultTimeBase(timebase);
-        tmp->setTag(getNextLinkOrder());
+        tmp->setTag(sim_->getNextLinkOrderTag());
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info_->getName(), my_info_->getType(), name);
 #endif
@@ -842,12 +842,6 @@ void
 BaseComponent::pushValidParams(Params& params, const std::string& type)
 {
     params.pushAllowedKeys(Factory::getFactory()->getParamNames(type));
-}
-
-uint32_t
-BaseComponent::getNextLinkOrder()
-{
-    return getParentComponent()->getNextLinkOrder();
 }
 
 
