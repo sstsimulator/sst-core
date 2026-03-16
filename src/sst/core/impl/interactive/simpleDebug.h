@@ -44,6 +44,12 @@
 namespace SST::IMPL::Interactive {
 
 enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER };
+enum class ExecutionType {
+        SERIAL,
+        THREAD,
+        RANK_SERIAL,
+        RANK_PARALLEL
+    };
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
     { ConsoleCommandGroup::GENERAL, "General" },
@@ -72,6 +78,63 @@ enum class LINE_ENTRY_MODE : int {
 class ConsoleCommand
 {
 public:
+#if 1
+    // Constructor for built-in commands has callback
+    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
+        ExecutionType exec_type,
+        std::function<bool(std::string& cmd_str)> func_serial, 
+        std::function<bool(std::string& cmd_str)> func_thread,
+        std::function<bool(std::string& cmd_str)> func_rank_serial,
+        std::function<bool(std::string& cmd_str)> func_rank_parallel, 
+        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_objmap) :
+        str_long_(str_long),
+        str_short_(str_short),
+        str_help_(str_help),
+        group_(group),
+        func_serial_(func_serial), 
+        func_thread_(func_thread),
+        func_rank_serial_(func_rank_serial),
+        func_rank_parallel_(func_rank_parallel),
+        func_objmap_(func_objmap),
+        exec_type_(exec_type)
+    { 
+        //RankInfo num_ranks_ = SST::Core::Simulation_impl::getSimulation()->getNumRanks();
+    
+        // Serial
+        if (exec_type_ == ExecutionType::SERIAL) {
+            func_ = func_serial_;
+        }
+        // Thread (single rank, multiple threads)
+        else if (exec_type_ == ExecutionType::THREAD) {
+            func_ = func_thread_;
+        }
+        // Rank Serial (multiple ranks, single thread per rank)
+        else if (exec_type_ == ExecutionType::RANK_SERIAL) {
+            func_ = func_rank_serial_;
+        }
+        // Rank Parallel (multiple ranks, multiple threads per rank)
+        else  {
+            func_ = func_rank_parallel_;
+        }
+    }
+#endif
+#if 0
+    // Constructor for built-in commands has callback
+    // SKK Temporary so I don't have to change them all
+    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
+        std::function<bool(std::vector<std::string>& tokens)> func, bool console) :
+        str_long_(str_long),
+        str_short_(str_short),
+        str_help_(str_help),
+        group_(group),
+        func_serial_(func),
+        func_thread_(func),
+        func_rank_serial_(func),
+        func_rank_parallel_(func),
+        console_(console)
+    {}
+#endif
+#if 0
     // Constructor for built-in commands has callback
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
         std::function<bool(std::vector<std::string>& tokens)> func, bool console) :
@@ -82,6 +145,7 @@ public:
         func_(func), 
         console_(console)
     {}
+#endif
 
     // Constructor for user-defined commands
     ConsoleCommand(std::string str_long) :
@@ -94,13 +158,20 @@ public:
     const std::string&         str_long() const { return str_long_; }
     const std::string&         str_short() const { return str_short_; }
     const std::string&         str_help() const { return str_help_; }
-    const bool                 console() const { return console_; }
+    const bool                 console() const { return console_; }  // SKK eliminate
     void                       setUserHelp(std::string& help) { str_help_ = help; }
     const ConsoleCommandGroup& group() const { return group_; }
     // Command Execution
-    bool                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
 #if 0
-    bool                       exec_par(std::string& cmd_str) { return func_par_(cmd_str); }
+    bool                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
+#else
+    bool                       exec(std::string& cmd_str) { return func_(cmd_str); }
+    bool                       exec_serial(std::string& cmd_str)  { return func_serial_(cmd_str); }                   
+    bool                       exec_thread(std::string& cmd_str) { return func_thread_(cmd_str); }
+    bool                       exec_rank_serial(std::string& cmd_str) { return func_rank_serial_(cmd_str); }
+    bool                       exec_rank_parallel(std::string& cmd_str) { return func_rank_parallel_(cmd_str); }
+    bool                       exec_objmap(std::vector<std::string>& UNUSED(tokens)) { return func_objmap_(tokens); }
+    //bool                       exec_objmap() { return func_objmap_(); }
 #endif
     bool                       match(const std::string& token)
     {
@@ -120,8 +191,21 @@ private:
     std::string                                           str_short_;
     std::string                                           str_help_;
     ConsoleCommandGroup                                   group_;
+    ExecutionType                                         exec_type_;
+#if 0
     std::function<bool(std::vector<std::string>& tokens)> func_;
-#if 1 
+#else
+    std::function<bool(std::string& cmd_str)> func_;
+    
+    std::function<bool(std::string& cmd_str)> func_serial_;
+    std::function<bool(std::string& cmd_str)> func_thread_;
+    std::function<bool(std::string& cmd_str)> func_rank_serial_;
+    std::function<bool(std::string& cmd_str)> func_rank_parallel_;
+    std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_objmap_;
+    
+
+#endif
+#if 1
     bool                                                  console_;
 #endif
     std::string                                           toLower(std::string s)
@@ -268,7 +352,7 @@ public:
     explicit SimpleDebugger(Params& params);
     ~SimpleDebugger();
 
-    int  execute(const std::string& msg) override;
+    int  execute(const std::string& msg) override; // SKK separate to thread, rank execute 
     void summary() override;
 
     // Callbacks from command line completions
@@ -289,14 +373,26 @@ private:
     void save_name_stack();
     void cd_name_stack();
 
-    static bool autoCompleteEnable; // skk = true;
+    #if 0
+    enum class ExecutionType {
+        SERIAL,
+        THREAD,
+        RANK_SERIAL,
+        RANK_PARALLEL
+    };
+    #endif
+    ExecutionType exec_type;
+    RankInfo num_ranks_;
+    RankInfo rank_;
+
+    static bool autoCompleteEnable; // skk default = true;
 
     // logging support
     static std::ofstream loggingFile;
     static std::ifstream replayFile;
-    static std::string   loggingFilePath; // skk = "sst-console.out";
-    static std::string   replayFilePath;  // skk = "sst-console.in";
-    static bool          enLogging;       // skk = false;
+    static std::string   loggingFilePath; // skk default = "sst-console.out";
+    static std::string   replayFilePath;  // skk default = "sst-console.in";
+    static bool          enLogging;       // skk default = false;
 
     // command injection (for sst --replay option)
     std::stringstream injectedCommand;
@@ -317,6 +413,7 @@ private:
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
     // Navigation
+#if 0
     bool cmd_help(std::vector<std::string>& UNUSED(tokens));
     bool cmd_verbose(std::vector<std::string>&(tokens));
     bool cmd_info(std::vector<std::string>& UNUSED(tokens));
@@ -324,8 +421,34 @@ private:
     bool cmd_rank(std::vector<std::string>& tokens);
     bool cmd_pwd(std::vector<std::string>& UNUSED(tokens));
     bool cmd_ls(std::vector<std::string>& UNUSED(tokens));
-    bool cmd_cd(std::vector<std::string>& tokens);
+#endif
+#if 1  // Test serial, thread, rank paths
+    bool cmd_help(std::string& cmd_str); 
+    bool cmd_help_thread(std::string& cmd_str);
+    bool cmd_help_rank_serial(std::string& cmd_str);
+    bool cmd_help_rank_parallel(std::string& cmd_str);
+    bool cmd_help_objmap(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_info(std::string& cmd_str);  
+    bool cmd_info_thread(std::string& cmd_str);
+    bool cmd_info_rank_serial(std::string& cmd_str);
+    bool cmd_info_rank_parallel(std::string& cmd_str);
+    bool cmd_info_objmap(std::vector<std::string>& UNUSED(tokens));
+    //bool cmd_thread(std::string& cmd_str);
+    bool cmd_ls(std::string& cmd_str);
+    bool cmd_ls_thread(std::string& cmd_str);
+    bool cmd_ls_rank_serial(std::string& cmd_str);
+    bool cmd_ls_rank_parallel(std::string& cmd_str);
+    bool cmd_ls_objmap(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_shutdown(std::string& cmd_str);
+    bool cmd_shutdown_thread(std::string& cmd_str);
+    bool cmd_shutdown_rank_serial(std::string& cmd_str);
+    bool cmd_shutdown_rank_parallel(std::string& cmd_str);
+    bool cmd_shutdown_objmap(std::vector<std::string>& UNUSED(tokens));
 
+    bool cmd_cd(std::vector<std::string>& tokens);
+#endif
+#if 0
+    bool cmd_cd(std::vector<std::string>& tokens);
     // Variable Access
     bool cmd_print(std::vector<std::string>& tokens);
     bool cmd_set(std::vector<std::string>& tokens);
@@ -362,6 +485,7 @@ private:
     // User defined commands
     bool cmd_define(std::vector<std::string>& tokens);
     bool cmd_document(std::vector<std::string>& tokens);
+#endif
 
     // command entry point
     bool dispatch_cmd(std::string& cmd);
@@ -381,8 +505,8 @@ private:
     void     msg(VERBOSITY_MASK mask, std::string message);
 
     // Test new rank parallel execute
-    static int current_thread;
-    static int current_rank;
+    static unsigned current_thread;
+    static unsigned current_rank;
     static std::vector<std::string> tokens;
     static std::stringstream result;
     //static Core::ThreadSafe::Barrier exchange_barrier;
@@ -396,12 +520,17 @@ private:
     //void unpackCommandBuffer( int32_t* cmd_buffer, std::atomic<int32_t>& cmd, std::atomic<int32_t>& tid);
     //void rankParallelExecute(); 
     int consoleExecute(const std::string& msg);
-    void sendCommand( int32_t rank_id, int32_t thread_id,  std::string cmd);
+    int executeThread(const std::string& msg);
+    int executeRankSerial(const std::string& msg);
+    int executeRankParallel(const std::string& msg);
+    int executeRankSlave(const std::string& msg);
+    void sendCommand( int32_t rank_id, int32_t thread_id,  const std::string& cmd);
     //void sendCommandAll(std::string cmd);
     void receiveCommand();
+    void receiveCommandRankSerial();
+    void receiveCommandRankParallel();
     void sendAll(std::string cmd);
     void sendDone();
-    void threadInfo();
 };
 
 } // namespace SST::IMPL::Interactive

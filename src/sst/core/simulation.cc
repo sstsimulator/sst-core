@@ -1050,7 +1050,8 @@ Simulation_impl::setup_interactive_mode()
             if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {  // SKK 
             //if ( num_ranks.thread > 1 && offset == 0 ) {
                 enter_interactive_ = true;
-                syncManager->handleInteractiveConsole();
+                //syncManager->handleInteractiveConsole();
+                interactive_->execute(interactive_msg_); // may need to handle shutdown here
                 enter_interactive_ = false;
                 //printf("After handleInteractiveConsole in setup_interactive_mode: sim_->enter_interactive %d\n", enter_interactive_);
             }
