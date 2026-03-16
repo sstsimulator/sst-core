@@ -881,15 +881,15 @@ if testH5:
 
 
 count = 0;
-curr_comp = None
-link = None
-comp_list.append(None)
+prior_comp = None
 
 for x in comp_list:
-    if curr_comp:
-        curr_comp.addLink(link, "left")
-    if x:
-        link = sst.Link("link{}".format(count), "1ns")
-        count += 1
-        x.addLink(link, "right")
-    curr_comp = x
+    if prior_comp is None:
+        prior_comp = x
+        continue
+
+    link = sst.Link("link{0}".format(count), "1ns")
+    count += 1
+    prior_comp.addLink(link, "left")
+    x.addLink(link, "right")
+    prior_comp = x
