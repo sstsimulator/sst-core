@@ -310,8 +310,8 @@ RankSync::findSyncInterval(uint32_t UNUSED_WO_MPI(my_rank))
         Comms::recv(i, 0, data);
         Comms::send(i, 0, link_maps[i]);
 
-        // Process the data. Get the Link and the send latency and add any addional receive latency that was added with
-        // addRecvLatency(). Compare again current minimum and update if necessary.
+        // Process the data. Get the Link and the send latency and add any additional receive latency that was added
+        // with addRecvLatency(). Compare again current minimum and update if necessary.
 
         for ( auto& x : data ) {
             Link* local = reinterpret_cast<Link*>(x.second);
@@ -352,8 +352,8 @@ RankSync::findSyncInterval(uint32_t UNUSED_WO_MPI(my_rank))
         Comms::send(i, 0, link_maps[i]);
         Comms::recv(i, 0, data);
 
-        // Process the data. Get the Link and the send latency and add any addional receive latency that was added with
-        // addRecvLatency(). Compare again current minimum and update if necessary.
+        // Process the data. Get the Link and the send latency and add any additional receive latency that was added
+        // with addRecvLatency(). Compare again current minimum and update if necessary.
 
         for ( auto& x : data ) {
             Link* local = reinterpret_cast<Link*>(x.second);

@@ -146,6 +146,21 @@ protected:
     inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
 
     inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
+
+    /**
+       Get the latency on the link in units of core atomic time base
+    */
+    SimTime_t getLatency(Link* link) { return link->latency; }
+
+    /**
+       Get the delivery_info for the link
+    */
+    uintptr_t getDeliveryInfo(Link* link) { return link->delivery_info; }
+
+    /**
+       Get the pair_link
+    */
+    Link* getPairLink(Link* link) { return link->pair_link; }
 };
 
 class SyncManager : public Action

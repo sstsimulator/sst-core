@@ -69,7 +69,7 @@ void
 ThreadSyncSimpleSkip::registerLink(Link* link)
 {
     std::scoped_lock slock(lock);
-    link_vec.push_back(link->getPairLink());
+    link_vec.push_back(getPairLink(link));
     auto iter = link_map.find(link->getId());
     if ( iter == link_map.end() ) {
         // I have initialized first, so just put the id and link in
@@ -190,7 +190,7 @@ ThreadSyncSimpleSkip::findSyncInterval()
     for ( auto* x : link_vec ) {
         // I need to see if addRecvLatency() was called on the remote side of the link.  We have a pointer to that Link
         // (as a uintptr_t) in delivery_info.
-        SimTime_t latency = x->getLatency() + reinterpret_cast<Link*>(x->getDeliveryInfo())->getLatency();
+        SimTime_t latency = getLatency(x) + getLatency(reinterpret_cast<Link*>(getDeliveryInfo(x)));
         if ( latency < min_lat ) min_lat = latency;
     }
 
