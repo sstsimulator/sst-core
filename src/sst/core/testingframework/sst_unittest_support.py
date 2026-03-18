@@ -32,14 +32,18 @@ import time
 import traceback
 import unittest
 from inspect import signature
+from functools import wraps
 from pathlib import Path
 from shutil import which
 from typing import (Any, Callable, List, Mapping, Optional, Sequence, Tuple,
-                    Type, TypeVar, Union)
+                    Type, TypeVar, TYPE_CHECKING, Union, cast)
 from warnings import warn
 
 import test_engine_globals
 from test_engine_support import check_param_type
+
+if TYPE_CHECKING:
+    from sst_unittest import SSTTestCase
 
 if not sys.warnoptions:
     import os
@@ -395,6 +399,60 @@ def skip_on_scenario(scenario_name: str, reason: str) -> Callable[[_FT], _FT]:
     if not _testing_check_is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)
+
+###
+
+_CallableT = TypeVar("_CallableT", bound=Callable[["SSTTestCase"], None])
+
+def categorize(category: str) -> Callable[[_CallableT], _CallableT]:
+    """
+    Decorator for ``unittest`` test methods.
+
+    Parameters
+    ----------
+    category: str
+        Desired test category. Must be one of:
+        * ``"pr"``
+        * ``"nightly"``
+        * ``"weekly"``
+        * any value present in
+          ``test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES``,
+          which is meant to be extended to accomodate custom categories.
+
+    Returns
+    -------
+    Callable[[_CallableT], _CallableT]
+        A decorator that either runs the test or skips it when
+        ``test_engine_globals.TESTENGINE_CATEGORIES`` (set from the command
+        line) does not contain ``category``.
+    """
+    allowed = set(test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES) | test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES
+    specified_categories = test_engine_globals.TESTENGINE_CATEGORIES
+    if category not in allowed:
+        raise ValueError(
+            f"Invalid test category '{category}'. Allowed categories are: "
+            f"{sorted(allowed)}"
+        )
+
+    def decorator(test_func: _CallableT) -> _CallableT:
+        reason = (
+            f"Test requires category '{category}' but the current "
+            f"categories are '{specified_categories}'."
+        )
+
+        @wraps(test_func)
+        def wrapper(tc: "SSTTestCase") -> None:
+            if category not in specified_categories:
+                raise unittest.SkipTest(reason)
+
+            return test_func(tc)
+
+        wrapper.__unittest_skip__ = category not in specified_categories  # type: ignore[attr-defined]
+        wrapper.__unittest_skip_why__ = reason  # type: ignore[attr-defined]
+
+        return cast(_CallableT, wrapper)
+
+    return decorator
 
 ###
 
