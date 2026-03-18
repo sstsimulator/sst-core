@@ -427,7 +427,7 @@ public:
     Core::ThreadSafe::BoundedQueue<std::vector<std::pair<LinkId_t, RankInfo>>*>* remote_discover_queue;
     std::vector<std::pair<LinkId_t, RankInfo>>*                                  xfer_vec = nullptr;
 
-    void discoverRemoteLinks_move_data(
+    void discoverRemoteLinksMoveData(
         std::vector<std::pair<LinkId_t, RankInfo>>& send_vec, std::vector<std::pair<LinkId_t, RankInfo>>& recv_vec);
 
     /**************************************************************/

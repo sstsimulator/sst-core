@@ -2092,7 +2092,7 @@ Simulation_impl::restart(ConfigGraph* graph)
     // Need to set Link::is_restart_same_parallelism flag. If we aren't doing a serial restart or a remap, then we must
     // have the same parallelism or we would have errored before getting here.  The variable is static, but all threads
     // will set it since they will all set it to the same thing.  This will avoid the need for a barrier while ensuring
-    // that all threadss will see the proper value.
+    // that all threads will see the proper value.
     if ( !serial_restart_ && !graph->cpt_remap_partitions ) {
         Link::is_restart_same_parallelism = true;
     }
@@ -2286,7 +2286,7 @@ Simulation_impl::discoverRemoteLinks()
     remote_links.insert(remote_links.begin(), local_links.begin(), local_links.end());
 
     for ( size_t i = 0; i < num_ranks.rank * num_ranks.thread - 1; ++i ) {
-        discoverRemoteLinks_move_data(remote_links, remote_links);
+        discoverRemoteLinksMoveData(remote_links, remote_links);
 
         // Process the data.  When we find matches, we will compress both lists
         auto local_iter   = local_links.begin();
@@ -2368,13 +2368,13 @@ Simulation_impl::discoverRemoteLinks()
     if ( local_links.size() != 0 ) {
         sim_output.fatal(CALL_INFO_LONG, 1,
             "ERROR: Found unmatched cross-partition links when restarting from a checkpoint.  This indicates a "
-            "bad/inconsistend set of checkpoint files.");
+            "bad/inconsistent set of checkpoint files.");
     }
 }
 
 
 void
-Simulation_impl::discoverRemoteLinks_move_data(
+Simulation_impl::discoverRemoteLinksMoveData(
     std::vector<std::pair<LinkId_t, RankInfo>>& send_vec, std::vector<std::pair<LinkId_t, RankInfo>>& recv_vec)
 {
     if ( num_ranks.thread != 1 ) {

@@ -129,7 +129,7 @@ SSTCPTModelDefinition::createConfigGraph()
             Output::getDefaultObject().fatal(CALL_INFO, 1,
                 "Rank or thread counts do not match checkpoint. Checkpoint/restart requires that the total parallelism "
                 "be the same between a checkpoint and restart (i.e. ranks * threads is the same for both).  Checkpoint "
-                "was create with %" PRIu32 " ranks and %" PRIu32 " threads. Serial restarts are also permitted.\n",
+                "was created with %" PRIu32 " ranks and %" PRIu32 " threads. Serial restarts are also permitted.\n",
                 graph->cpt_ranks.rank, graph->cpt_ranks.thread);
         }
     }
