@@ -519,6 +519,7 @@ SyncManager::testRankFlagExchange() {
 }
 #endif
 
+#if 0
 void
 SyncManager::rankHandleInteractiveConsole()
 {
@@ -628,8 +629,9 @@ SyncManager::rankHandleInteractiveConsole()
     rankSync_->clearFlags();
 
 }
+#endif
 
-
+#if 0
 void
 SyncManager::handleInteractiveConsole()
 {
@@ -731,6 +733,7 @@ SyncManager::handleInteractiveConsole()
     ic_barrier_.wait();
     threadSync_->clearFlags();     
 }
+#endif
 
 void
 SyncManager::partitionInfo() {
@@ -788,8 +791,8 @@ SyncManager::execute()
     if (next_sync_type_ == THREAD)
         type = "THREAD";
     Output& out = sim_->getSimulationOutput();
-    out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
-        rank_.rank, rank_.thread, type.c_str());
+    //out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
+    //    rank_.rank, rank_.thread, type.c_str());
 #else 
     std::string type = "RANK";
     if (next_sync_type_ == THREAD)
@@ -853,8 +856,8 @@ SyncManager::execute()
         ic_barrier_.wait();
         threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
         #endif
-        printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-            enter_interactive, enter_shutdown, shutdown_mode);
+        //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+        //    enter_interactive, enter_shutdown, shutdown_mode);
 #endif        
 
         // Now call the actual RankSync.  No barrier needed here
@@ -906,8 +909,8 @@ SyncManager::execute()
 
 #if 1
         rankSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-        printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+        //printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+        //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
 
         // Handle shutdown (all threads/ranks)
          if (enter_shutdown) {
@@ -1024,8 +1027,8 @@ SyncManager::execute()
             ckpt_generate_.store(0);
 
             threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-            printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-                enter_interactive, enter_shutdown, shutdown_mode);
+            //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+            //    enter_interactive, enter_shutdown, shutdown_mode);
             if (enter_shutdown) {
                 sim_->setEndSim();
                 ic_barrier_.wait();
@@ -1033,9 +1036,10 @@ SyncManager::execute()
             }
             else if (enter_interactive) {
                 //handleInteractiveConsole(); // Check of any thread set interactive console
+                sim_->interactive_->summary();
                 sim_->interactive_->execute(sim_->interactive_msg_);
-                Output::getDefaultObject().output(" R%d, T%d: after interactive enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+                //Output::getDefaultObject().output(" R%d, T%d: after interactive enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+                    //rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
                 //ic_barrier_.wait();
                 //handleShutdown();
                 //ic_barrier_.wait();

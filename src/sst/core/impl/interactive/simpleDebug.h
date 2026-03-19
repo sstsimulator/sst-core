@@ -43,13 +43,8 @@
 
 namespace SST::IMPL::Interactive {
 
-enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER };
-enum class ExecutionType {
-        SERIAL,
-        THREAD,
-        RANK_SERIAL,
-        RANK_PARALLEL
-    };
+enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER}; //, REMOTE };
+enum class ExecutionType { SERIAL, THREAD, RANK_SERIAL, RANK_PARALLEL };
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
     { ConsoleCommandGroup::GENERAL, "General" },
@@ -60,6 +55,7 @@ const std::map<ConsoleCommandGroup, std::string> GroupText {
     { ConsoleCommandGroup::LOGGING, "Logging" },
     { ConsoleCommandGroup::MISC, "Misc" },
     { ConsoleCommandGroup::USER, "User Defined" },
+    //{ ConsoleCommandGroup::REMOTE, "Remote Functions" },
 };
 
 // Each bit of mask enables verbosity for different debug features.
@@ -78,28 +74,36 @@ enum class LINE_ENTRY_MODE : int {
 class ConsoleCommand
 {
 public:
-#if 1
-    // Constructor for built-in commands has callback
+    // Constructor for built-in commands has callback - console only
+    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
+        std::function<bool(std::string& cmd_str)> func ) :
+        str_long_(str_long),
+        str_short_(str_short),
+        str_help_(str_help),
+        group_(group),
+        func_(func)
+    {}
+
+    // Constructor for built-in commands has callback - remote calls
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
         ExecutionType exec_type,
         std::function<bool(std::string& cmd_str)> func_serial, 
         std::function<bool(std::string& cmd_str)> func_thread,
         std::function<bool(std::string& cmd_str)> func_rank_serial,
         std::function<bool(std::string& cmd_str)> func_rank_parallel, 
-        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_objmap) :
+        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote
+        ) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
         group_(group),
+        exec_type_(exec_type),
         func_serial_(func_serial), 
         func_thread_(func_thread),
         func_rank_serial_(func_rank_serial),
         func_rank_parallel_(func_rank_parallel),
-        func_objmap_(func_objmap),
-        exec_type_(exec_type)
+        func_remote_(func_remote)
     { 
-        //RankInfo num_ranks_ = SST::Core::Simulation_impl::getSimulation()->getNumRanks();
-    
         // Serial
         if (exec_type_ == ExecutionType::SERIAL) {
             func_ = func_serial_;
@@ -117,35 +121,6 @@ public:
             func_ = func_rank_parallel_;
         }
     }
-#endif
-#if 0
-    // Constructor for built-in commands has callback
-    // SKK Temporary so I don't have to change them all
-    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<bool(std::vector<std::string>& tokens)> func, bool console) :
-        str_long_(str_long),
-        str_short_(str_short),
-        str_help_(str_help),
-        group_(group),
-        func_serial_(func),
-        func_thread_(func),
-        func_rank_serial_(func),
-        func_rank_parallel_(func),
-        console_(console)
-    {}
-#endif
-#if 0
-    // Constructor for built-in commands has callback
-    ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<bool(std::vector<std::string>& tokens)> func, bool console) :
-        str_long_(str_long),
-        str_short_(str_short),
-        str_help_(str_help),
-        group_(group),
-        func_(func), 
-        console_(console)
-    {}
-#endif
 
     // Constructor for user-defined commands
     ConsoleCommand(std::string str_long) :
@@ -154,25 +129,29 @@ public:
         str_help_("user defined command"),
         group_(ConsoleCommandGroup::USER)
     {}
+
+    #if 0
+    // Constructor for remote functions
+    ConsoleCommand(std::string str_long, std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote) :
+        str_long_(str_long),
+        func_remote_(func_remote),
+        group_(ConsoleCommandGroup::REMOTE)
+    {}
+    #endif
+
     ConsoleCommand() {}; // default constructor
     const std::string&         str_long() const { return str_long_; }
     const std::string&         str_short() const { return str_short_; }
     const std::string&         str_help() const { return str_help_; }
-    const bool                 console() const { return console_; }  // SKK eliminate
     void                       setUserHelp(std::string& help) { str_help_ = help; }
     const ConsoleCommandGroup& group() const { return group_; }
     // Command Execution
-#if 0
-    bool                       exec(std::vector<std::string>& tokens) { return func_(tokens); }
-#else
     bool                       exec(std::string& cmd_str) { return func_(cmd_str); }
     bool                       exec_serial(std::string& cmd_str)  { return func_serial_(cmd_str); }                   
     bool                       exec_thread(std::string& cmd_str) { return func_thread_(cmd_str); }
     bool                       exec_rank_serial(std::string& cmd_str) { return func_rank_serial_(cmd_str); }
     bool                       exec_rank_parallel(std::string& cmd_str) { return func_rank_parallel_(cmd_str); }
-    bool                       exec_objmap(std::vector<std::string>& UNUSED(tokens)) { return func_objmap_(tokens); }
-    //bool                       exec_objmap() { return func_objmap_(); }
-#endif
+    bool                       exec_remote(std::vector<std::string>& UNUSED(tokens)) { return func_remote_(tokens); }
     bool                       match(const std::string& token)
     {
         std::string lctoken = toLower(token);
@@ -192,22 +171,14 @@ private:
     std::string                                           str_help_;
     ConsoleCommandGroup                                   group_;
     ExecutionType                                         exec_type_;
-#if 0
-    std::function<bool(std::vector<std::string>& tokens)> func_;
-#else
+
     std::function<bool(std::string& cmd_str)> func_;
-    
     std::function<bool(std::string& cmd_str)> func_serial_;
     std::function<bool(std::string& cmd_str)> func_thread_;
     std::function<bool(std::string& cmd_str)> func_rank_serial_;
     std::function<bool(std::string& cmd_str)> func_rank_parallel_;
-    std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_objmap_;
-    
+    std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote_;
 
-#endif
-#if 1
-    bool                                                  console_;
-#endif
     std::string                                           toLower(std::string s)
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -368,19 +339,12 @@ private:
 
     SST::Core::Serialization::ObjectMap* obj_     = nullptr;
     bool                                 done     = false;
+    bool                                 exit_console = false;
     int                                  retState = -1; // -1 DONE, -2 SUMMARY, positive number is threadID
 
     void save_name_stack();
     void cd_name_stack();
 
-    #if 0
-    enum class ExecutionType {
-        SERIAL,
-        THREAD,
-        RANK_SERIAL,
-        RANK_PARALLEL
-    };
-    #endif
     ExecutionType exec_type;
     RankInfo num_ranks_;
     RankInfo rank_;
@@ -407,7 +371,7 @@ private:
     // Keep track of all the WatchPoints
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
     bool                                                query_clear_watchlist();
-    bool                                                clear_watchlist();
+    bool                                                clear_watchlist(std::vector<std::string>& UNUSED(tokens));
     static bool confirm_; // skk = true; // Ask for confirmation to clear watchlist
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
@@ -423,27 +387,31 @@ private:
     bool cmd_ls(std::vector<std::string>& UNUSED(tokens));
 #endif
 #if 1  // Test serial, thread, rank paths
-    bool cmd_help(std::string& cmd_str); 
-    bool cmd_help_thread(std::string& cmd_str);
-    bool cmd_help_rank_serial(std::string& cmd_str);
-    bool cmd_help_rank_parallel(std::string& cmd_str);
-    bool cmd_help_objmap(std::vector<std::string>& UNUSED(tokens));
-    bool cmd_info(std::string& cmd_str);  
+    bool cmd_help_console(std::string& cmd_str); 
+    bool cmd_help(std::vector<std::string>& UNUSED(tokens));
+    
+    bool cmd_info_serial(std::string& cmd_str);  
     bool cmd_info_thread(std::string& cmd_str);
     bool cmd_info_rank_serial(std::string& cmd_str);
     bool cmd_info_rank_parallel(std::string& cmd_str);
-    bool cmd_info_objmap(std::vector<std::string>& UNUSED(tokens));
-    //bool cmd_thread(std::string& cmd_str);
-    bool cmd_ls(std::string& cmd_str);
+    bool cmd_info_remote(std::vector<std::string>& UNUSED(tokens));
+
+    bool cmd_ls_serial(std::string& cmd_str);
     bool cmd_ls_thread(std::string& cmd_str);
     bool cmd_ls_rank_serial(std::string& cmd_str);
     bool cmd_ls_rank_parallel(std::string& cmd_str);
-    bool cmd_ls_objmap(std::vector<std::string>& UNUSED(tokens));
-    bool cmd_shutdown(std::string& cmd_str);
-    bool cmd_shutdown_thread(std::string& cmd_str);
-    bool cmd_shutdown_rank_serial(std::string& cmd_str);
-    bool cmd_shutdown_rank_parallel(std::string& cmd_str);
-    bool cmd_shutdown_objmap(std::vector<std::string>& UNUSED(tokens));
+    bool cmd_ls_remote(std::vector<std::string>& UNUSED(tokens));
+
+    bool cmd_run_console(std::string& cmd_str);
+    bool cmd_run(std::vector<std::string>& UNUSED(tokens));
+
+    bool cmd_exit_serial(std::string& cmd_str);
+    bool cmd_exit_thread(std::string& cmd_str);
+    bool cmd_exit_rank_serial(std::string& cmd_str);
+    bool cmd_exit_rank_parallel(std::string& cmd_str);
+    bool cmd_exit_remote(std::vector<std::string>& UNUSED(tokens));
+
+    bool cmd_shutdown_console(std::string& cmd_str);
 
     bool cmd_cd(std::vector<std::string>& tokens);
 #endif
