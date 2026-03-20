@@ -43,7 +43,7 @@
 
 namespace SST::IMPL::Interactive {
 
-enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER}; //, REMOTE };
+enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER};
 enum class ExecutionType { SERIAL, THREAD, RANK_SERIAL, RANK_PARALLEL };
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
@@ -55,7 +55,6 @@ const std::map<ConsoleCommandGroup, std::string> GroupText {
     { ConsoleCommandGroup::LOGGING, "Logging" },
     { ConsoleCommandGroup::MISC, "Misc" },
     { ConsoleCommandGroup::USER, "User Defined" },
-    //{ ConsoleCommandGroup::REMOTE, "Remote Functions" },
 };
 
 // Each bit of mask enables verbosity for different debug features.
@@ -129,15 +128,6 @@ public:
         str_help_("user defined command"),
         group_(ConsoleCommandGroup::USER)
     {}
-
-    #if 0
-    // Constructor for remote functions
-    ConsoleCommand(std::string str_long, std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote) :
-        str_long_(str_long),
-        func_remote_(func_remote),
-        group_(ConsoleCommandGroup::REMOTE)
-    {}
-    #endif
 
     ConsoleCommand() {}; // default constructor
     const std::string&         str_long() const { return str_long_; }
@@ -391,10 +381,11 @@ private:
     bool cmd_info_rank_serial(std::string& cmd_str);
     bool cmd_info_rank_parallel(std::string& cmd_str);
     bool cmd_info_remote(std::vector<std::string>& UNUSED(tokens));
-    
 
     bool cmd_thread(std::string& cmd_str); 
+
     bool cmd_rank(std::string& cmd_str); 
+
     bool cmd_setConfirm(std::string& cmd_str);
 
     bool cmd_pwd_serial(std::string& cmd_str);
@@ -448,11 +439,35 @@ private:
     bool cmd_watchlist_rank_parallel(std::string& cmd_str);
     bool cmd_watchlist_remote(std::vector<std::string>& tokens);
     
-    //bool cmd_addTraceVar(std::vector<std::string>& tokens);
-    //bool cmd_printWatchpoint(std::vector<std::string>& tokens);
-    //bool cmd_printTrace(std::vector<std::string>& tokens);
-    //bool cmd_resetTraceBuffer(std::vector<std::string>& tokens);
-    //bool cmd_setHandler(std::vector<std::string>& tokens);
+    bool cmd_addTraceVar_serial(std::string& cmd_str);
+    bool cmd_addTraceVar_thread(std::string& cmd_str);
+    bool cmd_addTraceVar_rank_serial(std::string& cmd_str);
+    bool cmd_addTraceVar_rank_parallel(std::string& cmd_str);
+    bool cmd_addTraceVar_remote(std::vector<std::string>& tokens);
+
+    bool cmd_printWatchpoint_serial(std::string& cmd_str);
+    bool cmd_printWatchpoint_thread(std::string& cmd_str);
+    bool cmd_printWatchpoint_rank_serial(std::string& cmd_str);
+    bool cmd_printWatchpoint_rank_parallel(std::string& cmd_str);
+    bool cmd_printWatchpoint_remote(std::vector<std::string>& tokens);
+
+    bool cmd_printTrace_serial(std::string& cmd_str);
+    bool cmd_printTrace_thread(std::string& cmd_str);
+    bool cmd_printTrace_rank_serial(std::string& cmd_str);
+    bool cmd_printTrace_rank_parallel(std::string& cmd_str);
+    bool cmd_printTrace_remote(std::vector<std::string>& tokens);
+
+    bool cmd_resetTraceBuffer_serial(std::string& cmd_str);
+    bool cmd_resetTraceBuffer_thread(std::string& cmd_str);
+    bool cmd_resetTraceBuffer_rank_serial(std::string& cmd_str);
+    bool cmd_resetTraceBuffer_rank_parallel(std::string& cmd_str);
+    bool cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens);
+
+    bool cmd_setHandler_serial(std::string& cmd_str);
+    bool cmd_setHandler_thread(std::string& cmd_str);
+    bool cmd_setHandler_rank_serial(std::string& cmd_str);
+    bool cmd_setHandler_rank_parallel(std::string& cmd_str);
+    bool cmd_setHandler_remote(std::vector<std::string>& tokens);
     
     bool cmd_unwatch_serial(std::string& cmd_str);
     bool cmd_unwatch_thread(std::string& cmd_str);
@@ -485,7 +500,6 @@ private:
     bool cmd_define(std::string& cmd_str);
     bool cmd_document(std::string& cmd_str);
 
-
     // command entry point
     bool dispatch_cmd(std::string& cmd);
 
@@ -503,14 +517,11 @@ private:
     uint32_t verbosity = 0;
     void     msg(VERBOSITY_MASK mask, std::string message);
 
-    // Test new rank parallel execute
+    // Support for serial, threaded, rank serial, rank parallel execution
     static unsigned current_thread;
     static unsigned current_rank;
     static std::vector<std::string> tokens;
     static std::stringstream result;
-    //static Core::ThreadSafe::Barrier exchange_barrier;
-    //static Core::ThreadSafe::Barrier process_barrier;
-    
     
     int consoleExecute(const std::string& msg);
     int executeThread(const std::string& msg);
@@ -519,10 +530,8 @@ private:
     int executeRankSlave(const std::string& msg);
     bool handleCommand();
     bool handleCommandAll();
-    
     void sendCommand( int32_t rank_id, int32_t thread_id,  const std::string& cmd);
     void sendCommandAll(const std::string&  cmd);
-    void receiveCommand();
     void receiveCommandRankSerial();
     void receiveCommandRankParallel();
     int packResultBuffer( std::stringstream& result, char** result_buffer);
