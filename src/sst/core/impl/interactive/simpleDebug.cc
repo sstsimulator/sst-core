@@ -99,7 +99,16 @@ SimpleDebugger::SimpleDebugger(Params& params) :
             [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_info_remote(tokens); },
         },
         { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL,
+            #if 1
             [this](std::string& UNUSED(cmd_str)) { return cmd_thread(cmd_str); }
+            #else
+            exec_type,
+            [this](std::string& UNUSED(cmd_str)) { return cmd_thread_serial(cmd_str); }, 
+            [this](std::string& UNUSED(cmd_str)) { return cmd_thread_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_thread_rank_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_thread_rank_parallel(cmd_str); },
+            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_thread_remote(tokens); }
+            #endif
         },
         { "rank", "rank", "[rankID]: switch to specified rank ID, same thread", ConsoleCommandGroup::GENERAL,
             [this](std::string& UNUSED(cmd_str)) { return cmd_rank(cmd_str); } 
@@ -810,8 +819,6 @@ SimpleDebugger::cmd_verbose_thread(std::string& UNUSED(cmd_str)) {
     return false;
 }
 
-
-
 bool 
 SimpleDebugger::cmd_verbose_rank_serial(std::string& cmd_str) {
 
@@ -856,6 +863,7 @@ SimpleDebugger::cmd_info_serial(std::string& UNUSED(cmd_str))
     cmd_info_remote(tokens);
     return true;
 }
+
 // Multithread info
 bool
 SimpleDebugger::cmd_info_thread(std::string& UNUSED(cmd_str))
@@ -875,6 +883,7 @@ SimpleDebugger::cmd_info_thread(std::string& UNUSED(cmd_str))
 
     return true;
 }
+
 // Rank serial info
 bool
 SimpleDebugger::cmd_info_rank_serial(std::string& cmd_str)
@@ -944,7 +953,9 @@ SimpleDebugger::cmd_info_remote(std::vector<std::string>& UNUSED(tokens))
     return true;
 }
 
+
 // thread <threadID> : switches to new thread
+#if 1
 bool
 SimpleDebugger::cmd_thread(std::string& UNUSED(cmd_str))
 {
@@ -974,7 +985,7 @@ SimpleDebugger::cmd_thread(std::string& UNUSED(cmd_str))
         return false;
     }
 
-    // Set current thread
+    // Set current thread and get interactive msg
     if ( threadID != current_thread ) {
         current_thread = threadID;  
         printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
@@ -986,6 +997,141 @@ SimpleDebugger::cmd_thread(std::string& UNUSED(cmd_str))
     }
     return true;
 }
+#else
+int
+SimpleDebugger::parse_thread())
+{
+    int      threadID;  // Used int because converting from string
+
+    if ( tokens.size() != 2 ) {
+        printf("Invalid format for thread command (thread <threadID>)\n");
+        return -1; //false;
+    }
+
+    // Get threadID
+    try {
+        threadID = std::stoi(tokens[1]);
+    }
+    catch ( const std::invalid_argument& e ) {
+        std::cout << "Invalid argument for threadID: " << tokens[1] << std::endl;
+        return -1; //false;
+    }
+    catch ( const std::out_of_range& e ) {
+        std::cout << "Out of range for threadID: " << tokens[1] << std::endl;
+        return -1; false;
+    }
+
+    // Check if valid threadID
+    if ( threadID < 0 || threadID >= static_cast<int>(num_ranks_.thread ) ) {
+        printf("ThreadID %d out of range (0:%d)\n", threadID, num_ranks_.thread - 1);
+        return -1; false;
+    }
+
+    return threadID;
+    #if 0
+    // Set current thread and get interactive msg
+    if ( threadID != current_thread ) {
+        current_thread = threadID;  
+        printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
+            current_rank, current_thread, getCurrentSimCycle());
+        printf("%s\n", Simulation_impl::getSimulation()->interactive_msg_.c_str());
+        // SKK May want to change this to list trigger like summary?
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+    return true;
+    #endif
+}
+
+
+bool
+SimpleDebugger::cmd_thread_serial(std::string& UNUSED(cmd_str))
+{
+    int threadID = parseThread();
+
+    // Set current thread and get interactive msg
+    if ( threadID != -1 && threadID != current_thread ) {
+        current_thread = threadID;  
+        printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
+            current_rank, current_thread, getCurrentSimCycle());
+        //printf("%s\n", Simulation_impl::getSimulation()->interactive_msg_.c_str());
+        getInteractiveMsg();
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+    return true;
+}
+
+bool
+SimpleDebugger::cmd_thread_thread(std::string& UNUSED(cmd_str))
+{
+    int threadID = parseThread();
+
+    // Set current thread and get interactive msg
+    if ( threadID != -1 && threadID != current_thread ) {
+        current_thread = threadID;  
+        printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
+            current_rank, current_thread, getCurrentSimCycle());
+        handleCommand();
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+    return true;
+}
+
+bool
+SimpleDebugger::cmd_thread_rank_serial(std::string& cmd_str)
+{
+     int threadID = parseThread();
+
+    // Set current thread and get interactive msg
+    if ( threadID != -1 && threadID != current_thread ) {
+        current_thread = threadID;  
+        printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
+            current_rank, current_thread, getCurrentSimCycle());
+
+        if (current_rank == 0) {
+            getInteractiveMsg(tokens);
+        } else {
+            // Send to remote rank
+            sendCommand(current_rank, current_thread, cmd_str);
+        }
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+    return true;
+}
+
+bool
+SimpleDebugger::cmd_thread_rank_parallel(std::string& cmd_str)
+{
+     int threadID = parseThread();
+
+    // Set current thread and get interactive msg
+    if ( threadID != -1 && threadID != current_thread ) {
+        current_thread = threadID;  
+        printf("---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", 
+            current_rank, current_thread, getCurrentSimCycle());
+
+        if (current_rank == 0) {
+            handleCommand();
+        } else {
+            // Send to remote rank
+            sendCommand(current_rank, current_thread, cmd_str);
+        }
+        // May also need to do something to update the listings
+        // and object map for the first time through
+    }
+    return true;
+}
+
+bool
+SimpleDebugger::cmd_thread_remote(std::vector<std::string>& UNUSED(tokens))
+{
+    Output::getDefaultObject().output("%s\n", Simulation_impl::interactive_msg_.c_str());
+    return true;
+}
+#endif
 
 // rank <rankID> : switches to new rank (same thread)
 bool

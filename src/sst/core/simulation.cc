@@ -2251,7 +2251,6 @@ Simulation_impl::initialize_interactive_console(const std::string& type)
 void
 Simulation_impl::scheduleInteractiveConsole(const std::string& msg)
 {
-    // std::cout << "skk: scheduleIC\n";
     enter_interactive_ = true;
     interactive_msg_   = msg;
 }

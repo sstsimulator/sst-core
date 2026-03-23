@@ -372,7 +372,7 @@ private:
     bool cmd_verbose_query();
     bool cmd_verbose_serial(std::string& UNUSED(cmd_str));
     bool cmd_verbose_thread(std::string& UNUSED(cmd_str));
-    bool cmd_verbose_rank_serial(std::string& md_str);
+    bool cmd_verbose_rank_serial(std::string& cmd_str);
     bool cmd_verbose_rank_parallel(std::string& cmd_str);
     bool cmd_verbose_remote(std::vector<std::string>&(tokens));
     

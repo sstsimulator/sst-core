@@ -172,11 +172,6 @@ public:
     ActivityQueue* registerLink(
         const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
     void exchangeLinkInfo();
-    void rankHandleShutdown();
-    void handleShutdown();
-    void rankHandleInteractiveConsole();
-    void handleInteractiveConsole();
-    void testRankFlagExchange();
     void execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
@@ -200,7 +195,6 @@ public:
     NotSerializable(SST::SyncManager)
 
     
-
 private:
     // Enum to track the next sync type
     enum sync_type_t { RANK, THREAD };
@@ -233,9 +227,7 @@ private:
     void setupSyncObjects();
     void getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
     void getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode, bool& generate_ckpt);
-    void partitionInfo();
-    // Test manager/worker
-    void testProducerConsumer();
+   
 };
 
 } // namespace SST
