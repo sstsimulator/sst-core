@@ -17,6 +17,7 @@ import filecmp
 from sst_unittest import *
 from sst_unittest_support import *
 
+have_mpi = sst_core_config_include_file_get_value(define="SST_CONFIG_HAVE_MPI", type=int, default=0, disable_warning=True) == 1
 
 class testcase_Checkpoint(SSTTestCase):
 
@@ -97,9 +98,11 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_sc_2u2u_n2one(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True)
 
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_Statistics_basic_par_remap(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", par_remap=True)
 
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_sc_2u2u_par_remap(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", par_remap=True)
 
