@@ -735,6 +735,7 @@ SyncManager::handleInteractiveConsole()
 }
 #endif
 
+#if 0
 void
 SyncManager::partitionInfo() {
     Output& out = sim_->getSimulationOutput();
@@ -760,7 +761,9 @@ SyncManager::partitionInfo() {
         RankExecBarrier_[0].wait();
     }
 }
+#endif
 
+#if 0
 void
 SyncManager::testProducerConsumer() 
 {
@@ -782,6 +785,7 @@ SyncManager::testProducerConsumer()
     sim_->setEndSim();
 
 }
+#endif
 
 void
 SyncManager::execute()
@@ -790,7 +794,7 @@ SyncManager::execute()
     std::string type = "RANK";
     if (next_sync_type_ == THREAD)
         type = "THREAD";
-    Output& out = sim_->getSimulationOutput();
+    //Output& out = sim_->getSimulationOutput();
     //out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
     //    rank_.rank, rank_.thread, type.c_str());
 #else 
@@ -845,19 +849,10 @@ SyncManager::execute()
         //printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
         //            rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
         getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
-        #if 1
         rankSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
         rankSync_->setCkptFlag(generate_ckpt);
         //printf("1: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
         //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-     
-        #else
-        threadSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
-        ic_barrier_.wait();
-        threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-        #endif
-        //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-        //    enter_interactive, enter_shutdown, shutdown_mode);
 #endif        
 
         // Now call the actual RankSync.  No barrier needed here
@@ -871,7 +866,7 @@ SyncManager::execute()
         // Now call the threadSync after() call
         threadSync_->after();
         
-        // Handle signals
+        // Get signals
         signals_received = rankSync_->getSignals(sig_end, sig_usr, sig_alrm);
        
         // Handle any signals
@@ -928,40 +923,17 @@ SyncManager::execute()
                 //if ( sim_->interactive_ != nullptr ) sim_->interactive_->execute(sim_->interactive_msg_);
                 //printf("3: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
                 //    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-                partitionInfo();
+                //partitionInfo();
 
-                #if 1
-                // SKK Test Producer/Consumer
-                //testProducerConsumer();
-                //sim_->interactive_->rankParallelExecute();
                 //Output::getDefaultObject().output("R%d, T%d: Before execute \n", rank_.rank, rank_.thread);
                 sim_->interactive_->execute(sim_->interactive_msg_);
-                
-                //RankExecBarrier_[0].wait();
-                //Output::getDefaultObject().output("R%d, T%d: After execute \n", rank_.rank, rank_.thread);
-                //sim_->setEndSim();
-                #else
-                //if (rank_.rank == 0) {  // SKK Temporary to test passing of watchpoint triggers
-                if (rank_.rank == 0 && rank_.thread == 0) { 
-                    //sim_->interactive_->execute();
-                    handleInteractiveConsole();  // SKK Hack to work until manager/worker implemented
-                    //rankHandleInteractiveConsole(); // won't work with MPIALLREDUCE bc only R0 calls
-                }
-                RankExecBarrier_[0].wait();  // SKK Sync result of IC
-                #endif
-                sim_->enter_interactive_ = false; // IC may schedule IC again
-                
+                sim_->enter_interactive_ = false; // IC may schedule IC again     
             }
             //printf("4: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
             //        rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
             rankSync_->clearFlags();
             RankExecBarrier_[0].wait();  // SKK Sync clear 
-            #if 0
-            // Test Rank Handle Shutdown Communication
-            testRankFlagExchange();
-            #endif
         }
-
 #endif
 
         // No barrier needed. Either the check failed and no
@@ -1036,20 +1008,13 @@ SyncManager::execute()
             }
             else if (enter_interactive) {
                 //handleInteractiveConsole(); // Check of any thread set interactive console
-                sim_->interactive_->summary();
                 sim_->interactive_->execute(sim_->interactive_msg_);
+                sim_->enter_interactive_ = false; // IC may schedule IC again
                 //Output::getDefaultObject().output(" R%d, T%d: after interactive enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
                     //rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-                //ic_barrier_.wait();
-                //handleShutdown();
-                //ic_barrier_.wait();
-                //threadSync_->clearFlags();
+                ic_barrier_.wait();
+                threadSync_->clearFlags();
             }
-            //threadSync_->clearFlags(); // SKK May currently be duplicated at end of handleIC for ic-start=0 case 
-            //printf("After threadSync_->clearFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-            //    enter_interactive, enter_shutdown, shutdown_mode);
-
-
         } // if num_ranks_.rank == 1 i.e. only multithreading
 
         if ( /*num_ranks_+.rank == 1*/ min_part_ == MAX_SIMTIME_T ) {
