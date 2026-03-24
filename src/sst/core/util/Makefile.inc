@@ -12,6 +12,7 @@ sst_core_sources += \
 	util/filesystem.cc
 
 nobase_dist_sst_HEADERS += \
+	util/bit_util.h \
 	util/smartTextFormatter.h \
 	util/filesystem.h
 

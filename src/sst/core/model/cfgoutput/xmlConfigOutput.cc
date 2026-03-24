@@ -61,8 +61,8 @@ XMLConfigGraphOutput::generateXML(
     // for(auto paramsItr = comp->params.begin(); paramsItr != comp->params.end(); paramsItr++) {
     auto keys = comp->params.getKeys();
     for ( auto paramsItr = keys.begin(); paramsItr != keys.end(); paramsItr++ ) {
-        std::string paramName  = *paramsItr;
-        std::string paramValue = comp->params.find<std::string>(*paramsItr);
+        const std::string& paramName  = *paramsItr;
+        std::string        paramValue = comp->params.find<std::string>(*paramsItr);
 
         fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n", indent.c_str(), "   ", paramName.c_str(),
             paramValue.c_str());
@@ -76,11 +76,11 @@ XMLConfigGraphOutput::generateXML(
     const std::string& indent, const ConfigLink* link, const ConfigComponentMap_t& compMap) const
 {
 
-    const ConfigComponent* link_left  = compMap[link->component[0]];
-    const ConfigComponent* link_right = compMap[link->component[1]];
+    const ConfigComponent* link_left  = compMap[link->component_[0]];
+    const ConfigComponent* link_right = compMap[link->component_[1]];
 
     fprintf(outputFile,
         "%s<link id=\"%s\" name=\"%s\"\n%s%sleft=\"%s\" right=\"%s\"\n%s%sleftport=\"%s\" rightport=\"%s\"/>\n",
-        indent.c_str(), link->name.c_str(), link->name.c_str(), indent.c_str(), "   ", link_left->name.c_str(),
-        link_right->name.c_str(), indent.c_str(), "   ", link->port[0].c_str(), link->port[1].c_str());
+        indent.c_str(), link->name_.c_str(), link->name_.c_str(), indent.c_str(), "   ", link_left->name.c_str(),
+        link_right->name.c_str(), indent.c_str(), "   ", link->port_[0].c_str(), link->port_[1].c_str());
 }

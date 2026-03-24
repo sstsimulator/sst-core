@@ -104,9 +104,9 @@ public:
 
     std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
-    uint16_t nextSubID;  /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
-    uint16_t nextStatID; /*!< Next statID to use for children */
-    bool     visited;    /*! Used when traversing graph to indicate component was visited already */
+    uint16_t nextSubID;        /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
+    uint64_t next_stat_id = 1; /*!< Next statID to use */
+    bool     visited;          /*! Used when traversing graph to indicate component was visited already */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
@@ -182,6 +182,15 @@ public:
     */
     std::vector<LinkId_t> clearAllLinks();
 
+    /**
+       Update a Link that has had its ID changed
+
+       @param old_id Old id to replace
+
+       @param new_id New id to use
+    */
+    void replaceLinkId(LinkId_t old_id, LinkId_t new_id);
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST_SER(id);
@@ -202,7 +211,7 @@ public:
         SST_SER(subComponents);
         SST_SER(coords);
         SST_SER(nextSubID);
-        SST_SER(nextStatID);
+        SST_SER(next_stat_id);
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -230,8 +239,7 @@ private:
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
         enabledAllStats(false),
-        nextSubID(1),
-        nextStatID(1)
+        nextSubID(1)
     {
         coords.resize(3, 0.0);
     }
@@ -247,8 +255,7 @@ private:
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
         enabledAllStats(false),
-        nextSubID(parent_subid),
-        nextStatID(parent_subid)
+        nextSubID(parent_subid)
     {
         coords.resize(3, 0.0);
     }

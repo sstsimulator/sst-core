@@ -50,8 +50,8 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     else
         single_rank = true;
 
-    my_max_period = sim->getInterThreadMinLatency();
-    nextSyncTime  = my_max_period;
+    max_period   = sim->getInterThreadMinLatency();
+    nextSyncTime = max_period;
 }
 
 ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
@@ -66,14 +66,15 @@ ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 }
 
 void
-ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
+ThreadSyncSimpleSkip::registerLink(Link* link)
 {
     std::scoped_lock slock(lock);
-    auto             iter = link_map.find(name);
+    link_vec.push_back(getPairLink(link));
+    auto iter = link_map.find(link->getId());
     if ( iter == link_map.end() ) {
-        // I have initialized first, so just put the name and link in
+        // I have initialized first, so just put the id and link in
         // the map
-        link_map[name] = link;
+        link_map[link->getId()] = link;
     }
     else {
         // I already have the remote info, so initialize the link data
@@ -84,14 +85,14 @@ ThreadSyncSimpleSkip::registerLink(const std::string& name, Link* link)
 }
 
 ActivityQueue*
-ThreadSyncSimpleSkip::registerRemoteLink(int tid, const std::string& name, Link* link)
+ThreadSyncSimpleSkip::registerRemoteLink(int tid, Link* link)
 {
     std::scoped_lock slock(lock);
-    auto             iter = link_map.find(name);
+    auto             iter = link_map.find(link->getId());
     if ( iter == link_map.end() ) {
-        // I have initialized first, so just put the name and link in
+        // I have initialized first, so just put the id and link in
         // the map
-        link_map[name] = link;
+        link_map[link->getId()] = link;
     }
     else {
         // I already have the local info, so initialize the link data
@@ -128,7 +129,7 @@ ThreadSyncSimpleSkip::after()
     // Use this nextSyncTime computation for skipping
 
     auto nextmin     = sim->getLocalMinimumNextActivityTime();
-    auto nextminPlus = nextmin + my_max_period;
+    auto nextminPlus = nextmin + max_period;
     nextSyncTime     = nextmin > nextminPlus ? nextmin : nextminPlus;
 }
 
@@ -179,6 +180,26 @@ ThreadSyncSimpleSkip::getDataSize() const
 {
     size_t count = 0;
     return count;
+}
+
+SimTime_t
+ThreadSyncSimpleSkip::findSyncInterval()
+{
+    SimTime_t min_lat = bit_util::type_max<SimTime_t>;
+    // Need to look through all my links and find the minimum latency
+    for ( auto* x : link_vec ) {
+        // I need to see if addRecvLatency() was called on the remote side of the link.  We have a pointer to that Link
+        // (as a uintptr_t) in delivery_info.
+        SimTime_t latency = getLatency(x) + getLatency(reinterpret_cast<Link*>(getDeliveryInfo(x)));
+        if ( latency < min_lat ) min_lat = latency;
+    }
+
+    link_vec.clear();
+    updateMinimumLatency(min_lat);
+
+    // Need to barrier, then return the minimum latency
+    barrier[0].wait();
+    return updateMinimumLatency();
 }
 
 void

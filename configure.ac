@@ -1,7 +1,7 @@
 
-AC_INIT([SSTCore], [-dev], [wg-sst@sandia.gov])
+AC_INIT([SSTCore],[-dev],[wg-sst@sandia.gov])
 
-AC_PREREQ([2.59])
+AC_PREREQ([2.69])
 AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2025])
 
 AC_CONFIG_AUX_DIR([config])
@@ -25,7 +25,7 @@ AC_CONFIG_HEADERS([src/sst/core/sst_config.h])
 # Lets check for the standard compilers and basic options
 AC_PROG_CC
 AM_PROG_CC_C_O
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71,, m4_defn([AC_AUTOCONF_VERSION]), 2.70,, [AC_PROG_CC_C99])
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.69, [AC_PROG_CC_C99], )
 AC_C_INLINE
 AC_PROG_MAKE_SET
 

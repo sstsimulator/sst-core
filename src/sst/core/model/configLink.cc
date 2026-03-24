@@ -24,6 +24,7 @@
 #include <utility>
 
 namespace SST {
+
 std::map<std::string, uint32_t> ConfigLink::lat_to_index;
 
 uint32_t
@@ -64,7 +65,7 @@ ConfigLink::latency_str(uint32_t index) const
 {
     static TimeLord* timelord = Simulation_impl::getTimeLord();
     UnitAlgebra      tb       = timelord->getTimeBase();
-    auto             tmp      = tb * latency[index];
+    auto             tmp      = tb * latency_[index];
     return tmp.toStringBestSI();
 }
 
@@ -74,30 +75,30 @@ ConfigLink::setAsNonLocal(int which_local, RankInfo remote_rank_info)
     // First, if which_local != 0, we need to swap the data for index
     // 0 and 1
     if ( which_local == 1 ) {
-        std::swap(component[0], component[1]);
-        std::swap(port[0], port[1]);
-        std::swap(latency[0], latency[1]);
+        std::swap(component_[0], component_[1]);
+        std::swap(port_[0], port_[1]);
+        std::swap(latency_[0], latency_[1]);
     }
 
     // Now add remote annotations.  Rank goes in component[1], thread
     // goes in latency[1], port[1] is not needed
-    component[1] = remote_rank_info.rank;
-    latency[1]   = remote_rank_info.thread;
-    port[1].clear();
+    component_[1] = remote_rank_info.rank;
+    latency_[1]   = remote_rank_info.thread;
+    port_[1].clear();
 
-    nonlocal = true;
+    nonlocal_ = true;
 }
 
 void
 ConfigLink::updateLatencies()
 {
     // Need to clean up some elements before we can test for zero latency
-    if ( order >= 1 ) {
-        latency[0] = ConfigLink::getLatencyFromIndex(latency[0]);
+    if ( component_[0] != UNSET_COMPONENT_ID ) {
+        latency_[0] = ConfigLink::getLatencyFromIndex(latency_[0]);
     }
     // If this is nonlocal, latency[1] holds the remote thread instead of the latency
-    if ( order >= 2 && !nonlocal ) {
-        latency[1] = ConfigLink::getLatencyFromIndex(latency[1]);
+    if ( !nonlocal_ && component_[1] != UNSET_COMPONENT_ID ) {
+        latency_[1] = ConfigLink::getLatencyFromIndex(latency_[1]);
     }
 }
 

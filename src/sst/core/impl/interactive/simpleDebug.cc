@@ -25,6 +25,7 @@
 #include <list>
 #include <sstream>
 #include <stdexcept>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
 
@@ -39,8 +40,10 @@ std::string   SimpleDebugger::loggingFilePath = "sst-console.out";
 std::string   SimpleDebugger::replayFilePath  = "sst-console.in";
 bool          SimpleDebugger::enLogging       = false;
 bool          SimpleDebugger::confirm_        = true;
+
 SimpleDebugger::SimpleDebugger(Params& params) :
-    InteractiveConsole()
+    InteractiveConsole(),
+    dout(std::cout, 50, 160)
 {
     // registerAsPrimaryComponent();
 
@@ -204,6 +207,12 @@ SimpleDebugger::SimpleDebugger(Params& params) :
 
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
+
+    struct winsize size;
+    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
+        dout.setLineWidth(size.ws_col);
+        dout.setLineCount(size.ws_row);
+    }
 }
 
 SimpleDebugger::~SimpleDebugger()
@@ -249,10 +258,17 @@ SimpleDebugger::summary()
 int
 SimpleDebugger::execute(const std::string& msg)
 {
+    struct winsize size;
+    if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
+        dout.setLineWidth(size.ws_col);
+        dout.setLineCount(size.ws_row);
+    }
+
     RankInfo info   = getRank();
     RankInfo nRanks = getNumRanks();
     printf("\n---- Rank%d:Thread%d: Entering interactive mode at time %" PRI_SIMTIME " \n", info.rank, info.thread,
         getCurrentSimCycle());
+
     printf("%s\n", msg.c_str());
 
     // Create a new ObjectMap
@@ -675,12 +691,13 @@ SimpleDebugger::cmd_ls(std::vector<std::string>& UNUSED(tokens))
     auto& vars = obj_->getVariables();
     for ( auto& x : vars ) {
         if ( x.second->isFundamental() ) {
-            std::cout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
+            dout << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
         }
         else {
-            std::cout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
+            dout << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
         }
     }
+    dout << dreset;
     return true;
 }
 
@@ -987,7 +1004,7 @@ SimpleDebugger::cmd_setHandler(std::vector<std::string>& tokens)
     size_t   tindex  = 2;
     unsigned handler = 0;
     while ( tindex < tokens.size() ) {
-        std::string type = tokens[tindex++];
+        const std::string& type = tokens[tindex++];
         // printf("%s ", type.c_str());
 
         if ( type == "bc" )
@@ -1045,7 +1062,7 @@ SimpleDebugger::cmd_addTraceVar(std::vector<std::string>& tokens)
     // Get trace vars and add associated objectBuffers
     size_t tindex = 2;
     while ( tindex < tokens.size() ) {
-        std::string tvar = tokens[tindex++];
+        const std::string& tvar = tokens[tindex++];
         // printf("%s ", tvar.c_str());
 
         // Find and check trace variable
@@ -1322,12 +1339,12 @@ Core::Serialization::ObjectMapComparison*
 parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj, std::string& name)
 {
     // Get first comparison
-    std::string var = tokens[index++];
+    const std::string& var = tokens[index++];
     if ( index >= tokens.size() ) {
         printf("Invalid format for trigger test\n");
         return nullptr;
     }
-    std::string                                  opstr = tokens[index++];
+    const std::string&                           opstr = tokens[index++];
     Core::Serialization::ObjectMapComparison::Op op =
         Core::Serialization::ObjectMapComparison::getOperationFromString(opstr);
 
@@ -1417,7 +1434,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
 WatchPoint::WPAction*
 parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj)
 {
-    std::string action = tokens[index++];
+    const std::string& action = tokens[index++];
 
     if ( action == "interactive" ) {
         return new WatchPoint::InteractiveWPAction();
@@ -1440,14 +1457,14 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
             printf("Missing variable for set command\n");
             return nullptr;
         }
-        std::string tvar = tokens[index++];
+        const std::string& tvar = tokens[index++];
         // printf("%s ", tvar.c_str());
 
         if ( index >= tokens.size() ) {
             printf("Missing value for set command\n");
             return nullptr;
         }
-        std::string tval = tokens[index++];
+        const std::string& tval = tokens[index++];
 
         // Find and check variable
         Core::Serialization::ObjectMap* map = obj->findVariable(tvar);

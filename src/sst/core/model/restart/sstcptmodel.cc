@@ -121,11 +121,17 @@ SSTCPTModelDefinition::createConfigGraph()
     if ( (cfg.num_ranks() != graph->cpt_ranks.rank || cfg.num_threads() != graph->cpt_ranks.thread) &&
          !(cfg.num_threads() == 1 && cfg.num_ranks() == 1) ) {
 
-        Output::getDefaultObject().fatal(CALL_INFO, 1,
-            "Rank or thread counts do not match checkpoint. "
-            "Checkpoint requires %" PRIu32 " ranks and %" PRIu32 " threads. "
-            "Serial restarts are also permitted.\n",
-            graph->cpt_ranks.rank, graph->cpt_ranks.thread);
+        // We can proceed if the total number of partitions is the same, otherwise, error
+        if ( (cfg.num_ranks() * cfg.num_threads()) == (graph->cpt_ranks.rank * graph->cpt_ranks.thread) ) {
+            graph->cpt_remap_partitions = true;
+        }
+        else {
+            Output::getDefaultObject().fatal(CALL_INFO, 1,
+                "Rank or thread counts do not match checkpoint. Checkpoint/restart requires that the total parallelism "
+                "be the same between a checkpoint and restart (i.e. ranks * threads is the same for both).  Checkpoint "
+                "was created with %" PRIu32 " ranks and %" PRIu32 " threads. Serial restarts are also permitted.\n",
+                graph->cpt_ranks.rank, graph->cpt_ranks.thread);
+        }
     }
     /******** ^^ Works for regular and N->1 restart ^^ ***********/
 

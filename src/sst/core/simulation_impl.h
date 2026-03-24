@@ -51,7 +51,6 @@ namespace SST {
 void SST_Exit(int exit_code);
 
 #define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
-#define STATALLFLAG            "--ALLSTATS--"
 
 class Activity;
 class CheckpointAction;
@@ -219,6 +218,8 @@ public:
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
+    void findRankSyncInterval();
+    void findThreadSyncInterval();
 
     /** Setup external control actions (forced stops, signal handling */
     void setupSimActions();
@@ -242,6 +243,8 @@ public:
     void run();
 
     void finish();
+
+    void updateSyncInterval();
 
     /** Adjust clocks and time to reflect precise simulation end time which
         may differ in parallel simulations from the time simulation end is detected.
@@ -418,7 +421,19 @@ public:
      */
     void checkpoint_write_globals(int checkpoint_id, const std::string& checkpoint_filename,
         const std::string& registry_filename, const std::string& globals_filename);
-    void restart();
+    void restart(ConfigGraph* graph);
+
+    void discoverRemoteLinks();
+
+    /**** Functions/variables needed for discoverRemoteLinks() ****/
+    Core::ThreadSafe::BoundedQueue<std::vector<std::pair<LinkId_t, RankInfo>>*>  local_discover_queue;
+    Core::ThreadSafe::BoundedQueue<std::vector<std::pair<LinkId_t, RankInfo>>*>* remote_discover_queue;
+    std::vector<std::pair<LinkId_t, RankInfo>>*                                  xfer_vec = nullptr;
+
+    void discoverRemoteLinksMoveData(
+        std::vector<std::pair<LinkId_t, RankInfo>>& send_vec, std::vector<std::pair<LinkId_t, RankInfo>>& recv_vec);
+
+    /**************************************************************/
 
     /**
        Function used to get the rank for a link on restart.  A rank of
@@ -426,7 +441,7 @@ public:
        between checkpoint and restart and the original rank info
        stored in the checkpoint should be used.
      */
-    RankInfo getRankForLinkOnRestart(RankInfo rank, uintptr_t UNUSED(tag))
+    RankInfo getRankForLinkOnRestart(RankInfo rank, LinkId_t UNUSED(id))
     {
         if ( serial_restart_ ) return RankInfo(0, 0);
         return RankInfo(rank.rank, rank.thread);
@@ -536,6 +551,14 @@ public:
     bool                    enter_interactive_ = false;
     std::string             interactive_msg_;
     SimTime_t               stop_at_ = 0;
+
+    uint32_t next_link_order_tag_ = 1;
+
+    /**
+       Gets the next value for the order field of the link.  The ordering of events based on links will be based on
+       the order that configureLink() is called.
+    */
+    uint32_t getNextLinkOrderTag() { return next_link_order_tag_++; }
 
     // OneShotManager
     Core::OneShotManager one_shot_manager_;
@@ -677,15 +700,15 @@ public:
     static std::vector<Simulation_impl*>                         instanceVec_;
 
     /******** Checkpoint/restart tracking data structures ***********/
-    std::map<std::pair<int, uintptr_t>, Link*> link_restart_tracking;
-    std::map<uintptr_t, uintptr_t>             event_handler_restart_tracking;
-    uint32_t                                   checkpoint_id_       = 0;
-    std::string                                checkpoint_prefix_   = "";
-    std::string                                globalOutputFileName = "";
-    std::string                                version_             = "";
-    std::string                                arch_                = "";
-    std::string                                os_                  = "";
-    bool                                       serial_restart_      = false;
+    std::map<LinkId_t, Link*>      link_restart_tracking;
+    std::map<uintptr_t, uintptr_t> event_handler_restart_tracking;
+    uint32_t                       checkpoint_id_       = 0;
+    std::string                    checkpoint_prefix_   = "";
+    std::string                    globalOutputFileName = "";
+    std::string                    version_             = "";
+    std::string                    arch_                = "";
+    std::string                    os_                  = "";
+    bool                           serial_restart_      = false;
 
     // Config object used by the simulation
     static Config       config;

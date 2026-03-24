@@ -24,44 +24,29 @@ class LinkPair
 {
 public:
     /** Create a new LinkPair.  This is used when the endpoints are in the same partition.
-     * @param order Value used to enforce the link order.
-     */
-    explicit LinkPair(LinkId_t order) :
-        left(new Link(order)),
-        right(new Link(order))
-    {
-        my_id = order;
 
+        @param id ID of the link
+    */
+    explicit LinkPair(LinkId_t id) :
+        left(new Link(id)),
+        right(new Link(id))
+    {
         left->pair_link  = right;
         right->pair_link = left;
     }
 
     /** Create a new LinkPair.  This is used on restart.
-     * @param order Value used to enforce the link order.
-     */
+
+        @param order Value used to enforce the link order.
+    */
     LinkPair() :
         left(new Link()),
         right(new Link())
     {
-        my_id = -1;
-
         left->pair_link  = right;
         right->pair_link = left;
     }
 
-    /** Create a new LinkPair.  This is used when the endpoints are in different partitions.
-     * @param order Value used to enforce the link order.
-     * @param remote_tag Used to look up the correct link on the other side.
-     */
-    LinkPair(LinkId_t order, LinkId_t remote_tag) :
-        left(new Link(remote_tag)),
-        right(new Link(order))
-    {
-        my_id = order;
-
-        left->pair_link  = right;
-        right->pair_link = left;
-    }
 
     virtual ~LinkPair() {}
 
@@ -78,8 +63,6 @@ public:
 private:
     Link* left;
     Link* right;
-
-    LinkId_t my_id;
 };
 
 } // namespace SST

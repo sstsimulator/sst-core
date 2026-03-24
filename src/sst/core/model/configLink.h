@@ -52,8 +52,8 @@ public:
        the order they are attached in.  If the link is marked as
        non-local, then component[1] holds the rank of the remote
        component.
-     */
-    ComponentId_t component[2] = { 0, 0 }; /*!< IDs of the connected components */
+    */
+    ComponentId_t component_[2] = { UNSET_COMPONENT_ID, UNSET_COMPONENT_ID }; /*!< IDs of the connected components */
 
     /**
        This is a dual purpose data member.
@@ -75,55 +75,40 @@ public:
 
        If the link is marked as non-local, then latency[1] holds the
        thread of the remote component.
-     */
-    SimTime_t latency[2] = { 0, 0 };
+    */
+    SimTime_t latency_[2] = { 0, 0 };
 
     /**
-       Name of the link.  This is used in three cases:
+       Name of the link.  This is used in two ways:
 
        Errors - if an error is found in the graph construction, the
        name is used to report the error to the user
-
-       Link ordering - the event ordering for links is based on the
-       alphabetized name of the links.  The links are sorted by name
-       and order is assigned linearly starting at 1
 
        Parallel load - for parallel load, links that cross partition
        boundaries are connected by matching link names
 
        Link names are not carried over to the simulation objects
-     */
-    std::string name;
+    */
+    std::string name_;
 
     /**
        id of the link.  This is used primarily to find the link in ConfigGraph::links.  For parallel loads, the link ID
        is only unique on a given rank, not globally.
 
        The ID's are not carried over to the simulation objects
-     */
-    LinkId_t id = 0;
-
-    /**
-       This is a dual purpose data member.  During graph construction,
-       it counts the number of components currently referencing this
-       link.  After graph construction, it is assigned the value used
-       to enforce ordering of events based on the links they were sent
-       on.
-
-       @see Activity::setOrderTag, Link::tag
-     */
-    LinkId_t order = 0;
+    */
+    LinkId_t id_ = 0;
 
     /**
        Name of the ports the link is connected to.  The indices match
        the ones used in the component array
-     */
-    std::string port[2];
+    */
+    std::string port_[2];
 
     /**
        Whether or not this link is set to be no-cut
-     */
-    bool no_cut = false;
+    */
+    bool no_cut_ = false;
 
     /**
        Whether this link crosses the graph boundary and is connected
@@ -132,17 +117,17 @@ public:
        for the arrays) and the rank for the remote component will be
        stored in component[1] and the thread in latency[1].
     */
-    bool nonlocal = false;
+    bool nonlocal_ = false;
 
     /**
        Set to true if this is a cross rank link
-     */
-    bool cross_rank = false;
+    */
+    bool cross_rank_ = false;
 
     /**
        Set to true if this is a cross thread link on same rank
     */
-    bool cross_thread = false;
+    bool cross_thread_ = false;
 
     /********* ^^ Member variables ^^ ***********/
 
@@ -150,23 +135,23 @@ public:
     /**
        Function used when storing ConfigLinks in a SparseVectorMap
     */
-    inline LinkId_t key() const { return id; }
+    inline LinkId_t key() const { return id_; }
 
     /**
        Return the minimum latency of this link (from both sides).  For non local links, it will return the local latency
     */
     SimTime_t getMinLatency() const
     {
-        if ( nonlocal ) return latency[0];
-        if ( latency[0] < latency[1] ) return latency[0];
-        return latency[1];
+        if ( nonlocal_ ) return latency_[0];
+        if ( latency_[0] < latency_[1] ) return latency_[0];
+        return latency_[1];
     }
 
     /**
        Gets the latency as a string from the id stored in latency[].  This is only allowed to be called during graph
        construction.  After post-graph construction checks, the latency[] array no longer hold indices to the strings.
 
-       @see latency
+       @see latency_
     */
     std::string latency_str(uint32_t index) const;
 
@@ -185,14 +170,14 @@ public:
     */
     void print(std::ostream& os) const
     {
-        os << "Link " << name << " (id = " << id << ")" << std::endl;
-        os << "  nonlocal = " << nonlocal << std::endl;
-        os << "  component[0] = " << component[0] << std::endl;
-        os << "  port[0] = " << port[0] << std::endl;
-        os << "  latency[0] = " << latency[0] << std::endl;
-        os << "  component[1] = " << component[1] << std::endl;
-        os << "  port[1] = " << port[1] << std::endl;
-        os << "  latency[1] = " << latency[1] << std::endl;
+        os << "Link " << name_ << " (id = " << id_ << ")" << std::endl;
+        os << "  nonlocal = " << nonlocal_ << std::endl;
+        os << "  component[0] = " << component_[0] << std::endl;
+        os << "  port[0] = " << port_[0] << std::endl;
+        os << "  latency[0] = " << latency_[0] << std::endl;
+        os << "  component[1] = " << component_[1] << std::endl;
+        os << "  port[1] = " << port_[1] << std::endl;
+        os << "  latency[1] = " << latency_[1] << std::endl;
     }
 
     /* Do not use.  For serialization only */
@@ -203,45 +188,29 @@ public:
      */
     void serialize_order(SST::Core::Serialization::serializer& ser) /*override*/
     {
-        SST_SER(id);
-        SST_SER(name);
-        SST_SER(component[0]);
-        SST_SER(component[1]);
-        SST_SER(port[0]);
-        SST_SER(port[1]);
-        SST_SER(latency[0]);
-        SST_SER(latency[1]);
-        SST_SER(order);
-        SST_SER(nonlocal);
-        SST_SER(no_cut);
-        SST_SER(cross_rank);
-        SST_SER(cross_thread);
+        SST_SER(id_);
+        SST_SER(name_);
+        SST_SER(component_);
+        SST_SER(port_);
+        SST_SER(latency_);
+        SST_SER(nonlocal_);
+        SST_SER(no_cut_);
+        SST_SER(cross_rank_);
+        SST_SER(cross_thread_);
     }
 
 private:
     friend class ConfigGraph;
     explicit ConfigLink(LinkId_t id) :
-        id(id),
-        no_cut(false)
-    {
-        order = 0;
-
-        // Initialize the component data items
-        component[0] = ULONG_MAX;
-        component[1] = ULONG_MAX;
-    }
+        id_(id),
+        no_cut_(false)
+    {}
 
     ConfigLink(LinkId_t id, const std::string& n) :
-        id(id),
-        no_cut(false)
-    {
-        order = 0;
-        name  = n;
-
-        // Initialize the component data items
-        component[0] = ULONG_MAX;
-        component[1] = ULONG_MAX;
-    }
+        name_(n),
+        id_(id),
+        no_cut_(false)
+    {}
 
     void updateLatencies();
 };
@@ -250,38 +219,38 @@ private:
 class PartitionLink
 {
 public:
-    LinkId_t      id;
-    ComponentId_t component[2];
-    SimTime_t     latency[2];
-    bool          no_cut;
+    LinkId_t      id_;
+    ComponentId_t component_[2];
+    SimTime_t     latency_[2];
+    bool          no_cut_;
 
     PartitionLink(const ConfigLink& cl)
     {
-        id           = cl.id;
-        component[0] = cl.component[0];
-        component[1] = cl.component[1];
-        latency[0]   = cl.latency[0];
-        latency[1]   = cl.latency[1];
-        no_cut       = cl.no_cut;
+        id_           = cl.id_;
+        component_[0] = cl.component_[0];
+        component_[1] = cl.component_[1];
+        latency_[0]   = cl.latency_[0];
+        latency_[1]   = cl.latency_[1];
+        no_cut_       = cl.no_cut_;
     }
 
-    inline LinkId_t key() const { return id; }
+    inline LinkId_t key() const { return id_; }
 
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const
     {
-        if ( latency[0] < latency[1] ) return latency[0];
-        return latency[1];
+        if ( latency_[0] < latency_[1] ) return latency_[0];
+        return latency_[1];
     }
 
     /** Print the Link information */
     void print(std::ostream& os) const
     {
-        os << "    Link " << id << std::endl;
-        os << "      component[0] = " << component[0] << std::endl;
-        os << "      latency[0] = " << latency[0] << std::endl;
-        os << "      component[1] = " << component[1] << std::endl;
-        os << "      latency[1] = " << latency[1] << std::endl;
+        os << "    Link " << id_ << std::endl;
+        os << "      component[0] = " << component_[0] << std::endl;
+        os << "      latency[0] = " << latency_[0] << std::endl;
+        os << "      component[1] = " << component_[1] << std::endl;
+        os << "      latency[1] = " << latency_[1] << std::endl;
     }
 };
 

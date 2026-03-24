@@ -252,7 +252,7 @@ Factory::CreateComponent(ComponentId_t id, const std::string& type, Params& para
 bool
 Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
 {
-    std::string compTypeToLoad = type;
+    const std::string& compTypeToLoad = type;
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);

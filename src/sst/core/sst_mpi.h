@@ -133,4 +133,5 @@ int SST_MPI_Barrier(MPI_Comm comm);
 int SST_MPI_Allgather(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount,
     MPI_Datatype recvtype, MPI_Comm comm);
 
+int SST_MPI_GetRank();
 #endif

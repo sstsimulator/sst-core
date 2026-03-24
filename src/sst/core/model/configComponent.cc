@@ -18,6 +18,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/from_string.h"
 #include "sst/core/model/configGraph.h"
+#include "sst/core/model/sstmodel.h"
 #include "sst/core/namecheck.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
@@ -201,8 +202,10 @@ ConfigComponent::getNextSubComponentID()
 StatisticId_t
 ConfigComponent::getNextStatisticID()
 {
-    uint16_t statId = nextStatID++;
-    return STATISTIC_ID_CREATE(id, statId);
+    if ( getParent() ) {
+        return getParent()->getNextStatisticID();
+    }
+    return next_stat_id++;
 }
 
 ConfigComponent*
@@ -267,16 +270,14 @@ ConfigComponent::addParameter(const std::string& key, const std::string& value, 
 ConfigStatistic*
 ConfigComponent::createStatistic()
 {
-    StatisticId_t stat_id = getNextStatisticID();
-
-    auto*            parent = getParent();
-    ConfigStatistic* cs     = nullptr;
+    auto* parent = getParent();
     if ( parent ) {
-        cs = parent->insertStatistic(stat_id);
+        return parent->createStatistic();
     }
-    else {
-        cs = &statistics_[stat_id];
-    }
+
+    StatisticId_t    stat_id = getNextStatisticID();
+    ConfigStatistic* cs      = &statistics_[stat_id];
+
     cs->id = stat_id;
     return cs;
 }
@@ -331,9 +332,9 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
 }
 
 bool
-ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t sid)
+ConfigComponent::reuseStatistic(const std::string& statistic_name, StatisticId_t sid)
 {
-    if ( statisticName == STATALLFLAG ) {
+    if ( statistic_name == STATALLFLAG ) {
         // We cannot use reuseStatistic with STATALLFLAG
         Output::getDefaultObject().fatal(CALL_INFO, 1, "Cannot reuse a Statistic with STATALLFLAG as parameter");
         return false;
@@ -344,10 +345,10 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         comp = comp->getParent();
     }
 
-    if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName) ) {
+    if ( !Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statistic_name) ) {
         Output::getDefaultObject().fatal(CALL_INFO, 1,
             "Failed to create statistic '%s' on '%s' of type '%s' - this is not a valid statistic\n",
-            statisticName.c_str(), name.c_str(), type.c_str());
+            statistic_name.c_str(), name.c_str(), type.c_str());
         return false;
     }
 
@@ -357,7 +358,7 @@ ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t 
         return false;
     }
     else {
-        enabledStatNames[statisticName] = sid;
+        enabledStatNames[statistic_name] = sid;
         return true;
     }
 }
@@ -568,6 +569,17 @@ ConfigComponent::clearAllLinks()
 }
 
 void
+ConfigComponent::replaceLinkId(LinkId_t old_id, LinkId_t new_id)
+{
+    for ( auto& x : links ) {
+        if ( x == old_id ) {
+            x = new_id;
+            break;
+        }
+    }
+}
+
+void
 ConfigComponent::checkPorts() const
 {
     std::map<std::string, std::string> ports;
@@ -579,27 +591,27 @@ ConfigComponent::checkPorts() const
         const ConfigLink* link = graph_links[links[i]];
         for ( int j = 0; j < 2; j++ ) {
             // If this is a nonlocal link, then there is no port to check for index 1
-            if ( link->nonlocal && j == 1 ) continue;
-            if ( link->component[j] == id ) {
+            if ( link->nonlocal_ && j == 1 ) continue;
+            if ( link->component_[j] == id ) {
                 // If port is not found, print an error
-                if ( !Factory::getFactory()->isPortNameValid(type, link->port[j]) ) {
+                if ( !Factory::getFactory()->isPortNameValid(type, link->port_[j]) ) {
                     // For now this is not a fatal error
                     // found_error = true;
                     Output::getDefaultObject().fatal(CALL_INFO, 1,
                         "ERROR:  Attempting to connect to unknown port: %s, "
                         "in component %s of type %s.\n",
-                        link->port[j].c_str(), name.c_str(), type.c_str());
+                        link->port_[j].c_str(), name.c_str(), type.c_str());
                 }
 
                 // Check for multiple links hooked to port
-                auto ret = ports.insert(std::make_pair(link->port[j], link->name));
+                auto ret = ports.insert(std::make_pair(link->port_[j], link->name_));
                 if ( !ret.second ) {
                     // Check to see if this is a loopback link
-                    if ( ret.first->second != link->name )
+                    if ( ret.first->second != link->name_ )
                         // Not a loopback link, fatal...
                         Output::getDefaultObject().fatal(CALL_INFO, 1,
-                            "ERROR: Port %s of Component %s connected to two links: %s, %s.\n", link->port[j].c_str(),
-                            name.c_str(), link->name.c_str(), ret.first->second.c_str());
+                            "ERROR: Port %s of Component %s connected to two links: %s, %s.\n", link->port_[j].c_str(),
+                            name.c_str(), link->name_.c_str(), ret.first->second.c_str());
                 }
             }
         }

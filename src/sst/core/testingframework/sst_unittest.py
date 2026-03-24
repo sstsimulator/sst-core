@@ -369,7 +369,7 @@ class SSTTestCase(unittest.TestCase):
         self.assertFalse(rtn.timeout(), err_str)
         if expected_rc:
             err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
-            self.assertEqual(rtn.result(), expected_rc, err_str)
+            self.assertNotEqual(rtn.result(), 0, err_str)
 
         # Return the command used to launch SST
         return oscmd

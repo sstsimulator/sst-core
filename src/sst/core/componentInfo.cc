@@ -157,8 +157,8 @@ ComponentInfo::ComponentInfo(
 ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     id_(o.id_),
     parent_info(o.parent_info),
-    name(std::move(o.name)),
-    type(std::move(o.type)),
+    name(o.name),
+    type(o.type),
     link_map(o.link_map),
     component(o.component),
     subComponents(std::move(o.subComponents)),
@@ -170,7 +170,7 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     statLoadLevel(o.statLoadLevel),
     coordinates(std::move(o.coordinates)),
     subIDIndex(o.subIDIndex),
-    slot_name(std::move(o.slot_name)),
+    slot_name(o.slot_name),
     slot_num(o.slot_num),
     share_flags(o.share_flags)
 {

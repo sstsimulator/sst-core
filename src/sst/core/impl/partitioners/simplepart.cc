@@ -235,7 +235,7 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
                 // ConfigLink* theLink = (*linkItr);
                 PartitionLink& theLink = linkMap[*linkItr];
                 compConnectMap->insert(
-                    std::pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()));
+                    std::pair<ComponentId_t, SimTime_t>(theLink.component_[1], theLink.getMinLatency()));
             }
         }
 

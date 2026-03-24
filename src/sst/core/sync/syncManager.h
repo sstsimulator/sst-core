@@ -51,9 +51,9 @@ public:
     virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual ActivityQueue* registerLink(
-        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link) = 0;
-    void exchangeLinkInfo(uint32_t my_rank);
+    virtual ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link) = 0;
+    void                   exchangeLinkInfo(uint32_t my_rank);
+    SimTime_t              findSyncInterval(uint32_t my_rank);
 
     virtual void execute(int thread)                                              = 0;
     virtual void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) = 0;
@@ -69,16 +69,26 @@ public:
 
     virtual void setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
-    TimeConverter getMaxPeriod() { return max_period; }
+    void      setMaxPeriod(SimTime_t period) { max_period = period; }
+    SimTime_t getMaxPeriod() { return max_period; }
 
     virtual uint64_t getDataSize() const = 0;
 
 protected:
     SimTime_t      nextSyncTime;
-    TimeConverter  max_period;
+    SimTime_t      max_period;
     const RankInfo num_ranks_;
 
-    std::vector<std::map<std::string, uintptr_t>> link_maps;
+    /**
+       This uses uint64_t because it is used for two different types of data at different times:
+
+       1 - LinkId_t when doing the Link pointer exchange
+
+       2 - SimTime_t when doing the Sync interval optimization
+
+       In both cases, the uintptr_t is a pointer to a Link
+    */
+    std::vector<std::vector<std::pair<uint64_t, uintptr_t>>> link_maps;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
 
@@ -112,16 +122,20 @@ public:
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
     virtual void      setRestartTime(SimTime_t time) { nextSyncTime = time; }
 
-    void          setMaxPeriod(TimeConverter* period) { max_period = period; }
-    TimeConverter getMaxPeriod() { return max_period; }
+    void      setMaxPeriod(SimTime_t period) { max_period = period; }
+    SimTime_t getMaxPeriod() { return max_period; }
 
     /** Register a Link which this Sync Object is responsible for */
-    virtual void           registerLink(const std::string& name, Link* link)                = 0;
-    virtual ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) = 0;
+    virtual void           registerLink(Link* link)                = 0;
+    virtual ActivityQueue* registerRemoteLink(int tid, Link* link) = 0;
+
+    virtual SimTime_t findSyncInterval() { return bit_util::type_max<SimTime_t>; }
+
+    static SimTime_t updateMinimumLatency(SimTime_t lat = bit_util::type_max<SimTime_t>);
 
 protected:
-    SimTime_t     nextSyncTime;
-    TimeConverter max_period;
+    SimTime_t nextSyncTime;
+    SimTime_t max_period;
 
     void finalizeConfiguration(Link* link) { link->finalizeConfiguration(); }
 
@@ -132,6 +146,21 @@ protected:
     inline void setLinkDeliveryInfo(Link* link, uintptr_t info) { link->pair_link->setDeliveryInfo(info); }
 
     inline Link* getDeliveryLink(Event* ev) { return ev->getDeliveryLink(); }
+
+    /**
+       Get the latency on the link in units of core atomic time base
+    */
+    SimTime_t getLatency(Link* link) { return link->latency; }
+
+    /**
+       Get the delivery_info for the link
+    */
+    uintptr_t getDeliveryInfo(Link* link) { return link->delivery_info; }
+
+    /**
+       Get the pair_link
+    */
+    Link* getPairLink(Link* link) { return link->pair_link; }
 };
 
 class SyncManager : public Action
@@ -143,12 +172,13 @@ public:
     virtual ~SyncManager() = default;
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(
-        const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link);
-    void exchangeLinkInfo();
+    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link);
+    void           exchangeLinkInfo();
     void handleShutdown();
     void handleInteractiveConsole();
-    void execute() override;
+    SimTime_t      findRankSyncInterval();
+    SimTime_t      findThreadSyncInterval();
+    void           execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkUntimedData(std::atomic<int>& msg_count);

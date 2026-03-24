@@ -59,10 +59,12 @@ public:
     void prepareForComplete() override;
 
     /** Register a Link which this Sync Object is responsible for */
-    void           registerLink(const std::string& name, Link* link) override;
-    ActivityQueue* registerRemoteLink(int tid, const std::string& name, Link* link) override;
+    void           registerLink(Link* link) override;
+    ActivityQueue* registerRemoteLink(int tid, Link* link) override;
 
     uint64_t getDataSize() const;
+
+    SimTime_t findSyncInterval() override;
 
 
     // static void disable() { disabled = true; barrier.disable(); }
@@ -72,10 +74,13 @@ private:
     // remote data.  It will hold whichever thread registers the link
     // first and will be removed after the second thread registers and
     // the link is properly initialized with the remote data.
-    std::unordered_map<std::string, Link*> link_map;
+    std::unordered_map<LinkId_t, Link*> link_map;
+
+    // Need to keep a list of all the Links in order to do the sync interval optimization after the init() phase. After
+    // than optimization pass completes, the vector can be cleared.
+    std::vector<Link*> link_vec;
 
     std::vector<ThreadSyncQueue*>    queues;
-    SimTime_t                        my_max_period;
     int                              num_threads;
     int                              thread;
     static SimTime_t                 localMinimumNextActivityTime;

@@ -24,594 +24,1171 @@ using namespace SST;
 using namespace SST::Core;
 
 ComponentId_t
-SSTConfigSaxHandler::findComponentIdByName(const std::string& Name, bool& success)
+SSTConfigSaxHandler::findComponentIdByName(const std::string& name, bool& success)
 {
-    ComponentId_t    Id   = -1;
-    ConfigComponent* Comp = nullptr;
+    ComponentId_t    id   = UNSET_COMPONENT_ID;
+    ConfigComponent* comp = nullptr;
 
-    if ( Name.length() == 0 ) {
-        errorStr = "Error: Name given to findComponentIdByName is null";
-        success  = false;
-        return Id;
+    if ( name.length() == 0 ) {
+        error_str_ = "Error: Name given to findComponentIdByName is null";
+        success    = false;
+        return id;
     }
 
     // first, find the component pointer from the name
-    Comp = graph->findComponentByName(Name);
-    if ( Comp == nullptr ) {
-        errorStr = "Error finding component ID by name: " + Name;
-        success  = false;
-        return Id;
+    comp = graph_->findComponentByName(name);
+    if ( comp == nullptr ) {
+        error_str_ = "Error: Unable to locate component by name: " + name;
+        success    = false;
+        return id;
     }
 
     success = true;
-    return Comp->id;
-}
-
-std::string
-SSTConfigSaxHandler::getCurrentPath() const
-{
-    std::string path;
-    for ( size_t i = 0; i < path_stack.size(); ++i ) {
-        if ( i > 0 ) path += ".";
-        path += path_stack[i];
-    }
-    return path;
+    return comp->id;
 }
 
 const std::map<std::string, std::string>
 SSTConfigSaxHandler::getProgramOptions()
 {
-    return ProgramOptions;
-}
-
-void
-SSTConfigSaxHandler::processValue(const json& value)
-{
-    std::string path = getCurrentPath();
-
-    if ( current_state == PROGRAM_OPTIONS ) {
-        if ( value.get<std::string>() == "false" ) {
-            ProgramOptions[current_key] = "0";
-        }
-        else if ( value.get<std::string>() == "true" ) {
-            ProgramOptions[current_key] = "1";
-        }
-        else {
-            ProgramOptions[current_key] = value.get<std::string>();
-        }
-    }
-    else if ( current_state == STATISTICS_OPTIONS ) {
-        if ( current_key == "statisticLoadLevel" && value.is_number_integer() ) {
-            graph->setStatisticLoadLevel(value.get<int>());
-        }
-        else if ( current_key == "statisticOutput" && value.is_string() ) {
-            graph->setStatisticOutput(value.get<std::string>());
-        }
-        else if ( path.find("statistics_options.params") != std::string::npos && value.is_string() ) {
-            graph->addStatisticOutputParameter(current_key, value.get<std::string>());
-        }
-    }
-    else if ( current_state == SHARED_PARAMS ) {
-        graph->addSharedParam(current_shared_name, current_key, value.get<std::string>());
-    }
-    else if ( current_state == COMPONENTS ) {
-        if ( current_key == "rank" && value.is_number_integer() ) {
-            current_comp_rank = value.get<unsigned int>();
-        }
-        else if ( current_key == "thread" && value.is_number_integer() ) {
-            RankInfo Rank(current_comp_rank, value.get<unsigned int>());
-            current_component->setRank(Rank);
-        }
-        else if ( path.find("params_shared_sets") != std::string::npos && value.is_string() ) {
-            current_component->addSharedParamSet(value.get<std::string>());
-        }
-        else if ( current_key == "slot_number" && in_comp_subcomp && value.is_number_integer() ) {
-            subcomp_slot = value.get<int>();
-        }
-        else if ( current_key == "params_shared_sets" && in_comp_subcomp && value.is_string() ) {
-            current_sub_component->addSharedParamSet(value.get<std::string>());
-        }
-    }
-    else if ( current_state == LINKS ) {
-        if ( current_key == "noCut" && value.is_boolean() ) {
-            no_cut = value.get<bool>();
-        }
-        else if ( current_key == "nonlocal" && value.is_boolean() ) {
-            nonlocal = value.get<bool>();
-        }
-        else if ( in_right_link && nonlocal ) {
-            if ( current_key == "rank" ) {
-                right_rank = value.get<int>();
-            }
-            else if ( current_key == "thread" ) {
-                right_thread = value.get<int>();
-            }
-        }
-    }
+    return program_options_;
 }
 
 bool
 SSTConfigSaxHandler::null()
 {
+    // null passed instead of an object or array
+    switch ( current_state_ ) {
+    case State::ProgramOptions_key:
+    case State::SharedParams_key:
+    case State::SharedParams_object_key:
+    case State::StatOptions_key:
+    case State::StatOptions_Params_key:
+    case State::StatGroupsArray_key:
+    case State::StatGroup_Output_key:
+    case State::StatGroup_Output_Params_key:
+    case State::StatGroup_StatArray_key:
+    case State::StatGroup_Stat_Params_key:
+    case State::CompArray_key:
+    case State::Comp_Params_key:
+    case State::Comp_StatOptions_key:
+    case State::Comp_StatOptions_Params_key:
+    case State::Comp_StatArray_key:
+    case State::Comp_Stat_Params_key:
+    case State::Comp_SharedParamsArray_key:
+    case State::Comp_Partition_key:
+    case State::PortMod_Params_key:
+    case State::PortMod_StatOptions_key:
+    case State::PortMod_StatOptions_Params_key:
+    case State::PortMod_StatArray_key:
+    case State::PortMod_Stat_Params_key:
+    case State::PortMod_SharedParamsArray_key:
+    case State::SubComp_Params_key:
+    case State::SubComp_StatOptions_key:
+    case State::SubComp_StatOptions_Params_key:
+    case State::SubComp_StatArray_key:
+    case State::SubComp_Stat_Params_key:
+    case State::SubComp_SharedParamsArray_key:
+    case State::LinkArray_key:
+    case State::Link_Left_key:
+    case State::Link_Right_key:
+        current_state_ = ParentState[(int)current_state_];
+        break;
+    case State::SubCompArray_key:
+    case State::PortModArray_key:
+        if ( shadow_component_stack_.size() == 1 ) {
+            current_state_ = State::Comp;
+        }
+        else {
+            current_state_ = State::SubComp;
+        }
+        break;
+    default:
+        error_str_ = "Parsed a null in an unexpected parser state " + StateString[(int)current_state_];
+        return false;
+    }
     return true;
 }
 
 bool
 SSTConfigSaxHandler::boolean(bool val)
 {
-    json j_val = val;
-    processValue(j_val);
+    switch ( current_state_ ) {
+    case State::Link:
+        if ( current_key_ == "noCut" || current_key_ == "no_cut" ) {
+            shadow_link_.nocut = val;
+        }
+        else if ( current_key_ == "nonlocal" ) {
+            shadow_link_.nonlocal = val;
+        }
+        else {
+            error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in Link '" + shadow_link_.name + "'";
+            return false;
+        }
+        break;
+    case State::Comp_StatOptions:
+    case State::SubComp_StatOptions:
+    case State::PortMod_StatOptions:
+        if ( current_key_ == "enable_all_stats" || current_key_ == "enable_all_statistics" ) {
+            if ( val ) {
+                shadow_statistic_.name = STATALLFLAG;
+            }
+        }
+        else {
+            error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'statistics' belonging to '" + shadow_component_stack_.front().name +
+                         "' or one of its subcomponents";
+            return false;
+        }
+        break;
+    case State::Comp_Stat:
+    case State::SubComp_Stat:
+    case State::PortMod_Stat:
+        if ( current_key_ == "shared" ) {
+            shadow_statistic_.shared = val;
+        }
+        else {
+            error_str_ = "Unexpected key/boolean value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    default:
+        error_str_ = "Parsed a boolean '" + std::to_string(val) + "'in an unexpected parser state " +
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
+        return false;
+    }
     return true;
 }
 
 bool
 SSTConfigSaxHandler::number_integer(json::number_integer_t val)
 {
-    json j_val = val;
-    processValue(j_val);
+    switch ( current_state_ ) {
+    case State::StatOptions:
+        if ( current_key_ == "statisticLoadLevel" || current_key_ == "statistic_load_level" ) {
+            graph_->setStatisticLoadLevel(val);
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in statistic_options object.";
+            return false;
+        }
+        break;
+    case State::Comp_Partition:
+        if ( current_key_ == "rank" ) {
+            rank_.rank = val;
+        }
+        else if ( current_key_ == "thread" ) {
+            rank_.thread = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in partition object.";
+            return false;
+        }
+        break;
+    case State::SubComp:
+        if ( current_key_ == "slot_number" ) {
+            shadow_component_stack_.back().slot_number = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::Comp_StatOptions:
+    case State::SubComp_StatOptions:
+        if ( current_key_ == "statistic_load_level" ) {
+            shadow_component_stack_.back().comp->setStatisticLoadLevel(val);
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::PortMod_StatOptions:
+        if ( current_key_ == "statistic_load_level" ) {
+            shadow_port_module_.stat_load_level = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::Link_Right:
+        if ( current_key_ == "rank" ) {
+            shadow_link_.rank = val;
+        }
+        else if ( current_key_ == "thread" ) {
+            shadow_link_.thread = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in right side of link '" + shadow_link_.name + "'.";
+            return false;
+        }
+        break;
+    default:
+        error_str_ = "Parsed an integer '" + std::to_string(val) + "' in an unexpected parser state " +
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
+        return false;
+    }
     return true;
 }
 
 bool
 SSTConfigSaxHandler::number_unsigned(json::number_unsigned_t val)
 {
-    json j_val = val;
-    processValue(j_val);
+    switch ( current_state_ ) {
+    case State::StatOptions:
+        if ( current_key_ == "statisticLoadLevel" || current_key_ == "statistic_load_level" ) {
+            graph_->setStatisticLoadLevel(val);
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in statistic_options object.";
+            return false;
+        }
+        break;
+    case State::Comp_Partition:
+        if ( current_key_ == "rank" ) {
+            rank_.rank = val;
+        }
+        else if ( current_key_ == "thread" ) {
+            rank_.thread = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in partition object.";
+            return false;
+        }
+        break;
+    case State::SubComp:
+        if ( current_key_ == "slot_number" ) {
+            shadow_component_stack_.back().slot_number = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::Comp_StatOptions:
+    case State::SubComp_StatOptions:
+        if ( current_key_ == "statistic_load_level" ) {
+            shadow_component_stack_.back().comp->setStatisticLoadLevel(val);
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'statistic_options' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::PortMod_StatOptions:
+        if ( current_key_ == "statistic_load_level" ) {
+            shadow_port_module_.stat_load_level = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in 'subcomponents' object in component tree '" + shadow_component_stack_[0].name;
+            return false;
+        }
+        break;
+    case State::Link_Right:
+        if ( current_key_ == "rank" ) {
+            shadow_link_.rank = val;
+        }
+        else if ( current_key_ == "thread" ) {
+            shadow_link_.thread = val;
+        }
+        else {
+            error_str_ = "Unexpected key/integer value pair: '" + current_key_ + "'/'" + std::to_string(val) +
+                         "' in right side of link '" + shadow_link_.name + "'.";
+            return false;
+        }
+        break;
+    default:
+        error_str_ = "Parsed an integer '" + std::to_string(val) + "' in an unexpected parser state " +
+                     StateString[(int)current_state_] + ". Last key was: " + current_key_;
+        return false;
+    }
     return true;
 }
 
 bool
-SSTConfigSaxHandler::number_float(json::number_float_t val, [[maybe_unused]] const std::string& str)
+SSTConfigSaxHandler::number_float([[maybe_unused]] json::number_float_t val, [[maybe_unused]] const std::string& str)
 {
-    json j_val = val;
-    processValue(j_val);
-    return true;
+    error_str_ = "Parsed a float '" + str + "'in an unexpected parser state " + StateString[(int)current_state_];
+    return false;
 }
 
 bool
 SSTConfigSaxHandler::binary([[maybe_unused]] json::binary_t& val)
 {
-    return true;
+    error_str_ = "Parsed a binary value in an unexpected parser state " + StateString[(int)current_state_];
+    return false;
 }
 
 bool
 SSTConfigSaxHandler::string(std::string& val)
 {
-    json j_val = val;
-    processValue(j_val);
-
-    // handle specific string assignment based upon context
-    if ( current_state == COMPONENTS ) {
-        if ( current_key == "name" && !in_comp_stats ) {
-            current_comp_name = val;
+    switch ( current_state_ ) {
+    case State::ProgramOptions:
+        if ( val == "false" ) {
+            program_options_[current_key_] = "0";
         }
-        else if ( current_key == "type" && !in_comp_stats && !in_comp_subcomp ) {
-            current_comp_id   = graph->addComponent(current_comp_name, val);
-            current_component = graph->findComponent(current_comp_id);
+        else if ( val == "true" ) {
+            program_options_[current_key_] = "1";
         }
-        else if ( in_comp_params && !in_comp_subcomp ) {
-            current_component->addParameter(current_key, val, false);
+        else {
+            program_options_[current_key_] = val;
         }
-        else if ( current_key == "name" && in_comp_stats ) {
-            current_comp_stat_name = val;
+        break;
+    case State::StatOptions:
+        if ( current_key_ == "statisticOutput" || current_key_ == "statistic_output" ) {
+            graph_->setStatisticOutput(val);
         }
-        else if ( in_comp_stats && in_comp_stats_params ) {
-            current_stat_params.insert(current_key, val);
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'statistics_options' object. Expected key 'statistic_output'.";
+            return false;
         }
-        else if ( current_key == "slot_name" ) {
-            current_subcomp_name = val;
-        }
-        else if ( current_key == "type" && in_comp_subcomp ) {
-            current_subcomp_type = val;
-            current_sub_component =
-                Parents.top()->addSubComponent(current_subcomp_name, current_subcomp_type, subcomp_slot);
-        }
-        else if ( in_comp_subcomp_params ) {
-            current_sub_component->addParameter(current_key, val, false);
-        }
-    }
-    else if ( current_state == LINKS ) {
-        if ( current_key == "name" ) {
-            link_name = val;
-        }
-        else if ( in_left_link ) {
-            if ( current_key == "component" ) {
-                left_comp = val;
-            }
-            else if ( current_key == "port" ) {
-                left_port = val;
-            }
-            else if ( current_key == "latency" ) {
-                left_latency = val;
+        break;
+    case State::StatOptions_Params:
+        graph_->addStatisticOutputParameter(current_key_, val);
+        break;
+    case State::Comp:
+        if ( current_key_ == "name" ) {
+            shadow_component_stack_.back().name = val;
+            if ( shadow_component_stack_.back().comp == nullptr && shadow_component_stack_.back().type != "" ) {
+                constructComponent();
+                if ( shadow_component_stack_.back().comp == nullptr ) return false;
             }
         }
-        else if ( in_right_link ) {
-            if ( current_key == "component" ) {
-                right_comp = val;
-            }
-            else if ( current_key == "port" ) {
-                right_port = val;
-            }
-            else if ( current_key == "latency" ) {
-                right_latency = val;
+        else if ( current_key_ == "type" ) {
+            shadow_component_stack_.back().type = val;
+            if ( shadow_component_stack_.back().comp == nullptr && shadow_component_stack_.back().name != "" ) {
+                constructComponent();
+                if ( shadow_component_stack_.back().comp == nullptr ) return false;
             }
         }
-    }
-    else if ( current_state == STATISTICS_GROUP ) {
-        if ( in_grp_stats_output ) {
-            if ( current_key == "type" ) {
-                auto& statOuts = graph->getStatOutputs();
-                statOuts.emplace_back(ConfigStatOutput(val));
-                current_stat_group->setOutput(statOuts.size() - 1);
-            }
-            else if ( in_grp_stats_output_params ) {
-                auto& statOuts = graph->getStatOutputs();
-                statOuts.back().addParameter(current_key, val);
-            }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'component' object with name (if already parsed): '" +
+                         shadow_component_stack_.back().name + "'. Expected key 'name' or 'type'.";
+            return false;
         }
-        else if ( in_grp_stats_def ) {
-            if ( current_key == "name" ) {
-                current_grp_stat_name = val;
-            }
-            else if ( in_grp_stats_def_params ) {
-                current_stat_params.insert(current_key, val);
-            }
+        break;
+    case State::SubComp:
+        if ( current_key_ == "slot_name" ) {
+            shadow_component_stack_.back().name = val;
         }
-        else if ( in_grp_stats_comps ) {
-            bool success = false;
-            current_stat_group->addComponent(findComponentIdByName(val, success));
+        else if ( current_key_ == "type" ) {
+            shadow_component_stack_.back().type = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'subcomponent' object in component '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'slot_name' or 'type'.";
+            return false;
+        }
+        break;
+    case State::PortMod:
+        if ( current_key_ == "port" ) {
+            shadow_port_module_.port = val;
+        }
+        else if ( current_key_ == "type" ) {
+            shadow_port_module_.type = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'port_module' object in component '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'port' or 'type'.";
+            return false;
+        }
+        break;
+    case State::Comp_Params:
+    case State::SubComp_Params:
+        shadow_component_stack_.back().comp->addParameter(current_key_, val, false);
+        break;
+    case State::PortMod_Params:
+        shadow_port_module_.pm->addParameter(current_key_, val);
+        break;
+    case State::Comp_SharedParamsArray:
+    case State::SubComp_SharedParamsArray:
+        shadow_component_stack_.back().comp->addSharedParamSet(val);
+        break;
+    case State::PortMod_SharedParamsArray:
+        shadow_port_module_.shared_param_sets.push_back(val);
+        break;
+    case State::Comp_Stat:
+    case State::SubComp_Stat:
+    case State::PortMod_Stat:
+        if ( current_key_ == "name" ) {
+            shadow_statistic_.name = val;
+        }
+        else if ( current_key_ == "shared_name" ) {
+            shadow_statistic_.shared_name = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'statistics' object in component tree '" + shadow_component_stack_[0].name +
+                         "'. Expected key 'name' or 'shared_name'.";
+            return false;
+        }
+        break;
+    case State::StatGroup_Stat:
+        if ( current_key_ == "name" ) {
+            shadow_statistic_.name = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'statistics_group' object. Expected key 'name'.";
+        }
+        break;
+    case State::Comp_Stat_Params:
+    case State::SubComp_Stat_Params:
+    case State::PortMod_Stat_Params:
+    case State::StatGroup_Stat_Params:
+    case State::Comp_StatOptions_Params:
+    case State::SubComp_StatOptions_Params:
+    case State::PortMod_StatOptions_Params:
+        shadow_statistic_.params.insert(current_key_, val);
+        break;
+    case State::Link:
+        if ( current_key_ == "name" ) {
+            shadow_link_.name = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in 'link' object. Link name is (may be blank if not parsed yet): '" + shadow_link_.name +
+                         "'. Expected key 'name'.";
+            return false;
+        }
+        break;
+    case State::Link_Left:
+        if ( current_key_ == "component" ) {
+            bool success;
+            shadow_link_.leftcomp = findComponentIdByName(val, success);
             if ( !success ) {
+                error_str_ = "Error: Unable to locate component ID for component '" + val + "' in left side of link '" +
+                             shadow_link_.name +
+                             "'. Ensure components are declared prior to link instantiation in your input file.";
                 return false;
             }
         }
-        else if ( current_key == "name" ) {
-            current_stat_group = graph->getStatGroup(val);
-            if ( current_stat_group == nullptr ) {
-                errorStr = "Error creating statistics group from: " + val;
+        else if ( current_key_ == "port" ) {
+            shadow_link_.leftport = val;
+        }
+        else if ( current_key_ == "latency" ) {
+            shadow_link_.leftlat = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in left side of link named '" + shadow_link_.name +
+                         "'. Expected key 'port', 'latency', or 'component'.";
+            return false;
+        }
+        break;
+    case State::Link_Right:
+        if ( current_key_ == "component" ) {
+            bool success;
+            shadow_link_.rightcomp = findComponentIdByName(val, success);
+            if ( !success ) {
+                error_str_ = "Error: Unable to locate component ID for component '" + val +
+                             "' in right side of link '" + shadow_link_.name +
+                             "'. Ensure components are declared prior to link instantiation in your input file.";
                 return false;
             }
         }
-        else if ( current_key == "frequency" ) {
-            if ( !current_stat_group->setFrequency(val) ) {
-                errorStr = "Error setting frequency for statistics group: " + val;
+        else if ( current_key_ == "port" ) {
+            shadow_link_.rightport = val;
+        }
+        else if ( current_key_ == "latency" ) {
+            shadow_link_.rightlat = val;
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in right side of link named '" + shadow_link_.name +
+                         "'. Expected key 'port', 'latency', 'component'.";
+            return false;
+        }
+        break;
+    case State::StatGroup:
+        if ( current_key_ == "name" ) {
+            current_stat_group_ = graph_->getStatGroup(val);
+            if ( current_stat_group_ == nullptr ) {
+                error_str_ = "Error creating statistics group from name: " + val;
                 return false;
             }
         }
+        else if ( current_key_ == "frequency" ) {
+            current_stat_group_->setFrequency(val);
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in statistics_group. Expected key 'name' or 'frequency'.";
+            return false;
+        }
+        break;
+    case State::StatGroup_Output:
+        if ( current_key_ == "type" ) {
+            auto& stat_outputs = graph_->getStatOutputs();
+            stat_outputs.emplace_back(ConfigStatOutput(val));
+            current_stat_group_->setOutput(stat_outputs.size() - 1);
+        }
+        else {
+            error_str_ = "Error: Unexpected key/string value pair: '" + current_key_ + "'/'" + val +
+                         "' in statistics_group output object. Expected key 'type'.";
+            return false;
+        }
+        break;
+    case State::StatGroup_Output_Params:
+        graph_->getStatOutputs().back().addParameter(current_key_, val);
+        break;
+    case State::StatGroup_CompArray:
+    {
+        bool success = false;
+        current_stat_group_->addComponent(findComponentIdByName(val, success));
+        if ( !success ) {
+            error_str_ =
+                "Error: Unable to locate component ID for component '" + val +
+                "' in statistics group component list for group " + current_stat_group_->name +
+                ". Ensure components are declared prior to adding them to a statistic group in your input file.";
+            return false;
+        }
+        break;
     }
-
+    case State::SharedParams_object:
+        graph_->addSharedParam(current_shared_name_, current_key_, val);
+        break;
+    default:
+        error_str_ = "Error: Parser encountered a string token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Key/value pair is '" +
+                     current_key_ + "'/'" + val + "'.";
+        return false;
+    }
     return true;
 }
 
+// Passes number of elements in object (-1 if unknown)
+// Generally each state transitions to next and prepares/clears any data structures that will be used by the object
 bool
-SSTConfigSaxHandler::start_object(std::size_t elements)
+SSTConfigSaxHandler::start_object([[maybe_unused]] std::size_t elements)
 {
-    if ( elements == 0 ) {
-        return true;
+    switch ( current_state_ ) {
+    case State::Entry:                          // Begin parsing -> Root
+    case State::ProgramOptions_key:             // Parse program options -> ProgramOptions
+    case State::SharedParams_key:               // Parse object containing sets of shared params -> SharedParams_object
+    case State::SharedParams_object_key:        // Parse shared params set -> SharedParams_object
+    case State::StatOptions_key:                // Parse statistic options
+    case State::StatOptions_Params_key:         // Parse params -> StatOptions_Params
+    case State::StatGroup_Output_key:           // Parse output config -> StatGroup_Output
+    case State::StatGroup_Output_Params_key:    // Parse params -> StatGroup_Output_Params
+    case State::StatGroup_StatArray:            // Parse statistic -> StatGroup_Stat
+    case State::StatGroup_Stat_Params_key:      // Parse params -> STATGRP_OBJ_STATOPT_PARAMS
+    case State::Comp_StatOptions_Params_key:    // Parse params
+    case State::Comp_Stat_Params_key:           // Parse params
+    case State::PortMod_Params_key:             // Parse params
+    case State::PortMod_Stat_Params_key:        // Parse params
+    case State::PortMod_StatOptions_Params_key: // Parse params
+    case State::SubComp_StatOptions_Params_key: // Parse params
+    case State::SubComp_Stat_Params_key:        // Parse params
+    case State::Link_Left_key:                  // Parse link left
+    case State::Link_Right_key:                 // Parse link right
+        break;
+    case State::StatGroupsArray: // Parse a statistic group -> StatGroup
+        current_stat_group_ = nullptr;
+        break;
+    case State::CompArray:    // Parse a component
+    case State::SubCompArray: // Parse a subcomponent
+        shadow_component_stack_.emplace_back();
+        break;
+    case State::Comp_Partition_key: // Parse partition
+        rank_.rank   = -1;
+        rank_.thread = -1;
+        break;
+    case State::PortModArray: // Parse port module
+        shadow_port_module_.reset();
+        break;
+    case State::Comp_StatArray:    // Parse statstic object
+    case State::SubComp_StatArray: // Parse statstic object
+    case State::PortMod_StatArray:
+    case State::PortMod_StatOptions_key: // Parse statistic options (params)
+        shadow_statistic_.reset();
+        break;
+    // These component/subcomponent sections require that the component/subcomponent be constructed
+    case State::Comp_StatOptions_key:    // Parse statistic options (params)
+    case State::SubComp_StatOptions_key: // Parse statistic options (params)
+        shadow_statistic_.reset();
+        // fall-thru
+    case State::Comp_Params_key:    // Parse params
+    case State::SubComp_Params_key: // Parse params
+        // Assert that component/subcomponent is constructed
+        if ( shadow_component_stack_.back().comp == nullptr ) {
+            error_str_ =
+                "Error: Encountered new (sub)component section before (sub)component was constructed. Ensure "
+                "that subcomponent required keys (name, type, slot_name,  etc.) are listed first in the object "
+                "before other keys. Component tree name is (if already parsed) '" +
+                shadow_component_stack_[0].name + "'.";
+            return false;
+        }
+        break;
+    case State::LinkArray: // Parse a link
+        shadow_link_.reset();
+        break;
+    default:
+        error_str_ = "Error: Parser encountered a '{' token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
+        return false;
     }
-
-    context_stack.push(json::value_t::object);
-
-    if ( !path_stack.empty() ) {
-        std::string current_section = path_stack[path_stack.size() - 1];
-
-        if ( current_section == "program_options" ) {
-            current_state = PROGRAM_OPTIONS;
-        }
-        else if ( current_section == "shared_params" ) {
-            current_state = SHARED_PARAMS;
-            if ( !in_shared_params_object && path_stack.size() == 2 ) {
-                current_shared_name     = path_stack[1];
-                in_shared_params_object = true;
-            }
-        }
-        else if ( current_section == "statistics_options" ) {
-            current_state = STATISTICS_OPTIONS;
-        }
-        else if ( current_state == STATISTICS_GROUP ) {
-            if ( current_section == "output" ) {
-                in_grp_stats_output = true;
-            }
-            else if ( current_section == "params" && in_grp_stats_output ) {
-                in_grp_stats_output_params = true;
-            }
-            else if ( current_section == "params" && in_grp_stats_def ) {
-                in_grp_stats_def_params = true;
-            }
-        }
-        else if ( current_state == COMPONENTS ) {
-            if ( current_section == "params" && !in_comp_stats && !in_comp_subcomp ) {
-                in_comp_params = true;
-            }
-            else if ( current_section == "params" && in_comp_stats ) {
-                in_comp_stats_params = true;
-            }
-            else if ( current_section == "params" && in_comp_subcomp ) {
-                in_comp_subcomp_params = true;
-            }
-        }
-        else if ( current_state == LINKS ) {
-            if ( current_section == "left" ) {
-                in_left_link = true;
-            }
-            else if ( current_section == "right" ) {
-                in_right_link = true;
-            }
-        }
-    }
-
+    current_state_ = NextStateObjOrArray[(int)current_state_];
     return true;
 }
 
 bool
 SSTConfigSaxHandler::end_object()
 {
-    if ( !context_stack.empty() ) {
-        context_stack.pop();
-    }
-
-    // handle each object completion
-    if ( current_state == PROGRAM_OPTIONS ) {
-        current_state = ROOT;
-    }
-    else if ( current_state == STATISTICS_OPTIONS && current_key != "params" ) {
-        current_state = ROOT;
-    }
-    else if ( current_state == SHARED_PARAMS && in_shared_params_object && path_stack.size() == 2 ) {
-        in_shared_params_object = false;
-    }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_output && in_grp_stats_output_params ) {
-        in_grp_stats_output_params = false;
-        current_stat_params.clear();
-    }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_output ) {
-        in_grp_stats_output = false;
-    }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def && in_grp_stats_def_params ) {
-        in_grp_stats_def_params = false;
-        current_stat_params.clear();
-    }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def ) {
-        current_stat_group->addStatistic(current_grp_stat_name, current_stat_params);
-        current_stat_params.clear();
+    switch ( current_state_ ) {
+    case State::Root:
+    case State::ProgramOptions:
+    case State::SharedParams:
+    case State::SharedParams_object:
+    case State::StatOptions:
+    case State::StatOptions_Params:
+    case State::StatGroup:
+    case State::StatGroup_Output:
+    case State::StatGroup_Output_Params:
+    case State::StatGroup_Stat_Params:
+    case State::Comp_Params:
+    case State::SubComp_Params:
+    case State::PortMod_Params:
+    case State::Comp_Stat_Params:
+    case State::SubComp_Stat_Params:
+    case State::PortMod_Stat_Params:
+    case State::Link_Left:
+    case State::Link_Right:
+        break;
+    case State::Comp_Partition:
+        shadow_component_stack_.back().comp->setRank(rank_);
+        break;
+    case State::StatGroup_Stat:
+    {
+        // Add stat to group
+        current_stat_group_->addStatistic(shadow_statistic_.name, shadow_statistic_.params);
         bool        verified = false;
         std::string reason;
-        std::tie(verified, reason) = current_stat_group->verifyStatsAndComponents(graph);
+        std::tie(verified, reason) = current_stat_group_->verifyStatsAndComponents(graph_);
         if ( !verified ) {
-            errorStr = "Error verifying statistics and components: " + reason;
+            error_str_ = "Error verifying statistics and components: " + reason;
             return false;
         }
+        break;
     }
-    else if ( current_state == COMPONENTS && in_comp_params ) {
-        in_comp_params = false;
-    }
-    else if ( current_state == COMPONENTS && in_comp_stats && in_comp_stats_params ) {
-        current_component->enableStatistic(current_comp_stat_name, current_stat_params);
-        in_comp_stats_params = false;
-        current_stat_params.clear();
-    }
-    else if ( current_state == COMPONENTS && in_comp_stats_params && in_comp_subcomp ) {
-        current_sub_component->enableStatistic(current_comp_stat_name, current_stat_params);
-        in_comp_stats_params = false;
-        current_stat_params.clear();
-    }
-    else if ( current_state == COMPONENTS && in_comp_subcomp && in_comp_subcomp_params ) {
-        in_comp_subcomp_params = false;
-    }
-    else if ( current_state == LINKS ) {
-        if ( in_left_link ) {
-            in_left_link = false;
-        }
-        else if ( in_right_link ) {
-            in_right_link = false;
-        }
-        else {
-            LinkId_t link_id = graph->createLink(link_name.c_str(), nullptr);
-            if ( no_cut ) graph->setLinkNoCut(link_id);
-
-            // left side
-            ComponentId_t CompID  = -1;
-            bool          success = false;
-            CompID                = findComponentIdByName(left_comp, success);
-            if ( !success ) {
-                return false;
-            }
-            graph->addLink(CompID, link_id, left_port.c_str(), left_latency.c_str());
-
-            // right side
-            if ( nonlocal ) {
-                graph->addNonLocalLink(link_id, right_rank, right_thread);
-            }
-            else {
-                success = false;
-                CompID  = findComponentIdByName(right_comp, success);
-                if ( !success ) {
+    case State::Comp:
+        shadow_component_stack_.pop_back();
+        current_shared_stats_.clear();
+        break;
+    case State::Comp_Stat:
+    case State::SubComp_Stat:
+    case State::Comp_StatOptions:
+    case State::SubComp_StatOptions:
+        if ( shadow_statistic_.name != "" ) { // Generally name="" if in StatOptions but didn't enable_all_stats
+            if ( shadow_statistic_.shared ) {
+                auto cs_iter = current_shared_stats_.find(shadow_statistic_.shared_name);
+                if ( cs_iter == current_shared_stats_.end() ) {
+                    // Have not yet created tis shared statistic object
+                    ConfigStatistic* cs = shadow_component_stack_.back().comp->createStatistic();
+                    if ( cs == nullptr ) {
+                        error_str_ = "Error: Failed to create shared statistic '" + shadow_statistic_.shared_name +
+                                     "' on '" + shadow_component_stack_.back().name + "'.";
+                        return false;
+                    }
+                    cs->params.insert(shadow_statistic_.params);
+                    cs->shared = true;
+                    cs->name   = shadow_statistic_.shared_name;
+                    current_shared_stats_.insert(std::make_pair(shadow_statistic_.shared_name, cs));
+                    cs_iter = current_shared_stats_.find(shadow_statistic_.shared_name);
+                }
+                // Shared statistic that maps to existing statistic object
+                if ( !shadow_component_stack_.back().comp->reuseStatistic(
+                         shadow_statistic_.name, cs_iter->second->id) ) {
+                    error_str_ = "Error: Attempting to link statistic '" + shadow_statistic_.name + "' to '" +
+                                 shadow_statistic_.shared_name + "' in component '" +
+                                 shadow_component_stack_.front().name + "' but unable to complete the linking.";
                     return false;
                 }
-                graph->addLink(CompID, link_id, right_port.c_str(), right_latency.c_str());
             }
-            no_cut       = false;
-            nonlocal     = false;
-            right_rank   = -1;
-            right_thread = -1;
+            else {
+                // Regular (unshared) statistic
+                shadow_component_stack_.back().comp->enableStatistic(shadow_statistic_.name, shadow_statistic_.params);
+            }
         }
+        shadow_statistic_.reset();
+        break;
+    case State::PortMod_Stat:
+    case State::PortMod_StatOptions:
+        // Portmodules don't do shared stats. An empty name is treated as an not-enabled statistic.
+        if ( shadow_statistic_.name == STATALLFLAG ) {
+            shadow_port_module_.pm->enableAllStatistics(shadow_statistic_.params);
+        }
+        else if ( shadow_statistic_.name != "" ) {
+            shadow_port_module_.pm->enableStatistic(shadow_statistic_.name, shadow_statistic_.params);
+        }
+        break;
+    case State::PortMod:
+    {
+        if ( shadow_port_module_.pm == nullptr ) {
+            constructPortModule();
+        }
+        if ( shadow_port_module_.stat_load_level != STATISTICLOADLEVELUNINITIALIZED ) {
+            shadow_port_module_.pm->setStatisticLoadLevel(shadow_port_module_.stat_load_level);
+        }
+        break;
     }
+    case State::SubComp:
+        if ( shadow_component_stack_.back().comp == nullptr ) {
+            constructSubComponent();
+            if ( !shadow_component_stack_.back().comp ) return false;
+        }
+        shadow_component_stack_.pop_back();
+        break;
+    case State::Link:
+    {
+        LinkId_t id = graph_->createLink(shadow_link_.name.c_str(), nullptr);
+        if ( shadow_link_.nocut ) graph_->setLinkNoCut(id);
+        graph_->addLink(shadow_link_.leftcomp, id, shadow_link_.leftport.c_str(), shadow_link_.leftlat.c_str());
 
-    if ( !path_stack.empty() ) {
-        path_stack.pop_back();
+        if ( shadow_link_.nonlocal ) {
+            graph_->addNonLocalLink(id, shadow_link_.rank, shadow_link_.thread);
+        }
+        else {
+            graph_->addLink(shadow_link_.rightcomp, id, shadow_link_.rightport.c_str(), shadow_link_.rightlat.c_str());
+        }
+        shadow_link_.reset();
+        break;
     }
-
+    default:
+        error_str_ = "Error: Parser encountered a '}' token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
+        return false;
+    }
+    current_state_ = ParentState[(int)current_state_];
     return true;
 }
 
 bool
 SSTConfigSaxHandler::start_array([[maybe_unused]] std::size_t elements)
 {
-    context_stack.push(json::value_t::array);
-    array_depth++;
-
-    if ( current_state == ROOT ) {
-        // top-level array elements
-        if ( current_key == "components" ) {
-            current_state   = COMPONENTS;
-            foundComponents = true;
+    switch ( current_state_ ) {
+    case State::CompArray_key:
+        found_components_ = true;
+        break;
+    case State::SubCompArray_key:
+        if ( shadow_component_stack_.back().comp == nullptr ) {
+            error_str_ = "Error: Encountered (sub)component's subcomponents array before the 'type' and 'name' keys in "
+                         "component '" +
+                         shadow_component_stack_.back().name + "'";
+            return false;
         }
-        else if ( current_key == "shared_params" ) {
-            current_state = SHARED_PARAMS;
+        break;
+    case State::LinkArray_key:
+        if ( !found_components_ ) {
+            error_str_ =
+                "Error: Encountered 'links' section before 'components' section. Put the 'links' section after "
+                "'components' in your input file";
+            return false;
         }
-        else if ( current_key == "statistics_group" ) {
-            current_state = STATISTICS_GROUP;
-            if ( !foundComponents ) {
-                errorStr = "Encountered statistics_group before components; components must be loaded before "
-                           "statistics_groups";
-                return false;
-            }
-        }
-        else if ( current_key == "links" ) {
-            current_state = LINKS;
-        }
+        break;
+    case State::PortModArray_key:
+    case State::Comp_StatArray_key:
+    case State::SubComp_StatArray_key:
+    case State::PortMod_StatArray_key:
+    case State::Comp_SharedParamsArray_key:
+    case State::SubComp_SharedParamsArray_key:
+    case State::PortMod_SharedParamsArray_key:
+    case State::StatGroupsArray_key:
+    case State::StatGroup_StatArray_key:
+    case State::StatGroup_CompArray_key:
+        break;
+    default:
+        error_str_ = "Error: Parser encountered a '[' token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
+        return false;
     }
-    else if ( current_state == STATISTICS_GROUP ) {
-        // array elements within statistics_group
-        if ( current_key == "statistics" ) {
-            in_grp_stats_def = true;
-        }
-        else if ( current_key == "components" ) {
-            in_grp_stats_comps = true;
-        }
-    }
-    else if ( current_state == COMPONENTS ) {
-        // array elements within components
-        if ( current_key == "statistics" ) {
-            in_comp_stats = true;
-        }
-        else if ( current_key == "subcomponents" && in_comp_subcomp ) {
-            in_comp_subsubcomp = true;
-            Parents.push(current_sub_component);
-        }
-        else if ( current_key == "subcomponents" ) {
-            in_comp_subcomp = true;
-            Parents.push(current_component);
-        }
-    }
-
+    current_state_ = NextStateObjOrArray[(int)current_state_];
     return true;
 }
 
 bool
 SSTConfigSaxHandler::end_array()
 {
-    if ( current_state == SHARED_PARAMS ) {
-        current_state = ROOT;
+    switch ( current_state_ ) {
+    case State::CompArray:
+    case State::LinkArray:
+    case State::Comp_StatArray:
+    case State::SubComp_StatArray:
+    case State::PortMod_StatArray:
+    case State::Comp_SharedParamsArray:
+    case State::SubComp_SharedParamsArray:
+    case State::PortMod_SharedParamsArray:
+    case State::StatGroupsArray:
+    case State::StatGroup_StatArray:
+    case State::StatGroup_CompArray:
+    case State::StatGroup_Output_Params:
+    case State::StatGroup_Stat_Params:
+    case State::Comp_Params:
+    case State::SubComp_Params:
+    case State::PortMod_Params:
+    case State::Comp_Stat_Params:
+    case State::SubComp_Stat_Params:
+    case State::PortMod_Stat_Params:
+    case State::Comp_Partition:
+        current_state_ = ParentState[(int)current_state_];
+        break;
+    case State::SubCompArray:
+    case State::PortModArray:
+        if ( shadow_component_stack_.size() == 1 ) {
+            current_state_ = State::Comp;
+        }
+        else {
+            current_state_ = State::SubComp;
+        }
+        break;
+    default:
+        error_str_ = "Error: Parser encountered a ']' token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Last key was '" + current_key_ +
+                     "'.";
+        return false;
     }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_comps ) {
-        in_grp_stats_comps = false;
-    }
-    else if ( current_state == STATISTICS_GROUP && in_grp_stats_def ) {
-        in_grp_stats_def = false;
-    }
-    else if ( current_state == STATISTICS_GROUP ) {
-        current_state = ROOT;
-    }
-    else if ( current_state == COMPONENTS && in_comp_stats ) {
-        in_comp_stats = false;
-    }
-    else if ( current_state == COMPONENTS && in_comp_subsubcomp ) {
-        in_comp_subsubcomp = false;
-        Parents.pop();
-    }
-    else if ( current_state == COMPONENTS && in_comp_subcomp ) {
-        in_comp_subcomp = false;
-        Parents.pop();
-    }
-    else if ( current_state == COMPONENTS ) {
-        current_state = ROOT;
-    }
-    else if ( current_state == LINKS ) {
-        current_state = ROOT;
-    }
-
-    if ( !context_stack.empty() ) {
-        context_stack.pop();
-    }
-    array_depth--;
     return true;
 }
 
 bool
 SSTConfigSaxHandler::key(std::string& val)
 {
-    current_key = val;
-    path_stack.push_back(val);
+    switch ( current_state_ ) {
+    case State::ProgramOptions:
+    case State::SharedParams_object:
+    case State::StatOptions_Params:
+    case State::Link_Left:
+    case State::Link_Right:
+    case State::StatGroup_Output_Params:
+    case State::StatGroup_Stat_Params:
+    case State::Comp_Params:
+    case State::Comp_StatOptions_Params:
+    case State::Comp_Stat_Params:
+    case State::Comp_Partition:
+    case State::SubComp_Params:
+    case State::SubComp_StatOptions_Params:
+    case State::SubComp_Stat_Params:
+    case State::PortMod_Params:
+    case State::PortMod_StatOptions_Params:
+    case State::PortMod_Stat_Params:
+        break;
+    case State::Root:
+        if ( val == "program_options" ) {
+            current_state_ = State::ProgramOptions_key;
+        }
+        else if ( val == "shared_params" ) {
+            current_state_ = State::SharedParams_key;
+        }
+        else if ( val == "statistics_options" ) {
+            current_state_ = State::StatOptions_key;
+        }
+        else if ( val == "statistics_group" ) {
+            current_state_ = State::StatGroupsArray_key;
+        }
+        else if ( val == "components" ) {
+            current_state_ = State::CompArray_key;
+        }
+        else if ( val == "links" ) {
+            current_state_ = State::LinkArray_key;
+        }
+        else { // Error: Unexpected key
+            error_str_ = "Error: Encountered unexpected key '" + val +
+                         "' in state Root. Expected keys are 'program_options', 'shared_params', 'statistics_options', "
+                         "'statistics_group', 'components', or 'links'.\n";
+            return false;
+        }
+        break;
+    case State::SharedParams:
+        current_shared_name_ = val;
+        current_state_       = State::SharedParams_object_key;
+        break;
+    case State::StatOptions:
+    case State::Comp_StatOptions:
+    case State::SubComp_StatOptions:
+    case State::PortMod_StatOptions:
+    case State::Comp_Stat:
+    case State::SubComp_Stat:
+    case State::PortMod_Stat:
+    case State::StatGroup_Output:
+    case State::StatGroup_Stat:
+        if ( val == "params" ) {
+            current_state_ = NextStateParams[(int)current_state_];
+        }
+        break;
+    case State::StatGroup:
+        if ( !current_stat_group_ && val != "name" ) {
+            error_str_ =
+                "Error: First key/value pair in a statistics_group object must be the group name. Expected key "
+                "'name' and got '" +
+                val + "'";
+            return false;
+        }
+        if ( val == "output" ) {
+            current_state_ = State::StatGroup_Output_key;
+        }
+        else if ( val == "statistics" ) {
+            current_state_ = State::StatGroup_StatArray_key;
+        }
+        else if ( val == "components" ) {
+            current_state_ = State::StatGroup_CompArray_key;
+        }
+        break;
+    case State::Comp:
+    {
+        bool assert_existance = true;
+        if ( val == "params" ) {
+            current_state_ = State::Comp_Params_key;
+        }
+        else if ( val == "statistics_options" ) {
+            current_state_ = State::Comp_StatOptions_key;
+        }
+        else if ( val == "statistics" ) {
+            current_state_ = State::Comp_StatArray_key;
+        }
+        else if ( val == "subcomponents" ) {
+            current_state_ = State::SubCompArray_key;
+        }
+        else if ( val == "params_shared_sets" ) {
+            current_state_ = State::Comp_SharedParamsArray_key;
+        }
+        else if ( val == "partition" ) {
+            current_state_ = State::Comp_Partition_key;
+        }
+        else if ( val == "port_modules" ) {
+            current_state_ = State::PortModArray_key;
+        }
+        else {
+            assert_existance = false;
+        }
+        if ( assert_existance ) { // To enter next state, component MUST already exist. Component is built as soon as
+                                  // type & name are encountered
+            if ( shadow_component_stack_.back().comp == nullptr ) {
+                error_str_ = "Error: Encountered key '" + val + "' before the 'type' and 'name' keys in component '" +
+                             shadow_component_stack_.back().name + "'.";
+                return false;
+            }
+        }
+        break;
+    }
+    case State::PortMod:
+    {
+        bool assert_existance = true;
+        if ( val == "params" ) {
+            current_state_ = State::PortMod_Params_key;
+        }
+        else if ( val == "statistics_options" ) {
+            current_state_ = State::PortMod_StatOptions_key;
+        }
+        else if ( val == "statistics" ) {
+            current_state_ = State::PortMod_StatArray_key;
+        }
+        else if ( val == "params_shared_sets" ) {
+            current_state_ = State::PortMod_SharedParamsArray_key;
+        }
+        else {
+            assert_existance = false;
+        }
+        if ( assert_existance ) {
+            if ( shadow_port_module_.pm == nullptr ) {
+                constructPortModule();
+            }
+        }
+        break;
+    }
+    case State::SubComp:
+    {
+        bool assert_existance = true;
+        if ( val == "params" ) {
+            current_state_ = State::SubComp_Params_key;
+        }
+        else if ( val == "statistics_options" ) {
+            current_state_ = State::SubComp_StatOptions_key;
+        }
+        else if ( val == "statistics" ) {
+            current_state_ = State::SubComp_StatArray_key;
+        }
+        else if ( val == "subcomponents" ) {
+            current_state_ = State::SubCompArray_key;
+        }
+        else if ( val == "params_shared_sets" ) {
+            current_state_ = State::SubComp_SharedParamsArray_key;
+        }
+        else if ( val == "port_modules" ) {
+            current_state_ = State::PortModArray_key;
+        }
+        else {
+            assert_existance = false;
+        }
+        if ( assert_existance ) { // To enter next state, component MUST already exist. Component is built as soon as
+                                  // type & name are encountered
+            if ( shadow_component_stack_.back().comp == nullptr ) {
+                constructSubComponent();
+                if ( shadow_component_stack_.back().comp == nullptr ) {
+                    return false; // error_str_ provided by constructSubComponent function
+                }
+            }
+        }
+        break;
+    }
+    case State::Link:
+        if ( val == "left" ) {
+            current_state_ = State::Link_Left_key;
+        }
+        else if ( val == "right" ) {
+            current_state_ = State::Link_Right_key;
+        }
+        break;
+    default:
+        error_str_ = "Error: Parser encountered a key token in state '" + StateString[(int)current_state_] +
+                     "'. This case is not handled and may be an error in the JSON file. Key is '" + val +
+                     "' and last valid key was '" + current_key_ + "'.";
+        return false;
+    }
+    current_key_ = val;
     return true;
 }
 
+// Internal function used to construct a subcomponent
+// All calls to this function are guarded or occur in a state that ensures that:
+//  (a) shadow_component_stack_.back().comp == nullptr
+//  (b) shadow_component_stack_.size() > 1
 void
-SSTConfigSaxHandler::setConfigGraph(ConfigGraph* g)
+SSTConfigSaxHandler::constructSubComponent()
 {
-    graph = g;
+    if ( shadow_component_stack_.back().name == "" || shadow_component_stack_.back().type == "" ) {
+        error_str_ = "Error: Unable to construct subcomponent in component '" + shadow_component_stack_[0].name +
+                     "'. Missing name or type ('" + shadow_component_stack_.back().name + "', '" +
+                     shadow_component_stack_.back().type +
+                     "'). The usual cause of this error is failing to place name and type at the beginning of a "
+                     "component object.\n";
+        return;
+    }
+    shadow_component_stack_.back().comp =
+        shadow_component_stack_[shadow_component_stack_.size() - 2].comp->addSubComponent(
+            shadow_component_stack_.back().name, shadow_component_stack_.back().type,
+            shadow_component_stack_.back().slot_number);
+}
+
+void
+SSTConfigSaxHandler::constructPortModule()
+{
+    if ( shadow_port_module_.port == "" || shadow_port_module_.type == "" ) {
+        error_str_ = "Error: Unable to construct port_module in component tree '" + shadow_component_stack_[0].name +
+                     "'. Missing port or type ('" + shadow_port_module_.port + "', '" + shadow_port_module_.type +
+                     "'). The usual cause of this error is failing to place port and type at the beginning of a "
+                     "port_module object.\n";
+        return;
+    }
+    size_t pm_id = (shadow_component_stack_.back().comp)
+                       ->addPortModule(shadow_port_module_.port, shadow_port_module_.type, shadow_port_module_.params);
+    shadow_port_module_.pm =
+        &((shadow_component_stack_.back().comp)->port_modules.find(shadow_port_module_.port)->second[pm_id]);
+}
+
+// Internal function used to construct a component
+// All calls to this function are guarded or occur in a state that ensures that:
+// (a) shadow_component_stack_.back().comp == nullptr
+// (b) shadow_component_stack_.size() == 1
+void
+SSTConfigSaxHandler::constructComponent()
+{
+    if ( shadow_component_stack_.back().name == "" || shadow_component_stack_.back().type == "" ) {
+        error_str_ = "Error: Unable to construct component. Missing name or type ('" +
+                     shadow_component_stack_.back().name + "', '" + shadow_component_stack_.back().type +
+                     "'). The usual cause of this error is failing to place name and type at the beginning of a "
+                     "component object.\n";
+        return;
+    }
+    ComponentId_t id = graph_->addComponent(shadow_component_stack_.back().name, shadow_component_stack_.back().type);
+    shadow_component_stack_.back().comp = graph_->findComponent(id);
+}
+
+void
+SSTConfigSaxHandler::setConfigGraph(ConfigGraph* graph)
+{
+    graph_ = graph;
 }
 
 bool
 SSTConfigSaxHandler::parse_error(std::size_t position, const std::string& last_token, const json::exception& ex)
 {
-    errorPos = position;
-    errorStr = last_token + " : " + ex.what();
+    error_pos_ = position;
+    error_str_ = last_token + " : " + ex.what();
     return false;
 }
 
 SSTJSONModelDefinition::SSTJSONModelDefinition(
-    const std::string& script_file, int verbosity, Config* configObj, double start_time) :
-    SSTModelDescription(configObj),
-    scriptName(script_file),
-    output(nullptr),
-    config(configObj),
-    graph(nullptr),
-    nextComponentId(0),
-    start_time(start_time)
+    const std::string& script_file, int verbosity, Config* config_obj, double start_time) :
+    SSTModelDescription(config_obj),
+    script_name_(script_file),
+    output_(nullptr),
+    config_(config_obj),
+    graph_(nullptr),
+    start_time_(start_time)
 {
-    output = new Output("SSTJSONModel: ", verbosity, 0, SST::Output::STDOUT);
+    output_ = new Output("SSTJSONModel: ", verbosity, 0, SST::Output::STDOUT);
 
-    graph = new ConfigGraph();
-    if ( !graph ) {
-        output->fatal(CALL_INFO, 1, "Could not create graph object in JSON loader.\n");
+    graph_ = new ConfigGraph();
+    if ( !graph_ ) {
+        output_->fatal(CALL_INFO, 1, "Could not create graph object in JSON loader.\n");
     }
 
-    output->verbose(CALL_INFO, 2, 0, "SST loading a JSON model from script: %s\n", script_file.c_str());
+    output_->verbose(CALL_INFO, 2, 0, "SST loading a JSON model from script: %s\n", script_file.c_str());
 }
 
 SSTJSONModelDefinition::~SSTJSONModelDefinition()
 {
-    delete output;
+    delete output_;
 }
 
 ConfigGraph*
 SSTJSONModelDefinition::createConfigGraph()
 {
     // open the file
-    std::ifstream ifs(scriptName.c_str());
+    std::ifstream ifs(script_name_.c_str());
     if ( !ifs.is_open() ) {
-        output->fatal(CALL_INFO, 1, "Error opening JSON model from script: %s\n", scriptName.c_str());
+        output_->fatal(CALL_INFO, 1, "Error opening JSON model from script: %s\n", script_name_.c_str());
         return nullptr;
     }
 
     // create the SAX handler
     SSTConfigSaxHandler handler;
-    handler.setConfigGraph(graph);
+    handler.setConfigGraph(graph_);
     bool result = json::sax_parse(ifs, &handler);
     if ( !result ) {
-        output->fatal(CALL_INFO, 1, "Error parsing json file at position %lu: (%s)\n", handler.errorPos,
-            handler.errorStr.c_str());
+        output_->fatal(CALL_INFO, 1, "Error parsing json file at position %lu: (%s)\n", handler.error_pos_,
+            handler.error_str_.c_str());
         return nullptr;
     }
 
     // set the program options
-    auto ProgramOptions = handler.getProgramOptions();
-    for ( const auto& [key, value] : ProgramOptions ) {
+    auto options = handler.getProgramOptions();
+    for ( const auto& [key, value] : options ) {
         setOptionFromModel(key, value);
     }
 
     // close the file
     ifs.close();
-
-    return graph;
+    return graph_;
 }

@@ -19,6 +19,7 @@
 namespace SST {
 
 class TimeLord;
+class SyncManager;
 
 /**
    A class to convert between a component's view of time and the
@@ -28,6 +29,7 @@ class TimeConverter
 {
 
     friend class TimeLord;
+    friend class SyncManager;
     friend class SST::Core::Serialization::serialize_impl<TimeConverter>;
     friend class SST::Core::Serialization::serialize_impl<TimeConverter*>;
 

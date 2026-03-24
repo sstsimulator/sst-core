@@ -50,3 +50,15 @@ SST_MPI_Allgather(const void* sendbuf, int sendcount, MPI_Datatype sendtype, voi
     return 0;
 #endif
 }
+
+int
+SST_MPI_GetRank()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int myrank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    return myrank;
+#else
+    return 0;
+#endif
+}

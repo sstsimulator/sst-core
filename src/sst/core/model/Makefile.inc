@@ -55,6 +55,7 @@ sst_core_python_sources = \
 	model/python/pymodel_portmodule.cc
 
 sst_core_json_sources = \
+  model/json/jsonstates.h \
   model/json/jsonmodel.h \
   model/json/jsonmodel.cc
 

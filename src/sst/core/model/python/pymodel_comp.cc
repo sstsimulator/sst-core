@@ -562,7 +562,7 @@ compCreateStatistic(PyObject* self, PyObject* args)
     cs->shared = true;
     cs->name   = name;
 
-    return buildStatisticObject(cs->id);
+    return buildStatisticObject(comp->id, cs->id);
 }
 
 static PyObject*

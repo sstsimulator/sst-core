@@ -17,6 +17,7 @@ import filecmp
 from sst_unittest import *
 from sst_unittest_support import *
 
+have_mpi = sst_core_config_include_file_get_value(define="SST_CONFIG_HAVE_MPI", type=int, default=0, disable_warning=True) == 1
 
 class testcase_Checkpoint(SSTTestCase):
 
@@ -97,6 +98,14 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_sc_2u2u_n2one(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True)
 
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Checkpoint_Statistics_basic_par_remap(self) -> None:
+        self.checkpoint_test_template("StatisticsComponent_basic", par_remap=True)
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Checkpoint_sc_2u2u_par_remap(self) -> None:
+        self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", par_remap=True)
+
     def test_Checkpoint_SharedObject_bool_array_n2one(self) -> None:
         self.checkpoint_test_template("SharedObject", 1, 2, modelparams="--param=object_type:bool_array --param=num_entities:12 --param=full_initialization:true --param=checkpoint:true", outstr = "SharedObject_bool_array", n_to_one=True)
 
@@ -115,7 +124,7 @@ class testcase_Checkpoint(SSTTestCase):
     # subcom: Set to True if this is a subcomponent test as the file/path name differs
     # modelparams: Set what is passed into --model-params when running SST
     # outstr: If set, is used in place of testtype to generate reference and output filenames
-    def checkpoint_test_template(self, testtype: str, rst_index: int = 1, cr_index: int = 0, subcomp: bool = False, modelparams: str = "", outstr: str = "", n_to_one: bool = False) -> None:
+    def checkpoint_test_template(self, testtype: str, rst_index: int = 1, cr_index: int = 0, subcomp: bool = False, modelparams: str = "", outstr: str = "", n_to_one: bool = False, par_remap : bool = False) -> None:
 
         # name conventions:
         # X_cpt - files/options associated with first checkpoint run
@@ -207,6 +216,8 @@ class testcase_Checkpoint(SSTTestCase):
 
         if n_to_one:
             self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst, num_ranks=1, num_threads=1)
+        elif par_remap:
+            self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst, num_ranks=testing_check_get_num_threads(), num_threads=testing_check_get_num_ranks())
         else:
             self.run_sst(sdlfile_rst, outfile_rst, other_args=options_rst)
 
@@ -229,6 +240,7 @@ class testcase_Checkpoint(SSTTestCase):
         outfile_cr = "{0}/test_Checkpoint_{1}_ckpt_restart.out".format(outdir, testtype)
         options_cr = "--load-checkpoint"
 
+        # If par_remap is on, we will still just rerun the checkpoint from the restart with the original parallelism
         if n_to_one:
             self.run_sst(sdlfile_cr, outfile_cr, other_args=options_cr, num_ranks=1, num_threads=1)
         else:

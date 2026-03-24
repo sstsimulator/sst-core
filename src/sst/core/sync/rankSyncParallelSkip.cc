@@ -54,8 +54,8 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks) :
     slaveExchangeDoneBarrier(num_ranks.thread),
     allDoneBarrier(num_ranks.thread)
 {
-    max_period     = Simulation_impl::getSimulation()->getMinPartTC();
-    myNextSyncTime = max_period.getFactor();
+    max_period     = Simulation_impl::getSimulation()->getMinPartTC().getFactor();
+    myNextSyncTime = max_period;
     recv_count     = new int[num_ranks_.thread];
     for ( uint32_t i = 0; i < num_ranks_.thread; i++ ) {
         recv_count[i] = 0;
@@ -84,8 +84,7 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
 }
 
 ActivityQueue*
-RankSyncParallelSkip::registerLink(
-    const RankInfo& to_rank, const RankInfo& from_rank, const std::string& name, Link* link)
+RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Link* link)
 {
     std::scoped_lock slock(lock);
 
@@ -113,7 +112,7 @@ RankSyncParallelSkip::registerLink(
         comm_recv_map[remote_rank_local_thread].local_size   = 4096;
     }
 
-    link_maps[to_rank.rank][name] = reinterpret_cast<uintptr_t>(link);
+    link_maps[to_rank.rank].emplace_back(link->getId(), reinterpret_cast<uintptr_t>(link));
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif
@@ -374,7 +373,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     SimTime_t min_time;
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 
-    myNextSyncTime = min_time + max_period.getFactor();
+    myNextSyncTime = min_time + max_period;
 
     /* Exchange signals */
     int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
