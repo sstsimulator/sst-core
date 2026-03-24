@@ -50,7 +50,7 @@ public:
 
        In which case, the class is created with:
 
-         new Clock::Handler<classname>(this, &classname::function_name)
+         new Clock::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -58,22 +58,23 @@ public:
 
        and the class is created with:
 
-         new Clock::Handler<classname, dataT>(this, &classname::function_name, data)
+         new Clock::Handler<classname, &classname::function_name, dataT>(this, data)
 
        In both cases, the boolean that's returned indicates whether
        the handler should be removed from the list or not.  On return
        of true, the handler will be removed.  On return of false, the
        handler will be left in the clock list.
-     */
-    template <typename classT, typename dataT = void>
-    using Handler [[deprecated("Handler has been deprecated. Please use Handler2 as it supports checkpointing.")]] =
-        SSTHandler<bool, Cycle_t, classT, dataT>;
-
-    /**
-       New style (checkpointable) SSTHandler
     */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<bool, Cycle_t, classT, dataT, funcT>;
+    using Handler = SSTHandler<bool, Cycle_t, classT, dataT, funcT>;
+
+    /**
+       Handler2 version which is now the same as Handler and is provided for backward compatibility until SST 17
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2
+        [[deprecated("Handler2 has been deprecated and will be removed in SST 17. Please use Handler instead.")]]
+        = SSTHandler<bool, Cycle_t, classT, dataT, funcT>;
 
     /**
      * Activates this clock object, by inserting into the simulation's

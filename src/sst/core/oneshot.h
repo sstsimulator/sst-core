@@ -36,30 +36,7 @@ public:
     /**
        Base handler for OneShot callbacks.
      */
-    using HandlerBase = SSTHandlerBaseNoArgs<void>;
-
-    /**
-       Used to create handlers for OneShot.  The callback function is
-       expected to be in the form of:
-
-         void func()
-
-       In which case, the class is created with:
-
-         new OneShot::Handler<classname>(this, &classname::function_name)
-
-       Or, to add static data, the callback function is:
-
-         void func(dataT data)
-
-       and the class is created with:
-
-         new OneShot::Handler<classname, dataT>(this, &classname::function_name, data)
-     */
-    template <typename classT, typename dataT = void>
-    using Handler
-        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
-            SSTHandlerNoArgs<void, classT, dataT>;
+    using HandlerBase = SSTHandlerBase<void, void>;
 
     /**
        Used to create checkpointable handlers for OneShot.  The callback function is
@@ -80,7 +57,30 @@ public:
          new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
      */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<void, void, classT, dataT, funcT>;
+    using Handler = SSTHandler<void, void, classT, dataT, funcT>;
+
+    /**
+       Used to create checkpointable handlers for OneShot.  The callback function is
+       expected to be in the form of:
+
+         void func()
+
+       In which case, the class is created with:
+
+         new OneShot::Handler2<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         void func(dataT data)
+
+       and the class is created with:
+
+         new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
+     */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2
+        [[deprecated("Handler2 has been deprecated and will be removed in SST 17.. Please use Handler instead.")]]
+        = SSTHandler<void, void, classT, dataT, funcT>;
 
 
     /////////////////////////////////////////////////

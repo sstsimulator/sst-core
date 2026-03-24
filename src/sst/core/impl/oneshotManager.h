@@ -41,8 +41,8 @@ public:
 
     /**
        Base handler for OneShot callbacks.
-     */
-    using HandlerBase = SSTHandlerBaseNoArgs<void>;
+    */
+    using HandlerBase = SSTHandlerBase<void, void>;
 
     /**
        Used to create checkpointable handlers for OneShot.  The callback function is
@@ -63,7 +63,12 @@ public:
          new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
      */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<void, void, classT, dataT, funcT>;
+    using Handler = SSTHandler<void, void, classT, dataT, funcT>;
+
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2
+        [[deprecated("Handler2 has been deprecated and will be removed in SST 17.. Please use Handler instead.")]]
+        = SSTHandler<void, void, classT, dataT, funcT>;
 
     using HandlerList_t = std::vector<OneShot::HandlerBase*>;
 

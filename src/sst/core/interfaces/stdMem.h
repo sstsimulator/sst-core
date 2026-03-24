@@ -82,14 +82,14 @@ public:
     using HandlerBase = SSTHandlerBase<void, Request*>;
 
     /**
-       Used to create handlers for request handling.  The callback
-       function is expected to be in the form of:
+       Used to create checkpointable handlers for request handling.
+       The callback function is expected to be in the form of:
 
          void func(Request* event)
 
        In which case, the class is created with:
 
-         new StdMem::Handler<classname>(this, &classname::function_name)
+         new StdMem::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -97,12 +97,10 @@ public:
 
        and the class is created with:
 
-         new stdMem::Handler<classname, dataT>(this, &classname::function_name, data)
+         new stdMem::Handler<classname, &classname::function_name, dataT>(this, data)
      */
-    template <typename classT, typename dataT = void>
-    using Handler
-        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
-            SSTHandler<void, Request*, classT, dataT>;
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler = SSTHandler<void, Request*, classT, dataT, funcT>;
 
     /**
        Used to create checkpointable handlers for request handling.
@@ -123,7 +121,9 @@ public:
          new stdMem::Handler<classname, &classname::function_name, dataT>(this, data)
      */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<void, Request*, classT, dataT, funcT>;
+    using Handler2
+        [[deprecated("Handler2 has been deprecated and will be removed in SST 17. Please use Handler instead.")]]
+        = SSTHandler<void, Request*, classT, dataT, funcT>;
 
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type
