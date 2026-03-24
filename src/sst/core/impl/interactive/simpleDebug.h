@@ -382,10 +382,20 @@ private:
     bool cmd_info_rank_serial(std::string& cmd_str);
     bool cmd_info_rank_parallel(std::string& cmd_str);
     bool cmd_info_remote(std::vector<std::string>& UNUSED(tokens));
+   
+    int  parse_thread();
+    bool cmd_thread_serial(std::string& UNUSED(cmd_str));
+    bool cmd_thread_thread(std::string& UNUSED(cmd_str));
+    bool cmd_thread_rank_serial(std::string& cmd_str);
+    bool cmd_thread_rank_parallel(std::string& cmd_str);
+    bool cmd_thread_remote(std::vector<std::string>& UNUSED(tokens));
 
-    bool cmd_thread(std::string& UNUSED(cmd_str)); 
-
-    bool cmd_rank(std::string& UNUSED(cmd_str)); 
+    int  parse_rank();
+    bool cmd_rank_serial(std::string& UNUSED(cmd_str));
+    bool cmd_rank_thread(std::string& UNUSED(cmd_str));
+    bool cmd_rank_rank_serial(std::string& cmd_str);
+    bool cmd_rank_rank_parallel(std::string& cmd_str);
+    bool cmd_rank_remote(std::vector<std::string>& UNUSED(tokens));
 
     bool cmd_setConfirm(std::string& UNUSED(cmd_str));
 

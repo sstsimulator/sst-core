@@ -1055,11 +1055,11 @@ Simulation_impl::setup_interactive_mode()
         }
 
         // Special case, invoke interactive console now rather than wait for sync
-        if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {  // SKK 
-        //if ( num_ranks.thread > 1 && offset == 0 ) {
+        if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) { 
             enter_interactive_ = true;
             //syncManager->handleInteractiveConsole();
-            interactive_->execute(interactive_msg_); // may need to handle shutdown here
+            interactive_msg_ = format_string("Interactive start at %" PRI_SIMTIME, offset);
+            interactive_->execute(format_string("Interactive start at %" PRI_SIMTIME, offset)); // may need to handle shutdown here
             enter_interactive_ = false;  
         }
         else {
