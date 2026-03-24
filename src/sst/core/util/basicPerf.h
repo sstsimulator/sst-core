@@ -193,9 +193,27 @@ public:
     int64_t  getMetricSigned(const std::string& name);
     double   getMetricFloat(const std::string& name);
 
-    void outputRegionData(Output& out, size_t verbose);
+    void outputRegionData(Output& out, size_t);
+
+    void setReportRegionInfo(Output& output, size_t verbose);
 
 private:
+
+    /**
+       Verbose level used to determin which regions will print on call to beginRegion().  Only levels equal to or less
+       than the verbose level will print.
+    */
+    size_t verbose_ = 0;
+
+    /**
+       Output object to use to report region info
+    */
+    Output* output_ = nullptr;
+
+    /**
+       Time that the object was intialized
+    */
+    double start_time_ = 0.0;
 
     /**
        Stores the regions in the order they are created

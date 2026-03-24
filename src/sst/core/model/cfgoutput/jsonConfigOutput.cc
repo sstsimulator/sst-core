@@ -405,8 +405,7 @@ JSONConfigGraphOutput::outputStatisticsOptions(ConfigGraph* graph, std::ofstream
 void
 JSONConfigGraphOutput::outputSharedParams(std::ofstream& ofs)
 {
-    size_t      count = 0;
-    const auto& set   = getSharedParamSetNames();
+    const auto& set = getSharedParamSetNames();
 
     auto param_sets = nlohmann::ordered_json::object();
 
@@ -414,7 +413,6 @@ JSONConfigGraphOutput::outputSharedParams(std::ofstream& ofs)
         ofs << "\"shared_params\":";
 
         for ( const auto& s : set ) {
-            count++;
             auto record = nlohmann::ordered_json::object();
             for ( const auto& kvp : getSharedParamSet(s) ) {
                 if ( kvp.first != "<set_name>" ) {

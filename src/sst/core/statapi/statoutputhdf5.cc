@@ -30,7 +30,7 @@ StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
 {
     // Announce this output object's name
     Output& out = getSimulationOutput();
-    out.verbose(CALL_INFO, 1, 0, " : StatisticOutputHDF5 enabled...\n");
+    out.verbose(CALL_INFO, 2, 0, "StatisticOutputHDF5 enabled...\n");
     setStatisticOutputName("StatisticOutputHDF5");
 }
 

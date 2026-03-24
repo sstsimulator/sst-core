@@ -154,8 +154,8 @@ dump_partition(ConfigGraph* graph, const RankInfo& size)
     // If the user asks us to dump the partitioned graph.
     if ( cfg.component_partition_file() != "" ) {
         if ( cfg.verbose() ) {
-            g_output.verbose(CALL_INFO, 1, 0, "# Dumping partitioned component graph to %s\n",
-                cfg.component_partition_file().c_str());
+            g_output.verbose(
+                CALL_INFO, 2, 0, "Dumping partitioned component graph to %s\n", cfg.component_partition_file().c_str());
         }
 
         std::ofstream         graph_file(cfg.component_partition_file().c_str());
@@ -183,7 +183,7 @@ dump_partition(ConfigGraph* graph, const RankInfo& size)
         graph_file.close();
 
         if ( cfg.verbose() ) {
-            g_output.verbose(CALL_INFO, 2, 0, "# Dump of partition graph is complete.\n");
+            g_output.verbose(CALL_INFO, 3, 0, "Dump of partition graph is complete.\n");
         }
     }
 }
@@ -605,16 +605,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         barrier.wait();
 
         if ( cfg.runMode() == SimulationRunMode::RUN || cfg.runMode() == SimulationRunMode::BOTH ) {
-            if ( cfg.verbose() && 0 == tid ) {
-                g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
-
-                time_t     the_time = time(nullptr);
-                struct tm* now      = localtime(&the_time);
-
-                g_output.verbose(CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n",
-                    (now->tm_year + 1900), (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
-            }
-
             if ( tid == 0 && info.world_size.rank > 1 ) {
                 // If we are a MPI_parallel job, need to makes sure that all used
                 // libraries are loaded on all ranks.
@@ -753,7 +743,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     }
 
     info.simulated_time = sim->getEndSimTime();
-    // g_output.output(CALL_INFO,"Simulation time = %s\n",info.simulated_time.toStringBestSI().c_str());
 
     double end_time = sst_get_cpu_time();
     info.run_time   = end_time - start_run;
@@ -886,6 +875,18 @@ main(int argc, char* argv[])
         // Just asked for info, clean exit
         return 0;
     }
+    Simulation_impl::basicPerf.setReportRegionInfo(g_output, cfg.verbose() + 1);
+
+    // Set up the output object.  Note that the thread count, core prefix, and verbose level may change after model
+    // generation.  Thread count changing won't have any visible effects because it is set to its final value before
+    // threads are started.  Setting the core prefix and verbose in the SDL file, but not on the command line, may cause
+    // some things to not print before model generation, or they may print the default prefix until after model
+    // generation.
+
+    // Output filename can't be reset to something new, so we won't set it until after model generation, but set the
+    // other Output fields that can be changed
+    Output::setWorldSize(world_size.rank, world_size.thread, myrank);
+    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
 
     /**************************************************************************
       2 - Build phase
@@ -991,10 +992,12 @@ main(int argc, char* argv[])
     // Create global output object
     Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
     Output::setWorldSize(world_size.rank, world_size.thread, myrank);
-    g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+    // g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+    g_output.setPrefix(cfg.output_core_prefix());
+    g_output.setVerboseLevel(cfg.verbose());
 
-    g_output.verbose(CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank,
-        myRank.thread, world_size.rank, world_size.thread);
+    g_output.verbose(CALL_INFO, 1, 0, "main() My rank is (%u,%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
+        world_size.rank, world_size.thread);
 
     // TimeLord must be initialized prior to postCreationCleanup() call
     Simulation_impl::getTimeLord()->init(cfg.timeBase());
@@ -1051,26 +1054,6 @@ main(int argc, char* argv[])
     }
 
     Simulation_impl::basicPerf.endRegion("model-generation");
-
-    if ( myRank.rank == 0 ) {
-        // Get the global and max memory usage.  These calls will generate
-        // implicit collectives so all ranks have to call them
-        uint64_t global_mem_begin = Simulation_impl::basicPerf.getGlobalTotalRegionBeginMemSize("model-generation");
-        uint64_t global_mem_end   = Simulation_impl::basicPerf.getGlobalTotalRegionEndMemSize("model-generation");
-        int64_t  global_mem_diff  = global_mem_end - global_mem_begin;
-        std::pair<uint64_t, int> max_mem = Simulation_impl::basicPerf.getGlobalMaxRegionEndMemSize("model-generation");
-
-        double graph_gen_time = Simulation_impl::basicPerf.getRegionDuration("model-generation");
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-        g_output.verbose(CALL_INFO, 1, 0, "# Graph construction took %f seconds.\n", graph_gen_time);
-        g_output.verbose(CALL_INFO, 1, 0, "# Global memory use is %" PRIu64 "kb (raised %" PRIi64 "kb)\n",
-            global_mem_end, global_mem_diff);
-        if ( world_size.rank > 1 )
-            g_output.verbose(
-                CALL_INFO, 1, 0, "# Max memory use is %" PRIu64 "kb (rank %d)\n", max_mem.first, max_mem.second);
-        if ( !restart ) g_output.verbose(CALL_INFO, 1, 0, "# Graph contains %" PRIu64 " components\n", comp_count);
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-    }
 
     /******** End Model Generation ********/
 
@@ -1438,37 +1421,18 @@ main(int argc, char* argv[])
     Simulation_impl::basicPerf.endRegion("graph-processing");
 
     if ( myRank.rank == 0 ) {
-        // Get the global and max memory usage.  These calls will generate
-        // implicit collectives so all ranks have to call them
-        uint64_t global_mem_begin = Simulation_impl::basicPerf.getGlobalTotalRegionBeginMemSize("graph-partitioning");
-        uint64_t global_mem_end   = Simulation_impl::basicPerf.getGlobalTotalRegionEndMemSize("graph-distribution");
-        uint64_t global_mem_diff  = global_mem_end - global_mem_begin;
-        std::pair<uint64_t, int> max_mem =
-            Simulation_impl::basicPerf.getGlobalMaxRegionEndMemSize("graph-distribution");
-
-        double graph_gen_time = Simulation_impl::basicPerf.getRegionDuration("graph-distribution");
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-        g_output.verbose(
-            CALL_INFO, 1, 0, "# Graph partitioning, output and distribution took %f seconds.\n", graph_gen_time);
-        g_output.verbose(CALL_INFO, 1, 0, "# Global memory use is %" PRIu64 "kb (raised %" PRIi64 "kb)\n",
-            global_mem_end, global_mem_diff);
-        if ( world_size.rank > 1 )
-            g_output.verbose(
-                CALL_INFO, 1, 0, "# Max memory use is %" PRIu64 "kb (rank %d)\n", max_mem.first, max_mem.second);
-        g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
-
         // Output the partition information if user requests it
         dump_partition(graph, world_size);
     }
 
     /******** Register signal handlers, if not disabled ********/
     if ( cfg.enable_sig_handling() ) {
-        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT, ALRM, and TERM\n");
+        g_output.verbose(CALL_INFO, 3, 0, "Signal handlers will be registered for USR1, USR2, INT, ALRM, and TERM\n");
         RealTimeManager::installSignalHandlers();
     }
     else {
         // Print out to say disabled?
-        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
+        g_output.verbose(CALL_INFO, 3, 0, "Signal handlers are disabled by user input\n");
     }
 
     /**************************************************************************
@@ -1575,6 +1539,13 @@ main(int argc, char* argv[])
         threadInfo[0].sync_data_size += threadInfo[i].sync_data_size;
     }
 
+    if ( 0 == myRank.rank ) {
+        // Print out the simulation time regardless of verbosity.
+        g_output.output(
+            "Simulation is complete, simulated time: %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
+    }
+
+
     double max_run_time   = Simulation_impl::basicPerf.getRegionDuration("run");
     double max_build_time = Simulation_impl::basicPerf.getRegionDuration("build");
     double max_total_time = Simulation_impl::basicPerf.getRegionDuration("total");
@@ -1621,7 +1592,7 @@ main(int argc, char* argv[])
     if ( cfg.verbose() || cfg.print_timing() || cfg.timing_json() != "" ) {
         if ( myRank.rank == 0 ) {
             int          timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();
-            TimingOutput timingOutput(g_output, timing_verbose);
+            TimingOutput timingOutput(g_output, std::max(timing_verbose, cfg.verbose() == 0 ? 0 : cfg.verbose() + 1));
             if ( cfg.timing_json() != "" ) timingOutput.setJSON(cfg.timing_json());
 
             timingOutput.set(TimingOutput::Key::LOCAL_MAX_RSS, local_max_rss);
@@ -1647,15 +1618,6 @@ main(int argc, char* argv[])
         }
     }
 
-#ifdef SST_CONFIG_HAVE_MPI
-    if ( 0 == myRank.rank ) {
-#endif
-        // Print out the simulation time regardless of verbosity.
-        g_output.output(
-            "Simulation is complete, simulated time: %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
-#ifdef SST_CONFIG_HAVE_MPI
-    }
-#endif
 
 #ifdef USE_MEMPOOL
     if ( cfg.event_dump_file() != "" ) {

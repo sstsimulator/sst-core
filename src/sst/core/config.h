@@ -228,7 +228,7 @@ private:
        Prefix to use for the default SST::Output object in core
     */
     SST_CONFIG_DECLARE_OPTION(
-        std::string, output_core_prefix, "@x SST Core: ", &StandardConfigParsers::from_string<std::string>);
+        std::string, output_core_prefix, "#@x SST Core: ", &StandardConfigParsers::from_string<std::string>);
 
 
     /**** Configuration output ****/

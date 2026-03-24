@@ -96,8 +96,8 @@ compInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
         ComponentId_t id            = gModel->addComponent(prefixed_name, type);
         obj                         = new PyComponent(self, id);
         free(prefixed_name);
-        gModel->getOutput()->verbose(
-            CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
+        gModel->getOutput()->debug(
+            CALL_INFO, 5, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     }
     else {
         obj = new PyComponent(self, useID);
@@ -685,7 +685,7 @@ subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 
     self->obj = obj;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n",
+    gModel->getOutput()->debug(CALL_INFO, 5, 0, "Creating subcomponent [%s] of type [%s]]\n",
         getComp((PyObject*)self)->name.c_str(), getComp((PyObject*)self)->type.c_str());
 
     return 0;

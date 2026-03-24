@@ -27,8 +27,9 @@ namespace SST::Util {
 void
 BasicPerfTracker::initialize(int rank, int num_ranks)
 {
-    rank_      = rank;
-    num_ranks_ = num_ranks;
+    rank_       = rank;
+    num_ranks_  = num_ranks;
+    start_time_ = sst_get_cpu_time();
 }
 
 
@@ -82,6 +83,13 @@ BasicPerfTracker::beginRegion(const std::string& tag)
     current_regions_.push(regions_.size());
 
     size_t level = current_regions_.size();
+
+    // Check to see if we need to print this level (need to check the verbose level because output_ may not be valid if
+    // verbose is 0)
+    if ( output_ && rank_ == 0 ) {
+        output_->verbose(CALL_INFO, level - 1, 0, "** Beginning region \"%s\" at time %s (elapsed time = %.2f s)\n",
+            tag.c_str(), sst_get_current_time().c_str(), sst_get_cpu_time() - start_time_);
+    }
 
     // Need to see if there are other regions in this level that need
     // to have last_of_level set to false.  Easier to do this before
@@ -402,6 +410,13 @@ BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
 
     // Restore the locale
     std::setlocale(LC_ALL, orig_c_locale.c_str());
+}
+
+void
+BasicPerfTracker::setReportRegionInfo(Output& output, size_t verbose)
+{
+    output_  = &output;
+    verbose_ = verbose;
 }
 
 } // namespace SST::Util

@@ -998,8 +998,8 @@ BaseComponent::addSelfLink(const std::string& name)
     LinkMap* myLinks = my_info_->getLinkMap();
     myLinks->addSelfPort(name);
     if ( myLinks->getLink(name) != nullptr ) {
-        printf("Attempting to add self link with duplicate name: %s\n", name.c_str());
-        abort();
+        sim_->getSimulationOutput().fatal(
+            CALL_INFO, 1, "Attempting to add self link with duplicate name: %s\n", name.c_str());
     }
 
     Link* link = new SelfLink();

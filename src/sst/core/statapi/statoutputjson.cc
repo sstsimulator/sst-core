@@ -27,7 +27,7 @@ StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters) :
 {
     // Announce this output object's name
     Output& out = getSimulationOutput();
-    out.verbose(CALL_INFO, 1, 0, " : StatisticOutputJSON enabled...\n");
+    out.verbose(CALL_INFO, 2, 0, "StatisticOutputJSON enabled...\n");
     setStatisticOutputName("StatisticOutputJSON");
 
     m_currentComponentName = "";

@@ -64,7 +64,7 @@ class testcase_Links(SSTTestCase):
             cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), outfile, reffile, rc == 0, filters)
         else:
             cmpfile = errfile
-            filters.append(RemoveRegexFromLineFilter(r"FATAL: (\[[0-9]+:[0-9]+\])* "))
+            filters.append(RemoveRegexFromLineFilter(r"FATAL: #(\[[0-9]+:[0-9]+\])* "))
             cmp_result = testing_compare_filtered_diff("Links_{0}".format(testtype), errfile, reffile, rc == 0, filters)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)

@@ -13,6 +13,8 @@
 
 #include "cputimer.h"
 
+#include <ctime>
+
 double
 sst_get_cpu_time()
 {
@@ -20,4 +22,16 @@ sst_get_cpu_time()
     gettimeofday(&the_time, nullptr);
 
     return ((double)the_time.tv_sec) + (((double)the_time.tv_usec) * 1.0e-6);
+}
+
+std::string
+sst_get_current_time()
+{
+    time_t     the_time = time(nullptr);
+    struct tm* now      = localtime(&the_time);
+
+    char buffer[256];
+    snprintf(buffer, 256, "%02u:%02u:%02u", now->tm_hour, now->tm_min, now->tm_sec);
+
+    return std::string(buffer);
 }

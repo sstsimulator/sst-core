@@ -1122,7 +1122,7 @@ void
 SSTPythonModelDefinition::initModel(
     const std::string& script_file, int verbosity, Config* config, int argc, char** argv)
 {
-    output = new Output("SSTPythonModel: ", verbosity, 0, SST::Output::STDOUT);
+    output = new Output("#@x SSTPythonModel: ", verbosity, 0, SST::Output::STDOUT);
 
     if ( gModel ) {
         output->fatal(CALL_INFO, 1, "A Python Config Model is already in progress.\n");
@@ -1145,7 +1145,7 @@ SSTPythonModelDefinition::initModel(
     const std::string file_name_only = script_file.substr(std::max(0, substr_index));
     local_script_name                = file_name_only.substr(0, file_name_only.size() - 3);
 
-    output->verbose(CALL_INFO, 2, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
+    output->verbose(CALL_INFO, 1, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
         local_script_name.c_str());
 
 
@@ -1328,7 +1328,7 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition()
 ConfigGraph*
 SSTPythonModelDefinition::createConfigGraph()
 {
-    output->verbose(CALL_INFO, 1, 0, "Creating config graph for SST using Python model...\n");
+    output->verbose(CALL_INFO, 2, 0, "Creating config graph for SST using Python model...\n");
 
 #if PY_MINOR_VERSION >= 9
     if ( enablePythonCoverage ) {
@@ -1365,7 +1365,7 @@ SSTPythonModelDefinition::createConfigGraph()
         output->fatal(CALL_INFO, 1, "Execution of model construction function failed\n%s", loadErrors.c_str());
     }
 
-    output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
+    output->verbose(CALL_INFO, 2, 0, "Construction of config graph with Python is complete.\n");
 
     if ( nullptr != PyErr_Occurred() ) {
         PyErr_Print();

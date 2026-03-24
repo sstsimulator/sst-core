@@ -29,7 +29,7 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters) :
     m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
     Output& out      = getSimulationOutput();
-    out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCSV enabled...\n");
+    out.verbose(CALL_INFO, 2, 0, "StatisticOutputCSV enabled...\n");
     setStatisticOutputName("StatisticOutputCSV");
 }
 
