@@ -1,10 +1,9 @@
 import sst
 import sys
 
-# PR #1536 All tests not exiting on their own should use --exit-after
+# Note: test WILL NOT terminate on its own
 if len(sys.argv) == 2 and sys.argv[1] == "stop":
-    print("WARNING[test_RealTime.py:6] ignoring 'stop' argument");
-    #  sst.setProgramOption("stop-at", "25us")
+    sst.setProgramOption("stop-at", "25us")
 
 # Define the simulation components
 comp_map = []
