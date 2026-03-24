@@ -233,7 +233,7 @@ private:
 
     RankInfo                         rank_;
     RankInfo                         num_ranks_;
-    static Core::ThreadSafe::Barrier RankExecBarrier_[5];
+    static Core::ThreadSafe::Barrier RankExecBarrier_[6];
     static Core::ThreadSafe::Barrier LinkUntimedBarrier_[3];
 
     static RankSync* rankSync_;

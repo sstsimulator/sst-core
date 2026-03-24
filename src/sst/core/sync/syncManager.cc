@@ -42,7 +42,7 @@ class InteractiveConsole;
 
 // Static data members
 RankSync*                 SyncManager::rankSync_ = nullptr;
-Core::ThreadSafe::Barrier SyncManager::RankExecBarrier_[5];
+Core::ThreadSafe::Barrier SyncManager::RankExecBarrier_[6];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier_[3];
 SimTime_t                 SyncManager::next_rankSync_ = MAX_SIMTIME_T;
 
@@ -601,10 +601,16 @@ SyncManager::execute()
     int  sig_end;
     int  sig_usr;
     int  sig_alrm;
+    bool interactive_enabled = false;
     bool enter_interactive;
     bool enter_shutdown;
     Simulation_impl::ShutdownMode_t shutdown_mode;
     bool generate_ckpt;
+
+    if (sim_->interactive_) {
+        interactive_enabled = true;
+    }
+
 
     SimTime_t next_checkpoint_time = MAX_SIMTIME_T;
 
@@ -632,10 +638,12 @@ SyncManager::execute()
         }
 
         // Get interactive, shutdown, and checkpoint flags
-        //printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-        //            rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
-        getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
-        rankSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
+        if (interactive_enabled) {
+            //printf("0: Rank%d, Thread%d: sim_- Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+            //            rank_.rank, rank_.thread, sim_->enter_interactive_, sim_->enter_shutdown_, sim_->shutdown_mode_);
+            getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
+            rankSync_->setFlags(enter_interactive, enter_shutdown, shutdown_mode);
+        }
         rankSync_->setCkptFlag(generate_ckpt);
         //printf("1: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
         //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);       
@@ -686,31 +694,37 @@ SyncManager::execute()
 
         //next_checkpoint_time = checkpoint_->check(getDeliveryTime());
 #endif
-        rankSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-        //printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-        //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+        if (interactive_enabled) {
+            rankSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
+            //printf("2: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+            //            rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
 
-        // Handle shutdown (all threads/ranks)
-        if (enter_shutdown) {
-            sim_->setEndSim();
-            ic_barrier_.wait();
-            rankSync_->clearFlags();
-        }
-        // Handle interactive console
-        else { 
-            // std::cout << "skk: syncmgr rank: t0: interactive execute\n";
-            if (enter_interactive == true) {
-                //printf("3: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                //    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-
-                //Output::getDefaultObject().output("R%d, T%d: Before execute \n", rank_.rank, rank_.thread);
-                sim_->interactive_->execute(sim_->interactive_msg_);
-                sim_->enter_interactive_ = false; // IC may schedule IC again     
+            // Handle shutdown (all threads/ranks)
+            if (enter_shutdown) {
+                sim_->setEndSim();
+                ic_barrier_.wait();
+                if (rank_.thread == 0)
+                    rankSync_->clearFlags();
+                RankExecBarrier_[5].wait(); 
             }
-            //printf("4: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-            //        rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-            rankSync_->clearFlags();
-            RankExecBarrier_[0].wait();  // SKK Sync clear 
+            // Handle interactive console
+            else { 
+                // std::cout << "skk: syncmgr rank: t0: interactive execute\n";
+                if (enter_interactive == true) {
+                    //printf("3: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+                    //    rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+
+                    //Output::getDefaultObject().output("R%d, T%d: Before execute \n", rank_.rank, rank_.thread);
+                    sim_->interactive_->execute(sim_->interactive_msg_);
+                    sim_->enter_interactive_ = false; // IC may schedule IC again     
+                    if (rank_.thread == 0)
+                        rankSync_->clearFlags();
+                    RankExecBarrier_[5].wait(); 
+                }
+                //printf("4: Rank%d, Thread%d: Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+                //        rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+                
+            }
         }
 
         // No barrier needed. Either the check failed and no
@@ -738,7 +752,7 @@ SyncManager::execute()
         // However, any thread can trigger interactive or shutdown, so need to have all threads store
         // That is also why the setFlags must be atomic
        
-        if (num_ranks_.rank == 1) {  
+        if (num_ranks_.rank == 1 && interactive_enabled) { 
             // Get local sim flags
             getSimFlags(enter_interactive, enter_shutdown, shutdown_mode, generate_ckpt);
             // Each thread atomically sets shared flags in threadSync
@@ -774,21 +788,23 @@ SyncManager::execute()
             next_checkpoint_time = checkpoint_->check(getDeliveryTime());
             ckpt_generate_.store(0);
 
-            threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
-            //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-            //    enter_interactive, enter_shutdown, shutdown_mode);
-            if (enter_shutdown) {
-                sim_->setEndSim();
-                ic_barrier_.wait();
-                threadSync_->clearFlags();
-            }
-            else if (enter_interactive) {
-                sim_->interactive_->execute(sim_->interactive_msg_);
-                sim_->enter_interactive_ = false; // IC may schedule IC again
-                //Output::getDefaultObject().output(" R%d, T%d: after interactive enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-                    //rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
-                ic_barrier_.wait();
-                threadSync_->clearFlags();
+            if (interactive_enabled) {
+                threadSync_->getFlags(enter_interactive, enter_shutdown, shutdown_mode);
+                //printf("After threadSync_->getFlags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+                //    enter_interactive, enter_shutdown, shutdown_mode);
+                if (enter_shutdown) {
+                    sim_->setEndSim();
+                    ic_barrier_.wait();
+                    threadSync_->clearFlags();
+                }
+                else if (enter_interactive) {
+                    sim_->interactive_->execute(sim_->interactive_msg_);
+                    sim_->enter_interactive_ = false; // IC may schedule IC again
+                    //Output::getDefaultObject().output(" R%d, T%d: after interactive enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+                        //rank_.rank, rank_.thread, enter_interactive, enter_shutdown, shutdown_mode);
+                    ic_barrier_.wait();
+                    threadSync_->clearFlags();
+                }
             }
         } // if num_ranks_.rank == 1 i.e. only multithreading
 
