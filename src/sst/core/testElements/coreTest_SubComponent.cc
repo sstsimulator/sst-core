@@ -35,7 +35,7 @@ SubComponentLoader::SubComponentLoader(ComponentId_t id, Params& params) :
     std::string freq  = params.find<std::string>("clock", "1GHz", found);
 
     if ( found ) {
-        registerClock(freq, new Clock::Handler2<SubComponentLoader, &SubComponentLoader::tick>(this));
+        registerClock(freq, new Clock::Handler<SubComponentLoader, &SubComponentLoader::tick>(this));
     }
 
     std::string unnamed_sub  = params.find<std::string>("unnamed_subcomponent", "");
@@ -176,7 +176,7 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) :
     else
         port_name = params.find<std::string>("port_name");
 
-    link = configureLink(port_name, new Event::Handler2<SubCompReceiver, &SubCompReceiver::handleEvent>(this));
+    link = configureLink(port_name, new Event::Handler<SubCompReceiver, &SubCompReceiver::handleEvent>(this));
     if ( !link ) {
         Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to configure port 'recvPort'\n");
     }

@@ -46,7 +46,7 @@ public:
 
        In which case, the class is created with:
 
-         new OneShot::Handler2<classname, &classname::function_name>(this)
+         new OneShot::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -54,7 +54,7 @@ public:
 
        and the class is created with:
 
-         new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
+         new OneShot::Handler<classname, &classname::function_name, dataT>(this, data)
      */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler = SSTHandler<void, void, classT, dataT, funcT>;
@@ -67,7 +67,7 @@ public:
 
        In which case, the class is created with:
 
-         new OneShot::Handler2<classname, &classname::function_name>(this)
+         new OneShot::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -75,11 +75,11 @@ public:
 
        and the class is created with:
 
-         new OneShot::Handler2<classname, &classname::function_name, dataT>(this, data)
+         new OneShot::Handler<classname, &classname::function_name, dataT>(this, data)
      */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler2
-        [[deprecated("Handler2 has been deprecated and will be removed in SST 17.. Please use Handler instead.")]]
+        [[deprecated("Handler2 has been deprecated and will be removed in SST 17. Please use Handler instead.")]]
         = SSTHandler<void, void, classT, dataT, funcT>;
 
 

@@ -52,7 +52,7 @@ public:
 
        In which case, the class is created with:
 
-         new PortInterface::Handler2<classname, &classname::function_name>(this)
+         new PortInterface::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -60,7 +60,7 @@ public:
 
        and the class is created with:
 
-         new PortInterface::Handler2<classname, &classname::function_name, dataT>(this, data)
+         new PortInterface::Handler<classname, &classname::function_name, dataT>(this, data)
     */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler = SSTHandler<void, Event*, classT, dataT, funcT>;

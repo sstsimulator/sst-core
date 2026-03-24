@@ -200,7 +200,7 @@ public:
 
        In which case, the class is created with:
 
-         new SimpleNetwork::Handler2<classname, &classname::function_name>(this)
+         new SimpleNetwork::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -227,7 +227,7 @@ public:
 
        In which case, the class is created with:
 
-         new SimpleNetwork::Handler2<classname, &classname::function_name>(this)
+         new SimpleNetwork::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 

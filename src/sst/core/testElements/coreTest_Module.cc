@@ -111,7 +111,7 @@ coreTestModuleLoader::coreTestModuleLoader(SST::ComponentId_t id, SST::Params& p
     primaryComponentDoNotEndSim();
 
     // set our clock
-    registerClock("1GHz", new Clock::Handler2<coreTestModuleLoader, &coreTestModuleLoader::tick>(this));
+    registerClock("1GHz", new Clock::Handler<coreTestModuleLoader, &coreTestModuleLoader::tick>(this));
 }
 
 coreTestModuleLoader::~coreTestModuleLoader()

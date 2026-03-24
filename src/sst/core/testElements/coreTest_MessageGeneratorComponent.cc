@@ -35,13 +35,13 @@ coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent(ComponentId
     primaryComponentDoNotEndSim();
 
     remote_component = configureLink("remoteComponent",
-        new Event::Handler2<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::handleEvent>(this));
+        new Event::Handler<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::handleEvent>(this));
 
     assert(remote_component);
 
     // set our clock
     registerClock(clock_frequency_str,
-        new Clock::Handler2<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::tick>(this));
+        new Clock::Handler<coreTestMessageGeneratorComponent, &coreTestMessageGeneratorComponent::tick>(this));
 }
 
 coreTestMessageGeneratorComponent::coreTestMessageGeneratorComponent() :
