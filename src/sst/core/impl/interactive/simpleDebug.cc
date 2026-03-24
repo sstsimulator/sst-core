@@ -3786,6 +3786,7 @@ SimpleDebugger::packResultBuffer( std::stringstream& result, char** result_buffe
 
 void 
 SimpleDebugger::sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::string& cmd) {
+    #ifdef SST_CONFIG_HAVE_MPI
     char* cmd_buffer;  // SKK Could share buffer
     int str_length;
     int buf_size;
@@ -3828,11 +3829,13 @@ SimpleDebugger::sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::s
     free(cmd_buffer);
     free(result_buffer);
     // SKK Need to return result string to calling function
+    #endif
 }
 
 
 void 
-SimpleDebugger::receiveCommandRankSerial() {    
+SimpleDebugger::receiveCommandRankSerial() {  
+    #ifdef SST_CONFIG_HAVE_MPI
     //const int default_size = 100;
     char* cmd_buffer;
     int buf_size;
@@ -3922,11 +3925,12 @@ SimpleDebugger::receiveCommandRankSerial() {
     free(cmd_str);
     free(result_buffer);
     //Output::getDefaultObject().output("After R1T0 send\n");
-
+    #endif
 }
 
 void 
-SimpleDebugger::receiveCommandRankParallel() {    
+SimpleDebugger::receiveCommandRankParallel() {
+    #ifdef SST_CONFIG_HAVE_MPI   
     //const int default_size = 100;
 
     char* cmd_buffer;
@@ -4015,6 +4019,7 @@ SimpleDebugger::receiveCommandRankParallel() {
     free(cmd_str);
     free(result_buffer);
     //Output::getDefaultObject().output("After R1T0 send\n");
+    #endif
 }
 
 #if 1
@@ -4031,7 +4036,7 @@ SimpleDebugger::sendCommandAll(const std::string& cmd_str) {
 
 void 
 SimpleDebugger::sendDone() {
-
+    #ifdef SST_CONFIG_HAVE_MPI
     std::string cmd = "done";
     char* cmd_buffer = nullptr;  // SKK Could share buffer
     int str_length;
@@ -4087,6 +4092,7 @@ SimpleDebugger::sendDone() {
 
     free(cmd_buffer);
     //Output::getDefaultObject().output("Exit sendDone: R%d, T%d\n", rank_.rank, rank_.thread);
+    #endif
 }
 
 // Could just call the correct execute directly now
@@ -4161,7 +4167,7 @@ SimpleDebugger::executeThread(const std::string& msg)
 int
 SimpleDebugger::executeRankSerial(const std::string& msg) 
 {
-#ifdef SST_CONFIG_HAVE_MPI
+    #ifdef SST_CONFIG_HAVE_MPI
     // -- Rank 0
     // Executes the console and sends commands to other threads/ranks as needed
     if (rank_.rank == 0)  { 
@@ -4202,7 +4208,7 @@ SimpleDebugger::executeRankSerial(const std::string& msg)
 int
 SimpleDebugger::executeRankParallel(const std::string& msg) 
 {
-#ifdef SST_CONFIG_HAVE_MPI
+    #ifdef SST_CONFIG_HAVE_MPI
 
     // -- Rank 0, Thread 0
     // Executes the console and sends commands to other threads/ranks as needed
@@ -4250,10 +4256,8 @@ SimpleDebugger::executeRankParallel(const std::string& msg)
 
     done = false;
     // SKK Maybe check shutdown here as well?
-
+    #endif
     return -1; // SKK Fix handling of return codes
-
-#endif  // SST_CONFIG_HAVE_MPI
 }  //end rankParallelExecute
 
 
