@@ -158,6 +158,92 @@ RankSyncParallelSkip::getSignals(int& end, int& usr, int& alrm)
     return sig_end_ || sig_usr_ || sig_alrm_;
 }
 
+void
+RankSyncParallelSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    // SKK This must be atomic because it can be set from any thread
+    //printf("Enter rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+    if (enter_shutdown) {
+        enter_shutdown_.store(enter_shutdown);
+        shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
+    }
+    //printf("Exit rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
+}
+
+void
+RankSyncParallelSkip::setCkptFlag(bool generate_ckpt)
+{
+    if (generate_ckpt)
+        generate_ckpt_.store(true);
+}
+
+void
+RankSyncParallelSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    // SKK This must be atomic because it can be set from any thread
+    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+    if (enter_interactive)
+        enter_interactive_.store(enter_interactive);
+
+    setShutdownFlags(enter_shutdown, shutdown_mode);
+
+    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
+}
+
+void 
+RankSyncParallelSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    enter_shutdown  = enter_shutdown_.load();
+    switch (shutdown_mode_) {
+        case 0:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+            break;
+        case 1:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+            break;
+        case 2:
+            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+            break;
+    }
+ 
+    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+}
+
+void
+RankSyncParallelSkip::getCkptFlag(bool& generate_ckpt)
+{
+    generate_ckpt = generate_ckpt_.load();
+}
+
+void 
+RankSyncParallelSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    
+    enter_interactive  = enter_interactive_.load();
+    getShutdownFlags( enter_shutdown, shutdown_mode);
+    
+    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
+    //            enter_interactive, enter_shutdown, shutdown_mode);
+}
+
+void
+RankSyncParallelSkip::clearFlags()
+{
+    enter_interactive_.store(false);
+    enter_shutdown_.store(false);
+    shutdown_mode_.store(0);
+    generate_ckpt_.store(false);
+
+    //printf("Clear Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
+    //               enter_interactive_, enter_shutdown_, shutdown_mode_);
+     
+}
+
 uint64_t
 RankSyncParallelSkip::getDataSize() const
 {
@@ -185,6 +271,45 @@ RankSyncParallelSkip::execute(int thread)
         allDoneBarrier.wait();        /* Wait for exchange_master to finish */
     }
 }
+
+void
+RankSyncParallelSkip::interactiveExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[1]  = { static_cast<int32_t>(enter_interactive_) };
+    int32_t global_flags[1] = { 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_interactive_  = global_flags[0];
+#endif
+}
+
+void
+RankSyncParallelSkip::shutdownExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[2]  = { static_cast<int32_t>(enter_shutdown_), static_cast<int32_t>(shutdown_mode_) };
+    int32_t global_flags[2] = { 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 2, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_shutdown_  = global_flags[0];
+    shutdown_mode_ = global_flags[1];
+#endif
+}
+
+#if 0
+void
+RankSyncParallelSkip::ckptExchange()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    int32_t local_flags[1]  = { static_cast<int32_t>(generate_ckpt_) };
+    int32_t global_flags[1] = { 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    generate_ckpt_  = global_flags[0];
+#endif
+}
+#endif
 
 void
 RankSyncParallelSkip::exchange_slave(int thread)
@@ -384,6 +509,16 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     sig_usr_  = global_signals[1];
     sig_alrm_ = global_signals[2];
 
+    int32_t local_flags[4]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_), 
+        static_cast<int32_t>(shutdown_mode_), static_cast<int32_t>(generate_ckpt_) };
+    int32_t global_flags[4] = { 0, 0, 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 4, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_interactive_  = global_flags[0];
+    enter_shutdown_  = global_flags[1];
+    shutdown_mode_ = global_flags[2];
+    generate_ckpt_ = global_flags[3];
+
 #endif
 }
 
@@ -506,5 +641,111 @@ RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
 int RankSyncParallelSkip::sig_end_(0);
 int RankSyncParallelSkip::sig_usr_(0);
 int RankSyncParallelSkip::sig_alrm_(0);
+std::atomic<bool>         RankSyncParallelSkip::enter_interactive_(false);
+std::atomic<bool>         RankSyncParallelSkip::enter_shutdown_(false);
+std::atomic<unsigned>     RankSyncParallelSkip::shutdown_mode_(0);
+std::atomic<bool>         RankSyncParallelSkip::generate_ckpt_(false);
+
+// SKK Test Producer Consumer
+int32_t RankSyncParallelSkip::test_rid_(0);
+int32_t RankSyncParallelSkip::test_tid_(0);
+int32_t RankSyncParallelSkip::test_cmd_(0);  // 0 = DONE, 1 = PRINT
+
+void 
+RankSyncParallelSkip::testManager() 
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
+    int32_t cmd_buffer[3];
+    int32_t result_buffer[1];
+    int tag = 0;
+    int src;
+    int dst;
+
+    // Static variables shared between threads within the rank
+    static std::atomic<int32_t> tid = 0;
+    static std::atomic<int32_t> cmd = 0;
+    static std::atomic<bool> done = false;
+    static std::atomic<int32_t> result = 0;
+    static Core::ThreadSafe::Barrier exchange_barrier(num_ranks_.thread);
+
+    Output::getDefaultObject().output("----ParallelSkip\n");
+
+    if (rank_.rank == 0 && rank_.thread == 0)  { // Handles send of commands
+        // Send print command to all ranks/threads
+        cmd_buffer[2] = 1;  // PRINT
+        for (uint32_t rindex = 1; rindex < num_ranks_.rank; rindex++ ) {
+            for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
+                Output::getDefaultObject().output("**Mgr R%d T%d Send PRINT: Dest R%d, T%d\n", 
+                    rank_.rank, rank_.thread, rindex, tindex);
+                // Send print command to correct rank and wait for return
+                cmd_buffer[0] = rindex;
+                cmd_buffer[1] = tindex;
+                dst = rindex;
+                MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD );
+                src = rindex;
+                MPI_Recv(result_buffer, 1, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                assert(result_buffer[0] == 1);
+            }  // for Threads
+        } // for Ranks
+        // Send done command to all ranks (can't use Bcast bc others don't know its coming)
+        cmd_buffer[2] = 0;  // DONE
+        for (uint32_t rindex = 1; rindex < num_ranks_.rank; rindex++ ) {
+            Output::getDefaultObject().output("**Mgr R%d T%d Send DONE: Dest R%d\n", 
+                rank_.rank, rank_.thread, rindex);
+            // Send done command to correct rank and wait for return
+            cmd_buffer[0] = rindex;
+            cmd_buffer[1] = 0;
+            dst = rindex;
+            MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
+        } // for Ranks
+
+    } // end rank 0, thread 0
+    else if (rank_.rank != 0) {  // Other ranks
+        Output::getDefaultObject().output("**Enter Worker: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
+        src = 0;
+        dst = 0;
+        tag = 0;
+        while (!done.load()) {
+            if (rank_.thread == 0) {
+                MPI_Recv(cmd_buffer, 3, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                Output::getDefaultObject().output("**Worker R%d T%d Recv: R%d, T%d cmd%d\n", 
+                    rank_.rank, rank_.thread, cmd_buffer[0], cmd_buffer[1], cmd_buffer[2]);
+                tid.store(cmd_buffer[1]);
+                cmd.store(cmd_buffer[2]);
+                if (cmd_buffer[2] == 0) { // DONE
+                    done.store(true);
+                    Output::getDefaultObject().output("**Worker DONE: R%d, T%d\n", rank_.rank, rank_.thread);
+                }
+            }
+
+            // Barrier before loading shared variables
+            exchange_barrier.wait();
+
+            // Not DONE, process command
+            if (cmd.load() != 0) {
+                if (rank_.thread == tid.load()) {
+                    result.store(1);
+                    Output::getDefaultObject().output("**Worker PRINT: R%d, T%d\n", rank_.rank, rank_.thread);
+                }
+                // Wait to access result
+                exchange_barrier.wait();
+                // Thread 0 sends cmd result back to Rank 0
+                if (rank_.thread == 0) {
+                    result_buffer[0] = result.load();
+                    MPI_Send(result_buffer, 1, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
+                    Output::getDefaultObject().output("**Worker R%d T%d Send: R%d, T%d\n", 
+                        rank_.rank, rank_.thread, cmd_buffer[0], cmd_buffer[1]);
+                }
+            }
+            
+        }  // while !done
+    }  // end other ranks
+    else { // other R0 threads, do nothing for now
+        Output::getDefaultObject().output("**Enter NOP: R%d, T%d\n", rank_.rank, rank_.thread);
+    } // other R0 threads
+#endif
+}
+
 
 } // namespace SST
