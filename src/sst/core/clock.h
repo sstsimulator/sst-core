@@ -72,9 +72,9 @@ public:
        Handler2 version which is now the same as Handler and is provided for backward compatibility until SST 17
     */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2
-        [[deprecated("Handler2 has been deprecated and will be removed in SST 17. Please use Handler instead.")]]
-        = SSTHandler<bool, Cycle_t, classT, dataT, funcT>;
+    using Handler2 [[deprecated(
+        "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
+    = SSTHandler<bool, Cycle_t, classT, dataT, funcT>;
 
     /**
      * Activates this clock object, by inserting into the simulation's

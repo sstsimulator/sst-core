@@ -19,25 +19,20 @@ namespace SST {
 
 class Params;
 
-// This file contains base classes for use as various handlers (object
-// encapsulating callback functions) in SST.  These handlers are
-// checkpointable and encapsulate a pointer to an object and a pointer
-// to a member function of the object's class (captured via template
-// parameter).  The classes also allow you to optionally add one
-// additional piece of static data to be passed into the callback
-// function along with any data provided by the caller.  There are two
-// versions of this class, one that has no data passed from the caller
-// (ending with SSTHandlerNoArgs), and one that has a single item
-// passed from the caller (SSTHandler).
+// This file contains base classes for use as various handlers (object encapsulating callback functions) in SST.  These
+// handlers are checkpointable and encapsulate a pointer to an object and a pointer to a member function of the object's
+// class (captured via template parameter).  The classes also allow you to optionally add one additional piece of static
+// data to be passed into the callback function along with any data provided by the caller.  There are two versions of
+// this class, one that has no data passed from the caller (ending with SSTHandlerNoArgs), and one that has a single
+// item passed from the caller (SSTHandler).
 
-// These classes provide the full functionality of the handlers and
-// can be added to a class with the "using" keyword, as follows (a
-// class can use any type name they'd like in place of HandlerBase and
-// Handler, though those names are preferred for consistency).
+// These classes provide the full functionality of the handlers and can be added to a class with the "using" keyword, as
+// follows (a class can use any type name they'd like in place of HandlerBase and Handler, though those names are
+// preferred for consistency).
 
 // Note: Support for legacy (noncheckpointable) handlers has been removed and Handler and Handler2 are now identical.
-// Handler2 is deprecated and will be removed in SST 17, but are included to provide backward compatibility until that
-// release.
+// The name Handler2 is deprecated and will be removed in SST 17, but is included to provide backward compatibility
+// until that release.
 
 
 // How to declare the Handlers in a class with the "using" keyword:

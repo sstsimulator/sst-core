@@ -66,9 +66,9 @@ public:
     using Handler = SSTHandler<void, void, classT, dataT, funcT>;
 
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2
-        [[deprecated("Handler2 has been deprecated and will be removed in SST 17.. Please use Handler instead.")]]
-        = SSTHandler<void, void, classT, dataT, funcT>;
+    using Handler2 [[deprecated(
+        "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
+    = SSTHandler<void, void, classT, dataT, funcT>;
 
     using HandlerList_t = std::vector<OneShot::HandlerBase*>;
 

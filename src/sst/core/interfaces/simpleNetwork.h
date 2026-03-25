@@ -243,9 +243,9 @@ public:
        handler will be removed from the clock list.
     */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2
-        [[deprecated("Handler2 has been deprecated and will be removed in SST 17. Please use Handler instead.")]]
-        = SSTHandler<bool, int, classT, dataT, funcT>;
+    using Handler2 [[deprecated(
+        "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
+    = SSTHandler<bool, int, classT, dataT, funcT>;
 
 
 public:
