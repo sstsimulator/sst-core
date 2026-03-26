@@ -21,7 +21,7 @@
 
 namespace SST {
 
-Clock::Clock(TimeConverter* period, int priority) :
+Clock::Clock(TimeConverter period, int priority) :
     Action(),
     currentCycle(0),
     period(period),
@@ -106,7 +106,7 @@ Clock::execute()
         // ++sop_iter;
     }
 
-    next = sim->getCurrentSimCycle() + period->getFactor();
+    next = sim->getCurrentSimCycle() + period.getFactor();
     sim->insertActivity(next, this);
 
     return;
@@ -116,8 +116,8 @@ void
 Clock::schedule()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    currentCycle         = sim->getCurrentSimCycle() / period->getFactor();
-    SimTime_t next       = (currentCycle * period->getFactor()) + period->getFactor();
+    currentCycle         = sim->getCurrentSimCycle() / period.getFactor();
+    SimTime_t next       = (currentCycle * period.getFactor()) + period.getFactor();
 
     // Check to see if we need to insert clock into queue at current
     // simtime.  This happens if the clock would have fired at this
@@ -126,13 +126,13 @@ Clock::schedule()
     // next cycle. Also, if the call happens during complete() or
     // finish(), then we don't adjust either.
     if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 && !sim->endSim ) {
-        if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) {
+        if ( sim->getCurrentSimCycle() % period.getFactor() == 0 ) {
             next = sim->getCurrentSimCycle();
             currentCycle--; // First thing execute does in increment currentCycle
         }
     }
 
-    // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " <<
+    // std::cout << "Scheduling clock " << period.getFactor() << " at cycle " << next << " current cycle is " <<
     // sim->getCurrentSimCycle() << std::endl;
     sim->insertActivity(next, this);
     scheduled = true;
@@ -142,7 +142,7 @@ void
 Clock::updateCurrentCycle()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    currentCycle         = sim->getCurrentSimCycle() / period->getFactor();
+    currentCycle         = sim->getCurrentSimCycle() / period.getFactor();
     return;
 }
 
@@ -150,7 +150,7 @@ std::string
 Clock::toString() const
 {
     std::stringstream buf;
-    buf << "Clock Activity with period " << period->getFactor() << " to be delivered at " << getDeliveryTime()
+    buf << "Clock Activity with period " << period.getFactor() << " to be delivered at " << getDeliveryTime()
         << " with priority " << getPriority() << " with " << staticHandlerMap.size() << " items on clock list";
     return buf.str();
 }

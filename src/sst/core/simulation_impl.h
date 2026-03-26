@@ -23,6 +23,7 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statengine.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/util/basicPerf.h"
 #include "sst/core/util/filesystem.h"
@@ -68,7 +69,6 @@ class SimulatorHeartbeat;
 class SyncBase;
 class SyncManager;
 class ThreadSync;
-class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
@@ -255,15 +255,6 @@ public:
 
     void printPerformanceInfo();
 
-    /** Register a OneShot event to be called after a time delay
-        Note: OneShot cannot be canceled, and will always callback after
-              the timedelay.
-    */
-    // TimeConverter* registerOneShot(const std::string& timeDelay, int priority, OneShot::HandlerBase* handler, bool
-    // absolute);
-
-    // TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, int priority, OneShot::HandlerBase* handler, bool
-    // absolute);
 
     const std::vector<SimTime_t>& getInterThreadLatencies() const { return interThreadLatencies; }
 
@@ -343,12 +334,11 @@ public:
     /******** API provided through BaseComponent only ***********/
 
     /** Register a handler to be called on a set frequency */
-    TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority);
+    TimeConverter registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority);
 
-    TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
+    TimeConverter registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
 
-    TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
-    TimeConverter* registerClock(TimeConverter& tcFreq, Clock::HandlerBase* handler, int priority);
+    TimeConverter registerClock(TimeConverter tcFreq, Clock::HandlerBase* handler, int priority);
 
     // registerClock function used during checkpoint/restart
     void registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority);
@@ -357,18 +347,15 @@ public:
     void reportClock(SimTime_t factor, int priority);
 
     /** Remove a clock handler from the list of active clock handlers */
-    void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
-    void unregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority);
+    void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority);
 
     /** Reactivate an existing clock and handler.
      * @return time when handler will next fire
      */
-    Cycle_t reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
-    Cycle_t reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority);
+    Cycle_t reregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority);
 
     /** Returns the next Cycle that the TimeConverter would fire. */
-    Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
-    Cycle_t getNextClockCycle(TimeConverter& tc, int priority = CLOCKPRIORITY);
+    Cycle_t getNextClockCycle(TimeConverter tc, int priority = CLOCKPRIORITY);
 
     /** Gets the clock the handler is registered with, represented by it's factor
      *

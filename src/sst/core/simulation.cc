@@ -339,7 +339,7 @@ Simulation_impl::Simulation_impl(
         checkpoint_action_->insertIntoTimeVortex(this);
     }
     else {
-        checkpoint_action_ = new CheckpointAction(&config, my_rank, this, nullptr);
+        checkpoint_action_ = new CheckpointAction(&config, my_rank, this, timeLord.getTimeConverter(0));
         checkpoint_action_->insertIntoTimeVortex(this);
     }
 
@@ -1061,8 +1061,8 @@ Simulation_impl::run()
                     offset = 0;
                 }
                 else {
-                    TimeConverter* tc = timeLord.getTimeConverter(time);
-                    offset            = tc->getFactor();
+                    TimeConverter tc = timeLord.getTimeConverter(time);
+                    offset           = tc.getFactor();
                 }
 
                 InteractiveAction* act =
@@ -1343,40 +1343,24 @@ Simulation_impl::getCompletePhaseElapsedRealTime() const
     }
 }
 
-TimeConverter*
+TimeConverter
 Simulation_impl::registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority)
 {
-    TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
+    TimeConverter tcFreq = timeLord.getTimeConverter(freq);
     return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter*
+TimeConverter
 Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
 {
-    TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
+    TimeConverter tcFreq = timeLord.getTimeConverter(freq);
     return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter*
-Simulation_impl::registerClock(TimeConverter& tc_freq, Clock::HandlerBase* handler, int priority)
+TimeConverter
+Simulation_impl::registerClock(TimeConverter tcFreq, Clock::HandlerBase* handler, int priority)
 {
-    // Use the simulation's instance of a timeconverter internally
-    TimeConverter*       tc_global = timeLord.getTimeConverter(tc_freq.getFactor());
-    clockMap_t::key_type mapKey    = std::make_pair(tc_freq.getFactor(), priority);
-    if ( clockMap.find(mapKey) == clockMap.end() ) {
-        Clock* ce        = new Clock(tc_global, priority);
-        clockMap[mapKey] = ce;
-
-        ce->schedule();
-    }
-    clockMap[mapKey]->registerHandler(handler);
-    return tc_global;
-}
-
-TimeConverter*
-Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
-{
-    clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
+    clockMap_t::key_type mapKey = std::make_pair(tcFreq.getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
         Clock* ce        = new Clock(tcFreq, priority);
         clockMap[mapKey] = ce;
@@ -1411,7 +1395,7 @@ Simulation_impl::reportClock(SimTime_t factor, int priority)
 }
 
 Cycle_t
-Simulation_impl::reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority)
+Simulation_impl::reregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
@@ -1423,33 +1407,9 @@ Simulation_impl::reregisterClock(TimeConverter& tc, Clock::HandlerBase* handler,
 }
 
 Cycle_t
-Simulation_impl::reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority)
-{
-    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
-    if ( clockMap.find(mapKey) == clockMap.end() ) {
-        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-        out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
-    }
-    clockMap[mapKey]->registerHandler(handler);
-    return clockMap[mapKey]->getNextCycle();
-}
-
-Cycle_t
-Simulation_impl::getNextClockCycle(TimeConverter& tc, int priority)
+Simulation_impl::getNextClockCycle(TimeConverter tc, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
-    if ( clockMap.find(mapKey) == clockMap.end() ) {
-        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-        out.fatal(
-            CALL_INFO, 1, "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
-    }
-    return clockMap[mapKey]->getNextCycle();
-}
-
-Cycle_t
-Simulation_impl::getNextClockCycle(TimeConverter* tc, int priority)
-{
-    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
         out.fatal(
@@ -1471,19 +1431,9 @@ Simulation_impl::getClockForHandler(Clock::HandlerBase* handler)
 }
 
 void
-Simulation_impl::unregisterClock(TimeConverter& tc, Clock::HandlerBase* handler, int priority)
+Simulation_impl::unregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), priority);
-    if ( clockMap.find(mapKey) != clockMap.end() ) {
-        bool empty;
-        clockMap[mapKey]->unregisterHandler(handler, empty);
-    }
-}
-
-void
-Simulation_impl::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority)
-{
-    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find(mapKey) != clockMap.end() ) {
         bool empty;
         clockMap[mapKey]->unregisterHandler(handler, empty);
@@ -2464,7 +2414,6 @@ Simulation_impl::printSimulationState()
     sim_output.output("num_ranks: %" PRIu32 ", %" PRIu32 "\n", num_ranks.rank, num_ranks.thread);
     sim_output.output("my_rank:   %" PRIu32 ", %" PRIu32 "\n", my_rank.rank, my_rank.thread);
     sim_output.output("currentSimCycle: %" PRIu64 "\n", currentSimCycle);
-    // sim_output.output("threadMinPartTC: %" PRIu64 "\n", threadMinPartTC->getFactor());
     sim_output.output("minPart: %" PRIu64 "\n", minPart);
     sim_output.output("minPartTC: %" PRIu64 "\n", minPartTC.getFactor());
     for ( auto i : interThreadLatencies ) {

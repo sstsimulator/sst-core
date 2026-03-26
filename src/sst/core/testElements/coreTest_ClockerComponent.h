@@ -65,7 +65,7 @@ private:
     virtual void Oneshot1Callback(uint32_t);
     virtual void Oneshot2Callback();
 
-    TimeConverter*      tc;
+    TimeConverter       tc;
     Clock::HandlerBase* Clock3Handler;
 
     std::string clock_frequency_str;

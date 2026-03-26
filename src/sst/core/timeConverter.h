@@ -34,21 +34,6 @@ class TimeConverter
     friend class SST::Core::Serialization::serialize_impl<TimeConverter*>;
 
 public:
-    /**
-       Create a new TimeConverter object from a TimeConverter*
-       Use this to create a local TimeConverter from a TimeConverter*
-       returned by the BaseComponent and other public APIs.
-       @param tc TimeConverter to initialize factor from
-     */
-    TimeConverter(TimeConverter* tc) { factor = tc->factor; }
-
-    [[deprecated("Use of shared TimeConverter objects is deprecated. If you're seeing this message, you likely have "
-                 "changed a TimeConverter* to TimeConverter, but are still assigning it to be nullptr at the point of "
-                 "this warning.")]]
-    TimeConverter(std::nullptr_t UNUSED(tc))
-    {
-        factor = 0;
-    }
 
     /**
        Do not directly invoke this constructor from Components to get
@@ -56,6 +41,13 @@ public:
        that uses a TimeConverter* to create a TimeConverter.
      */
     TimeConverter() {}
+
+    /**
+       Create a TimeConverter from the TimeConverter* passed
+
+       @param time TimeConverter to intialize from
+     */
+    TimeConverter(TimeConverter* tc) { factor = tc->factor; }
 
     /**
        Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports

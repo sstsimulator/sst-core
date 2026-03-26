@@ -569,12 +569,6 @@ Link::addSendLatency(SimTime_t cycles, TimeConverter timebase)
 }
 
 void
-Link::addSendLatency(SimTime_t cycles, TimeConverter* timebase)
-{
-    latency += timebase->convertToCoreTime(cycles);
-}
-
-void
 Link::addRecvLatency(int cycles, const std::string& timebase)
 {
     SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
@@ -585,12 +579,6 @@ void
 Link::addRecvLatency(SimTime_t cycles, TimeConverter timebase)
 {
     pair_link->latency += timebase.convertToCoreTime(cycles);
-}
-
-void
-Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase)
-{
-    pair_link->latency += timebase->convertToCoreTime(cycles);
 }
 
 void
@@ -742,33 +730,17 @@ Link::recvUntimedData()
 }
 
 void
-Link::setDefaultTimeBase(TimeConverter* tc)
-{
-    if ( tc == nullptr )
-        defaultTimeBase = 0;
-    else
-        defaultTimeBase = tc->getFactor();
-}
-
-void
 Link::setDefaultTimeBase(TimeConverter tc)
 {
     defaultTimeBase = tc.getFactor();
 }
 
-TimeConverter*
+TimeConverter
 Link::getDefaultTimeBase()
 {
-    if ( defaultTimeBase == 0 ) return nullptr;
     return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
 }
 
-const TimeConverter*
-Link::getDefaultTimeBase() const
-{
-    if ( defaultTimeBase == 0 ) return nullptr;
-    return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
-}
 
 std::string
 Link::createUniqueGlobalLinkName(RankInfo local_rank, uintptr_t local_ptr, RankInfo remote_rank, uintptr_t remote_ptr)

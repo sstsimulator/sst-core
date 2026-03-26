@@ -128,7 +128,7 @@ public:
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type
 
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::StandardMem,TimeConverter*,HandlerBase*)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::StandardMem,TimeConverter,HandlerBase*)
 
     /** All Addresses can be 64-bit */
     using Addr = uint64_t;
@@ -1502,7 +1502,7 @@ public:
      * @param handler Callback function to use for event receives
      */
     StandardMem(
-        SST::ComponentId_t id, Params& UNUSED(params), TimeConverter* UNUSED(time), HandlerBase*& UNUSED(handler)) :
+        SST::ComponentId_t id, Params& UNUSED(params), TimeConverter UNUSED(time), HandlerBase*& UNUSED(handler)) :
         SubComponent(id)
     {}
 

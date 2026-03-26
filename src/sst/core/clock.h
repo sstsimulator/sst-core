@@ -14,6 +14,7 @@
 
 #include "sst/core/action.h"
 #include "sst/core/ssthandler.h"
+#include "sst/core/timeConverter.h"
 
 #include <cinttypes>
 #include <string>
@@ -34,7 +35,7 @@ class Clock : public Action
 {
 public:
     /** Create a new clock with a specified period */
-    Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
+    Clock(TimeConverter period, int priority = CLOCKPRIORITY);
     ~Clock() = default; // Handlers are owned by BaseComponent and are deleted there
 
     /**
@@ -116,7 +117,7 @@ private:
     void execute() override;
 
     Cycle_t            currentCycle;
-    TimeConverter*     period;
+    TimeConverter      period;
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
     bool               scheduled;

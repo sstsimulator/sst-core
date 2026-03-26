@@ -19,6 +19,7 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
+#include "sst/core/timeConverter.h"
 
 #include <cstdint>
 #include <set>
@@ -65,7 +66,7 @@ public:
     /**
     Create a new checkpoint object for the simulation core to initiate checkpoints
     */
-    CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period);
+    CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter period);
     ~CheckpointAction() = default;
 
     /**
@@ -99,13 +100,13 @@ private:
 
     void createCheckpoint(Simulation_impl* sim); // The actual checkpoint operation
 
-    RankInfo       rank_;          // RankInfo for this thread/rank
-    TimeConverter* period_;        // Simulation time interval for scheduling or nullptr if not set
-    double         last_cpu_time_; // Last time a checkpoint was triggered
-    bool           generate_;      // Whether a checkpoint should be done next time check() is called
-    SimTime_t      next_sim_time_; // Next simulationt ime a checkpoint should trigger at or 0 if not applicable
-    std::string    dir_format_;    // Format string for checkpoint directory names
-    std::string    file_format_;   // Format string for checkpoint file names
+    RankInfo      rank_;          // RankInfo for this thread/rank
+    TimeConverter period_;        // Simulation time interval for scheduling or nullptr if not set
+    double        last_cpu_time_; // Last time a checkpoint was triggered
+    bool          generate_;      // Whether a checkpoint should be done next time check() is called
+    SimTime_t     next_sim_time_; // Next simulationt ime a checkpoint should trigger at or 0 if not applicable
+    std::string   dir_format_;    // Format string for checkpoint directory names
+    std::string   file_format_;   // Format string for checkpoint file names
 };
 
 } // namespace SST

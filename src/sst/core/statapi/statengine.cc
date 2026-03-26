@@ -160,7 +160,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
         bool success = true;
         if ( periodic ) {
-            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua)->getFactor();
+            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua).getFactor();
             success          = addPeriodicBasedStatistic(factor, stat); // will place stat in correct default group
         }
         else {
@@ -188,7 +188,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( start_at != "0ns" ) {
         ua = UnitAlgebra(start_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStartTime(stat, factor);
         }
     }
@@ -197,7 +197,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( stop_at != "0ns" ) {
         ua = UnitAlgebra(stop_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStopTime(stat, factor);
         }
     }

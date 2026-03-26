@@ -66,7 +66,7 @@ createNameFromFormat(const std::string& format, const std::string& prefix, uint6
 
 } // namespace pvt
 
-CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter* period) :
+CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter period) :
     Action(),
     rank_(this_rank),
     period_(period),
@@ -83,10 +83,10 @@ CheckpointAction::CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_i
     last_cpu_time_ = 0;
 
     // If period_ is set, then we have a simtime checkpoint period
-    if ( period_ ) {
+    if ( period_.getFactor() != 0 ) {
         // Compute the first checkpoint time
         next_sim_time_ =
-            (period_->getFactor() * (sim->getCurrentSimCycle() / period_->getFactor())) + period_->getFactor();
+            (period_.getFactor() * (sim->getCurrentSimCycle() / period_.getFactor())) + period_.getFactor();
     }
     else {
         next_sim_time_ = MAX_SIMTIME_T;
@@ -147,7 +147,7 @@ CheckpointAction::execute()
     Simulation_impl* sim = Simulation_impl::getSimulation();
     createCheckpoint(sim);
 
-    next_sim_time_ += period_->getFactor();
+    next_sim_time_ += period_.getFactor();
     sim->insertActivity(next_sim_time_, this);
 }
 
@@ -265,7 +265,7 @@ CheckpointAction::check(SimTime_t current_time)
         // Only add to the simulation-interval checkpoint time if it
         // was what triggered this
         if ( current_time == next_sim_time_ ) {
-            next_sim_time_ += period_->getFactor();
+            next_sim_time_ += period_.getFactor();
         }
     }
     return next_sim_time_;

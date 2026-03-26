@@ -16,6 +16,7 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <map>
@@ -38,8 +39,7 @@ class BaseComponent;
  */
 class TimeLord
 {
-    using TimeConverterMap_t = std::map<SimTime_t, TimeConverter*>;
-    using StringToTCMap_t    = std::map<std::string, TimeConverter*>;
+    using StringToTCMap_t = std::map<std::string, TimeConverter>;
 
 public:
     /**
@@ -53,14 +53,14 @@ public:
         'm' (milli). Allowable frequency prefixes are 'k' (kilo), 'M'
         (mega), and 'G' (giga).
     */
-    TimeConverter* getTimeConverter(const std::string& ts);
+    TimeConverter getTimeConverter(const std::string& ts);
 
     /**
        Create a new TimeConverter object using the specified units.
 
        @param ts UnitAlgebra object indicating the base unit for this object.
     */
-    TimeConverter* getTimeConverter(const UnitAlgebra& ts);
+    TimeConverter getTimeConverter(const UnitAlgebra& ts);
 
     /**
        Get the global TimeBase as a UnitAlgebra
@@ -74,21 +74,21 @@ public:
 
        @return TimeConverter which represents Nanoseconds
     */
-    TimeConverter* getNano() { return nano_; }
+    TimeConverter getNano() { return nano_; }
 
     /**
        Get the TimeConverter representing a microsecond
 
        @return TimeConverter which represents Microseconds
     */
-    TimeConverter* getMicro() { return micro_; }
+    TimeConverter getMicro() { return micro_; }
 
     /**
        Get the TimeConverter representing a millisecond
 
        @return TimeConverter which represents Milliseconds
     */
-    TimeConverter* getMilli() { return milli_; }
+    TimeConverter getMilli() { return milli_; }
 
     /**
        Not a Public API.
@@ -110,7 +110,7 @@ private:
 
     // Needed by the simulator to turn minPart back into a
     // TimeConverter object.
-    TimeConverter* getTimeConverter(SimTime_t simCycles);
+    TimeConverter getTimeConverter(SimTime_t simCycles);
 
     SimTime_t getFactorForTime(const std::string& time);
     SimTime_t getFactorForTime(const UnitAlgebra& time);
@@ -126,16 +126,16 @@ private:
     bool                 initialized_;
     std::recursive_mutex slock_;
 
-    std::string        timebase_string_;
-    TimeConverterMap_t tc_map_;
-    UnitAlgebra        timebase_;
+    std::string timebase_string_;
+    // TimeConverterMap_t tc_map_;
+    UnitAlgebra timebase_;
 
     // double sec_factor;
     StringToTCMap_t parse_cache_;
 
-    TimeConverter* nano_;
-    TimeConverter* micro_;
-    TimeConverter* milli_;
+    TimeConverter nano_;
+    TimeConverter micro_;
+    TimeConverter milli_;
 };
 
 } // namespace SST

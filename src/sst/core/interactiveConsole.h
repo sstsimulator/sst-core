@@ -19,6 +19,7 @@
 #include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
+#include "sst/core/timeConverter.h"
 #include "sst/core/unitAlgebra.h"
 
 #include <cstdint>
@@ -29,7 +30,6 @@ namespace SST {
 
 class Params;
 class Simulation_impl;
-class TimeConverter;
 
 namespace Interactive {
 /* Utility functions needed to manage directories */
@@ -98,7 +98,7 @@ protected:
     void getMemPoolUsage(int64_t& bytes, int64_t& active_entries);
 
     /** Get a TimeConverter */
-    TimeConverter* getTimeConverter(const std::string& time);
+    TimeConverter getTimeConverter(const std::string& time);
 
     /** Get the list of Components */
     void getComponentList(std::vector<std::pair<std::string, SST::Component*>>& vec);

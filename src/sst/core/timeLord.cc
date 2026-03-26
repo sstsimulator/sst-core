@@ -30,41 +30,34 @@ namespace SST {
 
 using Core::ThreadSafe::Spinlock;
 
-TimeConverter*
+TimeConverter
 TimeLord::getTimeConverter(const std::string& ts)
 {
     // See if this is in the cache
     std::scoped_lock lock(slock_);
     if ( parse_cache_.find(ts) == parse_cache_.end() ) {
-        TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
-        parse_cache_[ts]  = tc;
+        TimeConverter tc = getTimeConverter(UnitAlgebra(ts));
+        parse_cache_[ts] = tc;
         return tc;
     }
     return parse_cache_[ts];
 }
 
-TimeConverter*
+TimeConverter
 TimeLord::getTimeConverter(SimTime_t sim_cycles)
 {
-    // Check to see if we already have a TimeConverter with this value
-    std::scoped_lock lock(slock_);
-    if ( tc_map_.find(sim_cycles) == tc_map_.end() ) {
-        TimeConverter* tc   = new TimeConverter(sim_cycles);
-        tc_map_[sim_cycles] = tc;
-        return tc;
-    }
-    return tc_map_[sim_cycles];
+    return TimeConverter(sim_cycles);
 }
 
-TimeConverter*
+TimeConverter
 TimeLord::getTimeConverter(const UnitAlgebra& ts)
 {
-    Output& abort = Output::getDefaultObject();
     if ( !initialized_ ) {
+        Output& abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO, 1, "Time Lord has not yet been initialized!");
     }
-    SimTime_t      sim_cycles = getFactorForTime(ts);
-    TimeConverter* tc         = getTimeConverter(sim_cycles);
+    SimTime_t     sim_cycles = getFactorForTime(ts);
+    TimeConverter tc         = getTimeConverter(sim_cycles);
     return tc;
 }
 
@@ -81,7 +74,7 @@ TimeLord::init(const std::string& timebase_string)
     catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
-        nano_ = nullptr;
+        nano_ = TimeConverter((SimTime_t)0);
     }
 
     try {
@@ -90,7 +83,7 @@ TimeLord::init(const std::string& timebase_string)
     catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
-        micro_ = nullptr;
+        micro_ = TimeConverter((SimTime_t)0);
     }
 
     try {
@@ -99,19 +92,12 @@ TimeLord::init(const std::string& timebase_string)
     catch ( const std::underflow_error& e ) {
         // This means that the core timebase is too big to represent
         // this time. Just set it to nulllptr
-        milli_ = nullptr;
+        milli_ = TimeConverter((SimTime_t)0);
     }
 }
 
 TimeLord::~TimeLord()
 {
-    // Delete all the TimeConverter objects
-    std::map<ComponentId_t, LinkMap*>::iterator it;
-    for ( TimeConverterMap_t::iterator it = tc_map_.begin(); it != tc_map_.end(); ++it ) {
-        delete it->second;
-    }
-    tc_map_.clear();
-
     // Clear the contents of the cache
     parse_cache_.clear();
 }
@@ -122,11 +108,11 @@ TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
     // See if this is in the cache
     std::scoped_lock lock(slock_);
     if ( parse_cache_.find(ts) == parse_cache_.end() ) {
-        TimeConverter* tc = getTimeConverter(UnitAlgebra(ts));
-        parse_cache_[ts]  = tc;
-        return tc->getFactor();
+        TimeConverter tc = getTimeConverter(UnitAlgebra(ts));
+        parse_cache_[ts] = tc;
+        return tc.getFactor();
     }
-    return parse_cache_[ts]->getFactor();
+    return parse_cache_[ts].getFactor();
 }
 
 UnitAlgebra
@@ -143,11 +129,11 @@ TimeLord::getFactorForTime(const std::string& time)
     // See if this is in the cache
     std::scoped_lock<std::recursive_mutex> lock(slock_);
     if ( parse_cache_.find(time) == parse_cache_.end() ) {
-        TimeConverter* tc  = getTimeConverter(UnitAlgebra(time));
+        TimeConverter tc   = getTimeConverter(UnitAlgebra(time));
         parse_cache_[time] = tc;
-        return tc->factor;
+        return tc.factor;
     }
-    return parse_cache_[time]->factor;
+    return parse_cache_[time].factor;
 }
 
 SimTime_t
@@ -200,47 +186,6 @@ TimeConverter::TimeConverter(const UnitAlgebra& time)
 
 namespace Core::Serialization {
 
-template <>
-class ObjectMapFundamental<TimeConverter*> : public ObjectMap
-{
-protected:
-    /**
-       Address of the variable for reading and writing
-     */
-    TimeConverter** addr_ = nullptr;
-
-public:
-    // We'll treat this as a period when printing
-    std::string get() const final override
-    {
-        if ( nullptr == *addr_ ) return "nullptr";
-        TimeLord*   timelord = Simulation_impl::getTimeLord();
-        UnitAlgebra base     = timelord->getTimeBase();
-        base *= (*addr_)->getFactor();
-        return base.toStringBestSI();
-    }
-
-    void set_impl(const std::string& UNUSED(value)) final override { return; }
-
-    // We'll act like we're a fundamental type
-    bool isFundamental() const final override { return true; }
-
-    /**
-       Get the address of the variable represented by the ObjectMap
-
-       @return Address of varaible
-     */
-    void* getAddr() const final override { return addr_; }
-
-    explicit ObjectMapFundamental(TimeConverter** addr) :
-        ObjectMap(),
-        addr_(addr)
-    {
-        setReadOnly(true);
-    }
-
-    std::string getType() const override { return demangle_name(typeid(TimeConverter).name()); }
-};
 
 template <>
 class ObjectMapFundamental<TimeConverter> : public ObjectMap
@@ -302,46 +247,6 @@ serialize_impl<TimeConverter>::operator()(TimeConverter& s, serializer& ser, ser
     }
 }
 
-
-void
-serialize_impl<TimeConverter*>::operator()(TimeConverter*& s, serializer& ser, ser_opt_t options)
-{
-    SimTime_t factor = 0;
-
-    switch ( ser.mode() ) {
-    case serializer::SIZER:
-    case serializer::PACK:
-        // If s is nullptr, just put in a 0, otherwise get the factor
-        if ( nullptr != s ) factor = s->getFactor();
-        SST_SER(factor);
-        break;
-    case serializer::UNPACK:
-    {
-        SST_SER(factor);
-
-        // If we put in a nullptr, return a nullptr
-        if ( factor == 0 ) {
-            s = nullptr;
-            return;
-        }
-        // Now get the TimeConverter for this factor.  Can only use
-        // public APIs since there is no friend relationship with the
-        // TimeLord.
-        TimeLord*   timelord = Simulation_impl::getTimeLord();
-        UnitAlgebra base     = timelord->getTimeBase();
-        base *= factor;
-        s = timelord->getTimeConverter(base);
-        break;
-    }
-    case serializer::MAP:
-    {
-        ObjectMap* obj_map = new ObjectMapFundamental<TimeConverter*>(&s);
-        if ( SerOption::is_set(options, SerOption::map_read_only) ) obj_map->setReadOnly();
-        ser.mapper().map_object(ser.getMapName(), obj_map);
-        break;
-    }
-    }
-}
 
 } // namespace Core::Serialization
 

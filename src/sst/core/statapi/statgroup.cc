@@ -36,7 +36,7 @@ StatisticGroup::StatisticGroup(const ConfigStatGroup& csg, StatisticProcessingEn
 {
     if ( csg.outputFrequency.getValue() != 0 ) { // outputfreq = 0 by default
         output_freq =
-            Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(csg.outputFrequency)->getFactor();
+            Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(csg.outputFrequency).getFactor();
     }
 
     if ( !output->acceptsGroups() ) {

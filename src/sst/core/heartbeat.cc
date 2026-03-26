@@ -26,14 +26,12 @@
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat(
-    Config* UNUSED(cfg), int this_rank, Simulation_impl* sim, TimeConverter* period) :
+SimulatorHeartbeat::SimulatorHeartbeat(Config* UNUSED(cfg), int this_rank, Simulation_impl* sim, TimeConverter period) :
     Action(),
     rank(this_rank),
     m_period(period)
 {
-    SimTime_t next =
-        (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
+    SimTime_t next = (m_period.getFactor() * (sim->getCurrentSimCycle() / m_period.getFactor())) + m_period.getFactor();
 
     sim->insertActivity(next, this);
 
@@ -46,8 +44,7 @@ void
 SimulatorHeartbeat::schedule()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    SimTime_t        next =
-        (m_period->getFactor() * (sim->getCurrentSimCycle() / m_period->getFactor())) + m_period->getFactor();
+    SimTime_t next = (m_period.getFactor() * (sim->getCurrentSimCycle() / m_period.getFactor())) + m_period.getFactor();
     sim->insertActivity(next, this);
 
     if ( (0 == rank) ) {
@@ -70,7 +67,7 @@ SimulatorHeartbeat::execute()
         lastTime = now;
     }
 
-    SimTime_t next = sim->getCurrentSimCycle() + m_period->getFactor();
+    SimTime_t next = sim->getCurrentSimCycle() + m_period.getFactor();
     sim->insertActivity(next, this);
 
     // Print some resource usage

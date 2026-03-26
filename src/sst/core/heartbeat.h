@@ -17,6 +17,7 @@
 #include "sst/core/cputimer.h"
 #include "sst/core/output.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/timeConverter.h"
 
 #include <set>
 
@@ -35,7 +36,7 @@ public:
     /**
     Create a new heartbeat object for the simulation core to show progress
     */
-    SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter* period);
+    SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter period);
     ~SimulatorHeartbeat() = default;
 
     // Used to re-schedule the new heartbeat event during restart
@@ -49,10 +50,10 @@ private:
     SimulatorHeartbeat(const SimulatorHeartbeat&)            = delete;
     SimulatorHeartbeat& operator=(const SimulatorHeartbeat&) = delete;
 
-    void           execute() override;
-    int            rank;
-    TimeConverter* m_period;
-    double         lastTime;
+    void          execute() override;
+    int           rank;
+    TimeConverter m_period;
+    double        lastTime;
 };
 
 } // namespace SST
