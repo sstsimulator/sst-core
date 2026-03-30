@@ -43,13 +43,6 @@ public:
     TimeConverter() {}
 
     /**
-       Create a TimeConverter from the TimeConverter* passed
-
-       @param time TimeConverter to intialize from
-     */
-    TimeConverter(TimeConverter* tc) { factor = tc->factor; }
-
-    /**
        Create a TimeConverter for the time specified as a UnitAlgebra.  The time must be in seconds, or it also supports
        a unit of Hz, which will give you the time for the period of that frequency.  You may also use an SI prefix as
        part of the unit.
