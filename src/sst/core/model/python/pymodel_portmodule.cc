@@ -124,7 +124,6 @@ portModAddParams(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(count);
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 portModCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -154,13 +153,6 @@ portModCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-portModCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((PyPortModule*)obj0)->compare(((PyPortModule)obj1));
-}
-#endif
 
 /**
  * @brief portModEnableStatistic. Enables a specific statistic on the port module.

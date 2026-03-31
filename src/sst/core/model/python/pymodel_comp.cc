@@ -264,7 +264,6 @@ compGetFullName(PyObject* self, PyObject* UNUSED(args))
     return SST_ConvertToPythonString(getComp(self)->getFullName().c_str());
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 compCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -294,13 +293,6 @@ compCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-compCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((ComponentHolder*)obj0)->compare(((ComponentHolder*)obj1));
-}
-#endif
 
 static PyObject*
 compGetType(PyObject* self, PyObject* UNUSED(args))

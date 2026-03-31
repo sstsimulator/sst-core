@@ -177,8 +177,7 @@ mlFindModule(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyMethodDef emptyModMethods[] = { { nullptr, nullptr, 0, nullptr } };
-#if PY_MAJOR_VERSION >= 3
+static PyMethodDef        emptyModMethods[] = { { nullptr, nullptr, 0, nullptr } };
 /* This defines an empty module used if modName is not found during mlLoadModule() */
 static struct PyModuleDef emptyModDef {
     PyModuleDef_HEAD_INIT, /* m_base */
@@ -191,7 +190,6 @@ static struct PyModuleDef emptyModDef {
     nullptr,               /* m_clear */
     nullptr,               /* m_free */
 };
-#endif
 
 static PyObject*
 mlExecModule(PyObject* UNUSED(self), PyObject* args)
@@ -1044,7 +1042,6 @@ static PyMethodDef sstModuleMethods[] = {
     { nullptr, nullptr, 0, nullptr }
 };
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef sstModuleDef {
     PyModuleDef_HEAD_INIT, /* m_base */
     "sst",                 /* m_name */
@@ -1056,7 +1053,6 @@ static struct PyModuleDef sstModuleDef {
     nullptr,               /* m_clear */
     nullptr,               /* m_free */
 };
-#endif
 
 static PyObject*
 PyInit_sst()

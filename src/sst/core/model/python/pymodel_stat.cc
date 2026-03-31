@@ -127,7 +127,6 @@ statAddParams(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(count);
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 statCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -157,13 +156,6 @@ statCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-statCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((PyStatistic*)obj0)->compare(((PyStatistic*)obj1));
-}
-#endif
 
 static PyMethodDef statisticMethods[] = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
     { "addParams", statAddParams, METH_O, "Adds Multiple Parameters from a dict" }, { nullptr, nullptr, 0, nullptr } };
