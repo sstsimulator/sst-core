@@ -441,11 +441,11 @@ def categorize(category: str) -> Callable[[_CallableT], _CallableT]:
         )
 
         @wraps(test_func)
-        def wrapper(tc: "SSTTestCase") -> None:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             if category not in specified_categories:
                 raise unittest.SkipTest(reason)
 
-            return test_func(tc)
+            return test_func(*args, **kwargs)
 
         wrapper.__unittest_skip__ = category not in specified_categories  # type: ignore[attr-defined]
         wrapper.__unittest_skip_why__ = reason  # type: ignore[attr-defined]
