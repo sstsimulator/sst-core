@@ -128,3 +128,15 @@ class TestCategorizeDecorator(SSTTestCase):
         self.assertEqual(wrapped(1, 2, kw=3), 6)
 
         self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
+
+    @categorize("pr")
+    def test_integration_pr(self) -> None:
+        """Show an example of how to use the decorator for pull request tests."""
+
+    @categorize("nightly")
+    def test_integration_nightly(self) -> None:
+        """Show an example of how to use the decorator for nightly tests."""
+
+    @categorize("weekly")
+    def test_integration_weekly(self) -> None:
+        """Show an example of how to use the decorator for weekly tests."""
