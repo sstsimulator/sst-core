@@ -386,29 +386,6 @@ sst_ser_object(serializer& ser, TREF&& obj, ser_opt_t options, const char* name)
 
 } // namespace pvt
 
-// A universal/forwarding reference is used for obj so that it can match rvalue wrappers like
-// SST::Core::Serialization::array(ary, size) but then it is used as an lvalue so that it
-// matches serialization functions which only take lvalue references.
-template <class T>
-[[deprecated("The ser& syntax for serialization has been deprecated and will be removed in SST 16.  Please use the "
-             "SST_SER macro for serializing data. The macro supports additional options to control the details of "
-             "serialization.  See the SerOption enum for details.")]]
-void
-operator&(serializer& ser, T&& obj)
-{
-    pvt::sst_ser_object(ser, obj, SerOption::no_map, "");
-}
-
-template <class T>
-[[deprecated("The ser| syntax for serialization has been deprecated and will be removed in SST 16.  Please use the "
-             "SST_SER macro with the SerOption::as_ptr flag for serializing data. The macro supports additional "
-             "options to control the details of serialization.  See the SerOption enum for details.")]]
-void
-operator|(serializer& ser, T&& obj)
-{
-    pvt::sst_ser_object(ser, obj, SerOption::no_map | SerOption::as_ptr, "");
-}
-
 
 // Serialization macros for checkpoint/debug serialization
 #define SST_SER(obj, ...)                          \
