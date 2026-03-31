@@ -1213,18 +1213,18 @@ public:
         }
     }
 
-    void printVars()
+    void printVars(std::stringstream& ss)
     {
         for ( size_t obj = 0; obj < numObjects; obj++ ) {
             ObjectBuffer* varBuffer_ = objBuffers_[obj];
-            std::cout << SST::Core::to_string(varBuffer_->getName()) << " ";
+            ss << SST::Core::to_string(varBuffer_->getName()) << " ";
         }
     }
 
-    void printConfig()
+    void printConfig(std::stringstream& ss)
     {
-        std::cout << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
-        printVars();
+        ss << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
+        printVars(ss);
     }
 
     // private:

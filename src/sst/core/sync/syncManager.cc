@@ -460,6 +460,8 @@ SyncManager::setupSyncObjects()
         }
         else {
             rankSync_ = new EmptyRankSync(num_ranks_);
+            if (num_ranks_.rank > 1)
+                sim_->getSimulationOutput().output("WARNING: EmptyRankSync: Checkpoint and interactive debug disabled\n");
         }
     }
 

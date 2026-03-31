@@ -167,12 +167,12 @@ public:
     }
     void        setHandler(unsigned handlerType);
     std::string handlerToString(HANDLER h);
-    void        printHandler();
+    void        printHandler(std::stringstream& ss);
     void        genericHandler(HANDLER h);
-    void        printWatchpoint();
+    void        printWatchpoint(std::stringstream& ss);
     void        resetTraceBuffer();
     inline bool checkReset() { return reset_; }
-    void        printAction();
+    void        printAction(std::stringstream& ss);
     void        addTraceBuffer(Core::Serialization::TraceBuffer* tb);
     void        addObjectBuffer(Core::Serialization::ObjectBuffer* ob);
     void        addComparison(Core::Serialization::ObjectMapComparison* cmp);

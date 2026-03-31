@@ -262,31 +262,30 @@ WatchPoint::handlerToString(HANDLER h)
 }
 
 void
-WatchPoint::printHandler()
+WatchPoint::printHandler(std::stringstream& ss)
 {
-    std::cout << handlerToString(handler);
-    std::cout << " : ";
+    ss << handlerToString(handler);
+    ss << " : ";
 }
 
 void
-WatchPoint::printWatchpoint()
+WatchPoint::printWatchpoint(std::stringstream& ss)
 {
-
-    std::cout << "TriggerCount " << triggerCount << " : ";
-    printHandler();
+    ss << "TriggerCount " << triggerCount << " : ";
+    printHandler(ss);
     // TODO: print the logic values
     for ( size_t i = 0; i < numCmpObj_; i++ ) { // Print trigger tests
-        cmpObjects_[i]->print(std::cout);
+        cmpObjects_[i]->print(ss);
     }
-    std::cout << " : ";
+    ss << " : ";
 
     if ( tb_ != nullptr ) { // print trace buffer config
-        tb_->printConfig();
-        std::cout << " : ";
+        tb_->printConfig(ss);
+        ss << " : ";
     }
-    printAction();
+    printAction(ss);
 
-    std::cout << std::endl;
+    ss << std::endl;
 }
 
 void
@@ -356,9 +355,9 @@ WatchPoint::simulationShutdown()
 }
 
 void
-WatchPoint::printAction()
+WatchPoint::printAction(std::stringstream& ss)
 {
-    std::cout << wpAction->actionToString();
+    ss << wpAction->actionToString();
 }
 
 void
