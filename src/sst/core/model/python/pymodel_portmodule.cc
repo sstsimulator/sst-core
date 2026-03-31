@@ -319,11 +319,6 @@ static PyMethodDef portModuleMethods[] = { { "addParam", portModAddParam, METH_V
     { "addSharedParamSet", portModAddSharedParamSet, METH_O, "Add shared parameter set to the PortModule" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_PortModuleType = {
     SST_PY_OBJ_HEAD "sst.PortModule", /* tp_name */
     sizeof(PortModulePy_t),           /* tp_basicsize */
@@ -377,8 +372,3 @@ PyTypeObject PyModel_PortModuleType = {
     SST_TP_WATCHED                    /* Python3.12+ only */
     SST_TP_VERSIONS_USED              /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif

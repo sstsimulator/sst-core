@@ -609,11 +609,6 @@ static PyMethodDef componentMethods[] = { { "addParam", compAddParam, METH_VARAR
     { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_ComponentType = {
     SST_PY_OBJ_HEAD "sst.Component", /* tp_name */
     sizeof(ComponentPy_t),           /* tp_basicsize */
@@ -667,11 +662,6 @@ PyTypeObject PyModel_ComponentType = {
     SST_TP_WATCHED                   /* Python3.12+ only */
     SST_TP_VERSIONS_USED             /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
 
 static int
 subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
@@ -722,11 +712,6 @@ static PyMethodDef subComponentMethods[] = { { "addParam", compAddParam, METH_VA
         "Set (X,Y,Z) coordinates of this component, for use with visualization" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_SubComponentType = {
     SST_PY_OBJ_HEAD "sst.SubComponent", /* tp_name */
     sizeof(ComponentPy_t),              /* tp_basicsize */
@@ -780,8 +765,3 @@ PyTypeObject PyModel_SubComponentType = {
     SST_TP_WATCHED                      /* Python3.12+ */
     SST_TP_VERSIONS_USED                /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif

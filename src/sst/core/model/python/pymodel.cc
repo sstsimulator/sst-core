@@ -82,11 +82,6 @@ static PyMethodDef mlMethods[] = { { "find_module", mlFindModule, METH_VARARGS, 
     { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
     { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" }, { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 static PyTypeObject ModuleLoaderType = {
     SST_PY_OBJ_HEAD "ModuleLoader", /* tp_name */
     sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
@@ -140,11 +135,6 @@ static PyTypeObject ModuleLoaderType = {
     SST_TP_WATCHED                  /* Python3.12+ */
     SST_TP_VERSIONS_USED            /* Python3.13+ */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
 
 // I hate having to do this through a global variable
 // but there's really no other way to communicate errors from the importer
