@@ -1204,8 +1204,7 @@ SSTPythonModelDefinition::initModel(
 #endif
 
 
-    // Check to see if we need to import the coverage module (only works in Python >=3.9
-#if PY_MINOR_VERSION >= 9
+    // Check to see if we need to import the coverage module
     if ( config->enable_python_coverage() ) {
         enablePythonCoverage = true;
     }
@@ -1224,7 +1223,6 @@ SSTPythonModelDefinition::initModel(
             }
         }
     }
-#endif
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(
@@ -1330,7 +1328,6 @@ SSTPythonModelDefinition::createConfigGraph()
 {
     output->verbose(CALL_INFO, 2, 0, "Creating config graph for SST using Python model...\n");
 
-#if PY_MINOR_VERSION >= 9
     if ( enablePythonCoverage ) {
         // Create coverage object with a name unlikely to be used in the user script
         int startcoverageReturn = PyRun_SimpleString("import coverage\n"
@@ -1346,7 +1343,6 @@ SSTPythonModelDefinition::createConfigGraph()
             output->fatal(CALL_INFO, 1, "Execution of starting test coverage failed\n%s", loadErrors.c_str());
         }
     }
-#endif
 
     // Open the input script
     FILE* fp = fopen(scriptName.c_str(), "r");
@@ -1372,7 +1368,6 @@ SSTPythonModelDefinition::createConfigGraph()
         output->fatal(CALL_INFO, 1, "Error occurred handling the creation of the component graph in Python.\n");
     }
 
-#if PY_MINOR_VERSION >= 9
     // If coverage was enabled, stop the module and output the results
     if ( enablePythonCoverage ) {
         PyErr_Clear();
@@ -1389,7 +1384,7 @@ SSTPythonModelDefinition::createConfigGraph()
             output->fatal(CALL_INFO, 1, "Execution of stopping coverage failed\n%s", loadErrors.c_str());
         }
     }
-#endif
+
     return graph;
 }
 

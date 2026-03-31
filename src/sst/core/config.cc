@@ -98,7 +98,6 @@ Config::ext_help_timebase()
     return msg;
 }
 
-#if PY_MINOR_VERSION >= 9
 std::string
 Config::ext_help_enable_python_coverage()
 {
@@ -126,7 +125,6 @@ Config::ext_help_enable_python_coverage()
 
     return msg;
 }
-#endif
 
 std::string
 Config::ext_help_enable_profiling()
@@ -505,13 +503,11 @@ Config::insertOptions()
     DEF_ARG("debug-file", 0, "FILE", "File where debug output will go", debugFile_, true, false, true);
     addLibraryPathOptions();
 
-#if PY_MINOR_VERSION >= 9
     DEF_FLAG("enable-python-coverage", 0,
         "[EXPERIMENTAL] Causes the base Python interpreter to activate the coverage.Coverage object. This option can "
         "also be turned "
         "on by setting the environment variable SST_CONFIG_PYTHON_COVERAGE to true.",
         enable_python_coverage_, false, false, true);
-#endif
 
     /* Advanced Features - Profiling */
     DEF_SECTION_HEADING("Advanced Options - Profiling (API Not Yet Final)");

@@ -425,7 +425,6 @@ private:
     */
 
 
-#if PY_MINOR_VERSION >= 9
     /**
        Controls whether the Python coverage object will be loaded
      */
@@ -433,7 +432,6 @@ private:
 
     SST_CONFIG_DECLARE_OPTION(bool, enable_python_coverage, false, &StandardConfigParsers::flag_set_true,
         &Config::ext_help_enable_python_coverage);
-#endif
 
 
     /**** Advanced options - Profiling ****/

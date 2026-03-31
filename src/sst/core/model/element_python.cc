@@ -69,21 +69,11 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
     PyTracebackObject* ptb = (PyTracebackObject*)tb;
     while ( ptb != nullptr ) {
         // Filename
-// API change for code frames starting at 3.9
-#if PY_MINOR_VERSION < 9
-        stream << "File \"" << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_filename) << "\", ";
-#else
         stream << "File \"" << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_filename) << "\", ";
-#endif
         // Line number
         stream << "line " << ptb->tb_lineno << ", ";
         // Module name
-// API change for code frames starting at 3.9
-#if PY_MINOR_VERSION < 9
-        stream << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_name) << "\n";
-#else
         stream << PyUnicode_AsUTF8(PyFrame_GetCode(ptb->tb_frame)->co_name) << "\n";
-#endif
 
         // Get the next line
         ptb = ptb->tb_next;
