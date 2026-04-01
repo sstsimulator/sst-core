@@ -84,7 +84,7 @@ class SSTTestCaseException(Exception):
 ################################################################################
 
 def testing_check_is_nightly() -> bool:
-    """If Nightly is in the BUILD_TAG it's very likely a Nightly build."""
+    """Identify if the current test run will perform nightly tests"""
     return "nightly" in test_engine_globals.TESTENGINE_CATEGORIES
 
 ###
