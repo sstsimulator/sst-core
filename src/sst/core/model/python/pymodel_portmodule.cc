@@ -360,7 +360,6 @@ PyTypeObject PyModel_PortModuleType = {
     0,                                /* tp_version_tag */
     nullptr,                          /* tp_finalize */
     SST_TP_VECTORCALL                 /* Python3.8+ */
-    SST_TP_PRINT_DEP                  /* Python3.8 only */
     SST_TP_WATCHED                    /* Python3.12+ only */
     SST_TP_VERSIONS_USED              /* Python3.13+ only */
 };

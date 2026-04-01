@@ -29,8 +29,6 @@ REENABLE_WARNING
 // returns const char*.  No need to delete, it is managed by object it was called on
 #define SST_ConvertToCppString(x) PyUnicode_AsUTF8(x)
 
-#define SST_TP_PRINT_DEP
-
 #define SST_TP_VECTORCALL nullptr,
 
 #if PY_MINOR_VERSION >= 12
