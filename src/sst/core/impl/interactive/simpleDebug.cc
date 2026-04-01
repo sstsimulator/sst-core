@@ -4425,7 +4425,7 @@ SimpleDebugger::receiveCommandRankParallel() {
 void 
 SimpleDebugger::sendCommandAll(const std::string& cmd_str) {
 
-    for ( uint32_t rank_id = 0; rank_id < num_ranks_.rank; rank_id++ ) {
+    for ( uint32_t rank_id = 1; rank_id < num_ranks_.rank; rank_id++ ) {
         sendCommand(rank_id, num_ranks_.thread, cmd_str);
     }  
 }

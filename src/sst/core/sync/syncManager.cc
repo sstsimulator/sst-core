@@ -579,14 +579,7 @@ SyncManager::getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulati
 void
 SyncManager::execute()
 {
-#if 1 // SKK
-    std::string type = "RANK";
-    if (next_sync_type_ == THREAD)
-        type = "THREAD";
-    //Output& out = sim_->getSimulationOutput();
-    //out.output("SyncManager::execute: Rank %d: Thread %d: Type %s\n", 
-    //    rank_.rank, rank_.thread, type.c_str());
-#else 
+#if 0 // SKK
     std::string type = "RANK";
     if (next_sync_type_ == THREAD)
         type = "THREAD";
@@ -599,15 +592,15 @@ SyncManager::execute()
 
     if ( profile_tools_ ) profile_tools_->syncManagerStart();
 
-    bool signals_received;
-    int  sig_end;
-    int  sig_usr;
-    int  sig_alrm;
+    bool signals_received = false;
+    int  sig_end = 0;
+    int  sig_usr = 0;
+    int  sig_alrm = 0;
     bool interactive_enabled = false;
-    bool enter_interactive;
-    bool enter_shutdown;
-    Simulation_impl::ShutdownMode_t shutdown_mode;
-    bool generate_ckpt;
+    bool enter_interactive = false;
+    bool enter_shutdown = false;
+    Simulation_impl::ShutdownMode_t shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+    bool generate_ckpt = false;
 
     if (sim_->interactive_) {
         interactive_enabled = true;
