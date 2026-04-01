@@ -74,6 +74,7 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject*
 
 static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
 
+static void      mlDealloc(PyObject* self);
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
 static PyObject* mlCreateModule(PyObject* self, PyObject* args);
 static PyObject* mlExecModule(PyObject* self, PyObject* args);
@@ -91,7 +92,7 @@ static PyTypeObject ModuleLoaderType = {
     SST_PY_OBJ_HEAD "ModuleLoader", /* tp_name */
     sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
     0,                              /* tp_itemsize */
-    nullptr,                        /* tp_dealloc */
+    mlDealloc,                      /* tp_dealloc */
     0,                              /* tp_vectorcall_offset */
     nullptr,                        /* tp_getattr */
     nullptr,                        /* tp_setattr */
@@ -145,6 +146,12 @@ static PyTypeObject ModuleLoaderType = {
 REENABLE_WARNING
 #endif
 #endif
+
+static void
+mlDealloc(PyObject* self)
+{
+    Py_TYPE(self)->tp_free(self);
+}
 
 // I hate having to do this through a global variable
 // but there's really no other way to communicate errors from the importer
@@ -204,9 +211,11 @@ static struct PyModuleDef emptyModDef {
 #endif
 
 static PyObject*
-mlExecModule(PyObject* UNUSED(self), PyObject* args)
+mlExecModule(PyObject* UNUSED(self), PyObject* UNUSED(args))
 {
-    return args;
+    // exec_module must return None per the import protocol (PEP 451).
+    // All module loading is done in create_module via PyImport_ExecCodeModule.
+    Py_RETURN_NONE;
 }
 
 static PyObject*
@@ -223,24 +232,23 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     // error there.
     if ( !PyArg_ParseTuple(args, "O", &spec) ) return nullptr;
 
-    PyObject*   nameobj;
-    const char* name;
-
-    nameobj = PyObject_GetAttrString(spec, "name");
+    PyObject* nameobj = PyObject_GetAttrString(spec, "name");
     if ( nameobj == nullptr ) {
         return nullptr;
     }
-    name = SST_ConvertToCppString(nameobj);
 
-    if ( strncmp(name, "sst.", 4) ) {
-        // We know how to handle only sst.<module>
-        return nullptr; // ERROR!
+    // SST_ConvertToCppString (PyUnicode_AsUTF8) returns a pointer into
+    // nameobj's internal buffer, so copy before decref.
+    std::string nameStr(SST_ConvertToCppString(nameobj));
+    Py_DECREF(nameobj);
+
+    if ( nameStr.compare(0, 4, "sst.") != 0 ) {
+        Py_RETURN_NONE;
     }
 
-    const char* modName = name + 4; // sst.<modName>
+    std::string modName = nameStr.substr(4);
 
-    // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName.c_str(), nameStr.c_str());
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject*               mod   = nullptr;
     if ( !pymod ) {
@@ -1187,13 +1195,18 @@ SSTPythonModelDefinition::initModel(
                        "import sst\n"
                        "import importlib\n"
                        "import importlib.machinery\n"
-                       "spec = importlib.machinery.ModuleSpec(\"sst loader\", sst.ModuleLoader())\n"
                        "class SSTModuleFinder:\n"
+                       "  _loader = sst.ModuleLoader()\n"
                        "  def find_spec(self, fullname, path, target=None):\n"
-                       "    loader = sst.ModuleLoader()\n"
-                       "    found_loader = loader.find_module(fullname)\n"
-                       "    if found_loader:  return importlib.machinery.ModuleSpec(fullname, found_loader)\n"
-                       "    else: return None\n"
+                       "    if not fullname.startswith('sst.'):\n"
+                       "      return None\n"
+                       "    try:\n"
+                       "      found = self._loader.find_module(fullname)\n"
+                       "      if found:\n"
+                       "        return importlib.machinery.ModuleSpec(fullname, found)\n"
+                       "    except Exception:\n"
+                       "      pass\n"
+                       "    return None\n"
                        "sys.meta_path.append(SSTModuleFinder())\n");
 
 // https://github.com/sstsimulator/sst-core/issues/1531
@@ -1321,7 +1334,16 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition()
         Py_Finalize();
     }
     else {
+        // Python 3.14 rewrote the cycle GC to be incremental (two generations
+        // instead of three). Calling PyGC_Collect() during shutdown can trigger
+        // a segfault because type_clear may have already cleared type MROs and
+        // internal references, causing the collector to dereference freed memory
+        // when traversing objects. See CPython issues #130380, #133932, #135115.
+        // Py_Finalize() already calls PyGC_Collect() internally, so the explicit
+        // call here is only needed as a best-effort cleanup when we skip finalize.
+#if PY_MINOR_VERSION < 14
         PyGC_Collect();
+#endif
     }
 }
 
