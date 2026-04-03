@@ -81,7 +81,7 @@ for rank in range(num_ranks):
                     their_x = current_x + 1
                     if their_x == total_x_size:
                         their_x = 0
-                    port_x_pos.addLink(getLink("x%dy%d"%(current_x, y), "x%dy%d"%(their_x, y)), "port", "1ns")
+                    port_x_pos.addLink(getLink("x%dy%d"%(current_x, y), "x%dy%d"%(their_x, y)), "port0", "1ns")
 
                 # X neg
                 if ( my_rank == rank or x_neg_link or not parallel_load ):
@@ -89,7 +89,7 @@ for rank in range(num_ranks):
                     their_x = current_x - 1
                     if their_x == -1:
                         their_x = total_x_size - 1
-                    port_x_neg.addLink(getLink("x%dy%d"%(their_x, y), "x%dy%d"%(current_x, y)), "port", "1ns")
+                    port_x_neg.addLink(getLink("x%dy%d"%(their_x, y), "x%dy%d"%(current_x, y)), "port0", "1ns")
 
                 # Y links
                 # only hook up the y link for parallel loading when this is our rank
@@ -103,7 +103,7 @@ for rank in range(num_ranks):
                 if their_y == y_size:
                     their_y = 0
 
-                port_y_pos.addLink(getLink("x%dy%d"%(current_x, y), "x%dy%d"%(current_x,their_y)), "port", "1ns")
+                port_y_pos.addLink(getLink("x%dy%d"%(current_x, y), "x%dy%d"%(current_x,their_y)), "port0", "1ns")
 
                 # Negative
                 port_y_neg = comp.setSubComponent("ports","coreTestElement.message_mesh.message_port",3);
@@ -111,4 +111,4 @@ for rank in range(num_ranks):
                 their_y = y - 1
                 if their_y == -1:
                     their_y = y_size - 1
-                port_y_neg.addLink(getLink("x%dy%d"%(current_x,their_y), "x%dy%d"%(current_x, y)), "port", "1ns")
+                port_y_neg.addLink(getLink("x%dy%d"%(current_x,their_y), "x%dy%d"%(current_x, y)), "port0", "1ns")
