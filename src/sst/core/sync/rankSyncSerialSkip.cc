@@ -122,15 +122,11 @@ RankSyncSerialSkip::getSignals(int& end, int& usr, int& alrm)
 void
 RankSyncSerialSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
-    //printf("Enter rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
+    // SKK This can be set from any thread
     if (enter_shutdown) {
         enter_shutdown_.store(enter_shutdown);
         shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
     }
-    //printf("Exit rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
 void
@@ -143,16 +139,11 @@ RankSyncSerialSkip::setCkptFlag(bool generate_ckpt)
 void
 RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
-    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
+    // SKK This can be set from any thread
     if (enter_interactive)
         enter_interactive_.store(enter_interactive);
 
     setShutdownFlags(enter_shutdown, shutdown_mode);
-
-    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
 void 
@@ -170,9 +161,6 @@ RankSyncSerialSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::Shu
             shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
             break;
     }
- 
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
 void
@@ -184,13 +172,9 @@ RankSyncSerialSkip::getCkptFlag(bool& generate_ckpt)
 void 
 RankSyncSerialSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
 {
-    
     enter_interactive  = enter_interactive_.load();
     getShutdownFlags( enter_shutdown, shutdown_mode);
     
-    
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
 void
@@ -495,98 +479,4 @@ std::atomic<bool>         RankSyncSerialSkip::enter_shutdown_(false);
 std::atomic<unsigned>     RankSyncSerialSkip::shutdown_mode_(0);
 std::atomic<bool>         RankSyncSerialSkip::generate_ckpt_(false);
 
-// SKK Test Producer Consumer
-int32_t RankSyncSerialSkip::test_rid_(0);
-int32_t RankSyncSerialSkip::test_tid_(0);
-int32_t RankSyncSerialSkip::test_cmd_(0);  // 0 = DONE, 1 = PRINT
-
-void 
-RankSyncSerialSkip::testManager() 
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    RankInfo rank_ = Simulation_impl::getSimulation()->getRank();
-    int32_t cmd_buffer[3];
-    int32_t result_buffer[1];
-    bool done = false;
-    int tag = 0;
-    int src;
-    int dst;
-
-    Output::getDefaultObject().output("----SerialSkip\n");
-
-    if (rank_.rank == 0 && rank_.thread == 0)  { // Handles send of commands
-        // Send print commands to all ranks/threads
-        cmd_buffer[2] = 1;  // PRINT
-        for (uint32_t rindex = 1; rindex < num_ranks_.rank; rindex++ ) {
-            for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
-                Output::getDefaultObject().output("Mgr R%d T%d Send PRINT: Dest R%d, T%d\n", 
-                    rank_.rank, rank_.thread, rindex, tindex);
-                // Send print command to correct rank and wait for return
-                cmd_buffer[0] = rindex;
-                cmd_buffer[1] = tindex;
-                dst = rindex;
-                MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD );
-                src = rindex;
-                MPI_Recv(result_buffer, 1, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                assert(result_buffer[0] == 1);
-            }  // for Threads
-        } // for Ranks
-        // Send done commands to all ranks/threads
-        cmd_buffer[2] = 0;  // DONE
-        for (uint32_t rindex = 1; rindex < num_ranks_.rank; rindex++ ) {
-            for ( uint32_t tindex = 0; tindex < num_ranks_.thread; tindex++ ) {
-                Output::getDefaultObject().output("Mgr R%d T%d Send DONE: Dest R%d, T%d\n", 
-                    rank_.rank, rank_.thread, rindex, tindex);
-                // Send done command to correct rank and wait for return
-                cmd_buffer[0] = rindex;
-                cmd_buffer[1] = tindex;
-                dst = rindex;
-                MPI_Send(cmd_buffer, 3, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
-                #if 0
-                src = rindex;
-                MPI_Recv(result_buffer, 1, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                assert(result_buffer[0] == 0);
-                #endif
-            }  // for Threads
-        } // for Ranks
-
-
-    } // rank 0, thread 0
-    else if (rank_.rank != 0) {  // not rank 0, thread 0
-        Output::getDefaultObject().output("Enter Worker: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
-        src = 0;
-        dst = 0;
-        while (!done) {
-            MPI_Recv(cmd_buffer, 3, MPI_INT32_T, src, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            if (cmd_buffer[2] == 0) {  // DONE
-                done = true;
-                //result_buffer[0] = 0;
-                Output::getDefaultObject().output("Worker DONE: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
-                //MPI_Send(result_buffer, 1, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
-            } else {  // PRINT
-                result_buffer[0] = 1;
-                Output::getDefaultObject().output("Worker PRINT: Rank:%d, Thread:%d\n", rank_.rank, rank_.thread);
-                MPI_Send(result_buffer, 1, MPI_INT32_T, dst, tag, MPI_COMM_WORLD);
-            }
-        }  // while !done
-    } 
-    else { // other R0 threads, do nothing I should never have multiple
-        assert (false);
-        Output::getDefaultObject().output("Enter NOP: R%d, T%d\n", rank_.rank, rank_.thread);
-    }
-#endif
-}
-
-#if 0
-void
-RankSyncSerialSkip::testWorker() 
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    bool done = false;
-    while (!done) {
-        MPI_Receive
-    }
-#endif
-}
-#endif
 } // namespace SST

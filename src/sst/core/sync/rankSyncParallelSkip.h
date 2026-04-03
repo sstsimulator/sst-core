@@ -71,9 +71,6 @@ public:
 
     uint64_t getDataSize() const override;
 
-     // Test manager/worker 
-    void testManager() override;
-
 private:
     static SimTime_t myNextSyncTime;
 
@@ -158,11 +155,6 @@ private:
     static std::atomic<unsigned>     shutdown_mode_;
     static std::atomic<bool>         generate_ckpt_;
 
-    // Test Manager/worker 
-    // SKK Test Producer Consumer
-    static int32_t test_rid_;
-    static int32_t test_tid_;
-    static int32_t test_cmd_;  // 0 = DONE, 1 = PRINT
 };
 
 } // namespace SST

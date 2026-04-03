@@ -88,9 +88,6 @@ public:
 
     virtual uint64_t getDataSize() const = 0;
 
-    // Test manager/worker SKK
-    virtual void testManager() = 0;
-
 protected:
     SimTime_t      nextSyncTime;
     SimTime_t      max_period;
@@ -248,9 +245,6 @@ private:
     RealTimeManager*                 real_time_;
     CheckpointAction*                checkpoint_;
     static std::atomic<unsigned>     ckpt_generate_;
-    static std::atomic<int>          current_ic_thread_;
-    static std::atomic<int>          current_ic_state_;
-    static std::atomic<unsigned>     endSim_;
     static Core::ThreadSafe::Barrier ic_barrier_;
 
     SyncProfileToolList* profile_tools_ = nullptr;
