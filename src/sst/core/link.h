@@ -147,9 +147,6 @@ public:
 
        @param timebase Base units of cycles
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addSendLatency(SimTime_t cycles, "
-                 "TimeConverter timebase)' (i.e., no pointer) instead.")]]
-    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
     void addSendLatency(SimTime_t cycles, TimeConverter timebase);
 
     /**
@@ -168,9 +165,6 @@ public:
 
        @param timebase Base units of cycles
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'addRecvLatency(SimTime_t cycles, "
-                 "TimeConverter timebase)' (i.e., no pointer) instead.")]]
-    void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
     void addRecvLatency(SimTime_t cycles, TimeConverter timebase);
 
     /**
@@ -194,24 +188,6 @@ public:
        @return Functor used for event delivery
     */
     Event::HandlerBase* getFunctor();
-
-    /**
-       Sends an Event over a Link with an additional delay specified with a TimeConverter. I.e. the total delay is the
-       Link's delay + the additional specified delay.
-
-       @param delay Additional delay
-
-       @param tc TimeConverter to specify timebase for the additional delay
-
-       @param event Event to send
-    */
-    [[deprecated(
-        "Use of shared TimeConverter objects is deprecated. Use 'send(SimTime_t delay, const TimeConverter& tc, "
-        "Event* event)' instead.")]]
-    inline void send(SimTime_t delay, TimeConverter* tc, Event* event)
-    {
-        send(delay, *tc, event);
-    }
 
     /**
        Sends an Event over a Link with an additional delay specified with a TimeConverter. I.e. the total delay is the
@@ -257,15 +233,6 @@ public:
 
        @param tc TimeConverter object for the timebase
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)', "
-                 "(i.e., no pointer) instead.")]]
-    void setDefaultTimeBase(TimeConverter* tc);
-
-    /**
-       Manually set the default defaultTimeBase
-
-       @param tc TimeConverter object for the timebase
-    */
     void setDefaultTimeBase(TimeConverter tc);
 
     /**
@@ -273,7 +240,7 @@ public:
 
        @return the default timebase for this Link
     */
-    TimeConverter* getDefaultTimeBase();
+    TimeConverter getDefaultTimeBase();
 
     /**
        Return the ID of this Link
@@ -287,13 +254,6 @@ public:
         else
             return id;
     }
-
-    /**
-       Return the default timebase for this Link
-
-       @return Default timebase for this Link
-    */
-    const TimeConverter* getDefaultTimeBase() const;
 
     /**
        Send data during the init() or complete() phase.

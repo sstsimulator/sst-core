@@ -127,7 +127,6 @@ statAddParams(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(count);
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 statCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -157,22 +156,10 @@ statCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-statCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((PyStatistic*)obj0)->compare(((PyStatistic*)obj1));
-}
-#endif
 
 static PyMethodDef statisticMethods[] = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
     { "addParams", statAddParams, METH_O, "Adds Multiple Parameters from a dict" }, { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_StatType = {
     SST_PY_OBJ_HEAD "sst.Statistic", /* tp_name */
     sizeof(StatisticPy_t),           /* tp_basicsize */
@@ -222,15 +209,9 @@ PyTypeObject PyModel_StatType = {
     0,                               /* tp_version_tag */
     nullptr,                         /* tp_finalize */
     SST_TP_VECTORCALL                /* Python3.8+ */
-    SST_TP_PRINT_DEP                 /* Python3.8 only */
     SST_TP_WATCHED                   /* Python3.12+ */
     SST_TP_VERSIONS_USED             /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
 
 } /* extern C */
 

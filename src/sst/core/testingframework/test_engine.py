@@ -84,6 +84,13 @@ HELP_EPILOG = (
     ("   the -e ('--test_names') parameter.  The names must match the desired testnames\n") +
     ("   exactly.  Only these specific tests will be run.\n") +
     ("\n") +
+    ("Test Categories:\n") +
+    (" - Similar to pytest markers, categories of tests to run can be specified\n") +
+    ("   with the -m ('--categories') argument.  Each test in a testsuite\n") +
+    ("   should be marked with a single marker.  This means categories are\n") +
+    ("   disjoint, but multiple categories can be specified at runtime.\n") +
+    ("   Only these tests within the specified testsuite will run.\n") +
+    ("\n") +
     ("Test Scenarios:\n") +
     (" - Tests and TestCases identified within testsuites can be skipped from running\n") +
     ("   running by using the -s ('--scenarios') argument.  1 or more scenarios can\n") +
@@ -235,6 +242,10 @@ class TestEngine:
                                help='Display failure data during test runs (test dependent)')
         run_group.add_argument('-i', '--ignoreskips', action='store_true',
                                help='Disable Display of Skipped Test Messages (for debug purposes)')
+        run_group.add_argument("-m", "--categories",
+                               nargs="+", default=list(),
+                               choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
+                               help="Which category of tests to run")
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
                                help=(('Names of test scenarios that filter') + \
@@ -311,6 +322,7 @@ class TestEngine:
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
         self._list_of_specific_testnames = args.test_names
+        test_engine_globals.TESTENGINE_CATEGORIES = args.categories
         lc_testscenario_list = [item.lower() for item in args.scenarios]
         test_engine_globals.TESTENGINE_SCENARIOSLIST = lc_testscenario_list
         lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]

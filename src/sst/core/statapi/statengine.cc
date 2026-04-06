@@ -160,7 +160,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
         bool success = true;
         if ( periodic ) {
-            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua)->getFactor();
+            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua).getFactor();
             success          = addPeriodicBasedStatistic(factor, stat); // will place stat in correct default group
         }
         else {
@@ -188,7 +188,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( start_at != "0ns" ) {
         ua = UnitAlgebra(start_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStartTime(stat, factor);
         }
     }
@@ -197,7 +197,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( stop_at != "0ns" ) {
         ua = UnitAlgebra(stop_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua)->getFactor();
+            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStopTime(stat, factor);
         }
     }
@@ -254,7 +254,7 @@ StatisticProcessingEngine::finalizeInitialization()
         /* Register group clock, if rate is set */
         if ( group.output_freq != 0 ) {
             Simulation_impl::getSimulation()->registerClock(group.output_freq,
-                new Clock::Handler2<StatisticProcessingEngine, &StatisticProcessingEngine::handleGroupClockEvent,
+                new Clock::Handler<StatisticProcessingEngine, &StatisticProcessingEngine::handleGroupClockEvent,
                     StatisticGroup*>(this, &group),
                 STATISTICCLOCKPRIORITY);
         }
@@ -357,7 +357,7 @@ StatisticProcessingEngine::addPeriodicBasedStatistic(SimTime_t factor, Statistic
         stat_default_groups_.insert(std::make_pair(factor, group));
 
         // This factor is not found in the map, so create a new clock handler.
-        clock_handler = new Clock::Handler2<StatisticProcessingEngine,
+        clock_handler = new Clock::Handler<StatisticProcessingEngine,
             &StatisticProcessingEngine::handleStatisticEngineClockEvent, SimTime_t>(this, factor);
 
         // Set the clock priority so that normal clocks events will occur before this clock event.

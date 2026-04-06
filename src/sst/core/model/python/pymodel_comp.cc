@@ -96,8 +96,8 @@ compInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
         ComponentId_t id            = gModel->addComponent(prefixed_name, type);
         obj                         = new PyComponent(self, id);
         free(prefixed_name);
-        gModel->getOutput()->verbose(
-            CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
+        gModel->getOutput()->debug(
+            CALL_INFO, 5, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     }
     else {
         obj = new PyComponent(self, useID);
@@ -264,7 +264,6 @@ compGetFullName(PyObject* self, PyObject* UNUSED(args))
     return SST_ConvertToPythonString(getComp(self)->getFullName().c_str());
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 compCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -294,13 +293,6 @@ compCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-compCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((ComponentHolder*)obj0)->compare(((ComponentHolder*)obj1));
-}
-#endif
 
 static PyObject*
 compGetType(PyObject* self, PyObject* UNUSED(args))
@@ -609,11 +601,6 @@ static PyMethodDef componentMethods[] = { { "addParam", compAddParam, METH_VARAR
     { "addGlobalParamSet", compAddSharedParamSet, METH_O, "Add shared parameter set to the component" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_ComponentType = {
     SST_PY_OBJ_HEAD "sst.Component", /* tp_name */
     sizeof(ComponentPy_t),           /* tp_basicsize */
@@ -663,15 +650,9 @@ PyTypeObject PyModel_ComponentType = {
     0,                               /* tp_version_tag */
     nullptr,                         /* tp_finalize */
     SST_TP_VECTORCALL                /* Python3.8+ */
-    SST_TP_PRINT_DEP                 /* Python3.8 only */
     SST_TP_WATCHED                   /* Python3.12+ only */
     SST_TP_VERSIONS_USED             /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
 
 static int
 subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
@@ -685,7 +666,7 @@ subCompInit(ComponentPy_t* self, PyObject* args, PyObject* UNUSED(kwds))
 
     self->obj = obj;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n",
+    gModel->getOutput()->debug(CALL_INFO, 5, 0, "Creating subcomponent [%s] of type [%s]]\n",
         getComp((PyObject*)self)->name.c_str(), getComp((PyObject*)self)->type.c_str());
 
     return 0;
@@ -722,11 +703,6 @@ static PyMethodDef subComponentMethods[] = { { "addParam", compAddParam, METH_VA
         "Set (X,Y,Z) coordinates of this component, for use with visualization" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_SubComponentType = {
     SST_PY_OBJ_HEAD "sst.SubComponent", /* tp_name */
     sizeof(ComponentPy_t),              /* tp_basicsize */
@@ -776,12 +752,6 @@ PyTypeObject PyModel_SubComponentType = {
     0,                                  /* tp_version_tag */
     nullptr,                            /* tp_finalize */
     SST_TP_VECTORCALL                   /* Python3.8+ */
-    SST_TP_PRINT_DEP                    /* Python3.8 only */
     SST_TP_WATCHED                      /* Python3.12+ */
     SST_TP_VERSIONS_USED                /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif

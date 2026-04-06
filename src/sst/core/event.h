@@ -55,7 +55,7 @@ public:
 
        In which case, the class is created with:
 
-         new Event::Handler<classname>(this, &classname::function_name)
+         new Event::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -63,19 +63,19 @@ public:
 
        and the class is created with:
 
-         new Event::Handler<classname, dataT>(this, &classname::function_name, data)
+         new Event::Handler<classname, &classname::function_name, dataT>(this, data)
      */
-    template <typename classT, typename dataT = void>
-    using Handler
-        [[deprecated("Handler has been deprecated. Please use Handler2 instead as it supports checkpointing.")]] =
-            SSTHandler<void, Event*, classT, dataT>;
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler = SSTHandler<void, Event*, classT, dataT, funcT>;
 
 
     /**
-       New style (checkpointable) SSTHandler
+       Handler2 version which is now the same as Handler and is provided for backward compatibility until SST 17
     */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<void, Event*, classT, dataT, funcT>;
+    using Handler2 [[deprecated(
+        "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
+    = SSTHandler<void, Event*, classT, dataT, funcT>;
 
     /**
        Class used to sort events during checkpointing.  This is used

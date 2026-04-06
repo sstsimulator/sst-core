@@ -91,7 +91,7 @@ InteractiveConsole::getSyncQueueDataSize() const
     return Simulation_impl::getSimulation()->getSyncQueueDataSize();
 }
 
-TimeConverter*
+TimeConverter
 InteractiveConsole::getTimeConverter(const std::string& time)
 {
     return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(time);

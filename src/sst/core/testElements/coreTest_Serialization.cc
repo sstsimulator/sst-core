@@ -668,7 +668,7 @@ struct HandlerTest : public SST::Core::Serialization::serializable
 struct RecursiveSerializationTest : public SST::Core::Serialization::serializable
 {
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler = SSTHandler2<int, int, classT, dataT, funcT>;
+    using Handler = SSTHandler<int, int, classT, dataT, funcT>;
 
     int call(int input, float f)
     {
@@ -1550,45 +1550,45 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // LSB: returnT, argT, dataT.
 
         // args -                 returnT, argT,       dataT
-        auto* h000 = new SSTHandler2<void, void, HandlerTest, void, &HandlerTest::call_000>(t1);
+        auto* h000 = new SSTHandler<void, void, HandlerTest, void, &HandlerTest::call_000>(t1);
         (*h000)();
         std::cout << std::endl;
 
         // args -                 returnT, argT,       dataT
-        auto* h001 = new SSTHandler2<void, void, HandlerTest, float, &HandlerTest::call_001>(t1, 1.2);
+        auto* h001 = new SSTHandler<void, void, HandlerTest, float, &HandlerTest::call_001>(t1, 1.2);
         (*h001)();
         std::cout << std::endl;
 
         // args -                 returnT, argT,       dataT
-        auto* h010 = new SSTHandler2<void, int, HandlerTest, void, &HandlerTest::call_010>(t1);
+        auto* h010 = new SSTHandler<void, int, HandlerTest, void, &HandlerTest::call_010>(t1);
         (*h010)(52);
         std::cout << std::endl;
 
         // args -                 returnT, argT,       dataT
-        auto* h011 = new SSTHandler2<void, int, HandlerTest, float, &HandlerTest::call_011>(t1, 3.4);
+        auto* h011 = new SSTHandler<void, int, HandlerTest, float, &HandlerTest::call_011>(t1, 3.4);
         (*h011)(53);
         std::cout << std::endl;
 
         // args -                returnT, argT,       dataT
-        auto* h100 = new SSTHandler2<int, void, HandlerTest, void, &HandlerTest::call_100>(t2);
+        auto* h100 = new SSTHandler<int, void, HandlerTest, void, &HandlerTest::call_100>(t2);
         int   ret  = (*h100)();
         std::cout << "Return value: " << ret << std::endl;
         std::cout << std::endl;
 
         // args -                returnT, argT,       dataT
-        auto* h101 = new SSTHandler2<int, void, HandlerTest, float, &HandlerTest::call_101>(t2, 5.6);
+        auto* h101 = new SSTHandler<int, void, HandlerTest, float, &HandlerTest::call_101>(t2, 5.6);
         ret        = (*h101)();
         std::cout << "Return value: " << ret << std::endl;
         std::cout << std::endl;
 
         // args -                returnT, argT,       dataT
-        auto* h110 = new SSTHandler2<int, int, HandlerTest, void, &HandlerTest::call_110>(t2);
+        auto* h110 = new SSTHandler<int, int, HandlerTest, void, &HandlerTest::call_110>(t2);
         ret        = (*h110)(62);
         std::cout << "Return value: " << ret << std::endl;
         std::cout << std::endl;
 
         // args -                returnT, argT,       dataT
-        auto* h111 = new SSTHandler2<int, int, HandlerTest, float, &HandlerTest::call_111>(t2, 7.8);
+        auto* h111 = new SSTHandler<int, int, HandlerTest, float, &HandlerTest::call_111>(t2, 7.8);
         ret        = (*h111)(63);
         std::cout << "Return value: " << ret << std::endl;
         std::cout << std::endl;

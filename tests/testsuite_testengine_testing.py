@@ -79,7 +79,7 @@ class testcase_testengine_testing_frameworks_operation(SSTTestCase):
 ################################################################################
 
 ############################################################################
-# These tests verify operation of the SST UunitTest Support Functions
+# These tests verify operation of the SST UnitTest Support Functions
 ############################################################################
 
 class testcase_testengine_testing_support_functions(SSTTestCase):
@@ -196,7 +196,7 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
     def test_support_functions_get_info_from_sst_config_h_valid_key_rtn_int_success(self):
         # This should pass as we give/get valid data
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
-        test_define = sst_config_include_file_get_value(define="HAVE_CLOSEDIR", type=int, default=123)
+        test_define = sst_core_config_include_file_get_value(define="HAVE_CLOSEDIR", type=int, default=123)
         log_forced("#define HAVE_CLOSEDIR={0}; type={1}".format(test_define, type(test_define)))
         self.assertEqual(1, test_define)
         self.assertEqual(int, type(test_define))
@@ -204,16 +204,16 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
     def test_support_functions_get_info_from_sst_config_h_valid_key_rtn_str_success(self):
         # This should pass as we give/get valid data
         log_forced("NOTE: This Test Has an Expected Pass and should show as 'PASS'")
-        test_define = sst_config_include_file_get_value(define="PACKAGE_BUGREPORT", type=str, default="THIS_IS_DEFAULT_DATA")
+        test_define = sst_core_config_include_file_get_value(define="PACKAGE_BUGREPORT", type=str, default="THIS_IS_DEFAULT_DATA")
         log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
-        self.assertEqual("sst@sandia.gov", test_define)
+        self.assertEqual("wg-sst@sandia.gov", test_define)
         self.assertEqual(str, type(test_define))
 
     def test_support_functions_get_info_from_sst_config_h_invalid_key_rtn_default_str_success(self):
         # This should pass as we give valid data
         log_forced("NOTE: This Test Has an Expected Pass (BUT GENERATES A WARNING) and should show as 'PASS'")
         # This should pass by returning a default, but should log a warning
-        test_define = sst_config_include_file_get_value(define="PACKAGE_BUGREPORT_KEYINVALID", type=str, default="THIS_IS_DEFAULT_DATA")
+        test_define = sst_core_config_include_file_get_value(define="PACKAGE_BUGREPORT_KEYINVALID", type=str, default="THIS_IS_DEFAULT_DATA")
         log_forced("#define PACKAGE_BUGREPORT_KEYINVALID={0}; type={1}".format(test_define, type(test_define)))
         self.assertEqual("THIS_IS_DEFAULT_DATA", test_define)
         self.assertEqual(str, type(test_define))
@@ -222,7 +222,7 @@ class testcase_testengine_testing_support_functions(SSTTestCase):
         # This should pass as we detect an expected exception
         log_forced("NOTE: This Test Has an Expected Pass (BUT GENERATES A WARNING) and should show as 'PASS'")
         with self.assertRaises(SSTTestCaseException):
-            test_define = sst_config_include_file_get_value(define="PACKAGE_BUGREPORT_KEYINVALID", type=str)
+            test_define = sst_core_config_include_file_get_value(define="PACKAGE_BUGREPORT_KEYINVALID", type=str)
             log_forced("#define PACKAGE_BUGREPORT_KEYINVALID={0}; type={1}".format(test_define, type(test_define)))
 
     ############################################################################

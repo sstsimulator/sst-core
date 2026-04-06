@@ -39,9 +39,9 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
 
     // configure out links
     E = configureLink("Elink", link_tb.toString(),
-        new Event::Handler2<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "East"));
+        new Event::Handler<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "East"));
     W = configureLink("Wlink", link_tb.toString(),
-        new Event::Handler2<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "West"));
+        new Event::Handler<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "West"));
 
     if ( found_sendlat ) {
         E->addSendLatency(1, send_lat.toString());
@@ -54,7 +54,7 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
     }
 
     // set our clock
-    registerClock("100 MHz", new Clock::Handler2<coreTestLinks, &coreTestLinks::clockTic>(this));
+    registerClock("100 MHz", new Clock::Handler<coreTestLinks, &coreTestLinks::clockTic>(this));
 }
 
 // incoming events are scanned and deleted

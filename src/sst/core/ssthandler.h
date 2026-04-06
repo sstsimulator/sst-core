@@ -19,73 +19,42 @@ namespace SST {
 
 class Params;
 
-// This file contains base classes for use as various handlers (object
-// encapsulating callback functions) in SST.  These handlers are
-// checkpointable and encapsulate a pointer to an object and a pointer
-// to a member function of the object's class (captured via template
-// parameter).  The classes also allow you to optionally add one
-// additional piece of static data to be passed into the callback
-// function along with any data provided by the caller.  There are two
-// versions of this class, one that has no data passed from the caller
-// (ending with SSTHandlerNoArgs), and one that has a single item
-// passed from the caller (SSTHandler).
+// This file contains base classes for use as various handlers (object encapsulating callback functions) in SST.  These
+// handlers are checkpointable and encapsulate a pointer to an object and a pointer to a member function of the object's
+// class (captured via template parameter).  The classes also allow you to optionally add one additional piece of static
+// data to be passed into the callback function along with any data provided by the caller.  There are two versions of
+// this class, one that has no data passed from the caller (ending with SSTHandlerNoArgs), and one that has a single
+// item passed from the caller (SSTHandler).
 
-// NOTE: Legacy SSTHandler objects are not checkpointable and have
-// been deprecated.  Support for legacy handlers will be removed in
-// SST 15.
+// These classes provide the full functionality of the handlers and can be added to a class with the "using" keyword, as
+// follows (a class can use any type name they'd like in place of HandlerBase and Handler, though those names are
+// preferred for consistency).
 
-// These classes provide the full functionality of the handlers and
-// can be added to a class with the "using" keyword, as follows (a
-// class can use any type name they'd like in place of HandlerBase and
-// Handler, though those names are preferred for consistency):
+// Note: Support for legacy (noncheckpointable) handlers has been removed and Handler and Handler2 are now identical.
+// The name Handler2 is deprecated and will be removed in SST 17, but is included to provide backward compatibility
+// until that release.
 
-// Note: Until support for legacy handlers are removed, the new-style
-// handlers should use Handler2Base and Handler2 as the preferred
-// names.  After legacy support is removed with SST 15, both Handler
-// and Handler2 should both point to the new style handlers.  Handler2
-// will be deprecated from SST 15 until SST 16, when Handler will be
-// the approved name.
 
-// LEGACY STYLE
+// How to declare the Handlers in a class with the "using" keyword:
+
+// Need to first declare the base class that will be used to refer to all handlers of that type
 
 // using HandlerBase = SSTHandlerBase<return_type_of_callback, arg_type_of_callback>;
 
-// template <typename classT, typename dataT = void>
-// using Handler = SSTHandler<return_type_of_callback, arg_type_of_callback, classT, dataT>;
 
-// Or:
-
-// using HandlerBase = SSTHandlerBaseNoArgs<return_type_of_callback>;
-
-// template <return_type_of_callback, typename classT, typename dataT = void>
-// using Handler = SSTHandlerNoArgs<return_type_of_callback, classT, dataT>;
-
-// The handlers are then instanced as follows:
-
-// new Class::Handler<Class>(this, &Class::callback_function)
-
-// Or:
-
-// new Class::Handler<Class,int>(this, &Class::callback_function, 1)
-
-
-// NEW STYLE
-// Note: New style SSTHandler2 uses the same class for functions with and without parameters.
-
-// Note: HandlerBase is the same both both legacy and new style
-// using HandlerBase = SSTHandlerBase<return_type_of_callback, arg_type_of_callback>;
+// This is the final class that allows the user to specify the class and function for the callback
 
 // template <typename classT, auto funcT, typename dataT = void>
-// using Handler2 = SSTHandler2<return_type_of_callback, arg_type_of_callback, classT, dataT, funcT>;
+// using Handler = SSTHandler<return_type_of_callback, arg_type_of_callback, classT, dataT, funcT>;
 
 
 // The handlers are then instanced as follows:
 
-// new Class::Handler2<Class, &Class::callback_function>(this)
+// new Class::Handler<Class, &Class::callback_function>(this)
 
 // Or:
 
-// new Class::Handler2<Class, &Class::callback_function, int>(this, 1)
+// new Class::Handler<Class, &Class::callback_function, int>(this, 1)
 
 
 /**********************************************************************
@@ -1119,145 +1088,6 @@ private:
 
 
 /**********************************************************************
- * Legacy Handlers
- *
- * These handlers do not support checkpointing and will be removed in
- * SST 15.
- **********************************************************************/
-
-template <typename returnT>
-using SSTHandlerBaseNoArgs = SSTHandlerBase<returnT, void>;
-/**
- * Handler class with user-data argument
- */
-template <typename returnT, typename argT, typename classT, typename dataT = void>
-class SSTHandler : public SSTHandlerBase<returnT, argT>
-{
-private:
-    using PtrMember = returnT (classT::*)(argT, dataT);
-    classT*         object;
-    const PtrMember member;
-    dataT           data;
-
-public:
-    /** Constructor
-     * @param object - Pointer to Object upon which to call the handler
-     * @param member - Member function to call as the handler
-     * @param data - Additional argument to pass to handler
-     */
-    SSTHandler(classT* const object, PtrMember member, dataT data) :
-        SSTHandlerBase<returnT, argT>(),
-        object(object),
-        member(member),
-        data(data)
-    {}
-
-    SSTHandler(const SSTHandler&)            = delete;
-    SSTHandler& operator=(const SSTHandler&) = delete;
-
-    returnT operator_impl(argT arg) override { return (object->*member)(arg, data); }
-
-    NotSerializable(SSTHandler);
-};
-
-
-/**
- * Event Handler class with no user-data.
- */
-template <typename returnT, typename argT, typename classT>
-class SSTHandler<returnT, argT, classT, void> : public SSTHandlerBase<returnT, argT>
-{
-private:
-    using PtrMember = returnT (classT::*)(argT);
-    const PtrMember member;
-    classT*         object;
-
-public:
-    /** Constructor
-     * @param object - Pointer to Object upon which to call the handler
-     * @param member - Member function to call as the handler
-     */
-    SSTHandler(classT* const object, PtrMember member) :
-        SSTHandlerBase<returnT, argT>(),
-        member(member),
-        object(object)
-    {}
-
-    SSTHandler(const SSTHandler&)            = delete;
-    SSTHandler& operator=(const SSTHandler&) = delete;
-
-    returnT operator_impl(argT arg) override { return (object->*member)(arg); }
-
-    NotSerializable(SSTHandler);
-};
-
-
-/**
- * Event Handler class with user-data argument
- */
-template <typename returnT, typename classT, typename dataT = void>
-class SSTHandlerNoArgs : public SSTHandlerBaseNoArgs<returnT>
-{
-private:
-    using PtrMember = returnT (classT::*)(dataT);
-    classT*         object;
-    const PtrMember member;
-    dataT           data;
-
-public:
-    /** Constructor
-     * @param object - Pointer to Object upon which to call the handler
-     * @param member - Member function to call as the handler
-     * @param data - Additional argument to pass to handler
-     */
-    SSTHandlerNoArgs(classT* const object, PtrMember member, dataT data) :
-        SSTHandlerBase<returnT, void>(),
-        object(object),
-        member(member),
-        data(data)
-    {}
-
-    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
-    SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
-
-    void operator_impl() override { return (object->*member)(data); }
-
-    NotSerializable(SSTHandlerNoArgs);
-};
-
-
-/**
- * Event Handler class with no user-data.
- */
-template <typename returnT, typename classT>
-class SSTHandlerNoArgs<returnT, classT, void> : public SSTHandlerBaseNoArgs<returnT>
-{
-private:
-    using PtrMember = returnT (classT::*)();
-    const PtrMember member;
-    classT*         object;
-
-public:
-    /** Constructor
-     * @param object - Pointer to Object upon which to call the handler
-     * @param member - Member function to call as the handler
-     */
-    SSTHandlerNoArgs(classT* const object, PtrMember member) :
-        SSTHandlerBase<returnT, void>(),
-        member(member),
-        object(object)
-    {}
-
-    SSTHandlerNoArgs(const SSTHandlerNoArgs&)            = delete;
-    SSTHandlerNoArgs& operator=(const SSTHandlerNoArgs&) = delete;
-
-    void operator_impl() override { return (object->*member)(); }
-
-    NotSerializable(SSTHandlerNoArgs);
-};
-
-
-/**********************************************************************
  * New Style Handlers
  *
  * These handlers support checkpointing
@@ -1268,7 +1098,7 @@ public:
    is a mismatch somewhere, so it will just static_assert
  */
 template <typename returnT, typename argT, typename classT, typename dataT, auto funcT>
-class SSTHandler2 : public SSTHandlerBase<returnT, argT>
+class SSTHandler : public SSTHandlerBase<returnT, argT>
 {
     // This has to be dependent on a template parameter, otherwise it always asserts.
     static_assert((funcT, false), "Mismatched handler templates.");
@@ -1279,7 +1109,7 @@ class SSTHandler2 : public SSTHandlerBase<returnT, argT>
  * Handler class with user-data argument
  */
 template <typename returnT, typename argT, typename classT, typename dataT, returnT (classT::*funcT)(argT, dataT)>
-class SSTHandler2<returnT, argT, classT, dataT, funcT> : public SSTHandlerBase<returnT, argT>
+class SSTHandler<returnT, argT, classT, dataT, funcT> : public SSTHandlerBase<returnT, argT>
 {
 private:
     classT* object;
@@ -1290,16 +1120,16 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object, dataT data) :
+    SSTHandler(classT* const object, dataT data) :
         SSTHandlerBase<returnT, argT>(),
         object(object),
         data(data)
     {}
 
-    SSTHandler2() {}
+    SSTHandler() {}
 
-    SSTHandler2(const SSTHandler2&)            = delete;
-    SSTHandler2& operator=(const SSTHandler2&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg, data); }
 
@@ -1310,7 +1140,7 @@ public:
         SST_SER(data);
     }
 
-    ImplementSerializable(SSTHandler2)
+    ImplementSerializable(SSTHandler)
 };
 
 
@@ -1318,7 +1148,7 @@ public:
  * Event Handler class with no user-data.
  */
 template <typename returnT, typename argT, typename classT, returnT (classT::*funcT)(argT)>
-class SSTHandler2<returnT, argT, classT, void, funcT> : public SSTHandlerBase<returnT, argT>
+class SSTHandler<returnT, argT, classT, void, funcT> : public SSTHandlerBase<returnT, argT>
 {
 private:
     classT* object;
@@ -1328,14 +1158,14 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param member - Member function to call as the handler
      */
-    explicit SSTHandler2(classT* const object) :
+    explicit SSTHandler(classT* const object) :
         SSTHandlerBase<returnT, argT>(),
         object(object)
     {}
-    SSTHandler2() {}
+    SSTHandler() {}
 
-    SSTHandler2(const SSTHandler2&)            = delete;
-    SSTHandler2& operator=(const SSTHandler2&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl(argT arg) override { return (object->*funcT)(arg); }
 
@@ -1345,7 +1175,7 @@ public:
         SST_SER(object);
     }
 
-    ImplementSerializable(SSTHandler2)
+    ImplementSerializable(SSTHandler)
 };
 
 
@@ -1353,7 +1183,7 @@ public:
  * Event Handler class with user-data argument
  */
 template <typename returnT, typename classT, typename dataT, returnT (classT::*funcT)(dataT)>
-class SSTHandler2<returnT, void, classT, dataT, funcT> : public SSTHandlerBase<returnT, void>
+class SSTHandler<returnT, void, classT, dataT, funcT> : public SSTHandlerBase<returnT, void>
 {
 private:
     classT* object;
@@ -1364,15 +1194,15 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    SSTHandler2(classT* const object, dataT data) :
+    SSTHandler(classT* const object, dataT data) :
         SSTHandlerBase<returnT, void>(),
         object(object),
         data(data)
     {}
-    SSTHandler2() {}
+    SSTHandler() {}
 
-    SSTHandler2(const SSTHandler2&)            = delete;
-    SSTHandler2& operator=(const SSTHandler2&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl() override { return (object->*funcT)(data); }
 
@@ -1383,7 +1213,7 @@ public:
         SST_SER(data);
     }
 
-    ImplementSerializable(SSTHandler2)
+    ImplementSerializable(SSTHandler)
 };
 
 
@@ -1391,7 +1221,7 @@ public:
  * Event Handler class with user-data argument
  */
 template <typename returnT, typename classT, returnT (classT::*funcT)()>
-class SSTHandler2<returnT, void, classT, void, funcT> : public SSTHandlerBase<returnT, void>
+class SSTHandler<returnT, void, classT, void, funcT> : public SSTHandlerBase<returnT, void>
 {
 private:
     classT* object;
@@ -1401,14 +1231,14 @@ public:
      * @param object - Pointer to Object upon which to call the handler
      * @param data - Additional argument to pass to handler
      */
-    explicit SSTHandler2(classT* const object) :
+    explicit SSTHandler(classT* const object) :
         SSTHandlerBase<returnT, void>(),
         object(object)
     {}
-    SSTHandler2() {}
+    SSTHandler() {}
 
-    SSTHandler2(const SSTHandler2&)            = delete;
-    SSTHandler2& operator=(const SSTHandler2&) = delete;
+    SSTHandler(const SSTHandler&)            = delete;
+    SSTHandler& operator=(const SSTHandler&) = delete;
 
     returnT operator_impl() override { return (object->*funcT)(); }
 
@@ -1418,7 +1248,7 @@ public:
         SST_SER(object);
     }
 
-    ImplementSerializable(SSTHandler2)
+    ImplementSerializable(SSTHandler)
 };
 
 } // namespace SST

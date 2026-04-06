@@ -54,10 +54,10 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     primaryComponentDoNotEndSim();
 
     // configure out links
-    N = configureLink("Nlink", new Event::Handler2<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    S = configureLink("Slink", new Event::Handler2<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    E = configureLink("Elink", new Event::Handler2<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    W = configureLink("Wlink", new Event::Handler2<coreTestComponent, &coreTestComponent::handleEvent>(this));
+    N = configureLink("Nlink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
+    S = configureLink("Slink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
+    E = configureLink("Elink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
+    W = configureLink("Wlink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
 
     countN = registerStatistic<int>("N");
     countS = registerStatistic<int>("S");
@@ -70,7 +70,7 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     assert(W);
 
     // set our clock
-    registerClock(clockFrequency, new Clock::Handler2<coreTestComponent, &coreTestComponent::clockTic>(this));
+    registerClock(clockFrequency, new Clock::Handler<coreTestComponent, &coreTestComponent::clockTic>(this));
 
     last_event_id = SST::Event::NO_ID;
 }

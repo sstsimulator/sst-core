@@ -52,10 +52,10 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
     primaryComponentDoNotEndSim();
 
     // configure out links
-    N = configureLink("Nlink", new Event::Handler2<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
-    S = configureLink("Slink", new Event::Handler2<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
-    E = configureLink("Elink", new Event::Handler2<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
-    W = configureLink("Wlink", new Event::Handler2<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
+    N = configureLink("Nlink", new Event::Handler<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
+    S = configureLink("Slink", new Event::Handler<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
+    E = configureLink("Elink", new Event::Handler<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
+    W = configureLink("Wlink", new Event::Handler<coreTestPerfComponent, &coreTestPerfComponent::handleEvent>(this));
 
     countN = registerStatistic<int>("N");
     countS = registerStatistic<int>("S");
@@ -68,7 +68,7 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
     assert(W);
 
     // set our clock
-    auto clockHandler = new Clock::Handler2<coreTestPerfComponent, &coreTestPerfComponent::clockTic>(this);
+    auto clockHandler = new Clock::Handler<coreTestPerfComponent, &coreTestPerfComponent::clockTic>(this);
     registerClock("1GHz", clockHandler);
 }
 

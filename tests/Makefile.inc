@@ -22,6 +22,7 @@ EXTRA_DIST += \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
     tests/testsuite_default_PortModule.py \
+    tests/testsuite_default_testingframework.py \
     tests/testsuite_testengine_testing.py \
     tests/test_Checkpoint.py \
     tests/test_Component.py \

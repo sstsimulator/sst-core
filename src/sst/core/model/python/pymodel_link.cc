@@ -192,11 +192,6 @@ static PyMethodDef linkMethods[] = { { "connect", linkConnect, METH_VARARGS, "Co
     { "setNoCut", linkSetNoCut, METH_NOARGS, "Specifies that this link should not be partitioned across" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_LinkType = {
     SST_PY_OBJ_HEAD "sst.Link", /* tp_name */
     sizeof(LinkPy_t),           /* tp_basicsize */
@@ -246,14 +241,8 @@ PyTypeObject PyModel_LinkType = {
     0,                          /* tp_version_tag */
     nullptr,                    /* tp_finalize */
     SST_TP_VECTORCALL           /* Python3.8+ */
-    SST_TP_PRINT_DEP            /* Python3.8 only */
     SST_TP_WATCHED              /* Python3.12+ */
     SST_TP_VERSIONS_USED        /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
 
 } /* extern C */

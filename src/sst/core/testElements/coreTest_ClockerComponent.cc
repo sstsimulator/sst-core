@@ -35,18 +35,18 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
 
     // set our Main Clock
     registerClock(
-        clock_frequency_str, new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::tick>(this));
+        clock_frequency_str, new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::tick>(this));
 
     // Set some other clocks
     // Second Clock (5ns)
     std::cout << "REGISTER CLOCK #2 at 5 ns" << std::endl;
     registerClock("5 ns",
-        new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
+        new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
 
     // Third Clock (15ns)
     std::cout << "REGISTER CLOCK #3 at 15 ns" << std::endl;
     Clock3Handler =
-        new Clock::Handler2<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
+        new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
     tc = registerClock("15 ns", Clock3Handler);
 }
 

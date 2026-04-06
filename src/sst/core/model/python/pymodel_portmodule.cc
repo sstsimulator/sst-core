@@ -124,7 +124,6 @@ portModAddParams(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(count);
 }
 
-#if PY_MAJOR_VERSION >= 3
 static PyObject*
 portModCompare(PyObject* obj0, PyObject* obj1, int op)
 {
@@ -154,13 +153,6 @@ portModCompare(PyObject* obj0, PyObject* obj1, int op)
     Py_INCREF(result);
     return result;
 }
-#else
-static int
-portModCompare(PyObject* obj0, PyObject* obj1)
-{
-    return ((PyPortModule*)obj0)->compare(((PyPortModule)obj1));
-}
-#endif
 
 /**
  * @brief portModEnableStatistic. Enables a specific statistic on the port module.
@@ -319,11 +311,6 @@ static PyMethodDef portModuleMethods[] = { { "addParam", portModAddParam, METH_V
     { "addSharedParamSet", portModAddSharedParamSet, METH_O, "Add shared parameter set to the PortModule" },
     { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 PyTypeObject PyModel_PortModuleType = {
     SST_PY_OBJ_HEAD "sst.PortModule", /* tp_name */
     sizeof(PortModulePy_t),           /* tp_basicsize */
@@ -373,12 +360,6 @@ PyTypeObject PyModel_PortModuleType = {
     0,                                /* tp_version_tag */
     nullptr,                          /* tp_finalize */
     SST_TP_VECTORCALL                 /* Python3.8+ */
-    SST_TP_PRINT_DEP                  /* Python3.8 only */
     SST_TP_WATCHED                    /* Python3.12+ only */
     SST_TP_VERSIONS_USED              /* Python3.13+ only */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif

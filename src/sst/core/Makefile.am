@@ -91,7 +91,6 @@ nobase_dist_sst_HEADERS = \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
 	serialization/serializable.h \
-	serialization/serialize_serializable.h \
 	serialization/serializable_base.h \
 	serialization/serialize.h \
 	serialization/serialize_impl_fwd.h \

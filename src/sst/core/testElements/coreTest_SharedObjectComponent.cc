@@ -200,7 +200,7 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     primaryComponentDoNotEndSim();
 
     registerClock(
-        "1GHz", new Clock::Handler2<coreTestSharedObjectsComponent, &coreTestSharedObjectsComponent::tick>(this));
+        "1GHz", new Clock::Handler<coreTestSharedObjectsComponent, &coreTestSharedObjectsComponent::tick>(this));
 }
 
 void

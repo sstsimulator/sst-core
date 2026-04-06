@@ -74,6 +74,7 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject* self, PyObject*
 
 static PyObject* setCallPythonFinalize(PyObject* self, PyObject* args);
 
+static void      mlDealloc(PyObject* self);
 static PyObject* mlFindModule(PyObject* self, PyObject* args);
 static PyObject* mlCreateModule(PyObject* self, PyObject* args);
 static PyObject* mlExecModule(PyObject* self, PyObject* args);
@@ -82,16 +83,11 @@ static PyMethodDef mlMethods[] = { { "find_module", mlFindModule, METH_VARARGS, 
     { "create_module", mlCreateModule, METH_VARARGS, "Loads an SST Element Module" },
     { "exec_module", mlExecModule, METH_VARARGS, "Loads an SST Element Module" }, { nullptr, nullptr, 0, nullptr } };
 
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-DISABLE_WARN_DEPRECATED_DECLARATION
-#endif
-#endif
 static PyTypeObject ModuleLoaderType = {
     SST_PY_OBJ_HEAD "ModuleLoader", /* tp_name */
     sizeof(ModuleLoaderPy_t),       /* tp_basicsize */
     0,                              /* tp_itemsize */
-    nullptr,                        /* tp_dealloc */
+    mlDealloc,                      /* tp_dealloc */
     0,                              /* tp_vectorcall_offset */
     nullptr,                        /* tp_getattr */
     nullptr,                        /* tp_setattr */
@@ -136,15 +132,15 @@ static PyTypeObject ModuleLoaderType = {
     0,                              /* tp_version_tag */
     nullptr,                        /* tp_finalize */
     SST_TP_VECTORCALL               /* Python3.8+ */
-    SST_TP_PRINT_DEP                /* Python3.8 only */
     SST_TP_WATCHED                  /* Python3.12+ */
     SST_TP_VERSIONS_USED            /* Python3.13+ */
 };
-#if PY_MAJOR_VERSION == 3
-#if PY_MINOR_VERSION == 8
-REENABLE_WARNING
-#endif
-#endif
+
+static void
+mlDealloc(PyObject* self)
+{
+    Py_TYPE(self)->tp_free(self);
+}
 
 // I hate having to do this through a global variable
 // but there's really no other way to communicate errors from the importer
@@ -187,8 +183,7 @@ mlFindModule(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyMethodDef emptyModMethods[] = { { nullptr, nullptr, 0, nullptr } };
-#if PY_MAJOR_VERSION >= 3
+static PyMethodDef        emptyModMethods[] = { { nullptr, nullptr, 0, nullptr } };
 /* This defines an empty module used if modName is not found during mlLoadModule() */
 static struct PyModuleDef emptyModDef {
     PyModuleDef_HEAD_INIT, /* m_base */
@@ -201,12 +196,13 @@ static struct PyModuleDef emptyModDef {
     nullptr,               /* m_clear */
     nullptr,               /* m_free */
 };
-#endif
 
 static PyObject*
-mlExecModule(PyObject* UNUSED(self), PyObject* args)
+mlExecModule(PyObject* UNUSED(self), PyObject* UNUSED(args))
 {
-    return args;
+    // exec_module must return None per the import protocol (PEP 451).
+    // All module loading is done in create_module via PyImport_ExecCodeModule.
+    Py_RETURN_NONE;
 }
 
 static PyObject*
@@ -223,24 +219,23 @@ mlCreateModule(PyObject* UNUSED(self), PyObject* args)
     // error there.
     if ( !PyArg_ParseTuple(args, "O", &spec) ) return nullptr;
 
-    PyObject*   nameobj;
-    const char* name;
-
-    nameobj = PyObject_GetAttrString(spec, "name");
+    PyObject* nameobj = PyObject_GetAttrString(spec, "name");
     if ( nameobj == nullptr ) {
         return nullptr;
     }
-    name = SST_ConvertToCppString(nameobj);
 
-    if ( strncmp(name, "sst.", 4) ) {
-        // We know how to handle only sst.<module>
-        return nullptr; // ERROR!
+    // SST_ConvertToCppString (PyUnicode_AsUTF8) returns a pointer into
+    // nameobj's internal buffer, so copy before decref.
+    std::string nameStr(SST_ConvertToCppString(nameobj));
+    Py_DECREF(nameobj);
+
+    if ( nameStr.compare(0, 4, "sst.") != 0 ) {
+        Py_RETURN_NONE;
     }
 
-    const char* modName = name + 4; // sst.<modName>
+    std::string modName = nameStr.substr(4);
 
-    // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    // fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName.c_str(), nameStr.c_str());
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject*               mod   = nullptr;
     if ( !pymod ) {
@@ -1054,7 +1049,6 @@ static PyMethodDef sstModuleMethods[] = {
     { nullptr, nullptr, 0, nullptr }
 };
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef sstModuleDef {
     PyModuleDef_HEAD_INIT, /* m_base */
     "sst",                 /* m_name */
@@ -1066,7 +1060,6 @@ static struct PyModuleDef sstModuleDef {
     nullptr,               /* m_clear */
     nullptr,               /* m_free */
 };
-#endif
 
 static PyObject*
 PyInit_sst()
@@ -1122,7 +1115,7 @@ void
 SSTPythonModelDefinition::initModel(
     const std::string& script_file, int verbosity, Config* config, int argc, char** argv)
 {
-    output = new Output("SSTPythonModel: ", verbosity, 0, SST::Output::STDOUT);
+    output = new Output("#@x SSTPythonModel: ", verbosity, 0, SST::Output::STDOUT);
 
     if ( gModel ) {
         output->fatal(CALL_INFO, 1, "A Python Config Model is already in progress.\n");
@@ -1145,7 +1138,7 @@ SSTPythonModelDefinition::initModel(
     const std::string file_name_only = script_file.substr(std::max(0, substr_index));
     local_script_name                = file_name_only.substr(0, file_name_only.size() - 3);
 
-    output->verbose(CALL_INFO, 2, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
+    output->verbose(CALL_INFO, 1, 0, "SST loading a Python model from script: %s / [%s]\n", script_file.c_str(),
         local_script_name.c_str());
 
 
@@ -1187,13 +1180,18 @@ SSTPythonModelDefinition::initModel(
                        "import sst\n"
                        "import importlib\n"
                        "import importlib.machinery\n"
-                       "spec = importlib.machinery.ModuleSpec(\"sst loader\", sst.ModuleLoader())\n"
                        "class SSTModuleFinder:\n"
+                       "  _loader = sst.ModuleLoader()\n"
                        "  def find_spec(self, fullname, path, target=None):\n"
-                       "    loader = sst.ModuleLoader()\n"
-                       "    found_loader = loader.find_module(fullname)\n"
-                       "    if found_loader:  return importlib.machinery.ModuleSpec(fullname, found_loader)\n"
-                       "    else: return None\n"
+                       "    if not fullname.startswith('sst.'):\n"
+                       "      return None\n"
+                       "    try:\n"
+                       "      found = self._loader.find_module(fullname)\n"
+                       "      if found:\n"
+                       "        return importlib.machinery.ModuleSpec(fullname, found)\n"
+                       "    except Exception:\n"
+                       "      pass\n"
+                       "    return None\n"
                        "sys.meta_path.append(SSTModuleFinder())\n");
 
 // https://github.com/sstsimulator/sst-core/issues/1531
@@ -1204,8 +1202,7 @@ SSTPythonModelDefinition::initModel(
 #endif
 
 
-    // Check to see if we need to import the coverage module (only works in Python >=3.9
-#if PY_MINOR_VERSION >= 9
+    // Check to see if we need to import the coverage module
     if ( config->enable_python_coverage() ) {
         enablePythonCoverage = true;
     }
@@ -1224,7 +1221,6 @@ SSTPythonModelDefinition::initModel(
             }
         }
     }
-#endif
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(
@@ -1321,16 +1317,24 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition()
         Py_Finalize();
     }
     else {
+        // Python 3.14 rewrote the cycle GC to be incremental (two generations
+        // instead of three). Calling PyGC_Collect() during shutdown can trigger
+        // a segfault because type_clear may have already cleared type MROs and
+        // internal references, causing the collector to dereference freed memory
+        // when traversing objects. See CPython issues #130380, #133932, #135115.
+        // Py_Finalize() already calls PyGC_Collect() internally, so the explicit
+        // call here is only needed as a best-effort cleanup when we skip finalize.
+#if PY_MINOR_VERSION < 14
         PyGC_Collect();
+#endif
     }
 }
 
 ConfigGraph*
 SSTPythonModelDefinition::createConfigGraph()
 {
-    output->verbose(CALL_INFO, 1, 0, "Creating config graph for SST using Python model...\n");
+    output->verbose(CALL_INFO, 2, 0, "Creating config graph for SST using Python model...\n");
 
-#if PY_MINOR_VERSION >= 9
     if ( enablePythonCoverage ) {
         // Create coverage object with a name unlikely to be used in the user script
         int startcoverageReturn = PyRun_SimpleString("import coverage\n"
@@ -1346,7 +1350,6 @@ SSTPythonModelDefinition::createConfigGraph()
             output->fatal(CALL_INFO, 1, "Execution of starting test coverage failed\n%s", loadErrors.c_str());
         }
     }
-#endif
 
     // Open the input script
     FILE* fp = fopen(scriptName.c_str(), "r");
@@ -1365,14 +1368,13 @@ SSTPythonModelDefinition::createConfigGraph()
         output->fatal(CALL_INFO, 1, "Execution of model construction function failed\n%s", loadErrors.c_str());
     }
 
-    output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
+    output->verbose(CALL_INFO, 2, 0, "Construction of config graph with Python is complete.\n");
 
     if ( nullptr != PyErr_Occurred() ) {
         PyErr_Print();
         output->fatal(CALL_INFO, 1, "Error occurred handling the creation of the component graph in Python.\n");
     }
 
-#if PY_MINOR_VERSION >= 9
     // If coverage was enabled, stop the module and output the results
     if ( enablePythonCoverage ) {
         PyErr_Clear();
@@ -1389,7 +1391,7 @@ SSTPythonModelDefinition::createConfigGraph()
             output->fatal(CALL_INFO, 1, "Execution of stopping coverage failed\n%s", loadErrors.c_str());
         }
     }
-#endif
+
     return graph;
 }
 

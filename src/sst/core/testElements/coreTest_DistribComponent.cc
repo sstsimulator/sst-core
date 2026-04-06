@@ -111,7 +111,7 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
     }
 
     // set our clock
-    registerClock("1GHz", new Clock::Handler2<coreTestDistribComponent, &coreTestDistribComponent::tick>(this));
+    registerClock("1GHz", new Clock::Handler<coreTestDistribComponent, &coreTestDistribComponent::tick>(this));
 }
 
 coreTestDistribComponent::coreTestDistribComponent() :

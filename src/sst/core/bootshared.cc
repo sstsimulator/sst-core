@@ -75,16 +75,16 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
         snprintf(real_binary_path, PATH_MAX, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
     }
 
-    if ( verbose ) {
+    if ( verbose >= 5 ) {
         char** check_env = environ;
         while ( nullptr != check_env && nullptr != check_env[0] ) {
-            printf("SST Environment Variable: %s\n", check_env[0]);
+            printf("# SST Environment Variable: %s\n", check_env[0]);
             check_env++;
         }
     }
 
-    if ( verbose ) {
-        printf("Launching SST executable (%s)...\n", real_binary_path);
+    if ( verbose >= 5 ) {
+        printf("# Launching SST executable (%s)...\n", real_binary_path);
     }
 
     // Flush standard out in case binary crashes

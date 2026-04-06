@@ -12,11 +12,17 @@
 #ifndef SST_CORE_CPU_TIMER_H
 #define SST_CORE_CPU_TIMER_H
 
+#include <string>
 #include <sys/time.h>
 
 /**
  * @return Current CPU time using the time of day. Timezone information is not filled.
  */
 double sst_get_cpu_time();
+
+/**
+   Returns a string with the current time in HH:MM:SS format
+*/
+std::string sst_get_current_time();
 
 #endif // SST_CORE_CPU_TIMER_H

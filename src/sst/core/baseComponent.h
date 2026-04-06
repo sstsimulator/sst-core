@@ -242,9 +242,6 @@ public:
 
        @return Current time as a cycle count based on the provided timebase
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'getCurrentSimTime(TimeConverter tc)' "
-                 "(i.e., no pointer) instead.")]]
-    SimTime_t getCurrentSimTime(TimeConverter* base) const;
     SimTime_t getCurrentSimTime(TimeConverter base) const;
 
     /**
@@ -417,45 +414,11 @@ protected:
 
        @param name Port Name on which the link to configure is attached.
 
-       @param timebase Timebase of the link.  If nullptr is passed in, then it will use the Component
-       defaultTimeBase
-
-       @param handler Optional Handler to be called when an Event is received
-
-       @return A pointer to the configured link, or nullptr if an error occurred.
-     */
-
-    [[deprecated(
-        "Use of shared TimeConverter objects is deprecated. Use 'configureLink(const std::string& name, TimeConverter "
-        "timebase, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    Link* configureLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler = nullptr);
-
-    /**
-       Configure a Link
-
-       @param name Port Name on which the link to configure is attached.
-
        @param handler Optional Handler to be called when an Event is received
 
        @return A pointer to the configured link, or nullptr if an error occurred.
      */
     Link* configureLink(const std::string& name, Event::HandlerBase* handler = nullptr);
-
-    /**
-       Configure a SelfLink  (Loopback link)
-
-       @param name Name of the self-link port
-
-       @param timebase Timebase of the link.  If nullptr is passed in, then it will use the Component
-       defaultTimeBase
-
-       @param handler Optional Handler to be called when an Event is received
-
-       @return A pointer to the configured link, or nullptr if an error occurred.
-    */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'configureSelfLink(const std::string& name, "
-                 "TimeConverter timebase, EventHandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    Link* configureSelfLink(const std::string& name, TimeConverter* timebase, Event::HandlerBase* handler = nullptr);
 
     /**
        Configure a SelfLink  (Loopback link)
@@ -500,11 +463,7 @@ protected:
 
        @return The TimeConverter object representing the clock frequency
     */
-    TimeConverter* registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all = true);
-    [[deprecated(
-        "Use of shared TimeConverter objects is deprecated. Use 'registerClock(TimeConverter tc, Clock::HandlerBase* "
-        "handler, bool reg_all)' (i.e., no TimeConverter pointer) instead.")]]
-    TimeConverter* registerClock(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all = true);
+    TimeConverter registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all = true);
 
     /**
        Removes a clock handler from the component
@@ -518,9 +477,6 @@ protected:
        @param handler Handler to remove from the list
     */
     void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler);
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'unregisterClock(TimeConverter tc, "
-                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler);
 
     /**
        Reactivates an existing Clock and Handler
@@ -533,9 +489,6 @@ protected:
        may be greater than the value returned after simulation end.
     */
     Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'reregisterClock(TimeConverter freq, "
-                 "Clock::HandlerBase* handler)' (i.e., no TimeConverter pointer) instead.")]]
-    Cycle_t reregisterClock(TimeConverter* freq, Clock::HandlerBase* handler);
 
     /**
        Returns the next Cycle that the TimeConverter would fire. If called prior to the simulation run loop, next Cycle
@@ -548,10 +501,6 @@ protected:
        @return Cycle count that will be passed into the next call to this clock's handler functions
     */
     Cycle_t getNextClockCycle(TimeConverter freq);
-    [[deprecated(
-        "Use of shared TimeConverter objects is deprecated. Use 'getNextClockCycle(TimeConverter freq)' (i.e., "
-        "no TimeConverter pointer) instead.")]]
-    Cycle_t getNextClockCycle(TimeConverter* freq);
 
     /**
        Registers a default timebase for the component and optionally
@@ -564,10 +513,10 @@ protected:
        @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
     */
-    TimeConverter* registerTimeBase(const std::string& base, bool reg_all = true);
+    TimeConverter registerTimeBase(const std::string& base, bool reg_all = true);
 
-    TimeConverter* getTimeConverter(const std::string& base) const;
-    TimeConverter* getTimeConverter(const UnitAlgebra& base) const;
+    TimeConverter getTimeConverter(const std::string& base) const;
+    TimeConverter getTimeConverter(const UnitAlgebra& base) const;
 
     bool isStatisticShared(const std::string& stat_name, bool include_me = false)
     {
@@ -606,7 +555,7 @@ private:
        @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
     */
-    void registerClock_impl(TimeConverter* tc, Clock::HandlerBase* handler, bool reg_all);
+    void registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all);
 
     /**
         Handles default timebase setup
@@ -1131,22 +1080,10 @@ protected:
     /**
        Manually set the default defaultTimeBase
     */
-    [[deprecated("Use of shared TimeConverter objects is deprecated. Use 'setDefaultTimeBase(TimeConverter tc)' "
-                 "(i.e., no TimeConverter pointer) instead.")]]
-    void setDefaultTimeBase(TimeConverter* tc)
-    {
-        my_info_->defaultTimeBase = tc;
-    }
-
-    /**
-       Manually set the default defaultTimeBase
-    */
     void setDefaultTimeBase(TimeConverter tc) { my_info_->defaultTimeBase = tc; }
 
-    // Can change this back to inline once we move completely away
-    // from TimeConverter*
-    TimeConverter*       getDefaultTimeBase();       // { return my_info_->defaultTimeBase; }
-    const TimeConverter* getDefaultTimeBase() const; // { return my_info_->defaultTimeBase; }
+    TimeConverter       getDefaultTimeBase() { return my_info_->defaultTimeBase; }
+    const TimeConverter getDefaultTimeBase() const { return my_info_->defaultTimeBase; }
 
     bool doesSubComponentExist(const std::string& type);
 

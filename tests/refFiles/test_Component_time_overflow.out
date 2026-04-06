@@ -1,4 +1,4 @@
-FATAL:  SST Core: ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst --help timebase)
+FATAL: # SST Core: ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst --help timebase)
 SST Fatal Backtrace Information:
     0 : 0   sstsim.x                            0x000000010024ea3f _ZNK3SST6Output5fatalEjPKcS2_iS2_z + 879
     1 : 1   sstsim.x                            0x0000000100269b82 _ZN3SST15Simulation_impl3runEv + 866

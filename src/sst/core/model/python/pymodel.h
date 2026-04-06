@@ -72,9 +72,7 @@ protected:
     ComponentId_t                        nextComponentId;
     double                               start_time;
     bool                                 callPythonFinalize;
-#if PY_MINOR_VERSION >= 9
-    bool enablePythonCoverage = false;
-#endif
+    bool                                 enablePythonCoverage = false;
 
 public: /* Public, but private.  Called only from Python functions */
     Config* getConfig() const { return config; }

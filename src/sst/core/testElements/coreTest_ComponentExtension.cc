@@ -32,10 +32,10 @@ coreTestComponentExt2::coreTestComponentExt2(ComponentId_t id, int neighbor) :
     neighbor_ = neighbor;
 
     // configure out links
-    N_ = configureLink("Nlink", new Event::Handler2<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
-    S_ = configureLink("Slink", new Event::Handler2<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
-    E_ = configureLink("Elink", new Event::Handler2<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
-    W_ = configureLink("Wlink", new Event::Handler2<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
+    N_ = configureLink("Nlink", new Event::Handler<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
+    S_ = configureLink("Slink", new Event::Handler<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
+    E_ = configureLink("Elink", new Event::Handler<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
+    W_ = configureLink("Wlink", new Event::Handler<coreTestComponentExt2, &coreTestComponentExt2::handleEvent>(this));
 
     count_N_ = registerStatistic<int>("N");
     count_S_ = registerStatistic<int>("S");
@@ -127,7 +127,7 @@ coreTestComponentExt::coreTestComponentExt(
     work_per_cycle_ = work_per_cycle;
     comm_size_      = comm_size;
 
-    registerClock(clk, new Clock::Handler2<coreTestComponentExt, &coreTestComponentExt::clockTic>(this));
+    registerClock(clk, new Clock::Handler<coreTestComponentExt, &coreTestComponentExt::clockTic>(this));
 
     int neighbor = generateNext() % 4;
 

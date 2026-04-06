@@ -1928,9 +1928,9 @@ SimpleDebugger::cmd_run(std::string& UNUSED(cmd_str))
 {
     if ( tokens.size() == 2 ) {
         try {
-            TimeConverter* tc  = getTimeConverter(tokens[1]);
-            std::string    msg = format_string("Ran clock for %" PRI_SIMTIME " sim cycles", tc->getFactor());
-            schedule_interactive(tc->getFactor(), msg);
+            TimeConverter tc  = getTimeConverter(tokens[1]);
+            std::string   msg = format_string("Ran clock for %" PRI_SIMTIME " sim cycles", tc.getFactor());
+            schedule_interactive(tc.getFactor(), msg);
         }
         catch ( const std::exception& e ) {
             std::cout << "Unknown time in call to run: " << tokens[1] << std::endl;

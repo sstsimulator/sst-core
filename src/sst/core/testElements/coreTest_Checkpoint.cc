@@ -43,11 +43,11 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
     primaryComponentDoNotEndSim();
 
     link_left =
-        configureLink("port_left", new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+        configureLink("port_left", new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
     sst_assert(link_left, CALL_INFO, -1, "Could not configure left link");
 
     link_right =
-        configureLink("port_right", new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+        configureLink("port_right", new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
     sst_assert(link_right, CALL_INFO, -1, "Could not configure right link");
 
     test_string = params.find<std::string>("test_string", "");
@@ -56,7 +56,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
 
     // Need to keep a pointer to the clock handler so we can
     // reregister clock
-    clock_handler = new Clock::Handler2<coreTestCheckpoint, &coreTestCheckpoint::handleClock>(this);
+    clock_handler = new Clock::Handler<coreTestCheckpoint, &coreTestCheckpoint::handleClock>(this);
 
     // TimeConverter* core_tc = registerClock(freq, clock_handler);
     clock_tc         = registerClock(freq, clock_handler);
@@ -67,7 +67,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
     duty_cycle_count = duty_cycle;
 
     self_link = configureSelfLink(
-        "clock_restart", clock_tc, new Event::Handler2<coreTestCheckpoint, &coreTestCheckpoint::restartClock>(this));
+        "clock_restart", clock_tc, new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::restartClock>(this));
 
     // Output
     output = new Output(params.find<std::string>("output_prefix", ""), params.find<uint32_t>("output_verbose", 0), 0,

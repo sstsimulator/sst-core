@@ -192,34 +192,6 @@ public:
     using HandlerBase = SSTHandlerBase<bool, int>;
 
     /**
-       Used to create handlers to notify the endpoint when the
-       SimpleNetwork sends or recieves a packet..  The callback
-       function is expected to be in the form of:
-
-         bool func(int vn)
-
-       In which case, the class is created with:
-
-         new SimpleNetwork::Handler<classname>(this, &classname::function_name)
-
-       Or, to add static data, the callback function is:
-
-         bool func(int vn, dataT data)
-
-       and the class is created with:
-
-         new SimpleNetwork::Handler<classname, dataT>(this, &classname::function_name, data)
-
-       In both cases, the boolean that's returned indicates whether
-       the handler should be kept in the list or not.  On return
-       of true, the handler will be kept.  On return of false, the
-       handler will be removed from the clock list.
-    */
-    template <typename classT, typename dataT = void>
-    using Handler [[deprecated("Handler has been deprecated. Please use Handler2 as it supports checkpointing.")]] =
-        SSTHandler<bool, int, classT, dataT>;
-
-    /**
        Used to create checkpointable handlers to notify the endpoint
        when the SimpleNetwork sends or recieves a packet..  The
        callback function is expected to be in the form of:
@@ -228,7 +200,7 @@ public:
 
        In which case, the class is created with:
 
-         new SimpleNetwork::Handler2<classname, &classname::function_name>(this)
+         new SimpleNetwork::Handler<classname, &classname::function_name>(this)
 
        Or, to add static data, the callback function is:
 
@@ -244,7 +216,36 @@ public:
        handler will be removed from the clock list.
     */
     template <typename classT, auto funcT, typename dataT = void>
-    using Handler2 = SSTHandler2<bool, int, classT, dataT, funcT>;
+    using Handler = SSTHandler<bool, int, classT, dataT, funcT>;
+
+    /**
+       Used to create checkpointable handlers to notify the endpoint
+       when the SimpleNetwork sends or recieves a packet..  The
+       callback function is expected to be in the form of:
+
+         bool func(int vn)
+
+       In which case, the class is created with:
+
+         new SimpleNetwork::Handler<classname, &classname::function_name>(this)
+
+       Or, to add static data, the callback function is:
+
+         bool func(int vn, dataT data)
+
+       and the class is created with:
+
+         new SimpleNetwork::Handler<classname, &classname::function_name, dataT>(this, data)
+
+       In both cases, the boolean that's returned indicates whether
+       the handler should be kept in the list or not.  On return
+       of true, the handler will be kept.  On return of false, the
+       handler will be removed from the clock list.
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 [[deprecated(
+        "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
+    = SSTHandler<bool, int, classT, dataT, funcT>;
 
 
 public:

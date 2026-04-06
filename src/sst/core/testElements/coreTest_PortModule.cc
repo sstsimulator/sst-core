@@ -137,10 +137,10 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
     // Set up ports
     Event::HandlerBase* handler;
     if ( last ) {
-        handler = new Event::Handler2<coreTestPortModuleComponent, &coreTestPortModuleComponent::handleEventLast>(this);
+        handler = new Event::Handler<coreTestPortModuleComponent, &coreTestPortModuleComponent::handleEventLast>(this);
     }
     else {
-        handler = new Event::Handler2<coreTestPortModuleComponent, &coreTestPortModuleComponent::handleEvent>(this);
+        handler = new Event::Handler<coreTestPortModuleComponent, &coreTestPortModuleComponent::handleEvent>(this);
     }
 
     if ( use_subcomponent_ ) {
@@ -166,7 +166,7 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
     // If we are first, need to add a clock
     if ( first ) {
         registerClock(
-            "10MHz", new Clock::Handler2<coreTestPortModuleComponent, &coreTestPortModuleComponent::tick>(this));
+            "10MHz", new Clock::Handler<coreTestPortModuleComponent, &coreTestPortModuleComponent::tick>(this));
     }
 
     if ( first || last ) {
@@ -248,6 +248,6 @@ PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) :
     SubComponent(id)
 {
     // Need to connect to the right and left ports
-    left_  = configureLink("left", new Event::Handler2<PortSubComponent, &PortSubComponent::dummy_handler>(this));
+    left_  = configureLink("left", new Event::Handler<PortSubComponent, &PortSubComponent::dummy_handler>(this));
     right_ = configureLink("right", "1ns");
 }

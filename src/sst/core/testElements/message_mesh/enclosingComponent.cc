@@ -75,7 +75,7 @@ EnclosingComponent::setup()
     // function
     for ( size_t i = 0; i < ports_.size(); ++i ) {
         ports_[i]->setNotifyOnReceive(
-            new PortInterface::Handler2<EnclosingComponent, &EnclosingComponent::handleEvent, int>(this, i));
+            new PortInterface::Handler<EnclosingComponent, &EnclosingComponent::handleEvent, int>(this, i));
     }
     route_->sendInitialEvents(mod_);
 }
@@ -131,7 +131,7 @@ MessagePort::MessagePort(ComponentId_t id, Params& UNUSED(params)) :
 {
     std::string name = "port0";
     while ( isPortConnected(name) ) {
-        links_.push_back(configureLink(name, new Event::Handler2<MessagePort, &MessagePort::handleEvent>(this)));
+        links_.push_back(configureLink(name, new Event::Handler<MessagePort, &MessagePort::handleEvent>(this)));
         name = "port" + std::to_string(links_.size());
     }
 }
