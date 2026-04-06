@@ -1940,9 +1940,9 @@ SimpleDebugger::cmd_run(std::string& UNUSED(cmd_str))
     else if ( tokens.size() == 3 ) {
         std::string time = tokens[1] + tokens[2];
         try {
-            TimeConverter* tc  = getTimeConverter(time);
-            std::string    msg = format_string("Ran clock for %" PRI_SIMTIME " sim cycles", tc->getFactor());
-            schedule_interactive(tc->getFactor(), msg);
+            TimeConverter  tc  = getTimeConverter(time);
+            std::string    msg = format_string("Ran clock for %" PRI_SIMTIME " sim cycles", tc.getFactor());
+            schedule_interactive(tc.getFactor(), msg);
         }
         catch ( std::exception& e ) {
             std::cout << "Unknown time in call to run: " << time << std::endl;
