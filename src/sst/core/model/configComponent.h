@@ -191,28 +191,7 @@ public:
     */
     void replaceLinkId(LinkId_t old_id, LinkId_t new_id);
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override
-    {
-        SST_SER(id);
-        SST_SER(name);
-        SST_SER(slot_num);
-        SST_SER(type);
-        SST_SER(weight);
-        SST_SER(rank.rank);
-        SST_SER(rank.thread);
-        SST_SER(links);
-        SST_SER(params);
-        SST_SER(statLoadLevel);
-        SST_SER(port_modules);
-        SST_SER(enabledStatNames);
-        SST_SER(enabledAllStats);
-        SST_SER(statistics_);
-        SST_SER(allStatConfig);
-        SST_SER(subComponents);
-        SST_SER(coords);
-        SST_SER(nextSubID);
-        SST_SER(next_stat_id);
-    }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
 
     ImplementSerializable(SST::ConfigComponent)
 

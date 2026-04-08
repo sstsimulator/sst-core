@@ -1144,7 +1144,8 @@ Simulation_impl::run()
             "ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most "
             "likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by "
             "having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst "
-            "--help timebase)\n");
+            "--help timebase)\nLast activity executed: %s\n",
+            current_activity->toString().c_str());
     }
 
     /* We shouldn't need to do this, but to be safe... */
@@ -1721,6 +1722,42 @@ Simulation_impl::getComponentObjectMap()
 
 
 void
+Simulation_impl::writeCheckpointConfigGraph(ConfigGraph* graph)
+{
+    if ( checkpoint_configgraph_.empty() ) return;
+
+    // Turn on checkpoint mode serialization for ConfigGraph
+    ConfigGraph::serialize_for_checkpoint = true;
+
+    SST::Core::Serialization::serializer ser;
+
+    size_t            size;
+    std::vector<char> buffer;
+
+    // We will serialize as a non-pointer so we can deserialize "in-place" on restart
+    ser.start_sizing();
+    SST_SER(*graph);
+
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
+    SST_SER(*graph);
+
+    std::ofstream fs =
+        filesystem.ofstream(checkpoint_directory_ + "/" + checkpoint_configgraph_, std::ios::out | std::ios::binary);
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+    fs.close();
+
+    // Turn off checkpoint mode serialization for ConfigGraph
+    ConfigGraph::serialize_for_checkpoint = false;
+}
+
+
+void
 Simulation_impl::scheduleCheckpoint()
 {
     checkpoint_action_->setCheckpoint();
@@ -1883,7 +1920,9 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 #undef WR
 
     fs_reg << "** (globals): " << globals_filename << std::endl;
+    if ( !checkpoint_configgraph_.empty() ) fs_reg << "** (configgraph): ../" << checkpoint_configgraph_ << std::endl;
 
+    fs_reg << "** (start component registry):" << std::endl;
     fs_reg.close();
 }
 
@@ -1912,9 +1951,8 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
 void
 Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 {
-    std::ofstream fs     = filesystem.ofstream(checkpoint_filename, std::ios::out | std::ios::binary);
+    std::ofstream fs = filesystem.ofstream(checkpoint_filename, std::ios::out | std::ios::binary);
     // TODO: Add error checking for file open
-    uint64_t      offset = 0;
 
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
@@ -1942,11 +1980,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(&buffer[0], size);
-    offset += (sizeof(size) + size);
 
     size = compInfoMap.size();
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    offset += size;
 
     // Clear the offsets vector to start this round
     component_blob_offsets_.clear();
@@ -1962,10 +1998,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         ser.start_packing(&buffer[0], size);
         SST_SER(compinfo);
 
-        component_blob_offsets_.emplace_back(compinfo->id_, offset);
+        component_blob_offsets_.emplace_back(compinfo->id_, fs.tellp());
         fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
         fs.write(&buffer[0], size);
-        offset += (sizeof(size) + size);
     }
 
     fs.close();
@@ -2043,46 +2078,96 @@ Simulation_impl::restart(ConfigGraph* graph)
     // have the same parallelism or we would have errored before getting here.  The variable is static, but all threads
     // will set it since they will all set it to the same thing.  This will avoid the need for a barrier while ensuring
     // that all threads will see the proper value.
-    if ( !serial_restart_ && !graph->cpt_remap_partitions ) {
+    if ( !serial_restart_ && !graph->cpt_remap_partitions && !graph->cpt_repartition ) {
         Link::is_restart_same_parallelism = true;
     }
 
-    // Check to see if we are doing a remapping of the partitions (i.e. restart run has same total number of partitions,
-    // but different rank/thread values)
-    uint32_t effective_rank   = my_rank.rank;
-    uint32_t effective_thread = my_rank.thread;
-    if ( graph->cpt_remap_partitions ) {
-        // Need to generate an effective rank and thread as we are remapping partitions because we have the same total
-        // number, but not the same exact ranks and threads.
-        uint32_t index   = (my_rank.rank * num_ranks.thread) + my_rank.thread;
-        effective_rank   = index / graph->cpt_ranks.thread;
-        effective_thread = index % graph->cpt_ranks.thread;
-    }
+    if ( !graph->cpt_repartition ) {
+        // Check to see if we are doing a remapping of the partitions (i.e. restart run has same total number of
+        // partitions, but different rank/thread values)
+        uint32_t effective_rank   = my_rank.rank;
+        uint32_t effective_thread = my_rank.thread;
+        if ( graph->cpt_remap_partitions ) {
+            // Need to generate an effective rank and thread as we are remapping partitions because we have the same
+            // total number, but not the same exact ranks and threads.
+            uint32_t index   = (my_rank.rank * num_ranks.thread) + my_rank.thread;
+            effective_rank   = index / graph->cpt_ranks.thread;
+            effective_thread = index % graph->cpt_ranks.thread;
+        }
 
-    // Need to do this in the same order as the registry file so we
-    // don't have to keep looking from the beginning
-    for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
-        for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
-            if ( !serial_restart_ && (effective_rank != r || effective_thread != t) ) continue;
-            search_str = "** (";
-            search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
-            while ( std::getline(fs, line) ) {
-                size_t pos = line.find(search_str);
-                if ( pos == 0 ) {
-                    // Get the file name
-                    blob_filenames.push_back(checkpoint_directory + "/" + line.substr(search_str.length()));
-                    break;
+        // Need to do this in the same order as the registry file so we don't have to keep looking from the beginning
+        for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
+            for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
+                if ( !serial_restart_ && (effective_rank != r || effective_thread != t) ) continue;
+                search_str = "** (";
+                search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
+                while ( std::getline(fs, line) ) {
+                    size_t pos = line.find(search_str);
+                    if ( pos == 0 ) {
+                        // Get the file name
+                        blob_filenames.push_back(checkpoint_directory + "/" + line.substr(search_str.length()));
+                        break;
+                    }
                 }
             }
         }
     }
 
-
     fs.close();
 
     ser.enable_pointer_tracking();
 
-    if ( blob_filenames.size() == 1 ) {
+    if ( blob_filenames.size() == 0 ) {
+        // This is a repartitioned restart. We can't just open a single file, we need to find all the components
+        // allocated to this partition regardless of where they are
+        interThreadMinLatency = num_ranks.thread != 1 ? 0 : bit_util::type_max<SimTime_t>;
+        minPart               = num_ranks.rank != 1 ? 0 : bit_util::type_max<SimTime_t>;
+        independent           = false;
+
+        // Set up the syncManager
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+        // Look at simulation.cc line 365 on setting up profile tools
+
+        completeBarrier.wait();
+
+        /* Initial fix up of stat engine, the rest is after components re-register statistics */
+        stat_engine.restart();
+
+
+        // Need to get the information about each component in my partition
+        std::vector<std::pair<std::string, uint64_t>> my_comps;
+        for ( auto* x : graph->comps_ ) {
+            if ( x->rank.thread == my_rank.thread ) {
+                my_comps.emplace_back(x->type, x->next_stat_id);
+            }
+        }
+
+        std::sort(my_comps.begin(), my_comps.end());
+
+        std::string current_filename;
+
+        std::ifstream     fs_blob;
+        std::vector<char> buffer;
+        size_t            size = 0;
+        for ( auto& x : my_comps ) {
+            if ( current_filename != x.first ) {
+                current_filename = x.first;
+                if ( fs_blob.is_open() ) fs_blob.close();
+                fs_blob.open(checkpoint_directory + "/" + current_filename, std::ios::binary);
+            }
+            fs_blob.seekg(x.second);
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(buffer.data(), size);
+            ser.start_unpacking(buffer.data(), size);
+            // ComponentInfo* compInfo = new ComponentInfo();
+            ComponentInfo* compInfo;
+            SST_SER(compInfo);
+            compInfoMap.insert(compInfo);
+        }
+        if ( fs_blob.is_open() ) fs_blob.close();
+    }
+    else if ( blob_filenames.size() == 1 ) {
         // This is a regular restart (same parallelism as checkpoint)
         std::ifstream fs_blob(blob_filenames[0], std::ios::binary);
 
@@ -2572,7 +2657,8 @@ std::mutex                 Simulation_impl::simulationMutex;
 Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
 TimeConverter              Simulation_impl::minPartTC;
 SimTime_t                  Simulation_impl::minPart;
-std::string                Simulation_impl::checkpoint_directory_ = "";
+std::string                Simulation_impl::checkpoint_directory_   = "";
+std::string                Simulation_impl::checkpoint_configgraph_ = "";
 
 Util::BasicPerfTracker Simulation_impl::basicPerf;
 

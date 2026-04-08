@@ -323,15 +323,15 @@ doesDirectoryExist(const std::string& dirName, bool include_files)
 
 
 std::string
-initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank)
+initializeCheckpointInfrastructure(Config* cfg, bool can_ckpt, int myRank)
 {
     ////// Check to see if checkpointing is enabled //////
-    if ( !cfg->canInitiateCheckpoint() && !rt_can_ckpt ) return "";
+    if ( !can_ckpt ) return "";
 
     std::string checkpoint_dir_name = "";
 
     if ( myRank == 0 ) {
-        SST::Util::Filesystem& fs = Simulation_impl::getSimulation()->filesystem;
+        SST::Util::Filesystem& fs = Simulation_impl::filesystem;
         checkpoint_dir_name       = fs.createUniqueDirectory(cfg->checkpoint_prefix());
     }
 

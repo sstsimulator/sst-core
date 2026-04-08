@@ -416,7 +416,6 @@ start_partitioning(const RankInfo& world_size, const RankInfo& myRank, Factory* 
 
                     if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
                 }
-
                 delete pgraph;
             }
         }
@@ -470,12 +469,13 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         Simulation_impl::createSimulation(info.myRank, info.world_size, restart, currentSimCycle, currentPriority);
     double start_run = 0.0;
 
-    // Thread zero needs to initialize the checkpoint data structures
-    // if any checkpointing options were turned on.  This will return
-    // an empty string if checkpointing was not enabled.
+    // Thread zero needs to initialize the checkpoint data structures if any checkpointing options were turned on but
+    // the data structures haven't already been initialized earlier.  Things will only get initialized here if the only
+    // way to trigger a checkpoint is through the realtime actions. This will return an empty string if checkpointing
+    // was not enabled.
 
-    if ( tid == 0 ) {
-        sim->checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
+    if ( tid == 0 && Simulation_impl::checkpoint_directory_.empty() ) {
+        Simulation_impl::checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
             &cfg, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
 
         // if ( sim->checkpoint_directory_ != "" ) {
@@ -1005,8 +1005,8 @@ main(int argc, char* argv[])
     // Check the ConfigGraph and finalize things
 
     // Cleanup after graph creation, but only if rank participated
-    // in graph construction
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
+    // in graph construction and we aren't restarting
+    if ( (myRank.rank == 0 || cfg.parallel_load()) && !restart ) {
 
         Simulation_impl::basicPerf.beginRegion("graph-cleanup");
         if ( cfg.parallel_load() ) {
@@ -1131,6 +1131,22 @@ main(int argc, char* argv[])
             doParallelCapableGraphOutput(graph, myRank, world_size);
         }
     }
+
+    // Create the checkpoint directory structure if checkpointing is enabled
+    Simulation_impl::checkpoint_directory_ =
+        Checkpointing::initializeCheckpointInfrastructure(&cfg, cfg.canInitiateCheckpoint(), myRank.rank);
+
+    // If we are not doing a parallel load, rank 0 will write out the ConfigGraph
+    if ( cfg.canInitiateCheckpoint() && !cfg.parallel_load() && myRank.rank == 0 ) {
+        Simulation_impl::checkpoint_configgraph_ = "original_config_graph.bin";
+        Simulation_impl::writeCheckpointConfigGraph(graph);
+    }
+
+    if ( myRank.rank == 0 ) {
+        // Output the partition information if user requests it
+        dump_partition(graph, world_size);
+    }
+
 
     Simulation_impl::basicPerf.endRegion("graph-partitioning");
 
@@ -1419,11 +1435,6 @@ main(int argc, char* argv[])
     }
     Simulation_impl::basicPerf.endRegion("graph-distribution");
     Simulation_impl::basicPerf.endRegion("graph-processing");
-
-    if ( myRank.rank == 0 ) {
-        // Output the partition information if user requests it
-        dump_partition(graph, world_size);
-    }
 
     /******** Register signal handlers, if not disabled ********/
     if ( cfg.enable_sig_handling() ) {

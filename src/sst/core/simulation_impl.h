@@ -386,7 +386,7 @@ public:
      */
     TimeConverter minPartToTC(SimTime_t cycles) const;
 
-    std::string initializeCheckpointInfrastructure(const std::string& prefix);
+    static void writeCheckpointConfigGraph(ConfigGraph* graph);
     void        scheduleCheckpoint();
 
     /**
@@ -514,6 +514,7 @@ public:
     SimulatorHeartbeat*     m_heartbeat = nullptr;
     CheckpointAction*       checkpoint_action_;
     static std::string      checkpoint_directory_;
+    static std::string      checkpoint_configgraph_;
     bool                    endSim = false;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;

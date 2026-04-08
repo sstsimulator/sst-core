@@ -433,7 +433,7 @@ Config::insertOptions()
         "formats).",
         exit_after_, true, false, false);
     DEF_ARG("partitioner", 0, "PARTITIONER", "Select the partitioner to be used. <lib.partitionerName>", partitioner_,
-        true, true, false);
+        true, false, false);
     DEF_ARG("heartbeat-period", 0, "PERIOD",
         "Set time for heartbeats to be published (these are approximate timings measured in simulation time, published "
         "by the core, to update on progress)",
