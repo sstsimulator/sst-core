@@ -16,6 +16,7 @@
 #include "sst/core/output.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <chrono>
 #include <cinttypes>
@@ -104,18 +105,13 @@ EventHandlerProfileToolCount::eventSent(uintptr_t key, Event*& UNUSED(ev))
 
 
 void
-EventHandlerProfileToolCount::outputData(FILE* fp)
+EventHandlerProfileToolCount::outputData(SST::Util::DataRecord* record, RankInfo UNUSED(rank))
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name");
-    if ( profile_receives_ ) fprintf(fp, ", recv count");
-    if ( profile_sends_ ) fprintf(fp, ", send count");
-    fprintf(fp, "\n");
     for ( auto& x : counts_ ) {
-        fprintf(fp, "%s", x.first.c_str());
-        if ( profile_receives_ ) fprintf(fp, ", %" PRIu64, x.second.recv_count);
-        if ( profile_sends_ ) fprintf(fp, ", %" PRIu64, x.second.send_count);
-        fprintf(fp, "\n");
+        record->addChild(x.first);
+        if ( profile_receives_ ) record->addData("recv_count", x.second.recv_count);
+        if ( profile_sends_ ) record->addData("send_count", x.second.send_count);
+        record->changeLevelUp();
     }
 }
 
@@ -141,21 +137,20 @@ EventHandlerProfileToolTime<T>::registerLinkAttachTool(const AttachPointMetaData
 
 template <typename T>
 void
-EventHandlerProfileToolTime<T>::outputData(FILE* fp)
+EventHandlerProfileToolTime<T>::outputData(SST::Util::DataRecord* record, RankInfo UNUSED(rank))
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name");
-    if ( profile_receives_ ) fprintf(fp, ", recv count, recv time (s), avg. recv time (ns)");
-    if ( profile_sends_ ) fprintf(fp, ", send count");
-    fprintf(fp, "\n");
     for ( auto& x : times_ ) {
-        fprintf(fp, "%s", x.first.c_str());
-        if ( profile_receives_ )
-            fprintf(fp, ", %" PRIu64 ", %lf, %" PRIu64, x.second.recv_count,
-                ((double)x.second.recv_time) / 1000000000.0,
-                x.second.recv_count == 0 ? 0 : x.second.recv_time / x.second.recv_count);
-        if ( profile_sends_ ) fprintf(fp, ", %" PRIu64, x.second.send_count);
-        fprintf(fp, "\n");
+        record->addChild(x.first);
+        if ( profile_receives_ ) {
+            record->addData("recv_count", x.second.recv_count);
+            UnitAlgebra recv_time(std::to_string(((double)x.second.recv_time) / 1000000000.0) + "s");
+            record->addData("recv_time", recv_time);
+            if ( x.second.recv_count != 0 )
+                record->addData(
+                    "avg_recv_time", UnitAlgebra(std::to_string(x.second.recv_time / x.second.recv_count) + "ns"));
+        }
+        if ( profile_sends_ ) record->addData("send_count", x.second.send_count);
+        record->changeLevelUp();
     }
 }
 

@@ -16,6 +16,7 @@
 #include "sst/core/output.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <chrono>
 #include <cinttypes>
@@ -93,13 +94,12 @@ ComponentCodeSegmentProfileToolCount::codeSegmentStart(uintptr_t key)
 }
 
 void
-ComponentCodeSegmentProfileToolCount::outputData(FILE* fp)
+ComponentCodeSegmentProfileToolCount::outputData(SST::Util::DataRecord* record, RankInfo UNUSED(rank))
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name, Count\n");
     for ( auto& x : counts_ ) {
-        fprintf(fp, "%s", x.first.c_str());
-        fprintf(fp, ", %" PRIu64 "\n", x.second);
+        record->addChild(x.first);
+        record->addData("count", x.second);
+        record->changeLevelUp();
     }
 }
 
@@ -119,14 +119,14 @@ ComponentCodeSegmentProfileToolTime<T>::registerProfilePoint(
 
 template <typename T>
 void
-ComponentCodeSegmentProfileToolTime<T>::outputData(FILE* fp)
+ComponentCodeSegmentProfileToolTime<T>::outputData(SST::Util::DataRecord* record, RankInfo UNUSED(rank))
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name, count, time (s), avg time (ns)\n");
     for ( auto& x : times_ ) {
-        fprintf(fp, "%s", x.first.c_str());
-        fprintf(fp, ", %" PRIu64 ", %lf, %" PRIu64 "\n", x.second.count, ((double)x.second.time) / 1000000000.0,
-            x.second.count == 0 ? 0 : x.second.time / x.second.count);
+        record->addChild(x.first);
+        record->addData("count", x.second.count);
+        record->addData("time", UnitAlgebra(std::to_string(((double)x.second.time) / 1000000000) + "s"));
+        if ( x.second.count != 0 )
+            record->addData("time", UnitAlgebra(std::to_string((x.second.time) / x.second.count) + "ns"));
     }
 }
 

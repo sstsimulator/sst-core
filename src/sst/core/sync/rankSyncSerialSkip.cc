@@ -17,6 +17,7 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/profile.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_mpi.h"
@@ -74,6 +75,7 @@ RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED
         comm_map[to_rank.rank].rbuf           = new char[4096];
         comm_map[to_rank.rank].local_size     = 4096;
         comm_map[to_rank.rank].remote_size    = 4096;
+        comm_map[to_rank.rank].squeue->setProfileTools(profile_tools_);
     }
     else {
         queue = comm_map[to_rank.rank].squeue;
@@ -270,6 +272,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     if ( thread != 0 ) {
         return;
     }
+
     // Maximum number of outstanding requests is 3 times the number of
     // ranks I communicate with (1 recv, 2 sends per rank)
     auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_map.size());
@@ -354,6 +357,13 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     msg_count = count;
 #endif
 }
+
+void
+RankSyncSerialSkip::setProfileToolList(Profile::SyncProfileToolList* profile_tools)
+{
+    profile_tools_ = profile_tools;
+}
+
 
 int RankSyncSerialSkip::sig_end_(0);
 int RankSyncSerialSkip::sig_usr_(0);

@@ -24,6 +24,15 @@ sst_get_cpu_time()
     return ((double)the_time.tv_sec) + (((double)the_time.tv_usec) * 1.0e-6);
 }
 
+uint64_t
+sst_get_cpu_time_usec()
+{
+    struct timeval the_time;
+    gettimeofday(&the_time, nullptr);
+
+    return the_time.tv_usec + (the_time.tv_sec * 1.0e6);
+}
+
 std::string
 sst_get_current_time()
 {

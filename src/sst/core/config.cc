@@ -421,10 +421,8 @@ Config::insertOptions()
         "Print SST timing information.  Can supply an optional level to control the granularity of timing information. "
         "Level = 0 turns all timing info off, level = 1 will print total runtime, as well as other performance data. "
         "Level >= 2 will print increasing granularity of performance data. If specified with no level, then the level "
-        "will be set to 2.",
+        "will be set to 2. '--profiling-output' may be used to control the destination for timing information.",
         print_timing_, true, true, false);
-    DEF_ARG(
-        "timing-info-json", 0, "FILE", "Write SST timing information in JSON format", timing_json_, true, true, false);
     DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution", stop_at_, true, true, false);
     DEF_ARG("exit-after", 0, "TIME",
         "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
@@ -515,7 +513,10 @@ Config::insertOptions()
         "Enables default profiling for the specified points.  Argument is a semicolon separated list specifying the "
         "points to enable.",
         enabled_profiling_, true, false, false);
-    DEF_ARG("profiling-output", 0, "FILE", "Set output location for profiling data [stdout (default) or a filename]",
+    DEF_ARG("profiling-output", 0, "FILE",
+        "Set output location for profiling and timing data [stdout (default) and/or a "
+        "filename including a '.txt' (text) or '.json' (JSON) extension. To specify stdout and a filename, list both "
+        "separated by a comma such as 'stdout,output.json']",
         profiling_output_, true, false, false);
 
     /* Advanced Features - Debug */

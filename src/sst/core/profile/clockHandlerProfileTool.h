@@ -15,6 +15,7 @@
 #include "sst/core/clock.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/profile/profiletool.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/warnmacros.h"
@@ -24,7 +25,13 @@
 #include <map>
 #include <string>
 
-namespace SST::Profile {
+namespace SST {
+
+namespace Util {
+class DataRecord;
+}
+
+namespace Profile {
 
 class ClockHandlerProfileTool : public ProfileTool, public Clock::HandlerBase::AttachPoint
 {
@@ -75,7 +82,7 @@ public:
 
     void beforeHandler(uintptr_t key, const Cycle_t& cycle) override;
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     std::map<std::string, uint64_t> counts_;
@@ -116,13 +123,14 @@ public:
         entry->count++;
     }
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     typename T::time_point              start_time_;
     std::map<std::string, clock_data_t> times_;
 };
 
-} // namespace SST::Profile
+} // namespace Profile
+} // namespace SST
 
 #endif // SST_CORE_PROFILE_CLOCKHANDLERPROFILETOOL_H

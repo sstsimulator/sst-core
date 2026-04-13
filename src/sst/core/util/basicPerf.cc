@@ -17,6 +17,7 @@
 #include "sst/core/memuse.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_mpi.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <clocale>
 #include <cstdio>
@@ -81,7 +82,6 @@ BasicPerfTracker::beginRegion(const std::string& tag)
     // Push the index that this region will be in the vector to the
     // stack
     current_regions_.push(regions_.size());
-
     size_t level = current_regions_.size();
 
     // Check to see if we need to print this level (need to check the verbose level because output_ may not be valid if
@@ -298,118 +298,66 @@ BasicPerfTracker::getMetricFloat(const std::string& name)
     return scalars_float[name];
 }
 
-// Need to use wstring for the unicode box drawing characters
-std::wstring horizontal   = L"─"; // ─
-std::wstring vertical     = L"│"; // │
-std::wstring topLeft      = L"┌"; // ┌
-std::wstring topRight     = L"┐"; // ┐
-std::wstring bottomLeft   = L"└"; // └
-std::wstring bottomRight  = L"┘"; // ┘
-std::wstring vertAndRight = L"├"; // ├
-std::wstring fullBox      = L"■"; // ■
-
-
 void
-BasicPerfTracker::outputRegionData(Output& out, size_t verbose)
+BasicPerfTracker::outputRegionData(size_t verbose, PerfReporter* reporter)
 {
-    // We need to change the locale to support unicode.  Just need to
-    // change the c-locale since we are using output, which uses
-    // printf
-    std::string orig_c_locale = std::setlocale(LC_ALL, nullptr);
-    std::setlocale(LC_ALL, "en_US.UTF-8");
-
-    bool print = (rank_ == 0);
 
     // Use vector as stack to keep track of hierarchy
-    std::vector<std::pair<RegionPerfInfo*, bool>> region_stack;
+    std::vector<RegionPerfInfo*> region_stack;
 
-    std::wstring prefix_stats;
-    std::wstring prefix_region;
+    std::map<std::string, std::pair<std::string, std::string>> keys = {
+        { "regions", { "Simulation Resource Utilization for Code Regions", "" } },
+        { "total_memory", { "Total Memory", "" } }, { "duration", { "Duration", "s" } },
+        { "max_local_memory", { "Max Local Memory", "" } }, { "max_local_memory_rank", { "Max Local Memory Rank", "" } }
+    };
+    DataRecord* record = reporter->createDataRecord("regions", DataRecord::TextFormat::tree);
+    record->setKeys(keys);
 
+    // Push data into DataRecord structure
     for ( auto& x : regions_ ) {
 
         if ( x.level > verbose ) continue;
 
-        // First, need to see if we need to remove the last region
-        // and/or adjust the bool that controls the printing of the
-        // vertical bars
-
-        // If the level has descreased, need to pop all regions
+        // If the level has decreased, need to pop all regions
         // that are greater than current level
-
         if ( region_stack.size() > 1 ) {
-            while ( region_stack.back().first->level > x.level ) {
+            while ( region_stack.back()->level > x.level ) {
                 region_stack.pop_back();
+                record->changeLevelUp();
             }
 
             // If last region is same level as this region, remove it
-            if ( region_stack.back().first->level == x.level ) {
+            if ( region_stack.back()->level == x.level ) {
                 region_stack.pop_back();
+                record->changeLevelUp();
             }
-        }
-
-        std::wstring region_indicator;
-        if ( x.level == 1 ) {
-            region_indicator += L"■ ";
-        }
-        else if ( !x.last_of_level ) {
-            region_indicator += L"├ ■ ";
-        }
-        else {
-            region_indicator += L"└ ■ ";
-        }
-
-        // If I'm the last child at this level, need to turn | off for my parent
-        if ( x.level != 1 && x.last_of_level ) region_stack.back().second = false;
-
-        // Create prefix string
-        std::wstring prefix;
-        for ( size_t i = 0; i < region_stack.size(); ++i ) {
-            if ( region_stack[i].second )
-                prefix += L"│ ";
-            else
-                prefix += L"  ";
         }
 
         // If this is the last level to print because of verbosity,
         // act like the region has no children
-        bool has_child = x.has_child && x.level != verbose;
-        region_stack.push_back(std::make_pair(&x, has_child));
-
-        // The prefix for the region string needs to remove the indent
-        // caused by the current level
-        std::wstring region_prefix = prefix.substr(0, prefix.length() - 2);
-
-        if ( print ) out.output("%ls%ls%s\n", region_prefix.c_str(), region_indicator.c_str(), x.tag.c_str());
+        region_stack.push_back(&x);
+        record->addChild(x.tag);
+        record->setKeys(keys); // Add to each level of the record
 
         // Print the perf values
-        std::wstring stat_prefix = prefix + (has_child ? L"│ " : L"  ") + L"├──";
-        if ( print ) out.output("%ls Duration: %.3lf seconds\n", stat_prefix.c_str(), x.end_time - x.begin_time);
+        record->addData("duration", x.end_time - x.begin_time);
 
         uint64_t    mem_size_global = getGlobalTotalRegionEndMemSize(x.tag);
         UnitAlgebra mem_size_global_us("1kB");
         mem_size_global_us *= mem_size_global;
 
-        stat_prefix = prefix + (has_child ? L"│ " : L"  ") + L"└──";
         if ( num_ranks_ > 1 ) {
             auto        mem_size_max = getGlobalMaxRegionEndMemSize(x.tag);
             UnitAlgebra mem_size_max_us("1kB");
             mem_size_max_us *= mem_size_max.first;
-
-            if ( print )
-                out.output("%ls Memory: Total - %s, Max - %s (rank %d)\n", stat_prefix.c_str(),
-                    mem_size_global_us.toStringBestSI(4).c_str(), mem_size_max_us.toStringBestSI(4).c_str(),
-                    mem_size_max.second);
+            record->addData("total_memory", mem_size_global_us);
+            record->addData("max_local_memory", mem_size_max_us);
+            record->addData("max_local_memory_rank", (int64_t)(mem_size_max.second));
         }
         else {
-            if ( print )
-                out.output(
-                    "%ls Memory: Total - %s\n", stat_prefix.c_str(), mem_size_global_us.toStringBestSI(4).c_str());
+            record->addData("total_memory", mem_size_global_us);
         }
     }
-
-    // Restore the locale
-    std::setlocale(LC_ALL, orig_c_locale.c_str());
 }
 
 void

@@ -43,6 +43,7 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <algorithm>
 #include <atomic>
@@ -1479,30 +1480,7 @@ Simulation_impl::incrementSerialCounters(uint64_t count)
     rankLatency += count;
     ++rankExchangeCounter;
 }
-
-void
-Simulation_impl::incrementExchangeCounters(uint64_t events, uint64_t bytes)
-{
-    rankExchangeEvents += events;
-    rankExchangeBytes += bytes;
-}
 #endif // SST_EVENT_PROFILING
-
-
-#if SST_SYNC_PROFILING
-void
-Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
-{
-    if ( rankSync ) {
-        ++rankSyncCounter;
-        rankSyncTime += count;
-    }
-    else {
-        ++threadSyncCounter;
-        threadSyncTime += count;
-    }
-}
-#endif // SST_SYNC_PROFILING
 
 
 std::pair<pvt::TimeVortexSort::iterator, pvt::TimeVortexSort::iterator>
@@ -2456,32 +2434,19 @@ Simulation_impl::printSimulationState()
 }
 
 void
-Simulation_impl::printProfilingInfo(FILE* fp)
+Simulation_impl::printProfilingInfo(Util::PerfReporter* reporter)
 {
+    // Modifying shared state so serialize threads through this function
+    std::lock_guard<std::mutex> lock(simulationMutex);
+
     // If no profile tools are installed, return without doing
     // anything
     if ( profile_tools.size() == 0 ) return;
 
-    // Print out a header if printing to stdout
-    if ( fp == stdout && my_rank.rank == 0 && my_rank.thread == 0 ) {
-        fprintf(fp, "\n------------------------------------------------------------\n");
-        fprintf(fp, "Profiling Output:\n\n");
-    }
-
-    fprintf(fp, "-----------------------------\n");
-
-    // Print the rank and thread.  Profiling output is serialized
-    // through both ranks and threads.
-    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n\n", my_rank.rank, my_rank.thread);
-
     for ( auto tool : profile_tools ) {
-        tool.second->outputData(fp);
-        fprintf(fp, "\n");
-    }
-
-    // Print footer if printing on stdout
-    if ( fp == stdout && my_rank.rank == num_ranks.rank - 1 && my_rank.thread == num_ranks.thread - 1 ) {
-        fprintf(fp, "------------------------------------------------------------\n");
+        // Creates record if it does not yet exist on this rank, otherwise acquires record pointer
+        auto record = reporter->createDataRecord(tool.first);
+        tool.second->outputData(record, my_rank);
     }
 }
 
@@ -2501,39 +2466,11 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "Serialization Information:\n");
     fprintf(fp, "Rank total serialization time: %" PRIu64 " %s\n", rankLatency, clockResolution.c_str());
     fprintf(fp, "Rank pairwise sync count: %" PRIu64 "\n", rankExchangeCounter);
-    fprintf(fp, "Rank total events sent: %" PRIu64 "\n", rankExchangeEvents);
-    fprintf(fp, "Rank total bytes sent: %" PRIu64 "\n", rankExchangeBytes);
     fprintf(fp, "Rank average sync serialization time: %.6f %s/sync\n",
         (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
-    fprintf(fp, "Rank average sync bytes sent: %.6f bytes/sync\n",
-        (rankExchangeCounter == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeCounter));
     fprintf(fp, "Rank average sync serialization time: %.6f %s/sync\n",
         (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
-    fprintf(fp, "Rank average event bytes sent: %.6f bytes/event\n",
-        (rankExchangeEvents == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeEvents));
 #endif // SST_EVENT_PROFILING
-
-#if SST_SYNC_PROFILING
-    fprintf(fp, "Synchronization Information:\n");
-    fprintf(fp, "Thread-only sync (apart from Rank syncs):\n");
-    fprintf(fp, "Thread-sync count: %" PRIu64 "\n", threadSyncCounter);
-    fprintf(fp, "Thread-sync total execution time: %.6f s\n", (double)threadSyncTime / clockDivisor);
-    fprintf(fp, "Thread-sync average execution time: %.6f %s/sync\n",
-        (threadSyncCounter == 0.0 ? 0.0 : (double)threadSyncTime / threadSyncCounter), clockResolution.c_str());
-    fprintf(fp, "Rank Sync (including associated thread syncs):\n");
-    fprintf(fp, "Rank sync count: %" PRIu64 "\n", rankSyncCounter);
-    fprintf(fp, "Rank sync total execution time: %.6f s\n", (double)rankSyncTime / clockDivisor);
-    fprintf(fp, "Rank sync average execution time: %.6f %s/sync\n",
-        (rankSyncCounter == 0.0 ? 0.0 : (double)rankSyncTime / rankSyncCounter), clockResolution.c_str());
-    fprintf(fp, "All sync count:  %" PRIu64 "\n", threadSyncCounter + rankSyncCounter);
-    fprintf(fp, "All sync execution time: %.6f s\n", (double)(threadSyncTime + rankSyncTime) / clockDivisor);
-    fprintf(fp, "All sync average execution time: %.6f %s/sync\n",
-        ((threadSyncCounter + rankSyncCounter) == 0
-                ? 0.0
-                : (double)(threadSyncTime + rankSyncTime) / (threadSyncCounter + rankSyncCounter)),
-        clockResolution.c_str());
-    fprintf(fp, "\n");
-#endif // SST_SYNC_PROFILING
 }
 #endif
 

@@ -17,6 +17,7 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/profile.h"
+#include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_mpi.h"
@@ -95,6 +96,7 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
         comm_send_map[to_rank].to_rank = to_rank;
         queue = comm_send_map[to_rank].squeue = new RankSyncQueue(to_rank);
         comm_send_map[to_rank].remote_size    = 4096;
+        comm_send_map[to_rank].squeue->setProfileTools(profile_tools_);
     }
     else {
         queue = comm_send_map[to_rank].squeue;
@@ -501,6 +503,12 @@ RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
     SST_SER(msg->activity_vec);
 
     deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
+}
+
+void
+RankSyncParallelSkip::setProfileToolList(Profile::SyncProfileToolList* profile_tools)
+{
+    profile_tools_ = profile_tools;
 }
 
 int RankSyncParallelSkip::sig_end_(0);

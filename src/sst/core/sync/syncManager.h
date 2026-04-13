@@ -34,10 +34,10 @@ class Simulation_impl;
 class ThreadSyncQueue;
 class TimeConverter;
 
-class SyncProfileToolList;
 namespace Profile {
 class SyncProfileTool;
-}
+class SyncProfileToolList;
+} // namespace Profile
 
 class RankSync
 {
@@ -73,6 +73,8 @@ public:
     SimTime_t getMaxPeriod() { return max_period; }
 
     virtual uint64_t getDataSize() const = 0;
+
+    virtual void setProfileToolList(Profile::SyncProfileToolList* UNUSED(profile_list)) {}
 
 protected:
     SimTime_t      nextSyncTime;
@@ -219,7 +221,7 @@ private:
     RealTimeManager*  real_time_;
     CheckpointAction* checkpoint_;
 
-    SyncProfileToolList* profile_tools_ = nullptr;
+    Profile::SyncProfileToolList* profile_tools_ = nullptr;
 
     void computeNextInsert(SimTime_t next_checkpoint_time = MAX_SIMTIME_T);
     void setupSyncObjects();
