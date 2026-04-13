@@ -240,6 +240,7 @@ public:
     uint64_t      cpt_max_event_id     = 0;
     bool          cpt_remap_partitions = false;
     bool          cpt_repartition      = false;
+    std::string   cpt_orig_configgraph; // Does not need to be serialized (only needed on rank 0)
 
     std::shared_ptr<std::set<std::string>> cpt_libnames       = std::make_shared<std::set<std::string>>();
     std::shared_ptr<std::vector<char>>     cpt_shared_objects = std::make_shared<std::vector<char>>();

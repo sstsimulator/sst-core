@@ -503,14 +503,32 @@ SimTime_t
 SyncManager::findRankSyncInterval()
 {
     SimTime_t interval = rankSync_->findSyncInterval(rank_.rank);
+    // If there are no cross-rank links, then interval will be MAX_SIMTIME_T.  If this happens, we need to change over
+    // to an EmptyRankSync
+    if ( interval == MAX_SIMTIME_T ) {
+        delete rankSync_;
+        rankSync_ = new EmptyRankSync(num_ranks_);
+    }
     rankSync_->setMaxPeriod(interval);
     return interval;
+}
+
+void
+SyncManager::updateMinPart()
+{
+    min_part_ = rankSync_->getMaxPeriod();
 }
 
 SimTime_t
 SyncManager::findThreadSyncInterval()
 {
     SimTime_t interval = threadSync_->findSyncInterval();
+    // If there are no cross-rank links, then interval will be MAX_SIMTIME_T.  If this happens, we need to change over
+    // to an EmptyThreadSync
+    if ( interval == MAX_SIMTIME_T ) {
+        delete threadSync_;
+        threadSync_ = new EmptyThreadSync(sim_);
+    }
     threadSync_->setMaxPeriod(interval);
     return interval;
 }

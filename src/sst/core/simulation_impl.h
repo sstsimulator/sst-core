@@ -218,8 +218,11 @@ public:
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
+
+    /** Functions to compute the current rank and thread sync intervals */
     void findRankSyncInterval();
     void findThreadSyncInterval();
+    void updateSyncMinPart();
 
     /** Setup external control actions (forced stops, signal handling */
     void setupSimActions();
@@ -478,6 +481,8 @@ public:
      */
     void endSimulation();
     void endSimulation(SimTime_t end);
+
+    void checkIndepent();
 
     enum ShutdownMode_t {
         SHUTDOWN_CLEAN,     /* Normal shutdown */

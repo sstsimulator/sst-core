@@ -868,7 +868,7 @@ Simulation_impl::exchangeLinkInfo()
 void
 Simulation_impl::findRankSyncInterval()
 {
-    syncManager->findRankSyncInterval();
+    minPart = syncManager->findRankSyncInterval();
 }
 
 void
@@ -877,6 +877,11 @@ Simulation_impl::findThreadSyncInterval()
     syncManager->findThreadSyncInterval();
 }
 
+void
+Simulation_impl::updateSyncMinPart()
+{
+    syncManager->updateMinPart();
+}
 
 void
 Simulation_impl::initialize()
@@ -1000,7 +1005,7 @@ Simulation_impl::prepare_for_run()
         if ( compInfoMap.empty() ) {
             // std::cout << "Thread " << my_rank.thread << " is exiting with nothing to do" << std::endl;
             StopAction* sa = new StopAction();
-            sa->setDeliveryTime(0);
+            sa->setDeliveryTime(currentSimCycle);
             timeVortex->insert(sa);
         }
     }
@@ -1016,6 +1021,9 @@ Simulation_impl::prepare_for_run()
     header += std::to_string(my_rank.thread);
     header += ":  ";
 }
+
+// void
+// Simulation_impl::check_for_
 
 void
 Simulation_impl::run()
@@ -1147,7 +1155,6 @@ Simulation_impl::run()
             "--help timebase)\nLast activity executed: %s\n",
             current_activity->toString().c_str());
     }
-
     /* We shouldn't need to do this, but to be safe... */
 
     runBarrier.wait(); // TODO<- Is this needed?
@@ -1726,6 +1733,16 @@ Simulation_impl::writeCheckpointConfigGraph(ConfigGraph* graph)
 {
     if ( checkpoint_configgraph_.empty() ) return;
 
+    //  If we are doing a restart, and we aren't remapping partitions, then the ConfigGraph is empty and we need to just
+    //  copy to original one.  We can do the check by looking at cpt_repartition and cpt_orig_configgraph.
+    if ( !graph->cpt_orig_configgraph.empty() && !graph->cpt_repartition ) {
+        // We are restarting (known because we have an original configgraph), but are not repartitioning, so the main
+        // ConfigGraph datastructure will be empty.  We will just copy the file
+        std::filesystem::copy_file(graph->cpt_orig_configgraph, checkpoint_directory_ + "/" + checkpoint_configgraph_);
+        return;
+    }
+
+
     // Turn on checkpoint mode serialization for ConfigGraph
     ConfigGraph::serialize_for_checkpoint = true;
 
@@ -2278,15 +2295,25 @@ Simulation_impl::restart(ConfigGraph* graph)
     if ( my_rank.thread == 0 ) {
         StatisticProcessingEngine::stat_outputs_simulation_start();
     }
-    stat_engine.startOfSimulation();
 
-    real_time_->begin();
+
+    // stat_engine.startOfSimulation();
+
+    // real_time_->begin();
+}
+
+void
+Simulation_impl::checkIndepent()
+{
+    std::pair<SimTime_t, SimTime_t> sync_intervals = syncManager->getSyncIntervals();
+    if ( sync_intervals.first == MAX_SIMTIME_T && sync_intervals.second == MAX_SIMTIME_T ) {
+        independent = true;
+    }
 }
 
 void
 Simulation_impl::discoverRemoteLinks()
 {
-    // If we are multi-threaded, Need to intialize the necessary data structures
     if ( num_ranks.thread > 1 ) {
         // Initialize my local queue.  This will be used to receive data from the previous thread
         local_discover_queue.initialize(2);

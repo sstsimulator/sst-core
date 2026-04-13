@@ -535,9 +535,16 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
+        // Need to update the min_part variable in SyncManager
+        sim->updateSyncMinPart();
+
         sim->findThreadSyncInterval();
 
         barrier.wait();
+
+        sim->checkIndepent();
+
+        sim->prepare_for_run();
 
     } // if ( restart )
 

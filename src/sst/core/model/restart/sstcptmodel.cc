@@ -367,6 +367,8 @@ SSTCPTModelDefinition::createConfigGraph()
 
     fs.close();
 
+    // Put in the path to the original config graph bin file
+    graph->cpt_orig_configgraph = configgraph_filename;
     return graph;
 }
 

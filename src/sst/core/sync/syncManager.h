@@ -176,6 +176,7 @@ public:
     void           exchangeLinkInfo();
     SimTime_t      findRankSyncInterval();
     SimTime_t      findThreadSyncInterval();
+    void           updateMinPart();
     void           execute() override;
 
     /** Cause an exchange of Initialization Data to occur */
@@ -192,6 +193,11 @@ public:
     {
         rankSync_->setRestartTime(time);
         threadSync_->setRestartTime(time);
+    }
+
+    std::pair<SimTime_t, SimTime_t> getSyncIntervals()
+    {
+        return std::make_pair(rankSync_->getMaxPeriod(), threadSync_->getMaxPeriod());
     }
 
     void addProfileTool(Profile::SyncProfileTool* tool);
