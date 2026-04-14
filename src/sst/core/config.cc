@@ -418,6 +418,13 @@ Config::insertOptions()
         "will be appended to the model options (or used as the model options if --model-options was not specified).",
         model_options_, false, false, true);
     DEF_ARG_OPTVAL("print-timing-info", 0, "LEVEL",
+        "DEPRECATED: Use '--timing-info' instead. Print SST timing information.  Can supply an optional level to "
+        "control the granularity of timing information. "
+        "Level = 0 turns all timing info off, level = 1 will print total runtime, as well as other performance data. "
+        "Level >= 2 will print increasing granularity of performance data. If specified with no level, then the level "
+        "will be set to 2. '--profiling-output' may be used to control the destination for timing information.",
+        print_timing_, true, true, false);
+    DEF_ARG_OPTVAL("timing-info", 0, "LEVEL",
         "Print SST timing information.  Can supply an optional level to control the granularity of timing information. "
         "Level = 0 turns all timing info off, level = 1 will print total runtime, as well as other performance data. "
         "Level >= 2 will print increasing granularity of performance data. If specified with no level, then the level "

@@ -1,22 +1,35 @@
------------------------------
-Rank = 0, thread = 0:
 
-events
-Name, recv count
-component0, 39695
-component1, 39527
-component10, 40375
-component11, 40275
-component12, 40211
-component13, 40224
-component14, 40208
-component15, 39952
-component2, 39642
-component3, 39517
-component4, 40220
-component5, 39797
-component6, 39886
-component7, 40031
-component8, 40252
-component9, 40124
 
+events:
+  component0:
+    recv_count: 39695
+  component1:
+    recv_count: 39527
+  component10:
+    recv_count: 40375
+  component11:
+    recv_count: 40275
+  component12:
+    recv_count: 40211
+  component13:
+    recv_count: 40224
+  component14:
+    recv_count: 40208
+  component15:
+    recv_count: 39952
+  component2:
+    recv_count: 39642
+  component3:
+    recv_count: 39517
+  component4:
+    recv_count: 40220
+  component5:
+    recv_count: 39797
+  component6:
+    recv_count: 39886
+  component7:
+    recv_count: 40031
+  component8:
+    recv_count: 40252
+  component9:
+    recv_count: 40124

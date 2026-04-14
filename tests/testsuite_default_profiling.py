@@ -59,13 +59,13 @@ class testcase_Profiling(SSTTestCase):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        options = "--output-directory=testsuite_profiling --profiling-output=prof_{0}.out --model-options=\"4 4\" --enable-profiling=\"{1}\"".format(testtype,profile_options);
+        options = "--output-directory=testsuite_profiling --profiling-output=prof_{0}.txt --model-options=\"4 4\" --enable-profiling=\"{1}\"".format(testtype,profile_options);
 
         # Set the various file paths
         sdlfile = "{0}/test_MessageMesh.py".format(testsuitedir)
         reffile = "{0}/refFiles/test_Profiling_{1}.out".format(testsuitedir, testtype)
         outfile = "{0}/test_Profiling_{1}.out".format(outdir, testtype)
-        checkfile = "{0}/testsuite_profiling/prof_{1}.out".format(outdir, testtype)
+        checkfile = "{0}/testsuite_profiling/prof_{1}.txt".format(outdir, testtype)
 
         self.run_sst(sdlfile, outfile, other_args=options)
 

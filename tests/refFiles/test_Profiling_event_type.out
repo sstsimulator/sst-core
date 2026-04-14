@@ -1,7 +1,5 @@
------------------------------
-Rank = 0, thread = 0:
 
-events
-Name, recv count
-coreTestElement.message_mesh.message_port, 639936
 
+events:
+  coreTestElement.message_mesh.message_port:
+    recv_count: 639936

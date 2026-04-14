@@ -63,7 +63,7 @@ SyncProfileToolCount::outputData(SST::Util::DataRecord* record, RankInfo rank)
 
         record->setKeys(keys);
     }
-    record->addChild(std::to_string(rank.rank) + "_" + std::to_string(rank.thread));
+    record->addChild("rank" + std::to_string(rank.rank));
     record->addData("ranksync_total_count", syncmanager_count);
     record->addData("threadsync_total_count", threadsync_count_);
     record->addData("ranksync_total_events", events_exchanged_);
@@ -94,7 +94,7 @@ SyncProfileToolTime<T>::outputData(SST::Util::DataRecord* record, RankInfo rank)
         record->setKeys(keys);
         record->setFormat(SST::Util::DataRecord::TextFormat::list);
     }
-    record->addChild(std::to_string(rank.rank) + "_" + std::to_string(rank.thread));
+    record->addChild("rank" + std::to_string(rank.rank));
     record->addData("ranksync_total_count", syncmanager_count);
     record->addData("ranksync_total_time", UnitAlgebra(std::to_string((float)syncmanager_time / 1000000000.0) + "s"));
     record->addData("threadsync_total_count", threadsync_count);

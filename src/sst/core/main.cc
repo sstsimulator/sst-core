@@ -1569,7 +1569,7 @@ main(int argc, char* argv[])
                 { "global_mempool_size", { "Global mempool usage", "" } },
                 { "global_undeleted_activities", { "Global undeleted activities", "" } },
                 { "global_current_timevortex_depth", { "Current global TimeVortex depth", "entries" } },
-                { "global_max_tv_depth", { "Max TimeVortex depth", "entries" } },
+                { "global_max_timevortex_depth", { "Max TimeVortex depth", "entries" } },
                 { "global_page_faults", { "Global Page Faults", "faults" } },
                 { "local_max_page_faults", { "Max Local Page Faults", "faults" } }
             };
@@ -1587,7 +1587,7 @@ main(int argc, char* argv[])
             resources->addData("global_mempool_size", UnitAlgebra(std::to_string(global_mempool_size) + "B"));
             resources->addData("global_undeleted_activities", global_active_activities);
             resources->addData("global_current_timevortex_depth", global_current_tv_depth);
-            resources->addData("global_max_tv_depth", global_max_tv_depth);
+            resources->addData("global_max_timevortex_depth", global_max_tv_depth);
         }
     }
 

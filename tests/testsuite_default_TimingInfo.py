@@ -43,7 +43,7 @@ class testcase_TimingInfo(SSTTestCase):
         outfile = "{0}/test_TimingInfo.out".format(outdir)
         jsonfile = "{0}/test_TimingInfo.json".format(outdir)
 
-        self.run_sst(sdlfile, outfile, other_args=f"--timing-info-json={jsonfile}")
+        self.run_sst(sdlfile, outfile, other_args=f"--timing-info --profiling-output={jsonfile}")
 
         # Perform the test of the standard simulation output
         cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
@@ -57,28 +57,22 @@ class testcase_TimingInfo(SSTTestCase):
         except FileNotFoundError:
             self.assertFalse(True, f"Could not load json timing info file {jsonfile}")
 
-        timingInfo = jsonDict['timing-info']
+        timingInfo = jsonDict['resources']
 
         timing_keys = [
             "local_max_rss",
             "global_max_rss",
-            "local_max_pf",
-            "global_pf",
+            "local_max_page_faults",
+            "global_page_faults",
             "global_max_io_in",
             "global_max_io_out",
             "global_max_sync_data_size",
             "global_sync_data_size",
             "max_mempool_size",
             "global_mempool_size",
-            "global_active_activities",
-            "global_current_tv_depth",
-            "global_max_tv_depth",
-            "max_build_time",
-            "max_run_time",
-            "max_total_time",
-            "simulated_time_ua",
-            "ranks",
-            "threads",
+            "global_undeleted_activities",
+            "global_current_timevortex_depth",
+            "global_max_timevortex_depth",
         ]
 
         # Check keys exists

@@ -1,70 +1,131 @@
------------------------------
-Rank = 0, thread = 0:
 
-events
-Name, recv count
-component0:ports[0], 9727
-component0:ports[1], 9912
-component0:ports[2]:port, 9997
-component0:ports[3]:port, 10059
-component10:ports[0], 10120
-component10:ports[1], 10238
-component10:ports[2]:port, 10046
-component10:ports[3]:port, 9971
-component11:ports[0], 10217
-component11:ports[1], 10069
-component11:ports[2]:port, 9966
-component11:ports[3]:port, 10023
-component12:ports[0], 10185
-component12:ports[1], 10073
-component12:ports[2]:port, 10041
-component12:ports[3]:port, 9912
-component13:ports[0], 10023
-component13:ports[1], 10153
-component13:ports[2]:port, 10136
-component13:ports[3]:port, 9912
-component14:ports[0], 9916
-component14:ports[1], 10036
-component14:ports[2]:port, 10135
-component14:ports[3]:port, 10121
-component15:ports[0], 9912
-component15:ports[1], 10093
-component15:ports[2]:port, 9839
-component15:ports[3]:port, 10108
-component1:ports[0], 9783
-component1:ports[1], 10079
-component1:ports[2]:port, 9764
-component1:ports[3]:port, 9901
-component2:ports[0], 9845
-component2:ports[1], 9731
-component2:ports[2]:port, 10021
-component2:ports[3]:port, 10045
-component3:ports[0], 9793
-component3:ports[1], 9789
-component3:ports[2]:port, 9938
-component3:ports[3]:port, 9997
-component4:ports[0], 10174
-component4:ports[1], 10161
-component4:ports[2]:port, 10107
-component4:ports[3]:port, 9778
-component5:ports[0], 9881
-component5:ports[1], 10039
-component5:ports[2]:port, 9943
-component5:ports[3]:port, 9934
-component6:ports[0], 9910
-component6:ports[1], 9926
-component6:ports[2]:port, 10115
-component6:ports[3]:port, 9935
-component7:ports[0], 9999
-component7:ports[1], 10012
-component7:ports[2]:port, 10097
-component7:ports[3]:port, 9923
-component8:ports[0], 10031
-component8:ports[1], 9950
-component8:ports[2]:port, 10084
-component8:ports[3]:port, 10187
-component9:ports[0], 10072
-component9:ports[1], 10016
-component9:ports[2]:port, 10103
-component9:ports[3]:port, 9933
 
+events:
+  component0:ports[0]:
+    recv_count: 9727
+  component0:ports[1]:
+    recv_count: 9912
+  component0:ports[2]:port:
+    recv_count: 9997
+  component0:ports[3]:port:
+    recv_count: 10059
+  component10:ports[0]:
+    recv_count: 10120
+  component10:ports[1]:
+    recv_count: 10238
+  component10:ports[2]:port:
+    recv_count: 10046
+  component10:ports[3]:port:
+    recv_count: 9971
+  component11:ports[0]:
+    recv_count: 10217
+  component11:ports[1]:
+    recv_count: 10069
+  component11:ports[2]:port:
+    recv_count: 9966
+  component11:ports[3]:port:
+    recv_count: 10023
+  component12:ports[0]:
+    recv_count: 10185
+  component12:ports[1]:
+    recv_count: 10073
+  component12:ports[2]:port:
+    recv_count: 10041
+  component12:ports[3]:port:
+    recv_count: 9912
+  component13:ports[0]:
+    recv_count: 10023
+  component13:ports[1]:
+    recv_count: 10153
+  component13:ports[2]:port:
+    recv_count: 10136
+  component13:ports[3]:port:
+    recv_count: 9912
+  component14:ports[0]:
+    recv_count: 9916
+  component14:ports[1]:
+    recv_count: 10036
+  component14:ports[2]:port:
+    recv_count: 10135
+  component14:ports[3]:port:
+    recv_count: 10121
+  component15:ports[0]:
+    recv_count: 9912
+  component15:ports[1]:
+    recv_count: 10093
+  component15:ports[2]:port:
+    recv_count: 9839
+  component15:ports[3]:port:
+    recv_count: 10108
+  component1:ports[0]:
+    recv_count: 9783
+  component1:ports[1]:
+    recv_count: 10079
+  component1:ports[2]:port:
+    recv_count: 9764
+  component1:ports[3]:port:
+    recv_count: 9901
+  component2:ports[0]:
+    recv_count: 9845
+  component2:ports[1]:
+    recv_count: 9731
+  component2:ports[2]:port:
+    recv_count: 10021
+  component2:ports[3]:port:
+    recv_count: 10045
+  component3:ports[0]:
+    recv_count: 9793
+  component3:ports[1]:
+    recv_count: 9789
+  component3:ports[2]:port:
+    recv_count: 9938
+  component3:ports[3]:port:
+    recv_count: 9997
+  component4:ports[0]:
+    recv_count: 10174
+  component4:ports[1]:
+    recv_count: 10161
+  component4:ports[2]:port:
+    recv_count: 10107
+  component4:ports[3]:port:
+    recv_count: 9778
+  component5:ports[0]:
+    recv_count: 9881
+  component5:ports[1]:
+    recv_count: 10039
+  component5:ports[2]:port:
+    recv_count: 9943
+  component5:ports[3]:port:
+    recv_count: 9934
+  component6:ports[0]:
+    recv_count: 9910
+  component6:ports[1]:
+    recv_count: 9926
+  component6:ports[2]:port:
+    recv_count: 10115
+  component6:ports[3]:port:
+    recv_count: 9935
+  component7:ports[0]:
+    recv_count: 9999
+  component7:ports[1]:
+    recv_count: 10012
+  component7:ports[2]:port:
+    recv_count: 10097
+  component7:ports[3]:port:
+    recv_count: 9923
+  component8:ports[0]:
+    recv_count: 10031
+  component8:ports[1]:
+    recv_count: 9950
+  component8:ports[2]:port:
+    recv_count: 10084
+  component8:ports[3]:port:
+    recv_count: 10187
+  component9:ports[0]:
+    recv_count: 10072
+  component9:ports[1]:
+    recv_count: 10016
+  component9:ports[2]:port:
+    recv_count: 10103
+  component9:ports[3]:port:
+    recv_count: 9933
