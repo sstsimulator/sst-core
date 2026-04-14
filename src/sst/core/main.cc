@@ -1145,7 +1145,7 @@ main(int argc, char* argv[])
 
     // If we are not doing a parallel load, rank 0 will write out the ConfigGraph
     if ( cfg.canInitiateCheckpoint() && !cfg.parallel_load() && myRank.rank == 0 ) {
-        Simulation_impl::checkpoint_configgraph_ = "original_config_graph.bin";
+        Simulation_impl::checkpoint_configgraph_ = cfg.checkpoint_prefix() + "_config_graph.bin";
         Simulation_impl::writeCheckpointConfigGraph(graph);
     }
 

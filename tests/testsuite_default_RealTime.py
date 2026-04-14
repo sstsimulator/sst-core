@@ -210,7 +210,7 @@ class testcase_Signals(SSTTestCase):
         # Simple check - test that checkpoint was generated
         cptdir = "{0}/realtime-cpt/".format(outdir)
         self.assertTrue(os.path.exists(cptdir), "Checkpoint directory was not created. Did not find '{0}'".format(cptdir))
-        cptdir_list = os.listdir(cptdir)
+        cptdir_list = [entry.name for entry in os.scandir(cptdir) if entry.is_dir()]
         self.assertTrue(len(cptdir_list) > 0, "Checkpoint directory '{0}' is empty, expected at least one checkpoint.".format(cptdir))
         cptfile = cptdir + cptdir_list[0] + "/" + cptdir_list[0] + ".sstcpt"
         self.assertTrue(os.path.exists(cptfile), "Checkpoint file does not exist, file='{0}'".format(cptfile))
