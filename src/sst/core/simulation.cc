@@ -1015,15 +1015,7 @@ Simulation_impl::prepare_for_run()
 
     // Tell the real time manager that the simulation is beginning
     real_time_->begin();
-
-    std::string header = std::to_string(my_rank.rank);
-    header += ", ";
-    header += std::to_string(my_rank.thread);
-    header += ":  ";
 }
-
-// void
-// Simulation_impl::check_for_
 
 void
 Simulation_impl::run()
@@ -2303,7 +2295,7 @@ Simulation_impl::restart(ConfigGraph* graph)
 }
 
 void
-Simulation_impl::checkIndepent()
+Simulation_impl::checkIndependent()
 {
     std::pair<SimTime_t, SimTime_t> sync_intervals = syncManager->getSyncIntervals();
     if ( sync_intervals.first == MAX_SIMTIME_T && sync_intervals.second == MAX_SIMTIME_T ) {

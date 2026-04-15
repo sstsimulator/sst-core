@@ -542,7 +542,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
-        sim->checkIndepent();
+        sim->checkIndependent();
 
         sim->prepare_for_run();
 

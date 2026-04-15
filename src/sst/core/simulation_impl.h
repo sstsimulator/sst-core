@@ -482,7 +482,7 @@ public:
     void endSimulation();
     void endSimulation(SimTime_t end);
 
-    void checkIndepent();
+    void checkIndependent();
 
     enum ShutdownMode_t {
         SHUTDOWN_CLEAN,     /* Normal shutdown */

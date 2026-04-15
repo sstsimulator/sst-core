@@ -169,7 +169,7 @@ class testcase_Checkpoint(SSTTestCase):
         self.checkpoint_test_template("MessageMesh", 1, 2, modelparams="6 6", swap_rank_thread=True, restart_smaller=True, cpt_suffix="_swap_restart_smaller")
 
 #####
-    # This function will run sst 3 times.  In the absense of other options being set, all three runs will use the
+    # This function will run sst 3 times.  In the absence of other options being set, all three runs will use the
     # parallelism set on the command line to the main test script.  The the runs are described here, along with
     # how the other run options affect them:
     #
