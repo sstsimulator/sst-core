@@ -1539,7 +1539,6 @@ main(int argc, char* argv[])
 #endif
 
     if ( cfg.verbose() || cfg.print_timing() ) {
-        perfReporter.configureOutput(cfg.profiling_output());
 
         // These functions invoke MPI_Allreduce
         const uint64_t local_max_rss     = maxLocalMemSize();
