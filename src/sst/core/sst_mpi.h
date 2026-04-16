@@ -140,7 +140,7 @@ int SST_MPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_
 // MPI_Barrier is a no-op when MPI is not enabled and can be safely called in that case
 int SST_MPI_Barrier(MPI_Comm comm);
 
-// MPI_Send and MPI_Recv are both no-ops if NPI is not present.  However, they should be in segments of code that won't
+// MPI_Send and MPI_Recv are both no-ops if MPI is not present.  However, they should be in segments of code that won't
 // get exectuted if MPI is not available (i.e. only run if there is more than one rank, controlled be either an
 // if-statement or for-loop, but this is generally also necessary even when MPI is enabled)
 int SST_MPI_Send(const void* buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
