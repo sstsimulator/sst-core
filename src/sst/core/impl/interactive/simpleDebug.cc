@@ -401,8 +401,6 @@ SimpleDebugger::consoleExecute(const std::string& msg)
 
     // SKK TODO For now start with thread, rank of 0
     // Eventually change to triggered or last thread
-    current_thread = 0;
-    current_rank = 0;
     std::cout << "---- Rank" << current_rank << ":Thread" << current_thread << ": Entering interactive mode at time " 
             << getCurrentSimCycle() << std::endl;
     std::cout << msg << std::endl;

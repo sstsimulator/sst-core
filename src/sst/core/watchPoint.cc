@@ -204,7 +204,7 @@ void
 WatchPoint::printTrace()
 {
     if ( tb_ != nullptr ) {
-        std::cout << "TriggerCount=" << triggerCount << std::endl;
+        std::cout << "TriggerCount=" << triggerCount << "\n";
         tb_->dumpTriggerRecord();
         tb_->dumpTraceBufferT();
     }
