@@ -129,3 +129,10 @@ events:
     recv_count: 10103
   component9:ports[3]:port:
     recv_count: 9933
+
+
+Simulation Summary:
+  Simulation Input File: /sst-core/tests/test_MessageMesh.py
+  Ranks:                 1
+  Simulated time:        10 us
+  Threads:               1

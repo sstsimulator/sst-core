@@ -70,7 +70,8 @@ class testcase_Profiling(SSTTestCase):
         self.run_sst(sdlfile, outfile, other_args=options)
 
         # Perform the test
-        cmp_result = testing_compare_sorted_diff(testtype, checkfile, reffile)
+        filters = [ StartsWithFilter("  Simulation Input File") ]
+        cmp_result = testing_compare_filtered_diff(testtype, checkfile, reffile, sort=True, filters=filters)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
