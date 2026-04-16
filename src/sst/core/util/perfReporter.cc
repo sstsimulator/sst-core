@@ -107,6 +107,11 @@ DataRecord::addData(std::string key, int64_t value)
 }
 
 void
+DataRecord::addData(std::string key, std::string value)
+{
+    current_record_->data_[key] = value;
+}
+void
 DataRecord::addData(std::string key, UnitAlgebra value)
 {
     current_record_->data_[key] = value;
@@ -244,7 +249,6 @@ PerfReporter::output(int rank, int num_ranks)
             int length = static_cast<int>(record.first.size());
             SST_MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
             SST_MPI_Bcast((void*)&record.first[0], length, MPI_CHAR, 0, MPI_COMM_WORLD);
-
             auto json_o = nlohmann::ordered_json::object();
 
             // Output any text formatted data, first for rank 0 and then append from other ranks
@@ -294,10 +298,10 @@ PerfReporter::output(int rank, int num_ranks)
                 }
 
                 if ( idx != records_.size() ) {
-                    filestream << "},\n";
+                    filestream << "\n},\n";
                 }
                 else {
-                    filestream << "}\n";
+                    filestream << "\n}\n";
                 }
             }
         }
@@ -641,6 +645,12 @@ PerfReporter::outputRecordToJSON(const PerfData* node, json::ordered_json* json_
         outputRecordToJSON(child, &record);
         (*json_obj)[child->name_] = record;
     }
+}
+
+size_t
+PerfReporter::recordCount()
+{
+    return records_.size();
 }
 
 } // namespace SST::Util
