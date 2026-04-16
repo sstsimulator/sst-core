@@ -202,10 +202,10 @@ PerfReporter::output(int rank, int num_ranks)
     // A helper for rank exchanges
     auto recvStringFromRank = [](int src) -> std::string {
         int len = 0;
-        MPI_Recv(&len, 1, MPI_INT, src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        SST_MPI_Recv(&len, 1, MPI_INT, src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         if ( len <= 0 ) return {};
         std::string s(static_cast<size_t>(len), '\0');
-        MPI_Recv(s.data(), len, MPI_CHAR, src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        SST_MPI_Recv(s.data(), len, MPI_CHAR, src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         return s;
     };
 
@@ -214,7 +214,7 @@ PerfReporter::output(int rank, int num_ranks)
     if ( rank == 0 ) {
         record_count = static_cast<uint32_t>(records_.size());
     }
-    MPI_Bcast(&record_count, 1, MPI_UINT32_T, 0, MPI_COMM_WORLD);
+    SST_MPI_Bcast(&record_count, 1, MPI_UINT32_T, 0, MPI_COMM_WORLD);
 
     if ( record_count == 0 ) return; // Nothing to print
 
@@ -242,8 +242,8 @@ PerfReporter::output(int rank, int num_ranks)
 
             // Broadcast the record currently being output
             int length = static_cast<int>(record.first.size());
-            MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            MPI_Bcast((void*)&record.first[0], length, MPI_CHAR, 0, MPI_COMM_WORLD);
+            SST_MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            SST_MPI_Bcast((void*)&record.first[0], length, MPI_CHAR, 0, MPI_COMM_WORLD);
 
             auto json_o = nlohmann::ordered_json::object();
 
@@ -317,9 +317,9 @@ PerfReporter::output(int rank, int num_ranks)
         for ( uint32_t count = 0; count < record_count; count++ ) {
             // Get record name
             int length = 0;
-            MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            SST_MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
             char* name = new char[length];
-            MPI_Bcast(name, length, MPI_CHAR, 0, MPI_COMM_WORLD);
+            SST_MPI_Bcast(name, length, MPI_CHAR, 0, MPI_COMM_WORLD);
 
             // Lookup record
             auto record = records_.find(name);
@@ -327,7 +327,7 @@ PerfReporter::output(int rank, int num_ranks)
             if ( output_console_ || output_txt ) {
                 if ( record == records_.end() ) { // None found
                     int length = 0;
-                    MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 }
                 else {
                     std::stringstream str;
@@ -343,15 +343,15 @@ PerfReporter::output(int rank, int num_ranks)
 
                     std::string send_str = str.str();
                     int         length   = send_str.size();
-                    MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-                    MPI_Send(&send_str[0], length, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(send_str.data(), length, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
                 }
             }
 
             if ( output_json ) {
                 if ( record == records_.end() ) {
                     int length = 0;
-                    MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 }
                 else {
                     std::stringstream str;
@@ -369,11 +369,11 @@ PerfReporter::output(int rank, int num_ranks)
                     }
 
                     int length = send_str.size();
-                    MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-                    MPI_Send(&send_str[0], length, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(&length, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                    SST_MPI_Send(send_str.data(), length, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
                 }
             }
-            delete name;
+            delete[] name;
         }
     }
 }
