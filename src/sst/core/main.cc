@@ -1649,9 +1649,8 @@ main(int argc, char* argv[])
         record->addData("input_file", cfg.configFile_.value);
         std::map<std::string, std::pair<std::string, std::string>> key_map = { { "metadata",
                                                                                    { "Simulation Summary", "" } },
-            { "ranks", { "Ranks", "" } }, // UnitAlgebra, units unnecessary
-            { "threads", { "Threads", "" } }, { "simulation_time", { "Simulated time", "" } },
-            { "input_file", { "Simulation Input File", "" } } };
+            { "ranks", { "Ranks", "" } }, { "threads", { "Threads", "" } },
+            { "simulation_time", { "Simulated time", "" } }, { "input_file", { "Simulation Input File", "" } } };
         record->setKeys(key_map);
     }
     perfReporter.output(myRank.rank, world_size.rank);
