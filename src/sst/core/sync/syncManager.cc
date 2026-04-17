@@ -118,7 +118,6 @@ public:
 
     // Don't want to reset time for Empty Sync
     void setRestartTime(SimTime_t UNUSED(time)) override {}
-
 };
 
 class EmptyThreadSync : public ThreadSync

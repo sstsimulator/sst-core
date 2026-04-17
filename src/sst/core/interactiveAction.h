@@ -40,7 +40,7 @@ public:
     }
 
     ~InteractiveAction() {}
-#if 1
+
     /**
        Indicates InteractiveAction should be inserted into the
        TimeVortex. The insertion will only happen for serial runs, as
@@ -59,7 +59,6 @@ public:
         sim_->insertActivity(time, this);
         //}
     }
-#endif
 
     /** Called by TimeVortex to trigger interactive mode. */
     void execute() override
@@ -68,7 +67,6 @@ public:
         sim_->interactive_msg_   = msg_;
         delete this;
     }
-
 
 private:
     Simulation_impl* sim_;

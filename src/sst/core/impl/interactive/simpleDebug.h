@@ -40,8 +40,6 @@
 
 #include "sst/core/sst_mpi.h"
 
-#define SKK 1
-
 namespace SST::IMPL::Interactive {
 
 enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER};

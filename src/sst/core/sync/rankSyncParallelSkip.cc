@@ -163,7 +163,7 @@ RankSyncParallelSkip::getSignals(int& end, int& usr, int& alrm)
 void
 RankSyncParallelSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
+    // This must be atomic because it can be set from any thread
     //printf("Enter rankSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
     //            enter_interactive, enter_shutdown, shutdown_mode);
     if (enter_shutdown) {
@@ -184,16 +184,10 @@ RankSyncParallelSkip::setCkptFlag(bool generate_ckpt)
 void
 RankSyncParallelSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
-    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
     if (enter_interactive)
         enter_interactive_.store(enter_interactive);
 
     setShutdownFlags(enter_shutdown, shutdown_mode);
-
-    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
 void 
@@ -211,9 +205,6 @@ RankSyncParallelSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::S
             shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
             break;
     }
- 
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
 void
@@ -228,9 +219,7 @@ RankSyncParallelSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, S
     
     enter_interactive  = enter_interactive_.load();
     getShutdownFlags( enter_shutdown, shutdown_mode);
-    
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
+
 }
 
 void
@@ -240,9 +229,6 @@ RankSyncParallelSkip::clearFlags()
     enter_shutdown_.store(false);
     shutdown_mode_.store(0);
     generate_ckpt_.store(false);
-
-    //printf("Clear Flags: enter_interactive %d, enter_shutdown %d, shutdown_mode %d\n", 
-    //               enter_interactive_, enter_shutdown_, shutdown_mode_);
      
 }
 
@@ -299,19 +285,6 @@ RankSyncParallelSkip::shutdownExchange()
 #endif
 }
 
-#if 0
-void
-RankSyncParallelSkip::ckptExchange()
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    int32_t local_flags[1]  = { static_cast<int32_t>(generate_ckpt_) };
-    int32_t global_flags[1] = { 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    generate_ckpt_  = global_flags[0];
-#endif
-}
-#endif
 
 void
 RankSyncParallelSkip::exchange_slave(int thread)

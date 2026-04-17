@@ -231,7 +231,6 @@ public:
 
     NotSerializable(SST::SyncManager)
 
-    
 private:
     // Enum to track the next sync type
     enum sync_type_t { RANK, THREAD };

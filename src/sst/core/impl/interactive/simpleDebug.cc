@@ -32,7 +32,6 @@
 namespace SST::IMPL::Interactive {
 
 // Static Initialization
-//TODO kg is there a naming convention for static vars?
 unsigned           SimpleDebugger::current_thread  = 0;
 unsigned           SimpleDebugger::current_rank    = 0;
 std::vector<std::string> SimpleDebugger::tokens;
@@ -71,7 +70,6 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     // Populate the command registry
     cmdRegistry = CommandRegistry({
 
-        // SKK Implementerial, thread, rank paths
         // Navigation
         { "help", "?", "<[CMD]>: show this help or detailed command help", ConsoleCommandGroup::GENERAL,
             [this](std::string& UNUSED(cmd_str)) { return cmd_help(cmd_str); }, }, 
@@ -393,14 +391,13 @@ SimpleDebugger::summary()
 int
 SimpleDebugger::consoleExecute(const std::string& msg)
 {
+
     struct winsize size;
     if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
         dout.setLineWidth(size.ws_col);
         dout.setLineCount(size.ws_row);
     }
 
-    // SKK TODO For now start with thread, rank of 0
-    // Eventually change to triggered or last thread
     std::cout << "---- Rank" << current_rank << ":Thread" << current_thread << ": Entering interactive mode at time " 
             << getCurrentSimCycle() << std::endl;
     std::cout << msg << std::endl;
@@ -417,7 +414,6 @@ SimpleDebugger::consoleExecute(const std::string& msg)
 
     // Select the input source and next command line
     std::string line;
-    //while ( !done ) {
     while (!exit_console) {
         try {
             // User input prompt (except during user command)
@@ -427,7 +423,6 @@ SimpleDebugger::consoleExecute(const std::string& msg)
             bool squashLogging = false;
 
             // User input prompt
-            // std::cout << "R" << rank_.rank << ":T" << rank_.thread << "> " << std::flush;
 
             if ( !injectedCommand.str().empty() ) {
                 // Injected commands allow sst command line options to cause actions (currently only replay)
@@ -482,6 +477,7 @@ SimpleDebugger::consoleExecute(const std::string& msg)
             std::cout << "Parsing error. Ignoring " << line << std::endl;
         }
     }
+
     // Save the position on the name_stack, and clear obj_
     save_name_stack();
     done = true;
@@ -647,7 +643,7 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
     std::istringstream iss(input);
     std::string        token;
 
-    // SKK since tokens is now shared, clear it 
+    // since tokens is now shared, clear it 
     tokens.clear();
     while ( iss >> token ) {
         tokens.push_back(token);
@@ -705,7 +701,6 @@ SimpleDebugger::cmd_help(std::string& UNUSED(cmd_str))
     }
     return true;
 }
-
 
 // verbose [mask] : set verbosity mask or print if no mask specified
 bool
@@ -1858,8 +1853,8 @@ SimpleDebugger::cmd_set_remote(std::vector<std::string>& tokens)
     //    If var->selectParent() is not used prior to returning we
     //    can get a segmentation fault on a subsequent command. Address
     //    Sanitizer indicated use of previously freed memory.
-    // 
-    
+    //
+
     if ( obj_->isContainer() ) {
         bool found     = false;
         bool read_only = false;
@@ -3994,7 +3989,6 @@ CommandHistoryBuffer::searchAny(const std::string& s, std::string& newcmd)
 }
 
 // print message based on verbosity
-// SKK Where is this used?
 void
 SimpleDebugger::msg(VERBOSITY_MASK mask, std::string message)
 {
@@ -4339,15 +4333,13 @@ SimpleDebugger::receiveCommandRankSerial() {
     else {
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
-#if 1 
             // Execute in target thread
             if (obj_ == nullptr) {
                 // Create a new ObjectMap
                 obj_ = getComponentObjectMap();
                 // Descend into the name_stack
                 cd_name_stack();
-            } 
-#endif  
+            }
             succeed = consoleCommand.first.exec_remote(tokens);
             //Output::getDefaultObject().output("ReceiveCmdRankSerial: succeed %d\n", succeed);
 

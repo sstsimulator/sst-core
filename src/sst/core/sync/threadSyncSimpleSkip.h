@@ -54,7 +54,7 @@ public:
     bool getSignals(int& end, int& usr, int& alrm) override;
 
     /** Set interactive flags to exchange during sync */
-    // SKK Separated enter_interactive from from shutdown since they may be needed separately
+    // Separated enter_interactive from from shutdown since they may be needed separately
     void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */

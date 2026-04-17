@@ -209,7 +209,6 @@ private:
     bool                                                   reset_         = false;
     WPAction*                                              wpAction;
 
-
     void     setBufferReset();
     void     check();
     uint32_t verbosity = 0;

@@ -222,31 +222,20 @@ ThreadSyncSimpleSkip::getSignals(int& end, int& usr, int& alrm)
 void
 ThreadSyncSimpleSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
-    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
     if (enter_shutdown) {
         enter_shutdown_.store(enter_shutdown);
         shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
     }
-    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
 
 void
 ThreadSyncSimpleSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
-    //printf("Enter threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
     if (enter_interactive)
         enter_interactive_.store(enter_interactive);
 
     setShutdownFlags(enter_shutdown, shutdown_mode);
-
-    //printf("Exit threadSync setFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive_.load(), enter_shutdown_.load(), shutdown_mode_.load());
 }
 
 void 
@@ -264,9 +253,6 @@ ThreadSyncSimpleSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::S
             shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
             break;
     }
- 
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
 void 
@@ -275,9 +261,6 @@ ThreadSyncSimpleSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, S
     
     enter_interactive  = enter_interactive_.load();
     getShutdownFlags( enter_shutdown, shutdown_mode);
-    
-    //printf("ExitthreadSync getFlags: \n input: enter_interactive %d, enter_shutdown %d, shutdown_mode %d \n",
-    //            enter_interactive, enter_shutdown, shutdown_mode);
 }
 
 void

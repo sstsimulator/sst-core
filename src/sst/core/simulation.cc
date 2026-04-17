@@ -1021,8 +1021,6 @@ Simulation_impl::prepare_for_run()
 void
 Simulation_impl::setup_interactive_mode()
 {
-    // SKK Do I need to set something as a flag so we can avoid
-    // all the checking if we didn't enable interactive console?
     if ( interactive_type_ != "" ) {
         // --interactive-console used to override default
         initialize_interactive_console(interactive_type_);
@@ -1165,6 +1163,7 @@ Simulation_impl::run()
             current_activity->toString().c_str());
     }
     /* We shouldn't need to do this, but to be safe... */
+
     runBarrier.wait(); // TODO<- Is this needed?
 
     run_phase_total_time_ = sst_get_cpu_time() - run_phase_start_time_;
