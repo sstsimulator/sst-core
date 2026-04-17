@@ -24,6 +24,8 @@
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
 
+#include <atomic>
+
 #if SST_EVENT_PROFILING
 #define SST_EVENT_PROFILE_START auto event_profile_start = std::chrono::high_resolution_clock::now();
 

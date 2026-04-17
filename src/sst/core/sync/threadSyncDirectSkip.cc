@@ -20,6 +20,8 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
+#include <atomic>
+
 namespace SST {
 
 SimTime_t ThreadSyncDirectSkip::localMinimumNextActivityTime = 0;

@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <ostream>
 #include <sstream>
+#include <streambuf>
 #include <string>
 #include <utility>
 #include <vector>

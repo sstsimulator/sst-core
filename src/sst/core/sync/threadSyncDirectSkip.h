@@ -18,6 +18,7 @@
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/syncQueue.h"
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <unordered_map>

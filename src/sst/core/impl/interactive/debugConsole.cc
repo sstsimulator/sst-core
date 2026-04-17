@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <ios>
 #include <iostream>
 #include <list>
 #include <sstream>

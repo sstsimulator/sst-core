@@ -19,6 +19,7 @@
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
