@@ -1201,7 +1201,7 @@ public:
 
     void dumpTriggerRecord()
     {
-      std::stringstream ss;
+        std::stringstream ss;
         if ( numRecs_ == 0 ) {
             std::cout << "No trace samples in current buffer" << std::endl;
             return;

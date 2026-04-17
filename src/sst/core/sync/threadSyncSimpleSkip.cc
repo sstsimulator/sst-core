@@ -223,7 +223,7 @@ ThreadSyncSimpleSkip::getSignals(int& end, int& usr, int& alrm)
 void
 ThreadSyncSimpleSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    if (enter_shutdown) {
+    if ( enter_shutdown ) {
         enter_shutdown_.store(enter_shutdown);
         shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
     }
@@ -231,37 +231,38 @@ ThreadSyncSimpleSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::Shu
 
 
 void
-ThreadSyncSimpleSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+ThreadSyncSimpleSkip::setFlags(
+    bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    if (enter_interactive)
-        enter_interactive_.store(enter_interactive);
+    if ( enter_interactive ) enter_interactive_.store(enter_interactive);
 
     setShutdownFlags(enter_shutdown, shutdown_mode);
 }
 
-void 
-ThreadSyncSimpleSkip::getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+void
+ThreadSyncSimpleSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
 {
-    enter_shutdown  = enter_shutdown_.load();
-    switch (shutdown_mode_) {
-        case 0:
-            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
-            break;
-        case 1:
-            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
-            break;
-        case 2:
-            shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
-            break;
+    enter_shutdown = enter_shutdown_.load();
+    switch ( shutdown_mode_ ) {
+    case 0:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+        break;
+    case 1:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+        break;
+    case 2:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+        break;
     }
 }
 
-void 
-ThreadSyncSimpleSkip::getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+void
+ThreadSyncSimpleSkip::getFlags(
+    bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
 {
-    
-    enter_interactive  = enter_interactive_.load();
-    getShutdownFlags( enter_shutdown, shutdown_mode);
+
+    enter_interactive = enter_interactive_.load();
+    getShutdownFlags(enter_shutdown, shutdown_mode);
 }
 
 void

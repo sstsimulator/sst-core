@@ -18,6 +18,7 @@
 #include "sst/core/impl/interactive/debugStream.h"
 #include "sst/core/interactiveConsole.h"
 #include "sst/core/serialization/objectMapDeferred.h"
+#include "sst/core/sst_mpi.h"
 #include "sst/core/threadsafe.h"
 #include "sst/core/watchPoint.h"
 
@@ -38,8 +39,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "sst/core/sst_mpi.h"
 
 namespace SST::IMPL::Interactive {
 
@@ -65,7 +64,7 @@ public:
     explicit DebugConsole(Params& params);
     ~DebugConsole();
 
-    int  execute(const std::string& msg) override; // SKK separate to thread, rank execute 
+    int  execute(const std::string& msg) override; // SKK separate to thread, rank execute
     void summary() override;
 
     // Callbacks from command line completions
@@ -79,17 +78,17 @@ private:
     // directory as far as we can.
     std::deque<std::string> name_stack;
 
-    SST::Core::Serialization::ObjectMap* obj_     = nullptr;
-    bool                                 done     = false;
+    SST::Core::Serialization::ObjectMap* obj_         = nullptr;
+    bool                                 done         = false;
     bool                                 exit_console = false;
-    int                                  retState = -1; // -1 DONE, -2 SUMMARY, positive number is threadID
+    int                                  retState     = -1; // -1 DONE, -2 SUMMARY, positive number is threadID
 
     void save_name_stack();
     void cd_name_stack();
 
     ExecutionType exec_type;
-    RankInfo num_ranks_;
-    RankInfo rank_;
+    RankInfo      num_ranks_;
+    RankInfo      rank_;
 
     bool autoCompleteEnable = true;
 
@@ -97,8 +96,8 @@ private:
     std::ofstream loggingFile;
     std::ifstream replayFile;
     std::string   loggingFilePath = "sst-console.out";
-    std::string   replayFilePath = "sst-console.in";
-    bool          enLogging = false;
+    std::string   replayFilePath  = "sst-console.in";
+    bool          enLogging       = false;
 
     // command injection (for sst --replay option)
     std::stringstream injectedCommand;
@@ -114,7 +113,7 @@ private:
     std::vector<std::pair<WatchPoint*, BaseComponent*>> watch_points_;
     bool                                                query_clear_watchlist();
     bool                                                clear_watchlist(std::vector<std::string>& UNUSED(tokens));
-    bool confirm_ = true; // Ask for confirmation to clear watchlist
+    bool                                                confirm_ = true; // Ask for confirmation to clear watchlist
 
     std::vector<std::string> tokenize(std::vector<std::string>& tokens, const std::string& input);
 
@@ -127,13 +126,13 @@ private:
     bool cmd_verbose_rank_serial(std::string& cmd_str);
     bool cmd_verbose_rank_parallel(std::string& cmd_str);
     bool cmd_verbose_remote(std::vector<std::string>&(tokens));
-    
-    bool cmd_info_serial(std::string& UNUSED(cmd_str));  
+
+    bool cmd_info_serial(std::string& UNUSED(cmd_str));
     bool cmd_info_thread(std::string& UNUSED(cmd_str));
     bool cmd_info_rank_serial(std::string& cmd_str);
     bool cmd_info_rank_parallel(std::string& cmd_str);
     bool cmd_info_remote(std::vector<std::string>& UNUSED(tokens));
-   
+
     int  parse_thread();
     bool cmd_thread_serial(std::string& UNUSED(cmd_str));
     bool cmd_thread_thread(std::string& UNUSED(cmd_str));
@@ -182,7 +181,7 @@ private:
     bool cmd_set_rank_serial(std::string& cmd_str);
     bool cmd_set_rank_parallel(std::string& cmd_str);
     bool cmd_set_remote(std::vector<std::string>& tokens);
-    
+
     bool cmd_watch_serial(std::string& UNUSED(cmd_str));
     bool cmd_watch_thread(std::string& UNUSED(cmd_str));
     bool cmd_watch_rank_serial(std::string& cmd_str);
@@ -200,7 +199,7 @@ private:
     bool cmd_watchlist_rank_serial(std::string& cmd_str);
     bool cmd_watchlist_rank_parallel(std::string& cmd_str);
     bool cmd_watchlist_remote(std::vector<std::string>& tokens);
-    
+
     bool cmd_addTraceVar_serial(std::string& UNUSED(cmd_str));
     bool cmd_addTraceVar_thread(std::string& UNUSED(cmd_str));
     bool cmd_addTraceVar_rank_serial(std::string& cmd_str);
@@ -230,13 +229,13 @@ private:
     bool cmd_setHandler_rank_serial(std::string& cmd_str);
     bool cmd_setHandler_rank_parallel(std::string& cmd_str);
     bool cmd_setHandler_remote(std::vector<std::string>& tokens);
-    
+
     bool cmd_unwatch_serial(std::string& UNUSED(cmd_str));
     bool cmd_unwatch_thread(std::string& UNUSED(cmd_str));
     bool cmd_unwatch_rank_serial(std::string& cmd_str);
     bool cmd_unwatch_rank_parallel(std::string& cmd_str);
     bool cmd_unwatch_remote(std::vector<std::string>& tokens);
-    
+
     // Simulation
     bool cmd_run(std::string& UNUSED(cmd_str));
 
@@ -246,7 +245,7 @@ private:
     bool cmd_exit_rank_parallel(std::string& cmd_str);
 
     bool cmd_shutdown(std::string& UNUSED(cmd_str));
-    
+
     // Logging/Replay
     bool cmd_logging(std::string& UNUSED(cmd_str));
     bool cmd_replay(std::string& UNUSED(cmd_str));
@@ -283,19 +282,19 @@ private:
     DebuggerStream dout;
 
     // Support for serial, threaded, rank serial, rank parallel execution
-    static uint32_t current_thread;
-    static uint32_t current_rank;
+    static uint32_t                 current_thread;
+    static uint32_t                 current_rank;
     static std::vector<std::string> tokens;
-    static std::stringstream result;
-    
-    int consoleExecute(const std::string& msg);
-    int executeThread(const std::string& msg);
-    int executeRankSerial(const std::string& msg);
-    int executeRankParallel(const std::string& msg);
+    static std::stringstream        result;
+
+    int  consoleExecute(const std::string& msg);
+    int  executeThread(const std::string& msg);
+    int  executeRankSerial(const std::string& msg);
+    int  executeRankParallel(const std::string& msg);
     bool handleCommand();
     bool handleCommandAll();
-    bool sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::string& cmd);
-    bool sendCommandAll(const std::string&  cmd);
+    bool sendCommand(uint32_t rank_id, uint32_t thread_id, const std::string& cmd);
+    bool sendCommandAll(const std::string& cmd);
     void receiveCommandRankSerial();
     void receiveCommandRankParallel();
     bool sendDone();

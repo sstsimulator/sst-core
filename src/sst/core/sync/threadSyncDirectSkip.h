@@ -62,9 +62,10 @@ public:
     void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */
-    void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
-    void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
-     /** Clear interactive flags before next run */
+    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getFlags(
+        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    /** Clear interactive flags before next run */
     void clearFlags() override;
 
     SimTime_t getNextSyncTime() override { return nextSyncTime - 1; }

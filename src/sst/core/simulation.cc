@@ -1026,7 +1026,7 @@ Simulation_impl::setup_interactive_mode()
         initialize_interactive_console(interactive_type_);
     }
     else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
-                (config.sigusr2() == "sst.rt.interactive") ) {
+              (config.sigusr2() == "sst.rt.interactive") ) {
         // use default interactive console
         interactive_type_ = "sst.interactive.debugger";
         initialize_interactive_console(interactive_type_);
@@ -1046,7 +1046,7 @@ Simulation_impl::setup_interactive_mode()
             }
             else {
                 TimeConverter tc = timeLord.getTimeConverter(time);
-                offset            = tc.getFactor();
+                offset           = tc.getFactor();
             }
         }
         catch ( std::exception& e ) {
@@ -1054,12 +1054,13 @@ Simulation_impl::setup_interactive_mode()
         }
 
         // Special case, invoke interactive console now rather than wait for sync
-        if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) { 
+        if ( num_ranks.rank == 1 && num_ranks.thread > 1 && offset == 0 ) {
             enter_interactive_ = true;
-            //syncManager->handleInteractiveConsole();
-            interactive_msg_ = format_string("Interactive start at %" PRI_SIMTIME, offset);
-            interactive_->execute(format_string("Interactive start at %" PRI_SIMTIME, offset)); // may need to handle shutdown here
-            enter_interactive_ = false;  
+            // syncManager->handleInteractiveConsole();
+            interactive_msg_   = format_string("Interactive start at %" PRI_SIMTIME, offset);
+            interactive_->execute(
+                format_string("Interactive start at %" PRI_SIMTIME, offset)); // may need to handle shutdown here
+            enter_interactive_ = false;
         }
         else {
             InteractiveAction* act =

@@ -60,10 +60,11 @@ public:
     void setCkptFlag(bool generate_ckpt) override;
     void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */
-    void getShutdownFlags( bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
     void getCkptFlag(bool& generate_ckpt) override;
-    void getFlags( bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
-     /** Clear interactive flags before next run */
+    void getFlags(
+        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    /** Clear interactive flags before next run */
     void clearFlags() override;
     void interactiveExchange() override;
     void shutdownExchange() override;
@@ -105,15 +106,14 @@ private:
 
     Profile::SyncProfileToolList* profile_tools_ = nullptr;
 
-    Core::ThreadSafe::Spinlock lock;
-    static int                 sig_end_;
-    static int                 sig_usr_;
-    static int                 sig_alrm_;
-    static std::atomic<bool>         enter_interactive_;
-    static std::atomic<bool>         enter_shutdown_;
-    static std::atomic<unsigned>     shutdown_mode_;
-    static std::atomic<bool>         generate_ckpt_;
-
+    Core::ThreadSafe::Spinlock   lock;
+    static int                   sig_end_;
+    static int                   sig_usr_;
+    static int                   sig_alrm_;
+    static std::atomic<bool>     enter_interactive_;
+    static std::atomic<bool>     enter_shutdown_;
+    static std::atomic<unsigned> shutdown_mode_;
+    static std::atomic<bool>     generate_ckpt_;
 };
 
 } // namespace SST

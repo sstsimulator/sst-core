@@ -23,7 +23,7 @@
 
 namespace SST::IMPL::Interactive {
 
-enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER};
+enum class ConsoleCommandGroup { GENERAL, NAVIGATION, STATE, WATCH, SIMULATION, LOGGING, MISC, USER };
 enum class ExecutionType { SERIAL, THREAD, RANK_SERIAL, RANK_PARALLEL };
 
 const std::map<ConsoleCommandGroup, std::string> GroupText {
@@ -55,7 +55,7 @@ class ConsoleCommand
 public:
     // Constructor for built-in commands has callback - console only
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        std::function<bool(std::string& cmd_str)> func ) :
+        std::function<bool(std::string& cmd_str)> func) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
@@ -65,38 +65,36 @@ public:
 
     // Constructor for built-in commands has callback - remote calls
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
-        ExecutionType exec_type,
-        std::function<bool(std::string& cmd_str)> func_serial, 
-        std::function<bool(std::string& cmd_str)> func_thread,
-        std::function<bool(std::string& cmd_str)> func_rank_serial,
-        std::function<bool(std::string& cmd_str)> func_rank_parallel, 
-        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote
-        ) :
+        ExecutionType exec_type, std::function<bool(std::string& cmd_str)> func_serial,
+        std::function<bool(std::string& cmd_str)>                     func_thread,
+        std::function<bool(std::string& cmd_str)>                     func_rank_serial,
+        std::function<bool(std::string& cmd_str)>                     func_rank_parallel,
+        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
         group_(group),
         exec_type_(exec_type),
-        func_serial_(func_serial), 
+        func_serial_(func_serial),
         func_thread_(func_thread),
         func_rank_serial_(func_rank_serial),
         func_rank_parallel_(func_rank_parallel),
         func_remote_(func_remote)
-    { 
+    {
         // Serial
-        if (exec_type_ == ExecutionType::SERIAL) {
+        if ( exec_type_ == ExecutionType::SERIAL ) {
             func_ = func_serial_;
         }
         // Thread (single rank, multiple threads)
-        else if (exec_type_ == ExecutionType::THREAD) {
+        else if ( exec_type_ == ExecutionType::THREAD ) {
             func_ = func_thread_;
         }
         // Rank Serial (multiple ranks, single thread per rank)
-        else if (exec_type_ == ExecutionType::RANK_SERIAL) {
+        else if ( exec_type_ == ExecutionType::RANK_SERIAL ) {
             func_ = func_rank_serial_;
         }
         // Rank Parallel (multiple ranks, multiple threads per rank)
-        else  {
+        else {
             func_ = func_rank_parallel_;
         }
     }
@@ -117,7 +115,7 @@ public:
     const ConsoleCommandGroup& group() const { return group_; }
     // Command Execution
     bool                       exec(std::string& cmd_str) { return func_(cmd_str); }
-    bool                       exec_serial(std::string& cmd_str)  { return func_serial_(cmd_str); }                   
+    bool                       exec_serial(std::string& cmd_str) { return func_serial_(cmd_str); }
     bool                       exec_thread(std::string& cmd_str) { return func_thread_(cmd_str); }
     bool                       exec_rank_serial(std::string& cmd_str) { return func_rank_serial_(cmd_str); }
     bool                       exec_rank_parallel(std::string& cmd_str) { return func_rank_parallel_(cmd_str); }
@@ -136,20 +134,20 @@ public:
     }
 
 private:
-    std::string                                           str_long_;
-    std::string                                           str_short_;
-    std::string                                           str_help_;
-    ConsoleCommandGroup                                   group_;
-    ExecutionType                                         exec_type_;
+    std::string         str_long_;
+    std::string         str_short_;
+    std::string         str_help_;
+    ConsoleCommandGroup group_;
+    ExecutionType       exec_type_;
 
-    std::function<bool(std::string& cmd_str)> func_;
-    std::function<bool(std::string& cmd_str)> func_serial_;
-    std::function<bool(std::string& cmd_str)> func_thread_;
-    std::function<bool(std::string& cmd_str)> func_rank_serial_;
-    std::function<bool(std::string& cmd_str)> func_rank_parallel_;
+    std::function<bool(std::string& cmd_str)>                     func_;
+    std::function<bool(std::string& cmd_str)>                     func_serial_;
+    std::function<bool(std::string& cmd_str)>                     func_thread_;
+    std::function<bool(std::string& cmd_str)>                     func_rank_serial_;
+    std::function<bool(std::string& cmd_str)>                     func_rank_parallel_;
     std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote_;
 
-    std::string                                           toLower(std::string s)
+    std::string toLower(std::string s)
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower);
         return s;
