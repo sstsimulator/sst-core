@@ -553,9 +553,8 @@ SyncManager::execute()
     if (sim_->interactive_) {
         interactive_enabled = true;
     }
-
     if ( profile_tools_ ) profile_tools_->syncManagerStart(next_sync_type_ == RANK);
- 
+
     SimTime_t next_checkpoint_time = MAX_SIMTIME_T;
 
     switch ( next_sync_type_ ) {
