@@ -434,8 +434,7 @@ JSONConfigGraphOutput::outputProgramOptions(const Config* cfg, std::ofstream& of
     ofs << "\"program_options\":";
     record["verbose"]                = std::to_string(cfg->verbose());
     record["stop-at"]                = cfg->stop_at();
-    record["print-timing-info"]      = std::to_string(cfg->print_timing());
-    record["timing-info-json"]       = cfg->timing_json();
+    record["timing-info"]            = std::to_string(cfg->print_timing());
     // Ignore stopAfter for now
     // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec();
     record["heartbeat-sim-period"]   = cfg->heartbeat_sim_period();

@@ -73,6 +73,8 @@ checkForValidLinkName(const std::string& name)
 
 namespace SST {
 
+bool ConfigGraph::serialize_for_checkpoint = false;
+
 ConfigGraph::ConfigGraph() :
     nextComponentId(0)
 {
@@ -634,6 +636,7 @@ ConfigGraph::splitGraph(const std::set<uint32_t>& orig_rank_set, const std::set<
         graph->cpt_minPartTC        = cpt_minPartTC;
         graph->cpt_max_event_id     = cpt_max_event_id;
         graph->cpt_remap_partitions = cpt_remap_partitions;
+        graph->cpt_repartition      = cpt_repartition;
 
         graph->cpt_libnames       = cpt_libnames;
         graph->cpt_shared_objects = cpt_shared_objects;
@@ -890,6 +893,15 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
         }
     }
 }
+
+void
+ConfigGraph::annotateCompRestartLocation(ComponentId_t cid, const std::string& filename, uint64_t offset)
+{
+    ConfigComponent* comp = comps_[cid];
+    comp->type            = filename;
+    comp->next_stat_id    = offset;
+}
+
 
 void
 ConfigGraph::setComponentConfigGraphPointers()

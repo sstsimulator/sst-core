@@ -25,6 +25,10 @@ namespace SST {
 class RankSyncQueue;
 class TimeConverter;
 
+namespace Profile {
+class SyncProfileToolList;
+};
+
 class RankSyncSerialSkip : public RankSync
 {
 public:
@@ -69,6 +73,7 @@ public:
 
     uint64_t getDataSize() const override;
 
+    void setProfileToolList(Profile::SyncProfileToolList* profile_tools) override;
 
 private:
     static SimTime_t myNextSyncTime;
@@ -96,6 +101,8 @@ private:
 
     double mpiWaitTime;
     double deserializeTime;
+
+    Profile::SyncProfileToolList* profile_tools_ = nullptr;
 
     Core::ThreadSafe::Spinlock lock;
     static int                 sig_end_;

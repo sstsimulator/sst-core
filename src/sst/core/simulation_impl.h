@@ -78,6 +78,10 @@ class StatisticOutput;
 class StatisticProcessingEngine;
 } // namespace Statistics
 
+namespace Util {
+class PerfReporter;
+} // namespace Util
+
 namespace pvt {
 
 /**
@@ -218,8 +222,11 @@ public:
     int  prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int  performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     void exchangeLinkInfo();
+
+    /** Functions to compute the current rank and thread sync intervals */
     void findRankSyncInterval();
     void findThreadSyncInterval();
+    void updateSyncMinPart();
 
     /** Setup external control actions (forced stops, signal handling */
     void setupSimActions();
@@ -253,7 +260,7 @@ public:
 
     bool isIndependentThread() { return independent; }
 
-    void printProfilingInfo(FILE* fp);
+    void printProfilingInfo(Util::PerfReporter* reporter);
 
     void printPerformanceInfo();
 
@@ -388,7 +395,7 @@ public:
      */
     TimeConverter minPartToTC(SimTime_t cycles) const;
 
-    std::string initializeCheckpointInfrastructure(const std::string& prefix);
+    static void writeCheckpointConfigGraph(ConfigGraph* graph);
     void        scheduleCheckpoint();
     void        scheduleInteractiveConsole(const std::string& msg);
 
@@ -487,6 +494,8 @@ public:
     void endSimulation();
     void endSimulation(SimTime_t end);
 
+    void checkIndependent();
+
     enum ShutdownMode_t {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
         SHUTDOWN_SIGNAL,    /* SIGINT or SIGTERM received */
@@ -522,6 +531,7 @@ public:
     SimulatorHeartbeat*     m_heartbeat = nullptr;
     CheckpointAction*       checkpoint_action_;
     static std::string      checkpoint_directory_;
+    static std::string      checkpoint_configgraph_;
     bool                    endSim = false;
     bool                    independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int> untimed_msg_count;
@@ -634,24 +644,12 @@ public:
     uint64_t rankLatency     = 0; // Serialization time
     uint64_t messageXferSize = 0;
 
-    uint64_t rankExchangeBytes   = 0; // Serialization size
-    uint64_t rankExchangeEvents  = 0; // Serialized events
     uint64_t rankExchangeCounter = 0; // Num rank peer exchanges
 
 
     // Profiling functions
     void incrementSerialCounters(uint64_t count);
-    void incrementExchangeCounters(uint64_t events, uint64_t bytes);
 
-#endif
-
-#if SST_SYNC_PROFILING
-    uint64_t rankSyncCounter   = 0; // Num. of rank syncs
-    uint64_t rankSyncTime      = 0; // Total time rank syncing, in ns
-    uint64_t threadSyncCounter = 0; // Num. of thread syncs
-    uint64_t threadSyncTime    = 0; // Total time thread syncing, in ns
-                                    // Does not include thread syncs as part of rank syncs
-    void     incrementSyncTime(bool rankSync, uint64_t count);
 #endif
 
 #if SST_HIGH_RESOLUTION_CLOCK

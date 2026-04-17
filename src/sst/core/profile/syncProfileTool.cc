@@ -15,6 +15,7 @@
 
 #include "sst/core/output.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <chrono>
 #include <cinttypes>
@@ -31,17 +32,42 @@ SyncProfileToolCount::SyncProfileToolCount(const std::string& name, Params& para
 {}
 
 void
-SyncProfileToolCount::syncManagerStart()
+SyncProfileToolCount::syncManagerStart(bool ranksync)
 {
-    syncmanager_count++;
+    if ( !ranksync ) {
+        threadsync_count_++;
+    }
+    else {
+        syncmanager_count++;
+    }
 }
 
+void
+SyncProfileToolCount::updateSyncSize(size_t bytes, size_t events)
+{
+    bytes_exchanged_ += bytes;
+    events_exchanged_ += events;
+}
 
 void
-SyncProfileToolCount::outputData(FILE* fp)
+SyncProfileToolCount::outputData(SST::Util::DataRecord* record, RankInfo rank)
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "  SyncManager Count = %" PRIu64 "\n", syncmanager_count);
+    if ( rank.thread == 0 ) {
+        record->setFormat(SST::Util::DataRecord::TextFormat::list);
+
+        std::map<std::string, std::pair<std::string, std::string>> keys = { { "sync", { "Sync Profiling Data", "" } },
+            { "ranksync_total_count", { "RankSync Total Syncs", "" } },
+            { "threadsync_total_count", { "ThreadSync Total Syncs", "" } },
+            { "ranksync_total_events", { "RankSync Total Events Exchanged", "" } },
+            { "ranksync_total_data", { "RankSync Total Data Exchanged", "" } } };
+
+        record->setKeys(keys);
+    }
+    record->addChild("rank" + std::to_string(rank.rank));
+    record->addData("ranksync_total_count", syncmanager_count);
+    record->addData("threadsync_total_count", threadsync_count_);
+    record->addData("ranksync_total_events", events_exchanged_);
+    record->addData("ranksync_total_data", UnitAlgebra(std::to_string(bytes_exchanged_) + "B"));
 }
 
 
@@ -52,17 +78,42 @@ SyncProfileToolTime<T>::SyncProfileToolTime(const std::string& name, Params& par
 
 template <typename T>
 void
-SyncProfileToolTime<T>::outputData(FILE* fp)
+SyncProfileToolTime<T>::outputData(SST::Util::DataRecord* record, RankInfo rank)
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "  SyncManager Count = %" PRIu64 "\n", syncmanager_count);
-    fprintf(fp, "  Total SyncManager Time = %lfs\n", (float)syncmanager_time / 1000000000.0);
-    if ( syncmanager_count == 0 ) {
-        fprintf(fp, "  Average SyncManager Time = N/A\n");
+    if ( rank.thread == 0 ) {
+        std::map<std::string, std::pair<std::string, std::string>> keys = { { "sync", { "Sync Profiling Data", "" } },
+            { "ranksync_total_count", { "RankSync Total Syncs", "" } },
+            { "ranksync_total_time", { "RankSync Total Time", "" } },
+            { "ranksync_avg_time", { "RankSync Time per Sync", "" } },
+            { "threadsync_total_count", { "ThreadSync Total Syncs", "" } },
+            { "threadsync_total_time", { "ThreadSync Total Time", "" } },
+            { "threadsync_avg_time", { "ThreadSync Time per Sync", "" } },
+            { "ranksync_total_events", { "RankSync Total Events Exchanged", "" } },
+            { "ranksync_total_data", { "RankSync Total Data Exchanged", "" } } };
+
+        record->setKeys(keys);
+        record->setFormat(SST::Util::DataRecord::TextFormat::list);
+    }
+    record->addChild("rank" + std::to_string(rank.rank));
+    record->addData("ranksync_total_count", syncmanager_count);
+    record->addData("ranksync_total_time", UnitAlgebra(std::to_string((float)syncmanager_time / 1000000000.0) + "s"));
+    record->addData("threadsync_total_count", threadsync_count);
+    record->addData("threadsync_total_time", UnitAlgebra(std::to_string((float)threadsync_time / 1000000000.0) + "s"));
+
+    if ( syncmanager_count != 0 ) {
+        record->addData("ranksync_avg_time", UnitAlgebra(std::to_string(syncmanager_time / syncmanager_count) + "ns"));
     }
     else {
-        fprintf(fp, "  Average SyncManager Time = %" PRIu64 "ns\n", syncmanager_time / syncmanager_count);
+        record->addData("ranksync_avg_time", UnitAlgebra("0ns"));
     }
+    if ( threadsync_count != 0 ) {
+        record->addData("threadsync_avg_time", UnitAlgebra(std::to_string(threadsync_time / threadsync_count) + "ns"));
+    }
+    else {
+        record->addData("threadsync_avg_time", UnitAlgebra("0ns"));
+    }
+    record->addData("ranksync_total_events", events_exchanged_);
+    record->addData("ranksync_total_data", UnitAlgebra(std::to_string(bytes_exchanged_) + "B"));
 }
 
 
@@ -107,5 +158,6 @@ public:
 
     SST_ELI_EXPORT(SyncProfileToolTimeSteady)
 };
+
 
 } // namespace SST::Profile

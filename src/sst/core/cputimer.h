@@ -12,13 +12,19 @@
 #ifndef SST_CORE_CPU_TIMER_H
 #define SST_CORE_CPU_TIMER_H
 
+#include <cstdint>
 #include <string>
 #include <sys/time.h>
 
 /**
- * @return Current CPU time using the time of day. Timezone information is not filled.
+ * @return Current CPU time in seconds using the time of day. Timezone information is not filled.
  */
 double sst_get_cpu_time();
+
+/**
+ * @return Current CPU time in us using the time of day. Timezone information is not filled.
+ */
+uint64_t sst_get_cpu_time_usec();
 
 /**
    Returns a string with the current time in HH:MM:SS format

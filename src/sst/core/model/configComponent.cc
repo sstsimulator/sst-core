@@ -580,6 +580,34 @@ ConfigComponent::replaceLinkId(LinkId_t old_id, LinkId_t new_id)
 }
 
 void
+ConfigComponent::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST_SER(id);
+    SST_SER(name);
+    SST_SER(slot_num);
+    SST_SER(rank.rank);
+    SST_SER(rank.thread);
+    SST_SER(links);
+    SST_SER(nextSubID);
+    SST_SER(subComponents);
+
+    // None of the variables below are needed for checkpoint serialization
+    if ( ConfigGraph::serialize_for_checkpoint ) return;
+    SST_SER(type);
+    SST_SER(weight);
+    SST_SER(params);
+    SST_SER(statLoadLevel);
+    SST_SER(port_modules);
+    SST_SER(enabledStatNames);
+    SST_SER(enabledAllStats);
+    SST_SER(statistics_);
+    SST_SER(allStatConfig);
+    SST_SER(coords);
+    SST_SER(next_stat_id);
+}
+
+
+void
 ConfigComponent::checkPorts() const
 {
     std::map<std::string, std::string> ports;

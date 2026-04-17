@@ -22,6 +22,10 @@
 
 namespace SST {
 
+namespace Profile {
+class SyncProfileToolList;
+}
+
 /**
    \class SyncQueue
 
@@ -40,6 +44,8 @@ public:
 
     /** Accessor method to get to_rank */
     RankInfo getToRank() { return to_rank; }
+
+    virtual void setProfileTools(Profile::SyncProfileToolList* UNUSED(profile_tools)) {}
 
 private:
     RankInfo to_rank;
@@ -79,10 +85,13 @@ public:
 
     uint64_t getDataSize() { return buf_size + (activities.capacity() * sizeof(Activity*)); }
 
+    void setProfileTools(Profile::SyncProfileToolList* profile_tools) override { profile_tools_ = profile_tools; }
+
 private:
-    char*                  buffer;
-    size_t                 buf_size;
-    std::vector<Activity*> activities;
+    char*                         buffer;
+    size_t                        buf_size;
+    std::vector<Activity*>        activities;
+    Profile::SyncProfileToolList* profile_tools_ = nullptr;
 
     Core::ThreadSafe::Spinlock slock;
 };

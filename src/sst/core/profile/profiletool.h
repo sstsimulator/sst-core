@@ -13,6 +13,7 @@
 #define SST_CORE_PROFILE_PROFILETOOL_H
 
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
@@ -20,7 +21,12 @@
 
 namespace SST {
 class Params;
+
+namespace Util {
+class DataRecord;
 }
+} // namespace SST
+
 
 namespace SST::Profile {
 
@@ -45,7 +51,7 @@ public:
 
     std::string getName() { return name; }
 
-    virtual void outputData(FILE* fp) = 0;
+    virtual void outputData(SST::Util::DataRecord* record, RankInfo rank) = 0;
 
 protected:
     const std::string name;

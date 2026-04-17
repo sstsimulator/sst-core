@@ -1,7 +1,5 @@
------------------------------
-Rank = 0, thread = 0:
 
-events
-Name, recv count
-global, 639936
 
+events:
+  global:
+    recv_count: 639936

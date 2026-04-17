@@ -24,6 +24,7 @@ namespace SST {
 class Output;
 
 namespace Util {
+class PerfReporter;
 
 struct RegionPerfInfo
 {
@@ -193,9 +194,8 @@ public:
     int64_t  getMetricSigned(const std::string& name);
     double   getMetricFloat(const std::string& name);
 
-    void outputRegionData(Output& out, size_t);
-
     void setReportRegionInfo(Output& output, size_t verbose);
+    void outputRegionData(size_t verbose, PerfReporter* reporter);
 
 private:
 

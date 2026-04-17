@@ -48,11 +48,16 @@ std::string createUniqueDirectory(const std::string basename);
 void removeDirectory(const std::string name);
 
 /**
-   Initializes the infrastructure needed for checkpointing.  Uses the
-   createUniqueDirectory() function to create the directory, then
-   broadcasts the name to all ranks.
+   Initializes the infrastructure needed for checkpointing.  Uses the createUniqueDirectory() function to create the
+   directory, then broadcasts the name to all ranks.
+
+   This function is called twice.  Once after graph parititioning and once right after creation of the realtime manager
+   in the Simulation object. The first call will create the directory structure if any of the command line options other
+   than realtime actions enable checkpointing.  This is needed so that the system can write out the ConfigGraph for
+   repartitioned restarts while is still has it in one piece (note, this is not done for parallel loads).  We check
+   again after the realtime manager is created in case the only way to trigger a checkpoint is through signals.
  */
-std::string initializeCheckpointInfrastructure(Config* cfg, bool rt_can_ckpt, int myRank);
+std::string initializeCheckpointInfrastructure(Config* cfg, bool can_ckpt, int myRank);
 
 } // namespace Checkpointing
 

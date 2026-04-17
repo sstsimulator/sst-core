@@ -43,6 +43,7 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <algorithm>
 #include <atomic>
@@ -868,7 +869,7 @@ Simulation_impl::exchangeLinkInfo()
 void
 Simulation_impl::findRankSyncInterval()
 {
-    syncManager->findRankSyncInterval();
+    minPart = syncManager->findRankSyncInterval();
 }
 
 void
@@ -877,6 +878,11 @@ Simulation_impl::findThreadSyncInterval()
     syncManager->findThreadSyncInterval();
 }
 
+void
+Simulation_impl::updateSyncMinPart()
+{
+    syncManager->updateMinPart();
+}
 
 void
 Simulation_impl::initialize()
@@ -1000,7 +1006,7 @@ Simulation_impl::prepare_for_run()
         if ( compInfoMap.empty() ) {
             // std::cout << "Thread " << my_rank.thread << " is exiting with nothing to do" << std::endl;
             StopAction* sa = new StopAction();
-            sa->setDeliveryTime(0);
+            sa->setDeliveryTime(currentSimCycle);
             timeVortex->insert(sa);
         }
     }
@@ -1010,11 +1016,6 @@ Simulation_impl::prepare_for_run()
 
     // Tell the real time manager that the simulation is beginning
     real_time_->begin();
-
-    std::string header = std::to_string(my_rank.rank);
-    header += ", ";
-    header += std::to_string(my_rank.thread);
-    header += ":  ";
 }
 
 void
@@ -1160,9 +1161,9 @@ Simulation_impl::run()
             "ERROR: SST Core detected a time fault (an event had an earlier time than the previous event). The most "
             "likely cause of this is that the 64-bit core time had an overflow condition.  This is typically caused by "
             "having low frequency events with too low of a timebase.  See the extended help for --timebase option (sst "
-            "--help timebase)\n");
+            "--help timebase)\nLast activity executed: %s\n",
+            current_activity->toString().c_str());
     }
-
     /* We shouldn't need to do this, but to be safe... */
     runBarrier.wait(); // TODO<- Is this needed?
 
@@ -1509,30 +1510,7 @@ Simulation_impl::incrementSerialCounters(uint64_t count)
     rankLatency += count;
     ++rankExchangeCounter;
 }
-
-void
-Simulation_impl::incrementExchangeCounters(uint64_t events, uint64_t bytes)
-{
-    rankExchangeEvents += events;
-    rankExchangeBytes += bytes;
-}
 #endif // SST_EVENT_PROFILING
-
-
-#if SST_SYNC_PROFILING
-void
-Simulation_impl::incrementSyncTime(bool rankSync, uint64_t count)
-{
-    if ( rankSync ) {
-        ++rankSyncCounter;
-        rankSyncTime += count;
-    }
-    else {
-        ++threadSyncCounter;
-        threadSyncTime += count;
-    }
-}
-#endif // SST_SYNC_PROFILING
 
 
 std::pair<pvt::TimeVortexSort::iterator, pvt::TimeVortexSort::iterator>
@@ -1751,6 +1729,52 @@ Simulation_impl::getComponentObjectMap()
 
 
 void
+Simulation_impl::writeCheckpointConfigGraph(ConfigGraph* graph)
+{
+    if ( checkpoint_configgraph_.empty() ) return;
+
+    //  If we are doing a restart, and we aren't remapping partitions, then the ConfigGraph is empty and we need to just
+    //  copy to original one.  We can do the check by looking at cpt_repartition and cpt_orig_configgraph.
+    if ( !graph->cpt_orig_configgraph.empty() && !graph->cpt_repartition ) {
+        // We are restarting (known because we have an original configgraph), but are not repartitioning, so the main
+        // ConfigGraph datastructure will be empty.  We will just copy the file
+        std::filesystem::copy_file(graph->cpt_orig_configgraph, checkpoint_directory_ + "/" + checkpoint_configgraph_);
+        return;
+    }
+
+
+    // Turn on checkpoint mode serialization for ConfigGraph
+    ConfigGraph::serialize_for_checkpoint = true;
+
+    SST::Core::Serialization::serializer ser;
+
+    size_t            size;
+    std::vector<char> buffer;
+
+    // We will serialize as a non-pointer so we can deserialize "in-place" on restart
+    ser.start_sizing();
+    SST_SER(*graph);
+
+    size = ser.size();
+    buffer.resize(size);
+
+    ser.start_packing(buffer.data(), size);
+    SST_SER(*graph);
+
+    std::ofstream fs =
+        filesystem.ofstream(checkpoint_directory_ + "/" + checkpoint_configgraph_, std::ios::out | std::ios::binary);
+
+    fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    fs.write(buffer.data(), size);
+
+    fs.close();
+
+    // Turn off checkpoint mode serialization for ConfigGraph
+    ConfigGraph::serialize_for_checkpoint = false;
+}
+
+
+void
 Simulation_impl::scheduleCheckpoint()
 {
 #if 0
@@ -1917,7 +1941,9 @@ Simulation_impl::checkpoint_write_globals(int checkpoint_id, const std::string& 
 #undef WR
 
     fs_reg << "** (globals): " << globals_filename << std::endl;
+    if ( !checkpoint_configgraph_.empty() ) fs_reg << "** (configgraph): ../" << checkpoint_configgraph_ << std::endl;
 
+    fs_reg << "** (start component registry):" << std::endl;
     fs_reg.close();
 }
 
@@ -1946,9 +1972,8 @@ Simulation_impl::checkpoint_append_registry(const std::string& registry_name, co
 void
 Simulation_impl::checkpoint(const std::string& checkpoint_filename)
 {
-    std::ofstream fs     = filesystem.ofstream(checkpoint_filename, std::ios::out | std::ios::binary);
+    std::ofstream fs = filesystem.ofstream(checkpoint_filename, std::ios::out | std::ios::binary);
     // TODO: Add error checking for file open
-    uint64_t      offset = 0;
 
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
@@ -1976,11 +2001,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
     // Write buffer to file
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
     fs.write(&buffer[0], size);
-    offset += (sizeof(size) + size);
 
     size = compInfoMap.size();
     fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    offset += size;
 
     // Clear the offsets vector to start this round
     component_blob_offsets_.clear();
@@ -1996,10 +2019,9 @@ Simulation_impl::checkpoint(const std::string& checkpoint_filename)
         ser.start_packing(&buffer[0], size);
         SST_SER(compinfo);
 
-        component_blob_offsets_.emplace_back(compinfo->id_, offset);
+        component_blob_offsets_.emplace_back(compinfo->id_, fs.tellp());
         fs.write(reinterpret_cast<const char*>(&size), sizeof(size));
         fs.write(&buffer[0], size);
-        offset += (sizeof(size) + size);
     }
 
     fs.close();
@@ -2077,46 +2099,96 @@ Simulation_impl::restart(ConfigGraph* graph)
     // have the same parallelism or we would have errored before getting here.  The variable is static, but all threads
     // will set it since they will all set it to the same thing.  This will avoid the need for a barrier while ensuring
     // that all threads will see the proper value.
-    if ( !serial_restart_ && !graph->cpt_remap_partitions ) {
+    if ( !serial_restart_ && !graph->cpt_remap_partitions && !graph->cpt_repartition ) {
         Link::is_restart_same_parallelism = true;
     }
 
-    // Check to see if we are doing a remapping of the partitions (i.e. restart run has same total number of partitions,
-    // but different rank/thread values)
-    uint32_t effective_rank   = my_rank.rank;
-    uint32_t effective_thread = my_rank.thread;
-    if ( graph->cpt_remap_partitions ) {
-        // Need to generate an effective rank and thread as we are remapping partitions because we have the same total
-        // number, but not the same exact ranks and threads.
-        uint32_t index   = (my_rank.rank * num_ranks.thread) + my_rank.thread;
-        effective_rank   = index / graph->cpt_ranks.thread;
-        effective_thread = index % graph->cpt_ranks.thread;
-    }
+    if ( !graph->cpt_repartition ) {
+        // Check to see if we are doing a remapping of the partitions (i.e. restart run has same total number of
+        // partitions, but different rank/thread values)
+        uint32_t effective_rank   = my_rank.rank;
+        uint32_t effective_thread = my_rank.thread;
+        if ( graph->cpt_remap_partitions ) {
+            // Need to generate an effective rank and thread as we are remapping partitions because we have the same
+            // total number, but not the same exact ranks and threads.
+            uint32_t index   = (my_rank.rank * num_ranks.thread) + my_rank.thread;
+            effective_rank   = index / graph->cpt_ranks.thread;
+            effective_thread = index % graph->cpt_ranks.thread;
+        }
 
-    // Need to do this in the same order as the registry file so we
-    // don't have to keep looking from the beginning
-    for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
-        for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
-            if ( !serial_restart_ && (effective_rank != r || effective_thread != t) ) continue;
-            search_str = "** (";
-            search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
-            while ( std::getline(fs, line) ) {
-                size_t pos = line.find(search_str);
-                if ( pos == 0 ) {
-                    // Get the file name
-                    blob_filenames.push_back(checkpoint_directory + "/" + line.substr(search_str.length()));
-                    break;
+        // Need to do this in the same order as the registry file so we don't have to keep looking from the beginning
+        for ( uint32_t r = 0; r < num_ranks_cpt.rank; ++r ) {
+            for ( uint32_t t = 0; t < num_ranks_cpt.thread; ++t ) {
+                if ( !serial_restart_ && (effective_rank != r || effective_thread != t) ) continue;
+                search_str = "** (";
+                search_str = search_str + std::to_string(r) + ":" + std::to_string(t) + "): ";
+                while ( std::getline(fs, line) ) {
+                    size_t pos = line.find(search_str);
+                    if ( pos == 0 ) {
+                        // Get the file name
+                        blob_filenames.push_back(checkpoint_directory + "/" + line.substr(search_str.length()));
+                        break;
+                    }
                 }
             }
         }
     }
 
-
     fs.close();
 
     ser.enable_pointer_tracking();
 
-    if ( blob_filenames.size() == 1 ) {
+    if ( blob_filenames.size() == 0 ) {
+        // This is a repartitioned restart. We can't just open a single file, we need to find all the components
+        // allocated to this partition regardless of where they are
+        interThreadMinLatency = num_ranks.thread != 1 ? 0 : bit_util::type_max<SimTime_t>;
+        minPart               = num_ranks.rank != 1 ? 0 : bit_util::type_max<SimTime_t>;
+        independent           = false;
+
+        // Set up the syncManager
+        syncManager = new SyncManager(my_rank, num_ranks, minPart, interThreadLatencies, real_time_);
+        // Look at simulation.cc line 365 on setting up profile tools
+
+        completeBarrier.wait();
+
+        /* Initial fix up of stat engine, the rest is after components re-register statistics */
+        stat_engine.restart();
+
+
+        // Need to get the information about each component in my partition
+        std::vector<std::pair<std::string, uint64_t>> my_comps;
+        for ( auto* x : graph->comps_ ) {
+            if ( x->rank.thread == my_rank.thread ) {
+                my_comps.emplace_back(x->type, x->next_stat_id);
+            }
+        }
+
+        std::sort(my_comps.begin(), my_comps.end());
+
+        std::string current_filename;
+
+        std::ifstream     fs_blob;
+        std::vector<char> buffer;
+        size_t            size = 0;
+        for ( auto& x : my_comps ) {
+            if ( current_filename != x.first ) {
+                current_filename = x.first;
+                if ( fs_blob.is_open() ) fs_blob.close();
+                fs_blob.open(checkpoint_directory + "/" + current_filename, std::ios::binary);
+            }
+            fs_blob.seekg(x.second);
+            fs_blob.read(reinterpret_cast<char*>(&size), sizeof(size));
+            buffer.resize(size);
+            fs_blob.read(buffer.data(), size);
+            ser.start_unpacking(buffer.data(), size);
+            // ComponentInfo* compInfo = new ComponentInfo();
+            ComponentInfo* compInfo;
+            SST_SER(compInfo);
+            compInfoMap.insert(compInfo);
+        }
+        if ( fs_blob.is_open() ) fs_blob.close();
+    }
+    else if ( blob_filenames.size() == 1 ) {
         // This is a regular restart (same parallelism as checkpoint)
         std::ifstream fs_blob(blob_filenames[0], std::ios::binary);
 
@@ -2227,15 +2299,25 @@ Simulation_impl::restart(ConfigGraph* graph)
     if ( my_rank.thread == 0 ) {
         StatisticProcessingEngine::stat_outputs_simulation_start();
     }
-    stat_engine.startOfSimulation();
 
-    real_time_->begin();
+
+    // stat_engine.startOfSimulation();
+
+    // real_time_->begin();
+}
+
+void
+Simulation_impl::checkIndependent()
+{
+    std::pair<SimTime_t, SimTime_t> sync_intervals = syncManager->getSyncIntervals();
+    if ( sync_intervals.first == MAX_SIMTIME_T && sync_intervals.second == MAX_SIMTIME_T ) {
+        independent = true;
+    }
 }
 
 void
 Simulation_impl::discoverRemoteLinks()
 {
-    // If we are multi-threaded, Need to intialize the necessary data structures
     if ( num_ranks.thread > 1 ) {
         // Initialize my local queue.  This will be used to receive data from the previous thread
         local_discover_queue.initialize(2);
@@ -2497,32 +2579,19 @@ Simulation_impl::printSimulationState()
 }
 
 void
-Simulation_impl::printProfilingInfo(FILE* fp)
+Simulation_impl::printProfilingInfo(Util::PerfReporter* reporter)
 {
+    // Modifying shared state so serialize threads through this function
+    std::lock_guard<std::mutex> lock(simulationMutex);
+
     // If no profile tools are installed, return without doing
     // anything
     if ( profile_tools.size() == 0 ) return;
 
-    // Print out a header if printing to stdout
-    if ( fp == stdout && my_rank.rank == 0 && my_rank.thread == 0 ) {
-        fprintf(fp, "\n------------------------------------------------------------\n");
-        fprintf(fp, "Profiling Output:\n\n");
-    }
-
-    fprintf(fp, "-----------------------------\n");
-
-    // Print the rank and thread.  Profiling output is serialized
-    // through both ranks and threads.
-    fprintf(fp, "Rank = %" PRIu32 ", thread = %" PRIu32 ":\n\n", my_rank.rank, my_rank.thread);
-
     for ( auto tool : profile_tools ) {
-        tool.second->outputData(fp);
-        fprintf(fp, "\n");
-    }
-
-    // Print footer if printing on stdout
-    if ( fp == stdout && my_rank.rank == num_ranks.rank - 1 && my_rank.thread == num_ranks.thread - 1 ) {
-        fprintf(fp, "------------------------------------------------------------\n");
+        // Creates record if it does not yet exist on this rank, otherwise acquires record pointer
+        auto record = reporter->createDataRecord(tool.first);
+        tool.second->outputData(record, my_rank);
     }
 }
 
@@ -2542,39 +2611,11 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "Serialization Information:\n");
     fprintf(fp, "Rank total serialization time: %" PRIu64 " %s\n", rankLatency, clockResolution.c_str());
     fprintf(fp, "Rank pairwise sync count: %" PRIu64 "\n", rankExchangeCounter);
-    fprintf(fp, "Rank total events sent: %" PRIu64 "\n", rankExchangeEvents);
-    fprintf(fp, "Rank total bytes sent: %" PRIu64 "\n", rankExchangeBytes);
     fprintf(fp, "Rank average sync serialization time: %.6f %s/sync\n",
         (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
-    fprintf(fp, "Rank average sync bytes sent: %.6f bytes/sync\n",
-        (rankExchangeCounter == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeCounter));
     fprintf(fp, "Rank average sync serialization time: %.6f %s/sync\n",
         (rankExchangeCounter == 0 ? 0.0 : (double)rankLatency / rankExchangeCounter), clockResolution.c_str());
-    fprintf(fp, "Rank average event bytes sent: %.6f bytes/event\n",
-        (rankExchangeEvents == 0 ? 0.0 : (double)rankExchangeBytes / rankExchangeEvents));
 #endif // SST_EVENT_PROFILING
-
-#if SST_SYNC_PROFILING
-    fprintf(fp, "Synchronization Information:\n");
-    fprintf(fp, "Thread-only sync (apart from Rank syncs):\n");
-    fprintf(fp, "Thread-sync count: %" PRIu64 "\n", threadSyncCounter);
-    fprintf(fp, "Thread-sync total execution time: %.6f s\n", (double)threadSyncTime / clockDivisor);
-    fprintf(fp, "Thread-sync average execution time: %.6f %s/sync\n",
-        (threadSyncCounter == 0.0 ? 0.0 : (double)threadSyncTime / threadSyncCounter), clockResolution.c_str());
-    fprintf(fp, "Rank Sync (including associated thread syncs):\n");
-    fprintf(fp, "Rank sync count: %" PRIu64 "\n", rankSyncCounter);
-    fprintf(fp, "Rank sync total execution time: %.6f s\n", (double)rankSyncTime / clockDivisor);
-    fprintf(fp, "Rank sync average execution time: %.6f %s/sync\n",
-        (rankSyncCounter == 0.0 ? 0.0 : (double)rankSyncTime / rankSyncCounter), clockResolution.c_str());
-    fprintf(fp, "All sync count:  %" PRIu64 "\n", threadSyncCounter + rankSyncCounter);
-    fprintf(fp, "All sync execution time: %.6f s\n", (double)(threadSyncTime + rankSyncTime) / clockDivisor);
-    fprintf(fp, "All sync average execution time: %.6f %s/sync\n",
-        ((threadSyncCounter + rankSyncCounter) == 0
-                ? 0.0
-                : (double)(threadSyncTime + rankSyncTime) / (threadSyncCounter + rankSyncCounter)),
-        clockResolution.c_str());
-    fprintf(fp, "\n");
-#endif // SST_SYNC_PROFILING
 }
 #endif
 
@@ -2613,7 +2654,8 @@ std::mutex                 Simulation_impl::simulationMutex;
 Core::ThreadSafe::Spinlock Simulation_impl::cross_thread_lock;
 TimeConverter              Simulation_impl::minPartTC;
 SimTime_t                  Simulation_impl::minPart;
-std::string                Simulation_impl::checkpoint_directory_ = "";
+std::string                Simulation_impl::checkpoint_directory_   = "";
+std::string                Simulation_impl::checkpoint_configgraph_ = "";
 
 Util::BasicPerfTracker Simulation_impl::basicPerf;
 

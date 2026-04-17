@@ -21,7 +21,14 @@
 #include <map>
 #include <string>
 
-namespace SST::Core {
+
+namespace SST {
+namespace Util {
+class PerfReporter;
+}
+
+namespace Core {
+
 
 /**
  * Outputs configuration data to a specified file path.
@@ -78,9 +85,7 @@ public:
     TimingOutput(const SST::Output& output, int print_verbosity);
     virtual ~TimingOutput();
     void setJSON(const std::string& path);
-    void generate();
-    void renderText();
-    void renderJSON();
+    void generate(SST::Util::PerfReporter* reporter);
 
     void set(Key key, uint64_t v);
     void set(Key key, UnitAlgebra v);
@@ -96,7 +101,7 @@ private:
     std::map<Key, double>      dmap_      = {};
     FILE*                      outputFile = nullptr;
 };
-
-} // namespace SST::Core
+} // namespace Core
+} // namespace SST
 
 #endif // SST_CORE_TIMING_OUTPUT_H

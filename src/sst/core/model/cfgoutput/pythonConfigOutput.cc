@@ -383,8 +383,7 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     fprintf(outputFile, "# (These reflect the settings from original run and are not necessary in all files)\n");
     fprintf(outputFile, "sst.setProgramOption(\"verbose\", \"%" PRIu32 "\")\n", cfg->verbose());
     fprintf(outputFile, "sst.setProgramOption(\"stop-at\", \"%s\")\n", cfg->stop_at().c_str());
-    fprintf(outputFile, "sst.setProgramOption(\"print-timing-info\", \"%d\")\n", cfg->print_timing());
-    fprintf(outputFile, "sst.setProgramOption(\"timing-info-json\", \"%s\")\n", cfg->timing_json().c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"timing-info\", \"%d\")\n", cfg->print_timing());
     // Ignore stopAfter for now
     // fprintf(outputFile, "sst.setProgramOption(\"stopAfter\", \"%" PRIu32 "\")\n", cfg->stopAfterSec);
     fprintf(

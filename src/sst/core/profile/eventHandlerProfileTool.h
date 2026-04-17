@@ -25,6 +25,10 @@
 #include <map>
 #include <string>
 
+namespace SST::Util {
+class DataRecord;
+}
+
 namespace SST::Profile {
 
 class EventHandlerProfileTool : public ProfileTool, public Event::HandlerBase::AttachPoint, public Link::AttachPoint
@@ -102,7 +106,7 @@ public:
     void beforeHandler(uintptr_t key, const SST::Event* event) override;
     void eventSent(uintptr_t key, Event*& ev) override;
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     std::map<std::string, event_data_t> counts_;
@@ -148,7 +152,7 @@ public:
 
     void eventSent(uintptr_t key, Event*& UNUSED(ev)) override { reinterpret_cast<event_data_t*>(key)->send_count++; }
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     typename T::time_point              start_time_;

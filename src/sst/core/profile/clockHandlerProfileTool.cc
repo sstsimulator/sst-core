@@ -16,6 +16,7 @@
 #include "sst/core/output.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <chrono>
 #include <cinttypes>
@@ -85,12 +86,13 @@ ClockHandlerProfileToolCount::beforeHandler(uintptr_t key, const Cycle_t& UNUSED
 
 
 void
-ClockHandlerProfileToolCount::outputData(FILE* fp)
+ClockHandlerProfileToolCount::outputData(SST::Util::DataRecord* record, RankInfo rank)
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name, count\n");
+    record->addChild(std::to_string(rank.rank) + "_" + std::to_string(rank.thread));
     for ( auto& x : counts_ ) {
-        fprintf(fp, "%s, %" PRIu64 "\n", x.first.c_str(), x.second);
+        record->addChild(x.first);
+        record->addData("count", x.second);
+        record->changeLevelUp();
     }
 }
 
@@ -109,13 +111,19 @@ ClockHandlerProfileToolTime<T>::registerHandler(const AttachPointMetaData& mdata
 
 template <typename T>
 void
-ClockHandlerProfileToolTime<T>::outputData(FILE* fp)
+ClockHandlerProfileToolTime<T>::outputData(SST::Util::DataRecord* record, RankInfo rank)
 {
-    fprintf(fp, "%s\n", name.c_str());
-    fprintf(fp, "Name, count, handler time (s), avg. handler time (ns)\n");
+    record->addChild(std::to_string(rank.rank) + "_" + std::to_string(rank.thread));
+
     for ( auto& x : times_ ) {
-        fprintf(fp, "%s, %" PRIu64 ", %lf, %" PRIu64 "\n", x.first.c_str(), x.second.count,
-            ((double)x.second.time) / 1000000000.0, x.second.count == 0 ? 0 : x.second.time / x.second.count);
+        record->addChild(x.first);
+        record->addData("count", x.second.count);
+        UnitAlgebra handler_time(std::to_string(((double)x.second.time) / 1000000000.0) + "s");
+        record->addData("handler_time", handler_time);
+        if ( x.second.count != 0 ) {
+            record->addData("avg_handler_time", UnitAlgebra(std::to_string(x.second.time / x.second.count) + "ns"));
+        }
+        record->changeLevelUp();
     }
 }
 

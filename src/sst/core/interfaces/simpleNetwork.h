@@ -181,6 +181,10 @@ public:
             SubComponent(id)
         {}
 
+        explicit NetworkInspector() :
+            SubComponent()
+        {}
+
         virtual ~NetworkInspector() {}
 
         virtual void inspectNetworkData(Request* req) = 0;

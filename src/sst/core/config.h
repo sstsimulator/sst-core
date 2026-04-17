@@ -188,11 +188,6 @@ private:
         std::bind(&StandardConfigParsers::from_string_default<int>, std::placeholders::_1, std::placeholders::_2, 2));
 
     /**
-        Print SST timing information to JSON file
-    */
-    SST_CONFIG_DECLARE_OPTION(std::string, timing_json, "", &StandardConfigParsers::from_string<std::string>);
-
-    /**
        Simulated cycle to stop the simulation at
     */
     SST_CONFIG_DECLARE_OPTION(std::string, stop_at, "0ns", &StandardConfigParsers::from_string<std::string>);

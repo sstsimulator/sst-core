@@ -14,6 +14,7 @@
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/profile/profiletool.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
 
@@ -26,7 +27,12 @@
 
 namespace SST {
 class BaseComponent;
+
+namespace Util {
+class DataRecord;
 }
+
+} // namespace SST
 
 namespace SST::Profile {
 
@@ -145,7 +151,7 @@ public:
 
     void codeSegmentStart(uintptr_t key) override;
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     std::map<std::string, uint64_t> counts_;
@@ -187,7 +193,7 @@ public:
         entry->count++;
     }
 
-    void outputData(FILE* fp) override;
+    void outputData(SST::Util::DataRecord* record, RankInfo rank) override;
 
 private:
     typename T::time_point                start_time_;

@@ -75,6 +75,9 @@ class PartitionGraph;
 class ConfigGraph : public SST::Core::Serialization::serializable
 {
 public:
+
+    static bool serialize_for_checkpoint;
+
     /** Print the configuration graph */
     void print(std::ostream& os) const
     {
@@ -193,17 +196,24 @@ public:
         return ret;
     }
 
+    void annotateCompRestartLocation(ComponentId_t cid, const std::string& filename, uint64_t offset);
+
     void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         SST_SER(links_);
         SST_SER(comps_);
-        SST_SER(stats_config_);
+
         if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
             // Need to reinitialize the ConfigGraph ptrs in the
             // ConfigComponents
             setComponentConfigGraphPointers();
         }
+
+        // If we are serializing for checkpointing, we only needed the links and components
+        if ( serialize_for_checkpoint ) return;
+
+        SST_SER(stats_config_);
 
         SST_SER(cpt_ranks);
         SST_SER(cpt_currentSimCycle);
@@ -212,6 +222,7 @@ public:
         SST_SER(cpt_minPartTC);
         SST_SER(cpt_max_event_id);
         SST_SER(cpt_remap_partitions);
+        SST_SER(cpt_repartition);
 
         SST_SER(*(cpt_libnames.get()));
         SST_SER(*(cpt_shared_objects.get()));
@@ -228,6 +239,8 @@ public:
     TimeConverter cpt_minPartTC;
     uint64_t      cpt_max_event_id     = 0;
     bool          cpt_remap_partitions = false;
+    bool          cpt_repartition      = false;
+    std::string   cpt_orig_configgraph; // Does not need to be serialized (only needed on rank 0)
 
     std::shared_ptr<std::set<std::string>> cpt_libnames       = std::make_shared<std::set<std::string>>();
     std::shared_ptr<std::vector<char>>     cpt_shared_objects = std::make_shared<std::vector<char>>();

@@ -56,6 +56,7 @@ REENABLE_WARNING
 #include "sst/core/timingOutput.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/util/bit_util.h"
+#include "sst/core/util/perfReporter.h"
 
 #include <cinttypes>
 #include <csignal>
@@ -79,7 +80,8 @@ using namespace SST::Partition;
 using namespace SST;
 
 
-static SST::Output g_output;
+static SST::Output             g_output;
+static SST::Util::PerfReporter perfReporter;
 
 
 // Functions to force initialization stages of simulation to execute
@@ -416,7 +418,6 @@ start_partitioning(const RankInfo& world_size, const RankInfo& myRank, Factory* 
 
                     if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
                 }
-
                 delete pgraph;
             }
         }
@@ -475,12 +476,13 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // restored
     sim->setupSimActions();
 
-    // Thread zero needs to initialize the checkpoint data structures
-    // if any checkpointing options were turned on.  This will return
-    // an empty string if checkpointing was not enabled.
+    // Thread zero needs to initialize the checkpoint data structures if any checkpointing options were turned on but
+    // the data structures haven't already been initialized earlier.  Things will only get initialized here if the only
+    // way to trigger a checkpoint is through the realtime actions. This will return an empty string if checkpointing
+    // was not enabled.
 
-    if ( tid == 0 ) {
-        sim->checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
+    if ( tid == 0 && Simulation_impl::checkpoint_directory_.empty() ) {
+        Simulation_impl::checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
             &cfg, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
 
         // if ( sim->checkpoint_directory_ != "" ) {
@@ -540,9 +542,16 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         barrier.wait();
 
+        // Need to update the min_part variable in SyncManager
+        sim->updateSyncMinPart();
+
         sim->findThreadSyncInterval();
 
         barrier.wait();
+
+        sim->checkIndependent();
+
+        sim->prepare_for_run();
 
     } // if ( restart )
 
@@ -748,50 +757,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     info.max_tv_depth     = sim->getTimeVortexMaxDepth();
     info.current_tv_depth = sim->getTimeVortexCurrentDepth();
 
-    // Print the profiling info.  For threads, we will serialize
-    // writing and for ranks we will use different files, unless we
-    // are writing to console, in which case we will serialize the
-    // output as well.
-    FILE*       fp   = nullptr;
-    std::string file = cfg.profiling_output();
-    if ( file == "stdout" ) {
-        // Output to the console, so we will force both rank and
-        // thread output to be sequential
-        force_rank_sequential_start(info.world_size.rank > 1, info.myRank, info.world_size);
-
-        for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-            if ( i == info.myRank.thread ) {
-                sim->printProfilingInfo(stdout);
-            }
-            barrier.wait();
-        }
-
-        force_rank_sequential_stop(info.world_size.rank > 1, info.myRank, info.world_size);
-        barrier.wait();
-    }
-    else {
-        // Output to file
-        if ( info.world_size.rank > 1 ) {
-            addRankToFileName(file, info.myRank.rank);
-        }
-
-        // First thread will open a new file
-        std::string mode;
-        // Thread 0 will open a new file, all others will append
-        if ( info.myRank.thread == 0 )
-            mode = "w";
-        else
-            mode = "a";
-
-        for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-            if ( i == info.myRank.thread ) {
-                fp = Simulation_impl::filesystem.fopen(file, mode.c_str());
-                sim->printProfilingInfo(fp);
-                fclose(fp);
-            }
-            barrier.wait();
-        }
-    }
+    // Print the profiling info if requested
+    sim->printProfilingInfo(&perfReporter);
 
     // Put in info about sync memory usage
     info.sync_data_size = sim->getSyncQueueDataSize();
@@ -990,12 +957,14 @@ main(int argc, char* argv[])
     // Create global output object
     Output::setFileName(cfg.debugFile() != "/dev/null" ? cfg.debugFile() : "sst_output");
     Output::setWorldSize(world_size.rank, world_size.thread, myrank);
-    // g_output = Output::setDefaultObject(cfg.output_core_prefix(), cfg.verbose(), 0, Output::STDOUT);
+
     g_output.setPrefix(cfg.output_core_prefix());
     g_output.setVerboseLevel(cfg.verbose());
 
     g_output.verbose(CALL_INFO, 1, 0, "main() My rank is (%u,%u), on %u/%u nodes/threads\n", myRank.rank, myRank.thread,
         world_size.rank, world_size.thread);
+
+    perfReporter.configureOutput(cfg.profiling_output());
 
     // TimeLord must be initialized prior to postCreationCleanup() call
     Simulation_impl::getTimeLord()->init(cfg.timeBase());
@@ -1003,8 +972,8 @@ main(int argc, char* argv[])
     // Check the ConfigGraph and finalize things
 
     // Cleanup after graph creation, but only if rank participated
-    // in graph construction
-    if ( myRank.rank == 0 || cfg.parallel_load() ) {
+    // in graph construction and we aren't restarting
+    if ( (myRank.rank == 0 || cfg.parallel_load()) && !restart ) {
 
         Simulation_impl::basicPerf.beginRegion("graph-cleanup");
         if ( cfg.parallel_load() ) {
@@ -1129,6 +1098,22 @@ main(int argc, char* argv[])
             doParallelCapableGraphOutput(graph, myRank, world_size);
         }
     }
+
+    // Create the checkpoint directory structure if checkpointing is enabled
+    Simulation_impl::checkpoint_directory_ =
+        Checkpointing::initializeCheckpointInfrastructure(&cfg, cfg.canInitiateCheckpoint(), myRank.rank);
+
+    // If we are not doing a parallel load, rank 0 will write out the ConfigGraph
+    if ( cfg.canInitiateCheckpoint() && !cfg.parallel_load() && myRank.rank == 0 ) {
+        Simulation_impl::checkpoint_configgraph_ = cfg.checkpoint_prefix() + "_config_graph.bin";
+        Simulation_impl::writeCheckpointConfigGraph(graph);
+    }
+
+    if ( myRank.rank == 0 ) {
+        // Output the partition information if user requests it
+        dump_partition(graph, world_size);
+    }
+
 
     Simulation_impl::basicPerf.endRegion("graph-partitioning");
 
@@ -1418,11 +1403,6 @@ main(int argc, char* argv[])
     Simulation_impl::basicPerf.endRegion("graph-distribution");
     Simulation_impl::basicPerf.endRegion("graph-processing");
 
-    if ( myRank.rank == 0 ) {
-        // Output the partition information if user requests it
-        dump_partition(graph, world_size);
-    }
-
     /******** Register signal handlers, if not disabled ********/
     if ( cfg.enable_sig_handling() ) {
         g_output.verbose(CALL_INFO, 3, 0, "Signal handlers will be registered for USR1, USR2, INT, ALRM, and TERM\n");
@@ -1543,11 +1523,6 @@ main(int argc, char* argv[])
             "Simulation is complete, simulated time: %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
     }
 
-
-    double max_run_time   = Simulation_impl::basicPerf.getRegionDuration("run");
-    double max_build_time = Simulation_impl::basicPerf.getRegionDuration("build");
-    double max_total_time = Simulation_impl::basicPerf.getRegionDuration("total");
-
     uint64_t local_max_tv_depth      = threadInfo[0].max_tv_depth;
     uint64_t global_max_tv_depth     = 0;
     uint64_t local_current_tv_depth  = threadInfo[0].current_tv_depth;
@@ -1579,40 +1554,55 @@ main(int argc, char* argv[])
     global_active_activities  = active_activities;
 #endif
 
-    // These functions invoke MPI_Allreduce
-    const uint64_t local_max_rss     = maxLocalMemSize();
-    const uint64_t global_max_rss    = maxGlobalMemSize();
-    const uint64_t local_max_pf      = maxLocalPageFaults();
-    const uint64_t global_pf         = globalPageFaults();
-    const uint64_t global_max_io_in  = maxInputOperations();
-    const uint64_t global_max_io_out = maxOutputOperations();
+    if ( cfg.verbose() || cfg.print_timing() ) {
 
-    if ( cfg.verbose() || cfg.print_timing() || cfg.timing_json() != "" ) {
+        // These functions invoke MPI_Allreduce
+        const uint64_t local_max_rss     = maxLocalMemSize();
+        const uint64_t global_max_rss    = maxGlobalMemSize();
+        const uint64_t local_max_pf      = maxLocalPageFaults();
+        const uint64_t global_pf         = globalPageFaults();
+        const uint64_t global_max_io_in  = maxInputOperations();
+        const uint64_t global_max_io_out = maxOutputOperations();
+
         if ( myRank.rank == 0 ) {
             int          timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();
             TimingOutput timingOutput(g_output, std::max(timing_verbose, cfg.verbose() == 0 ? 0 : cfg.verbose() + 1));
-            if ( cfg.timing_json() != "" ) timingOutput.setJSON(cfg.timing_json());
+            timingOutput.generate(&perfReporter); // Triggers basicPerf to dump data to the record
 
-            timingOutput.set(TimingOutput::Key::LOCAL_MAX_RSS, local_max_rss);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MAX_RSS, global_max_rss);
-            timingOutput.set(TimingOutput::Key::LOCAL_MAX_PF, local_max_pf);
-            timingOutput.set(TimingOutput::Key::GLOBAL_PF, global_pf);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MAX_IO_IN, global_max_io_in);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MAX_IO_OUT, global_max_io_out);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MAX_SYNC_DATA_SIZE, global_max_sync_data_size);
-            timingOutput.set(TimingOutput::Key::GLOBAL_SYNC_DATA_SIZE, global_sync_data_size);
-            timingOutput.set(TimingOutput::Key::MAX_MEMPOOL_SIZE, (uint64_t)max_mempool_size);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MEMPOOL_SIZE, (uint64_t)global_mempool_size);
-            timingOutput.set(TimingOutput::Key::MAX_BUILD_TIME, max_build_time);
-            timingOutput.set(TimingOutput::Key::MAX_RUN_TIME, max_run_time);
-            timingOutput.set(TimingOutput::Key::MAX_TOTAL_TIME, max_total_time);
-            timingOutput.set(TimingOutput::Key::SIMULATED_TIME_UA, threadInfo[0].simulated_time);
-            timingOutput.set(TimingOutput::Key::GLOBAL_ACTIVE_ACTIVITIES, (uint64_t)global_active_activities);
-            timingOutput.set(TimingOutput::Key::GLOBAL_CURRENT_TV_DEPTH, global_current_tv_depth);
-            timingOutput.set(TimingOutput::Key::GLOBAL_MAX_TV_DEPTH, global_max_tv_depth);
-            timingOutput.set(TimingOutput::Key::RANKS, (uint64_t)world_size.rank);
-            timingOutput.set(TimingOutput::Key::THREADS, (uint64_t)world_size.thread);
-            timingOutput.generate();
+            SST::Util::DataRecord* resources = perfReporter.createDataRecord("resources");
+            std::map<std::string, std::pair<std::string, std::string>> key_map = {
+                { "resources", { "Simulation Resource Information", "" } },
+                { "local_max_rss", { "Max Resident Set Size", "" } }, // UnitAlgebra, units unnecessary
+                { "global_max_rss", { "Approx. Global Max RSS Size", "" } },
+                { "local_max_page_faults", { "Max Local Page Faults", "faults" } },
+                { "global_max_page_faults", { "Global Page Faults", "faults" } },
+                { "global_max_io_in", { "Max Output Blocks", "blocks" } },
+                { "global_max_io_out", { "Max Input Blocks", "blocks" } },
+                { "global_max_sync_data_size", { "Max Sync data size", "B" } },
+                { "global_sync_data_size", { "Global Sync data size", "B" } },
+                { "max_mempool_size", { "Max mempool usage", "" } },
+                { "global_mempool_size", { "Global mempool usage", "" } },
+                { "global_undeleted_activities", { "Global undeleted activities", "" } },
+                { "global_current_timevortex_depth", { "Current global TimeVortex depth", "entries" } },
+                { "global_max_timevortex_depth", { "Max TimeVortex depth", "entries" } },
+                { "global_page_faults", { "Global Page Faults", "faults" } },
+                { "local_max_page_faults", { "Max Local Page Faults", "faults" } }
+            };
+
+            resources->setKeys(key_map);
+            resources->addData("local_max_rss", UnitAlgebra(std::to_string(local_max_rss) + "KiB"));
+            resources->addData("global_max_rss", UnitAlgebra(std::to_string(global_max_rss) + "KiB"));
+            resources->addData("local_max_page_faults", local_max_pf);
+            resources->addData("global_page_faults", global_pf);
+            resources->addData("global_max_io_in", global_max_io_in);
+            resources->addData("global_max_io_out", global_max_io_out);
+            resources->addData("global_max_sync_data_size", global_max_sync_data_size);
+            resources->addData("global_sync_data_size", global_sync_data_size);
+            resources->addData("max_mempool_size", UnitAlgebra(std::to_string(max_mempool_size) + "B"));
+            resources->addData("global_mempool_size", UnitAlgebra(std::to_string(global_mempool_size) + "B"));
+            resources->addData("global_undeleted_activities", global_active_activities);
+            resources->addData("global_current_timevortex_depth", global_current_tv_depth);
+            resources->addData("global_max_timevortex_depth", global_max_tv_depth);
         }
     }
 
@@ -1642,7 +1632,13 @@ main(int argc, char* argv[])
         }
         MemPoolAccessor::printUndeletedMemPoolItems("  ", out);
     }
+#endif // USE_MEMPOOL
+
+#ifdef SST_CONFIG_HAVE_MPI
+    MPI_Barrier(MPI_COMM_WORLD);
 #endif
+
+    perfReporter.output(myRank.rank, world_size.rank);
 
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Finalize();

@@ -123,15 +123,28 @@ struct mpi_double_int_t
 #define MPI_MAXLOC 0
 #define MPI_MINLOC 0
 
+#define MPI_Status        int
+#define MPI_STATUS_IGNORE 0
+
 #endif
 
-// Verions of typical MPI functions that will hide the
-// SST_CONFIG_HAVE_MPI macros
+///// Verions of typical MPI functions that will hide the SST_CONFIG_HAVE_MPI macros ////
 
+// These functions will generally copy the data from input to output and will behave as expected for a 1 rank MPI job
+// when MPI is not enabled
 int SST_MPI_Allreduce(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
-int SST_MPI_Barrier(MPI_Comm comm);
 int SST_MPI_Allgather(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount,
     MPI_Datatype recvtype, MPI_Comm comm);
+int SST_MPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
+
+// MPI_Barrier is a no-op when MPI is not enabled and can be safely called in that case
+int SST_MPI_Barrier(MPI_Comm comm);
+
+// MPI_Send and MPI_Recv are both no-ops if MPI is not present.  However, they should be in segments of code that won't
+// get exectuted if MPI is not available (i.e. only run if there is more than one rank, controlled be either an
+// if-statement or for-loop, but this is generally also necessary even when MPI is enabled)
+int SST_MPI_Send(const void* buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
+int SST_MPI_Recv(void* buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status* status);
 
 int SST_MPI_GetRank();
 #endif

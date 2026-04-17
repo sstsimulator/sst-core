@@ -60,33 +60,50 @@ SSTCPTModelDefinition::createConfigGraph()
 
     std::string line;
 
-    // Look for the line that has the global data file
+    // Search for globals and configgraph files.
     std::string globals_filename;
-    std::string search_str("** (globals): ");
+    std::string globals_search_string("** (globals): ");
+    std::string configgraph_filename;
+    std::string configgraph_search_string("** (configgraph): ");
+    std::string registry_search_string("** (start component registry):");
+
+    // Look for the line that has the global data file
+    // std::string search_str("** (globals): ");
     while ( std::getline(fs, line) ) {
-        // Look for lines starting with "** (globals):", then get the filename.
-        size_t pos = line.find(search_str);
+        // Look for lines starting with "**" and check to see if they have the globals and configgraph files.  If we see
+        // the start of the component registry, we are done.  This code code be more runtime efficient by not doing the
+        // string match on all the search strings, but this is not a performance critical part of the code and the
+        // simple code is easier to follow.
+        size_t pos = line.find("**");
         if ( pos == 0 ) {
-            // Get the file name
-            globals_filename = checkpoint_directory + "/" + line.substr(search_str.length());
-            break;
+            // Check for globals file
+            pos = line.find(globals_search_string);
+            if ( pos == 0 ) globals_filename = checkpoint_directory + "/" + line.substr(globals_search_string.length());
+
+            // Check for configgraph file
+            pos = line.find(configgraph_search_string);
+            if ( pos == 0 )
+                configgraph_filename = checkpoint_directory + "/" + line.substr(configgraph_search_string.length());
+
+            // Check for end
+            pos = line.find(registry_search_string);
+            if ( pos == 0 ) break;
         }
     }
-    fs.close();
 
     // Need to open the globals file
     std::ifstream fs_globals(globals_filename);
     if ( !fs_globals.is_open() ) {
         if ( fs_globals.bad() ) {
-            fprintf(stderr, "XXUnable to open checkpoint globals file [%s]: badbit set\n", globals_filename.c_str());
+            fprintf(stderr, "Unable to open checkpoint globals file [%s]: badbit set\n", globals_filename.c_str());
             SST_Exit(-1);
         }
         if ( fs_globals.fail() ) {
-            fprintf(stderr, "YYUnable to open checkpoint globals file [%s]: %s\n", globals_filename.c_str(),
-                strerror(errno));
+            fprintf(
+                stderr, "Unable to open checkpoint globals file [%s]: %s\n", globals_filename.c_str(), strerror(errno));
             SST_Exit(-1);
         }
-        fprintf(stderr, "ZZUnable to open checkpoint globals file [%s]: unknown error\n", globals_filename.c_str());
+        fprintf(stderr, "Unable to open checkpoint globals file [%s]: unknown error\n", globals_filename.c_str());
         SST_Exit(-1);
     }
 
@@ -125,15 +142,19 @@ SSTCPTModelDefinition::createConfigGraph()
         if ( (cfg.num_ranks() * cfg.num_threads()) == (graph->cpt_ranks.rank * graph->cpt_ranks.thread) ) {
             graph->cpt_remap_partitions = true;
         }
+        else if ( !configgraph_filename.empty() ) {
+            graph->cpt_repartition = true;
+        }
         else {
             Output::getDefaultObject().fatal(CALL_INFO, 1,
-                "Rank or thread counts do not match checkpoint. Checkpoint/restart requires that the total parallelism "
+                "Rank or thread counts do not match checkpoint and the original ConfigGraph was not stored in the "
+                "checkpoint, so repartitioning is not possible. Checkpoint/restart requires that the total parallelism "
                 "be the same between a checkpoint and restart (i.e. ranks * threads is the same for both).  Checkpoint "
                 "was created with %" PRIu32 " ranks and %" PRIu32 " threads. Serial restarts are also permitted.\n",
                 graph->cpt_ranks.rank, graph->cpt_ranks.thread);
         }
     }
-    /******** ^^ Works for regular and N->1 restart ^^ ***********/
+    /**** ^^ Works for regular, N->1 restart and repartitioned restarts when ConfigGraph is in checkpoint^^ *******/
 
     ////// Initialize global data //////
 
@@ -275,6 +296,79 @@ SSTCPTModelDefinition::createConfigGraph()
 
     fs_globals.close();
     setOptionFromModel("load-checkpoint", "");
+
+    // If we are repartitioning for the restart, need to read in the graph
+    if ( graph->cpt_repartition ) {
+        // Need to open the globals file
+        std::ifstream fs_cg(configgraph_filename);
+        if ( !fs_cg.is_open() ) {
+            if ( fs_cg.bad() ) {
+                fprintf(stderr, "Unable to open checkpointed ConfigGraph file [%s]: badbit set\n",
+                    globals_filename.c_str());
+                SST_Exit(-1);
+            }
+            if ( fs_cg.fail() ) {
+                fprintf(stderr, "Unable to open checkpointed ConfigGraph file [%s]: %s\n", globals_filename.c_str(),
+                    strerror(errno));
+                SST_Exit(-1);
+            }
+            fprintf(
+                stderr, "Unable to open checkpointed ConfigGraph file [%s]: unknown error\n", globals_filename.c_str());
+            SST_Exit(-1);
+        }
+
+        size_t size;
+
+        fs_cg.read(reinterpret_cast<char*>(&size), sizeof(size));
+        restart_data_buffer.resize(size);
+        fs_cg.read(restart_data_buffer.data(), size);
+
+        SST::Core::Serialization::serializer ser;
+        ser.start_unpacking(restart_data_buffer.data(), size);
+
+        ConfigGraph::serialize_for_checkpoint = true;
+        SST_SER(*graph);
+        ConfigGraph::serialize_for_checkpoint = false;
+
+        fs_cg.close();
+
+        // Need to annotate the components in the graph with the file and offset to find the serialized blob for that
+        // component
+
+        std::string current_filename;
+        while ( std::getline(fs, line) ) {
+            if ( line.empty() ) continue;
+
+            size_t pos = line.find("**");
+            if ( pos == 0 ) {
+                // This is a new filename.  Search for "): " to find the start of the filename
+                pos = line.rfind(':');
+                if ( pos != std::string::npos ) current_filename = line.substr(pos + 2);
+            }
+            else {
+                // parse "comp_id : offset (…)"
+                size_t c = line.find(':');
+                if ( c == std::string::npos ) continue;
+
+                std::string comp_str = line.substr(0, c - 1);
+                std::string after    = line.substr(c + 1);
+
+                // drop any "(…)"
+                auto paren = after.find(" (");
+                if ( paren != std::string::npos ) after = after.substr(0, paren);
+
+                ComponentId_t comp_id = from_string<ComponentId_t>(comp_str);
+                uint64_t      offset  = from_string<uint64_t>(after);
+
+                graph->annotateCompRestartLocation(comp_id, current_filename, offset);
+            }
+        }
+    }
+
+    fs.close();
+
+    // Put in the path to the original config graph bin file
+    graph->cpt_orig_configgraph = configgraph_filename;
     return graph;
 }
 
