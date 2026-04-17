@@ -9,10 +9,9 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-// #include "simpleDebug.h"
 #include "sst_config.h"
 
-#include "sst/core/impl/interactive/simpleDebug.h"
+#include "sst/core/impl/interactive/debugConsole.h"
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/simulation_impl.h"
@@ -32,13 +31,13 @@
 namespace SST::IMPL::Interactive {
 
 // Static Initialization
-unsigned           SimpleDebugger::current_thread  = 0;
-unsigned           SimpleDebugger::current_rank    = 0;
-std::vector<std::string> SimpleDebugger::tokens;
-std::stringstream         SimpleDebugger::result;
+unsigned           DebugConsole::current_thread  = 0;
+unsigned           DebugConsole::current_rank    = 0;
+std::vector<std::string> DebugConsole::tokens;
+std::stringstream         DebugConsole::result;
 
 
-SimpleDebugger::SimpleDebugger(Params& params) :
+DebugConsole::DebugConsole(Params& params) :
     InteractiveConsole(),
     dout(std::cout, 50, 160)
 {
@@ -354,14 +353,14 @@ SimpleDebugger::SimpleDebugger(Params& params) :
     }
 }
 
-SimpleDebugger::~SimpleDebugger()
+DebugConsole::~DebugConsole()
 {
     if ( loggingFile.is_open() ) loggingFile.close();
     if ( replayFile.is_open() ) replayFile.close();
 }
 
 void
-SimpleDebugger::summary()
+DebugConsole::summary()
 {
     Simulation_impl* sim_ = Simulation_impl::getSimulation();
     result << "-- Rank:" << rank_.rank << "/" << num_ranks_.rank << " Thread:" << rank_.thread << "/" << num_ranks_.thread;
@@ -389,7 +388,7 @@ SimpleDebugger::summary()
 
 
 int
-SimpleDebugger::consoleExecute(const std::string& msg)
+DebugConsole::consoleExecute(const std::string& msg)
 {
 
     struct winsize size;
@@ -486,7 +485,7 @@ SimpleDebugger::consoleExecute(const std::string& msg)
 
 // Save the name stack of the current position, and clear obj_
 void
-SimpleDebugger::save_name_stack()
+DebugConsole::save_name_stack()
 {
     name_stack.clear();
     for ( ;; ) {
@@ -515,7 +514,7 @@ SimpleDebugger::save_name_stack()
 
 // Descend into the name_stack
 void
-SimpleDebugger::cd_name_stack()
+DebugConsole::cd_name_stack()
 {
     for ( const std::string& name : name_stack ) {
         std::vector<std::string> tokens { "cd", name };
@@ -527,7 +526,7 @@ SimpleDebugger::cd_name_stack()
 // Substitution actions (!!, !?, ...) can modify the command.
 // This ensure the final, resolved, command is captured in the command log
 bool
-SimpleDebugger::dispatch_cmd(std::string& cmd)
+DebugConsole::dispatch_cmd(std::string& cmd)
 {
     // empty command
     if ( cmd.size() == 0 ) return true;
@@ -638,7 +637,7 @@ SimpleDebugger::dispatch_cmd(std::string& cmd)
 // Functions for the Explorer
 
 std::vector<std::string>
-SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& input)
+DebugConsole::tokenize(std::vector<std::string>& tokens, const std::string& input)
 {
     std::istringstream iss(input);
     std::string        token;
@@ -653,7 +652,7 @@ SimpleDebugger::tokenize(std::vector<std::string>& tokens, const std::string& in
 }
 
 bool
-SimpleDebugger::cmd_help(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_help(std::string& UNUSED(cmd_str))
 {
     // First check for specific command help
     if ( tokens.size() == 1 ) {
@@ -704,7 +703,7 @@ SimpleDebugger::cmd_help(std::string& UNUSED(cmd_str))
 
 // verbose [mask] : set verbosity mask or print if no mask specified
 bool
-SimpleDebugger::cmd_verbose_query()
+DebugConsole::cmd_verbose_query()
 { 
     if ( tokens.size() > 1 ) {
         try {
@@ -726,7 +725,7 @@ SimpleDebugger::cmd_verbose_query()
 }
 
 bool
-SimpleDebugger::cmd_verbose_remote(std::vector<std::string>& tokens) 
+DebugConsole::cmd_verbose_remote(std::vector<std::string>& tokens) 
 {
     verbosity = SST::Core::from_string<uint32_t>(tokens[1]);
 
@@ -739,7 +738,7 @@ SimpleDebugger::cmd_verbose_remote(std::vector<std::string>& tokens)
 }
 
 bool 
-SimpleDebugger::cmd_verbose_serial(std::string& UNUSED(cmd_str)) 
+DebugConsole::cmd_verbose_serial(std::string& UNUSED(cmd_str)) 
 {
     bool succeed;
     // Valid verbosity?
@@ -757,7 +756,7 @@ SimpleDebugger::cmd_verbose_serial(std::string& UNUSED(cmd_str))
 }
 
 bool 
-SimpleDebugger::cmd_verbose_thread(std::string& UNUSED(cmd_str)) 
+DebugConsole::cmd_verbose_thread(std::string& UNUSED(cmd_str)) 
 {
     bool succeed;
     // Valid verbosity?
@@ -775,7 +774,7 @@ SimpleDebugger::cmd_verbose_thread(std::string& UNUSED(cmd_str))
 }
 
 bool 
-SimpleDebugger::cmd_verbose_rank_serial(std::string& cmd_str) 
+DebugConsole::cmd_verbose_rank_serial(std::string& cmd_str) 
 {
     // Valid verbosity?
     if (!confirm_ || cmd_verbose_query()) {
@@ -799,7 +798,7 @@ SimpleDebugger::cmd_verbose_rank_serial(std::string& cmd_str)
 }
 
 bool 
-SimpleDebugger::cmd_verbose_rank_parallel(std::string& cmd_str) 
+DebugConsole::cmd_verbose_rank_parallel(std::string& cmd_str) 
 {
     // Valid verbosity?
     if (!confirm_ || cmd_verbose_query()) {
@@ -825,7 +824,7 @@ SimpleDebugger::cmd_verbose_rank_parallel(std::string& cmd_str)
 // info current|all
 // print summary for current thread or all threads
 bool
-SimpleDebugger::cmd_info_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_info_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -849,7 +848,7 @@ SimpleDebugger::cmd_info_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_info_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_info_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -879,7 +878,7 @@ SimpleDebugger::cmd_info_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_info_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_info_rank_serial(std::string& cmd_str)
 {
     bool succeed, succeed2;
     if ( tokens.size() != 2 ) {
@@ -925,7 +924,7 @@ SimpleDebugger::cmd_info_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_info_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_info_rank_parallel(std::string& cmd_str)
 {
     bool succeed, succeed2;
     if ( tokens.size() != 2 ) {
@@ -970,7 +969,7 @@ SimpleDebugger::cmd_info_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_info_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_info_remote(std::vector<std::string>& UNUSED(tokens))
 {
     result << "Rank " << rank_.rank << "/" << num_ranks_.rank << " Thread " << rank_.thread << "/" 
         << num_ranks_.thread << " (Process " << getpid() << ")" << std::endl;
@@ -980,7 +979,7 @@ SimpleDebugger::cmd_info_remote(std::vector<std::string>& UNUSED(tokens))
 
 // thread <threadID> : switches to new thread
 int
-SimpleDebugger::parse_thread()
+DebugConsole::parse_thread()
 {
     int      threadID;  // Used int because converting from string
 
@@ -1013,7 +1012,7 @@ SimpleDebugger::parse_thread()
 
 
 bool
-SimpleDebugger::cmd_thread_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_thread_serial(std::string& UNUSED(cmd_str))
 {
     int threadID = parse_thread();
 
@@ -1037,7 +1036,7 @@ SimpleDebugger::cmd_thread_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_thread_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_thread_thread(std::string& UNUSED(cmd_str))
 {
     int threadID = parse_thread();
     if ( threadID == -1 )
@@ -1060,7 +1059,7 @@ SimpleDebugger::cmd_thread_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_thread_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_thread_rank_serial(std::string& cmd_str)
 {
     int threadID = parse_thread();
     if ( threadID == -1 )
@@ -1089,7 +1088,7 @@ SimpleDebugger::cmd_thread_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_thread_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_thread_rank_parallel(std::string& cmd_str)
 {
     int threadID = parse_thread();
     if ( threadID == -1 )
@@ -1118,7 +1117,7 @@ SimpleDebugger::cmd_thread_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_thread_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_thread_remote(std::vector<std::string>& UNUSED(tokens))
 {
     result << Simulation_impl::getSimulation()->interactive_msg_ << std::endl;
     return true;
@@ -1126,7 +1125,7 @@ SimpleDebugger::cmd_thread_remote(std::vector<std::string>& UNUSED(tokens))
 
 // rank <rankID> : switches to new rank (same thread)
 int
-SimpleDebugger::parse_rank()
+DebugConsole::parse_rank()
 {
     int      rankID;  // Used int because converting from string
 
@@ -1159,7 +1158,7 @@ SimpleDebugger::parse_rank()
 }
 
 bool
-SimpleDebugger::cmd_rank_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_rank_serial(std::string& UNUSED(cmd_str))
 {
     int rankID = parse_rank();
     if ( rankID == -1 )
@@ -1182,7 +1181,7 @@ SimpleDebugger::cmd_rank_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_rank_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_rank_thread(std::string& UNUSED(cmd_str))
 {
     int rankID = parse_rank();
     if ( rankID == -1 )
@@ -1205,7 +1204,7 @@ SimpleDebugger::cmd_rank_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_rank_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_rank_rank_serial(std::string& cmd_str)
 {
      int rankID = parse_rank();
      if ( rankID == -1 )
@@ -1234,7 +1233,7 @@ SimpleDebugger::cmd_rank_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_rank_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_rank_rank_parallel(std::string& cmd_str)
 {
      int rankID = parse_rank();
      if ( rankID == -1 )
@@ -1263,7 +1262,7 @@ SimpleDebugger::cmd_rank_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_rank_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_rank_remote(std::vector<std::string>& UNUSED(tokens))
 {
     result << Simulation_impl::getSimulation()->interactive_msg_ << std::endl;
     return true;
@@ -1271,7 +1270,7 @@ SimpleDebugger::cmd_rank_remote(std::vector<std::string>& UNUSED(tokens))
 
 // pwd: print current working directory
 bool
-SimpleDebugger::cmd_pwd_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_pwd_serial(std::string& UNUSED(cmd_str))
 {
     // Clear R0 result string 
     result.str("");
@@ -1284,7 +1283,7 @@ SimpleDebugger::cmd_pwd_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_pwd_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_pwd_thread(std::string& UNUSED(cmd_str))
 {
     // Clear R0 result string 
     result.str("");
@@ -1297,7 +1296,7 @@ SimpleDebugger::cmd_pwd_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_pwd_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_pwd_rank_serial(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -1315,7 +1314,7 @@ SimpleDebugger::cmd_pwd_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_pwd_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_pwd_rank_parallel(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -1335,7 +1334,7 @@ SimpleDebugger::cmd_pwd_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_pwd_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_pwd_remote(std::vector<std::string>& UNUSED(tokens))
 {
     // std::string path = obj_->getName();
     // std::string slash("/");
@@ -1352,7 +1351,7 @@ SimpleDebugger::cmd_pwd_remote(std::vector<std::string>& UNUSED(tokens))
 
 // ls: list current directory
 bool
-SimpleDebugger::cmd_ls_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_ls_serial(std::string& UNUSED(cmd_str))
 {
     // Clear R0 result string 
     result.str("");
@@ -1367,7 +1366,7 @@ SimpleDebugger::cmd_ls_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_ls_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_ls_thread(std::string& UNUSED(cmd_str))
 {
     // Clear R0 result string 
     result.str("");
@@ -1382,7 +1381,7 @@ SimpleDebugger::cmd_ls_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_ls_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_ls_rank_serial(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -1402,7 +1401,7 @@ SimpleDebugger::cmd_ls_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_ls_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_ls_rank_parallel(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -1423,7 +1422,7 @@ SimpleDebugger::cmd_ls_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_ls_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_ls_remote(std::vector<std::string>& UNUSED(tokens))
 {
     auto& vars = obj_->getVariables();
     for ( auto& x : vars ) {
@@ -1439,7 +1438,7 @@ SimpleDebugger::cmd_ls_remote(std::vector<std::string>& UNUSED(tokens))
 
 // Callback for autofill of object string (similar to ls)
 void
-SimpleDebugger::get_listing_strings(std::list<std::string>& list)
+DebugConsole::get_listing_strings(std::list<std::string>& list)
 {
     list.clear();
     auto& vars = obj_->getVariables();
@@ -1454,7 +1453,7 @@ SimpleDebugger::get_listing_strings(std::list<std::string>& list)
 
 // cd <path>: change to new directory
 bool
-SimpleDebugger::cmd_cd_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_cd_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -1473,7 +1472,7 @@ SimpleDebugger::cmd_cd_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_cd_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_cd_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -1492,7 +1491,7 @@ SimpleDebugger::cmd_cd_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_cd_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_cd_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -1516,7 +1515,7 @@ SimpleDebugger::cmd_cd_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_cd_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_cd_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -1542,7 +1541,7 @@ SimpleDebugger::cmd_cd_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_cd_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
 {
     
 #if 0
@@ -1603,7 +1602,7 @@ SimpleDebugger::cmd_cd_remote(std::vector<std::string>& tokens)
 
 // time: print current simulation cycle
 bool
-SimpleDebugger::cmd_time(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_time(std::string& UNUSED(cmd_str))
 {
     std::cout << "current time = " << getCurrentSimCycle() << std::endl;
     return true;
@@ -1611,7 +1610,7 @@ SimpleDebugger::cmd_time(std::string& UNUSED(cmd_str))
 
 // print [-rN] [<obj>]: print object
 bool
-SimpleDebugger::cmd_print_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_print_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 2 ) {
@@ -1629,7 +1628,7 @@ SimpleDebugger::cmd_print_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_print_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_print_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 2 ) {
@@ -1648,7 +1647,7 @@ SimpleDebugger::cmd_print_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_print_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_print_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 2 ) {
@@ -1672,7 +1671,7 @@ SimpleDebugger::cmd_print_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_print_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_print_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 2 ) {
@@ -1698,7 +1697,7 @@ SimpleDebugger::cmd_print_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_print_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
 {
     // Index in tokens array where we may find the variable name
     size_t var_index = 1;
@@ -1758,7 +1757,7 @@ SimpleDebugger::cmd_print_remote(std::vector<std::string>& tokens)
 
 // set <obj> <value>: set object to value
 bool
-SimpleDebugger::cmd_set_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_set_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1777,7 +1776,7 @@ SimpleDebugger::cmd_set_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_set_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_set_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1796,7 +1795,7 @@ SimpleDebugger::cmd_set_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_set_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_set_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1820,7 +1819,7 @@ SimpleDebugger::cmd_set_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_set_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_set_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1846,7 +1845,7 @@ SimpleDebugger::cmd_set_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_set_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_set_remote(std::vector<std::string>& tokens)
 {
     // kg It may be safer to check for  exactly 3 params but because
     //    of strings we allow for more (until parser handled quoted strings)
@@ -1917,7 +1916,7 @@ SimpleDebugger::cmd_set_remote(std::vector<std::string>& tokens)
 
 // run <time>: run simulation for time
 bool  
-SimpleDebugger::cmd_run(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_run(std::string& UNUSED(cmd_str))
 {
     if ( tokens.size() == 2 ) {
         try {
@@ -1953,7 +1952,7 @@ SimpleDebugger::cmd_run(std::string& UNUSED(cmd_str))
 // setHandler <wpIndex> <handlerType1> ... <handlerTypeN>
 // set where to do trigger checks and sampling (before/after clock/event handler)
 bool
-SimpleDebugger::cmd_setHandler_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_setHandler_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1972,7 +1971,7 @@ SimpleDebugger::cmd_setHandler_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_setHandler_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_setHandler_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -1991,7 +1990,7 @@ SimpleDebugger::cmd_setHandler_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_setHandler_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_setHandler_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2015,7 +2014,7 @@ SimpleDebugger::cmd_setHandler_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_setHandler_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_setHandler_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2041,7 +2040,7 @@ SimpleDebugger::cmd_setHandler_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_setHandler_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_setHandler_remote(std::vector<std::string>& tokens)
 {
     size_t wpIndex = watch_points_.size();
     try {
@@ -2095,7 +2094,7 @@ SimpleDebugger::cmd_setHandler_remote(std::vector<std::string>& tokens)
 
 // addTraceVar <wpIndex> <var1> ... <varN>
 bool
-SimpleDebugger::cmd_addTraceVar_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_addTraceVar_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2114,7 +2113,7 @@ SimpleDebugger::cmd_addTraceVar_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_addTraceVar_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_addTraceVar_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2133,7 +2132,7 @@ SimpleDebugger::cmd_addTraceVar_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_addTraceVar_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_addTraceVar_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2157,7 +2156,7 @@ SimpleDebugger::cmd_addTraceVar_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_addTraceVar_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_addTraceVar_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -2183,7 +2182,7 @@ SimpleDebugger::cmd_addTraceVar_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
 {
     size_t wpIndex = watch_points_.size();
     try {
@@ -2240,7 +2239,7 @@ SimpleDebugger::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
 
 // resetTraceBuffer <wpIndex> : resets trace buffer for indexed watchpoint
 bool
-SimpleDebugger::cmd_resetTraceBuffer_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_resetTraceBuffer_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2259,7 +2258,7 @@ SimpleDebugger::cmd_resetTraceBuffer_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_resetTraceBuffer_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_resetTraceBuffer_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2278,7 +2277,7 @@ SimpleDebugger::cmd_resetTraceBuffer_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_resetTraceBuffer_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_resetTraceBuffer_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2302,7 +2301,7 @@ SimpleDebugger::cmd_resetTraceBuffer_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_resetTraceBuffer_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_resetTraceBuffer_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2327,7 +2326,7 @@ SimpleDebugger::cmd_resetTraceBuffer_rank_parallel(std::string& cmd_str)
     return succeed;
 }
 bool
-SimpleDebugger::cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens)
 {
     size_t wpIndex = watch_points_.size();
     try {
@@ -2358,7 +2357,7 @@ SimpleDebugger::cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens)
 
 // printTrace <wpIndex> : prints trace buffer for indexed watchpoint
 bool
-SimpleDebugger::cmd_printTrace_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_printTrace_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2377,7 +2376,7 @@ SimpleDebugger::cmd_printTrace_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_printTrace_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_printTrace_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2396,7 +2395,7 @@ SimpleDebugger::cmd_printTrace_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_printTrace_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_printTrace_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2420,7 +2419,7 @@ SimpleDebugger::cmd_printTrace_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_printTrace_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_printTrace_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2446,7 +2445,7 @@ SimpleDebugger::cmd_printTrace_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_printTrace_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_printTrace_remote(std::vector<std::string>& tokens)
 {
     size_t wpIndex = watch_points_.size();
     try {
@@ -2478,7 +2477,7 @@ SimpleDebugger::cmd_printTrace_remote(std::vector<std::string>& tokens)
 
 // printWatchpoint <wpIndex> : prints detailed info for indexed watchpoint 
 bool
-SimpleDebugger::cmd_printWatchpoint_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_printWatchpoint_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2497,7 +2496,7 @@ SimpleDebugger::cmd_printWatchpoint_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_printWatchpoint_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_printWatchpoint_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2515,7 +2514,7 @@ SimpleDebugger::cmd_printWatchpoint_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_printWatchpoint_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_printWatchpoint_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2539,7 +2538,7 @@ SimpleDebugger::cmd_printWatchpoint_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_printWatchpoint_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_printWatchpoint_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() != 2 ) {
@@ -2565,7 +2564,7 @@ SimpleDebugger::cmd_printWatchpoint_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_printWatchpoint_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_printWatchpoint_remote(std::vector<std::string>& tokens)
 {
     size_t wpIndex = watch_points_.size();
     try {
@@ -2599,7 +2598,7 @@ SimpleDebugger::cmd_printWatchpoint_remote(std::vector<std::string>& tokens)
 
 // logging <filepath> : logs commands to the specified file
 bool
-SimpleDebugger::cmd_logging(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_logging(std::string& UNUSED(cmd_str))
 {
     if ( loggingFile.is_open() ) {
         std::cout << "Logging file is already set to " << loggingFilePath << std::endl;
@@ -2620,7 +2619,7 @@ SimpleDebugger::cmd_logging(std::string& UNUSED(cmd_str))
 
 // replay <filepath> : replays commands from the specified file
 bool
-SimpleDebugger::cmd_replay(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_replay(std::string& UNUSED(cmd_str))
 {
     if ( replayFile.is_open() ) {
         std::cout << "Replay file is already set to " << replayFilePath << std::endl;
@@ -2641,7 +2640,7 @@ SimpleDebugger::cmd_replay(std::string& UNUSED(cmd_str))
 
 // history : prints command history
 bool
-SimpleDebugger::cmd_history(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_history(std::string& UNUSED(cmd_str))
 {
     int recs = 0; // 0 indicates all history
     if ( tokens.size() > 1 ) {
@@ -2673,7 +2672,7 @@ getLogicOpFromString(const std::string& opStr)
 
 // watchlist : prints the watchlists from all threads
 bool
-SimpleDebugger::cmd_watchlist_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_watchlist_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     // Clear R0 result string 
@@ -2687,7 +2686,7 @@ SimpleDebugger::cmd_watchlist_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_watchlist_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_watchlist_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     // Clear R0 result string 
@@ -2701,7 +2700,7 @@ SimpleDebugger::cmd_watchlist_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_watchlist_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_watchlist_rank_serial(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -2719,7 +2718,7 @@ SimpleDebugger::cmd_watchlist_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_watchlist_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_watchlist_rank_parallel(std::string& cmd_str)
 {
     // Clear R0 result string 
     result.str("");
@@ -2739,7 +2738,7 @@ SimpleDebugger::cmd_watchlist_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_watchlist_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_watchlist_remote(std::vector<std::string>& UNUSED(tokens))
 {
     // Print the watch points
     result << "R" << rank_.rank << ",T" << rank_.thread << ": Current watch points:" << std::endl;
@@ -2758,7 +2757,7 @@ SimpleDebugger::cmd_watchlist_remote(std::vector<std::string>& UNUSED(tokens))
 
 // autoComplete : toggle command line auto-completion enable
 bool
-SimpleDebugger::cmd_autoComplete(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_autoComplete(std::string& UNUSED(cmd_str))
 {
     autoCompleteEnable = !autoCompleteEnable;
     std::cout << "auto completion is now " << autoCompleteEnable << std::endl;
@@ -2767,7 +2766,7 @@ SimpleDebugger::cmd_autoComplete(std::string& UNUSED(cmd_str))
 
 // clear : reset terminal
 bool
-SimpleDebugger::cmd_clear(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_clear(std::string& UNUSED(cmd_str))
 {
     // clear screen and move cursor to (0,0)
     std::cout << "\033[2J\033[1;1H";
@@ -2776,7 +2775,7 @@ SimpleDebugger::cmd_clear(std::string& UNUSED(cmd_str))
 
 // define <foo> : define a user command sequence
 bool
-SimpleDebugger::cmd_define(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_define(std::string& UNUSED(cmd_str))
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid\nsyntax: define <cmd_name>" << std::endl;
@@ -2791,7 +2790,7 @@ SimpleDebugger::cmd_define(std::string& UNUSED(cmd_str))
 
 // document <foo> : document help for a user defined command
 bool
-SimpleDebugger::cmd_document(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_document(std::string& UNUSED(cmd_str))
 {
     if ( tokens.size() != 2 ) {
         std::cout << "Invalid\nsyntax: document <cmd_name>" << std::endl;
@@ -2986,7 +2985,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 //  watch size > 90 && value == 100
 //  watch size changed || value == 100 && index == 55
 bool
-SimpleDebugger::cmd_watch_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_watch_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -3004,7 +3003,7 @@ SimpleDebugger::cmd_watch_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_watch_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_watch_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -3022,7 +3021,7 @@ SimpleDebugger::cmd_watch_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_watch_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_watch_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -3045,7 +3044,7 @@ SimpleDebugger::cmd_watch_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_watch_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_watch_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 3 ) {
@@ -3070,7 +3069,7 @@ SimpleDebugger::cmd_watch_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_watch_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
 {
     size_t      index = 1;
     std::string name  = "";
@@ -3162,7 +3161,7 @@ SimpleDebugger::cmd_watch_remote(std::vector<std::string>& tokens)
 
 // confirm <true/false> : set confirmation requests on (default) or off
 bool
-SimpleDebugger::cmd_setConfirm(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_setConfirm(std::string& UNUSED(cmd_str))
 {
 
     if ( tokens.size() != 2 ) {
@@ -3187,7 +3186,7 @@ SimpleDebugger::cmd_setConfirm(std::string& UNUSED(cmd_str))
 
 // prompt user to delete all watchpoints
 bool
-SimpleDebugger::query_clear_watchlist() {
+DebugConsole::query_clear_watchlist() {
     if ( confirm_ ) {
         std::string line;
         std::cout << "Do you want to delete all watchpoints? [yes, no]\n";
@@ -3206,7 +3205,7 @@ SimpleDebugger::query_clear_watchlist() {
 
 // clear all watchlists at all threads
 bool
-SimpleDebugger::clear_watchlist(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::clear_watchlist(std::vector<std::string>& UNUSED(tokens))
 {
     // Remove watchpoints
     // Does this delete the objects correctly?
@@ -3224,7 +3223,7 @@ SimpleDebugger::clear_watchlist(std::vector<std::string>& UNUSED(tokens))
 
 // unwatch <wpIndex> : remove 1 or all watchpoints
 bool
-SimpleDebugger::cmd_unwatch_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_unwatch_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     // If no arguments, unwatch all watchpoints
@@ -3273,7 +3272,7 @@ SimpleDebugger::cmd_unwatch_serial(std::string& UNUSED(cmd_str))
 
   
 bool
-SimpleDebugger::cmd_unwatch_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_unwatch_thread(std::string& UNUSED(cmd_str))
 {   bool succeed;
     // If no arguments, unwatch all watchpoints
     if ( tokens.size() == 1 ) {
@@ -3304,7 +3303,7 @@ SimpleDebugger::cmd_unwatch_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_unwatch_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_unwatch_rank_serial(std::string& cmd_str)
 {
     bool succeed, succeed2;
     // If no arguments, unwatch all watchpoints
@@ -3345,7 +3344,7 @@ SimpleDebugger::cmd_unwatch_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_unwatch_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_unwatch_rank_parallel(std::string& cmd_str)
 {
     bool succeed, succeed2;
    // If no arguments, unwatch all watchpoints
@@ -3390,7 +3389,7 @@ SimpleDebugger::cmd_unwatch_rank_parallel(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_unwatch_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_unwatch_remote(std::vector<std::string>& tokens)
 {
     // If no arguments, unwatch all watchpoints
     if ( tokens.size() == 1 ) {
@@ -3511,7 +3510,7 @@ parseTraceVar(std::string& tvar, Core::Serialization::ObjectMap* obj, Core::Seri
 // Could also consider having multiple actions and/or default buffer config
 // TODO check at each step that we haven't exceeded token size
 bool
-SimpleDebugger::cmd_trace_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_trace_serial(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 9 ) {
@@ -3530,7 +3529,7 @@ SimpleDebugger::cmd_trace_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_trace_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_trace_thread(std::string& UNUSED(cmd_str))
 {
     bool succeed;
     if ( tokens.size() < 9 ) {
@@ -3548,7 +3547,7 @@ SimpleDebugger::cmd_trace_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_trace_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_trace_rank_serial(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 9 ) {
@@ -3572,7 +3571,7 @@ SimpleDebugger::cmd_trace_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_trace_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_trace_rank_parallel(std::string& cmd_str)
 {
     bool succeed;
     if ( tokens.size() < 9 ) {
@@ -3599,7 +3598,7 @@ SimpleDebugger::cmd_trace_rank_parallel(std::string& cmd_str)
 
 
 bool
-SimpleDebugger::cmd_trace_remote(std::vector<std::string>& tokens)
+DebugConsole::cmd_trace_remote(std::vector<std::string>& tokens)
 {
     size_t      index = 1;
     std::string name  = "";
@@ -3707,7 +3706,7 @@ SimpleDebugger::cmd_trace_remote(std::vector<std::string>& tokens)
 
 // exit OR quit : clears watchlists if prompted (or confirm off) then continues execution
 bool
-SimpleDebugger::cmd_exit_serial(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_exit_serial(std::string& UNUSED(cmd_str))
 {
     // Remove all watchpoints before exit?
     if (!confirm_ || query_clear_watchlist()) {
@@ -3722,7 +3721,7 @@ SimpleDebugger::cmd_exit_serial(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_exit_thread(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_exit_thread(std::string& UNUSED(cmd_str))
 {
     // Remove all watchpoints?
     if (!confirm_ || query_clear_watchlist()) {
@@ -3738,7 +3737,7 @@ SimpleDebugger::cmd_exit_thread(std::string& UNUSED(cmd_str))
 }
 
 bool
-SimpleDebugger::cmd_exit_rank_serial(std::string& cmd_str)
+DebugConsole::cmd_exit_rank_serial(std::string& cmd_str)
 {
     // Remove all watchpoints?
     if (!confirm_ || query_clear_watchlist()) {
@@ -3758,7 +3757,7 @@ SimpleDebugger::cmd_exit_rank_serial(std::string& cmd_str)
 }
 
 bool
-SimpleDebugger::cmd_exit_rank_parallel(std::string& cmd_str)
+DebugConsole::cmd_exit_rank_parallel(std::string& cmd_str)
 {
     // Remove all watchpoints?
     if (!confirm_ || query_clear_watchlist()) {
@@ -3779,7 +3778,7 @@ SimpleDebugger::cmd_exit_rank_parallel(std::string& cmd_str)
 
 // shutdown : exit the debugger and cleanly shutdown simulator
 bool
-SimpleDebugger::cmd_shutdown(std::string& UNUSED(cmd_str))
+DebugConsole::cmd_shutdown(std::string& UNUSED(cmd_str))
 {
     simulationShutdown();
     exit_console = true;
@@ -3990,7 +3989,7 @@ CommandHistoryBuffer::searchAny(const std::string& s, std::string& newcmd)
 
 // print message based on verbosity
 void
-SimpleDebugger::msg(VERBOSITY_MASK mask, std::string message)
+DebugConsole::msg(VERBOSITY_MASK mask, std::string message)
 {
     if ( (!static_cast<uint32_t>(mask)) & verbosity ) return;
     std::cout << message << std::endl;
@@ -4137,7 +4136,7 @@ CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
 // If current_thread is total number of threads, all threads execute the function
 // Otherwise just current_thread executes the function 
 bool
-SimpleDebugger::handleCommand()
+DebugConsole::handleCommand()
 {
 #if 0
     std::cout << "**Enter HandleCommand: R" << rank_.rank << " T" << rank_.thread << std::endl;
@@ -4191,7 +4190,7 @@ SimpleDebugger::handleCommand()
 
 // Handle command for all threads in current rank
 bool
-SimpleDebugger::handleCommandAll() 
+DebugConsole::handleCommandAll() 
 {
     bool succeed = true;
     bool ret;
@@ -4205,7 +4204,7 @@ SimpleDebugger::handleCommandAll()
 }
 
 bool 
-SimpleDebugger::sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::string& cmd) {
+DebugConsole::sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::string& cmd) {
     #ifdef SST_CONFIG_HAVE_MPI
     char* cmd_buffer;  // SKK Could share buffer
     uint32_t str_length;
@@ -4258,7 +4257,7 @@ SimpleDebugger::sendCommand( uint32_t rank_id, uint32_t thread_id,  const std::s
 
 // Send command to all ranks and threads
 bool
-SimpleDebugger::sendCommandAll(const std::string& cmd_str) {
+DebugConsole::sendCommandAll(const std::string& cmd_str) {
 
     bool succeed = true;
     bool ret;
@@ -4272,7 +4271,7 @@ SimpleDebugger::sendCommandAll(const std::string& cmd_str) {
 }
 
 void 
-SimpleDebugger::receiveCommandRankSerial() {  
+DebugConsole::receiveCommandRankSerial() {  
     #ifdef SST_CONFIG_HAVE_MPI
     //const int default_size = 100;
     bool succeed = true;
@@ -4370,7 +4369,7 @@ SimpleDebugger::receiveCommandRankSerial() {
 }
 
 void 
-SimpleDebugger::receiveCommandRankParallel() {
+DebugConsole::receiveCommandRankParallel() {
     #ifdef SST_CONFIG_HAVE_MPI   
     //const int default_size = 100;
     bool succeed = true;
@@ -4470,7 +4469,7 @@ SimpleDebugger::receiveCommandRankParallel() {
 }
 
 bool 
-SimpleDebugger::sendDone() {
+DebugConsole::sendDone() {
     #ifdef SST_CONFIG_HAVE_MPI
     std::string cmd = "done";
     char* cmd_buffer = nullptr;  // SKK Could share buffer
@@ -4538,7 +4537,7 @@ SimpleDebugger::sendDone() {
 
 // Could just call the correct execute directly now
 int
-SimpleDebugger::execute(const std::string& msg)  
+DebugConsole::execute(const std::string& msg)  
 {
     int ret;
     // Serial (single rank, single thread)
@@ -4572,7 +4571,7 @@ SimpleDebugger::execute(const std::string& msg)
 }
 
 int
-SimpleDebugger::executeThread(const std::string& msg) 
+DebugConsole::executeThread(const std::string& msg) 
 {
     if (rank_.thread == 0)  { 
         // Clear R0 result string 
@@ -4613,7 +4612,7 @@ SimpleDebugger::executeThread(const std::string& msg)
 }
 
 int
-SimpleDebugger::executeRankSerial(const std::string& msg) 
+DebugConsole::executeRankSerial(const std::string& msg) 
 {
     #ifdef SST_CONFIG_HAVE_MPI
     // -- Rank 0
@@ -4662,7 +4661,7 @@ SimpleDebugger::executeRankSerial(const std::string& msg)
 }
 
 int
-SimpleDebugger::executeRankParallel(const std::string& msg) 
+DebugConsole::executeRankParallel(const std::string& msg) 
 {
     #ifdef SST_CONFIG_HAVE_MPI
 

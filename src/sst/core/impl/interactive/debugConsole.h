@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
-#define SST_CORE_IMPL_INTERACTIVE_SIMPLEDEBUG_H
+#ifndef SST_CORE_IMPL_INTERACTIVE_DEBUGCONSOLE_H
+#define SST_CORE_IMPL_INTERACTIVE_DEBUGCONSOLE_H
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/impl/interactive/cmdLineEditor.h"
@@ -291,12 +291,12 @@ private:
     bool                      ret_    = false;   // user command complete, return to caller
 }; // class ExecState
 
-class SimpleDebugger : public SST::InteractiveConsole
+class DebugConsole : public SST::InteractiveConsole
 {
 
 public:
     SST_ELI_REGISTER_INTERACTIVE_CONSOLE(
-      SimpleDebugger,   // class
+      DebugConsole,   // class
       "sst",     // library
       "interactive.debugger", // name
       SST_ELI_ELEMENT_VERSION(1, 0, 0),
@@ -309,8 +309,8 @@ public:
     /**
            Creates a new self partition scheme.
     */
-    explicit SimpleDebugger(Params& params);
-    ~SimpleDebugger();
+    explicit DebugConsole(Params& params);
+    ~DebugConsole();
 
     int  execute(const std::string& msg) override; // SKK separate to thread, rank execute 
     void summary() override;
