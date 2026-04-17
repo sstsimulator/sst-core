@@ -536,7 +536,6 @@ SyncManager::getSimFlags(
     generate_ckpt = checkpoint_->getCheckpoint();
 }
 
-
 void
 SyncManager::execute()
 {
