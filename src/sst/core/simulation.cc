@@ -1028,7 +1028,7 @@ Simulation_impl::setup_interactive_mode()
     else if ( (interactive_start_ != "") || (config.sigusr1() == "sst.rt.interactive") ||
                 (config.sigusr2() == "sst.rt.interactive") ) {
         // use default interactive console
-        interactive_type_ = "sst.interactive.simpledebug";
+        interactive_type_ = "sst.interactive.debugger";
         initialize_interactive_console(interactive_type_);
     }
 

@@ -298,7 +298,7 @@ public:
     SST_ELI_REGISTER_INTERACTIVE_CONSOLE(
       SimpleDebugger,   // class
       "sst",     // library
-      "interactive.simpledebug", // name
+      "interactive.debugger", // name
       SST_ELI_ELEMENT_VERSION(1, 0, 0),
       "{EXPERIMENTAL} Interactive console debug probe")
 
