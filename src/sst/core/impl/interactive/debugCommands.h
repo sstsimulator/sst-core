@@ -66,10 +66,10 @@ public:
     // Constructor for built-in commands has callback - remote calls
     ConsoleCommand(std::string str_long, std::string str_short, std::string str_help, ConsoleCommandGroup group,
         ExecutionType exec_type, std::function<bool(std::string& cmd_str)> func_serial,
-        std::function<bool(std::string& cmd_str)>                     func_thread,
-        std::function<bool(std::string& cmd_str)>                     func_rank_serial,
-        std::function<bool(std::string& cmd_str)>                     func_rank_parallel,
-        std::function<bool(std::vector<std::string>& UNUSED(tokens))> func_remote) :
+        std::function<bool(std::string& cmd_str)>             func_thread,
+        std::function<bool(std::string& cmd_str)>             func_rank_serial,
+        std::function<bool(std::string& cmd_str)>             func_rank_parallel,
+        std::function<bool(std::vector<std::string>& tokens)> func_remote) :
         str_long_(str_long),
         str_short_(str_short),
         str_help_(str_help),
