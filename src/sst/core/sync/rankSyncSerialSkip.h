@@ -55,7 +55,7 @@ public:
     bool getSignals(int& end, int& usr, int& alrm) override;
 
     /** Set interactive flags to exchange during sync */
-    // SKK Separated enter_interactive from from shutdown since they may be needed separately
+    // Separated enter_interactive from from shutdown since they may be needed separately
     void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
     void setCkptFlag(bool generate_ckpt) override;
     void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
@@ -66,8 +66,6 @@ public:
         bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
     /** Clear interactive flags before next run */
     void clearFlags() override;
-    void interactiveExchange() override;
-    void shutdownExchange() override;
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
 

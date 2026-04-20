@@ -113,8 +113,6 @@ public:
 
     /** Clear interactive flags before next run */
     void clearFlags() override {}
-    void interactiveExchange() override {}
-    void shutdownExchange() override {}
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
@@ -539,15 +537,6 @@ SyncManager::getSimFlags(
 void
 SyncManager::execute()
 {
-#if 0  // SKK
-    std::string type = "RANK";
-    if (next_sync_type_ == THREAD)
-        type = "THREAD";
-    std::cout << "SyncManager::execute: Rank " << rank_.rank
-    << ": Thread " << rank_.thread
-    << ": Type " << type << std::endl;
-#endif // SKK
-
     if ( profile_tools_ ) profile_tools_->syncManagerStart(next_sync_type_ == RANK);
 
     bool                            signals_received    = false;
@@ -683,11 +672,6 @@ SyncManager::execute()
         // Handle signals for multi-threaded runs/no MPI
         if ( num_ranks_.rank == 1 ) {
             signals_received = threadSync_->getSignals(sig_end, sig_usr, sig_alrm);
-#if 0
-            Output& out = sim_->getSimulationOutput();
-            out.output("skk:syncmgr:execute: T%d: sig_end=%d, sig_usr=%d, sig_alrm=%d, received=%d\n", rank_.thread,
-                sig_end, sig_usr, sig_alrm, signals_received);
-#endif
             if ( sig_end )
                 real_time_->performSignal(sig_end);
             else if ( signals_received ) {

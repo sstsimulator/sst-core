@@ -76,14 +76,14 @@ DebugConsole::DebugConsole(Params& params) :
             "?",
             "<[CMD]>: show this help or detailed command help",
             ConsoleCommandGroup::GENERAL,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_help(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_help(cmd_str); },
         },
         { "verbose", "v", "[mask]: set verbosity mask or print if no mask specified", ConsoleCommandGroup::GENERAL,
-            exec_type, [this](std::string& UNUSED(cmd_str)) { return cmd_verbose_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_verbose_thread(cmd_str); },
+            exec_type, [this](std::string& cmd_str) { return cmd_verbose_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_verbose_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_verbose_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_verbose_rank_parallel(cmd_str); },
-            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_verbose_remote(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_verbose_remote(tokens); } },
 
         {
             "info",
@@ -91,56 +91,56 @@ DebugConsole::DebugConsole(Params& params) :
             "\"current\"|\"all\" print summary for current thread or all threads",
             ConsoleCommandGroup::GENERAL,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_info_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_info_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_info_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_info_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_info_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_info_rank_parallel(cmd_str); },
-            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_info_remote(tokens); },
+            [this](std::vector<std::string>& tokens) { return cmd_info_remote(tokens); },
         },
         { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL, exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_thread_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_thread_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_thread_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_thread_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_thread_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_thread_rank_parallel(cmd_str); },
-            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_thread_remote(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_thread_remote(tokens); } },
         { "rank", "rank", "[rankID]: switch to specified rank ID, same thread", ConsoleCommandGroup::GENERAL, exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_rank_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_rank_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_rank_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_rank_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_rank_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_rank_rank_parallel(cmd_str); },
-            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_rank_remote(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_rank_remote(tokens); } },
         { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_setConfirm(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_setConfirm(cmd_str); } },
         { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
-            exec_type, [this](std::string& UNUSED(cmd_str)) { return cmd_pwd_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_pwd_thread(cmd_str); },
+            exec_type, [this](std::string& cmd_str) { return cmd_pwd_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_pwd_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_pwd_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_pwd_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_pwd_remote(tokens); } },
         { "chdir", "cd", "change 1 directory level in the object map", ConsoleCommandGroup::NAVIGATION, exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_cd_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_cd_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_cd_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_cd_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_cd_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_cd_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_cd_remote(tokens); } },
         { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
-            exec_type, [this](std::string& UNUSED(cmd_str)) { return cmd_ls_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_ls_thread(cmd_str); },
+            exec_type, [this](std::string& cmd_str) { return cmd_ls_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_ls_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_ls_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_ls_rank_parallel(cmd_str); },
-            [this](std::vector<std::string>& UNUSED(tokens)) { return cmd_ls_remote(tokens); } },
+            [this](std::vector<std::string>& tokens) { return cmd_ls_remote(tokens); } },
 
         // State
         { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_time(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_time(cmd_str); } },
         {
             "print",
             "p",
             "[-rN] [<obj>]: print objects at the current level",
             ConsoleCommandGroup::STATE,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_print_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_print_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_print_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_print_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_print_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_print_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_print_remote(tokens); },
@@ -151,8 +151,8 @@ DebugConsole::DebugConsole(Params& params) :
             "var value: set value for a variable at the current level",
             ConsoleCommandGroup::STATE,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_set_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_set_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_set_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_set_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_set_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_set_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_set_remote(tokens); },
@@ -163,8 +163,8 @@ DebugConsole::DebugConsole(Params& params) :
             "<trig>: adds watchpoint to the watchlist",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_watch_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_watch_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_watch_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_watch_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_watch_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_watch_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_watch_remote(tokens); },
@@ -175,8 +175,8 @@ DebugConsole::DebugConsole(Params& params) :
             "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_trace_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_trace_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_trace_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_trace_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_trace_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_trace_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_trace_remote(tokens); },
@@ -187,21 +187,20 @@ DebugConsole::DebugConsole(Params& params) :
             "prints the current list of watchpoints",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_watchlist_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_watchlist_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_watchlist_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_watchlist_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_watchlist_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_watchlist_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_watchlist_remote(tokens); },
         },
-#if 1
         {
             "addTraceVar",
             "add",
             "<watchpointIndex> <var1> ... <varN>",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_addTraceVar_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_addTraceVar_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_addTraceVar_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_addTraceVar_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_addTraceVar_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_addTraceVar_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_addTraceVar_remote(tokens); },
@@ -212,8 +211,8 @@ DebugConsole::DebugConsole(Params& params) :
             "<watchpointIndex>: prints a watchpoint",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_printWatchpoint_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_printWatchpoint_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_printWatchpoint_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_printWatchpoint_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_printWatchpoint_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_printWatchpoint_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_printWatchpoint_remote(tokens); },
@@ -224,8 +223,8 @@ DebugConsole::DebugConsole(Params& params) :
             "<watchpointIndex>: prints trace buffer for a watchpoint",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_printTrace_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_printTrace_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_printTrace_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_printTrace_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_printTrace_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_printTrace_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_printTrace_remote(tokens); },
@@ -236,8 +235,8 @@ DebugConsole::DebugConsole(Params& params) :
             "<watchpointIndex>: reset trace buffer for a watchpoint",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_resetTraceBuffer_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_resetTraceBuffer_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_resetTraceBuffer_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_resetTraceBuffer_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_resetTraceBuffer_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_resetTraceBuffer_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_resetTraceBuffer_remote(tokens); },
@@ -248,21 +247,20 @@ DebugConsole::DebugConsole(Params& params) :
             "<idx> <t1> ... <t2>: trigger check/sampling handler",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_setHandler_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_setHandler_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_setHandler_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_setHandler_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_setHandler_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_setHandler_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_setHandler_remote(tokens); },
         },
-#endif
         {
             "unwatch",
             "uw",
             "<watchpointIndex>: remove 1 or all watchpoints",
             ConsoleCommandGroup::WATCH,
             exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_unwatch_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_unwatch_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_unwatch_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_unwatch_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_unwatch_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_unwatch_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_unwatch_remote(tokens); },
@@ -273,46 +271,46 @@ DebugConsole::DebugConsole(Params& params) :
             "r",
             "[TIME]: continues the simulation",
             ConsoleCommandGroup::SIMULATION,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_run(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_run(cmd_str); },
         },
         {
             "continue",
             "c",
             "alias for run",
             ConsoleCommandGroup::SIMULATION,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_run(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_run(cmd_str); },
         },
 
         { "exit", "e", "exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION, exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_exit_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_exit_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_exit_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_exit_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return clear_watchlist(tokens); } },
         { "quit", "q", "alias for exit", ConsoleCommandGroup::SIMULATION, exec_type,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_exit_serial(cmd_str); },
-            [this](std::string& UNUSED(cmd_str)) { return cmd_exit_thread(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_exit_serial(cmd_str); },
+            [this](std::string& cmd_str) { return cmd_exit_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return clear_watchlist(tokens); } },
         { "shutdown", "shutd", "exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_shutdown(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_shutdown(cmd_str); } },
         // Logging/Replay
         { "logging", "log", "<filepath>: log command line entires to file", ConsoleCommandGroup::LOGGING,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_logging(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_logging(cmd_str); } },
         { "replay", "rep", "<filepath>: run commands from a file. See also: sst --replay", ConsoleCommandGroup::LOGGING,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_replay(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_replay(cmd_str); } },
         { "history", "h", "[N]: display all or last N unique commands", ConsoleCommandGroup::LOGGING,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_history(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_history(cmd_str); } },
         // Misc
         { "autoComplete", "ac", "toggle command line auto-completion enable", ConsoleCommandGroup::MISC,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_autoComplete(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_autoComplete(cmd_str); } },
         { "clear", "clr", "reset terminal", ConsoleCommandGroup::MISC,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_clear(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_clear(cmd_str); } },
         { "define", "def", "define a user command sequence", ConsoleCommandGroup::MISC,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_define(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_define(cmd_str); } },
         { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
-            [this](std::string& UNUSED(cmd_str)) { return cmd_document(cmd_str); } },
+            [this](std::string& cmd_str) { return cmd_document(cmd_str); } },
     });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
@@ -773,12 +771,9 @@ DebugConsole::cmd_verbose_query()
             return false;
         }
     }
-#if 1
+
     // This messes up the auto-complete keyboard input
     std::cout << "verbose=0x" << std::hex << verbosity << std::endl;
-#else
-    std::cout << "verbose=" << verbosity << std::endl;
-#endif
 
     return true;
 }
@@ -991,7 +986,7 @@ DebugConsole::cmd_info_rank_parallel(std::string& cmd_str)
         return false;
     }
 
-    // SKK Must be executed by target rank because otherwise the process ID won't be correct
+    // Must be executed by target rank because otherwise the process ID won't be correct
     if ( tokens[1] == "current" ) {
         // Clear R0 result string
         result.str("");
@@ -1605,15 +1600,6 @@ DebugConsole::cmd_cd_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
 {
-
-#if 0
-    // skk This works but doesn't delete/deactivate like objmap selectParent
-    if ( tokens.size() == 1 ) {
-        obj_ = getComponentObjectMap();
-        return;
-    }
-#endif
-
     // Allow for trailing '/'
     std::string selection = tokens[1];
     if ( !selection.empty() && selection.back() == '/' ) selection.pop_back();
@@ -3029,7 +3015,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 
         return new WatchPoint::SetVarWPAction(name, map, tval);
     }
-#if 0
+#if 0 // Do users want a heartbeat action?
     else if (action == "heartbeat") {
         return new WatchPoint::HeartbeatWPAction();
     }
@@ -4224,14 +4210,6 @@ CommandRegistry::addHelp(std::string key, std::vector<std::string>& vec)
 bool
 DebugConsole::handleCommand()
 {
-#if 0
-    std::cout << "**Enter HandleCommand: R" << rank_.rank << " T" << rank_.thread << std::endl;
-    for (const std::string& token : tokens) {
-        std::cout << token;
-    }
-    std::cout << std::endl;
-#endif
-
     static Core::ThreadSafe::Barrier exchange_barrier(num_ranks_.thread);
     static Core::ThreadSafe::Barrier process_barrier(num_ranks_.thread);
 
@@ -4251,14 +4229,6 @@ DebugConsole::handleCommand()
     else if ( !done ) {
         // If I am target thread, handle the incoming command
         if ( current_thread == rank_.thread ) {
-#if 0
-            std::cout << "**HandleCommand: R" << rank_.rank << " T" << rank_.thread << std::endl;
-            for (const std::string& token : tokens) {
-                std::cout << token;
-            }
-            std::cout << std::endl;
-#endif
-
             if ( obj_ == nullptr ) {
                 // Create a new ObjectMap
                 obj_ = getComponentObjectMap();
@@ -4294,7 +4264,7 @@ bool
 DebugConsole::sendCommand(uint32_t rank_id, uint32_t thread_id, const std::string& cmd)
 {
 #ifdef SST_CONFIG_HAVE_MPI
-    char*      cmd_buffer; // SKK Could share buffer
+    char*      cmd_buffer;
     uint32_t   str_length;
     int        buf_size;
     int        position = 0;
@@ -4409,7 +4379,7 @@ DebugConsole::receiveCommandRankSerial()
     else if ( tokens[0] == "summary" ) {
         summary();
     }
-#if 0
+#if 0 // Will we need an init with object tree?
     else if (tokens[0] == "init") {
         if (obj_ == nullptr) {
             // Create a new ObjectMap
@@ -4508,7 +4478,7 @@ DebugConsole::receiveCommandRankParallel()
     else if ( tokens[0] == "summary" ) {
         handleCommandAll();
     }
-#if 0
+#if 0  // Will we need an init with object tree?
     else if (tokens[0] == "init") {
         if (obj_ == nullptr) {
             // Create a new ObjectMap
@@ -4566,7 +4536,7 @@ DebugConsole::sendDone()
 {
 #ifdef SST_CONFIG_HAVE_MPI
     std::string cmd        = "done";
-    char*       cmd_buffer = nullptr; // SKK Could share buffer
+    char*       cmd_buffer = nullptr;
     uint32_t    str_length;
     int         buf_size;
     int         position;
@@ -4602,7 +4572,7 @@ DebugConsole::sendDone()
         MPI_Probe(rank_id, tag, MPI_COMM_WORLD, &status);
         // Get the actual number of elements (characters)
         MPI_Get_count(&status, MPI_CHAR, &rcv_buf_size);
-        // SKK TODO Consider moving this to sendCommand - all done messages should be the same size
+        // Consider using this in sendCommand - all done messages should be the same size
         if ( rcv_buf_size > prev_size ) {
             if ( result_buffer != nullptr ) {
                 free(result_buffer);
@@ -4615,13 +4585,6 @@ DebugConsole::sendDone()
         // Unpack the rank_id, thread_id, string length, cmd string
         position = 0;
         MPI_Unpack(result_buffer, buf_size, &position, &succeed, 1, MPI_CXX_BOOL, MPI_COMM_WORLD);
-#if 0
-        // Currently don't need result string for done - used for debugging
-        MPI_Unpack(result_buffer, buf_size, &position, &str_length, 1, MPI_UINT32_T, MPI_COMM_WORLD);
-        char* result_str = (char*) malloc(str_length * sizeof(char));
-        MPI_Unpack(result_buffer, buf_size, &position, result_str, str_length, MPI_CHAR, MPI_COMM_WORLD);
-        result << "DONE: " << result_str << std::endl;
-#endif
     } // End for each rank
 
     free(cmd_buffer);
@@ -4637,7 +4600,8 @@ DebugConsole::execute(const std::string& msg)
     // Serial (single rank, single thread)
     if ( num_ranks_.rank == 1 && num_ranks_.thread == 1 ) {
         // ExecutionType::SERIAL;
-        // SKK Currently don't print summary because it would break existing tests
+        // Currently we don't print summary because it would break existing tests
+        // but we may want the components to print for consistency
         // std::cout << "Serial execute" << std::endl;
         // std::cout << "\nINTERACTIVE CONSOLE" << std::endl;
         // summary();
@@ -4809,7 +4773,7 @@ DebugConsole::executeRankParallel(const std::string& msg)
     }
 
     done = false;
-    // SKK Maybe check shutdown here as well?
+    // Maybe check shutdown here as well?
     return 0; // Return codes currently unused
 #endif
 } // end rankParallelExecute

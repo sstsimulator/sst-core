@@ -116,7 +116,7 @@ void
 ThreadSyncDirectSkip::setFlags(
     bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This must be atomic because it can be set from any thread
+    // This must be atomic because it can be set from any thread
     if ( enter_interactive ) enter_interactive_.store(enter_interactive);
     setShutdownFlags(enter_shutdown, shutdown_mode);
 }
@@ -125,7 +125,6 @@ void
 ThreadSyncDirectSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
 {
     enter_shutdown = enter_shutdown_.load();
-#if 1
     switch ( shutdown_mode_ ) {
     case 0:
         shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
@@ -137,9 +136,6 @@ ThreadSyncDirectSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::Sh
         shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
         break;
     }
-#else
-    shutdown_mode = static_cast<Simulation_impl::ShutdownMode_t>(shutdown_mode_);
-#endif
 }
 
 void

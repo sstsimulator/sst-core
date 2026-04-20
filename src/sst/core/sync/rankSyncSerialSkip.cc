@@ -126,7 +126,7 @@ RankSyncSerialSkip::getSignals(int& end, int& usr, int& alrm)
 void
 RankSyncSerialSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This can be set from any thread
+    // This can be set from any thread
     if ( enter_shutdown ) {
         enter_shutdown_.store(enter_shutdown);
         shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
@@ -142,7 +142,7 @@ RankSyncSerialSkip::setCkptFlag(bool generate_ckpt)
 void
 RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
 {
-    // SKK This can be set from any thread
+    // This can be set from any thread
     if ( enter_interactive ) enter_interactive_.store(enter_interactive);
 
     setShutdownFlags(enter_shutdown, shutdown_mode);
@@ -205,44 +205,6 @@ RankSyncSerialSkip::execute(int thread)
         exchange();
     }
 }
-
-void
-RankSyncSerialSkip::interactiveExchange()
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    int32_t local_flags[1]  = { static_cast<int32_t>(enter_interactive_) };
-    int32_t global_flags[1] = { 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    enter_interactive_ = global_flags[0];
-#endif
-}
-
-void
-RankSyncSerialSkip::shutdownExchange()
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    int32_t local_flags[2]  = { static_cast<int32_t>(enter_shutdown_), static_cast<int32_t>(shutdown_mode_) };
-    int32_t global_flags[2] = { 0, 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 2, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    enter_shutdown_ = global_flags[0];
-    shutdown_mode_  = global_flags[1];
-#endif
-}
-#if 0
-void
-RankSyncSerialSkip::ckptExchange()
-{
-#ifdef SST_CONFIG_HAVE_MPI
-    int32_t local_flags[1]  = { static_cast<int32_t>(generate_ckpt_) };
-    int32_t global_flags[1] = { 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 1, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    generate_ckpt_  = global_flags[0];
-#endif
-}
-#endif
 
 void
 RankSyncSerialSkip::exchange()

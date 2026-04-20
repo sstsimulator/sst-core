@@ -52,10 +52,8 @@ public:
         // If this is a serial job, insert this into
         // the time TimeVortex.  If it is parallel, then the
         // InteractiveAction is managed by the SyncManager.
-        // std::cout << "skk: insertIntoTimeVortex called\n";
         RankInfo num_ranks = sim_->getNumRanks();
         // if (num_ranks.rank == 1 && num_ranks.thread == 1) {
-        // std::cout << "  skk: insertIntoTimeVortex insertActivity\n";
         sim_->insertActivity(time, this);
         //}
     }

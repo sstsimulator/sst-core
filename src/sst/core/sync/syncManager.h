@@ -80,8 +80,6 @@ public:
         bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
     /** Clear interactive flags before next run */
     virtual void clearFlags()                                                                          = 0;
-    virtual void interactiveExchange()                                                                 = 0;
-    virtual void shutdownExchange()                                                                    = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
