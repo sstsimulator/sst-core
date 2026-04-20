@@ -4478,7 +4478,7 @@ DebugConsole::receiveCommandRankParallel()
     else if ( tokens[0] == "summary" ) {
         handleCommandAll();
     }
-#if 0  // Will we need an init with object tree?
+#if 0 // Will we need an init with object tree?
     else if (tokens[0] == "init") {
         if (obj_ == nullptr) {
             // Create a new ObjectMap
