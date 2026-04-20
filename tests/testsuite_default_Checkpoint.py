@@ -97,7 +97,7 @@ class testcase_Checkpoint(SSTTestCase):
         self.checkpoint_test_template("Module")
 
     ### Stats tests, including repartitioned restart tests
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "his test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic")
 
