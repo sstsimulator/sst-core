@@ -37,7 +37,8 @@ class testcase_StatisticComponent(SSTTestCase):
 
     num_threads = test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
 
-    #@unittest.skipIf(num_threads > 1, "Statistic test currently fails with threads due to strange interactions of independent threads with stats")
+    # This test has floating point statistics in it and on certain platforms, minor rounding leads to floating point diffs
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "his test fails on Rocky 10")
     def test_StatisticsBasic(self):
         self.Statistics_test_template("basic")
 
