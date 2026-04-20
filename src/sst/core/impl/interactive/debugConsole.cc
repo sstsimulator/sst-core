@@ -4416,7 +4416,7 @@ DebugConsole::receiveCommandRankSerial()
             obj_ = getComponentObjectMap();
             // Descend into the name_stack
             cd_name_stack();
-        }   
+        }
     }
 #endif
     // Execute command
@@ -4515,7 +4515,7 @@ DebugConsole::receiveCommandRankParallel()
             obj_ = getComponentObjectMap();
             // Descend into the name_stack
             cd_name_stack();
-        }   
+        }
     }
 #endif
 
@@ -4615,7 +4615,7 @@ DebugConsole::sendDone()
         // Unpack the rank_id, thread_id, string length, cmd string
         position = 0;
         MPI_Unpack(result_buffer, buf_size, &position, &succeed, 1, MPI_CXX_BOOL, MPI_COMM_WORLD);
-#if 0        
+#if 0
         // Currently don't need result string for done - used for debugging
         MPI_Unpack(result_buffer, buf_size, &position, &str_length, 1, MPI_UINT32_T, MPI_COMM_WORLD);
         char* result_str = (char*) malloc(str_length * sizeof(char));

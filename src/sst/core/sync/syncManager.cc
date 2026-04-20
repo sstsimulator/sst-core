@@ -543,8 +543,8 @@ SyncManager::execute()
     std::string type = "RANK";
     if (next_sync_type_ == THREAD)
         type = "THREAD";
-    std::cout << "SyncManager::execute: Rank " << rank_.rank 
-    << ": Thread " << rank_.thread 
+    std::cout << "SyncManager::execute: Rank " << rank_.rank
+    << ": Thread " << rank_.thread
     << ": Type " << type << std::endl;
 #endif // SKK
 
