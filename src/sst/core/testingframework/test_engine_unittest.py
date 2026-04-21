@@ -73,6 +73,8 @@ if check_module_conditional_import('pygments'):
 import queue
 Queue = queue.Queue
 
+TestSuiteBaseClass: Type[TestSuite]
+
 # Try to import testtools (this may not be installed on system)
 if check_module_conditional_import('testtools'):
     import testtools
@@ -565,7 +567,7 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
         suite: TestSuite,
         make_tests: Callable[["SSTTestSuite"], List[Any]],
         wrap_result: Optional[
-            Callable[["testtools.ThreadsafeForwardingResults", int], TestResult]
+            Callable[["testtools.ThreadsafeForwardingResult", int], TestResult]
         ] = None,
     ) -> None:
         """Create a ConcurrentTestSuite or TestSuite to execute the suite.

@@ -249,14 +249,14 @@ def host_os_get_distribution_type() -> str:
             return OS_DIST_ARCH
         if "centos" in dist_name:
             return OS_DIST_CENTOS
+        if "rocky" in dist_name:
+            return OS_DIST_ROCKY
         if "red hat" in dist_name:
             return OS_DIST_RHEL
         if "toss" in dist_name:
             return OS_DIST_TOSS
         if "ubuntu" in dist_name:
             return OS_DIST_UBUNTU
-        if "rocky" in dist_name:
-            return OS_DIST_ROCKY
     elif k_type == 'Darwin':
         return OS_DIST_OSX
     return OS_DIST_UNDEF
@@ -2278,12 +2278,12 @@ def _get_linux_distribution() -> Tuple[str, str]:
     elif os.path.isfile("/etc/centos-release"):
         distname = "centos"
         distver = _get_linux_version("/etc/centos-release", " ")
-    elif os.path.isfile("/etc/redhat-release"):
-        distname = "red hat"
-        distver = _get_linux_version("/etc/redhat-release", " ")
     elif os.path.isfile("/etc/rocky-release"):
         distname = "rocky"
         distver = _get_linux_version("/etc/rocky-release", " ")
+    elif os.path.isfile("/etc/redhat-release"):
+        distname = "red hat"
+        distver = _get_linux_version("/etc/redhat-release", " ")
     elif os.path.isfile("/etc/os-release"):
         distname, distver = _read_os_release("/etc/os-release")
     rtn_data = (distname, distver)

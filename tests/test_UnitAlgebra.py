@@ -58,7 +58,7 @@ print("Addition:")
 
 ua3 = ua1
 if id(ua3) != id(ua1):
-    print("ERROR: assignement operator did not result in both objects being the same")
+    print("ERROR: assignment operator did not result in both objects being the same")
 ua4 = ua3
 ua3_id_before = id(ua3)
 ua3 += ua2
