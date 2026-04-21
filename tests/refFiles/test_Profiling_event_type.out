@@ -3,3 +3,10 @@
 events:
   coreTestElement.message_mesh.message_port:
     recv_count: 639936
+
+
+Simulation Summary:
+  Simulation Input File: /sst-core/tests/test_MessageMesh.py
+  Ranks:                 1
+  Simulated time:        10 us
+  Threads:               1

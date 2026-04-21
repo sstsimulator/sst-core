@@ -1567,9 +1567,9 @@ main(int argc, char* argv[])
         const uint64_t global_max_io_out = maxOutputOperations();
 
         if ( myRank.rank == 0 ) {
-            int          timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();
-            TimingOutput timingOutput(g_output, std::max(timing_verbose, cfg.verbose() == 0 ? 0 : cfg.verbose() + 1));
-            timingOutput.generate(&perfReporter); // Triggers basicPerf to dump data to the record
+            int timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();
+            timing_verbose     = std::max(timing_verbose, cfg.verbose() == 0 ? 0 : cfg.verbose() + 1);
+            Simulation_impl::basicPerf.outputRegionData(timing_verbose, &perfReporter);
 
             SST::Util::DataRecord* resources = perfReporter.createDataRecord("resources");
             std::map<std::string, std::pair<std::string, std::string>> key_map = {
@@ -1640,6 +1640,19 @@ main(int argc, char* argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
+    if ( perfReporter.recordCount() > 0 && myRank.rank == 0 ) {
+        // Add a metadata section
+        Util::DataRecord* record = perfReporter.createDataRecord("metadata");
+        record->addData("ranks", (uint64_t)world_size.rank);
+        record->addData("threads", (uint64_t)world_size.thread);
+        record->addData("simulation_time", threadInfo[0].simulated_time);
+        record->addData("input_file", cfg.configFile_.value);
+        std::map<std::string, std::pair<std::string, std::string>> key_map = { { "metadata",
+                                                                                   { "Simulation Summary", "" } },
+            { "ranks", { "Ranks", "" } }, { "threads", { "Threads", "" } },
+            { "simulation_time", { "Simulated time", "" } }, { "input_file", { "Simulation Input File", "" } } };
+        record->setKeys(key_map);
+    }
     perfReporter.output(myRank.rank, world_size.rank);
 
 #ifdef SST_CONFIG_HAVE_MPI

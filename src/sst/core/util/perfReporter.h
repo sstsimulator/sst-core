@@ -83,6 +83,7 @@ public:
     void addData(std::string key, uint64_t value);
     void addData(std::string key, int64_t value);
     void addData(std::string key, UnitAlgebra value);
+    void addData(std::string key, std::string value);
     void addData(std::map<std::string, std::variant<uint64_t, int64_t, double, UnitAlgebra, std::string>> data);
 
 private:
@@ -114,9 +115,10 @@ public:
     void outputValueToText(
         const std::variant<uint64_t, int64_t, double, UnitAlgebra, std::string>& v, std::stringstream* sstr);
     std::string convertValueToString(const std::variant<uint64_t, int64_t, double, UnitAlgebra, std::string>& v);
-    void outputRecordToText(const PerfData* node, std::stringstream* sstr, int indent = 0, bool print_name = true);
-    void outputRecordToTextList(const PerfData* node, std::stringstream* sstr, bool header);
-    void outputRecordToJSON(const PerfData* node, nlohmann::ordered_json* obj);
+    void   outputRecordToText(const PerfData* node, std::stringstream* sstr, int indent = 0, bool print_name = true);
+    void   outputRecordToTextList(const PerfData* node, std::stringstream* sstr, bool header);
+    void   outputRecordToJSON(const PerfData* node, nlohmann::ordered_json* obj);
+    size_t recordCount();
 
 private:
     // Can output to console and/or a file (json or text)
