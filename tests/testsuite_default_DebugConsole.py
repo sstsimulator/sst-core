@@ -104,10 +104,20 @@ class testcase_DebugConsole(SSTTestCase):
         outfile = "{0}/test_DebugConsole_{1}.out".format(outdir, testtype)
         checkfile = "{0}/testsuite_DebugConsole/debug_{1}.txt".format(outdir, testtype)
 
+        # Run the test
         self.run_sst(sdlfile, outfile, other_args=options)
 
-        # Perform the test
-        cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
+        # Remove replay file path which will vary
+        filter1 = LineFilter();
+        filter1 = RemoveRegexFromLineFilter(r"replay.*")
+        # Filter out printstatus events due to differences in queue order
+        filter2 = LineFilter();
+        #filter2 = RemoveRegexFromLineFilter(r"N3SST8.*")
+        filter2 = RemoveRegexFromLineFilter(r"queue order:.*")
+
+        # Perform the test comparison with refFile
+        #cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, sort=True, filters=[filter1, filter2])
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
