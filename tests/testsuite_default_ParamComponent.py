@@ -45,8 +45,9 @@ class testcase_ParamComponent(SSTTestCase):
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")
         filter2 = StartsWithFilter("#")
+        filter3 = StartsWithFilter("WARNING: EmptyRankSync")
         ws_filter = IgnoreWhiteSpaceFilter()
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2, ws_filter])
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2, filter3, ws_filter])
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
