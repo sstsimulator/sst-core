@@ -1,0 +1,78 @@
+c3, init()
+c2, init()
+c1, init()
+c0, init()
+c3, setup()
+c2, setup()
+c1, setup()
+c0, setup()
+---- Rank0:Thread0: Entering interactive mode at time 1000000
+Interactive start at 1000000
+> replay /home/skuntz/sanity/sst-core/tests/cmd_DebugConsole_Checkpoint_serial1.cmd
+
+> confirm false
+> # 0 watch
+> cd c0
+> cd xorshift
+> watch w changed
+Added watchpoint #0
+> trace w changed : 16 0 : w : checkpoint
+Added watchpoint #1
+> run
+c1 talkingc1, bounce 999, t=1000000
+c2 talkingc2, bounce 998, t=2000000
+c3 talkingc3, bounce 997, t=3000000
+c0 talkingc0, bounce 996, t=4000000
+c1 talkingc1, bounce 995, t=5000000
+c2 talkingc2, bounce 994, t=6000000
+c3 talkingc3, bounce 993, t=7000000
+c0 talkingc0, bounce 992, t=8000000
+c1 talkingc1, bounce 991, t=9000000
+c0 talkingClock cycle count = 1
+c0 talkingRNG: 4074790800, 774252441, 24684
+c0 talkingDistributions: 1.500000, 5.000000, 0.721430, 0.919625, 0.000000, 1.000000
+    Invoke Action
+    Set Buffer Reset
+# Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.03792 seconds)
+    Reset Trace Buffer
+c1 talkingClock cycle count = 1
+c1 talkingRNG: 4074790800, 774252441, 24684
+c1 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c2 talkingClock cycle count = 1
+c2 talkingRNG: 4074790800, 774252441, 24684
+c2 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+c3 talkingClock cycle count = 1
+c3 talkingRNG: 4074790800, 774252441, 24684
+c3 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
+---- Rank0:Thread0: Entering interactive mode at time 10000000
+  Last Trigger: WP0: AC : c0/xorshift/w ...
+> wl
+R0,T0: Current watch points:
+0: TriggerCount 1 : ALL : c0/xorshift/w CHANGED  : interactive
+1: TriggerCount 1 : ALL : c0/xorshift/w CHANGED  : bufsize = 16 postDelay = 0 : c0/xorshift/w  : checkpoint
+> unwatch 0
+> unwatch 1
+> shutd
+Simulation shutdown
+R0, T0: Exiting ObjectExplorer and shutting down simulation
+c3, complete()
+c2, complete()
+c1, complete()
+c0, complete()
+c3 finished. teststring=hello, output=('c3 talking',2)
+c2 finished. teststring=hello, output=('c2 talking',2)
+c1 finished. teststring=hello, output=('c1 talking',2)
+c0 finished. teststring=hello, output=('c0 talking',2)
+ c0.rngvals : Histogram : BinsMinValue.u32 = 0; BinsMaxValue.u32 = 3999999999; BinWidth.u32 = 400000000; TotalNumBins.u32 = 10; Sum.u32 = 774252441; SumSQ.u32 = 3280730481; NumActiveBins.u32 = 1; NumItemsCollected.u64 = 1; NumItemsBinned.u64 = 1; NumOutOfBounds-MinValue.u64 = 0; NumOutOfBounds-MaxValue.u64 = 0; Bin0:0-399999999.u64 = 0; Bin1:400000000-799999999.u64 = 1; Bin2:800000000-1199999999.u64 = 0; Bin3:1200000000-1599999999.u64 = 0; Bin4:1600000000-1999999999.u64 = 0; Bin5:2000000000-2399999999.u64 = 0; Bin6:2400000000-2799999999.u64 = 0; Bin7:2800000000-3199999999.u64 = 0; Bin8:3200000000-3599999999.u64 = 0; Bin9:3600000000-3999999999.u64 = 0; 
+ c0.eventcount : Accumulator : Sum.u32 = 2; SumSQ.u32 = 2; Count.u64 = 2; Min.u32 = 1; Max.u32 = 1; 
+ c0.distvals : Accumulator : Sum.f64 = 0.919625; SumSQ.f64 = 0.845711; Count.u64 = 1; Min.f64 = 0.919625; Max.f64 = 0.919625; 
+ c1.eventcount : Accumulator : Sum.u32 = 3; SumSQ.u32 = 3; Count.u64 = 3; Min.u32 = 1; Max.u32 = 1; 
+ c1.rngvals : Accumulator : Sum.u32 = 774252441; SumSQ.u32 = 3280730481; Count.u64 = 1; Min.u32 = 774252441; Max.u32 = 774252441; 
+ c1.distvals : Accumulator : Sum.f64 = 0.919625; SumSQ.f64 = 0.845711; Count.u64 = 1; Min.f64 = 0.919625; Max.f64 = 0.919625; 
+ c2.eventcount : Accumulator : Sum.u32 = 2; SumSQ.u32 = 2; Count.u64 = 2; Min.u32 = 1; Max.u32 = 1; 
+ c2.rngvals : Accumulator : Sum.u32 = 774252441; SumSQ.u32 = 3280730481; Count.u64 = 1; Min.u32 = 774252441; Max.u32 = 774252441; 
+ c2.distvals : Accumulator : Sum.f64 = 0.919625; SumSQ.f64 = 0.845711; Count.u64 = 1; Min.f64 = 0.919625; Max.f64 = 0.919625; 
+ c3.eventcount : Accumulator : Sum.u32 = 2; SumSQ.u32 = 2; Count.u64 = 2; Min.u32 = 1; Max.u32 = 1; 
+ c3.rngvals : Accumulator : Sum.u32 = 774252441; SumSQ.u32 = 3280730481; Count.u64 = 1; Min.u32 = 774252441; Max.u32 = 774252441; 
+ c3.distvals : Accumulator : Sum.f64 = 0.919625; SumSQ.f64 = 0.845711; Count.u64 = 1; Min.f64 = 0.919625; Max.f64 = 0.919625; 
+Simulation is complete, simulated time: 0 s

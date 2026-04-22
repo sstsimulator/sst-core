@@ -3,9 +3,21 @@
 #
 
 EXTRA_DIST += \
+    tests/cmd_DebugConsole_Checkpoint_serial0.cmd \
+    tests/cmd_DebugConsole_Checkpoint_serial1.cmd \
+    tests/cmd_DebugConsole_rankparallel0.cmd \
+    tests/cmd_DebugConsole_rankparallel1.cmd \
+    tests/cmd_DebugConsole_rankserial0.cmd \
+    tests/cmd_DebugConsole_rankserial1.cmd \
+    tests/cmd_DebugConsole_serial0.cmd \
+    tests/cmd_DebugConsole_serial1.cmd \
+    tests/cmd_DebugConsole_thread0.cmd \
+    tests/cmd_DebugConsole_thread1.cmd \
     tests/testsuite_default_Checkpoint.py \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_ComponentExtension.py \
+    testsuite_default_DebugConsole_Checkpoint.py \
+    testsuite_default_DebugConsole.py \
     tests/testsuite_default_Links.py \
     tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_default_Module.py \

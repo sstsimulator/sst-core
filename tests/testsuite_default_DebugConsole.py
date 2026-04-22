@@ -30,8 +30,6 @@ class testcase_DebugConsole(SSTTestCase):
 
 ###
 
-    
-    
     parallelism = testing_check_get_num_ranks() * testing_check_get_num_threads()
 
     # Serial
@@ -39,64 +37,61 @@ class testcase_DebugConsole(SSTTestCase):
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports serial execution")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test only supports serial execution")
     def test_serial0(self):
-        self.profiling_test_template("serial0", "0")
+        self.debugconsole_test_template("serial0", "0")
     
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports serial execution")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test only supports serial execution")
     def test_serial1(self):
-        self.profiling_test_template("serial1", "1ps")
+        self.debugconsole_test_template("serial1", "1ps")
 
     # Multithreaded - 4 threads
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test requires single rank with 4 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 4, "Test requires single rank with 4 threads")
     def test_rank_thread0(self):
-        self.profiling_test_template("thread0", "0")
+        self.debugconsole_test_template("thread0", "0")
     
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test requires single rank with 4 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 4, "Test requires single rank with 4 threads")
     def test_rank_thread1(self):
-        self.profiling_test_template("thread1", "1ps")
+        self.debugconsole_test_template("thread1", "1ps")
 
     # Rank Serial - 4 ranks, each with 1 thread
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 4, "Test requires 4 ranks, each with 1 thread")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 4 ranks, each with 1 thread")
     def test_rankserial0(self):
-        self.profiling_test_template("rankserial0", "0")
+        self.debugconsole_test_template("rankserial0", "0")
     
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 4, "Test requires 4 ranks, each with 1 thread")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 4 ranks, each with 1 thread")
     def test_rankserial1(self):
-        self.profiling_test_template("rankserial1", "1ps")
+        self.debugconsole_test_template("rankserial1", "1ps")
 
     # Rank Parallel - 2 ranks, each with 2 threads
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 2, "Test requires 2 ranks, each with 2 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 2, "Test requires 2 ranks, each with 2 threads")
     def test_rankparallel0(self):
-        self.profiling_test_template("rankparallel0", "0")
+        self.debugconsole_test_template("rankparallel0", "0")
     
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 2, "Test requires 2 ranks, each with 2 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 2, "Test requires 2 ranks, each with 2 threads")
     def test_rankparallel1(self):
-        self.profiling_test_template("rankparallel1", "1ps")
-
+        self.debugconsole_test_template("rankparallel1", "1ps")
 
 #####
 
-    def profiling_test_template(self, testtype, profile_options):
+    def debugconsole_test_template(self, testtype, starttime):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
-        #options = "--output-directory=testsuite_profiling --profiling-output=prof_{0}.txt --model-options=\"4 4\" --enable-profiling=\"{1}\"".format(testtype,profile_options);
         cmdfile = "{0}/cmd_DebugConsole_{1}.cmd".format(testsuitedir, testtype)
-        options = "--interactive-start={1} --replay-file={0} --model-options=\"4 4\"".format(cmdfile, profile_options);
-
+        options = "--interactive-start={1} --replay-file={0} --model-options=\"4 4\"".format(cmdfile, starttime);
 
         # Set the various file paths
         sdlfile = "{0}/test_MessageMesh.py".format(testsuitedir)
@@ -110,9 +105,8 @@ class testcase_DebugConsole(SSTTestCase):
         # Remove replay file path which will vary
         filter1 = LineFilter();
         filter1 = RemoveRegexFromLineFilter(r"replay.*")
-        # Filter out printstatus events due to differences in queue order
+        # Filter out printstatus queue order due to differences across architectures
         filter2 = LineFilter();
-        #filter2 = RemoveRegexFromLineFilter(r"N3SST8.*")
         filter2 = RemoveRegexFromLineFilter(r"queue order:.*")
 
         # Perform the test comparison with refFile
