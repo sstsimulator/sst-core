@@ -15,6 +15,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/statapi/statoutput.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 

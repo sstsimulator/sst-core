@@ -21,6 +21,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <getopt.h>
 #include <iostream>

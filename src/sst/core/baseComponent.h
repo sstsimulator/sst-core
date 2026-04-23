@@ -27,6 +27,7 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdarg>
 #include <cstdint>
 #include <functional>
 #include <map>

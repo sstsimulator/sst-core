@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <type_traits>
 #include <vector>

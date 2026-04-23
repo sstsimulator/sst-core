@@ -19,6 +19,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
 namespace SST::Statistics {
 

@@ -16,6 +16,8 @@
 #include "sst/core/link.h"
 #include "sst/core/rng/marsaglia.h"
 
+#include <string>
+
 namespace SST::CoreTestComponent {
 
 class coreTestLinks : public SST::Component

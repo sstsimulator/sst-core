@@ -29,6 +29,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 

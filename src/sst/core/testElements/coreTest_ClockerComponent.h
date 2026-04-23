@@ -14,6 +14,7 @@
 
 #include "sst/core/component.h"
 
+#include <cstdint>
 #include <string>
 
 namespace SST::CoreTestClockerComponent {

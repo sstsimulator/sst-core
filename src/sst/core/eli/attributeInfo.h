@@ -15,6 +15,7 @@
 #include "sst/core/eli/elibase.h"
 #include "sst/core/warnmacros.h"
 
+#include <ostream>
 #include <string>
 #include <type_traits>
 #include <vector>

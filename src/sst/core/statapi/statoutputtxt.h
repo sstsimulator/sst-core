@@ -19,6 +19,7 @@
 #include <zlib.h>
 #endif
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 

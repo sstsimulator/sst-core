@@ -19,6 +19,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstdint>
+#include <ctime>
 #include <string>
 
 namespace SST {

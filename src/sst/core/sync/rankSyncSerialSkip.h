@@ -16,6 +16,7 @@
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/threadsafe.h"
 
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <string>

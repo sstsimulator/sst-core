@@ -16,6 +16,8 @@
 #include "sst/core/event.h"
 #include "sst/core/subcomponent.h"
 
+#include <cstdint>
+
 namespace SST::CoreTestPortModule {
 
 class PortSubComponent;
