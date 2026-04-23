@@ -23,6 +23,7 @@ DISABLE_WARN_DEPRECATED_REGISTER
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <map>
 #include <string>
 #include <thread>
 #include <utility>

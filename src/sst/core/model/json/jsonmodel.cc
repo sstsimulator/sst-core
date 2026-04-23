@@ -15,8 +15,10 @@
 
 #include "sst/core/model/json/jsonmodel.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 DISABLE_WARN_STRICT_ALIASING
 
