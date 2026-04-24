@@ -350,7 +350,7 @@ WatchPoint::heartbeat()
 void
 WatchPoint::simulationShutdown()
 {
-    Simulation_impl::getSimulation()->signalShutdown(false);
+    Simulation_impl::getSimulation()->consoleShutdown(false);
     std::cout << "wp simulation shutdown\n";
 }
 

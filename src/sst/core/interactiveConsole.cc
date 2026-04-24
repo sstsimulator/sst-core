@@ -117,7 +117,7 @@ InteractiveConsole::simulationShutdown()
 {
     // Simulation_impl::getSimulation()->endSimulation();  // Only works for single thread
     std::cout << "Simulation shutdown\n";
-    Simulation_impl::getSimulation()->signalShutdown(false);
+    Simulation_impl::getSimulation()->consoleShutdown(false);
 }
 
 

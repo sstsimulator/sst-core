@@ -484,6 +484,12 @@ public:
      */
     void signalShutdown(bool abnormal);
 
+    /** Console Shutdown
+     * Called when a shutdown command or watchpoint shutdown action trigger needs to terminate SST
+     */
+    void consoleShutdown(bool abnormal);
+
+
     /** Set EndSim
      * Called by SyncMgr when interactive console ready to shutdown
      */

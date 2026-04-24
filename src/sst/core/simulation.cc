@@ -1220,6 +1220,19 @@ Simulation_impl::signalShutdown(bool abnormal)
         shutdown_mode_ = SHUTDOWN_CLEAN;
     }
 
+    endSim = true;
+}
+
+void
+Simulation_impl::consoleShutdown(bool abnormal)
+{
+    if ( abnormal ) {
+        shutdown_mode_ = SHUTDOWN_SIGNAL;
+    }
+    else {
+        shutdown_mode_ = SHUTDOWN_CLEAN;
+    }
+
     if ( num_ranks.rank == 1 && num_ranks.thread == 1 ) {
         // Set endsim right away if serial
         endSim = true;
