@@ -208,7 +208,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def get_test_runtime_sec(self) -> float:
+    def _get_test_runtime_sec(self) -> float:
         """ Return the current runtime (walltime) of the test
 
         Returns:

@@ -186,48 +186,6 @@ def testing_is_PIN3_used() -> bool:
 # System Information Functions
 ################################################################################
 
-def host_os_get_system_node_name() -> str:
-    """ Get the node name of the system
-
-        Returns:
-            (str) Returns the system node name
-    """
-    warn("host_os_get_system_node_name() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return platform.node()
-
-###
-
-def host_os_get_kernel_type() -> str:
-    """ Get the Kernel Type
-
-        Returns:
-            (str) 'Linux' or 'Darwin' as the Kernel Type
-    """
-    warn("host_os_get_kernel_type() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return platform.system()
-
-def host_os_get_kernel_release() -> str:
-    """ Get the Kernel Release number
-
-        Returns:
-            (str) Kernel Release Number.  Note: This is not the same as OS version
-    """
-    warn("host_os_get_kernel_release() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return platform.release()
-
-def host_os_get_kernel_arch() -> str:
-    """ Get the Kernel System Arch
-
-        Returns:
-            (str) 'x86_64' on Linux; 'i386' on OSX as the Kernel Architecture
-    """
-    warn("host_os_get_kernel_arch() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return platform.machine()
-
 def host_os_get_distribution_type() -> str:
     """ Get the os distribution type
 
@@ -277,90 +235,6 @@ def host_os_get_distribution_version() -> str:
     return "Undefined"
 
 ###
-
-def host_os_is_osx() -> bool:
-    """ Check if OS distribution is OSX
-
-        Returns:
-            (bool) True if OS Distribution is OSX
-    """
-    warn("host_os_is_osx() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_OSX
-
-def host_os_is_linux() -> bool:
-    """ Check if OS distribution is Linux
-
-        Returns:
-            (bool) True if OS Distribution is Linux
-    """
-    warn("host_os_is_linux() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return not host_os_get_distribution_type() == OS_DIST_OSX
-
-def host_os_is_centos() -> bool:
-    """ Check if OS distribution is CentOS
-
-        Returns:
-            (bool) True if OS Distribution is CentOS
-    """
-    warn("host_os_is_centos() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_CENTOS
-
-def host_os_is_rhel() -> bool:
-    """ Check if OS distribution is RHEL
-
-        Returns:
-            (bool) True if OS Distribution is RHEL
-    """
-    warn("host_os_is_rhel() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_RHEL
-
-def host_os_is_toss() -> bool:
-    """ Check if OS distribution is Toss
-
-        Returns:
-            (bool) True if OS Distribution is Toss
-    """
-    warn("host_os_is_toss() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_TOSS
-
-def host_os_is_ubuntu()-> bool:
-    """ Check if OS distribution is Ubuntu
-
-        Returns:
-            (bool) True if OS Distribution is Ubuntu
-    """
-    warn("host_os_is_ubuntu() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_UBUNTU
-
-def host_os_is_rocky() -> bool:
-    """ Check if OS distribution is Rocky
-
-        Returns:
-            (bool) True if OS Distribution is Rocky
-    """
-    warn("host_os_is_rocky() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    return host_os_get_distribution_type() == OS_DIST_ROCKY
-
-
-###
-
-def host_os_get_num_cores_on_system() -> int:
-    """ Get number of cores on the system
-
-        Returns:
-            (int) Number of cores on the system
-    """
-    warn("host_os_get_num_cores_on_system() is deprecated and will be removed in future versions of SST.",
-         DeprecationWarning, stacklevel=2)
-    num_cores = multiprocessing.cpu_count()
-    return num_cores
 
 ################################################################################
 # SST Skipping Support
@@ -474,68 +348,6 @@ def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> 
 # SST Core Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
 
-def sst_core_config_include_file_get_value_int(
-    define: str,
-    default: Optional[int] = None,
-    disable_warning: bool = False,
-) -> int:
-    """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
-
-        Args:
-            define (str): The define to look for
-            default (int): Default Return if failure occurs
-            disable_warning (bool): Disable logging the warning if define is not found
-
-        Returns:
-            (int) The returned data or default if not found in the include file
-
-        Raises:
-            SSTTestCaseException: if type is incorrect OR no data AND default
-                                  is not provided
-    """
-    warn("sst_core_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
-         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(
-        include_dict=test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
-        include_source="sst_config.h",
-        define=define,
-        default=default,
-        data_type=int,
-        disable_warning=disable_warning,
-    )
-
-###
-
-def sst_core_config_include_file_get_value_str(
-    define: str,
-    default: Optional[str] = None,
-    disable_warning: bool = False,
-) -> str:
-    """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
-
-        Args:
-            define (str): The define to look for
-            default (str): Default Return if failure occurs
-            disable_warning (bool): Disable logging the warning if define is not found
-
-        Returns:
-            (str) The returned data or default if not found in the include file
-
-        Raises:
-            SSTTestCaseException: if type is incorrect OR no data AND default
-                                  is not provided
-    """
-    warn("sst_core_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
-         Use sst_core_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(
-        include_dict=test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
-        include_source="sst_config.h",
-        define=define,
-        default=default,
-        data_type=str,
-        disable_warning=disable_warning,
-    )
-
 ###
 
 T_include = TypeVar("T_include", str, int)
@@ -572,70 +384,6 @@ def sst_core_config_include_file_get_value(
 # SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
 ################################################################################
 
-def sst_elements_config_include_file_get_value_int(
-    define: str,
-    default: Optional[int] = None,
-    disable_warning: bool = False,
-) -> int:
-    """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
-
-        Args:
-            define (str): The define to look for
-            default (int): Default Return if failure occurs
-            disable_warning (bool): Disable logging the warning if define is not found
-
-        Returns:
-            (int) The returned data or default if not found in the include file
-
-        Raises:
-            SSTTestCaseException: if type is incorrect OR no data AND default
-                                  is not provided
-    """
-    warn("sst_elements_config_include_file_get_value_int() is deprecated and will be removed in future versions of SST. \
-         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(
-        include_dict=test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
-        include_source="sst_element_config.h",
-        define=define,
-        default=default,
-        data_type=int,
-        disable_warning=disable_warning,
-    )
-
-###
-
-def sst_elements_config_include_file_get_value_str(
-    define: str,
-    default: Optional[str] = None,
-    disable_warning: bool = False,
-) -> str:
-    """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
-
-        Args:
-            define (str): The define to look for
-            default (str): Default Return if failure occurs
-            disable_warning (bool): Disable logging the warning if define is not found
-
-        Returns:
-            (str) The returned data or default if not found in the include file
-
-        Raises:
-            SSTTestCaseException: if type is incorrect OR no data AND default
-                                  is not provided
-    """
-    warn("sst_elements_config_include_file_get_value_str() is deprecated and will be removed in future versions of SST. \
-         Use sst_elements_config_include_file_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sst_config_include_file_value(
-        include_dict=test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
-        include_source="sst_element_config.h",
-        define=define,
-        default=default,
-        data_type=str,
-        disable_warning=disable_warning,
-    )
-
-###
-
 def sst_elements_config_include_file_get_value(
     define: str,
     type: Type[T_include],
@@ -666,93 +414,6 @@ def sst_elements_config_include_file_get_value(
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
-
-def sstsimulator_conf_get_value_str(section: str, key: str, default: Optional[str] = None) -> str:
-    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-
-        Args:
-            section (str): The [section] to look for the key
-            key (str): The key to find
-            default (str): Default Return if failure occurs
-
-        Returns:
-            (str) The returned data or default if not found in the config file
-
-        Raises:
-            SSTTestCaseException: if no data AND default is not provided
-    """
-    warn("sstsimulator_conf_get_value_str() is deprecated and will be removed in future versions of SST. \
-         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=str)
-
-###
-
-def sstsimulator_conf_get_value_int(section: str, key: str, default: Optional[int] = None) -> int:
-    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-
-        Args:
-            section (str): The [section] to look for the key
-            key (str): The key to find
-            default (int): Default Return if failure occurs
-
-        Returns:
-            (int) The returned data or default if not found in the config file
-
-        Raises:
-            SSTTestCaseException: if no data AND default is not provided
-    """
-    warn("sstsimulator_conf_get_value_int() is deprecated and will be removed in future versions of SST. \
-         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=int)
-
-###
-
-def sstsimulator_conf_get_value_float(
-    section: str, key: str, default: Optional[float] = None
-) -> float:
-    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-
-        Args:
-            section (str): The [section] to look for the key
-            key (str): The key to find
-            default (float): Default Return if failure occurs
-
-        Returns:
-            (float) The returned data or default if not found in the config file
-
-        Raises:
-            SSTTestCaseException: if no data AND default is not provided
-    """
-    warn("sstsimulator_conf_get_value_float() is deprecated and will be removed in future versions of SST. \
-         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=float)
-
-###
-
-def sstsimulator_conf_get_value_bool(
-    section: str, key: str, default: Optional[bool] = None
-) -> bool:
-    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-
-        NOTE: "1", "yes", "true", and "on" will return True;
-              "0", "no", "false", and "off" willl return False
-
-        Args:
-            section (str): The [section] to look for the key
-            key (str): The key to find
-            default (bool): Default Return if failure occurs
-
-        Returns:
-            (bool) The returned data or default if not found in the config file
-
-        Raises:
-            SSTTestCaseException: if no data AND default is not provided
-    """
-    warn("sstsimulator_conf_get_value_bool() is deprecated and will be removed in future versions of SST. \
-         Use sstsimulator_conf_get_value() instead.", DeprecationWarning, stacklevel=2)
-    return _get_sstsimulator_conf_value(section=section, key=key, default=default, data_type=bool)
-
-###
 
 T_conf = TypeVar("T_conf", str, int, float, bool)
 
@@ -1978,40 +1639,7 @@ class OSCommandResult:
         """ return true if the run timed out """
         return self._run_timeout
 
-# elements needs this while we're making this change
-warn("OSCommand() is deprecated and will be removed in future versions of SST.\n" +
-    "Use os_command() instead.",
-    DeprecationWarning, stacklevel=2)
-OSCommand = os_command
-
 ################################################################################
-
-def os_simple_command(
-    os_cmd: str,
-    run_dir: Optional[str] = None,
-    **kwargs: Any,
-) -> Tuple[int, str]:
-    """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput).
-
-        NOTE: Simple command cannot have pipes or redirects
-
-        Args:
-            os_cmd (str): Command to run
-            run_dir (str): Directory where to run the command; if None (defaut)
-                           current working directory is used.
-
-        Returns:
-            (tuple) Returns a tuple of the (rtncode, rtnoutput) of types (int, str)
-    """
-    warn("os_simple_command() is deprecated and will be removed in future versions of SST.\n" +
-         "Use os_command() instead.",
-         DeprecationWarning, stacklevel=2)
-    check_param_type("os_cmd", os_cmd, str)
-    if run_dir is not None:
-        check_param_type("run_dir", run_dir, str)
-    rtn = os_command(os_cmd, set_cwd=run_dir).run(**kwargs)
-    rtn_data = (rtn.result(), rtn.output())
-    return rtn_data
 
 def os_ls(directory: str = ".", echo_out: bool = True, **kwargs: Any) -> str:
     """ Perform an simple ls -lia shell command and dump output to screen.

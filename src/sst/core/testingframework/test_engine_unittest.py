@@ -364,7 +364,7 @@ class SSTTextTestResult(TextTestResult):
         super().stopTest(test)
         testruntime = 0.0
         if self._is_test_of_type_ssttestcase(test):
-            testruntime = test.get_test_runtime_sec()  # type: ignore [attr-defined]
+            testruntime = test._get_test_runtime_sec()  # type: ignore [attr-defined]
         self._junit_test_case.junit_add_elapsed_sec(testruntime)
 
         if not self._is_test_of_type_ssttestcase(test):
@@ -404,7 +404,7 @@ class SSTTextTestResult(TextTestResult):
             self.stream.write(self.getShortDescription(test))
             testruntime = 0.0
             if self._is_test_of_type_ssttestcase(test):
-                testruntime = test.get_test_runtime_sec()  # type: ignore [attr-defined]
+                testruntime = test._get_test_runtime_sec()  # type: ignore [attr-defined]
             if showruntime:
                 self.stream.writeln(" [{0:.3f}s]".format(testruntime))
             else:
