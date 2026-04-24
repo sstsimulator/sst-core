@@ -55,7 +55,7 @@ SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
         SST_SER(count);
 
         for ( size_t i = 0; i < count; ++i ) {
-            Event* ev;
+            Event* ev = nullptr;
             SST_SER(ev);
             // Insert into the specified ActivityQueue after updating
             // delvery_info
