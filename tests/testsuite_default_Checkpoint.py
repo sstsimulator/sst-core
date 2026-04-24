@@ -132,6 +132,7 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_sc_2u2u_n2one(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True, cpt_suffix="_n2one")
 
+    @unittest.skipIf(testing_check_get_num_threads() > 1 and testing_check_get_num_ranks() > 1, "This test requires specific partitioning to work in multi-rank/multi-thread configurations")
     def test_Checkpoint_sc_2u2u_start_serial(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", start_serial=True, cpt_suffix="_start_serial")
 
