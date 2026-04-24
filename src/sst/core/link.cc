@@ -343,7 +343,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             uintptr_t delivery_info;
             SST_SER(delivery_info);
 
-            Event::HandlerBase* handler;
+            Event::HandlerBase* handler = nullptr;
             SST_SER(handler);
             s->pair_link->delivery_info = reinterpret_cast<uintptr_t>(handler);
 
