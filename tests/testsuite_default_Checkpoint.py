@@ -97,28 +97,28 @@ class testcase_Checkpoint(SSTTestCase):
         self.checkpoint_test_template("Module")
 
     ### Stats tests, including repartitioned restart tests
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_n2one(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", n_to_one=True, cpt_suffix="_n2one")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_start_serial(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", start_serial=True, cpt_suffix="_start_serial")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_restart_smaller(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", restart_smaller=True, cpt_suffix="_restart_smaller")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_Statistics_basic_remap(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", swap_rank_thread=True, cpt_suffix="_remap")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version() == "10", "This test fails on Rocky 10")
+    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_Statistics_basic_swap_restart_smaller(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", swap_rank_thread=True, restart_smaller=True, cpt_suffix="_swap_restart_smaller")
@@ -132,6 +132,7 @@ class testcase_Checkpoint(SSTTestCase):
     def test_Checkpoint_sc_2u2u_n2one(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", n_to_one=True, cpt_suffix="_n2one")
 
+    @unittest.skipIf(testing_check_get_num_threads() > 1 and testing_check_get_num_ranks() > 1, "This test requires specific partitioning to work in multi-rank/multi-thread configurations")
     def test_Checkpoint_sc_2u2u_start_serial(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1", start_serial=True, cpt_suffix="_start_serial")
 

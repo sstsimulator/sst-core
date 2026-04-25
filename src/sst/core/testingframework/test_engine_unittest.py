@@ -73,6 +73,8 @@ if check_module_conditional_import('pygments'):
 import queue
 Queue = queue.Queue
 
+TestSuiteBaseClass: Type[TestSuite]
+
 # Try to import testtools (this may not be installed on system)
 if check_module_conditional_import('testtools'):
     import testtools
@@ -362,7 +364,7 @@ class SSTTextTestResult(TextTestResult):
         super().stopTest(test)
         testruntime = 0.0
         if self._is_test_of_type_ssttestcase(test):
-            testruntime = test.get_test_runtime_sec()  # type: ignore [attr-defined]
+            testruntime = test._get_test_runtime_sec()  # type: ignore [attr-defined]
         self._junit_test_case.junit_add_elapsed_sec(testruntime)
 
         if not self._is_test_of_type_ssttestcase(test):
@@ -402,7 +404,7 @@ class SSTTextTestResult(TextTestResult):
             self.stream.write(self.getShortDescription(test))
             testruntime = 0.0
             if self._is_test_of_type_ssttestcase(test):
-                testruntime = test.get_test_runtime_sec()  # type: ignore [attr-defined]
+                testruntime = test._get_test_runtime_sec()  # type: ignore [attr-defined]
             if showruntime:
                 self.stream.writeln(" [{0:.3f}s]".format(testruntime))
             else:
@@ -565,7 +567,7 @@ class SSTTestSuite(TestSuiteBaseClass):  # type: ignore [misc, valid-type]
         suite: TestSuite,
         make_tests: Callable[["SSTTestSuite"], List[Any]],
         wrap_result: Optional[
-            Callable[["testtools.ThreadsafeForwardingResults", int], TestResult]
+            Callable[["testtools.ThreadsafeForwardingResult", int], TestResult]
         ] = None,
     ) -> None:
         """Create a ConcurrentTestSuite or TestSuite to execute the suite.
