@@ -38,7 +38,7 @@ class testcase_DebugConsole(SSTTestCase):
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test only supports serial execution")
     def test_serial0(self):
         self.debugconsole_test_template("serial0", "0")
-    
+
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports serial execution")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test only supports serial execution")
@@ -51,25 +51,38 @@ class testcase_DebugConsole(SSTTestCase):
     @unittest.skipIf(testing_check_get_num_threads() != 4, "Test requires single rank with 4 threads")
     def test_rank_thread0(self):
         self.debugconsole_test_template("thread0", "0")
-    
+
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test requires single rank with 4 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 4, "Test requires single rank with 4 threads")
     def test_rank_thread1(self):
         self.debugconsole_test_template("thread1", "1ps")
 
+    # Rank Serial - 2 ranks, each with 1 thread
+    #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
+    @unittest.skipIf(testing_check_get_num_ranks() != 2, "Test requires 2 ranks, each with 1 thread")
+    @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 2 ranks, each with 1 thread")
+    def test_r2_rankserial0(self):
+        self.debugconsole_test_template("r2_rankserial0", "0")
+
+    #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
+    @unittest.skipIf(testing_check_get_num_ranks() != 2, "Test requires 2 ranks, each with 1 thread")
+    @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 2 ranks, each with 1 thread")
+    def test_r2_rankserial1(self):
+        self.debugconsole_test_template("r2_rankserial1", "1ps")
+
     # Rank Serial - 4 ranks, each with 1 thread
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 4, "Test requires 4 ranks, each with 1 thread")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 4 ranks, each with 1 thread")
-    def test_rankserial0(self):
-        self.debugconsole_test_template("rankserial0", "0")
-    
+    def test_r4_rankserial0(self):
+        self.debugconsole_test_template("r4_rankserial0", "0")
+
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 4, "Test requires 4 ranks, each with 1 thread")
     @unittest.skipIf(testing_check_get_num_threads() > 1, "Test requires 4 ranks, each with 1 thread")
-    def test_rankserial1(self):
-        self.debugconsole_test_template("rankserial1", "1ps")
+    def test_r4_rankserial1(self):
+        self.debugconsole_test_template("r4_rankserial1", "1ps")
 
     # Rank Parallel - 2 ranks, each with 2 threads
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
@@ -77,7 +90,7 @@ class testcase_DebugConsole(SSTTestCase):
     @unittest.skipIf(testing_check_get_num_threads() != 2, "Test requires 2 ranks, each with 2 threads")
     def test_rankparallel0(self):
         self.debugconsole_test_template("rankparallel0", "0")
-    
+
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() != 2, "Test requires 2 ranks, each with 2 threads")
     @unittest.skipIf(testing_check_get_num_threads() != 2, "Test requires 2 ranks, each with 2 threads")

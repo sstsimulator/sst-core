@@ -120,7 +120,7 @@ class testcase_Checkpoint(SSTTestCase):
         ## the same period for both the original checkpoint run and
         ## the checkpoint of a restart run
         checkpoint_period = "10 us"
-        
+
         ## First run
 
         # Get the primary sdl file and output file
@@ -167,7 +167,7 @@ class testcase_Checkpoint(SSTTestCase):
         outfile_rst = "{0}/test_{1}{2}{3}_restart.out".format(outdir, testtype, out_suffix, cpt_suffix)
         options_rst = "--load-checkpoint"
         options_checkpoint_rst = ""
-        
+
 
         # If we are checkpointing the restart run, need to add those options
         if cr_index > 0:
