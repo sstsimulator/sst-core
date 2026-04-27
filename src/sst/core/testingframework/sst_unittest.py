@@ -335,7 +335,7 @@ class SSTTestCase(unittest.TestCase):
             if rtn_mpirun == 0:
                 mpi_avail = True
 
-            numa_param = "-map-by numa:PE={0}".format(num_threads)
+            numa_param = "--map-by numa:PE={0}".format(num_threads)
 
             oscmd = "mpirun -np {0} {1} --output-filename {2} {3}".format(num_ranks,
                                                                           numa_param,
