@@ -18,8 +18,8 @@ EXTRA_DIST += \
     tests/testsuite_default_Checkpoint.py \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_ComponentExtension.py \
-    testsuite_default_DebugConsole_Checkpoint.py \
-    testsuite_default_DebugConsole.py \
+    tests/testsuite_default_DebugConsole_Checkpoint.py \
+    tests/testsuite_default_DebugConsole.py \
     tests/testsuite_default_Links.py \
     tests/testsuite_default_MemPoolTest.py \
     tests/testsuite_default_Module.py \
