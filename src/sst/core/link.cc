@@ -55,7 +55,7 @@ SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
         SST_SER(count);
 
         for ( size_t i = 0; i < count; ++i ) {
-            Event* ev;
+            Event* ev = nullptr;
             SST_SER(ev);
             // Insert into the specified ActivityQueue after updating
             // delvery_info
@@ -343,7 +343,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
             uintptr_t delivery_info;
             SST_SER(delivery_info);
 
-            Event::HandlerBase* handler;
+            Event::HandlerBase* handler = nullptr;
             SST_SER(handler);
             s->pair_link->delivery_info = reinterpret_cast<uintptr_t>(handler);
 

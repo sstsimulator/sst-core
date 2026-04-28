@@ -149,7 +149,7 @@ private:
     void handleEvent(SST::Event* ev, int port);
 
     std::vector<PortInterface*> ports_;
-    RouteInterface*             route_;
+    RouteInterface*             route_ = nullptr;
 
     // Measuring statistics per component
     std::vector<Statistic<uint64_t>*> stats_;
@@ -203,7 +203,7 @@ public:
 
 
 private:
-    PortInterface* port_;
+    PortInterface* port_ = nullptr;
 };
 
 
@@ -291,9 +291,9 @@ private:
     std::vector<PortInterface*> ports_;
     std::vector<size_t>         counts_;
     int                         my_id_;
-    SST::RNG::Random*           rng_;
+    SST::RNG::Random*           rng_ = nullptr;
 
-    Statistic<uint64_t>* mcnt_;
+    Statistic<uint64_t>* mcnt_ = nullptr;
 };
 
 } // namespace SST::CoreTest::MessageMesh
