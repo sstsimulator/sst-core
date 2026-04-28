@@ -22,9 +22,8 @@ class TestCategorizeDecorator(SSTTestCase):
         # initialized in init_test_engine_globals(), recreated here as that
         # function cannot be called more than once, but we still need clean
         # category variables for each test.
-        test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES = set(("pr", "nightly", "weekly"))
+        test_engine_globals.init_test_engine_categories()
         test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES = set()
-        test_engine_globals.TESTENGINE_CATEGORIES = set()
 
     _MOCK_TEST_SENTINEL = "executed"
 
