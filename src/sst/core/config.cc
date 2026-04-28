@@ -664,6 +664,15 @@ Config::canInitiateCheckpoint()
     return false;
 }
 
+bool
+Config::canInitiateInteractive()
+{
+    if ( interactive_start_time_.value != "" ) return true;
+    if ( sigusr1() == "sst.rt.interactive" ) return true;
+    if ( sigusr2() == "sst.rt.interactive" ) return true;
+    return false;
+}
+
 // Set the prefix for checkpoint files
 int
 Config::parse_checkpoint_name_format(std::string& var, std::string arg)

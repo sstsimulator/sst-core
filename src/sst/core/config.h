@@ -620,6 +620,9 @@ public:
     /** Get whether or not any of the checkpoint options were turned on */
     bool canInitiateCheckpoint();
 
+    /** Get whether or not any of the interactive options were turned on */
+    bool canInitiateInteractive();
+
     /** Print to stdout the current configuration */
     void print();
 
