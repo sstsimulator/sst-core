@@ -90,6 +90,10 @@ HELP_EPILOG = (
     ("   should be marked with a single marker.  This means categories are\n") +
     ("   disjoint, but multiple categories can be specified at runtime.\n") +
     ("   Only these tests within the specified testsuite will run.\n") +
+    (" - Categories are independent from testsuite discovery.\n") +
+    ("   For example, selecting the weekly category does not automatically run tests\n") +
+    ("   located in files matching 'testsuite_weekly_*.py', and selecting -w '*weekly*'\n") +
+    ("   does not automatically run tests decorated as being in the weekly category.\n") +
     ("\n") +
     ("Test Scenarios:\n") +
     (" - Tests and TestCases identified within testsuites can be skipped from running\n") +
@@ -388,7 +392,7 @@ class TestEngine:
             concurrent_txt = "[CONCURRENTLY ({0} Testing Threads)]".\
             format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
-        # Display operations info if we are unning in a verbose mode
+        # Display operations info if we are running in a verbose mode
         log_info(("SST Test Engine Instantiated - Running") +
                  (" tests on {0} {1}").format(self._test_type_str, concurrent_txt),
                  forced=False)
