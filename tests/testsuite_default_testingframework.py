@@ -79,17 +79,15 @@ class TestCategorizeDecorator(SSTTestCase):
             wrapped()
         self.assertIn(expected_why, str(cm.exception))
 
-    def test_wrapper_skips_when_test_category_is_none(self) -> None:
-        """If TESTENGINE_CATEGORIES is not set, the test is skipped."""
+    def test_default_test_category_is_pr(self) -> None:
+        """When TESTENGINE_CATEGORIES is empty, still run pull request (PR) tests."""
         wrapped = self._apply_decorator("pr")
 
-        self.assertTrue(getattr(wrapped, "__unittest_skip__"))
-        expected_why = "Test requires category 'pr' but the current categories are '[]'."
+        self.assertFalse(getattr(wrapped, "__unittest_skip__"))
+        expected_why = "Test requires category 'pr' but the current categories are '['pr']'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__"), expected_why)
 
-        with self.assertRaises(unittest.SkipTest) as cm:
-            wrapped()
-        self.assertIn(expected_why, str(cm.exception))
+        self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
 
     def test_extra_allowed_category_matches_and_runs(self) -> None:
         """A category listed in TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES works like a built‑in."""
@@ -109,7 +107,7 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = self._apply_decorator("performance")
 
         self.assertTrue(getattr(wrapped, "__unittest_skip__"))
-        expected_why = "Test requires category 'performance' but the current categories are '[]'."
+        expected_why = "Test requires category 'performance' but the current categories are '['pr']'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__"), expected_why)
 
         with self.assertRaises(unittest.SkipTest) as cm:
