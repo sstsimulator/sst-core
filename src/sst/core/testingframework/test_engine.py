@@ -247,7 +247,7 @@ class TestEngine:
         run_group.add_argument('-i', '--ignoreskips', action='store_true',
                                help='Disable Display of Skipped Test Messages (for debug purposes)')
         run_group.add_argument("-m", "--categories",
-                               nargs="+", default=list(),
+                               nargs="+", default=set(),
                                choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
                                help="Which category of tests to run")
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
