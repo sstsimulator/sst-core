@@ -62,7 +62,7 @@ class TestCategorizeDecorator(SSTTestCase):
         self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
         # The reason is always formed and set, even if the test is not
         # skipped.
-        expected_why = "Test requires category 'nightly' but the current categories are '{'nightly'}'."
+        expected_why = "Test requires category 'nightly' but the current categories are '['nightly']'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
@@ -73,7 +73,7 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = self._apply_decorator("nightly")
 
         self.assertTrue(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'nightly' but the current categories are '{'pr'}'."
+        expected_why = "Test requires category 'nightly' but the current categories are '['pr']'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         with self.assertRaises(unittest.SkipTest) as cm:
@@ -85,7 +85,7 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = self._apply_decorator("pr")
 
         self.assertTrue(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'pr' but the current categories are 'set()'."
+        expected_why = "Test requires category 'pr' but the current categories are '[]'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         with self.assertRaises(unittest.SkipTest) as cm:
@@ -99,7 +99,7 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = self._apply_decorator("integration")
 
         self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'integration' but the current categories are '{'integration'}'."
+        expected_why = "Test requires category 'integration' but the current categories are '['integration']'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
@@ -110,7 +110,7 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = self._apply_decorator("performance")
 
         self.assertTrue(getattr(wrapped, "__unittest_skip__", True))
-        expected_why = "Test requires category 'performance' but the current categories are 'set()'."
+        expected_why = "Test requires category 'performance' but the current categories are '[]'."
         self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         with self.assertRaises(unittest.SkipTest) as cm:

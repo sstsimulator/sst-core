@@ -308,7 +308,7 @@ def categorize(category: str) -> Callable[[_CallableT], _CallableT]:
     def decorator(test_func: _CallableT) -> _CallableT:
         reason = (
             f"Test requires category '{category}' but the current "
-            f"categories are '{specified_categories}'."
+            f"categories are '{sorted(specified_categories)}'."
         )
 
         @wraps(test_func)
