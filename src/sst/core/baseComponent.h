@@ -225,7 +225,7 @@ public:
 
        @return Default Output object for this partition
     */
-    Output& getSimulationOutput() const;
+    static Output& getSimulationOutput();
 
     /**
        Return the simulated time since the simulation began in the default timebase

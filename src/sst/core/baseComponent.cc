@@ -163,7 +163,7 @@ BaseComponent::getNumRanks() const
 }
 
 Output&
-BaseComponent::getSimulationOutput() const
+BaseComponent::getSimulationOutput()
 {
     return Simulation_impl::getSimulationOutput();
 }
