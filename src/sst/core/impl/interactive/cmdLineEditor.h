@@ -88,21 +88,26 @@ public:
     // debug helper
     std::ofstream dbgFile;
 
+    // tab behaviors
+    enum TAB_STATE { FILL_COMMON, LIST_COMMON };
+
 private:
     termios                                               originalTerm;
     std::list<std::string>                                cmdStrings        = {};
     std::function<void(std::list<std::string>& callback)> listing_callback_ = nullptr;
 
-    int  curpos = -1;
-    int  checktty(int rc);
-    int  setRawMode();
-    int  restoreTermMode();
-    bool read2chars(char (&seq)[3]);
-    void move_cursor_left();
-    void move_cursor_right(int slen);
-    void auto_complete(std::string& cmd);
-    bool selectMatches(const std::list<std::string>& list, const std::string& searchfor,
-        std::vector<std::string>& matches, std::string& newcmd);
+    int         curpos    = -1;
+    TAB_STATE   tab_state = TAB_STATE::FILL_COMMON;
+    int         checktty(int rc);
+    int         setRawMode();
+    int         restoreTermMode();
+    bool        read2chars(char (&seq)[3]);
+    void        move_cursor_left();
+    void        move_cursor_right(int slen);
+    void        auto_complete(std::string& cmd);
+    bool        selectMatches(const std::list<std::string>& list, const std::string& searchfor,
+               std::vector<std::string>& matches, std::string& newcmd);
+    std::string findLongestCommonPrefix(const std::vector<std::string>& strings);
 
 private:
     // yet more string helpers

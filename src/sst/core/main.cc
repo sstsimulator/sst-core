@@ -23,6 +23,7 @@ DISABLE_WARN_DEPRECATED_REGISTER
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <map>
 #include <string>
 #include <thread>
 #include <utility>
@@ -471,6 +472,11 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         Simulation_impl::createSimulation(info.myRank, info.world_size, restart, currentSimCycle, currentPriority);
     double start_run = 0.0;
 
+    // Setup the real time actions (all of these have to be defined on
+    // the command-line or SDL file, they will not be checkpointed and
+    // restored
+    sim->setupSimActions();
+
     // Thread zero needs to initialize the checkpoint data structures if any checkpointing options were turned on but
     // the data structures haven't already been initialized earlier.  Things will only get initialized here if the only
     // way to trigger a checkpoint is through the realtime actions. This will return an empty string if checkpointing
@@ -549,13 +555,6 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->prepare_for_run();
 
     } // if ( restart )
-
-
-    // Setup the real time actions (all of these have to be defined on
-    // the command-line or SDL file, they will not be checkpointed and
-    // restored
-    sim->setupSimActions();
-
 
     if ( !restart ) {
 

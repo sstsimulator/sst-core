@@ -19,8 +19,8 @@
 #include "sst/core/warnmacros.h"
 
 #include <cstdint>
+#include <ctime>
 #include <string>
-
 namespace SST {
 
 class Output;
@@ -53,6 +53,11 @@ public:
        that all the checkpoint infrastructure can be initialized.
      */
     virtual bool canInitiateCheckpoint() { return false; }
+
+    /**
+       Lets the core know if this action may trigger an interactive console.
+     */
+    virtual bool canInitiateInteractive() { return false; }
 
     /* Reports whether the action is valid for use with sigalrm */
     virtual bool isValidSigalrmAction() { return true; }

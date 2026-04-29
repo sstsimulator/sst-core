@@ -26,9 +26,11 @@
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <ostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -382,11 +384,12 @@ public:
        TODO: prefer this return nullptr as bugs have occurred with incorrect use
 
        @param name Name of variable to select
+       @param confirm Prompt user to resolve duplicate match of name. Select first found if false.
 
        @return ObjectMap for specified variable, if it exists, this
        otherwise
     */
-    ObjectMap* selectVariable(std::string name, bool& loop_detected);
+    ObjectMap* selectVariable(std::string name, bool& loop_detected, bool confirm = false);
 
     /**
        Adds a variable to this ObjectMap.  NOTE: calls to this
@@ -544,17 +547,12 @@ public:
        Find a variable in this object map
 
        @param name Name of variable to find
+       @param confirm Prompt user to resolve duplicate match of name. Select first found if false.
 
        @return ObjectMap representing the requested variable if it is
        found, nullptr otherwise
      */
-    ObjectMap* findVariable(const std::string& name) const
-    {
-        auto& variables = getVariables();
-        for ( auto [it, end] = variables.equal_range(name); it != end; ++it )
-            return it->second; // For now, we return only the first match if multiple matches
-        return nullptr;
-    }
+    ObjectMap* findVariable(const std::string& name, bool confirm = false) const;
 
     /**
        Refresh the ObjectMap, reconstructing children
@@ -1152,7 +1150,7 @@ public:
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
                 std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->get(i) << " ";
             }
-            std::cout << std::endl;
+            std::cout << "\n";
 
             if ( i == end ) {
                 break;
@@ -1162,32 +1160,34 @@ public:
 
     void dumpTriggerRecord()
     {
+        std::stringstream ss;
         if ( numRecs_ == 0 ) {
             std::cout << "No trace samples in current buffer" << std::endl;
             return;
         }
         if ( state_ != CLEAR ) {
-            std::cout << "TriggerRecord:@cycle" << triggerCycle << ": samples lost = " << samplesLost_ << ": ";
+            ss << "LastTriggerRecord:@cycle" << triggerCycle << ": SamplesLost=" << samplesLost_ << ": ";
             for ( size_t obj = 0; obj < numObjects; obj++ ) {
                 ObjectBuffer* varBuffer_ = objBuffers_[obj];
-                std::cout << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
+                ss << SST::Core::to_string(varBuffer_->getName()) << "=" << varBuffer_->getTriggerVal() << " ";
             }
-            std::cout << std::endl;
+            ss << "\n";
+            std::cout << ss.str();
         }
     }
 
-    void printVars()
+    void printVars(std::stringstream& ss)
     {
         for ( size_t obj = 0; obj < numObjects; obj++ ) {
             ObjectBuffer* varBuffer_ = objBuffers_[obj];
-            std::cout << SST::Core::to_string(varBuffer_->getName()) << " ";
+            ss << SST::Core::to_string(varBuffer_->getName()) << " ";
         }
     }
 
-    void printConfig()
+    void printConfig(std::stringstream& ss)
     {
-        std::cout << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
-        printVars();
+        ss << "bufsize = " << bufSize_ << " postDelay = " << postDelay_ << " : ";
+        printVars(ss);
     }
 
     // private:

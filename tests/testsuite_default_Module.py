@@ -51,7 +51,8 @@ class testcase_Module(SSTTestCase):
         filters = [
             CheckpointInfoFilter(),
             # Appears in multi-thread/rank runs since we just have one component, filter it out
-            StartsWithFilter("WARNING: No components are") ]
+            StartsWithFilter("WARNING: No components are"),
+            StartsWithFilter("WARNING: EmptyRankSync") ]
         cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)

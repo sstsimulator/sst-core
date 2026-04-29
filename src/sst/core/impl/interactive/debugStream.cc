@@ -12,6 +12,7 @@
 #include "sst/core/impl/interactive/debugStream.h"
 
 #include <iostream>
+#include <streambuf>
 
 namespace SST::IMPL::Interactive {
 

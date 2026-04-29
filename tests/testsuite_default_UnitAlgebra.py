@@ -48,7 +48,8 @@ class testcase_UnitAlgebra(SSTTestCase):
         testing_remove_component_warning_from_file(outfile)
 
         # Perform the test
-        cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
+        filter1 = StartsWithFilter("WARNING: EmptyRankSync")
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1])
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)

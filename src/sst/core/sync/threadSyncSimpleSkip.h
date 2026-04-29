@@ -13,11 +13,13 @@
 #define SST_CORE_SYNC_THREADSYNCSIMPLESKIP_H
 
 #include "sst/core/action.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -51,6 +53,17 @@ public:
     void setSignals(int end, int usr, int alrm) override;
     /** Return exchanged signals after sync */
     bool getSignals(int& end, int& usr, int& alrm) override;
+
+    /** Set interactive flags to exchange during sync */
+    // Separated enter_interactive from from shutdown since they may be needed separately
+    void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    /** Return exchanged interactive flags after sync */
+    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getFlags(
+        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    /** Clear interactive flags before next run */
+    void clearFlags() override;
 
     /** Cause an exchange of Untimed Data to occur */
     void processLinkUntimedData() override;
@@ -92,6 +105,9 @@ private:
     static int                       sig_end_;
     static int                       sig_usr_;
     static int                       sig_alrm_;
+    static std::atomic<bool>         enter_interactive_;
+    static std::atomic<bool>         enter_shutdown_;
+    static std::atomic<unsigned>     shutdown_mode_;
 };
 
 } // namespace SST

@@ -1,0 +1,399 @@
+---- Rank0:Thread0: Entering interactive mode at time 1
+Interactive start at 1
+> replay /home/skuntz/sanity/sst-core/tests/cmd_DebugConsole_serial1.cmd
+
+> confirm false
+> # 0 watch
+> cd component0
+> watch message_count_ changed
+Added watchpoint #0
+> run
+---- Rank0:Thread0: Entering interactive mode at time 1000
+  Last Trigger: WP0: AE : component0/message_count_ ...
+> wl
+R0,T0: Current watch points:
+0: TriggerCount 1 : ALL : component0/message_count_ CHANGED  : interactive
+> unwatch 0
+> cd ..
+> # 1 trace printStatus
+> cd component2
+> trace message_count_ changed : 16 0 : message_count_ : printStatus
+Added watchpoint #1
+> setHandler 1 ae
+WP 1 - component2/message_count_
+> run 1ps
+	CurrentSimCycle:  1000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 10, queue order: 17
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 11, queue order: 40
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 12, queue order: 7
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 13, queue order: 14
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 14, queue order: 21
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 15, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 16, queue order: 3
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 17, queue order: 34
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 18, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 19, queue order: 48
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 20, queue order: 15
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 21, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 22, queue order: 29
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 23, queue order: 52
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 24, queue order: 19
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 25, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 26, queue order: 33
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 27, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 28, queue order: 23
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 29, queue order: 30
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 30, queue order: 37
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 31, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 32, queue order: 27
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 33, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 34, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 35, queue order: 64
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 36, queue order: 31
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 37, queue order: 54
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 38, queue order: 45
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 39, queue order: 12
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 40, queue order: 35
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 41, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 42, queue order: 49
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 43, queue order: 8
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 44, queue order: 39
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 45, queue order: 46
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 46, queue order: 53
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 47, queue order: 4
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 48, queue order: 43
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 49, queue order: 10
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 50, queue order: 1
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 51, queue order: 16
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 52, queue order: 47
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 53, queue order: 6
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 54, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 55, queue order: 20
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 56, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 57, queue order: 2
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 58, queue order: 9
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 59, queue order: 24
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 60, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 61, queue order: 62
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 62, queue order: 5
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 63, queue order: 28
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 64, queue order: 59
+  SST::Action to be delivered at time: 1001, priority: 0, order tag: 0, queue order: 68
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 73
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 75
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 6, queue order: 69
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 70
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 71
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 76
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 51, queue order: 67
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 72
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 74
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  1000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 11, queue order: 40
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 12, queue order: 7
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 13, queue order: 14
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 14, queue order: 21
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 15, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 16, queue order: 3
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 17, queue order: 34
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 18, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 19, queue order: 48
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 20, queue order: 15
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 21, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 22, queue order: 29
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 23, queue order: 52
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 24, queue order: 19
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 25, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 26, queue order: 33
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 27, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 28, queue order: 23
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 29, queue order: 30
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 30, queue order: 37
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 31, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 32, queue order: 27
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 33, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 34, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 35, queue order: 64
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 36, queue order: 31
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 37, queue order: 54
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 38, queue order: 45
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 39, queue order: 12
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 40, queue order: 35
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 41, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 42, queue order: 49
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 43, queue order: 8
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 44, queue order: 39
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 45, queue order: 46
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 46, queue order: 53
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 47, queue order: 4
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 48, queue order: 43
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 49, queue order: 10
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 50, queue order: 1
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 51, queue order: 16
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 52, queue order: 47
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 53, queue order: 6
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 54, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 55, queue order: 20
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 56, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 57, queue order: 2
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 58, queue order: 9
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 59, queue order: 24
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 60, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 61, queue order: 62
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 62, queue order: 5
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 63, queue order: 28
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 64, queue order: 59
+  SST::Action to be delivered at time: 1001, priority: 0, order tag: 0, queue order: 68
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 73
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 75
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 6, queue order: 69
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 70
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 71
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 76
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 77
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 51, queue order: 67
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 72
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 74
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  1000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 12, queue order: 7
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 13, queue order: 14
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 14, queue order: 21
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 15, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 16, queue order: 3
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 17, queue order: 34
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 18, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 19, queue order: 48
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 20, queue order: 15
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 21, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 22, queue order: 29
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 23, queue order: 52
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 24, queue order: 19
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 25, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 26, queue order: 33
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 27, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 28, queue order: 23
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 29, queue order: 30
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 30, queue order: 37
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 31, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 32, queue order: 27
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 33, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 34, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 35, queue order: 64
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 36, queue order: 31
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 37, queue order: 54
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 38, queue order: 45
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 39, queue order: 12
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 40, queue order: 35
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 41, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 42, queue order: 49
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 43, queue order: 8
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 44, queue order: 39
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 45, queue order: 46
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 46, queue order: 53
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 47, queue order: 4
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 48, queue order: 43
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 49, queue order: 10
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 50, queue order: 1
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 51, queue order: 16
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 52, queue order: 47
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 53, queue order: 6
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 54, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 55, queue order: 20
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 56, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 57, queue order: 2
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 58, queue order: 9
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 59, queue order: 24
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 60, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 61, queue order: 62
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 62, queue order: 5
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 63, queue order: 28
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 64, queue order: 59
+  SST::Action to be delivered at time: 1001, priority: 0, order tag: 0, queue order: 68
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 73
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 75
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 5, queue order: 78
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 6, queue order: 69
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 70
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 71
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 76
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 77
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 51, queue order: 67
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 72
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 74
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  1000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 13, queue order: 14
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 14, queue order: 21
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 15, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 16, queue order: 3
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 17, queue order: 34
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 18, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 19, queue order: 48
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 20, queue order: 15
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 21, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 22, queue order: 29
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 23, queue order: 52
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 24, queue order: 19
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 25, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 26, queue order: 33
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 27, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 28, queue order: 23
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 29, queue order: 30
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 30, queue order: 37
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 31, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 32, queue order: 27
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 33, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 34, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 35, queue order: 64
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 36, queue order: 31
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 37, queue order: 54
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 38, queue order: 45
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 39, queue order: 12
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 40, queue order: 35
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 41, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 42, queue order: 49
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 43, queue order: 8
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 44, queue order: 39
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 45, queue order: 46
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 46, queue order: 53
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 47, queue order: 4
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 48, queue order: 43
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 49, queue order: 10
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 50, queue order: 1
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 51, queue order: 16
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 52, queue order: 47
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 53, queue order: 6
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 54, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 55, queue order: 20
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 56, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 57, queue order: 2
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 58, queue order: 9
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 59, queue order: 24
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 60, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 61, queue order: 62
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 62, queue order: 5
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 63, queue order: 28
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 64, queue order: 59
+  SST::Action to be delivered at time: 1001, priority: 0, order tag: 0, queue order: 68
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 73
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 1, queue order: 75
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 5, queue order: 78
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 5, queue order: 79
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 6, queue order: 69
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 70
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 20, queue order: 71
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 76
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 28, queue order: 77
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 51, queue order: 67
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 72
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 2000, priority: 50, order tag: 55, queue order: 74
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+---- Rank0:Thread0: Entering interactive mode at time 1001
+Ran clock for 1 sim cycles
+> wl
+R0,T0: Current watch points:
+1: TriggerCount 1 : AE : component2/message_count_ CHANGED  : bufsize = 16 postDelay = 0 : component2/message_count_  : printStatus
+> unwatch 1
+> # 2 trace printTrace
+> cd ..
+> cd component5
+> trace message_count_ changed : 16 4 : message_count_ : printTrace
+Added watchpoint #2
+> setHandler 2 ae
+WP 2 - component5/message_count_
+> run 1000ps
+---- Rank0:Thread0: Entering interactive mode at time 2001
+Ran clock for 1000 sim cycles
+> wl
+R0,T0: Current watch points:
+2: TriggerCount 4 : AE : component5/message_count_ CHANGED  : bufsize = 16 postDelay = 4 : component5/message_count_  : printTrace
+> unwatch 2
+> # 3 trace set
+> cd ..
+> cd component6
+> trace message_count_ changed : 16 2 : message_count_ : set my_id_ 50
+Added watchpoint #3
+> setHandler 3 ae
+WP 3 - component6/message_count_
+> run 1000ps
+    Invoke Action
+    Set Buffer Reset
+LastTriggerRecord:@cycle3000: SamplesLost=0: component6/message_count_=13 
+set component6/my_id_ 50
+    Reset Trace Buffer
+---- Rank0:Thread0: Entering interactive mode at time 3001
+Ran clock for 1000 sim cycles
+> wl
+R0,T0: Current watch points:
+3: TriggerCount 3 : AE : component6/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component6/message_count_  : set component6/my_id_ 50
+> #print my_id_
+> unwatch 3
+> # 4 trace interactive
+> cd ..
+> cd component10
+> trace message_count_ changed : 16 2 : message_count_ : interactive
+Added watchpoint #4
+> setHandler 4 ae
+WP 4 - component10/message_count_
+> run
+    Invoke Action
+    Set Buffer Reset
+---- Rank0:Thread0: Entering interactive mode at time 4000
+  Last Trigger: WP4: AE : component10/message_count_ ...
+> wl
+R0,T0: Current watch points:
+4: TriggerCount 3 : AE : component10/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component10/message_count_  : interactive
+> unwatch 4
+> # 5 trace shutdown
+> cd ..
+> cd component12
+> trace message_count_ changed : 16 2 : message_count_ : shutdown
+Added watchpoint #5
+> run
+    Invoke Action
+    Set Buffer Reset
+LastTriggerRecord:@cycle4000: SamplesLost=0: component12/message_count_=14 
+  Trigger action shutting down simulation
+wp simulation shutdown
+15 received 16 messages
+14 received 12 messages
+13 received 10 messages
+0 received 16 messages
+1 received 15 messages
+2 received 17 messages
+3 received 13 messages
+4 received 12 messages
+5 received 14 messages
+50 received 17 messages
+7 received 10 messages
+8 received 18 messages
+9 received 16 messages
+10 received 20 messages
+11 received 21 messages
+12 received 14 messages
+Simulation is complete, simulated time: 0 s

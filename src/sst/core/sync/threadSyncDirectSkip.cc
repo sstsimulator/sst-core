@@ -20,6 +20,8 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 
+#include <atomic>
+
 namespace SST {
 
 SimTime_t ThreadSyncDirectSkip::localMinimumNextActivityTime = 0;
@@ -101,11 +103,64 @@ ThreadSyncDirectSkip::getSignals(int& end, int& usr, int& alrm)
     return sig_end_ || sig_usr_ || sig_alrm_;
 }
 
+void
+ThreadSyncDirectSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    if ( enter_shutdown ) {
+        enter_shutdown_.store(enter_shutdown);
+        shutdown_mode_.store(static_cast<unsigned>(shutdown_mode));
+    }
+}
+
+void
+ThreadSyncDirectSkip::setFlags(
+    bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+{
+    // This must be atomic because it can be set from any thread
+    if ( enter_interactive ) enter_interactive_.store(enter_interactive);
+    setShutdownFlags(enter_shutdown, shutdown_mode);
+}
+
+void
+ThreadSyncDirectSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    enter_shutdown = enter_shutdown_.load();
+    switch ( shutdown_mode_ ) {
+    case 0:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+        break;
+    case 1:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+        break;
+    case 2:
+        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+        break;
+    }
+}
+
+void
+ThreadSyncDirectSkip::getFlags(
+    bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+{
+    enter_interactive = enter_interactive_.load();
+    getShutdownFlags(enter_shutdown, shutdown_mode);
+}
+
+void
+ThreadSyncDirectSkip::clearFlags()
+{
+    enter_interactive_.store(false);
+    enter_shutdown_.store(false);
+    shutdown_mode_.store(0);
+}
 
 Core::ThreadSafe::Barrier ThreadSyncDirectSkip::barrier[3];
 int                       ThreadSyncDirectSkip::sig_end_(0);
 int                       ThreadSyncDirectSkip::sig_usr_(0);
 int                       ThreadSyncDirectSkip::sig_alrm_(0);
+std::atomic<bool>         ThreadSyncDirectSkip::enter_interactive_(false);
+std::atomic<bool>         ThreadSyncDirectSkip::enter_shutdown_(false);
+std::atomic<unsigned>     ThreadSyncDirectSkip::shutdown_mode_(0);
 
 
 } // namespace SST
