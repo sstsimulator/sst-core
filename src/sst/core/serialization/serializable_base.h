@@ -15,6 +15,7 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <limits>

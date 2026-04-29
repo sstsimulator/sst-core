@@ -19,6 +19,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include <fstream>
 #include <map>
 #include <string>
 

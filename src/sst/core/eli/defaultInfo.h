@@ -14,6 +14,7 @@
 
 #include "sst/core/eli/elibase.h"
 
+#include <ostream>
 #include <string>
 #include <vector>
 

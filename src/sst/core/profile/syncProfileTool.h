@@ -20,6 +20,7 @@
 #include "sst/core/warnmacros.h"
 
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
