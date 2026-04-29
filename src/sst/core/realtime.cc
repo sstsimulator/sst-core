@@ -36,7 +36,7 @@ void
 RealTimeManager::SimulationSigEndHandler(int sig)
 {
     sig_end_from_os_ = sig;
-    Simulation_impl::notifySignal(); // Notify monitor
+    Simulation::notifySignal(); // Notify monitor
 
     signal(sig, SIG_DFL); // Restore default handler - double sigint/term will kill the process
 }
@@ -45,20 +45,20 @@ void
 RealTimeManager::SimulationSigUsrHandler(int sig)
 {
     sig_usr_from_os_ = sig;
-    Simulation_impl::notifySignal(); // Notify monitor
+    Simulation::notifySignal(); // Notify monitor
 }
 
 void
 RealTimeManager::SimulationSigAlrmHandler(int sig)
 {
     sig_alrm_from_os_ = sig;
-    Simulation_impl::notifySignal(); // Notify monitor
+    Simulation::notifySignal(); // Notify monitor
 }
 
 void
 RealTimeManager::installSignalHandlers()
 {
-    Output out = Simulation_impl::getSimulationOutput();
+    Output out = Simulation::getSimulationOutput();
     if ( SIG_ERR == signal(SIGUSR1, RealTimeManager::SimulationSigUsrHandler) ) {
         out.fatal(CALL_INFO, 1, "Installation of SIGUSR1 signal handler failed.\n");
     }
@@ -88,55 +88,55 @@ SST_ELI_DEFINE_CTOR_EXTERN(RealTimeAction)
 UnitAlgebra
 RealTimeAction::getCoreTimeBase() const
 {
-    return Simulation_impl::getSimulation()->getTimeLord()->getTimeBase();
+    return Simulation::getSimulation()->getTimeLord()->getTimeBase();
 }
 
 SimTime_t
 RealTimeAction::getCurrentSimCycle() const
 {
-    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+    return Simulation::getSimulation()->getCurrentSimCycle();
 }
 
 UnitAlgebra
 RealTimeAction::getElapsedSimTime() const
 {
-    return Simulation_impl::getSimulation()->getElapsedSimTime();
+    return Simulation::getSimulation()->getElapsedSimTime();
 }
 
 SimTime_t
 RealTimeAction::getEndSimCycle() const
 {
-    return Simulation_impl::getSimulation()->getEndSimCycle();
+    return Simulation::getSimulation()->getEndSimCycle();
 }
 
 UnitAlgebra
 RealTimeAction::getEndSimTime() const
 {
-    return Simulation_impl::getSimulation()->getEndSimTime();
+    return Simulation::getSimulation()->getEndSimTime();
 }
 
 RankInfo
 RealTimeAction::getRank() const
 {
-    return Simulation_impl::getSimulation()->getRank();
+    return Simulation::getSimulation()->getRank();
 }
 
 RankInfo
 RealTimeAction::getNumRanks() const
 {
-    return Simulation_impl::getSimulation()->getNumRanks();
+    return Simulation::getSimulation()->getNumRanks();
 }
 
 Output&
 RealTimeAction::getSimulationOutput() const
 {
-    return Simulation_impl::getSimulation()->getSimulationOutput();
+    return Simulation::getSimulation()->getSimulationOutput();
 }
 
 uint64_t
 RealTimeAction::getTimeVortexMaxDepth() const
 {
-    return Simulation_impl::getSimulation()->getTimeVortexMaxDepth();
+    return Simulation::getSimulation()->getTimeVortexMaxDepth();
 }
 
 void
@@ -148,31 +148,31 @@ RealTimeAction::getMemPoolUsage(int64_t& bytes, int64_t& active_entries)
 uint64_t
 RealTimeAction::getSyncQueueDataSize() const
 {
-    return Simulation_impl::getSimulation()->getSyncQueueDataSize();
+    return Simulation::getSimulation()->getSyncQueueDataSize();
 }
 
 void
 RealTimeAction::simulationPrintStatus(bool component_status)
 {
-    Simulation_impl::getSimulation()->printStatus(component_status);
+    Simulation::getSimulation()->printStatus(component_status);
 }
 
 void
 RealTimeAction::simulationSignalShutdown(bool abnormal)
 {
-    Simulation_impl::getSimulation()->signalShutdown(abnormal);
+    Simulation::getSimulation()->signalShutdown(abnormal);
 }
 
 void
 RealTimeAction::simulationCheckpoint()
 {
-    Simulation_impl::getSimulation()->scheduleCheckpoint();
+    Simulation::getSimulation()->scheduleCheckpoint();
 }
 
 void
 RealTimeAction::initiateInteractive(const std::string& msg)
 {
-    Simulation_impl* sim    = Simulation_impl::getSimulation();
+    Simulation* sim         = Simulation::getSimulation();
     sim->enter_interactive_ = true;
     sim->interactive_msg_   = msg;
 }

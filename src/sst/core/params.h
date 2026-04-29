@@ -967,7 +967,7 @@ private:
     /* Friend main() because it broadcasts the maps */
     friend int ::main(int argc, char* argv[]);
     /* Friend simulation because it checkpoints the maps */
-    friend class Simulation_impl;
+    friend class Simulation;
 
     static std::map<std::string, uint32_t> keyMap;
     static std::vector<std::string>        keyMapReverse;

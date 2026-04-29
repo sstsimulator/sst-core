@@ -24,7 +24,7 @@
 
 namespace SST {
 
-class Simulation_impl;
+class Simulation;
 
 namespace Core {
 
@@ -110,7 +110,7 @@ public:
         Note: OneShot cannot be canceled, and will always callback after
               the timedelay.
     */
-    OneShotManager(Simulation_impl* sim);
+    OneShotManager(Simulation* sim);
     ~OneShotManager();
 
     /** Add a handler to be called on this OneShot Event */
@@ -150,7 +150,7 @@ private:
     friend class OneShot;
 
     HandlerVectorMap_t handler_vector_map_;
-    Simulation_impl*   sim_ = nullptr;
+    Simulation*        sim_ = nullptr;
 
     /**
        Registers a handler for delivery at the specified time

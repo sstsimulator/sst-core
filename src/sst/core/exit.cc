@@ -55,24 +55,24 @@ Exit::refDec(uint32_t thread)
 {
     std::scoped_lock lock(slock_);
     if ( ref_count_ == 0 ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "ref_count is already 0\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "ref_count is already 0\n");
     }
 
     --ref_count_;
     --thread_counts_[thread];
 
     if ( single_rank_ && num_threads_ == 1 && ref_count_ == 0 ) {
-        end_time_            = Simulation_impl::getSimulation()->getCurrentSimCycle();
-        Simulation_impl* sim = Simulation_impl::getSimulation();
+        end_time_       = Simulation::getSimulation()->getCurrentSimCycle();
+        Simulation* sim = Simulation::getSimulation();
         sim->insertActivity(sim->getCurrentSimCycle() + 1, this);
     }
     else if ( thread_counts_[thread] == 0 ) {
-        SimTime_t end_time_new = Simulation_impl::getSimulation()->getCurrentSimCycle();
+        SimTime_t end_time_new = Simulation::getSimulation()->getCurrentSimCycle();
         if ( end_time_new > end_time_ ) end_time_ = end_time_new;
-        if ( Simulation_impl::getSimulation()->isIndependentThread() ) {
+        if ( Simulation::getSimulation()->isIndependentThread() ) {
             // Need to exit just this thread, so we'll need to use a
             // StopAction
-            Simulation_impl* sim = Simulation_impl::getSimulation();
+            Simulation* sim = Simulation::getSimulation();
             sim->insertActivity(sim->getCurrentSimCycle(), new StopAction());
         }
     }

@@ -44,7 +44,7 @@ ConfigLink::getIndexForLatency(const char* latency)
 std::vector<SimTime_t>
 ConfigLink::initializeLinkLatencyVector()
 {
-    TimeLord*              timeLord = Simulation_impl::getTimeLord();
+    TimeLord*              timeLord = Simulation::getTimeLord();
     std::vector<SimTime_t> vec;
     vec.resize(lat_to_index.size() + 1);
     for ( auto& [lat, index] : lat_to_index ) {
@@ -63,7 +63,7 @@ ConfigLink::getLatencyFromIndex(uint32_t index)
 std::string
 ConfigLink::latency_str(uint32_t index) const
 {
-    static TimeLord* timelord = Simulation_impl::getTimeLord();
+    static TimeLord* timelord = Simulation::getTimeLord();
     UnitAlgebra      tb       = timelord->getTimeBase();
     auto             tmp      = tb * latency_[index];
     return tmp.toStringBestSI();

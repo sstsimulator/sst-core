@@ -57,14 +57,13 @@ public:
 
     /** Set interactive flags to exchange during sync */
     // Separated enter_interactive from from shutdown since they may be needed separately
-    void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode) override;
     void setCkptFlag(bool generate_ckpt) override;
-    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */
-    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) override;
     void getCkptFlag(bool& generate_ckpt) override;
-    void getFlags(
-        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) override;
     /** Clear interactive flags before next run */
     void clearFlags() override;
 

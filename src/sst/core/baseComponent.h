@@ -49,7 +49,7 @@ class LinkMap;
 class Module;
 class Params;
 class Simulation;
-class Simulation_impl;
+class Simulation;
 class SubComponent;
 class SubComponentSlotInfo;
 class TimeConverter;
@@ -1059,7 +1059,7 @@ private:
     void vfatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, va_list arg) const
         __attribute__((format(printf, 6, 0)));
 
-    // Get the statengine from Simulation_impl
+    // Get the statengine from Simulation
     StatisticProcessingEngine* getStatEngine();
 
 public:
@@ -1253,8 +1253,8 @@ private:
     friend class Core::Serialization::pvt::SerializeBaseComponentHelper;
 
 
-    ComponentInfo*   my_info_ = nullptr;
-    Simulation_impl* sim_     = nullptr;
+    ComponentInfo* my_info_ = nullptr;
+    Simulation*    sim_     = nullptr;
 
     // component_state_ is initialized as NotPrimary and !Extension
     ComponentState component_state_ = ComponentState::None;

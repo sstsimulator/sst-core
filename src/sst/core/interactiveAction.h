@@ -31,7 +31,7 @@ public:
     /**
        Create a new InteractiveAction object for the simulation core to initiate interactive mode
     */
-    InteractiveAction(Simulation_impl* sim, const std::string& msg) :
+    InteractiveAction(Simulation* sim, const std::string& msg) :
         Action(),
         sim_(sim),
         msg_(msg)
@@ -67,8 +67,8 @@ public:
     }
 
 private:
-    Simulation_impl* sim_;
-    std::string      msg_;
+    Simulation* sim_;
+    std::string msg_;
 };
 
 } // namespace SST

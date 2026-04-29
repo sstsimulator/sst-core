@@ -34,7 +34,7 @@ extern void finalize_statEngineConfig();
 
 namespace SST {
 class BaseComponent;
-class Simulation_impl;
+class Simulation;
 class ConfigGraph;
 class ConfigStatGroup;
 class ConfigStatOutput;
@@ -150,7 +150,7 @@ public:
     ImplementSerializable(SST::Statistics::StatisticProcessingEngine)
 
 private:
-    friend class SST::Simulation_impl;
+    friend class SST::Simulation;
     friend int ::main(int argc, char** argv);
     friend void ::finalize_statEngineConfig();
 

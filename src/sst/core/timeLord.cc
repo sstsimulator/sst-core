@@ -118,7 +118,7 @@ TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
 UnitAlgebra
 TimeConverter::getPeriod() const
 {
-    return Simulation_impl::getTimeLord()->getTimeBase() * factor;
+    return Simulation::getTimeLord()->getTimeBase() * factor;
 }
 
 SimTime_t
@@ -176,12 +176,12 @@ TimeLord::getFactorForTime(const UnitAlgebra& time)
 
 TimeConverter::TimeConverter(const std::string& time)
 {
-    factor = Simulation_impl::getSimulation()->timeLord.getFactorForTime(time);
+    factor = Simulation::getSimulation()->timeLord.getFactorForTime(time);
 }
 
 TimeConverter::TimeConverter(const UnitAlgebra& time)
 {
-    factor = Simulation_impl::getSimulation()->timeLord.getFactorForTime(time);
+    factor = Simulation::getSimulation()->timeLord.getFactorForTime(time);
 }
 
 namespace Core::Serialization {
@@ -200,7 +200,7 @@ public:
     // We'll treat this as a period when printing
     std::string get() const final override
     {
-        TimeLord*   timelord = Simulation_impl::getTimeLord();
+        TimeLord*   timelord = Simulation::getTimeLord();
         UnitAlgebra base     = timelord->getTimeBase();
         base *= addr_->getFactor();
         return base.toStringBestSI();

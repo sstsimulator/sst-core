@@ -121,7 +121,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
 
     // Make sure that the wireup has not been completed
     // If it has, stat output must support dynamic registration
-    if ( true == Simulation_impl::getSimulation()->isWireUpFinished() ) {
+    if ( true == Simulation::getSimulation()->isWireUpFinished() ) {
         if ( !group.output->supportsDynamicRegistration() ) {
             output_.fatal(CALL_INFO, 1,
                 "ERROR: Statistic %s - "
@@ -141,7 +141,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     }
     else if ( !rate_ua.hasUnits("event") ) {
         // rate has a unit type we dont recognize
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
             "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", stat->getFullStatName().c_str(),
             rate.c_str());
     }
@@ -160,7 +160,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
         bool success = true;
         if ( periodic ) {
-            SimTime_t factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(rate_ua).getFactor();
+            SimTime_t factor = Simulation::getSimulation()->getTimeLord()->getTimeConverter(rate_ua).getFactor();
             success          = addPeriodicBasedStatistic(factor, stat); // will place stat in correct default group
         }
         else {
@@ -188,7 +188,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( start_at != "0ns" ) {
         ua = UnitAlgebra(start_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
+            factor = Simulation::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStartTime(stat, factor);
         }
     }
@@ -197,7 +197,7 @@ StatisticProcessingEngine::registerStatisticWithEngine(StatisticBase* stat, Para
     if ( stop_at != "0ns" ) {
         ua = UnitAlgebra(stop_at);
         if ( ua.getValue() != 0 ) {
-            factor = Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
+            factor = Simulation::getSimulation()->getTimeLord()->getTimeConverter(ua).getFactor();
             setStatisticStopTime(stat, factor);
         }
     }
@@ -253,7 +253,7 @@ StatisticProcessingEngine::finalizeInitialization()
 
         /* Register group clock, if rate is set */
         if ( group.output_freq != 0 ) {
-            Simulation_impl::getSimulation()->registerClock(group.output_freq,
+            Simulation::getSimulation()->registerClock(group.output_freq,
                 new Clock::Handler<StatisticProcessingEngine, &StatisticProcessingEngine::handleGroupClockEvent,
                     StatisticGroup*>(this, &group),
                 STATISTICCLOCKPRIORITY);
@@ -319,7 +319,7 @@ void
 StatisticProcessingEngine::castError(
     const std::string& type, const std::string& stat_name, const std::string& field_name)
 {
-    Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
+    Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
         "Unable to cast statistic %s of type %s to correct field type %s", stat_name.c_str(), type.c_str(),
         field_name.c_str());
 }
@@ -345,7 +345,7 @@ StatisticProcessingEngine::getGroupForStatistic(const StatisticBase* stat) const
 bool
 StatisticProcessingEngine::addPeriodicBasedStatistic(SimTime_t factor, StatisticBase* stat)
 {
-    Simulation_impl*    sim = Simulation_impl::getSimulation();
+    Simulation*         sim = Simulation::getSimulation();
     Clock::HandlerBase* clock_handler;
 
     // See if the map contains an entry for this factor
@@ -393,8 +393,8 @@ StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count, Stat
 void
 StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat, SimTime_t factor)
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    StatArray_t*     stat_array;
+    Simulation*  sim = Simulation::getSimulation();
+    StatArray_t* stat_array;
 
     // Check to see if the time is zero or has already passed, if it is we skip this work
     if ( factor > sim->getCurrentSimCycle() ) {
@@ -435,8 +435,8 @@ StatisticProcessingEngine::getStatisticStartTimeFactor(StatisticBase* stat)
 void
 StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat, SimTime_t factor)
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    StatArray_t*     stat_array;
+    Simulation*  sim = Simulation::getSimulation();
+    StatArray_t* stat_array;
 
     // Check to see if the time is zero or has already passed, if it is we skip this work
     if ( factor > sim->getCurrentSimCycle() ) {

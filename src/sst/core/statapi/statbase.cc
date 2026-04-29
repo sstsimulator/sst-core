@@ -29,7 +29,7 @@ void
 registerStatWithEngineOnRestart(
     SST::Statistics::StatisticBase* stat, SimTime_t start_factor, SimTime_t stop_factor, SimTime_t output_factor)
 {
-    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->reregisterStatisticWithEngine(
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->reregisterStatisticWithEngine(
         stat, start_factor, stop_factor, output_factor);
 }
 
@@ -66,7 +66,7 @@ DISABLE_WARN_MISSING_NORETURN
 void
 Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output), bool UNUSED(end_of_sim_flag))
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
         "void statistic %s, type %s does not support outputing fields", getFullStatName().c_str(),
         getStatTypeName().c_str());
 }
@@ -74,7 +74,7 @@ Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(stat_output
 void
 Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(stat_output))
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
         "void statistic %s, type %s does not support outputing fields", getFullStatName().c_str(),
         getStatTypeName().c_str());
 }
@@ -136,7 +136,7 @@ StatisticBase::checkEventForOutput()
     if ( (!registered_collection_mode_) && (output_collection_count_ >= collection_count_limit_) &&
          (1 <= collection_count_limit_) ) {
         // Dont output if CountLimit is zero
-        Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(this);
+        Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(this);
     }
 }
 
@@ -149,13 +149,13 @@ StatisticBase::operator==(StatisticBase& check_stat)
 SimTime_t
 StatisticBase::getStartAtFactor()
 {
-    return Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->getStatisticStartTimeFactor(this);
+    return Simulation::getSimulation()->getStatisticsProcessingEngine()->getStatisticStartTimeFactor(this);
 }
 
 SimTime_t
 StatisticBase::getStopAtFactor()
 {
-    return Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->getStatisticStopTimeFactor(this);
+    return Simulation::getSimulation()->getStatisticsProcessingEngine()->getStatisticStopTimeFactor(this);
 }
 
 SimTime_t

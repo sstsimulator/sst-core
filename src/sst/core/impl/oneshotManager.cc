@@ -34,7 +34,7 @@ OneShot::execute()
 }
 
 
-OneShotManager::OneShotManager(Simulation_impl* sim) :
+OneShotManager::OneShotManager(Simulation* sim) :
     sim_(sim)
 {}
 

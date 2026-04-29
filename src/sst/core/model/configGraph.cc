@@ -923,12 +923,12 @@ ConfigGraph::restoreRestartData()
     // Initialize SharedObjectManager
     auto* vec_som = cpt_shared_objects.get();
     ser.start_unpacking(vec_som->data(), vec_som->size());
-    Simulation_impl::serializeSharedObjectManager(ser);
+    Simulation::serializeSharedObjectManager(ser);
 
     // Get the stats config
     auto* vec_sc = cpt_stats_config.get();
     ser.start_unpacking(vec_sc->data(), vec_sc->size());
-    SST_SER(Simulation_impl::stats_config_);
+    SST_SER(Simulation::stats_config_);
 
     cpt_libnames.reset();
     cpt_shared_objects.reset();

@@ -178,7 +178,7 @@ PerfReporter::configureOutput(std::string output_str)
         size_t      pos = filename_.find_last_of('.');
         std::string ext = filename_.substr(pos + 1);
         if ( ext == "json" || ext == "txt" ) {
-            if ( !Simulation_impl::filesystem.ensureDirectoryExists(filename_, true) ) {
+            if ( !Simulation::filesystem.ensureDirectoryExists(filename_, true) ) {
                 output_.fatal(CALL_INFO, -1,
                     "Error: Unable to write a file to the directory for profiling output (filename='%s'). Check that "
                     "this location is writeable.",
@@ -235,7 +235,7 @@ PerfReporter::output(int rank, int num_ranks)
         const std::string ext = (pos == std::string::npos) ? "" : filename_.substr(pos + 1);
         output_txt            = (ext == "txt");
         output_json           = (ext == "json");
-        filestream            = Simulation_impl::filesystem.ofstream(filename_);
+        filestream            = Simulation::filesystem.ofstream(filename_);
     }
 
     std::cout << std::flush;

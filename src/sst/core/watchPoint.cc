@@ -302,42 +302,42 @@ WatchPoint::resetTraceBuffer()
 bool
 WatchPoint::getInteractive()
 {
-    return Simulation_impl::getSimulation()->enter_interactive_;
+    return Simulation::getSimulation()->enter_interactive_;
 }
 
 void
 WatchPoint::setEnterInteractive()
 {
-    Simulation_impl::getSimulation()->enter_interactive_ = true;
+    Simulation::getSimulation()->enter_interactive_ = true;
 }
 
 void
 WatchPoint::setInteractiveMsg(const std::string& msg)
 {
-    Simulation_impl::getSimulation()->interactive_msg_ = msg;
+    Simulation::getSimulation()->interactive_msg_ = msg;
 }
 
 SimTime_t
 WatchPoint::getCurrentSimCycle()
 {
-    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+    return Simulation::getSimulation()->getCurrentSimCycle();
 }
 
 void
 WatchPoint::setCheckpoint()
 {
-    if ( Simulation_impl::getSimulation()->checkpoint_directory_ == "" ) {
+    if ( Simulation::getSimulation()->checkpoint_directory_ == "" ) {
         std::cout << "Invalid action: checkpointing not enabled (use --checkpoint-enable cmd line option)\n";
     }
     else {
-        Simulation_impl::getSimulation()->scheduleCheckpoint();
+        Simulation::getSimulation()->scheduleCheckpoint();
     }
 }
 
 void
 WatchPoint::printStatus()
 {
-    Simulation_impl::getSimulation()->printStatus(true);
+    Simulation::getSimulation()->printStatus(true);
 }
 
 void
@@ -350,7 +350,7 @@ WatchPoint::heartbeat()
 void
 WatchPoint::simulationShutdown()
 {
-    Simulation_impl::getSimulation()->consoleShutdown(false);
+    Simulation::getSimulation()->consoleShutdown(false);
     std::cout << "wp simulation shutdown\n";
 }
 

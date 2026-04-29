@@ -32,14 +32,14 @@ class Link;
 class TimeConverter;
 class Exit;
 class Event;
-class Simulation_impl;
+class Simulation;
 class ThreadSyncQueue;
 
 class ThreadSyncSimpleSkip : public ThreadSync
 {
 public:
     /** Create a new ThreadSync object */
-    ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim);
+    ThreadSyncSimpleSkip(int num_threads, int thread, Simulation* sim);
     ThreadSyncSimpleSkip() {} // For serialization only
     ~ThreadSyncSimpleSkip();
 
@@ -56,12 +56,11 @@ public:
 
     /** Set interactive flags to exchange during sync */
     // Separated enter_interactive from from shutdown since they may be needed separately
-    void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
-    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode) override;
+    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode) override;
     /** Return exchanged interactive flags after sync */
-    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
-    void getFlags(
-        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) override;
+    void getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) override;
     /** Clear interactive flags before next run */
     void clearFlags() override;
 
@@ -97,7 +96,7 @@ private:
     int                              num_threads;
     int                              thread;
     static SimTime_t                 localMinimumNextActivityTime;
-    Simulation_impl*                 sim;
+    Simulation*                      sim;
     static Core::ThreadSafe::Barrier barrier[3];
     double                           totalWaitTime;
     bool                             single_rank;

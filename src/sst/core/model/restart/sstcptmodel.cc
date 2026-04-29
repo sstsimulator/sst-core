@@ -36,7 +36,7 @@ SSTCPTModelDefinition::SSTCPTModelDefinition(
 ConfigGraph*
 SSTCPTModelDefinition::createConfigGraph()
 {
-    Config& cfg = Simulation_impl::config;
+    Config& cfg = Simulation::config;
 
     SST::Core::Serialization::serializer ser;
     ser.enable_pointer_tracking();
@@ -285,11 +285,11 @@ SSTCPTModelDefinition::createConfigGraph()
 
 
     // // Initialize SharedObjectManager
-    // Simulation_impl::serializeSharedObjectManager(ser);
+    // Simulation::serializeSharedObjectManager(ser);
     // // SST_SER(SST::Shared::SharedObject::manager);
 
     // // Get the stats config
-    // SST_SER(Simulation_impl::stats_config_);
+    // SST_SER(Simulation::stats_config_);
 
     // Done with restart_data_buffer
     restart_data_buffer.clear();

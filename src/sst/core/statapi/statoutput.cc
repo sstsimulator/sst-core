@@ -77,38 +77,37 @@ StatisticOutput::registerGroup(StatisticGroup* group)
 void
 StatisticOutput::printUsage()
 {
-    Simulation_impl::getSimulationOutput().output(
-        "StatisticOutput does not provide usage message; use 'sst-info' instead");
+    Simulation::getSimulationOutput().output("StatisticOutput does not provide usage message; use 'sst-info' instead");
 }
 
 Output&
 StatisticOutput::getSimulationOutput()
 {
-    return Simulation_impl::getSimulationOutput();
+    return Simulation::getSimulationOutput();
 }
 
 RankInfo
 StatisticOutput::getNumRanks()
 {
-    return Simulation_impl::getSimulation()->getNumRanks();
+    return Simulation::getSimulation()->getNumRanks();
 }
 
 RankInfo
 StatisticOutput::getRank()
 {
-    return Simulation_impl::getSimulation()->getRank();
+    return Simulation::getSimulation()->getRank();
 }
 
 SimTime_t
 StatisticOutput::getCurrentSimCycle()
 {
-    return Simulation_impl::getSimulation()->getCurrentSimCycle();
+    return Simulation::getSimulation()->getCurrentSimCycle();
 }
 
 std::string
 StatisticOutput::getAbsolutePathForOutputFile(const std::string& filename)
 {
-    return Simulation_impl::filesystem.getAbsolutePath(filename);
+    return Simulation::filesystem.getAbsolutePath(filename);
 }
 
 StatisticFieldsOutput::StatisticFieldsOutput(Params& outputParameters) :
@@ -129,7 +128,7 @@ StatisticFieldsOutput::addFieldToLists(const char* fieldName, fieldType_t fieldT
         fieldHandle_t       id                    = iter->second;
         StatisticFieldInfo* ExistingStatFieldInfo = m_outputFieldInfoArray[id];
         if ( ExistingStatFieldInfo->getFieldType() != fieldType ) {
-            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
+            Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
                 "StatisticOutput %s registering the same column (%s) with two different types",
                 getStatisticOutputName().c_str(), fieldName);
         }
@@ -169,42 +168,42 @@ DISABLE_WARN_MISSING_NORETURN
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support double output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support float output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int32_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint32_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support int64_t output", getStatisticOutputName().c_str());
 }
 
 void
 StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
 {
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "StatisticOutput %s does not support uint64_t output", getStatisticOutputName().c_str());
 }
 REENABLE_WARNING

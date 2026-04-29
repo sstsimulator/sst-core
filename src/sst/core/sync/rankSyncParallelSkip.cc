@@ -55,7 +55,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks) :
     slaveExchangeDoneBarrier(num_ranks.thread),
     allDoneBarrier(num_ranks.thread)
 {
-    max_period     = Simulation_impl::getSimulation()->getMinPartTC().getFactor();
+    max_period     = Simulation::getSimulation()->getMinPartTC().getFactor();
     myNextSyncTime = max_period;
     recv_count     = new int[num_ranks_.thread];
     for ( uint32_t i = 0; i < num_ranks_.thread; i++ ) {
@@ -124,7 +124,7 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
 void
 RankSyncParallelSkip::setRestartTime(SimTime_t time)
 {
-    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) {
+    if ( Simulation::getSimulation()->getRank().thread == 0 ) {
         myNextSyncTime = time;
     }
 }
@@ -161,7 +161,7 @@ RankSyncParallelSkip::getSignals(int& end, int& usr, int& alrm)
 }
 
 void
-RankSyncParallelSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+RankSyncParallelSkip::setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)
 {
     // This must be atomic because it can be set from any thread
     if ( enter_shutdown ) {
@@ -177,8 +177,7 @@ RankSyncParallelSkip::setCkptFlag(bool generate_ckpt)
 }
 
 void
-RankSyncParallelSkip::setFlags(
-    bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+RankSyncParallelSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)
 {
     if ( enter_interactive ) enter_interactive_.store(enter_interactive);
 
@@ -186,18 +185,18 @@ RankSyncParallelSkip::setFlags(
 }
 
 void
-RankSyncParallelSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+RankSyncParallelSkip::getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)
 {
     enter_shutdown = enter_shutdown_.load();
     switch ( shutdown_mode_ ) {
     case 0:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_CLEAN;
         break;
     case 1:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_SIGNAL;
         break;
     case 2:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_EMERGENCY;
         break;
     }
 }
@@ -209,8 +208,7 @@ RankSyncParallelSkip::getCkptFlag(bool& generate_ckpt)
 }
 
 void
-RankSyncParallelSkip::getFlags(
-    bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+RankSyncParallelSkip::getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)
 {
 
     enter_interactive = enter_interactive_.load();
@@ -261,7 +259,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
     // Check the serialize_queue for work.
     comm_send_pair* ser;
 
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
 
     while ( serialize_queue.try_remove(ser) ) {
         // Measures serialization time
@@ -343,7 +341,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     comm_send_pair* send;
 
 #if SST_EVENT_PROFILING
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
 #endif
 
     while ( my_send_count != 0 ) {
@@ -436,8 +434,8 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     // min + max_period.
 
     // Need to get the local minimum, then do a global minimum
-    // SimTime_t input = Simulation_impl::getSimulation()->getNextActivityTime();
-    SimTime_t input = Simulation_impl::getLocalMinimumNextActivityTime();
+    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
     SimTime_t min_time;
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 

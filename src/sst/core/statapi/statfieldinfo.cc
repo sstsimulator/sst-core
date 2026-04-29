@@ -52,7 +52,7 @@ StatisticFieldTypeBase::getField(fieldType_t id)
 {
     auto iter = fields_->find(id);
     if ( iter == fields_->end() ) {
-        Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Invalid Field ID: %d", int(id));
+        Simulation::getSimulationOutput().fatal(CALL_INFO, 1, "Invalid Field ID: %d", int(id));
     }
     return iter->second;
 }
@@ -65,7 +65,7 @@ StatisticFieldTypeBase::getField(const char* field_short_name)
             return field.first;
         }
     }
-    Simulation_impl::getSimulationOutput().fatal(
+    Simulation::getSimulationOutput().fatal(
         CALL_INFO, 1, "Look up field name: %s; No such field found", field_short_name);
     return 0;
 }
@@ -83,7 +83,7 @@ void
 StatisticFieldTypeBase::checkRegisterConflict(const char* old_name, const char* new_name)
 {
     if ( old_name && ::strcmp(old_name, new_name) ) {
-        Simulation_impl::getSimulationOutput().fatal(
+        Simulation::getSimulationOutput().fatal(
             CALL_INFO, 1, "Conflicting names registered for field: %s != %s", old_name, new_name);
     }
 }

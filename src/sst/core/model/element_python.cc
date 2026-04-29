@@ -81,7 +81,7 @@ abortOnPyErr(uint32_t line, const char* file, const char* func, uint32_t exit_co
 
     // Add in the other error information
     stream << exc_name << ": " << PyUnicode_AsUTF8(PyObject_Str(val)) << "\n";
-    Simulation_impl::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
+    Simulation::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
 }
 
 SSTElementPythonModuleCode*
@@ -151,7 +151,7 @@ SSTElementPythonModule::load()
     if ( primary_code_module != nullptr ) return primary_code_module->load(nullptr);
 
     if ( primary_module == nullptr ) {
-        Simulation_impl::getSimulationOutput().fatal(
+        Simulation::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule: Primary module not set.  Use addPrimaryModule().\n");
     }
     PyObject* code = Py_CompileString(primary_module, pylibrary.c_str(), Py_file_input);
@@ -194,7 +194,7 @@ SSTElementPythonModule::createPrimaryModule(char* code, const std::string& filen
         primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, code, filename);
     }
     else {
-        Simulation_impl::getSimulationOutput().fatal(
+        Simulation::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
     }
     return primary_code_module;
@@ -207,7 +207,7 @@ SSTElementPythonModule::createPrimaryModule()
         primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, empty_code, "empty_module");
     }
     else {
-        Simulation_impl::getSimulationOutput().fatal(
+        Simulation::getSimulationOutput().fatal(
             CALL_INFO, 1, "SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
     }
     return primary_code_module;

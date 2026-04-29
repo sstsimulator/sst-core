@@ -43,8 +43,8 @@ DebugConsole::DebugConsole(Params& params) :
     dout(std::cout, 50, 160)
 {
     // registerAsPrimaryComponent();
-    num_ranks_ = Simulation_impl::getSimulation()->getNumRanks();
-    rank_      = Simulation_impl::getSimulation()->getRank();
+    num_ranks_ = Simulation::getSimulation()->getNumRanks();
+    rank_      = Simulation::getSimulation()->getRank();
 
     // Serial (single rank, single thread)
     if ( num_ranks_.rank == 1 && num_ranks_.thread == 1 ) {
@@ -418,7 +418,7 @@ DebugConsole::~DebugConsole()
 void
 DebugConsole::summary()
 {
-    Simulation_impl* sim_ = Simulation_impl::getSimulation();
+    Simulation* sim_ = Simulation::getSimulation();
     result << "-- Rank:" << rank_.rank << "/" << num_ranks_.rank << " Thread:" << rank_.thread << "/"
            << num_ranks_.thread;
     //<< " (Process " << getpid() << ")";
@@ -1172,7 +1172,7 @@ DebugConsole::cmd_thread_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_thread_remote(std::vector<std::string>& UNUSED(tokens))
 {
-    result << Simulation_impl::getSimulation()->interactive_msg_ << std::endl;
+    result << Simulation::getSimulation()->interactive_msg_ << std::endl;
     return true;
 }
 
@@ -1315,7 +1315,7 @@ DebugConsole::cmd_rank_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_rank_remote(std::vector<std::string>& UNUSED(tokens))
 {
-    result << Simulation_impl::getSimulation()->interactive_msg_ << std::endl;
+    result << Simulation::getSimulation()->interactive_msg_ << std::endl;
     return true;
 }
 
@@ -2966,7 +2966,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
         return new WatchPoint::PrintTraceWPAction();
     }
     else if ( action == "checkpoint" ) {
-        if ( Simulation_impl::getSimulation()->checkpoint_directory_ == "" ) {
+        if ( Simulation::getSimulation()->checkpoint_directory_ == "" ) {
             std::cout << "Invalid action: checkpointing not enabled (use --checkpoint-enable cmd line option)\n";
             return nullptr;
         }

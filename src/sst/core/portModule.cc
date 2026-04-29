@@ -31,7 +31,7 @@ PortModule::PortModule()
     std::tie(comp, id) = BaseComponent::port_module_id_;
     // Differentiate restart and regular startup by whether comp is a valid ID
     if ( comp != UNSET_COMPONENT_ID ) {
-        component_ = Simulation_impl::getSimulation()->getComponent(comp);
+        component_ = Simulation::getSimulation()->getComponent(comp);
         id_        = id;
         name_      = component_->getName() + "." + id_.first + "." + std::to_string(id_.second);
     }
@@ -147,7 +147,7 @@ PortModule::getCurrentSimTimeMilli() const
 Statistics::StatisticProcessingEngine*
 PortModule::getStatEngine() const
 {
-    return Simulation_impl::getSimulation()->getStatisticsProcessingEngine();
+    return Simulation::getSimulation()->getStatisticsProcessingEngine();
 }
 
 uint8_t

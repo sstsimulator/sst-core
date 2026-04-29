@@ -50,7 +50,7 @@ RankSyncSerialSkip::RankSyncSerialSkip(RankInfo num_ranks) :
     mpiWaitTime(0.0),
     deserializeTime(0.0)
 {
-    max_period     = Simulation_impl::getSimulation()->getMinPartTC().getFactor();
+    max_period     = Simulation::getSimulation()->getMinPartTC().getFactor();
     myNextSyncTime = max_period;
 }
 
@@ -93,7 +93,7 @@ RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED
 void
 RankSyncSerialSkip::setRestartTime(SimTime_t time)
 {
-    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) {
+    if ( Simulation::getSimulation()->getRank().thread == 0 ) {
         myNextSyncTime = time;
     }
 }
@@ -124,7 +124,7 @@ RankSyncSerialSkip::getSignals(int& end, int& usr, int& alrm)
 }
 
 void
-RankSyncSerialSkip::setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+RankSyncSerialSkip::setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)
 {
     // This can be set from any thread
     if ( enter_shutdown ) {
@@ -140,7 +140,7 @@ RankSyncSerialSkip::setCkptFlag(bool generate_ckpt)
 }
 
 void
-RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)
+RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)
 {
     // This can be set from any thread
     if ( enter_interactive ) enter_interactive_.store(enter_interactive);
@@ -149,18 +149,18 @@ RankSyncSerialSkip::setFlags(bool enter_interactive, bool enter_shutdown, Simula
 }
 
 void
-RankSyncSerialSkip::getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+RankSyncSerialSkip::getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)
 {
     enter_shutdown = enter_shutdown_.load();
     switch ( shutdown_mode_ ) {
     case 0:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_CLEAN;
         break;
     case 1:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_SIGNAL;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_SIGNAL;
         break;
     case 2:
-        shutdown_mode = Simulation_impl::ShutdownMode_t::SHUTDOWN_EMERGENCY;
+        shutdown_mode = Simulation::ShutdownMode_t::SHUTDOWN_EMERGENCY;
         break;
     }
 }
@@ -172,8 +172,7 @@ RankSyncSerialSkip::getCkptFlag(bool& generate_ckpt)
 }
 
 void
-RankSyncSerialSkip::getFlags(
-    bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+RankSyncSerialSkip::getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)
 {
     enter_interactive = enter_interactive_.load();
     getShutdownFlags(enter_shutdown, shutdown_mode);
@@ -217,7 +216,7 @@ RankSyncSerialSkip::exchange()
     int  sreq_count = 0;
     int  rreq_count = 0;
 
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
 
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
 
@@ -231,7 +230,7 @@ RankSyncSerialSkip::exchange()
 
         // Cast to Header so we can get/fill in data
         RankSyncQueue::Header* hdr = reinterpret_cast<RankSyncQueue::Header*>(send_buffer);
-        // Simulation_impl::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
+        // Simulation::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
         int                    tag = 1;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
@@ -315,8 +314,8 @@ RankSyncSerialSkip::exchange()
     // min + max_period.
 
     // Need to get the local minimum, then do a global minimum
-    // SimTime_t input = Simulation_impl::getSimulation()->getNextActivityTime();
-    SimTime_t input = Simulation_impl::getLocalMinimumNextActivityTime();
+    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
     SimTime_t min_time;
     MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 

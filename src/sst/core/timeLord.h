@@ -29,7 +29,7 @@ namespace SST {
 
 class Link;
 class Simulation;
-class Simulation_impl;
+class Simulation;
 class TimeConverter;
 class UnitAlgebra;
 class BaseComponent;
@@ -99,7 +99,7 @@ public:
 
 private:
     friend class SST::Simulation;
-    friend class SST::Simulation_impl;
+    friend class SST::Simulation;
     friend class SST::Link;
     friend class SST::BaseComponent;
     friend class SST::TimeConverter;

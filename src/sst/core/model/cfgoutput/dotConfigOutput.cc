@@ -136,7 +136,7 @@ DotConfigGraphOutput::generateDot(const ConfigComponent* comp, const ConfigLinkM
 void
 DotConfigGraphOutput::generateDot(const ConfigLink* link, const uint32_t dot_verbosity) const
 {
-    UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
+    UnitAlgebra tb = Simulation::getTimeLord()->getTimeBase();
 
     int minLatIdx = (link->latency_[0] <= link->latency_[1]) ? 0 : 1;
 

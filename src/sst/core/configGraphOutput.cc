@@ -21,7 +21,7 @@ namespace SST::Core {
 
 ConfigGraphOutput::ConfigGraphOutput(const char* path)
 {
-    SST::Util::Filesystem filesystem = Simulation_impl::filesystem;
+    SST::Util::Filesystem filesystem = Simulation::filesystem;
     outputFile                       = filesystem.fopen(path, "wt");
 }
 
