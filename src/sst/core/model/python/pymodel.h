@@ -28,6 +28,7 @@
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 #include <cstddef>
+#include <cstdint>
 REENABLE_WARNING
 
 #include <map>

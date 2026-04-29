@@ -21,6 +21,7 @@
 #include "sst/core/statapi/statfieldinfo.h"
 #include "sst/core/warnmacros.h"
 
+#include <cstdint>
 #include <mutex>
 #include <string>
 #include <unordered_map>

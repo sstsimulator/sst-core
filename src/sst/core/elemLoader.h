@@ -12,6 +12,7 @@
 #ifndef SST_CORE_ELEMLOADER_H
 #define SST_CORE_ELEMLOADER_H
 
+#include <ostream>
 #include <string>
 #include <vector>
 

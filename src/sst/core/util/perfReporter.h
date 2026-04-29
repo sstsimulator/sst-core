@@ -24,6 +24,7 @@
 #include <iostream>
 #include <map>
 #include <mutex>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <utility>

@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <iostream>
 #include <mutex>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stdio.h>

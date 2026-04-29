@@ -16,8 +16,11 @@
 #include "sst/core/eli/elementinfo.h"
 
 #include <cstdio>
+#include <functional>
 #include <map>
+#include <ostream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
