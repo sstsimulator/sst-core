@@ -1,11 +1,11 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
-// This file is part of the SST software package. For licensebool
+// This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
@@ -4544,7 +4544,7 @@ DebugConsole::sendDone()
     int         rcv_buf_size;
     int         prev_size = 0;
     MPI_Status  status;
-    bool        succeed;
+    bool        succeed       = false;
     char*       result_buffer = nullptr;
 
     // Pack and Send message
