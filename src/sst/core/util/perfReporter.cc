@@ -23,6 +23,11 @@
 
 #include <clocale>
 #include <cstdio>
+#include <iomanip>
+#include <ios>
+#include <ostream>
+#include <sstream>
+#include <tuple>
 
 namespace json = ::nlohmann;
 

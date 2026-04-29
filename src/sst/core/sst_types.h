@@ -14,6 +14,7 @@
 
 #include "sst/core/util/bit_util.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <limits>

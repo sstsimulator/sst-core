@@ -4544,7 +4544,7 @@ DebugConsole::sendDone()
     int         rcv_buf_size;
     int         prev_size = 0;
     MPI_Status  status;
-    bool        succeed;
+    bool        succeed       = false;
     char*       result_buffer = nullptr;
 
     // Pack and Send message

@@ -19,6 +19,7 @@
 
 #include <chrono>
 #include <cinttypes>
+#include <cstddef>
 #include <cstdio>
 
 namespace SST::Profile {
