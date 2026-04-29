@@ -668,8 +668,6 @@ bool
 Config::canInitiateInteractive()
 {
     if ( interactive_start_time_.value != "" ) return true;
-    if ( sigusr1() == "sst.rt.interactive" ) return true;
-    if ( sigusr2() == "sst.rt.interactive" ) return true;
     return false;
 }
 

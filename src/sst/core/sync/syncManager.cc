@@ -401,7 +401,8 @@ SyncManager::setupSyncObjects()
         else {
             rankSync_ = new EmptyRankSync(num_ranks_);
             if ( num_ranks_.rank > 1 &&
-                 (real_time_->canInitiateCheckpoint() || sim_->config.canInitiateInteractive()) ) {
+                 (real_time_->canInitiateCheckpoint() || sim_->config.canInitiateCheckpoint() ||
+                     real_time_->canInitiateInteractive() || sim_->config.canInitiateInteractive()) ) {
                 if ( rank_.rank == 0 )
                     sim_->getSimulationOutput().output(
                         "WARNING: EmptyRankSync: Checkpoint and interactive debug disabled\n");
