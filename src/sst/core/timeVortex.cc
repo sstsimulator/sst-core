@@ -14,7 +14,7 @@
 #include "sst/core/timeVortex.h"
 
 #include "sst/core/event.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 #include <string>
 

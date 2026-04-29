@@ -15,7 +15,7 @@
 
 #include "sst/core/baseComponent.h"
 #include "sst/core/model/configGraph.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/stringize.h"
 #include "sst/core/warnmacros.h"
 

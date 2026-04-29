@@ -17,7 +17,7 @@
 #include "sst/core/output.h"
 
 // Core Headers
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 // C++ System Headers
 #include <atomic>

@@ -19,7 +19,7 @@
 #include "sst/core/objectComms.h"
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/realtime.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"

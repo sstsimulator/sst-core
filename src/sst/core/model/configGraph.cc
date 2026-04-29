@@ -20,7 +20,7 @@
 #include "sst/core/model/configLink.h"
 #include "sst/core/model/configStatistic.h"
 #include "sst/core/namecheck.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/warnmacros.h"

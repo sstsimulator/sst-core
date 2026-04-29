@@ -15,7 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/link.h"
 #include "sst/core/rankInfo.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
 

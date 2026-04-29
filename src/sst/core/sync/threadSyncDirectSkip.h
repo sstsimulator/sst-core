@@ -13,7 +13,7 @@
 #define SST_CORE_SYNC_THREADSYNCDIRECTSKIP_H
 
 #include "sst/core/action.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/syncQueue.h"

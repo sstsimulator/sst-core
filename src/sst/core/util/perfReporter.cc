@@ -16,7 +16,7 @@
 
 #include "sst/core/cputimer.h"
 #include "sst/core/memuse.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 
 #include "nlohmann/json.hpp"

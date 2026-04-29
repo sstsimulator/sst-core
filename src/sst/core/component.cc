@@ -15,7 +15,7 @@
 
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 using namespace SST::Statistics;
 

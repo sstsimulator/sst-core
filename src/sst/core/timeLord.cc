@@ -17,7 +17,7 @@
 #include "sst/core/output.h"
 #include "sst/core/serialization/serialize.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/warnmacros.h"
 

@@ -13,7 +13,7 @@
 
 #include "sst/core/action.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 

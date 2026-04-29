@@ -16,7 +16,7 @@
 
 #include "sst/core/config.h"
 #include "sst/core/params.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/util/filesystem.h"
 
 #include <cstddef>

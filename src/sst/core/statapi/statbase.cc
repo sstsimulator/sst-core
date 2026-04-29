@@ -14,7 +14,7 @@
 #include "sst/core/statapi/statbase.h"
 
 #include "sst/core/baseComponent.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/stathistogram.h"
 #include "sst/core/statapi/statnull.h"

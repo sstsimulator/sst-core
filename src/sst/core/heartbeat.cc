@@ -15,7 +15,7 @@
 
 #include "sst/core/component.h"
 #include "sst/core/mempoolAccessor.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"

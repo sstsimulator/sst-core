@@ -19,7 +19,7 @@
 #include "sst/core/linkPair.h"
 #include "sst/core/pollingLinkQueue.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/syncQueue.h"

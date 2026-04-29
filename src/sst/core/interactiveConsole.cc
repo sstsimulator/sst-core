@@ -15,7 +15,7 @@
 
 #include "sst/core/interactiveAction.h"
 #include "sst/core/mempoolAccessor.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/timeLord.h"
 
 #include <iostream>

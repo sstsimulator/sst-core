@@ -19,7 +19,7 @@
 #include "sst/core/shared/sharedArray.h"
 #include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedSet.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/warnmacros.h"
 
 #include <utility>

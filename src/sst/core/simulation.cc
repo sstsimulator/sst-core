@@ -11,8 +11,8 @@
 
 #include "sst_config.h"
 
-#include "sst/core/simulation_impl.h"
-// simulation_impl header should stay here
+#include "sst/core/simulation.h"
+// simulation header should stay here
 
 #include "sst/core/checkpointAction.h"
 #include "sst/core/clock.h"

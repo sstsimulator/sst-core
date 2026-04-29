@@ -15,7 +15,7 @@
 #include "sst/core/action.h"
 // Can include this because this header is not installed
 #include "sst/core/interactiveConsole.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 #include <string>
 

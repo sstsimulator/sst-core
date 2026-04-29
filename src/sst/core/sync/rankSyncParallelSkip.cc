@@ -19,7 +19,7 @@
 #include "sst/core/profile.h"
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"

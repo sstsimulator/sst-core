@@ -22,7 +22,7 @@
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/serialization/serialize.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/stringize.h"
 #include "sst/core/subcomponent.h"

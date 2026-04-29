@@ -20,7 +20,7 @@
 #include "sst/core/model/element_python.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/params.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 

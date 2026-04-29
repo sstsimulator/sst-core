@@ -16,7 +16,7 @@
 #include "sst/core/baseComponent.h"
 #include "sst/core/model/configGraph.h"
 #include "sst/core/output.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/statapi/statgroup.h"

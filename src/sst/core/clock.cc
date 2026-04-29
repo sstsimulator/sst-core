@@ -14,7 +14,7 @@
 #include "sst/core/clock.h"
 
 #include "sst/core/factory.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 
 #include <sys/time.h>

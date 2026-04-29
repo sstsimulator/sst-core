@@ -14,7 +14,7 @@
 
 #include "sst/core/configGraphOutput.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/util/filesystem.h"
 
 namespace SST::Core {

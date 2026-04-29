@@ -15,7 +15,7 @@
 
 #include "sst/core/model/restart/sstcptmodel.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 #include <cstdint>
 #include <fstream>
