@@ -248,10 +248,15 @@ class TestEngine:
         run_group.add_argument('-i', '--ignoreskips', action='store_true',
                                help='Disable Display of Skipped Test Messages (for debug purposes)')
         run_group.add_argument("-m", "--categories",
+                               metavar="category",
                                nargs="+",
                                default=test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
                                choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
-                               help="Which category of tests to run")
+                               help=("Categories of tests to run.\n" +
+                                     "Allowed categories are " +
+                                     f"{sorted(test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES)}.\n" +
+                                     "The default categories are " +
+                                     f"{sorted(test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES)}."))
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
                                help=(('Names of test scenarios that filter') + \
