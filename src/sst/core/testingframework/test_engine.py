@@ -23,7 +23,8 @@ import os
 import shutil
 import sys
 import unittest
-from typing import Any, Dict, List, Union
+from inspect import getmembers
+from typing import Any, Collection, Dict, List, Union
 
 import test_engine_globals
 from sst_unittest import *
@@ -501,6 +502,12 @@ class TestEngine:
         if len(self._list_of_specific_testnames) != 0:
             self._sst_full_test_suite = self._prune_unwanted_tests(self._sst_full_test_suite)
 
+        # Automatically categorize undecorated tests
+        self._sst_full_test_suite = self._add_categorization_decorator(
+            self._sst_full_test_suite,
+            test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
+        )
+
         log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
         self._dump_testsuite_list(self._sst_full_test_suite)
 
@@ -775,7 +782,7 @@ class TestEngine:
         """ Recursively remove any tests that dont match the name
 
             Args:
-                suite (SSTTestSuite): The current suite to print
+                suite (SSTTestSuite): The current suite to prune
         """
         allowed_tests_list = self._list_of_specific_testnames
         new_suite = unittest.TestSuite()
@@ -790,3 +797,38 @@ class TestEngine:
                 new_suite.addTest(suite)
 
         return new_suite
+
+    def _add_categorization_decorator(
+        self,
+        suite: Union[unittest.TestSuite, unittest.TestCase],
+        default_categories: Collection[str],
+    ) -> unittest.TestSuite:
+        """Recursively add default test categories to all test methods.
+
+        Specifically, mark undecorated test methods with the PR category
+        without requiring manual addition of the @categorize decorator.
+        """
+        new_suite = unittest.TestSuite()
+
+        if hasattr(suite, "__iter__"):
+            for sub_suite in suite:
+                new_suite.addTest(self._add_categorization_decorator(sub_suite, default_categories))
+        else:
+            members = getmembers(object=suite, predicate=lambda value: _is_test_method(suite, value))
+            assert len(members) == 1
+            member = members[0][1]
+            if not hasattr(member, "_category"):
+                categorized_member = member
+                for default_category in default_categories:
+                    categorized_member = categorize(default_category)(categorized_member)
+                setattr(suite, suite._testMethodName, categorized_member)
+            new_suite.addTest(suite)
+
+        return new_suite
+
+
+def _is_test_method(suite: unittest.TestCase, member: Any) -> bool:
+    """Is the given member of the test suite a method?"""
+    if hasattr(member, "__func__"):
+        return suite._testMethodName == member.__func__.__name__  # type: ignore[no-any-return]
+    return False
