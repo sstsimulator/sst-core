@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2025 NTESS. Under the terms
+# Copyright 2009-2026 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2025, NTESS
+# Copyright (c) 2009-2026, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -197,7 +197,7 @@ class testcase_Checkpoint(SSTTestCase):
     # testtype: This is the main variable and sets the base name for input, output, and ref files, as well as checkpoint
     #    directories. The filenames based on test type are:
     #      input file:     test_<testtype>.py
-    #      output file:    test_<testtype>.out
+    #      output file:    test_chckpoint_<testtype>.out
     #      reference file: test_<testtype>.out
     #      original checkpoint directory: <testtype>_cpt
     #      restart checkpoint directory:  <testtype>_rst
@@ -205,7 +205,7 @@ class testcase_Checkpoint(SSTTestCase):
     # out_suffix: This is used when the output file has an added suffix compared to the input file.  This allows the same
     #    input to be used, but have different reference output.  This will add a suffix to the following:
     #
-    #      output file:    test_<testtype><out_suffix>.out
+    #      output file:    test_checkpoint_<testtype><out_suffix>.out
     #      reference file: test_<testtype><out_suffix>.out
     #      original checkpoint directory: <testtype><outsuffix>_cpt
     #      restart checkpoint directory:  <testtype><outsuffix>_rst
@@ -213,7 +213,7 @@ class testcase_Checkpoint(SSTTestCase):
     # cpt_suffix: This is used to add an additional suffix to the checkpoint directories for tests that use the same
     #    input and output files, but have tests for multiple levels of parallelism.  These will add a suffix to the following:
     #
-    #      output file:    test_<testtype><out_suffix><cpt_suffix>.out
+    #      output file:    test_checkpoint_<testtype><out_suffix><cpt_suffix>.out
     #      reference file: test_<testtype><out_suffix>.out (cpt_suffix not used for reference file)
     #      original checkpoint directory: <testtype><outsuffix><cpt_suffix>_cpt
     #      restart checkpoint directory:  <testtype><outsuffix><cpt_suffix>_rst
@@ -262,7 +262,7 @@ class testcase_Checkpoint(SSTTestCase):
 
         # Get the primary sdl file and output file
         sdlfile_cpt = "{0}/test_{1}.py".format(testsuitedir,testtype)
-        outfile_cpt = "{0}/test_{1}{2}{3}.out".format(outdir, testtype, out_suffix, cpt_suffix)
+        outfile_cpt = "{0}/test_checkpoint_{1}{2}{3}.out".format(outdir, testtype, out_suffix, cpt_suffix)
 
         # Get the checkpoint prefix
         prefix_cpt = "{0}{1}{2}_cpt".format(testtype, out_suffix, cpt_suffix)
@@ -293,7 +293,7 @@ class testcase_Checkpoint(SSTTestCase):
 
         ## Restart run
         sdlfile_rst = "{0}/testsuite_checkpoint/{1}/{1}_{2}/{1}_{2}.sstcpt".format(outdir, prefix_cpt, rst_index)
-        outfile_rst = "{0}/test_{1}{2}{3}_restart.out".format(outdir, testtype, out_suffix, cpt_suffix)
+        outfile_rst = "{0}/test_checkpoint_{1}{2}{3}_restart.out".format(outdir, testtype, out_suffix, cpt_suffix)
         options_rst = "--load-checkpoint"
         options_checkpoint_rst = ""
 
@@ -345,7 +345,7 @@ class testcase_Checkpoint(SSTTestCase):
         if cr_index <= 0: return
 
         sdlfile_cr = "{0}/testsuite_checkpoint/{1}/{1}_{2}/{1}_{2}.sstcpt".format(outdir, prefix_rst, cr_index )
-        outfile_cr = "{0}/test_{1}{2}{3}_ckpt_restart.out".format(outdir, testtype, out_suffix, cpt_suffix)
+        outfile_cr = "{0}/test_checkpoint_{1}{2}{3}_ckpt_restart.out".format(outdir, testtype, out_suffix, cpt_suffix)
         options_cr = "--load-checkpoint"
 
         # If swap_rank_thread is on, we will still just rerun the checkpoint from the restart with the original parallelism

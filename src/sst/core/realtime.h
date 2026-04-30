@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -127,7 +127,10 @@ public:
     InteractiveRealTimeAction();
     void execute() override;
     bool isValidSigalrmAction() override { return false; }
-    bool canInitiateCheckpoint() override { return true; }
+    // Separate --checkpoint-enable flag is currently used to control checkpointing for interactive console
+    // If we set canInitiateCheckpoint to true here, it will ALWAYS set up checkpointing and the flag is unnecessary
+    bool canInitiateCheckpoint() override { return false; }
+    bool canInitiateInteractive() override { return true; }
 };
 
 /* Wrapper for RealTimeActions that occur on a time interval */
@@ -207,12 +210,20 @@ public:
      */
     bool canInitiateCheckpoint() { return can_checkpoint_; }
 
+    /**
+       Check whether or not any of the Actions registered with the
+       manager can initiate the interactive console.
+     */
+    bool canInitiateInteractive() { return can_initiate_interactive_; }
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::RealTimeManager)
 
 private:
-    bool serial_exec_;            // Whether execution is serial or parallel
-    bool can_checkpoint_ = false; // Set to true if any Actions can trigger checkpoint
+    bool serial_exec_;                      // Whether execution is serial or parallel
+    bool can_checkpoint_           = false; // Set to true if any Actions can trigger checkpoint
+    bool can_initiate_interactive_ = false; // Set to true if any Actions can trigger interactive console
+
 
     /* The set of signal handlers for all signals */
     std::map<int, RealTimeAction*> signal_actions_;

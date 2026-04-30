@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2025 NTESS. Under the terms
+# Copyright 2009-2026 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2025, NTESS
+# Copyright (c) 2009-2026, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -51,7 +51,8 @@ class testcase_Module(SSTTestCase):
         filters = [
             CheckpointInfoFilter(),
             # Appears in multi-thread/rank runs since we just have one component, filter it out
-            StartsWithFilter("WARNING: No components are") ]
+            StartsWithFilter("WARNING: No components are"),
+            StartsWithFilter("WARNING: EmptyRankSync") ]
         cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)

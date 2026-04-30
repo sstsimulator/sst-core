@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <ostream>
 #include <sstream>
+#include <streambuf>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,6 +40,7 @@ private:
     bool            quit_;
     unsigned        charsPerLine_;
     unsigned        curChars_;
+    bool            confirm_;
 
 protected:
     virtual int_type overflow(int_type c) override;
@@ -58,11 +60,21 @@ public:
 
     void reset()
     {
-        paginate_ = true;
+        if ( confirm_ )
+            paginate_ = true;
+        else
+            paginate_ = false;
         quit_     = false;
         curLines_ = 0;
         curChars_ = 0;
     }
+
+    void setConfirm(bool c)
+    {
+        confirm_  = c;
+        paginate_ = c;
+    }
+
     void     setLineWidth(const unsigned w) { charsPerLine_ = w; }
     void     setLineCount(const unsigned c) { linesPerScreen_ = c; }
     unsigned getLineWidth() { return charsPerLine_; }
@@ -87,6 +99,9 @@ public:
         buf_.reset();
         clear();
     }
+
+    void setConfirm(bool c) { buf_.setConfirm(c); }
+
 
     void     setLineWidth(const unsigned w) { buf_.setLineWidth(w); }
     void     setLineCount(const unsigned c) { buf_.setLineCount(c); }

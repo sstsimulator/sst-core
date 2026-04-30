@@ -1,0 +1,468 @@
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank0:Thread0: Entering interactive mode at time 1000
+Interactive start at 0
+> replay /home/skuntz/sanity/sst-core/tests/cmd_DebugConsole_rankparallel0.cmd
+
+> # Requires 2 ranks, each with 2 threads
+> confirm false
+> run 1ps
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank0:Thread0: Entering interactive mode at time 2000
+Ran clock for 1 sim cycles
+> # 0 watch
+> cd component0
+> watch message_count_ changed
+Added watchpoint #0
+> run
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank0:Thread0: Entering interactive mode at time 3000
+  Last Trigger: WP0: AE : component0/message_count_ ...
+> wl
+R0,T0: Current watch points:
+0: TriggerCount 3 : ALL : component0/message_count_ CHANGED  : interactive
+R0,T1: Current watch points:
+R1,T0: Current watch points:
+R1,T1: Current watch points:
+> unwatch 0
+> cd ..
+> # 1 trace printStatus
+> cd component2
+> trace message_count_ changed : 16 0 : message_count_ : printStatus
+Added watchpoint #1
+> setHandler 1 ae
+WP 1 - component2/message_count_
+> run 1ps
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Reset Trace Buffer
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank0:Thread0: Entering interactive mode at time 4000
+Ran clock for 1 sim cycles
+> wl
+R0,T0: Current watch points:
+1: TriggerCount 1 : AE : component2/message_count_ CHANGED  : bufsize = 16 postDelay = 0 : component2/message_count_  : printStatus
+R0,T1: Current watch points:
+R1,T0: Current watch points:
+R1,T1: Current watch points:
+> unwatch 1
+> # 2 trace printTrace
+> #cd ..
+> thread 1
+---- Rank0:Thread1: Entering interactive mode at time 4000
+Interactive start at 0
+> cd component5
+> trace message_count_ changed : 16 4 : message_count_ : printTrace
+Added watchpoint #0
+> setHandler 0 ae
+WP 0 - component5/message_count_
+> run 2000ps
+    Invoke Action
+    Set Buffer Reset
+TriggerCount=5
+LastTriggerRecord:@cycle5000: SamplesLost=0: component5/message_count_=16 
+buf[0] AE @4000 (!) component5/message_count_=12 
+buf[1] AE @4000 (+) component5/message_count_=13 
+buf[2] AE @4000 (+) component5/message_count_=14 
+buf[3] AE @5000 (+) component5/message_count_=15 
+buf[4] AE @5000 (+) component5/message_count_=16 
+    Reset Trace Buffer
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank0:Thread1: Entering interactive mode at time 6000
+Ran clock for 2000 sim cycles
+> wl
+R0,T0: Current watch points:
+R0,T1: Current watch points:
+0: TriggerCount 5 : AE : component5/message_count_ CHANGED  : bufsize = 16 postDelay = 4 : component5/message_count_  : printTrace
+R1,T0: Current watch points:
+R1,T1: Current watch points:
+> unwatch 0
+> # 3 trace set
+> rank 1
+---- Rank1:Thread1: Entering interactive mode at time 6000
+Interactive start at 0
+> thread 0
+---- Rank1:Thread0: Entering interactive mode at time 6000
+Interactive start at 0
+> cd component8
+> trace message_count_ changed : 16 2 : message_count_ : set my_id_ 50
+Added watchpoint #0
+> setHandler 0 ae
+WP 0 - component8/message_count_
+> run 1000ps
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank1:Thread0: Entering interactive mode at time 7000
+Ran clock for 1000 sim cycles
+> wl
+R0,T0: Current watch points:
+R0,T1: Current watch points:
+R1,T0: Current watch points:
+0: TriggerCount 3 : AE : component8/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component8/message_count_  : set component8/my_id_ 50
+R1,T1: Current watch points:
+> #print my_id_
+> unwatch 0
+> # 4 trace interactive
+> cd ..
+> cd component10
+> trace message_count_ changed : 16 2 : message_count_ : interactive
+Added watchpoint #1
+> setHandler 1 ae
+WP 1 - component10/message_count_
+> run
+
+INTERACTIVE CONSOLE
+-- Rank:0/2 Thread:0/2 (Not Triggered)
+-- Component Summary
+component0/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component1/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component2/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component3/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:0/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component4/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component5/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component6/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component7/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:0/2 (Triggered)
+-- Component Summary
+component10/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component11/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component8/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component9/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+-- Rank:1/2 Thread:1/2 (Not Triggered)
+-- Component Summary
+component12/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component13/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component14/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+component15/ (SST::CoreTest::MessageMesh::EnclosingComponent)
+
+---- Rank1:Thread0: Entering interactive mode at time 8000
+Ran clock for 1000 sim cycles
+> wl
+R0,T0: Current watch points:
+R0,T1: Current watch points:
+R1,T0: Current watch points:
+1: TriggerCount 7 : AE : component10/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component10/message_count_  : interactive
+R1,T1: Current watch points:
+> unwatch 1
+> # 5 trace shutdown
+> #cd ..
+> thread 1
+---- Rank1:Thread1: Entering interactive mode at time 8000
+Interactive start at 0
+> cd component12
+> trace message_count_ changed : 16 2 : message_count_ : shutdown
+Added watchpoint #0
+> run
+7 received 25 messages
+6 received 31 messages
+5 received 28 messages
+4 received 28 messages
+3 received 28 messages
+2 received 38 messages
+1 received 29 messages
+0 received 32 messages
+Simulation is complete, simulated time: 0 s
+	CurrentSimCycle:  3000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 40
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 13, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 14, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 52
+  SST::Action to be delivered at time: 3001, priority: 0, order tag: 0, queue order: 53
+   SyncManager to be delivered at 4000 with priority 25
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 59
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 61
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  3000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 41
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 13, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 14, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 52
+  SST::Action to be delivered at time: 3001, priority: 0, order tag: 0, queue order: 53
+   SyncManager to be delivered at 4000 with priority 25
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 59
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 61
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  3000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 10, queue order: 42
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 13, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 14, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 52
+  SST::Action to be delivered at time: 3001, priority: 0, order tag: 0, queue order: 53
+   SyncManager to be delivered at 4000 with priority 25
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 59
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 62
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+	CurrentSimCycle:  3000
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 13, queue order: 38
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 14, queue order: 44
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 50
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 51
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 3000, priority: 50, order tag: 16, queue order: 52
+  SST::Action to be delivered at time: 3001, priority: 0, order tag: 0, queue order: 53
+   SyncManager to be delivered at 4000 with priority 25
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 59
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 1, queue order: 60
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 55
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 56
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 57
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 6, queue order: 58
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 61
+  N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 4000, priority: 50, order tag: 14, queue order: 62
+   StopAction to be delivered at 10000000
+   StopAction to be delivered at 18446744073709551615
+---- Components: ----
+    Invoke Action
+    Set Buffer Reset
+LastTriggerRecord:@cycle6000: SamplesLost=0: component8/message_count_=24 
+set component8/my_id_ 50
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+    Invoke Action
+    Set Buffer Reset
+    Invoke Action
+    Set Buffer Reset
+    Invoke Action
+    Set Buffer Reset
+    Invoke Action
+    Set Buffer Reset
+    Invoke Action
+    Set Buffer Reset
+LastTriggerRecord:@cycle8000: SamplesLost=0: component12/message_count_=29 
+  Trigger action shutting down simulation
+wp simulation shutdown
+    Reset Trace Buffer
+    Invoke Action
+    Set Buffer Reset
+LastTriggerRecord:@cycle8000: SamplesLost=0: component12/message_count_=31 
+  Trigger action shutting down simulation
+wp simulation shutdown
+    Reset Trace Buffer
+15 received 28 messages
+14 received 35 messages
+13 received 34 messages
+12 received 32 messages
+11 received 34 messages
+10 received 40 messages
+9 received 39 messages
+50 received 31 messages

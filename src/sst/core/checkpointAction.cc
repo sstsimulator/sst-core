@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -271,6 +271,11 @@ CheckpointAction::check(SimTime_t current_time)
     return next_sim_time_;
 }
 
+bool
+CheckpointAction::getCheckpoint()
+{
+    return generate_;
+}
 void
 CheckpointAction::setCheckpoint()
 {
@@ -331,6 +336,14 @@ initializeCheckpointInfrastructure(Config* cfg, bool can_ckpt, int myRank)
     std::string checkpoint_dir_name = "";
 
     if ( myRank == 0 ) {
+        // Verify prefix format (no '/')
+        const std::string prefix   = cfg->checkpoint_prefix();
+        size_t            foundPos = prefix.find('/');
+        if ( foundPos != std::string::npos ) {
+            throw std::invalid_argument("Invalid checkpoint prefix: " + prefix);
+        }
+
+        // Create checkpoint directory path
         SST::Util::Filesystem& fs = Simulation_impl::filesystem;
         checkpoint_dir_name       = fs.createUniqueDirectory(cfg->checkpoint_prefix());
     }

@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace SST {
 
@@ -57,8 +58,12 @@ public:
     InteractiveConsole()          = default;
     virtual ~InteractiveConsole() = default;
 
+    /** Interactive Console execute return codes: Positive number is thread ID to switch to, negative is other state */
+    enum ICretcode { DONE = -1, SUMMARY = -2 };
     /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
-    virtual void execute(const std::string& msg) = 0;
+    virtual int  execute(const std::string& msg) = 0;
+    /** Called by SyncManager to get summary info for each thread */
+    virtual void summary()                       = 0;
 
 protected:
     // Functions that can be called by child class

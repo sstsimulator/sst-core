@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -54,6 +54,19 @@ public:
     void setSignals(int end, int usr, int alrm) override;
     /** Return exchanged signals after sync */
     bool getSignals(int& end, int& usr, int& alrm) override;
+
+    /** Set interactive flags to exchange during sync */
+    // Separated enter_interactive from from shutdown since they may be needed separately
+    void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    void setCkptFlag(bool generate_ckpt) override;
+    void setFlags(bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) override;
+    /** Return exchanged interactive flags after sync */
+    void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    void getCkptFlag(bool& generate_ckpt) override;
+    void getFlags(
+        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) override;
+    /** Clear interactive flags before next run */
+    void clearFlags() override;
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
 
@@ -140,10 +153,14 @@ private:
 
     Profile::SyncProfileToolList* profile_tools_ = nullptr;
 
-    Core::ThreadSafe::Spinlock lock;
-    static int                 sig_end_;
-    static int                 sig_usr_;
-    static int                 sig_alrm_;
+    Core::ThreadSafe::Spinlock   lock;
+    static int                   sig_end_;
+    static int                   sig_usr_;
+    static int                   sig_alrm_;
+    static std::atomic<bool>     enter_interactive_;
+    static std::atomic<bool>     enter_shutdown_;
+    static std::atomic<unsigned> shutdown_mode_;
+    static std::atomic<bool>     generate_ckpt_;
 };
 
 } // namespace SST

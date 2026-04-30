@@ -2,7 +2,7 @@
 AC_INIT([SSTCore],[-dev],[wg-sst@sandia.gov])
 
 AC_PREREQ([2.69])
-AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2025])
+AC_COPYRIGHT([Copyright National Technology and Engineering Solutions of Sandia (NTESS), 2004-2026])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])

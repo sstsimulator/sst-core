@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -245,6 +245,8 @@ public:
 
     void prepare_for_run();
 
+    void setup_interactive_mode();
+
     void run();
 
     void finish();
@@ -395,6 +397,7 @@ public:
 
     static void writeCheckpointConfigGraph(ConfigGraph* graph);
     void        scheduleCheckpoint();
+    void        scheduleInteractiveConsole(const std::string& msg);
 
     /**
        Write the partition specific checkpoint data
@@ -481,6 +484,17 @@ public:
      */
     void signalShutdown(bool abnormal);
 
+    /** Console Shutdown
+     * Called when a shutdown command or watchpoint shutdown action trigger needs to terminate SST
+     */
+    void consoleShutdown(bool abnormal);
+
+
+    /** Set EndSim
+     * Called by SyncMgr when interactive console ready to shutdown
+     */
+    void setEndSim();
+
     /** Normal Shutdown
      */
     void endSimulation();
@@ -530,6 +544,7 @@ public:
     unsigned int            untimed_phase;
     volatile sig_atomic_t   signal_arrived_; // true if a signal has arrived
     ShutdownMode_t          shutdown_mode_;
+    bool                    enter_shutdown_ = false;
     bool                    wireUpFinished_;
     RealTimeManager*        real_time_;
     std::string             interactive_type_  = "";

@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,6 +15,7 @@
 #include "sst/core/watchPoint.h"
 
 #include "sst/core/output.h"
+#include "sst/core/realtime.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sst_types.h"
 
@@ -36,7 +37,8 @@ WatchPoint::InteractiveWPAction::invokeAction(WatchPoint* wp)
     msg("    SetInteractive");
     wp->setEnterInteractive(); // Trigger action
     std::string handlerStr = wp->handlerToString(wp->triggerHandler);
-    wp->setInteractiveMsg(format_string("  WP%ld: %s : %s ...", wp->wpIndex, handlerStr.c_str(), wp->name_.c_str()));
+    wp->setInteractiveMsg(
+        format_string("  Last Trigger: WP%ld: %s : %s ...", wp->wpIndex, handlerStr.c_str(), wp->name_.c_str()));
     // Note that the interactive action is delayed and
     // we want to be able to print the Trace Buffer there.
     // So, resetTraceBuffer for this case is in handlers
@@ -100,37 +102,52 @@ WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serializatio
 }
 
 void
+WatchPoint::genericHandler(HANDLER h)
+{
+    if ( tb_ ) {
+
+        if ( reset_ && !getInteractive() ) {
+            tb_->resetTraceBuffer();
+            triggerCount = 0;
+            reset_       = false;
+        }
+
+        SimTime_t cycle = getCurrentSimCycle();
+
+        bool invoke = tb_->sampleT(trigger, cycle, handlerToString(h));
+        if ( trigger == true ) triggerCount++;
+        trigger = false;
+        if ( invoke ) {
+            triggerHandler = h;
+            setBufferReset();
+            wpAction->invokeAction(this);
+            triggerHandler = HANDLER::NONE;
+        }
+    }
+    else {
+        msg("    No trace buffer");
+        if ( reset_ && !getInteractive() ) {
+            triggerCount = 0;
+            reset_       = false;
+        }
+        if ( trigger ) {
+            triggerHandler = h;
+            triggerCount++;
+            reset_ = true;
+            wpAction->invokeAction(this);
+            trigger        = false;
+            triggerHandler = HANDLER::NONE;
+        }
+    }
+}
+
+void
 WatchPoint::beforeHandler(uintptr_t UNUSED(key), const Event* UNUSED(ev))
 {
     if ( handler & BEFORE_EVENT ) {
         msg("  Before Event Handler");
         check();
-        if ( tb_ ) {
-
-            if ( reset_ && !getInteractive() ) {
-                tb_->resetTraceBuffer();
-                reset_ = false;
-            }
-
-            SimTime_t cycle  = getCurrentSimCycle();
-            bool      invoke = tb_->sampleT(trigger, cycle, "BE");
-            trigger          = false;
-            if ( invoke ) {
-                triggerHandler = HANDLER::BEFORE_EVENT;
-                setBufferReset();
-                wpAction->invokeAction(this);
-                triggerHandler = HANDLER::NONE;
-            }
-        }
-        else {
-            msg("    No trace buffer");
-            if ( trigger ) {
-                triggerHandler = HANDLER::BEFORE_EVENT;
-                wpAction->invokeAction(this);
-                trigger        = false;
-                triggerHandler = HANDLER::NONE;
-            }
-        }
+        genericHandler(HANDLER::BEFORE_EVENT);
     } // if BEFORE_EVENT
 }
 
@@ -140,32 +157,7 @@ WatchPoint::afterHandler(uintptr_t UNUSED(key))
     if ( handler & AFTER_EVENT ) {
         msg("  After Event Handler");
         check();
-        if ( tb_ ) {
-
-            if ( reset_ && !getInteractive() ) {
-                tb_->resetTraceBuffer();
-                reset_ = false;
-            }
-
-            SimTime_t cycle  = getCurrentSimCycle();
-            bool      invoke = tb_->sampleT(trigger, cycle, "AE");
-            trigger          = false;
-            if ( invoke ) {
-                triggerHandler = HANDLER::AFTER_EVENT;
-                setBufferReset();
-                wpAction->invokeAction(this);
-                triggerHandler = HANDLER::NONE;
-            }
-        }
-        else {
-            msg("    No trace buffer");
-            if ( trigger ) {
-                triggerHandler = HANDLER::AFTER_EVENT;
-                wpAction->invokeAction(this);
-                trigger        = false;
-                triggerHandler = HANDLER::NONE;
-            }
-        }
+        genericHandler(HANDLER::AFTER_EVENT);
     } // if AFTER_EVENT
 }
 
@@ -175,31 +167,7 @@ WatchPoint::beforeHandler(uintptr_t UNUSED(key), const Cycle_t& UNUSED(cycle))
     if ( handler & BEFORE_CLOCK ) {
         msg("  Before Clock Handler");
         check();
-        if ( tb_ ) {
-            if ( reset_ && !getInteractive() ) {
-                tb_->resetTraceBuffer();
-                reset_ = false;
-            }
-
-            SimTime_t cycle  = getCurrentSimCycle();
-            bool      invoke = tb_->sampleT(trigger, cycle, "BC");
-            trigger          = false;
-            if ( invoke ) {
-                triggerHandler = HANDLER::BEFORE_CLOCK;
-                setBufferReset();
-                wpAction->invokeAction(this);
-                triggerHandler = HANDLER::NONE;
-            }
-        }
-        else {
-            msg("    No trace buffer");
-            if ( trigger ) {
-                triggerHandler = HANDLER::BEFORE_CLOCK;
-                wpAction->invokeAction(this);
-                trigger        = false;
-                triggerHandler = HANDLER::NONE;
-            }
-        }
+        genericHandler(HANDLER::BEFORE_CLOCK);
     } // if AFTER_CLOCK
 }
 
@@ -209,31 +177,7 @@ WatchPoint::afterHandler(uintptr_t UNUSED(key), const bool& UNUSED(ret))
     if ( handler & AFTER_CLOCK ) {
         msg("  After Clock Handler");
         check();
-        if ( tb_ ) {
-            if ( reset_ && !getInteractive() ) {
-                tb_->resetTraceBuffer();
-                reset_ = false;
-            }
-
-            SimTime_t cycle  = getCurrentSimCycle();
-            bool      invoke = tb_->sampleT(trigger, cycle, "AC");
-            trigger          = false;
-            if ( invoke ) {
-                triggerHandler = HANDLER::AFTER_CLOCK;
-                setBufferReset();
-                wpAction->invokeAction(this);
-                triggerHandler = HANDLER::NONE;
-            }
-        }
-        else {
-            msg("    No trace buffer");
-            if ( trigger ) {
-                triggerHandler = HANDLER::AFTER_CLOCK;
-                wpAction->invokeAction(this);
-                trigger        = false;
-                triggerHandler = HANDLER::NONE;
-            }
-        }
+        genericHandler(HANDLER::AFTER_CLOCK);
     } // if AFTER_CLOCK
 }
 
@@ -260,6 +204,7 @@ void
 WatchPoint::printTrace()
 {
     if ( tb_ != nullptr ) {
+        std::cout << "TriggerCount=" << triggerCount << "\n";
         tb_->dumpTriggerRecord();
         tb_->dumpTraceBufferT();
     }
@@ -317,28 +262,30 @@ WatchPoint::handlerToString(HANDLER h)
 }
 
 void
-WatchPoint::printHandler()
+WatchPoint::printHandler(std::stringstream& ss)
 {
-    std::cout << handlerToString(handler);
-    std::cout << " : ";
+    ss << handlerToString(handler);
+    ss << " : ";
 }
 
 void
-WatchPoint::printWatchpoint()
+WatchPoint::printWatchpoint(std::stringstream& ss)
 {
-    printHandler();
+    ss << "TriggerCount " << triggerCount << " : ";
+    printHandler(ss);
     // TODO: print the logic values
     for ( size_t i = 0; i < numCmpObj_; i++ ) { // Print trigger tests
-        cmpObjects_[i]->print(std::cout);
+        cmpObjects_[i]->print(ss);
     }
-    std::cout << " : ";
+    ss << " : ";
 
     if ( tb_ != nullptr ) { // print trace buffer config
-        tb_->printConfig();
-        std::cout << " : ";
+        tb_->printConfig(ss);
+        ss << " : ";
     }
-    printAction();
-    std::cout << std::endl;
+    printAction(ss);
+
+    ss << std::endl;
 }
 
 void
@@ -403,13 +350,14 @@ WatchPoint::heartbeat()
 void
 WatchPoint::simulationShutdown()
 {
-    Simulation_impl::getSimulation()->endSimulation();
+    Simulation_impl::getSimulation()->consoleShutdown(false);
+    std::cout << "wp simulation shutdown\n";
 }
 
 void
-WatchPoint::printAction()
+WatchPoint::printAction(std::stringstream& ss)
 {
-    std::cout << wpAction->actionToString();
+    ss << wpAction->actionToString();
 }
 
 void

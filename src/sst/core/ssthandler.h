@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -1112,7 +1112,7 @@ template <typename returnT, typename argT, typename classT, typename dataT, retu
 class SSTHandler<returnT, argT, classT, dataT, funcT> : public SSTHandlerBase<returnT, argT>
 {
 private:
-    classT* object;
+    classT* object = nullptr;
     dataT   data;
 
 public:
@@ -1151,7 +1151,7 @@ template <typename returnT, typename argT, typename classT, returnT (classT::*fu
 class SSTHandler<returnT, argT, classT, void, funcT> : public SSTHandlerBase<returnT, argT>
 {
 private:
-    classT* object;
+    classT* object = nullptr;
 
 public:
     /** Constructor
@@ -1186,7 +1186,7 @@ template <typename returnT, typename classT, typename dataT, returnT (classT::*f
 class SSTHandler<returnT, void, classT, dataT, funcT> : public SSTHandlerBase<returnT, void>
 {
 private:
-    classT* object;
+    classT* object = nullptr;
     dataT   data;
 
 public:
@@ -1224,7 +1224,7 @@ template <typename returnT, typename classT, returnT (classT::*funcT)()>
 class SSTHandler<returnT, void, classT, void, funcT> : public SSTHandlerBase<returnT, void>
 {
 private:
-    classT* object;
+    classT* object = nullptr;
 
 public:
     /** Constructor

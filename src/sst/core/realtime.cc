@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -577,6 +577,7 @@ RealTimeManager::registerSignal(RealTimeAction* action, int signum)
 {
     signal_actions_.insert(std::make_pair(signum, action));
     if ( action->canInitiateCheckpoint() ) can_checkpoint_ = true;
+    if ( action->canInitiateInteractive() ) can_initiate_interactive_ = true;
 }
 
 void
@@ -589,6 +590,7 @@ RealTimeManager::registerInterval(uint32_t interval, RealTimeAction* action)
 
     static_cast<AlrmSignalAction*>(signal_actions_[SIGALRM])->addIntervalAction(interval, action);
     if ( action->canInitiateCheckpoint() ) can_checkpoint_ = true;
+    if ( action->canInitiateInteractive() ) can_initiate_interactive_ = true;
 }
 
 void

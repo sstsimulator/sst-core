@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2009-2025 NTESS. Under the terms
+# Copyright 2009-2026 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2025, NTESS
+# Copyright (c) 2009-2026, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -45,8 +45,9 @@ class testcase_ParamComponent(SSTTestCase):
         # Perform the test
         filter1 = StartsWithFilter("WARNING: No components are")
         filter2 = StartsWithFilter("#")
+        filter3 = StartsWithFilter("WARNING: EmptyRankSync")
         ws_filter = IgnoreWhiteSpaceFilter()
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2, ws_filter])
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, [filter1, filter2, filter3, ws_filter])
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)

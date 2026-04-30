@@ -1,8 +1,8 @@
-// Copyright 2009-2025 NTESS. Under the terms
+// Copyright 2009-2026 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2025, NTESS
+// Copyright (c) 2009-2026, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -21,6 +21,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <getopt.h>
 #include <iostream>
@@ -531,14 +532,11 @@ Config::insertOptions()
     DEF_ARG("run-mode", 0, "MODE", "Set run mode [ init | run | both (default)]", runMode_, true, false, true);
     DEF_ARG("interactive-console", 0, "ACTION",
         "[EXPERIMENTAL] Set console to use for interactive mode (overrides default console: "
-        "sst.interactive.simpledebug). "
-        "NOTE: This currently only works for serial jobs and will be ignored for parallel runs.",
+        "sst.interactive.debugger). ",
         interactive_console_, true, false, false);
     DEF_ARG_OPTVAL("interactive-start", 0, "TIME",
         "[EXPERIMENTAL] Drop into interactive mode at specified simulated time.  If no time is specified, or the time "
-        "is 0, then it will drop into interactive mode before any events are processed in the main run loop. "
-        "NOTE: This currently only works for serial jobs and this option will be ignored "
-        "for parallel runs.",
+        "is 0, then it will drop into interactive mode before any events are processed in the main run loop. ",
         interactive_start_time_, true, false, false);
     DEF_ARG("replay-file", 0, "FILE", "Specify file for replaying an interactive debug console session.", replay_file_,
         false);
@@ -664,6 +662,13 @@ Config::canInitiateCheckpoint()
     if ( checkpoint_enable_.value == true ) return true;
     if ( checkpoint_wall_period_.value != 0 ) return true;
     if ( checkpoint_sim_period_.value != "" ) return true;
+    return false;
+}
+
+bool
+Config::canInitiateInteractive()
+{
+    if ( interactive_start_time_.value != "" ) return true;
     return false;
 }
 

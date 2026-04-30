@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2009-2025 NTESS. Under the terms
+# Copyright 2009-2026 NTESS. Under the terms
 # of Contract DE-NA0003525 with NTESS, the U.S.
 # Government retains certain rights in this software.
 #
-# Copyright (c) 2009-2025, NTESS
+# Copyright (c) 2009-2026, NTESS
 # All rights reserved.
 #
 # This file is part of the SST software package. For license
@@ -335,7 +335,7 @@ class SSTTestCase(unittest.TestCase):
             if rtn_mpirun == 0:
                 mpi_avail = True
 
-            numa_param = "-map-by numa:PE={0}".format(num_threads)
+            numa_param = "--map-by numa:PE={0}".format(num_threads)
 
             oscmd = "mpirun -np {0} {1} --output-filename {2} {3}".format(num_ranks,
                                                                           numa_param,
