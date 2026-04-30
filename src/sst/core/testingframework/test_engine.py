@@ -247,20 +247,6 @@ class TestEngine:
                                help='Display failure data during test runs (test dependent)')
         run_group.add_argument('-i', '--ignoreskips', action='store_true',
                                help='Disable Display of Skipped Test Messages (for debug purposes)')
-        run_group.add_argument("-m", "--categories",
-                               metavar="category",
-                               nargs="+",
-                               default=test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
-                               choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
-                               help=("Categories of tests to run.\n" +
-                                     "Allowed categories are " +
-                                     f"{sorted(test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES)}.\n" +
-                                     "The default categories are " +
-                                     f"{sorted(test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES)}."))
-        run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
-                               nargs="+", default=[],
-                               help=(('Names of test scenarios that filter') + \
-                                     (' tests\nto be run [NONE]')))
         run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
                                nargs=1, default=[1],
                                help='Run with XX ranks [1]')
@@ -314,6 +300,20 @@ class TestEngine:
                                   help=(('Names of specific tests from discovered testsuites') + \
                                        (' to run\ndefault = [run all tests]; Example: -e "test_UnitAlgebra"') + \
                                        ('\nNote: Will only add tests from discovered testsuites')))
+        discover_group.add_argument("-m", "--categories",
+                                    metavar="category",
+                                    nargs="+",
+                                    default=test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
+                                    choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
+                                    help=("Categories of tests to run.\n" +
+                                          "Allowed categories are " +
+                                          f"{sorted(test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES)}.\n" +
+                                          "The default categories are " +
+                                          f"{sorted(test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES)}."))
+        discover_group.add_argument('-s', '--scenarios', type=str, metavar="name",
+                                    nargs="+", default=[],
+                                    help=(('Names of test scenarios that filter') + \
+                                          (' tests\nto be run [NONE]')))
 
         args = parser.parse_args()
         self._decode_parsed_arguments(args, parser)
