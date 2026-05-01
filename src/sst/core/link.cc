@@ -19,7 +19,7 @@
 #include "sst/core/linkPair.h"
 #include "sst/core/pollingLinkQueue.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/sync/syncManager.h"
 #include "sst/core/sync/syncQueue.h"
@@ -42,7 +42,7 @@ SST::Core::Serialization::serialize_impl<Link*>::serialize_events(
     if ( ser.mode() == serializer::SIZER || ser.mode() == serializer::PACK ) {
         // Look up all the events for the specified handler
         std::pair<::SST::pvt::TimeVortexSort::iterator, ::SST::pvt::TimeVortexSort::iterator> activites =
-            Simulation_impl::getSimulation()->getEventsForHandler(delivery_info);
+            Simulation::getSimulation()->getEventsForHandler(delivery_info);
 
         size_t count = std::distance(activites.first, activites.second);
         SST_SER(count);
@@ -80,7 +80,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
     int16_t SYNC = 3;
 
     // Need a pointer to my simulation object
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
 
     // For restarts that use the same parallelism, we need to
     // track the rank of the link and its pair link.  For regular
@@ -237,7 +237,7 @@ SST::Core::Serialization::serialize_impl<Link*>::operator()(Link*& s, serializer
           is a sync link or a regular link with the potentially new
           repartioning on restart.
 
-          We do this by querying the Simulation_impl object to see if
+          We do this by querying the Simulation object to see if
           the pair link is on the same partition or not.  If it is, it
           is a regular link, otherwise it is part of a sync link pair.
         */
@@ -459,7 +459,7 @@ Link::Link(LinkId_t id) :
     defaultTimeBase(0),
     latency(1),
     pair_link(nullptr),
-    current_time(Simulation_impl::getSimulation()->currentSimCycle),
+    current_time(Simulation::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
     tag(0),
@@ -472,7 +472,7 @@ Link::Link() :
     defaultTimeBase(0),
     latency(1),
     pair_link(nullptr),
-    current_time(Simulation_impl::getSimulation()->currentSimCycle),
+    current_time(Simulation::getSimulation()->currentSimCycle),
     type(UNINITIALIZED),
     mode(INIT),
     tag(bit_util::type_max<uint32_t>)
@@ -509,7 +509,7 @@ Link::finalizeConfiguration()
     }
 
     if ( HANDLER == type ) {
-        pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex();
+        pair_link->send_queue = Simulation::getSimulation()->getTimeVortex();
     }
     else if ( POLL == type ) {
         pair_link->send_queue = new PollingLinkQueue();
@@ -558,7 +558,7 @@ Link::setLatency(Cycle_t lat)
 void
 Link::addSendLatency(int cycles, const std::string& timebase)
 {
-    SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
+    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
     latency += (cycles * tb);
 }
 
@@ -571,7 +571,7 @@ Link::addSendLatency(SimTime_t cycles, TimeConverter timebase)
 void
 Link::addRecvLatency(int cycles, const std::string& timebase)
 {
-    SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
+    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase, "addOutputLatency");
     pair_link->latency += (cycles * tb);
 }
 
@@ -585,7 +585,7 @@ void
 Link::setFunctor(Event::HandlerBase* functor)
 {
     if ( UNLIKELY(type == POLL) ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
+        Simulation::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call setFunctor on a Polling Link\n");
     }
 
@@ -597,7 +597,7 @@ void
 Link::replaceFunctor(Event::HandlerBase* functor)
 {
     if ( UNLIKELY(type == POLL) ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
+        Simulation::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call replaceFunctor on a Polling Link\n");
     }
 
@@ -624,12 +624,12 @@ Link::send_impl(SimTime_t delay, Event* event)
 {
     if ( RUN != mode ) {
         if ( INIT == mode ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+            Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
                 "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before "
                 "setup.\n");
         }
         else if ( COMPLETE == mode ) {
-            Simulation_impl::getSimulation()->getSimulationOutput().fatal(
+            Simulation::getSimulation()->getSimulationOutput().fatal(
                 CALL_INFO, 1, "ERROR: Trying to call send or recv during complete phase.");
         }
     }
@@ -663,12 +663,12 @@ Link::recv()
 {
     // Check to make sure this is a polling link
     if ( UNLIKELY(type != POLL) ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(
+        Simulation::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
     }
 
-    Event*           event      = nullptr;
-    Simulation_impl* simulation = Simulation_impl::getSimulation();
+    Event*      event      = nullptr;
+    Simulation* simulation = Simulation::getSimulation();
 
     if ( !pair_link->send_queue->empty() ) {
         Activity* activity = pair_link->send_queue->front();
@@ -684,15 +684,15 @@ void
 Link::sendUntimedData(Event* data)
 {
     if ( RUN == mode ) {
-        Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
             "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
     }
 
     if ( send_queue == nullptr ) {
         send_queue = new InitQueue();
     }
-    Simulation_impl::getSimulation()->untimed_msg_count++;
-    data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
+    Simulation::getSimulation()->untimed_msg_count++;
+    data->setDeliveryTime(Simulation::getSimulation()->untimed_phase + 1);
     data->setDeliveryInfo(tag, delivery_info);
 
     send_queue->insert(data);
@@ -721,7 +721,7 @@ Link::recvUntimedData()
     Event* event = nullptr;
     if ( !pair_link->send_queue->empty() ) {
         Activity* activity = pair_link->send_queue->front();
-        if ( activity->getDeliveryTime() <= Simulation_impl::getSimulation()->untimed_phase ) {
+        if ( activity->getDeliveryTime() <= Simulation::getSimulation()->untimed_phase ) {
             event = static_cast<Event*>(activity);
             pair_link->send_queue->pop();
         }
@@ -738,7 +738,7 @@ Link::setDefaultTimeBase(TimeConverter tc)
 TimeConverter
 Link::getDefaultTimeBase()
 {
-    return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
+    return Simulation::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
 }
 
 

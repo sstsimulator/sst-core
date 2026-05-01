@@ -27,7 +27,7 @@
 
 namespace SST {
 
-class Simulation_impl;
+class Simulation;
 class TimeConverter;
 
 namespace Checkpointing {
@@ -71,7 +71,7 @@ public:
     /**
     Create a new checkpoint object for the simulation core to initiate checkpoints
     */
-    CheckpointAction(Config* cfg, RankInfo this_rank, Simulation_impl* sim, TimeConverter period);
+    CheckpointAction(Config* cfg, RankInfo this_rank, Simulation* sim, TimeConverter period);
     ~CheckpointAction() = default;
 
     /**
@@ -80,7 +80,7 @@ public:
        CheckpointAction is managed by the SyncManager in parallel
        runs.
      */
-    void insertIntoTimeVortex(Simulation_impl* sim);
+    void insertIntoTimeVortex(Simulation* sim);
 
     /** Get checkpoint flag */
     bool getCheckpoint();
@@ -106,7 +106,7 @@ private:
     CheckpointAction(const CheckpointAction&)            = delete;
     CheckpointAction& operator=(const CheckpointAction&) = delete;
 
-    void createCheckpoint(Simulation_impl* sim); // The actual checkpoint operation
+    void createCheckpoint(Simulation* sim); // The actual checkpoint operation
 
     RankInfo      rank_;          // RankInfo for this thread/rank
     TimeConverter period_;        // Simulation time interval for scheduling or nullptr if not set

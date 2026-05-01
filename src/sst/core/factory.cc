@@ -20,7 +20,7 @@
 #include "sst/core/model/element_python.h"
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/params.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -407,6 +407,8 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& comp_type, const
 std::string
 Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statistic_name)
 {
+    const std::string no_units_sentinel = "";
+
     std::string comp_type_to_load = type;
     if ( true == type.empty() ) {
         comp_type_to_load = loadingComponentType;
@@ -432,7 +434,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
                 }
             }
         }
-        return nullptr;
+        return no_units_sentinel;
     }
 
     auto* sub_lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
@@ -446,12 +448,12 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
                 }
             }
         }
-        return nullptr;
+        return no_units_sentinel;
     }
 
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", type.c_str(), error_os.str().c_str());
-    return nullptr;
+    return no_units_sentinel;
 }
 
 bool

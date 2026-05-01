@@ -47,7 +47,7 @@ REENABLE_WARNING
 #include "sst/core/rankInfo.h"
 #include "sst/core/realtime.h"
 #include "sst/core/shared/sharedObject.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/stringize.h"
@@ -151,7 +151,7 @@ initialize_unitalgebra()
 static void
 dump_partition(ConfigGraph* graph, const RankInfo& size)
 {
-    Config& cfg = Simulation_impl::config;
+    Config& cfg = Simulation::config;
 
     ///////////////////////////////////////////////////////////////////////
     // If the user asks us to dump the partitioned graph.
@@ -192,7 +192,7 @@ dump_partition(ConfigGraph* graph, const RankInfo& size)
 }
 
 static void
-do_graph_wireup(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank, SimTime_t min_part)
+do_graph_wireup(ConfigGraph* graph, SST::Simulation* sim, const RankInfo& myRank, SimTime_t min_part)
 {
 
     if ( !graph->containsComponentInRank(myRank) ) {
@@ -226,16 +226,16 @@ do_statoutput_end_simulation(const RankInfo& myRank)
     StatisticProcessingEngine::stat_outputs_simulation_end();
 }
 
-// Function to initialize the StatEngines in each partition (Simulation_impl object)
+// Function to initialize the StatEngines in each partition (Simulation object)
 // static void
 static void
-do_statengine_initialization(StatsConfig* stats_config, SST::Simulation_impl* sim, const RankInfo& UNUSED(myRank))
+do_statengine_initialization(StatsConfig* stats_config, SST::Simulation* sim, const RankInfo& UNUSED(myRank))
 {
     sim->initializeStatisticEngine(stats_config);
 }
 
 static void
-do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank, SimTime_t min_part)
+do_link_preparation(ConfigGraph* graph, SST::Simulation* sim, const RankInfo& myRank, SimTime_t min_part)
 {
     sim->prepareLinks(*graph, myRank, min_part);
 }
@@ -262,7 +262,7 @@ addRankToFileName(std::string& file_name, int rank)
 static void
 doSerialOnlyGraphOutput(ConfigGraph* graph)
 {
-    Config& cfg = Simulation_impl::config;
+    Config& cfg = Simulation::config;
     // See if user asked us to dump the config graph in dot graph format
     if ( cfg.output_dot() != "" ) {
         DotConfigGraphOutput out(cfg.output_dot().c_str());
@@ -276,7 +276,7 @@ doSerialOnlyGraphOutput(ConfigGraph* graph)
 static void
 doParallelCapableGraphOutput(ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
 {
-    Config& cfg = Simulation_impl::config;
+    Config& cfg = Simulation::config;
     // User asked us to dump the config graph to a file in Python
     if ( cfg.output_config_graph() != "" ) {
         // See if we are doing parallel output
@@ -310,7 +310,7 @@ doParallelCapableGraphOutput(ConfigGraph* graph, const RankInfo& myRank, const R
 static void
 start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const RankInfo& myRank)
 {
-    Config&                  cfg    = Simulation_impl::config;
+    Config&                  cfg    = Simulation::config;
     // Get a list of all the available SSTModelDescriptions
     std::vector<std::string> models = ELI::InfoDatabase::getRegisteredElementNames<SSTModelDescription>();
 
@@ -388,7 +388,7 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
 static double
 start_partitioning(const RankInfo& world_size, const RankInfo& myRank, Factory* factory, ConfigGraph* graph)
 {
-    Config& cfg        = Simulation_impl::config;
+    Config& cfg        = Simulation::config;
     ////// Start Partitioning //////
     double  start_part = sst_get_cpu_time();
 
@@ -459,7 +459,7 @@ static void
 start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier& barrier, SimTime_t currentSimCycle,
     int currentPriority)
 {
-    Config& cfg = Simulation_impl::config;
+    Config& cfg = Simulation::config;
 
     // Setup Mempools
     Core::MemPoolAccessor::initializeLocalData(tid);
@@ -468,8 +468,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     bool restart = cfg.load_from_checkpoint();
 
     ////// Create Simulation Objects //////
-    SST::Simulation_impl* sim =
-        Simulation_impl::createSimulation(info.myRank, info.world_size, restart, currentSimCycle, currentPriority);
+    SST::Simulation* sim =
+        Simulation::createSimulation(info.myRank, info.world_size, restart, currentSimCycle, currentPriority);
     double start_run = 0.0;
 
     // Setup the real time actions (all of these have to be defined on
@@ -482,8 +482,8 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // way to trigger a checkpoint is through the realtime actions. This will return an empty string if checkpointing
     // was not enabled.
 
-    if ( tid == 0 && Simulation_impl::checkpoint_directory_.empty() ) {
-        Simulation_impl::checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
+    if ( tid == 0 && Simulation::checkpoint_directory_.empty() ) {
+        Simulation::checkpoint_directory_ = Checkpointing::initializeCheckpointInfrastructure(
             &cfg, sim->real_time_->canInitiateCheckpoint(), info.myRank.rank);
 
         // if ( sim->checkpoint_directory_ != "" ) {
@@ -504,7 +504,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         stats_config = info.graph->getStatsConfig();
     }
     else {
-        stats_config = Simulation_impl::stats_config_;
+        stats_config = Simulation::stats_config_;
     }
 
     // Setup the stats engine
@@ -586,7 +586,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
 
         if ( tid == 0 ) {
             // Store off the stats config for use with checkpoints
-            Simulation_impl::stats_config_ = info.graph->takeStatsConfig();
+            Simulation::stats_config_ = info.graph->takeStatsConfig();
             delete info.graph;
         }
 
@@ -645,17 +645,17 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             barrier.wait();
 
             if ( tid == 0 ) {
-                Simulation_impl::basicPerf.endRegion("construct");
-                Simulation_impl::basicPerf.endRegion("build");
+                Simulation::basicPerf.endRegion("construct");
+                Simulation::basicPerf.endRegion("build");
 
-                Simulation_impl::basicPerf.beginRegion("execute");
+                Simulation::basicPerf.beginRegion("execute");
             }
 
 
-            if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("init");
+            if ( tid == 0 ) Simulation::basicPerf.beginRegion("init");
             sim->initialize();
             barrier.wait();
-            if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("init");
+            if ( tid == 0 ) Simulation::basicPerf.endRegion("init");
 
             /*
               After init() we need to check to see if the sync interval has changed
@@ -663,7 +663,7 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             sim->updateSyncInterval();
 
             /* Run Set */
-            if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("setup");
+            if ( tid == 0 ) Simulation::basicPerf.beginRegion("setup");
             sim->setup();
             barrier.wait();
 
@@ -672,22 +672,22 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
             barrier.wait();
 
             sim->prepare_for_run();
-            if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("setup");
+            if ( tid == 0 ) Simulation::basicPerf.endRegion("setup");
         } // end !RUNMODE == INIT
         else {
             // Need to all all the regions that were skipped because
             // RUNMODE was set to INIT
             if ( tid == 0 ) {
-                Simulation_impl::basicPerf.endRegion("construct");
-                Simulation_impl::basicPerf.endRegion("build");
+                Simulation::basicPerf.endRegion("construct");
+                Simulation::basicPerf.endRegion("build");
 
-                Simulation_impl::basicPerf.beginRegion("execute");
+                Simulation::basicPerf.beginRegion("execute");
 
-                Simulation_impl::basicPerf.beginRegion("init");
-                Simulation_impl::basicPerf.endRegion("init");
+                Simulation::basicPerf.beginRegion("init");
+                Simulation::basicPerf.endRegion("init");
 
-                Simulation_impl::basicPerf.beginRegion("setup");
-                Simulation_impl::basicPerf.endRegion("setup");
+                Simulation::basicPerf.beginRegion("setup");
+                Simulation::basicPerf.endRegion("setup");
             }
         }
     } // end if !restart
@@ -695,25 +695,25 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         // Just need to add all the regions that were skipped to the
         // basicPerf object
         if ( tid == 0 ) {
-            Simulation_impl::basicPerf.endRegion("construct");
-            Simulation_impl::basicPerf.endRegion("build");
+            Simulation::basicPerf.endRegion("construct");
+            Simulation::basicPerf.endRegion("build");
 
-            Simulation_impl::basicPerf.beginRegion("execute");
+            Simulation::basicPerf.beginRegion("execute");
 
-            Simulation_impl::basicPerf.beginRegion("init");
-            Simulation_impl::basicPerf.endRegion("init");
+            Simulation::basicPerf.beginRegion("init");
+            Simulation::basicPerf.endRegion("init");
 
-            Simulation_impl::basicPerf.beginRegion("setup");
-            Simulation_impl::basicPerf.endRegion("setup");
+            Simulation::basicPerf.beginRegion("setup");
+            Simulation::basicPerf.endRegion("setup");
         }
     }
 
     /* Run Simulation */
     if ( cfg.runMode() == SimulationRunMode::RUN || cfg.runMode() == SimulationRunMode::BOTH ) {
-        if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("run");
+        if ( tid == 0 ) Simulation::basicPerf.beginRegion("run");
         sim->run();
         barrier.wait();
-        if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("run");
+        if ( tid == 0 ) Simulation::basicPerf.endRegion("run");
 
         /* Adjust clocks at simulation end to
          * reflect actual simulation end if that
@@ -722,31 +722,31 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
         sim->adjustTimeAtSimEnd();
         barrier.wait();
 
-        if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("complete");
+        if ( tid == 0 ) Simulation::basicPerf.beginRegion("complete");
         sim->complete();
         barrier.wait();
-        if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("complete");
+        if ( tid == 0 ) Simulation::basicPerf.endRegion("complete");
 
-        if ( tid == 0 ) Simulation_impl::basicPerf.beginRegion("finish");
+        if ( tid == 0 ) Simulation::basicPerf.beginRegion("finish");
         sim->finish();
         barrier.wait();
 
         /* Tell stat outputs simulation is done */
         do_statoutput_end_simulation(info.myRank);
         barrier.wait();
-        if ( tid == 0 ) Simulation_impl::basicPerf.endRegion("finish");
+        if ( tid == 0 ) Simulation::basicPerf.endRegion("finish");
     }
     else {
         // For RUNMODE set to INIT
         if ( tid == 0 ) {
-            Simulation_impl::basicPerf.beginRegion("run");
-            Simulation_impl::basicPerf.endRegion("run");
+            Simulation::basicPerf.beginRegion("run");
+            Simulation::basicPerf.endRegion("run");
 
-            Simulation_impl::basicPerf.beginRegion("complete");
-            Simulation_impl::basicPerf.endRegion("complete");
+            Simulation::basicPerf.beginRegion("complete");
+            Simulation::basicPerf.endRegion("complete");
 
-            Simulation_impl::basicPerf.beginRegion("finish");
-            Simulation_impl::basicPerf.endRegion("finish");
+            Simulation::basicPerf.beginRegion("finish");
+            Simulation::basicPerf.endRegion("finish");
         }
     }
 
@@ -792,10 +792,10 @@ main(int argc, char* argv[])
 #endif
 
     // Initialize the performance tracker
-    Simulation_impl::basicPerf.initialize(myrank, mysize);
+    Simulation::basicPerf.initialize(myrank, mysize);
 
     // Mark the start of the full run region
-    Simulation_impl::basicPerf.beginRegion("total");
+    Simulation::basicPerf.beginRegion("total");
 
     /************************************************************************************
       Here are the major phases of simulation as represented in main()
@@ -826,8 +826,8 @@ main(int argc, char* argv[])
         During Config Object Initialization, the command line is
         parsed and the Config object is initialized
     ***************************************************************************/
-    Simulation_impl::config.initialize(world_size.rank, myrank == 0);
-    Config& cfg = Simulation_impl::config;
+    Simulation::config.initialize(world_size.rank, myrank == 0);
+    Config& cfg = Simulation::config;
 
     initialize_unitalgebra();
 
@@ -841,7 +841,7 @@ main(int argc, char* argv[])
         // Just asked for info, clean exit
         return 0;
     }
-    Simulation_impl::basicPerf.setReportRegionInfo(g_output, cfg.verbose() + 1);
+    Simulation::basicPerf.setReportRegionInfo(g_output, cfg.verbose() + 1);
 
     // Set up the output object.  Note that the thread count, core prefix, and verbose level may change after model
     // generation.  Thread count changing won't have any visible effects because it is set to its final value before
@@ -864,7 +864,7 @@ main(int argc, char* argv[])
         a - ConfigGraph processing
         b - Simulation object construction
     ***************************************************************************/
-    Simulation_impl::basicPerf.beginRegion("build");
+    Simulation::basicPerf.beginRegion("build");
 
     /**************************************************************************
       2.a - ConfigGraph Processing
@@ -899,7 +899,7 @@ main(int argc, char* argv[])
           - Set currentSimCycle and currentPriority to use for
             Simulation object construction.
     ***************************************************************************/
-    Simulation_impl::basicPerf.beginRegion("graph-processing");
+    Simulation::basicPerf.beginRegion("graph-processing");
 
     // Need to ensure that the input file exists
 
@@ -930,7 +930,7 @@ main(int argc, char* argv[])
         The ConfigGraph isn't needed for restart runs that use the
         original partitioning.
     ***************************************************************************/
-    Simulation_impl::basicPerf.beginRegion("model-generation");
+    Simulation::basicPerf.beginRegion("model-generation");
 
     ConfigGraph* graph    = nullptr;
     SimTime_t    min_part = 0xffffffffffffffffl;
@@ -938,7 +938,7 @@ main(int argc, char* argv[])
     // Count of the number of components
     uint64_t comp_count = 0;
 
-    Simulation_impl::basicPerf.beginRegion("model-execution");
+    Simulation::basicPerf.beginRegion("model-execution");
     Factory::createFactory(cfg.getLibPath());
     start_graph_creation(graph, world_size, myRank);
 
@@ -947,7 +947,7 @@ main(int argc, char* argv[])
     bool restart = cfg.load_from_checkpoint();
 
 
-    Simulation_impl::basicPerf.endRegion("model-execution");
+    Simulation::basicPerf.endRegion("model-execution");
 
     //// Initialize global data that needed to wait until Config was
     //// possibly updated by the SDL file
@@ -968,7 +968,7 @@ main(int argc, char* argv[])
     perfReporter.configureOutput(cfg.profiling_output());
 
     // TimeLord must be initialized prior to postCreationCleanup() call
-    Simulation_impl::getTimeLord()->init(cfg.timeBase());
+    Simulation::getTimeLord()->init(cfg.timeBase());
 
     // Check the ConfigGraph and finalize things
 
@@ -976,26 +976,26 @@ main(int argc, char* argv[])
     // in graph construction and we aren't restarting
     if ( (myRank.rank == 0 || cfg.parallel_load()) && !restart ) {
 
-        Simulation_impl::basicPerf.beginRegion("graph-cleanup");
+        Simulation::basicPerf.beginRegion("graph-cleanup");
         if ( cfg.parallel_load() ) {
             graph->reduceGraphToSingleRank(myRank.rank);
         }
         graph->postCreationCleanup();
-        Simulation_impl::basicPerf.endRegion("graph-cleanup");
+        Simulation::basicPerf.endRegion("graph-cleanup");
 
         // Check config graph to see if there are structural errors.
-        Simulation_impl::basicPerf.beginRegion("graph-error-check");
+        Simulation::basicPerf.beginRegion("graph-error-check");
         if ( graph->checkForStructuralErrors() ) {
             g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
         }
-        Simulation_impl::basicPerf.endRegion("graph-error-check");
+        Simulation::basicPerf.endRegion("graph-error-check");
     }
     else {
-        Simulation_impl::basicPerf.beginRegion("graph-cleanup");
-        Simulation_impl::basicPerf.endRegion("graph-cleanup");
+        Simulation::basicPerf.beginRegion("graph-cleanup");
+        Simulation::basicPerf.endRegion("graph-cleanup");
 
-        Simulation_impl::basicPerf.beginRegion("graph-error-check");
-        Simulation_impl::basicPerf.endRegion("graph-error-check");
+        Simulation::basicPerf.beginRegion("graph-error-check");
+        Simulation::basicPerf.endRegion("graph-error-check");
     }
 
     // Compute the total number components in the simulation.
@@ -1007,12 +1007,12 @@ main(int argc, char* argv[])
             uint64_t my_count = graph->getNumComponentsInMPIRank(myRank.rank);
             SST_MPI_Allreduce(&my_count, &comp_count, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
         }
-        Simulation_impl::basicPerf.addMetric("component count", comp_count);
+        Simulation::basicPerf.addMetric("component count", comp_count);
     }
 
 
     // Set up the Filesystem object with the specified output directory
-    bool out_dir_okay = Simulation_impl::filesystem.setBasePath(cfg.output_directory());
+    bool out_dir_okay = Simulation::filesystem.setBasePath(cfg.output_directory());
     if ( !out_dir_okay ) {
         fprintf(stderr,
             "ERROR: Directory specified with --output-directory (%s) is not valid.  Most likely causes are that the "
@@ -1021,7 +1021,7 @@ main(int argc, char* argv[])
         return -1;
     }
 
-    Simulation_impl::basicPerf.endRegion("model-generation");
+    Simulation::basicPerf.endRegion("model-generation");
 
     /******** End Model Generation ********/
 
@@ -1044,7 +1044,7 @@ main(int argc, char* argv[])
     ***************************************************************************/
 
     // For now, nothing to do in the restart path
-    Simulation_impl::basicPerf.beginRegion("graph-partitioning");
+    Simulation::basicPerf.beginRegion("graph-partitioning");
 #ifdef SST_CONFIG_HAVE_MPI
     // If we did a parallel load, check to make sure that all the
     // ranks have the same thread count set (the python can change the
@@ -1083,7 +1083,7 @@ main(int argc, char* argv[])
         // conditions being met.
         // if ( min_part == MAX_SIMTIME_T ) {
         //     // std::cout << "No links cross rank boundary" << std::endl;
-        //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
+        //     min_part = Simulation::getTimeLord()->getSimCycles("1us","");
         // }
 
         SST_MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
@@ -1101,13 +1101,13 @@ main(int argc, char* argv[])
     }
 
     // Create the checkpoint directory structure if checkpointing is enabled
-    Simulation_impl::checkpoint_directory_ =
+    Simulation::checkpoint_directory_ =
         Checkpointing::initializeCheckpointInfrastructure(&cfg, cfg.canInitiateCheckpoint(), myRank.rank);
 
     // If we are not doing a parallel load, rank 0 will write out the ConfigGraph
     if ( cfg.canInitiateCheckpoint() && !cfg.parallel_load() && myRank.rank == 0 ) {
-        Simulation_impl::checkpoint_configgraph_ = cfg.checkpoint_prefix() + "_config_graph.bin";
-        Simulation_impl::writeCheckpointConfigGraph(graph);
+        Simulation::checkpoint_configgraph_ = cfg.checkpoint_prefix() + "_config_graph.bin";
+        Simulation::writeCheckpointConfigGraph(graph);
     }
 
     if ( myRank.rank == 0 ) {
@@ -1116,7 +1116,7 @@ main(int argc, char* argv[])
     }
 
 
-    Simulation_impl::basicPerf.endRegion("graph-partitioning");
+    Simulation::basicPerf.endRegion("graph-partitioning");
 
     /**************************************************************************
       2.a.3 - Graph Distribution
@@ -1128,7 +1128,7 @@ main(int argc, char* argv[])
         Normal jobs that were loaded in parallel need to exchange unique
         Link IDs so that the IDs are shared across partitions.
     ***************************************************************************/
-    Simulation_impl::basicPerf.beginRegion("graph-distribution");
+    Simulation::basicPerf.beginRegion("graph-distribution");
 
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -1401,8 +1401,8 @@ main(int argc, char* argv[])
     if ( cfg.parallel_output() && !restart ) {
         doParallelCapableGraphOutput(graph, myRank, world_size);
     }
-    Simulation_impl::basicPerf.endRegion("graph-distribution");
-    Simulation_impl::basicPerf.endRegion("graph-processing");
+    Simulation::basicPerf.endRegion("graph-distribution");
+    Simulation::basicPerf.endRegion("graph-processing");
 
     /******** Register signal handlers, if not disabled ********/
     if ( cfg.enable_sig_handling() ) {
@@ -1451,12 +1451,12 @@ main(int argc, char* argv[])
     ***************************************************************************/
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
-    Simulation_impl::basicPerf.beginRegion("construct");
+    Simulation::basicPerf.beginRegion("construct");
 
     // Initialize Simulation object data members and barriers
-    Simulation_impl::factory    = Factory::getFactory();
-    Simulation_impl::sim_output = g_output;
-    Simulation_impl::resizeBarriers(world_size.thread);
+    Simulation::factory    = Factory::getFactory();
+    Simulation::sim_output = g_output;
+    Simulation::resizeBarriers(world_size.thread);
     CheckpointAction::barrier.resize(world_size.thread);
 #ifdef USE_MEMPOOL
     MemPoolAccessor::initializeGlobalData(world_size.thread, cfg.cache_align_mempools());
@@ -1499,14 +1499,14 @@ main(int argc, char* argv[])
             threads[i].join();
         }
 
-        Simulation_impl::shutdown();
+        Simulation::shutdown();
     }
     catch ( const std::exception& e ) {
         g_output.fatal(CALL_INFO, -1, "Error encountered during simulation: %s\n", e.what());
     }
-    Simulation_impl::basicPerf.endRegion("execute");
+    Simulation::basicPerf.endRegion("execute");
 
-    Simulation_impl::basicPerf.endRegion("total");
+    Simulation::basicPerf.endRegion("total");
 
     for ( uint32_t i = 1; i < world_size.thread; i++ ) {
         threadInfo[0].simulated_time = std::max(threadInfo[0].simulated_time, threadInfo[i].simulated_time);
@@ -1568,7 +1568,7 @@ main(int argc, char* argv[])
         if ( myRank.rank == 0 ) {
             int timing_verbose = cfg.print_timing() == 0 ? (cfg.verbose() > 0 ? 2 : 0) : cfg.print_timing();
             timing_verbose     = std::max(timing_verbose, cfg.verbose() == 0 ? 0 : cfg.verbose() + 1);
-            Simulation_impl::basicPerf.outputRegionData(timing_verbose, &perfReporter);
+            Simulation::basicPerf.outputRegionData(timing_verbose, &perfReporter);
 
             SST::Util::DataRecord* resources = perfReporter.createDataRecord("resources");
             std::map<std::string, std::pair<std::string, std::string>> key_map = {

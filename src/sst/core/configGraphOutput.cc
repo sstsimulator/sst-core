@@ -14,14 +14,14 @@
 
 #include "sst/core/configGraphOutput.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/util/filesystem.h"
 
 namespace SST::Core {
 
 ConfigGraphOutput::ConfigGraphOutput(const char* path)
 {
-    SST::Util::Filesystem filesystem = Simulation_impl::filesystem;
+    SST::Util::Filesystem filesystem = Simulation::filesystem;
     outputFile                       = filesystem.fopen(path, "wt");
 }
 

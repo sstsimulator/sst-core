@@ -19,7 +19,7 @@
 #include "sst/core/objectComms.h"
 #include "sst/core/profile/syncProfileTool.h"
 #include "sst/core/realtime.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
@@ -96,19 +96,17 @@ public:
         return false;
     }
 
-    void setShutdownFlags(bool UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override
-    {}
+    void setShutdownFlags(bool UNUSED(enter_shutdown), Simulation::ShutdownMode_t UNUSED(shutdown_mode)) override {}
 
     void setCkptFlag(bool UNUSED(generate_ckpt)) override {}
     void setFlags(bool UNUSED(enter_interactive), bool UNUSED(enter_shutdown),
-        Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override
+        Simulation::ShutdownMode_t UNUSED(shutdown_mode)) override
     {}
 
-    void getShutdownFlags(bool& UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override
-    {}
+    void getShutdownFlags(bool& UNUSED(enter_shutdown), Simulation::ShutdownMode_t& UNUSED(shutdown_mode)) override {}
     void getCkptFlag(bool& UNUSED(generate_ckpt)) override {}
     void getFlags(bool& UNUSED(enter_interactive), bool& UNUSED(enter_shutdown),
-        Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override
+        Simulation::ShutdownMode_t& UNUSED(shutdown_mode)) override
     {}
 
     /** Clear interactive flags before next run */
@@ -125,10 +123,10 @@ public:
 class EmptyThreadSync : public ThreadSync
 {
 public:
-    Simulation_impl* sim;
+    Simulation* sim;
 
 public:
-    explicit EmptyThreadSync(Simulation_impl* sim) :
+    explicit EmptyThreadSync(Simulation* sim) :
         sim(sim)
     {
         nextSyncTime = MAX_SIMTIME_T;
@@ -153,18 +151,16 @@ public:
         return false;
     }
 
-    void setShutdownFlags(bool UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override
-    {}
+    void setShutdownFlags(bool UNUSED(enter_shutdown), Simulation::ShutdownMode_t UNUSED(shutdown_mode)) override {}
 
     void setFlags(bool UNUSED(enter_interactive), bool UNUSED(enter_shutdown),
-        Simulation_impl::ShutdownMode_t UNUSED(shutdown_mode)) override
+        Simulation::ShutdownMode_t UNUSED(shutdown_mode)) override
     {}
 
-    void getShutdownFlags(bool& UNUSED(enter_shutdown), Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override
-    {}
+    void getShutdownFlags(bool& UNUSED(enter_shutdown), Simulation::ShutdownMode_t& UNUSED(shutdown_mode)) override {}
 
     void getFlags(bool& UNUSED(enter_interactive), bool& UNUSED(enter_shutdown),
-        Simulation_impl::ShutdownMode_t& UNUSED(shutdown_mode)) override
+        Simulation::ShutdownMode_t& UNUSED(shutdown_mode)) override
     {}
 
     /** Clear interactive flags before next run */
@@ -225,13 +221,13 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 
         // First check to make sure the vectors are the same size
         if ( data.size() != link_maps[i].size() ) {
-            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+            Simulation::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
                 "ERROR: Number of links in link exchange not the same for ranks %d and %d\n", i, my_rank);
         }
 
         for ( size_t x = 0; x < data.size(); ++x ) {
             if ( data[x].first != link_maps[i][x].first ) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                Simulation::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
                     "ERROR: Unmatched links in link exchange for ranks %d and %d\n", i, my_rank);
             }
             Link* link = reinterpret_cast<Link*>(link_maps[i][x].second);
@@ -260,13 +256,13 @@ RankSync::exchangeLinkInfo(uint32_t UNUSED_WO_MPI(my_rank))
 
         // First check to make sure the vectors are the same size
         if ( data.size() != link_maps[i].size() ) {
-            Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+            Simulation::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
                 "ERROR: Number of links in link exchange not the same for ranks %d and %d\n", i, my_rank);
         }
 
         for ( size_t x = 0; x < data.size(); ++x ) {
             if ( data[x].first != link_maps[i][x].first ) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
+                Simulation::getSimulationOutput().fatal(CALL_INFO, EXIT_FAILURE,
                     "ERROR: Unmatched links in link exchange for ranks %d and %d\n", i, my_rank);
             }
             Link* link = reinterpret_cast<Link*>(link_maps[i][x].second);
@@ -436,7 +432,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTim
     min_part_(min_part),
     real_time_(real_time)
 {
-    sim_ = Simulation_impl::getSimulation();
+    sim_ = Simulation::getSimulation();
 
     setupSyncObjects();
 
@@ -449,7 +445,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTim
 
 SyncManager::SyncManager()
 {
-    sim_ = Simulation_impl::getSimulation();
+    sim_ = Simulation::getSimulation();
 }
 
 /** Register a Link which this Sync Object is responsible for */
@@ -469,7 +465,7 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
         threadSync_->registerLink(link);
 
         // Need to get target queue from the remote ThreadSync
-        ThreadSync* remoteSync = Simulation_impl::instanceVec_[to_rank.thread]->syncManager->threadSync_;
+        ThreadSync* remoteSync = Simulation::instanceVec_[to_rank.thread]->syncManager->threadSync_;
         return remoteSync->registerRemoteLink(from_rank.thread, link);
     }
     else {
@@ -519,7 +515,7 @@ SyncManager::findThreadSyncInterval()
 }
 
 void
-SyncManager::getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode)
+SyncManager::getSimShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)
 {
 
     // Get sim flags to exchange in threadSync
@@ -529,7 +525,7 @@ SyncManager::getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::Shutdown
 
 void
 SyncManager::getSimFlags(
-    bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode, bool& generate_ckpt)
+    bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode, bool& generate_ckpt)
 {
 
     // Get sim flags to exchange in threadSync
@@ -543,15 +539,15 @@ SyncManager::execute()
 {
     if ( profile_tools_ ) profile_tools_->syncManagerStart(next_sync_type_ == RANK);
 
-    bool                            signals_received    = false;
-    int                             sig_end             = 0;
-    int                             sig_usr             = 0;
-    int                             sig_alrm            = 0;
-    bool                            interactive_enabled = false;
-    bool                            enter_interactive   = false;
-    bool                            enter_shutdown      = false;
-    Simulation_impl::ShutdownMode_t shutdown_mode       = Simulation_impl::ShutdownMode_t::SHUTDOWN_CLEAN;
-    bool                            generate_ckpt       = false;
+    bool                       signals_received    = false;
+    int                        sig_end             = 0;
+    int                        sig_usr             = 0;
+    int                        sig_alrm            = 0;
+    bool                       interactive_enabled = false;
+    bool                       enter_interactive   = false;
+    bool                       enter_shutdown      = false;
+    Simulation::ShutdownMode_t shutdown_mode       = Simulation::ShutdownMode_t::SHUTDOWN_CLEAN;
+    bool                       generate_ckpt       = false;
 
     if ( sim_->interactive_ ) {
         interactive_enabled = true;

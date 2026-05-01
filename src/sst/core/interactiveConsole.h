@@ -30,7 +30,7 @@
 namespace SST {
 
 class Params;
-class Simulation_impl;
+class Simulation;
 
 namespace Interactive {
 /* Utility functions needed to manage directories */

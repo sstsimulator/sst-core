@@ -55,7 +55,7 @@ public:
     // Main creates the config object
     friend int ::main(int argc, char** argv);
     friend class SSTModelDescription;
-    friend class Simulation_impl;
+    friend class Simulation;
 
     /**
        Default constructor.

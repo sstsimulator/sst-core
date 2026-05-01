@@ -15,7 +15,7 @@
 
 #include "sst/core/component.h"
 #include "sst/core/mempoolAccessor.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_mpi.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
@@ -26,7 +26,7 @@
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat(Config* UNUSED(cfg), int this_rank, Simulation_impl* sim, TimeConverter period) :
+SimulatorHeartbeat::SimulatorHeartbeat(Config* UNUSED(cfg), int this_rank, Simulation* sim, TimeConverter period) :
     Action(),
     rank(this_rank),
     m_period(period)
@@ -43,7 +43,7 @@ SimulatorHeartbeat::SimulatorHeartbeat(Config* UNUSED(cfg), int this_rank, Simul
 void
 SimulatorHeartbeat::schedule()
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
     SimTime_t next = (m_period.getFactor() * (sim->getCurrentSimCycle() / m_period.getFactor())) + m_period.getFactor();
     sim->insertActivity(next, this);
 
@@ -55,8 +55,8 @@ SimulatorHeartbeat::schedule()
 void
 SimulatorHeartbeat::execute()
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    const double     now = sst_get_cpu_time();
+    Simulation*  sim = Simulation::getSimulation();
+    const double now = sst_get_cpu_time();
 
     Output& sim_output = sim->getSimulationOutput();
     if ( 0 == rank ) {
@@ -71,7 +71,7 @@ SimulatorHeartbeat::execute()
     sim->insertActivity(next, this);
 
     // Print some resource usage
-    uint64_t local_max_tv_depth  = Simulation_impl::getSimulation()->getTimeVortexMaxDepth();
+    uint64_t local_max_tv_depth  = Simulation::getSimulation()->getTimeVortexMaxDepth();
     uint64_t global_max_tv_depth = 0;
 
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
@@ -82,7 +82,7 @@ SimulatorHeartbeat::execute()
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
 
 #ifdef SST_CONFIG_HAVE_MPI
-    uint64_t local_sync_data_size = Simulation_impl::getSimulation()->getSyncQueueDataSize();
+    uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
 
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD);
     MPI_Allreduce(&local_sync_data_size, &global_max_sync_data_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD);
