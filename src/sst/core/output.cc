@@ -17,7 +17,7 @@
 #include "sst/core/output.h"
 
 // Core Headers
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 // C++ System Headers
 #include <atomic>
@@ -208,7 +208,7 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
     fprintf(stderr, "Backtrace not available on this build/platform.\n");
 #endif
 
-    Simulation_impl::emergencyShutdown();
+    Simulation::emergencyShutdown();
 
     SST_Exit(exit_code);
 }
@@ -416,7 +416,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 't':
-                snprintf(tempBuf, 256, "%" PRI_SIMTIME, Simulation_impl::getSimulation()->getCurrentSimCycle());
+                snprintf(tempBuf, 256, "%" PRI_SIMTIME, Simulation::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
@@ -524,9 +524,9 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
 {
     if ( !active_ ) return;
     if ( print_sim_info ) {
-        Simulation_impl* sim = nullptr;
+        Simulation* sim = nullptr;
         try {
-            sim = Simulation_impl::getSimulation();
+            sim = Simulation::getSimulation();
         }
         catch ( const std::out_of_range& e ) {
             // do nothing

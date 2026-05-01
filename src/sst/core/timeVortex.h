@@ -23,7 +23,7 @@
 namespace SST {
 
 class Output;
-class Simulation_impl;
+class Simulation;
 
 /**
  * Primary Event Queue

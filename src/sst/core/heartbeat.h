@@ -23,7 +23,7 @@
 
 namespace SST {
 
-class Simulation_impl;
+class Simulation;
 class TimeConverter;
 
 /**
@@ -36,7 +36,7 @@ public:
     /**
     Create a new heartbeat object for the simulation core to show progress
     */
-    SimulatorHeartbeat(Config* cfg, int this_rank, Simulation_impl* sim, TimeConverter period);
+    SimulatorHeartbeat(Config* cfg, int this_rank, Simulation* sim, TimeConverter period);
     ~SimulatorHeartbeat() = default;
 
     // Used to re-schedule the new heartbeat event during restart

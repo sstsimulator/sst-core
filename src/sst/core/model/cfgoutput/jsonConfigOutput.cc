@@ -16,7 +16,7 @@
 
 #include "sst/core/config.h"
 #include "sst/core/params.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/util/filesystem.h"
 
 #include <cstddef>
@@ -459,7 +459,7 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     }
 
     // open an output stream separate from the C-style file pointer
-    SST::Util::Filesystem filesystem = Simulation_impl::filesystem;
+    SST::Util::Filesystem filesystem = Simulation::filesystem;
     std::ofstream         ofs        = filesystem.ofstream(pathStr, std::ofstream::out);
     if ( !ofs.is_open() ) {
         throw ConfigGraphOutputException("Streaming output file is not open for writing");

@@ -35,7 +35,7 @@ class ConfigPortModule;
 class ConfigComponent;
 class ConfigStatistic;
 
-class Simulation_impl;
+class Simulation;
 
 namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
@@ -59,7 +59,7 @@ private:
     static const uint64_t USER_FLAGS = 0x7;
 
     // Friend classes
-    friend class Simulation_impl;
+    friend class Simulation;
     friend class BaseComponent;
     friend class ComponentInfoMap;
     friend class Core::Serialization::pvt::SerializeBaseComponentHelper;

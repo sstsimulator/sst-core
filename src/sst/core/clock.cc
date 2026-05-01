@@ -14,7 +14,7 @@
 #include "sst/core/clock.h"
 
 #include "sst/core/factory.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 
 #include <sys/time.h>
@@ -81,7 +81,7 @@ Clock::getNextCycle()
 void
 Clock::execute()
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
+    Simulation* sim = Simulation::getSimulation();
 
     if ( staticHandlerMap.empty() ) {
         scheduled = false;
@@ -115,9 +115,9 @@ Clock::execute()
 void
 Clock::schedule()
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    currentCycle         = sim->getCurrentSimCycle() / period.getFactor();
-    SimTime_t next       = (currentCycle * period.getFactor()) + period.getFactor();
+    Simulation* sim = Simulation::getSimulation();
+    currentCycle    = sim->getCurrentSimCycle() / period.getFactor();
+    SimTime_t next  = (currentCycle * period.getFactor()) + period.getFactor();
 
     // Check to see if we need to insert clock into queue at current
     // simtime.  This happens if the clock would have fired at this
@@ -141,8 +141,8 @@ Clock::schedule()
 void
 Clock::updateCurrentCycle()
 {
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-    currentCycle         = sim->getCurrentSimCycle() / period.getFactor();
+    Simulation* sim = Simulation::getSimulation();
+    currentCycle    = sim->getCurrentSimCycle() / period.getFactor();
     return;
 }
 

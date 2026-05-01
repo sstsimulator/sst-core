@@ -13,20 +13,20 @@
 
 #include "sst/core/action.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 
 void
 Action::endSimulation()
 {
-    Simulation_impl::getSimulation()->endSimulation();
+    Simulation::getSimulation()->endSimulation();
 }
 
 void
 Action::endSimulation(SimTime_t end)
 {
-    Simulation_impl::getSimulation()->endSimulation(end);
+    Simulation::getSimulation()->endSimulation(end);
 }
 
 void

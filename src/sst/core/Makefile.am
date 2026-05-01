@@ -256,7 +256,7 @@ sst_core_sources = \
 	iouse.cc \
 	objectComms.h \
 	objectSerialization.h \
-	simulation_impl.h \
+	simulation.h \
 	watchPoint.h \
 	watchPoint.cc \
 	sst_mpi.h

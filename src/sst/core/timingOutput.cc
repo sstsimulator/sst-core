@@ -12,7 +12,7 @@
 
 #include "sst/core/timingOutput.h"
 
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/stringize.h"
 #include "sst/core/util/perfReporter.h"
 
@@ -58,7 +58,7 @@ TimingOutput::~TimingOutput() {}
 void
 TimingOutput::generate(SST::Util::PerfReporter* reporter)
 {
-    Simulation_impl::basicPerf.outputRegionData(print_verbosity_, reporter);
+    Simulation::basicPerf.outputRegionData(print_verbosity_, reporter);
 }
 
 } // namespace SST::Core

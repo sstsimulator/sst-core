@@ -15,7 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/link.h"
 #include "sst/core/rankInfo.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/threadsafe.h"
 
@@ -32,7 +32,7 @@ namespace SST {
 class CheckpointAction;
 class Exit;
 class RealTimeManager;
-class Simulation_impl;
+class Simulation;
 // class SyncBase;
 class ThreadSyncQueue;
 class TimeConverter;
@@ -69,17 +69,15 @@ public:
     virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
     /** Set interactive flags to exchange during sync */
-    virtual void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
-    virtual void setCkptFlag(bool generate_ckpt)                                                      = 0;
-    virtual void setFlags(
-        bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)     = 0;
+    virtual void setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)                    = 0;
+    virtual void setCkptFlag(bool generate_ckpt)                                                                    = 0;
+    virtual void setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)    = 0;
     /** Return exchanged interactive flags after sync */
-    virtual void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
-    virtual void getCkptFlag(bool& generate_ckpt)                                                       = 0;
-    virtual void getFlags(
-        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+    virtual void getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)                  = 0;
+    virtual void getCkptFlag(bool& generate_ckpt)                                                                   = 0;
+    virtual void getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) = 0;
     /** Clear interactive flags before next run */
-    virtual void clearFlags()                                                                          = 0;
+    virtual void clearFlags()                                                                                       = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
@@ -138,15 +136,13 @@ public:
     virtual bool getSignals(int& end, int& usr, int& alrm) = 0;
 
     /** Set interactive flags to exchange during sync */
-    virtual void setShutdownFlags(bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode) = 0;
-    virtual void setFlags(
-        bool enter_interactive, bool enter_shutdown, Simulation_impl::ShutdownMode_t shutdown_mode)     = 0;
+    virtual void setShutdownFlags(bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)                    = 0;
+    virtual void setFlags(bool enter_interactive, bool enter_shutdown, Simulation::ShutdownMode_t shutdown_mode)    = 0;
     /** Return exchanged interactive flags after sync */
-    virtual void getShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
-    virtual void getFlags(
-        bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode) = 0;
+    virtual void getShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode)                  = 0;
+    virtual void getFlags(bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode) = 0;
     /** Clear interactive flags before next run */
-    virtual void clearFlags()                                                                          = 0;
+    virtual void clearFlags()                                                                                       = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
     virtual void      setRestartTime(SimTime_t time) { nextSyncTime = time; }
@@ -248,7 +244,7 @@ private:
     static SimTime_t next_rankSync_;
     ThreadSync*      threadSync_;
     Exit*            exit_;
-    Simulation_impl* sim_;
+    Simulation*      sim_;
 
     sync_type_t next_sync_type_;
     SimTime_t   min_part_;
@@ -262,9 +258,9 @@ private:
 
     void computeNextInsert(SimTime_t next_checkpoint_time = MAX_SIMTIME_T);
     void setupSyncObjects();
-    void getSimShutdownFlags(bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode);
-    void getSimFlags(bool& enter_interactive, bool& enter_shutdown, Simulation_impl::ShutdownMode_t& shutdown_mode,
-        bool& generate_ckpt);
+    void getSimShutdownFlags(bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode);
+    void getSimFlags(
+        bool& enter_interactive, bool& enter_shutdown, Simulation::ShutdownMode_t& shutdown_mode, bool& generate_ckpt);
 };
 
 } // namespace SST

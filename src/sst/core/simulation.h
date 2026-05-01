@@ -117,7 +117,7 @@ struct TimeVortexSort
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation_impl
+class Simulation
 {
 
 public:
@@ -174,12 +174,12 @@ public:
     using clockMap_t = std::map<std::pair<SimTime_t, int>, Clock*>; /*!< Map of times to clocks */
     // using oneShotMap_t = std::map<int, OneShot*>; /*!< Map of priorities to OneShots */
 
-    ~Simulation_impl();
+    ~Simulation();
 
     /*********  Static Core-only Functions *********/
 
     /** Return a pointer to the singleton instance of the Simulation */
-    static Simulation_impl* getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
+    static Simulation* getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
 
     /** Return the TimeLord associated with this Simulation */
     static TimeLord* getTimeLord() { return &timeLord; }
@@ -192,7 +192,7 @@ public:
      * @param num_ranks - How many Ranks are in the simulation
      * @param restart - Whether this simulation is being restarted from a checkpoint (true) or not
      */
-    static Simulation_impl* createSimulation(
+    static Simulation* createSimulation(
         RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority);
 
     /**
@@ -386,9 +386,9 @@ public:
     // To enable main to set up globals
     friend int ::main(int argc, char** argv);
 
-    Simulation_impl(RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority);
-    Simulation_impl(const Simulation_impl&)            = delete; // Don't Implement
-    Simulation_impl& operator=(const Simulation_impl&) = delete; // Don't implement
+    Simulation(RankInfo my_rank, RankInfo num_ranks, bool restart, SimTime_t currentSimCycle, int currentPriority);
+    Simulation(const Simulation&)            = delete; // Don't Implement
+    Simulation& operator=(const Simulation&) = delete; // Don't implement
 
     /** Get a handle to a TimeConverter
      * @param cycles Frequency which is the base of the TimeConverter
@@ -687,8 +687,8 @@ public:
     double complete_phase_start_time_;
     double complete_phase_total_time_;
 
-    static std::unordered_map<std::thread::id, Simulation_impl*> instanceMap;
-    static std::vector<Simulation_impl*>                         instanceVec_;
+    static std::unordered_map<std::thread::id, Simulation*> instanceMap;
+    static std::vector<Simulation*>                         instanceVec_;
 
     /******** Checkpoint/restart tracking data structures ***********/
     std::map<LinkId_t, Link*>      link_restart_tracking;

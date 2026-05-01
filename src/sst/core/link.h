@@ -30,7 +30,7 @@ class ActivityQueue;
 class BaseComponent;
 class TimeConverter;
 class LinkPair;
-class Simulation_impl;
+class Simulation;
 
 class UnitAlgebra;
 
@@ -124,7 +124,7 @@ public:
     friend class LinkPair;
     friend class RankSync;
     friend class ThreadSync;
-    friend class Simulation_impl;
+    friend class Simulation;
     friend class SyncManager;
     friend class ComponentInfo;
     friend class BaseComponent;

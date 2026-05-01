@@ -41,7 +41,7 @@ using namespace SST::Statistics;
 
 namespace SST {
 
-class Simulation_impl;
+class Simulation;
 
 class Config;
 class TimeLord;
@@ -250,7 +250,7 @@ public:
 
 
 private:
-    friend class Simulation_impl;
+    friend class Simulation;
 
     Output   output;
     LinkId_t link_rank_mask = 0;

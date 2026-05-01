@@ -22,7 +22,7 @@
 #include "sst/core/profile/clockHandlerProfileTool.h"
 #include "sst/core/profile/eventHandlerProfileTool.h"
 #include "sst/core/serialization/serialize.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/stringize.h"
 #include "sst/core/subcomponent.h"
@@ -41,8 +41,8 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     SST::Core::Serialization::serializable_base(),
-    my_info_(Simulation_impl::getSimulation()->getComponentInfo(id)),
-    sim_(Simulation_impl::getSimulation())
+    my_info_(Simulation::getSimulation()->getComponentInfo(id)),
+    sim_(Simulation::getSimulation())
 {
     if ( my_info_->component == nullptr ) {
         // If it's already set, then this is a ComponentExtension and
@@ -165,7 +165,7 @@ BaseComponent::getNumRanks() const
 Output&
 BaseComponent::getSimulationOutput()
 {
-    return Simulation_impl::getSimulationOutput();
+    return Simulation::getSimulationOutput();
 }
 
 SimTime_t
@@ -179,7 +179,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
 {
     SimTime_t ret;
     try {
-        TimeConverter tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
+        TimeConverter tc = Simulation::getTimeLord()->getTimeConverter(base);
         ret              = getCurrentSimTime(tc);
     }
     catch ( const std::underflow_error& e ) {
@@ -194,7 +194,7 @@ BaseComponent::getCurrentSimTime(const std::string& base) const
 SimTime_t
 BaseComponent::getCurrentSimTimeNano() const
 {
-    TimeConverter tc = Simulation_impl::getTimeLord()->getNano();
+    TimeConverter tc = Simulation::getTimeLord()->getNano();
     if ( tc.getFactor() != 0 ) return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 ns");
 }
@@ -202,7 +202,7 @@ BaseComponent::getCurrentSimTimeNano() const
 SimTime_t
 BaseComponent::getCurrentSimTimeMicro() const
 {
-    TimeConverter tc = Simulation_impl::getTimeLord()->getMicro();
+    TimeConverter tc = Simulation::getTimeLord()->getMicro();
     if ( tc.getFactor() != 0 ) return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 us");
 }
@@ -210,7 +210,7 @@ BaseComponent::getCurrentSimTimeMicro() const
 SimTime_t
 BaseComponent::getCurrentSimTimeMilli() const
 {
-    TimeConverter tc = Simulation_impl::getTimeLord()->getMilli();
+    TimeConverter tc = Simulation::getTimeLord()->getMilli();
     if ( tc.getFactor() != 0 ) return tc.convertFromCoreTime(sim_->getCurrentSimCycle());
     return getCurrentSimTime("1 ms");
 }
@@ -409,7 +409,7 @@ BaseComponent::getNextClockCycle(TimeConverter freq)
 TimeConverter
 BaseComponent::registerTimeBase(const std::string& base, bool reg_all)
 {
-    TimeConverter tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
+    TimeConverter tc = Simulation::getTimeLord()->getTimeConverter(base);
 
     // if reg_all is true set tc as the default for the component and
     // for all the links
@@ -423,13 +423,13 @@ BaseComponent::registerTimeBase(const std::string& base, bool reg_all)
 TimeConverter
 BaseComponent::getTimeConverter(const std::string& base) const
 {
-    return Simulation_impl::getTimeLord()->getTimeConverter(base);
+    return Simulation::getTimeLord()->getTimeConverter(base);
 }
 
 TimeConverter
 BaseComponent::getTimeConverter(const UnitAlgebra& base) const
 {
-    return Simulation_impl::getTimeLord()->getTimeConverter(base);
+    return Simulation::getTimeLord()->getTimeConverter(base);
 }
 
 
@@ -468,7 +468,7 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     }
     case SST::Core::Serialization::serializer::UNPACK:
     {
-        sim_ = Simulation_impl::getSimulation();
+        sim_ = Simulation::getSimulation();
 
         if ( isStateDoNotEndSim() ) {
             // First set state to OKToEndSim to suppress warning in
@@ -703,7 +703,7 @@ Statistics::StatisticBase*
 BaseComponent::createExplicitlyEnabledStatistic(
     Params& params, StatisticId_t id, const std::string& name, const std::string& stat_sub_id, StatCreateFunction fxn)
 {
-    Output& out = Simulation_impl::getSimulationOutput();
+    Output& out = Simulation::getSimulationOutput();
     if ( my_info_->parent_info ) {
         out.fatal(CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
             name.c_str());
@@ -835,7 +835,7 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
         return nullptr;
     }
     if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
-        Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1,
+        Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
             "SubComponent slot %s requires a dense allocation of SubComponents and did not get one.\n", name.c_str());
     }
     return info;

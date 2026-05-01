@@ -14,7 +14,7 @@
 #include "sst/core/event.h"
 
 #include "sst/core/link.h"
-#include "sst/core/simulation_impl.h"
+#include "sst/core/simulation.h"
 
 #include <sys/time.h>
 
@@ -33,7 +33,7 @@ DISABLE_WARN_MISSING_NORETURN
 Event*
 Event::clone()
 {
-    Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
         "Called clone() on an Event that doesn't"
         " implement it.");
 }
@@ -42,7 +42,7 @@ REENABLE_WARNING
 Event::id_type
 Event::generateUniqueId()
 {
-    return std::make_pair(id_counter++, Simulation_impl::getSimulation()->getRank().rank);
+    return std::make_pair(id_counter++, Simulation::getSimulation()->getRank().rank);
 }
 
 } // namespace SST

@@ -27,7 +27,7 @@ extern int main(int argc, char** argv);
 
 namespace SST {
 
-class Simulation_impl;
+class Simulation;
 
 namespace Shared {
 
@@ -292,7 +292,7 @@ public:
     ImplementSerializable(SharedObject)
 
 protected:
-    friend class SST::Simulation_impl;
+    friend class SST::Simulation;
 
     // To enable main to initialize manager on restart
     friend int ::main(int argc, char** argv);
