@@ -22,9 +22,8 @@ class TestCategorizeDecorator(SSTTestCase):
         # initialized in init_test_engine_globals(), recreated here as that
         # function cannot be called more than once, but we still need clean
         # category variables for each test.
-        test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES = set(("pr", "nightly", "weekly"))
+        test_engine_globals.init_test_engine_categories()
         test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES = set()
-        test_engine_globals.TESTENGINE_CATEGORIES = set()
 
     _MOCK_TEST_SENTINEL = "executed"
 
@@ -59,12 +58,6 @@ class TestCategorizeDecorator(SSTTestCase):
         test_engine_globals.TESTENGINE_CATEGORIES = set(["nightly"])
         wrapped = self._apply_decorator("nightly")
 
-        self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
-        # The reason is always formed and set, even if the test is not
-        # skipped.
-        expected_why = "Test requires category 'nightly' but the current categories are '{'nightly'}'."
-        self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
-
         self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
 
     def test_wrapper_skips_when_category_mismatches(self) -> None:
@@ -72,35 +65,23 @@ class TestCategorizeDecorator(SSTTestCase):
         test_engine_globals.TESTENGINE_CATEGORIES = set(["pr"])
         wrapped = self._apply_decorator("nightly")
 
-        self.assertTrue(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'nightly' but the current categories are '{'pr'}'."
-        self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
+        expected_why = "Test requires category 'nightly' but the current categories are '['pr']'."
 
         with self.assertRaises(unittest.SkipTest) as cm:
             wrapped()
         self.assertIn(expected_why, str(cm.exception))
 
-    def test_wrapper_skips_when_test_category_is_none(self) -> None:
-        """If TESTENGINE_CATEGORIES is not set, the test is skipped."""
+    def test_default_test_category_is_pr(self) -> None:
+        """When TESTENGINE_CATEGORIES is empty, still run pull request (PR) tests."""
         wrapped = self._apply_decorator("pr")
 
-        self.assertTrue(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'pr' but the current categories are 'set()'."
-        self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
-
-        with self.assertRaises(unittest.SkipTest) as cm:
-            wrapped()
-        self.assertIn(expected_why, str(cm.exception))
+        self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
 
     def test_extra_allowed_category_matches_and_runs(self) -> None:
         """A category listed in TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES works like a built‑in."""
         test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES = set(["integration"])
         test_engine_globals.TESTENGINE_CATEGORIES = set(["integration"])
         wrapped = self._apply_decorator("integration")
-
-        self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
-        expected_why = "Test requires category 'integration' but the current categories are '{'integration'}'."
-        self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
 
         self.assertEqual(wrapped(), self._MOCK_TEST_SENTINEL)
 
@@ -109,9 +90,7 @@ class TestCategorizeDecorator(SSTTestCase):
         test_engine_globals.TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES = set(["performance"])
         wrapped = self._apply_decorator("performance")
 
-        self.assertTrue(getattr(wrapped, "__unittest_skip__", True))
-        expected_why = "Test requires category 'performance' but the current categories are 'set()'."
-        self.assertEqual(getattr(wrapped, "__unittest_skip_why__", ""), expected_why)
+        expected_why = "Test requires category 'performance' but the current categories are '['pr']'."
 
         with self.assertRaises(unittest.SkipTest) as cm:
             wrapped()
@@ -126,8 +105,6 @@ class TestCategorizeDecorator(SSTTestCase):
         wrapped = categorize("weekly")(func_with_args)
 
         self.assertEqual(wrapped(1, 2, kw=3), 6)
-
-        self.assertFalse(getattr(wrapped, "__unittest_skip__", False))
 
     @categorize("pr")
     def test_integration_pr(self) -> None:

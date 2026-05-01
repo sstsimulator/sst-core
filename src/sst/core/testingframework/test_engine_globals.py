@@ -54,6 +54,7 @@ TESTENGINE_ERRORCOUNT = 0
 TESTENGINE_ALLOWED_TEST_CATEGORIES = set()
 TESTENGINE_EXTRA_ALLOWED_TEST_CATEGORIES: Set[str] = set()
 TESTENGINE_CATEGORIES: Set[str] = set()
+_TESTENGINE_DEFAULT_CATEGORIES = set(["pr"])
 TESTENGINE_SCENARIOSLIST: List[str] = []
 TESTENGINE_TESTNOTESLIST: List[str] = []
 
@@ -83,8 +84,6 @@ def init_test_engine_globals() -> None:
     global TESTENGINE_CORE_CONFINCLUDE_DICT
     global TESTENGINE_ELEM_CONFINCLUDE_DICT
     global TESTENGINE_ERRORCOUNT
-    global TESTENGINE_ALLOWED_TEST_CATEGORIES
-    global TESTENGINE_CATEGORIES
     global TESTENGINE_SCENARIOSLIST
     global TESTENGINE_TESTNOTESLIST
 
@@ -110,7 +109,26 @@ def init_test_engine_globals() -> None:
     TESTENGINE_CORE_CONFINCLUDE_DICT = {}
     TESTENGINE_ELEM_CONFINCLUDE_DICT = {}
     TESTENGINE_ERRORCOUNT = 0
-    TESTENGINE_ALLOWED_TEST_CATEGORIES = set(("pr", "nightly", "weekly"))
-    TESTENGINE_CATEGORIES = set()
+    init_test_engine_categories()
     TESTENGINE_SCENARIOSLIST = []
     TESTENGINE_TESTNOTESLIST = []
+
+
+def init_test_engine_categories() -> None:
+    """Initialize global values for test categories.
+
+    Extra allowed categories are not reset to allow for external additions.
+    """
+    global TESTENGINE_ALLOWED_TEST_CATEGORIES
+    global TESTENGINE_CATEGORIES
+
+    TESTENGINE_ALLOWED_TEST_CATEGORIES = set(("pr", "nightly", "weekly"))
+    # Allow running tests decorated as PR tests without specifying it on the
+    # command line, which is the existing behavior.
+    #
+    # This is both here and in the argparse CLI so that tests, which don't use
+    # the CLI, have the same behavior without mocking.
+    #
+    # This is not hardcoded in the categorize decorator because that makes it
+    # impossible to change this default behavior for third parties.
+    TESTENGINE_CATEGORIES = _TESTENGINE_DEFAULT_CATEGORIES

@@ -149,7 +149,7 @@ class testcase_Checkpoint(SSTTestCase):
 
 
     ### Message Mesh tests, including repartitioned restart tests
-    def test_Checkpiont_MessageMesh(self) -> None:
+    def test_Checkpoint_MessageMesh(self) -> None:
         self.checkpoint_test_template("MessageMesh", 1, 1, modelparams="6 6")
 
     def test_Checkpoint_MessageMesh_n2one(self) -> None:

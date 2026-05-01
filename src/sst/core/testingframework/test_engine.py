@@ -23,7 +23,8 @@ import os
 import shutil
 import sys
 import unittest
-from typing import Any, Dict, List, Union
+from inspect import getmembers
+from typing import Any, Collection, Dict, List, Union
 
 import test_engine_globals
 from sst_unittest import *
@@ -90,6 +91,10 @@ HELP_EPILOG = (
     ("   should be marked with a single marker.  This means categories are\n") +
     ("   disjoint, but multiple categories can be specified at runtime.\n") +
     ("   Only these tests within the specified testsuite will run.\n") +
+    (" - Categories are independent from testsuite discovery.\n") +
+    ("   For example, selecting the weekly category does not automatically run tests\n") +
+    ("   located in files matching 'testsuite_weekly_*.py', and selecting -w '*weekly*'\n") +
+    ("   does not automatically run tests decorated as being in the weekly category.\n") +
     ("\n") +
     ("Test Scenarios:\n") +
     (" - Tests and TestCases identified within testsuites can be skipped from running\n") +
@@ -242,14 +247,6 @@ class TestEngine:
                                help='Display failure data during test runs (test dependent)')
         run_group.add_argument('-i', '--ignoreskips', action='store_true',
                                help='Disable Display of Skipped Test Messages (for debug purposes)')
-        run_group.add_argument("-m", "--categories",
-                               nargs="+", default=list(),
-                               choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
-                               help="Which category of tests to run")
-        run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
-                               nargs="+", default=[],
-                               help=(('Names of test scenarios that filter') + \
-                                     (' tests\nto be run [NONE]')))
         run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
                                nargs=1, default=[1],
                                help='Run with XX ranks [1]')
@@ -303,6 +300,20 @@ class TestEngine:
                                   help=(('Names of specific tests from discovered testsuites') + \
                                        (' to run\ndefault = [run all tests]; Example: -e "test_UnitAlgebra"') + \
                                        ('\nNote: Will only add tests from discovered testsuites')))
+        discover_group.add_argument("-m", "--categories",
+                                    metavar="category",
+                                    nargs="+",
+                                    default=test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
+                                    choices=test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES,
+                                    help=("Categories of tests to run.\n" +
+                                          "Allowed categories are " +
+                                          f"{sorted(test_engine_globals.TESTENGINE_ALLOWED_TEST_CATEGORIES)}.\n" +
+                                          "The default categories are " +
+                                          f"{sorted(test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES)}."))
+        discover_group.add_argument('-s', '--scenarios', type=str, metavar="name",
+                                    nargs="+", default=[],
+                                    help=(('Names of test scenarios that filter') + \
+                                          (' tests\nto be run [NONE]')))
 
         args = parser.parse_args()
         self._decode_parsed_arguments(args, parser)
@@ -388,7 +399,7 @@ class TestEngine:
             concurrent_txt = "[CONCURRENTLY ({0} Testing Threads)]".\
             format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
-        # Display operations info if we are unning in a verbose mode
+        # Display operations info if we are running in a verbose mode
         log_info(("SST Test Engine Instantiated - Running") +
                  (" tests on {0} {1}").format(self._test_type_str, concurrent_txt),
                  forced=False)
@@ -495,6 +506,12 @@ class TestEngine:
         # Handle the option of user selected specific test names
         if len(self._list_of_specific_testnames) != 0:
             self._sst_full_test_suite = self._prune_unwanted_tests(self._sst_full_test_suite)
+
+        # Automatically categorize undecorated tests
+        self._sst_full_test_suite = self._add_categorization_decorator(
+            self._sst_full_test_suite,
+            test_engine_globals._TESTENGINE_DEFAULT_CATEGORIES,
+        )
 
         log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
         self._dump_testsuite_list(self._sst_full_test_suite)
@@ -770,7 +787,7 @@ class TestEngine:
         """ Recursively remove any tests that dont match the name
 
             Args:
-                suite (SSTTestSuite): The current suite to print
+                suite (SSTTestSuite): The current suite to prune
         """
         allowed_tests_list = self._list_of_specific_testnames
         new_suite = unittest.TestSuite()
@@ -785,3 +802,38 @@ class TestEngine:
                 new_suite.addTest(suite)
 
         return new_suite
+
+    def _add_categorization_decorator(
+        self,
+        suite: Union[unittest.TestSuite, unittest.TestCase],
+        default_categories: Collection[str],
+    ) -> unittest.TestSuite:
+        """Recursively add default test categories to all test methods.
+
+        Specifically, mark undecorated test methods with the PR category
+        without requiring manual addition of the @categorize decorator.
+        """
+        new_suite = unittest.TestSuite()
+
+        if hasattr(suite, "__iter__"):
+            for sub_suite in suite:
+                new_suite.addTest(self._add_categorization_decorator(sub_suite, default_categories))
+        else:
+            members = getmembers(object=suite, predicate=lambda value: _is_test_method(suite, value))
+            assert len(members) == 1
+            member = members[0][1]
+            if not hasattr(member, "_category"):
+                categorized_member = member
+                for default_category in default_categories:
+                    categorized_member = categorize(default_category)(categorized_member)
+                setattr(suite, suite._testMethodName, categorized_member)
+            new_suite.addTest(suite)
+
+        return new_suite
+
+
+def _is_test_method(suite: unittest.TestCase, member: Any) -> bool:
+    """Is the given member of the test suite a method?"""
+    if hasattr(member, "__func__"):
+        return suite._testMethodName == member.__func__.__name__  # type: ignore[no-any-return]
+    return False
