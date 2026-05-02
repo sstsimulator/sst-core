@@ -308,7 +308,7 @@ def categorize(category: str) -> Callable[[_CallableT], _CallableT]:
     def decorator(test_func: _CallableT) -> _CallableT:
         reason = (
             f"Test requires category '{category}' but the current "
-            f"categories are '{specified_categories}'."
+            f"categories are '{sorted(specified_categories)}'."
         )
 
         @wraps(test_func)
@@ -318,8 +318,11 @@ def categorize(category: str) -> Callable[[_CallableT], _CallableT]:
 
             return test_func(*args, **kwargs)
 
-        wrapper.__unittest_skip__ = category not in specified_categories  # type: ignore[attr-defined]
-        wrapper.__unittest_skip_why__ = reason  # type: ignore[attr-defined]
+        # Metadata for easier deduction of decorator type and arguments, since
+        # cells in the closure do not contain enough information.  The absence
+        # of the metadata is used to detect if a test case needs to have the
+        # missing decorator applied automatically by the test engine.
+        wrapper._category = category  # type: ignore[attr-defined]
 
         return cast(_CallableT, wrapper)
 

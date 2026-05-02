@@ -25,7 +25,7 @@ from unittest import TestCase, TestResult, TestSuite, TextTestResult, TextTestRu
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from unittest.runner import _WritelnDecorator  # type: ignore [attr-defined]
+    from unittest.runner import _WritelnDecorator
 
     from sst_unittest import SSTTestCase
     from test_engine import TestEngine
@@ -152,7 +152,7 @@ class SSTTextTestRunner(TextTestRunner):
 
 ###
 
-    def run(self, test: Union[TestSuite, TestCase]) -> TestResult:
+    def run(self, test: Union[TestSuite, TestCase]) -> "TextTestResult[_WritelnDecorator]":
         """ Run the tests."""
         testing_start_time = time.time()
         runresults = super().run(test)
@@ -303,7 +303,7 @@ class SSTTextTestResult(TextTestResult):
         self._testcase_name = "undefined_testcasename"
         self._testsuite_name = "undefined_testsuitename"
         self._junit_test_case: JUnitTestCase = None  # type: ignore [assignment]
-        self.stream: _WritelnDecorator = stream
+        self.stream: "_WritelnDecorator" = stream
         self.showAll = verbosity > 1
         self.dots = verbosity == 1
         self.descriptions = descriptions
