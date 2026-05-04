@@ -4261,7 +4261,8 @@ DebugConsole::handleCommandAll()
 }
 
 bool
-DebugConsole::sendCommand(uint32_t rank_id, uint32_t thread_id, const std::string& cmd)
+DebugConsole::sendCommand(
+    uint32_t UNUSED_WO_MPI(rank_id), uint32_t UNUSED_WO_MPI(thread_id), const std::string& UNUSED_WO_MPI(cmd))
 {
 #ifdef SST_CONFIG_HAVE_MPI
     char*      cmd_buffer;
@@ -4308,8 +4309,9 @@ DebugConsole::sendCommand(uint32_t rank_id, uint32_t thread_id, const std::strin
 
     free(cmd_buffer);
     free(result_buffer);
-
     return succeed;
+#else
+    return false;
 #endif
 }
 
@@ -4589,6 +4591,8 @@ DebugConsole::sendDone()
 
     free(cmd_buffer);
     return succeed;
+#else
+    return false;
 #endif
 }
 
@@ -4670,7 +4674,7 @@ DebugConsole::executeThread(const std::string& msg)
 }
 
 int
-DebugConsole::executeRankSerial(const std::string& msg)
+DebugConsole::executeRankSerial(const std::string& UNUSED_WO_MPI(msg))
 {
 #ifdef SST_CONFIG_HAVE_MPI
     // -- Rank 0
@@ -4714,12 +4718,12 @@ DebugConsole::executeRankSerial(const std::string& msg)
     } // end Rank i!=0
 
     done = false; // Return codes currently unused
+#endif            // SST_CONFIG_HAVE_MPI
     return 0;
-#endif // SST_CONFIG_HAVE_MPI
 }
 
 int
-DebugConsole::executeRankParallel(const std::string& msg)
+DebugConsole::executeRankParallel(const std::string& UNUSED_WO_MPI(msg))
 {
 #ifdef SST_CONFIG_HAVE_MPI
 
@@ -4774,8 +4778,8 @@ DebugConsole::executeRankParallel(const std::string& msg)
 
     done = false;
     // Maybe check shutdown here as well?
-    return 0; // Return codes currently unused
 #endif
+    return 0; // Return codes currently unused
 } // end rankParallelExecute
 
 
