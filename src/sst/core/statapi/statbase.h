@@ -23,6 +23,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -196,6 +197,8 @@ public:
     virtual void   serialize_order(SST::Core::Serialization::serializer& ser);
     void           serializeStat(SST::Core::Serialization::serializer& ser);
     BaseComponent* deserializeComponentPtr(SST::Core::Serialization::serializer& ser);
+
+    std::mutex statsBaseMutex;
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;

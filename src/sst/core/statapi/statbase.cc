@@ -22,6 +22,7 @@
 #include "sst/core/statapi/statoutputjson.h"
 #include "sst/core/statapi/statoutputtxt.h"
 #include "sst/core/statapi/statuniquecount.h"
+#include <mutex>
 
 namespace SST::Stat::pvt {
 
@@ -83,6 +84,7 @@ REENABLE_WARNING
 void
 StatisticBase::incrementCollectionCount(uint64_t increment)
 {
+    std::lock_guard<std::mutex> lk(statsBaseMutex);
     current_collection_count_ += increment;
     output_collection_count_ += increment;
     checkEventForOutput();
