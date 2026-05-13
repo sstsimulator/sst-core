@@ -1708,7 +1708,7 @@ DebugConsole::cmd_print_rank_serial(std::string& cmd_str)
     result.clear();
 
     if ( current_rank == 0 ) {
-        succeed = cmd_ls_remote(tokens);
+        succeed = cmd_print_remote(tokens);
         std::cout << result.str();
     }
     else {
