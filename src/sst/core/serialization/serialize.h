@@ -209,9 +209,11 @@ class serialize
             // that point to it.
             if ( ser.sizer().check_pointer_sizer(ptr) ) {
                 Output::getDefaultObject().output(
-                    "WARNING: Serializaion of object using as_ptr option detected that a pointer to this object was "
+                    "WARNING: Serializaion of object of type %s using as_ptr option detected that a pointer to this "
+                    "object was "
                     "already serialized.  Serialization of the object should happen before serialization of any "
-                    "pointers to the object.\n");
+                    "pointers to the object.\n",
+                    ObjectMap::demangle_name(typeid(T).name()).c_str());
             }
 
             // Always put the pointer in
