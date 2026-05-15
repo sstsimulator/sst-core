@@ -383,7 +383,6 @@ void
 WatchPoint::setBufferReset()
 {
     if ( tb_ != nullptr ) {
-        printf("    Set Buffer Reset\n");
         tb_->setBufferReset();
         reset_ = true;
     }
@@ -412,7 +411,6 @@ WatchPoint::check()
         s << "      ";
         cmpObjects_[i]->print(s);
         s << " -> " << result2 << std::endl;
-        // printf("      comparison%ld = %d\n", i, result2);
 
         if ( logicOps_[i - 1] == LogicOp::AND ) {
             result = result && result2;
