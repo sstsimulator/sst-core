@@ -1019,7 +1019,6 @@ public:
 
     void resetTraceBuffer()
     {
-        printf("    Reset Trace Buffer\n");
         postCount_   = 0;
         cur_         = 0;
         first_       = 0;
@@ -1067,41 +1066,43 @@ public:
             // printf("    Sample: post trigger\n");
         }
 
+        if ( !(state_ == POSTTRIGGER && postCount_ >= postDelay_) ) {
 // Circular buffer
 #ifdef _OBJMAP_DEBUG_
-        std::cout << "    Sample:" << handler << ": numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
-                  << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
-                  << " samplesLost:" << samplesLost_ << std::endl;
+            std::cout << "    Sample:" << handler << ": numRecs:" << numRecs_ << " first:" << first_ << " cur:" << cur_
+                      << " state:" << state2char.at(state_) << " isOverrun:" << isOverrun_
+                      << " samplesLost:" << samplesLost_ << std::endl;
 #endif
-        cycleBuffer_[cur_]   = cycle;
-        handlerBuffer_[cur_] = handler;
-        if ( trigger ) {
-            triggerCycle = cycle;
-        }
-
-        // Sample all the trace object buffers
-        ObjectBuffer* varBuffer_;
-        for ( size_t obj = 0; obj < numObjects; obj++ ) {
-            varBuffer_ = objBuffers_[obj];
-            varBuffer_->sample(cur_, trigger);
-        }
-
-        if ( numRecs_ < bufSize_ ) {
-            tagBuffer_[cur_] = state_;
-            numRecs_++;
-            cur_ = (cur_ + 1) % bufSize_;
-            if ( cur_ == 0 ) first_ = 0; // 1;
-        }
-        else { // Buffer full
-            // Check to see if we are overwriting trigger
-            if ( tagBuffer_[cur_] == TRIGGER ) {
-                // printf("    Sample Overrun\n");
-                isOverrun_ = true;
+            cycleBuffer_[cur_]   = cycle;
+            handlerBuffer_[cur_] = handler;
+            if ( trigger ) {
+                triggerCycle = cycle;
             }
-            tagBuffer_[cur_] = state_;
-            numRecs_++;
-            cur_   = (cur_ + 1) % bufSize_;
-            first_ = cur_;
+
+            // Sample all the trace object buffers
+            ObjectBuffer* varBuffer_;
+            for ( size_t obj = 0; obj < numObjects; obj++ ) {
+                varBuffer_ = objBuffers_[obj];
+                varBuffer_->sample(cur_, trigger);
+            }
+
+            if ( numRecs_ < bufSize_ ) {
+                tagBuffer_[cur_] = state_;
+                numRecs_++;
+                cur_ = (cur_ + 1) % bufSize_;
+                if ( cur_ == 0 ) first_ = 0; // 1;
+            }
+            else { // Buffer full
+                // Check to see if we are overwriting trigger
+                if ( tagBuffer_[cur_] == TRIGGER ) {
+                    // printf("    Sample Overrun\n");
+                    isOverrun_ = true;
+                }
+                tagBuffer_[cur_] = state_;
+                numRecs_++;
+                cur_   = (cur_ + 1) % bufSize_;
+                first_ = cur_;
+            }
         }
 
         if ( isOverrun_ ) {
@@ -1110,14 +1111,12 @@ public:
 
         if ( (state_ == TRIGGER) && (postDelay_ == 0) ) {
             invokeAction = true;
-            std::cout << "    Invoke Action\n";
         }
 
         if ( state_ == POSTTRIGGER ) {
             postCount_++;
             if ( postCount_ >= postDelay_ ) {
                 invokeAction = true;
-                std::cout << "    Invoke Action\n";
             }
         }
 

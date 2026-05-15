@@ -31,10 +31,7 @@ c1 talkingc1, bounce 991, t=9000000
 c0 talkingClock cycle count = 1
 c0 talkingRNG: 4074790800, 774252441, 24684
 c0 talkingDistributions: 1.500000, 5.000000, 0.721430, 0.919625, 0.000000, 1.000000
-    Invoke Action
-    Set Buffer Reset
 # Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.04483 seconds)
-    Reset Trace Buffer
 c1 talkingClock cycle count = 1
 c1 talkingRNG: 4074790800, 774252441, 24684
 c1 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000

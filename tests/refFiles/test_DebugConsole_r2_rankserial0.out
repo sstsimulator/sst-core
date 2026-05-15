@@ -99,21 +99,6 @@ Added watchpoint #1
 > setHandler 1 ae
 WP 1 - component2/message_count_
 > run 1ps
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
 
 INTERACTIVE CONSOLE
 -- Rank:0/2 Thread:0/1 (Triggered)
@@ -153,8 +138,6 @@ Added watchpoint #2
 > setHandler 2 ae
 WP 2 - component5/message_count_
 > run 2000ps
-    Invoke Action
-    Set Buffer Reset
 TriggerCount=5
 LastTriggerRecord:@cycle5000: SamplesLost=0: component5/message_count_=16 
 buf[0] AE @4000 (!) component5/message_count_=12 
@@ -162,7 +145,6 @@ buf[1] AE @4000 (+) component5/message_count_=13
 buf[2] AE @4000 (+) component5/message_count_=14 
 buf[3] AE @5000 (+) component5/message_count_=15 
 buf[4] AE @5000 (+) component5/message_count_=16 
-    Reset Trace Buffer
 
 INTERACTIVE CONSOLE
 -- Rank:0/2 Thread:0/1 (Triggered)
@@ -419,33 +401,14 @@ Simulation is complete, simulated time: 0 s
    StopAction to be delivered at 10000000
    StopAction to be delivered at 18446744073709551615
 ---- Components: ----
-    Invoke Action
-    Set Buffer Reset
 LastTriggerRecord:@cycle6000: SamplesLost=0: component8/message_count_=24 
 set component8/my_id_ 50
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Invoke Action
-    Set Buffer Reset
-    Invoke Action
-    Set Buffer Reset
-    Invoke Action
-    Set Buffer Reset
-    Invoke Action
-    Set Buffer Reset
-    Invoke Action
-    Set Buffer Reset
 LastTriggerRecord:@cycle8000: SamplesLost=0: component12/message_count_=29 
   Trigger action shutting down simulation
 wp simulation shutdown
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
 LastTriggerRecord:@cycle8000: SamplesLost=0: component12/message_count_=31 
   Trigger action shutting down simulation
 wp simulation shutdown
-    Reset Trace Buffer
 15 received 28 messages
 14 received 35 messages
 13 received 34 messages
