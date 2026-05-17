@@ -298,21 +298,6 @@ WP 1 - component2/message_count_
    StopAction to be delivered at 10000000
    StopAction to be delivered at 18446744073709551615
 ---- Components: ----
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
-    Reset Trace Buffer
-    Invoke Action
-    Set Buffer Reset
-    Reset Trace Buffer
 ---- Rank0:Thread0: Entering interactive mode at time 1001
 Ran clock for 1 sim cycles
 > wl
@@ -341,11 +326,8 @@ Added watchpoint #3
 > setHandler 3 ae
 WP 3 - component6/message_count_
 > run 1000ps
-    Invoke Action
-    Set Buffer Reset
 LastTriggerRecord:@cycle3000: SamplesLost=0: component6/message_count_=13 
 set component6/my_id_ 50
-    Reset Trace Buffer
 ---- Rank0:Thread0: Entering interactive mode at time 3001
 Ran clock for 1000 sim cycles
 > wl
@@ -361,8 +343,6 @@ Added watchpoint #4
 > setHandler 4 ae
 WP 4 - component10/message_count_
 > run
-    Invoke Action
-    Set Buffer Reset
 ---- Rank0:Thread0: Entering interactive mode at time 4000
   Last Trigger: WP4: AE : component10/message_count_ ...
 > wl
@@ -375,8 +355,6 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 2 : message_count_ : shutdown
 Added watchpoint #5
 > run
-    Invoke Action
-    Set Buffer Reset
 LastTriggerRecord:@cycle4000: SamplesLost=0: component12/message_count_=14 
   Trigger action shutting down simulation
 wp simulation shutdown
