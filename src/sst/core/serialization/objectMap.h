@@ -1253,7 +1253,9 @@ public:
     bool checkValue(const std::string& value) const override
     {
         try {
-            *addr_ = SST::Core::from_string<T>(value);
+            [[maybe_unused]]
+            decltype(SST::Core::from_string<T>(value)) v;
+            v = SST::Core::from_string<T>(value);
             return true;
         }
         catch ( const std::exception& e ) {
