@@ -1254,8 +1254,7 @@ public:
     {
         try {
             [[maybe_unused]]
-            decltype(SST::Core::from_string<T>(value)) v;
-            v = SST::Core::from_string<T>(value);
+            T v = SST::Core::from_string<T>(value);
             return true;
         }
         catch ( const std::exception& e ) {
