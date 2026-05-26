@@ -4753,7 +4753,7 @@ DebugConsole::executeRankParallel(const std::string& UNUSED_WO_MPI(msg))
 
         // Set done in local rank threads
         tokens.clear();
-        tokens[0] = "done";
+        tokens.push_back("done");
         handleCommand();
 
         // Send done to remote ranks
