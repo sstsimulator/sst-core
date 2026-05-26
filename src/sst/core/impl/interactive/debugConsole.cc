@@ -14,6 +14,8 @@
 #include "sst/core/impl/interactive/debugConsole.h"
 
 #include "sst/core/baseComponent.h"
+#include "sst/core/impl/interactive/ObjMapToTree.h"
+#include "sst/core/impl/interactive/ObjTreeHelpers.h"
 #include "sst/core/simulation.h"
 #include "sst/core/stringize.h"
 #include "sst/core/timeConverter.h"
@@ -78,6 +80,13 @@ DebugConsole::DebugConsole(Params& params) :
             ConsoleCommandGroup::GENERAL,
             [this](std::string& cmd_str) { return cmd_help(cmd_str); },
         },
+        {
+            "show",
+            "sh",
+            "[CMD]: show user-defined command \"CMD\" or show all user-defined commands",
+            ConsoleCommandGroup::GENERAL,
+            [this](std::string& cmd_str) { return cmd_show(cmd_str); },
+        },
         { "verbose", "v", "[mask]: set verbosity mask or print if no mask specified", ConsoleCommandGroup::GENERAL,
             exec_type, [this](std::string& cmd_str) { return cmd_verbose_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_verbose_thread(cmd_str); },
@@ -88,7 +97,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "info",
             "info",
-            "\"current\"|\"all\" print summary for current thread or all threads",
+            "\"current\"|\"all\": print summary for current thread or all threads",
             ConsoleCommandGroup::GENERAL,
             exec_type,
             [this](std::string& cmd_str) { return cmd_info_serial(cmd_str); },
@@ -97,13 +106,13 @@ DebugConsole::DebugConsole(Params& params) :
             [this](std::string& cmd_str) { return cmd_info_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_info_remote(tokens); },
         },
-        { "thread", "thd", "[threadID]: switch to specified thread ID", ConsoleCommandGroup::GENERAL, exec_type,
+        { "thread", "thd", "<threadID>: switch to specified thread ID", ConsoleCommandGroup::GENERAL, exec_type,
             [this](std::string& cmd_str) { return cmd_thread_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_thread_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_thread_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_thread_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_thread_remote(tokens); } },
-        { "rank", "rank", "[rankID]: switch to specified rank ID, same thread", ConsoleCommandGroup::GENERAL, exec_type,
+        { "rank", "rank", "<rankID>: switch to specified rank ID, same thread", ConsoleCommandGroup::GENERAL, exec_type,
             [this](std::string& cmd_str) { return cmd_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_rank_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_rank_rank_serial(cmd_str); },
@@ -111,32 +120,32 @@ DebugConsole::DebugConsole(Params& params) :
             [this](std::vector<std::string>& tokens) { return cmd_rank_remote(tokens); } },
         { "confirm", "cfm", "<true/false>: set confirmation requests on (default) or off", ConsoleCommandGroup::GENERAL,
             [this](std::string& cmd_str) { return cmd_setConfirm(cmd_str); } },
-        { "pwd", "pwd", "print the current working directory in the object map", ConsoleCommandGroup::NAVIGATION,
+        { "pwd", "pwd", ": print the current working directory in the object tree", ConsoleCommandGroup::NAVIGATION,
             exec_type, [this](std::string& cmd_str) { return cmd_pwd_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_pwd_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_pwd_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_pwd_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_pwd_remote(tokens); } },
-        { "chdir", "cd", "change 1 directory level in the object map", ConsoleCommandGroup::NAVIGATION, exec_type,
+        { "chdir", "cd", ": change 1 directory level in the object tree", ConsoleCommandGroup::NAVIGATION, exec_type,
             [this](std::string& cmd_str) { return cmd_cd_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_cd_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_cd_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_cd_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_cd_remote(tokens); } },
-        { "list", "ls", "list the objects in the current level of the object map", ConsoleCommandGroup::NAVIGATION,
-            exec_type, [this](std::string& cmd_str) { return cmd_ls_serial(cmd_str); },
+        { "list", "ls", "[-l] [-ll]: list the objects in the current level of the object tree",
+            ConsoleCommandGroup::NAVIGATION, exec_type, [this](std::string& cmd_str) { return cmd_ls_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_ls_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_ls_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_ls_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return cmd_ls_remote(tokens); } },
 
         // State
-        { "time", "tm", "print current simulation time in cycles", ConsoleCommandGroup::STATE,
+        { "time", "tm", ": print current simulation time in cycles", ConsoleCommandGroup::STATE,
             [this](std::string& cmd_str) { return cmd_time(cmd_str); } },
         {
             "print",
             "p",
-            "[-rN] [<obj>]: print objects at the current level",
+            "[-r N] <obj>: print objects at the current level",
             ConsoleCommandGroup::STATE,
             exec_type,
             [this](std::string& cmd_str) { return cmd_print_serial(cmd_str); },
@@ -148,7 +157,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "set",
             "s",
-            "var value: set value for a variable at the current level",
+            "<var> <value>: set value for a variable at the current level",
             ConsoleCommandGroup::STATE,
             exec_type,
             [this](std::string& cmd_str) { return cmd_set_serial(cmd_str); },
@@ -172,7 +181,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "trace",
             "t",
-            "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action>",
+            "<trig> : <bufSize> <postDelay> : <v1> ... <vN> : <action> (see 'help trace')",
             ConsoleCommandGroup::WATCH,
             exec_type,
             [this](std::string& cmd_str) { return cmd_trace_serial(cmd_str); },
@@ -184,7 +193,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "watchlist",
             "wl",
-            "prints the current list of watchpoints",
+            ": prints the current list of watchpoints",
             ConsoleCommandGroup::WATCH,
             exec_type,
             [this](std::string& cmd_str) { return cmd_watchlist_serial(cmd_str); },
@@ -196,7 +205,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "addTraceVar",
             "add",
-            "<watchpointIndex> <var1> ... <varN>",
+            "<watchpointIndex> <var1> ... <varN>: adds additional trace variables to existing watchpoint",
             ConsoleCommandGroup::WATCH,
             exec_type,
             [this](std::string& cmd_str) { return cmd_addTraceVar_serial(cmd_str); },
@@ -244,7 +253,7 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "setHandler",
             "shn",
-            "<idx> <t1> ... <t2>: trigger check/sampling handler",
+            "<idx> <t1> ... <t2>: set a watchpoint's handler location(s) for trigger check and sampling",
             ConsoleCommandGroup::WATCH,
             exec_type,
             [this](std::string& cmd_str) { return cmd_setHandler_serial(cmd_str); },
@@ -276,93 +285,105 @@ DebugConsole::DebugConsole(Params& params) :
         {
             "continue",
             "c",
-            "alias for run",
+            ": alias for run",
             ConsoleCommandGroup::SIMULATION,
             [this](std::string& cmd_str) { return cmd_run(cmd_str); },
         },
 
-        { "exit", "e", "exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION, exec_type,
+        { "exit", "e", ": exit debugger and continue simulation", ConsoleCommandGroup::SIMULATION, exec_type,
             [this](std::string& cmd_str) { return cmd_exit_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return clear_watchlist(tokens); } },
-        { "quit", "q", "alias for exit", ConsoleCommandGroup::SIMULATION, exec_type,
+        { "quit", "q", ": alias for exit", ConsoleCommandGroup::SIMULATION, exec_type,
             [this](std::string& cmd_str) { return cmd_exit_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_thread(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_serial(cmd_str); },
             [this](std::string& cmd_str) { return cmd_exit_rank_parallel(cmd_str); },
             [this](std::vector<std::string>& tokens) { return clear_watchlist(tokens); } },
-        { "shutdown", "shutd", "exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
+        { "shutdown", "shutd", ": exit the debugger and cleanly shutdown simulator", ConsoleCommandGroup::SIMULATION,
             [this](std::string& cmd_str) { return cmd_shutdown(cmd_str); } },
         // Logging/Replay
-        { "logging", "log", "<filepath>: log command line entires to file", ConsoleCommandGroup::LOGGING,
+        { "logging", "log", "<filepath>: log command line entries to file", ConsoleCommandGroup::LOGGING,
             [this](std::string& cmd_str) { return cmd_logging(cmd_str); } },
-        { "replay", "rep", "<filepath>: run commands from a file. See also: sst --replay", ConsoleCommandGroup::LOGGING,
-            [this](std::string& cmd_str) { return cmd_replay(cmd_str); } },
+        { "replay", "rep", "<filepath>: run commands from a file. See also: 'sst --replay'",
+            ConsoleCommandGroup::LOGGING, [this](std::string& cmd_str) { return cmd_replay(cmd_str); } },
         { "history", "h", "[N]: display all or last N unique commands", ConsoleCommandGroup::LOGGING,
             [this](std::string& cmd_str) { return cmd_history(cmd_str); } },
         // Misc
-        { "autoComplete", "ac", "toggle command line auto-completion enable", ConsoleCommandGroup::MISC,
+        { "autoComplete", "ac", ": toggle command line auto-completion enable", ConsoleCommandGroup::MISC,
             [this](std::string& cmd_str) { return cmd_autoComplete(cmd_str); } },
-        { "clear", "clr", "reset terminal", ConsoleCommandGroup::MISC,
+        { "clear", "clr", ": reset terminal", ConsoleCommandGroup::MISC,
             [this](std::string& cmd_str) { return cmd_clear(cmd_str); } },
-        { "define", "def", "define a user command sequence", ConsoleCommandGroup::MISC,
+        { "define", "def", ": define a user command sequence", ConsoleCommandGroup::MISC,
             [this](std::string& cmd_str) { return cmd_define(cmd_str); } },
-        { "document", "doc", "document help for a user defined command", ConsoleCommandGroup::MISC,
+        { "document", "doc", ": document help for a user defined command", ConsoleCommandGroup::MISC,
             [this](std::string& cmd_str) { return cmd_document(cmd_str); } },
     });
 
     // Detailed help from some commands. Can also add general things like 'help navigation'
-    cmdRegistry.cmdHelp = {
-        { "verbose", "[mask]: set verbosity mask or print if no mask specified\n"
-                     "\tA mask is used to select which features to enable verbosity.\n"
-                     "\tTo turn on all features set the mask to 0xffffffff\n"
-                     "\t\t0x10: Show trigger details" },
-        { "print", "[-rN][<obj>]: print objects in the current level of the object map\n"
-                   "\tif -rN is provided print recursive N levels (default N=4)" },
+    cmdRegistry.cmdHelp = { { "verbose", "[mask]: set verbosity mask or print if no mask specified\n"
+                                         "\tA mask is used to select which features to enable verbosity.\n"
+                                         "\tTo turn on all features set the mask to 0xffffffff\n"
+                                         "\t\t0x10: Show trigger details" },
+        { "print", "[-r N] <obj>: print objects in the current level of the object tree\n"
+                   "\tif -r N is provided print recursive N levels" },
         { "set", "<obj> <value>: sets an object in the current scope to the provided value\n"
-                 "\tobject must be a 'fundamental type' (arithmetic or string)\n"
-                 "\t e.g. set mystring hello world" },
-        { "examine", "[e][<obj>]: prints object in the current scope\n" },
+                 "\t Example: set mystring hello world" },
         { "watchpoints",
             "Manage watchpoints (with or without tracing)\n"
             "\tA <trigger> can be a <comparison> or a sequence of comparisons combined with a <logicOp>\n"
-            "\tE.g. <trigger> = <comparison> or <comparison1> <logicOp> <comparison2> ...\n"
+            "\tE.g. <trigger> = '<comparison>' or '<comparison1> <logicOp> <comparison2> ...'\n"
             "\tA <comparision> can be '<var> changed' which checks whether the value has changed\n"
             "\tor '<var> <op> <val>' which compares the variable to a given value\n"
             "\tAn <op> can be <, <=, >, >=, ==, or !=\n"
             "\tA <logicOp> can be && or ||\n"
             "\t'watch' creates a default watchpoint that breaks into an interactive console when triggered\n"
             "\t'trace' creates a watchpoint with a trace buffer to trace a set of variables and trigger an <action>\n"
+            "\t Note that only data members with persistent references should be used in watchpoints\n"
             "\tAvailable actions include: \n"
-            "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown"
-            "\t  Note: checkpoint action must be enabled at startup via the '--checkpoint-enable' command line "
+            "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown\n"
+            "\tNote that checkpoint action must be enabled at startup via the '--checkpoint-enable' command line "
             "option\n" },
-        { "watch", "<trigger>: adds watchpoint to the watchlist; breaks into interactive console when triggered\n"
-                   "\tExample: watch var1 > 90 && var2 < 100 || var3 changed" },
+        { "watch", "<trigger>: Adds the watchpoint to the watchlist. Breaks into interactive console \n"
+                   "\twhen the trigger condition evaluates to true\n"
+                   "\tExample: watch var1 > 90 && var2 < 100 || var3 changed\n"
+                   "\tWill break into the interactive console when 'var 1 > 90 && var2 < 100 || var3 changed'\n" },
         { "trace",
             "<trigger> : <bufferSize> <postDelay> : <var1> ... <varN> : <action>\n"
-            "\tAdds watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of "
-            "<postDelay>\n"
-            "\tTraces all of the variables specified in the var list and invokes the <action> after postDelay "
-            "when triggered\n"
+            "\tAdds a watchpoint to the watchlist with a trace buffer of <bufferSize> and a post trigger delay of \n"
+            "\t<postDelay>. Each of the variable values is sampled (recorded in the trace buffer) at each handler \n"
+            "\tlocation (before/after clock/event handlers). Once the trigger condition is true, \n"
+            "\tit will sample postDelay additional times and then trigger the associated action. \n"
             "\tAvailable actions include: \n"
             "\t  interactive, printTrace, checkpoint, set <var> <val>, printStatus, or shutdown\n"
             "\t  Note: checkpoint action must be enabled at startup via the '--checkpoint-enable' command line option\n"
-            "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace" },
+            "\tExample: trace var1 > 90 || var2 == 100 : 32 4 : size count state : printTrace\n"
+            "\tThis example will sample the size, count, and state variables in a circular buffer of size 32 until  \n"
+            "\tuntil the trigger condition is true, i.e. 'var1 > 90 || var2 == 100'.  It will then sample 4 additional "
+            "\n"
+            "\ttimes before printing the trace buffer and resetting it.\n" },
         { "watchlist", "prints the current list of watchpoints and their associated indices" },
-        { "addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the specified variables to the specified "
+        { "addtracevar", "<watchpointIndex> <var1> ... <varN> : adds the variables to the specified "
                          "watchpoint's trace buffer" },
-        { "printwatchpoint", "<watchpointIndex>: prints the watchpoint based on the index specified by watchlist" },
-        { "printtrace", "<watchpointIndex>: prints the trace buffer for the specified watchpoint" },
-        { "resettrace", "<watchpointIndex>: resets the trace buffer for the specified watchpoint" },
+        { "printwatchpoint", "<watchpointIndex>: prints the watchpoint at that index in the local watchlist" },
+        { "printtrace",
+            "<watchpointIndex>: prints the trace buffer for the specified watchpoint in the local watchlist" },
+        { "resettrace",
+            "<watchpointIndex>: resets the trace buffer for the specified watchpoint in the local watchlist" },
         { "sethandler", "<wpIndex> <handlerType1> ... <handlerTypeN>\n"
-                        "\tset where to do trigger checks and sampling (before/after clock/event handler)" },
-        { "unwatch", "<watchpointIndex>: removes the specified watchpoint from the watch list.\n"
+                        "\tset location(s) to execute trigger checks and sampling (default is all)\n"
+                        "\t  bc: before clock handler\n"
+                        "\t  ac: after clock handler\n"
+                        "\t  be: before event handler\n"
+                        "\t  ae: after event handler\n"
+                        "\t  all: all 4 locations\n"
+                        "\tExample setHandler 1 ac ae" },
+        { "unwatch", "<watchpointIndex>: removes the specified watchpoint from the current watch list.\n"
                      "\tIf no index is provided, all watchpoints are removed." },
-        { "run", "[TIME]: runs the simulation from the current point for TIME and then returns to\n"
-                 "\tinteractive mode; if no time is given, the simulation runs to completion;\n"
+        { "run", "[TIME]: runs the simulation from the current point for TIME and then returns to interactive mode;\n"
+                 "\t if no time is given, the simulation runs to the next watchpoint trigger or completion;\n"
                  "\tTIME is of the format <Number><unit> e.g. 4us" },
         { "history", "[N]: list previous N instructions. If N is not set list all\n"
                      "\tSupports bash-style commands:\n"
@@ -379,16 +400,20 @@ DebugConsole::DebugConsole(Params& params) :
                      "\ttab: auto-completion\n"
                      "\tctrl-a: move cursor to beginning of line\n"
                      "\tctrl-b: move cursor to the left\n"
-                     "\tctrl-d: delete character at cursor or quit debugger\n"
+                     "\tctrl-d: delete character at cursor or shutdown\n"
                      "\tctrl-e: move cursor to end of line\n"
-                     "\tctrl-f: move cursor to the right\n" },
+                     "\tctrl-f: move cursor to the right\n"
+                     "\tNote: this functionality is not available when using mpi" },
         { "define", "<cmd-name>: enter a command sequence for a user defined command.\n"
-                    "Terminate the sequence by typing \"end\"\n" },
+                    "\tTerminate the sequence by typing \"end\"\n" },
         { "document", "<cmd-name>: provide help documentation for a user defined command.\n"
-                      "The first line will be summarized in the short help text.\n"
-                      "Remaining lines will be provided in detailed help\n"
-                      "Terminate the sequence by typing \"end\"\n" },
-    };
+                      "\tThe first line will be summarized in the short help text.\n"
+                      "\tRemaining lines will be provided in detailed help\n"
+                      "\tTerminate the sequence by typing \"end\"\n" },
+        { "list",
+            "[-l] [-ll]: list the objects in the current level of the object tree with varying detail (default 1).\n"
+            "\tl: verbosity level 2\n"
+            "\tll: verbosity level 3\n" } };
 
     // Command autofill strings
     std::list<std::string> cmdStrings;
@@ -402,6 +427,7 @@ DebugConsole::DebugConsole(Params& params) :
     // Callback for directory listing strings
     cmdLineEditor.set_listing_callback([this](std::list<std::string>& vec) { get_listing_strings(vec); });
 
+    objTree_ = new SST::Core::Serialization::ComponentObj();
     struct winsize size;
     if ( ioctl(STDERR_FILENO, TIOCGWINSZ, &size) == 0 ) {
         dout.setLineWidth(size.ws_col);
@@ -413,6 +439,7 @@ DebugConsole::~DebugConsole()
 {
     if ( loggingFile.is_open() ) loggingFile.close();
     if ( replayFile.is_open() ) replayFile.close();
+    if ( objTree_ ) delete objTree_;
 }
 
 void
@@ -458,8 +485,20 @@ DebugConsole::consoleExecute(const std::string& msg)
               << getCurrentSimCycle() << std::endl;
     std::cout << msg << std::endl;
 
-    // Create a new ObjectMap
-    obj_ = getComponentObjectMap();
+    // Try and serialize the entire map
+    // auto totalMap = SST::Core::Serialization::ObjectMapToTree::convertAndSerialize("root", obj_);
+    // printf("---- total map:\n ----");
+    // totalMap->Dump(2);
+
+    // if(curObj_ == nullptr || objTree_->isEmpty()){
+    if ( objTree_->isEmpty() ) {
+        objTree_->BuildTree(getComponentInfoMap());
+        curObj_ = objTree_;
+    }
+    if ( curObj_ == nullptr ) {
+        curObj_ = objTree_;
+    }
+
 
     // Descend into the name_stack
     cd_name_stack();
@@ -534,39 +573,32 @@ DebugConsole::consoleExecute(const std::string& msg)
         }
     }
 
-    // Save the position on the name_stack, and clear obj_
+    // Save the position on the name_stack, and clear objTree_ and curObj_
     save_name_stack();
+
     done = true;
     return retState;
 }
 
-// Save the name stack of the current position, and clear obj_
+// Save the name stack of the current position, and clear objTree and curObj_
 void
 DebugConsole::save_name_stack()
 {
     name_stack.clear();
-    for ( ;; ) {
-        // Get the name of the current node
-        std::string name = obj_->getName();
 
-        // Get the parent of the current node
-        Core::Serialization::ObjectMap* parent = obj_->selectParent();
-
-        // If the parent is nullptr, we have reached the top and can stop
-        if ( !parent ) break;
-
-        // Push the name on the name_stack
-        name_stack.push_front(std::move(name));
-
-        // See if this is the top level component, and if so, set it to nullptr
-        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
-
-        // Move up to the parent
-        obj_ = parent;
+    if ( curObj_ && !curObj_->isRoot() ) {
+        SST::Core::Serialization::ObjTreeCont* parent = curObj_->getParent();
+        name_stack.push_front(std::move(curObj_->getObjName()));
+        while ( parent && !parent->isRoot() ) {
+            name_stack.push_front(std::move(parent->getObjName()));
+            parent = parent->getParent();
+        }
     }
 
-    obj_->decRefCount();
-    obj_ = nullptr;
+    if ( !objTree_->isEmpty() ) {
+        objTree_->clear(); // tear down the children so we refresh next time we break in
+        curObj_ = nullptr;
+    }
 }
 
 // Descend into the name_stack
@@ -585,6 +617,12 @@ DebugConsole::cd_name_stack()
 bool
 DebugConsole::dispatch_cmd(std::string& cmd)
 {
+    // ctrl+d
+    if ( std::cin.eof() ) {
+        std::cout << "<ctrl+d>" << std::endl;
+        cmd = "shutdown";
+    }
+
     // empty command
     if ( cmd.size() == 0 ) return true;
 
@@ -758,6 +796,45 @@ DebugConsole::cmd_help(std::string& UNUSED(cmd_str))
     return true;
 }
 
+bool
+DebugConsole::cmd_show(std::string& UNUSED(cmd_str))
+{
+    // First check for specific command help
+    if ( tokens.size() == 1 ) {
+        if ( cmdRegistry.getUserRegistryVector().size() > 0 ) {
+            std::cout << "--- User-Defined Commands ---" << std::endl;
+            for ( const auto& cmd : cmdRegistry.getUserRegistryVector() ) {
+                // if ( g.first == c.group() ) {
+                //     std::cout << c << std::endl;
+                // }
+                std::string c = cmd.str_long();
+                std::cout << "User command \"" << c << "\":\n";
+                auto insts = cmdRegistry.userCommandInsts(c);
+                for ( auto i : *insts ) {
+                    std::cout << "\t" << i << "\n";
+                }
+                std::cout << std::endl;
+            }
+        }
+        return true;
+    }
+
+    if ( tokens.size() > 1 ) {
+        std::string c     = tokens[1];
+        auto        insts = cmdRegistry.userCommandInsts(c);
+        if ( insts == nullptr ) {
+            std::cout << "User-defined command \"" << c << "\" not found" << std::endl;
+            return false;
+        }
+        std::cout << "User command \"" << c << "\":\n";
+        for ( auto i : *insts ) {
+            std::cout << "\t" << i << "\n";
+        }
+        return true;
+    }
+    return false;
+}
+
 // verbose [mask] : set verbosity mask or print if no mask specified
 bool
 DebugConsole::cmd_verbose_query()
@@ -781,6 +858,11 @@ DebugConsole::cmd_verbose_query()
 bool
 DebugConsole::cmd_verbose_remote(std::vector<std::string>& tokens)
 {
+    if ( tokens.size() <= 1 ) {
+        std::cout << "Invalid format for verbose command (verbose N)" << std::endl;
+        return false;
+    }
+
     verbosity = SST::Core::from_string<uint32_t>(tokens[1]);
 
     // update watchpoint verbosity in all ranks/threads
@@ -921,7 +1003,8 @@ DebugConsole::cmd_info_thread(std::string& UNUSED(cmd_str))
     else if ( tokens[1] == "all" ) {
         // Print info for all threads
         succeed = handleCommandAll();
-        std::cout << result.str();
+        dout << result.str();
+        dout << dreset;
     }
     else {
         std::cout << "Invalid argument for info command: " << tokens[1] << " (info \"current\"|\"all\")" << std::endl;
@@ -961,14 +1044,15 @@ DebugConsole::cmd_info_rank_serial(std::string& cmd_str)
         result.clear();
         // Print info for rank 0
         succeed = cmd_info_remote(tokens);
-        std::cout << result.str();
+        dout << result.str();
 
         // Clear R0 result string
         result.str("");
         result.clear();
         // Send to remote ranks, all threads
         succeed2 = sendCommandAll(cmd_str);
-        std::cout << result.str();
+        dout << result.str();
+        dout << dreset;
         return succeed || succeed2;
     }
     else {
@@ -1007,14 +1091,15 @@ DebugConsole::cmd_info_rank_parallel(std::string& cmd_str)
         result.clear();
         // Print info for rank 0
         succeed = handleCommandAll();
-        std::cout << result.str();
+        dout << result.str();
 
         // Clear result string
         result.str("");
         result.clear();
         // Print info for other ranks, all threads
         succeed2 = sendCommandAll(cmd_str);
-        std::cout << result.str();
+        dout << result.str();
+        dout << dreset;
         return succeed || succeed2;
     }
     else {
@@ -1389,16 +1474,17 @@ DebugConsole::cmd_pwd_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_pwd_remote(std::vector<std::string>& UNUSED(tokens))
 {
-    // std::string path = obj_->getName();
-    // std::string slash("/");
-    // // path = slash + path;
-    // SST::Core::Serialization::ObjectMap* curr = obj_->getParent();
-    // while ( curr != nullptr ) {
-    //     path = curr->getName() + slash + path;
-    //     curr = curr->getParent();
-    // }
-
-    result << obj_->getFullName() << " (" << obj_->getType() << ")\n";
+    std::string path = "/";
+    if ( !curObj_->isRoot() ) {
+        SST::Core::Serialization::ObjTreeCont* parent = curObj_->getParent();
+        path.append(curObj_->getObjName());
+        while ( parent && !parent->isRoot() ) {
+            path.insert(0, parent->getObjName());
+            path.insert(0, "/");
+            parent = parent->getParent();
+        }
+    }
+    result << path << std::endl;
     return true;
 }
 
@@ -1477,17 +1563,21 @@ DebugConsole::cmd_ls_rank_parallel(std::string& cmd_str)
 }
 
 bool
-DebugConsole::cmd_ls_remote(std::vector<std::string>& UNUSED(tokens))
+DebugConsole::cmd_ls_remote(std::vector<std::string>& tokens)
 {
-    auto& vars = obj_->getVariables();
-    for ( auto& x : vars ) {
-        if ( x.second->isFundamental() ) {
-            result << x.first << " = " << x.second->get() << " (" << x.second->getType() << ")" << std::endl;
-        }
-        else {
-            result << x.first.c_str() << "/ (" << x.second->getType() << ")\n";
-        }
+
+    unsigned verbosity = 0;
+    if ( tokens.size() > 1 ) {
+        if ( "-l" == tokens[1] )
+            verbosity = 2;
+        else if ( "-ll" == tokens[1] )
+            verbosity = 3;
     }
+    // Dump all the components
+    curObj_->applyRecursive([verbosity](SST::Core::Serialization::ObjTreeCont* child) {
+        child->Dump(verbosity, std::ios_base::dec, result);
+    });
+
     return true;
 }
 
@@ -1496,13 +1586,8 @@ void
 DebugConsole::get_listing_strings(std::list<std::string>& list)
 {
     list.clear();
-    auto& vars = obj_->getVariables();
-    for ( auto& x : vars ) {
-        std::stringstream s;
-        s << x.first;
-        if ( !x.second->isFundamental() ) s << "/";
-        list.emplace_back(s.str());
-    }
+    curObj_->applyRecursive(
+        [&](SST::Core::Serialization::ObjTreeCont* child) { list.emplace_back(child->getObjName()); });
     list.sort();
 }
 
@@ -1606,46 +1691,61 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
 
     // Check for ..
     if ( selection == ".." ) {
-        auto* parent = obj_->selectParent();
-        if ( parent == nullptr ) {
-            result << "Already at top of object hierarchy" << std::endl;
+        auto* parent = curObj_->getParent();
+        if ( parent ) {
+            curObj_ = parent;
+        }
+        else {
+            printf("Already at top of object hierarchy\n");
             return false;
         }
-
-        // See if this is the top level component, and if so, set it to nullptr
-        if ( dynamic_cast<Core::Serialization::ObjectMap*>(base_comp_) == obj_ ) base_comp_ = nullptr;
-
-        obj_ = parent;
         return true;
     }
 
-    bool                                 loop_detected = false;
-    SST::Core::Serialization::ObjectMap* new_obj       = obj_->selectVariable(selection, loop_detected, confirm_);
-    if ( !new_obj || (new_obj == obj_) ) {
-        result << "Unknown object in cd command: " << selection << std::endl;
+    // Search children by name
+    SST::Core::Serialization::ObjTreeCont* target = curObj_->findByName(selection);
+    if ( !target ) {
+        printf("Unknown object in cd command: %s\n", selection.c_str());
         return false;
     }
 
-    if ( new_obj->isFundamental() ) {
-        result << "Object" << selection << " is a fundamental type so you cannot cd into it" << std::endl;
-        new_obj->selectParent();
+    // If it's a ComponentObj that hasn't been serialized yet, serialize it
+    if ( auto* comp = dynamic_cast<Core::Serialization::ComponentObj*>(target) ) {
+        if ( comp->getChildren().empty() ) {
+            Core::Serialization::ObjectMapToTree::serializeComponent(comp, true);
+        }
+    }
+
+    // Only descend if the target has children (or is a component that just got serialized)
+    if ( target->getChildren().empty() ) {
+        printf("Cannot cd into %s: no children\n", selection.c_str());
         return false;
     }
 
-    if ( loop_detected ) {
-        result << "Loop detected in cd.  New working directory will be set to level of looped object: "
-               << new_obj->getFullName() << std::endl;
-    }
-    obj_ = new_obj;
+    curObj_ = target;
 
-    // If we don't already have the top level component, check to see
-    // if this is it
-    if ( nullptr == base_comp_ ) {
-        Core::Serialization::ObjectMapDeferred<BaseComponent>* base_comp =
-            dynamic_cast<Core::Serialization::ObjectMapDeferred<BaseComponent>*>(obj_);
-        if ( base_comp ) base_comp_ = base_comp;
-    }
     return true;
+}
+
+std::vector<size_t>
+DebugConsole::parseBracketIndices(std::string& token)
+{
+    std::vector<size_t> indices;
+
+    size_t pos = token.find('[');
+    while ( pos != std::string::npos ) {
+        size_t pos2 = token.find(']', pos);
+        if ( pos2 == std::string::npos ) break;
+
+        std::string key = token.substr(pos + 1, (pos2 - pos) - 1);
+        indices.push_back(std::atoi(key.c_str()));
+        token.erase(pos, (pos2 - pos) + 1);
+
+        // Search again from the same position since we erased
+        pos = token.find('[', pos);
+    }
+
+    return indices;
 }
 
 // time: print current simulation cycle
@@ -1671,7 +1771,8 @@ DebugConsole::cmd_print_serial(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = cmd_print_remote(tokens);
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
     return succeed;
 }
 
@@ -1689,7 +1790,8 @@ DebugConsole::cmd_print_thread(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = handleCommand();
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed;
 }
@@ -1709,13 +1811,14 @@ DebugConsole::cmd_print_rank_serial(std::string& cmd_str)
 
     if ( current_rank == 0 ) {
         succeed = cmd_print_remote(tokens);
-        std::cout << result.str();
+        dout << result.str();
     }
     else {
         // Send to remote rank
         succeed = sendCommand(current_rank, current_thread, cmd_str);
-        std::cout << result.str();
+        dout << result.str();
     }
+    dout << dreset;
     return succeed;
 }
 
@@ -1735,14 +1838,14 @@ DebugConsole::cmd_print_rank_parallel(std::string& cmd_str)
     if ( current_rank == 0 ) {
         // Execute in correct local thread
         succeed = handleCommand();
-        std::cout << result.str();
+        dout << result.str();
     }
     else {
         // Send to remote rank
         succeed = sendCommand(current_rank, current_thread, cmd_str);
-        std::cout << result.str();
+        dout << result.str();
     }
-
+    dout << dreset;
     return succeed;
 }
 
@@ -1752,12 +1855,18 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     // Index in tokens array where we may find the variable name
     size_t var_index = 1;
 
+    if ( tokens.size() < 2 ) {
+        printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+        return false;
+    }
+
+    size_t      pos     = containsArg(tokens, "-r");
     // See if have a -r or not
-    int         recurse = 4; // default -r depth
+    int         recurse = 0; // default -r depth
     std::string tok     = tokens[1];
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
         // Got a -r
-        std::string num = tok.substr(2);
+        std::string num = tokens[pos + 1];
         if ( num.size() != 0 ) {
             try {
                 recurse = SST::Core::from_string<int>(num);
@@ -1779,31 +1888,121 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
                 }
             }
         }
-        var_index = 2;
+
+        var_index = (pos + 2 > var_index) ? pos += 2 : var_index;
     }
 
-    if ( tokens.size() == var_index ) {
-        // Print current object
-        obj_->list(recurse);
-        return true;
+    // See if have a -v or not
+    int print_verbose = 0;
+    pos               = containsArg(tokens, "-v");
+    if ( std::string::npos != pos ) {
+        // Got a -v
+        std::string num = tokens[pos + 1];
+        if ( num.size() != 0 ) {
+            try {
+                print_verbose = std::stoi(num, nullptr, 10);
+            }
+            catch ( const std::invalid_argument& e ) {
+                printf("Invalid number format specified with -v: %s\n", num.c_str());
+                return false;
+            }
+        }
+        else {
+            print_verbose = 0; // default -v depth
+        }
+
+        var_index = (pos + 2 > var_index) ? pos += 2 : var_index;
+    }
+
+    // check for format specifier
+    pos                          = containsArg(tokens, "-f");
+    std::string             fmt  = "dec";
+    std::ios_base::fmtflags base = std::ios_base::dec;
+    if ( std::string::npos != pos ) {
+        // found format specifier
+        fmt = tokens[pos + 1];
+
+        if ( "hex" == fmt ) {
+            base = std::ios_base::hex;
+        }
+        else if ( "oct" == fmt ) {
+            base = std::ios_base::oct;
+        }
+        else {
+            base = std::ios_base::dec;
+        }
+
+        var_index = (pos + 2 > var_index) ? pos += 2 : var_index;
     }
 
     if ( tokens.size() != (var_index + 1) ) {
-        result << "Invalid format for print command (print [-rN] [<obj>])" << std::endl;
+        printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
         return false;
     }
 
-    bool        found;
-    std::string listing = obj_->listVariable(tokens[var_index], found, recurse);
-    if ( !found ) {
-        result << "Unknown object in print command: " << tokens[var_index] << std::endl;
-        return false;
+    // Check for [ ] [ ]
+    std::vector<size_t> indices = parseBracketIndices(tokens[var_index]);
+
+    auto* target = curObj_->findByName(tokens[var_index]);
+    if ( target ) {
+        if ( !indices.empty() ) {
+            SST::Core::Serialization::ContainerObj* tmp = dynamic_cast<SST::Core::Serialization::ContainerObj*>(target);
+            if ( tmp ) {
+                tmp->printElementAt(indices, print_verbose + 1, base, result);
+            }
+            else {
+                std::cout << "WARNING: Object not indexable" << std::endl;
+                target->Dump(print_verbose + 1, base, result);
+            }
+        }
+        else {
+            target->Dump(print_verbose + 1, base, result);
+            if ( recurse > 0 ) {
+                if ( target->getChildren().empty() ) {
+                    // Object we are trying to recursively print has (potentially) not yet been serialized
+                    // If it's a ComponentObj that hasn't been serialized yet, serialize it
+                    if ( auto* comp = dynamic_cast<Core::Serialization::ComponentObj*>(target) ) {
+                        if ( comp->getChildren().empty() ) {
+                            Core::Serialization::ObjectMapToTree::serializeComponent(comp, true);
+                        }
+                    }
+                }
+                target->applyRecursive([print_verbose, base](SST::Core::Serialization::ObjTreeCont* child) {
+                    child->Dump(print_verbose + 1, base, result);
+                });
+            }
+        }
     }
     else {
-        result << listing;
+        result << "Unknown object in print command: " << tokens[var_index] << std::endl;
+        // result << "Invalid format for print command (print [-rN] [<obj>])" << std::endl;
+        return false;
     }
     return true;
 }
+
+bool
+DebugConsole::containsArg(const std::string tok, const char arg)
+{
+    for ( size_t i = 0; i + 1 < tok.size(); ++i ) {
+        if ( (tok[i] == '-' && tok[i + 1] == arg) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+size_t
+DebugConsole::containsArg(const std::vector<std::string> tokens, const std::string& arg)
+{
+    for ( size_t i = 0; i < tokens.size(); ++i ) {
+        if ( tokens[i] == arg ) {
+            return i;
+        }
+    }
+    return std::string::npos;
+}
+
 
 // set <obj> <value>: set object to value
 bool
@@ -1906,63 +2105,52 @@ DebugConsole::cmd_set_remote(std::vector<std::string>& tokens)
     //    Sanitizer indicated use of previously freed memory.
     //
 
-    if ( obj_->isContainer() ) {
-        bool found     = false;
-        bool read_only = false;
-        obj_->set(tokens[1], tokens[2], found, read_only);
-        if ( !found ) {
-            result << "Unknown object in set command for container: " << tokens[1] << std::endl;
-            return false;
+    // DDD: Do we need to check for ReadOnly in the ObjectMap?
+
+    // NOTE: We assume that if there are more than 3 tokens you are setting a string.
+    if ( tokens.size() > 3 ) {
+        int totalTokens = tokens.size();
+        for ( int t = 3; t < totalTokens; t++ ) {
+            tokens[2].push_back(' ');
+            tokens[2].append(tokens[t]); // pack all the other tokens into the string value that will be set.
         }
-        if ( read_only ) {
-            result << "Object specified in set command is read-only for container: " << tokens[1] << std::endl;
-            return false;
+    }
+
+    // Check for [ ] [ ]
+    std::vector<size_t> indices = parseBracketIndices(tokens[1]);
+
+    auto* target = curObj_->findByName(tokens[1]);
+    if ( target ) {
+        if ( !indices.empty() ) {
+            SST::Core::Serialization::ContainerObj* tmp = dynamic_cast<SST::Core::Serialization::ContainerObj*>(target);
+            if ( tmp ) {
+                if ( tmp->setElementFromString(indices, tokens[2]) ) {
+                    return true;
+                }
+                else {
+                    result << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType()
+                           << ")" << std::endl;
+                    return false;
+                }
+            }
+            else {
+                result << "ERROR: Unable to set value - object not indexable" << std::endl;
+                return false;
+            }
         }
-        // TODO do we need var->selectParent() here?
-        return true;
-    }
-
-    bool  loop_detected = false;
-    auto* var           = obj_->selectVariable(tokens[1], loop_detected);
-    assert(var);
-    if ( !var || (var == obj_) ) {
-        result << "Unknown object in set command: " << tokens[1] << std::endl;
-        // TODO make sure selectVariable hasn't altered any state.
-        return false;
-    }
-
-    // Once we have a valid object, be sure to use var->selectParent() or
-    // future commands may attempt to use free'd memory.
-
-    if ( var->isReadOnly() ) {
-        result << "Object specified in set command is read-only: " << tokens[1] << std::endl;
-        var->selectParent();
-        return false;
-    }
-
-    if ( !var->isFundamental() ) {
-        result << "Invalid object in set command: " << tokens[1] << " is not a fundamental type" << std::endl;
-        var->selectParent();
-        return false;
-    }
-    std::string value = tokens[2];
-    if ( var->getType() == "std::string" ) {
-        for ( size_t index = 3; index < tokens.size(); index++ ) {
-            value = value + " " + tokens[index];
+        else {
+            if ( !target->setFromString(tokens[2]) ) {
+                result << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType() << ")"
+                       << std::endl;
+                return false;
+            }
         }
     }
     else {
-        value = tokens[2];
-    }
-
-    try {
-        var->set(value);
-    }
-    catch ( const std::exception& e ) {
-        result << "Invalid format: " << tokens[2] << std::endl;
+        result << "Unknown object in set command: " << tokens[1] << std::endl;
         return false;
     }
-    var->selectParent();
+
     return true;
 }
 
@@ -2270,24 +2458,19 @@ DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
         const std::string& tvar = tokens[tindex++];
 
         // Find and check trace variable
-        Core::Serialization::ObjectMap* map = obj_->findVariable(tvar);
+        auto* map = curObj_->findByName(tvar);
         if ( nullptr == map ) {
             result << "Unknown variable: " << tvar << std::endl;
             return false;
         }
 
-        // Is variable fundamental
-        if ( !map->isFundamental() ) {
-            result << "Traces can only be placed on fundamental types; " << tvar << " is not fundamental" << std::endl;
-            return false;
-        }
         size_t bufsize = wp->getBufferSize();
         if ( bufsize == 0 ) {
             result << "Watchpoint " << wpIndex << " does not have tracing enabled" << std::endl;
             return false;
         }
-        auto* ob = map->getObjectBuffer(obj_->getFullName() + "/" + tvar, bufsize);
-        wp->addObjectBuffer(ob);
+        std::unique_ptr<Core::Serialization::ObjTreeCont> map_uniq(map->clone());
+        wp->addObjectBuffer(std::move(map_uniq));
     }
     return true;
 }
@@ -2427,7 +2610,8 @@ DebugConsole::cmd_printTrace_serial(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = cmd_printTrace_remote(tokens);
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed;
 }
@@ -2446,7 +2630,8 @@ DebugConsole::cmd_printTrace_thread(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = handleCommand();
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed;
 }
@@ -2466,13 +2651,14 @@ DebugConsole::cmd_printTrace_rank_serial(std::string& cmd_str)
 
     if ( current_rank == 0 ) {
         succeed = cmd_printTrace_remote(tokens);
-        std::cout << result.str();
+        dout << result.str();
     }
     else {
         // Send to remote rank
         succeed = sendCommand(current_rank, current_thread, cmd_str);
-        std::cout << result.str();
+        dout << result.str();
     }
+    dout << dreset;
     return succeed;
 }
 
@@ -2492,13 +2678,14 @@ DebugConsole::cmd_printTrace_rank_parallel(std::string& cmd_str)
     if ( current_rank == 0 ) {
         // Execute in correct local thread
         succeed = handleCommand();
-        std::cout << result.str();
+        dout << result.str();
     }
     else {
         // Send to remote rank
         succeed = sendCommand(current_rank, current_thread, cmd_str);
-        std::cout << result.str();
+        dout << result.str();
     }
+    dout << dreset;
 
     return succeed;
 }
@@ -2529,7 +2716,7 @@ DebugConsole::cmd_printTrace_remote(std::vector<std::string>& tokens)
         return false;
     }
 
-    wp->printTrace();
+    wp->printTrace(result);
 
     return true;
 }
@@ -2741,7 +2928,8 @@ DebugConsole::cmd_watchlist_serial(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = cmd_watchlist_remote(tokens);
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed;
 }
@@ -2755,7 +2943,8 @@ DebugConsole::cmd_watchlist_thread(std::string& UNUSED(cmd_str))
     result.clear();
 
     succeed = handleCommandAll();
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed;
 }
@@ -2767,13 +2956,14 @@ DebugConsole::cmd_watchlist_rank_serial(std::string& cmd_str)
     result.str("");
     result.clear();
     bool succeed = cmd_watchlist_remote(tokens);
-    std::cout << result.str();
+    dout << result.str();
 
     // Send to remote rank
     result.str("");
     result.clear();
     bool succeed2 = sendCommandAll(cmd_str);
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed || succeed2;
 }
@@ -2786,14 +2976,15 @@ DebugConsole::cmd_watchlist_rank_parallel(std::string& cmd_str)
     result.clear();
     // Handle local threads
     bool succeed = handleCommandAll();
-    std::cout << result.str();
+    dout << result.str();
 
     // Clear R0 result string
     result.str("");
     result.clear();
     // Send to remote ranks
     bool succeed2 = sendCommandAll(cmd_str);
-    std::cout << result.str();
+    dout << result.str();
+    dout << dreset;
 
     return succeed || succeed2;
 }
@@ -2844,7 +3035,7 @@ DebugConsole::cmd_define(std::string& UNUSED(cmd_str))
     }
 
     // Create a user command entry (or clear existing one)
-    if ( cmdRegistry.beginUserCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DEFINE;
+    if ( cmdRegistry.beginUserCommand(tokens[1], confirm_) ) line_entry_mode = LINE_ENTRY_MODE::DEFINE;
 
     return true;
 }
@@ -2860,6 +3051,140 @@ DebugConsole::cmd_document(std::string& UNUSED(cmd_str))
     if ( cmdRegistry.beginDocCommand(tokens[1]) ) line_entry_mode = LINE_ENTRY_MODE::DOCUMENT;
 
     return true;
+}
+
+// Create a helper object that contains the paths to the objects, the types being compared
+//  as well as the operators used. Creates and returns a new ObjTreeComparison that the caller owns.
+//  nullptr returned as an error condition.
+Core::Serialization::ObjTreeComparison*
+parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjTreeCont* curObj,
+    Core::Serialization::ObjTreeComparison* op = nullptr)
+{
+
+    const std::string& var = tokens[index++];
+    if ( index >= tokens.size() ) {
+        std::cout << "Invalid format for trigger test" << std::endl;
+        return nullptr;
+    }
+    const std::string& opstr = tokens[index++];
+    if ( nullptr == op ) {
+        op = new Core::Serialization::ObjTreeComparison();
+    }
+    op->operators.push_back(Core::Serialization::ObjTreeComparison::getOperationFromString(opstr));
+
+    std::string v2;
+    if ( Core::Serialization::ObjTreeComparison::Op::CHANGED != op->operators.back() ) {
+        if ( index >= tokens.size() ) {
+            std::cout << "Invalid format for trigger test. Valid formats are <var> changed and <var> <op> <val>"
+                      << std::endl;
+            return nullptr;
+        }
+        v2 = tokens[index++];
+    }
+
+    // Is operator valid
+    if ( op->operators.back() == Core::Serialization::ObjTreeComparison::Op::INVALID ) {
+        std::cout << "Unknown comparison operation specified in trigger test" << std::endl;
+        return nullptr;
+    }
+
+    // DDD: There is a lot of code duplicated ... this can clearly be a loop
+    SST::Core::Serialization::ObjTreeCont* opObj  = curObj->findByName(var);
+    SST::Core::Serialization::ObjTreeCont* parent = nullptr;
+    std::deque<std::string>                path;
+    if ( nullptr != opObj ) {
+        if ( !opObj->isLeaf() ) {
+            std::cout << "WARNING: Unsupported object " << opObj->getObjName() << " in watchpoint" << std::endl;
+        }
+        parent = opObj->getParent();
+        path.push_front(opObj->getObjName());
+        while ( parent && !parent->isRoot() ) {
+            path.push_front(parent->getObjName());
+            parent = parent->getParent();
+        }
+        op->objectsToCompare.emplace_back(
+            std::move(path), Core::Serialization::ObjTreeComparison::valType::OBJ, opObj->clone());
+
+        // In changed mode, we do not use v2, but add a "placeholder" object to the compairson list. This is a touch
+        // wasteful, but makes our life a lot easier later
+        if ( op->operators.back() == Core::Serialization::ObjTreeComparison::Op::CHANGED ) {
+            std::deque<std::string> tmpPath;
+            tmpPath.push_front("unnit");
+            op->objectsToCompare.emplace_back(
+                std::move(tmpPath), Core::Serialization::ObjTreeComparison::valType::UNKNOWN, opObj->clone());
+            return op;
+        }
+    }
+    else {
+        std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
+        // Convert the string value to an Integer or FloatObj
+        try {
+            int64_t v = std::stoll(var);
+            constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+        }
+        catch ( ... ) {
+        }
+        try {
+            double v  = std::stod(var);
+            constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
+        }
+        catch ( ... ) {
+        }
+        if ( constNode == nullptr ) {
+            std::cout << "Unknown Constant in expression" << std::endl;
+            return nullptr;
+        }
+        std::deque<std::string> const_arg;
+        const_arg.push_back(var);
+        op->objectsToCompare.emplace_back(
+            std::move(const_arg), Core::Serialization::ObjTreeComparison::valType::CONST, constNode->clone());
+    }
+
+
+    // Check if v2 is a variable
+    Core::Serialization::ObjTreeCont* opObj2 = curObj->findByName(v2);
+
+    // V2 is valid variable
+    if ( nullptr != opObj2 ) {
+        if ( !opObj2->isLeaf() ) {
+            std::cout << "WARNING: Unsupported object " << opObj2->getObjName() << " in watchpoint" << std::endl;
+        }
+        parent = opObj2->getParent();
+        path.clear();
+        path.push_front(opObj2->getObjName());
+        while ( parent && !parent->isRoot() ) {
+            path.push_front(parent->getObjName());
+            parent = parent->getParent();
+        }
+        op->objectsToCompare.emplace_back(
+            std::move(path), Core::Serialization::ObjTreeComparison::valType::OBJ, opObj2->clone());
+    }
+    else { // V2 is value string
+        std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
+        // Convert the string value to an Integer or FloatObj
+        try {
+            int64_t v = std::stoll(v2);
+            constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+        }
+        catch ( ... ) {
+        }
+        try {
+            double v  = std::stod(v2);
+            constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
+        }
+        catch ( ... ) {
+        }
+        if ( constNode == nullptr ) {
+            std::cout << "Unknown Constant in expression" << std::endl;
+            return nullptr;
+        }
+        std::deque<std::string> const_arg;
+        const_arg.push_back(v2);
+        op->objectsToCompare.emplace_back(
+            std::move(const_arg), Core::Serialization::ObjTreeComparison::valType::CONST, constNode->clone());
+    }
+
+    return op;
 }
 
 // helper function to parse watchpoint comparison string
@@ -2955,7 +3280,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
 
 // helper function to parse watchpoint action string
 WatchPoint::WPAction*
-parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj)
+parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjTreeCont* obj)
 {
     const std::string& action = tokens[index++];
 
@@ -2988,32 +3313,41 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
         const std::string& tval = tokens[index++];
 
         // Find and check variable
-        Core::Serialization::ObjectMap* map = obj->findVariable(tvar);
+        Core::Serialization::ObjTreeCont* map = obj->findByName(tvar);
         if ( nullptr == map ) {
             std::cout << "Unknown variable: " << tvar << std::endl;
             return nullptr;
         }
 
         // Is variable fundamental
-        if ( !map->isFundamental() ) {
-            std::cout << "Can only set fundamental variable, " << tvar << " is not fundamental" << std::endl;
-            return nullptr;
-        }
+        //  if ( !map->isFundamental() ) {
+        //     std::cout << "Can only set fundamental variable, " << tvar << " is not fundamental" << std::endl;
+        //     return nullptr;
+        // }
 
         // Is variable read-only
-        if ( map->isReadOnly() ) {
-            std::cout << "Object specified in set command is read-only: " << tvar << std::endl;
-            return nullptr;
-        }
+        //  if ( map->isReadOnly() ) {
+        //     std::cout << "Object specified in set command is read-only: " << tvar << std::endl;
+        //      return nullptr;
+        //  }
 
         // Check for valid value
-        if ( !map->checkValue(tval) ) {
-            return nullptr;
+        // if ( !map->checkValue(tval) ) {
+        //      return nullptr;
+        //  }
+
+
+        std::string                       name;
+        Core::Serialization::ObjTreeCont* parent = obj->getParent();
+        name.append("/" + tvar);
+        name.insert(0, obj->getObjName());
+        while ( parent && !parent->isRoot() ) {
+            name.insert(0, "/");
+            name.insert(0, parent->getObjName());
+            parent = parent->getParent();
         }
 
-        std::string name = obj->getFullName() + "/" + tvar;
-
-        return new WatchPoint::SetVarWPAction(name, map, tval);
+        return new WatchPoint::SetVarWPAction(name, map->clone(), tval);
     }
 #if 0 // Do users want a heartbeat action?
     else if (action == "heartbeat") {
@@ -3027,6 +3361,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
         return nullptr;
     }
 }
+
 
 // watch <trigger>   where
 //  <trigger> is <comparison> OR <comparison> <logicOp> <comparison> ...
@@ -3128,18 +3463,22 @@ DebugConsole::cmd_watch_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
 {
-    size_t      index = 1;
-    std::string name  = "";
+    size_t            index = 1;
+    std::string       name  = "";
+    std::stringstream ss;
 
     try {
         // Get first comparison
-        Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
+        // allocate ObjTreeCompairson
+        Core::Serialization::ObjTreeComparison* c = parseComparison(tokens, index, curObj_, nullptr);
         if ( c == nullptr ) {
             result << "Invalid comparison argument passed to watch command" << std::endl;
             return false;
         }
         size_t wpIndex = watch_points_.size();
-        auto*  pt      = new WatchPoint(wpIndex, name, c);
+        c->print(ss, 0, c->operators.size() * 2);
+        name     = ss.str();
+        auto* pt = new WatchPoint(wpIndex, name, c);
 
 #if 0 // watch variables currently don't trace, but they could automatically
       // trace test vars
@@ -3168,13 +3507,11 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
             }
 
             // Get next comparison
-            Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
+            c = parseComparison(tokens, index, curObj_, c);
             if ( c == nullptr ) {
                 result << "Invalid comparison argument passed to watch command" << std::endl;
                 return false;
             }
-            pt->addComparison(c);
-
         } // while index < tokens.size(), add another logic op and test comparision
 
         // Parse action
@@ -3191,7 +3528,12 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
         }
 
         // Get the top level component to set the watch point
-        BaseComponent* comp = static_cast<BaseComponent*>(base_comp_->getAddr());
+        BaseComponent*                    comp   = nullptr;
+        Core::Serialization::ObjTreeCont* parent = curObj_;
+        while ( !parent->isComponent() && !parent->isRoot() ) {
+            parent = parent->getParent();
+        }
+        comp = static_cast<Core::Serialization::ComponentObj*>(parent)->getVal();
         if ( comp ) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
@@ -3494,9 +3836,8 @@ DebugConsole::cmd_unwatch_remote(std::vector<std::string>& tokens)
     return true;
 }
 
-// parse trace buffer string to create new trace
-Core::Serialization::TraceBuffer*
-parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjectMap* obj)
+Core::Serialization::ObjTreeTraceBuffer*
+parseTraceBuffer(std::vector<std::string>& tokens, size_t& index)
 {
     size_t bufsize = 32;
     size_t pdelay  = 0;
@@ -3543,7 +3884,7 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
 
     try {
         // Setup Trace Buffer
-        return new Core::Serialization::TraceBuffer(obj, bufsize, pdelay);
+        return new Core::Serialization::ObjTreeTraceBuffer(bufsize, pdelay);
     }
     catch ( const std::exception& e ) {
         std::cout << "Invalid buffer argument passed to trace command\n";
@@ -3551,24 +3892,16 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index, Core::Serializ
     }
 }
 
-// Parse trace variable string
-Core::Serialization::ObjectBuffer*
-parseTraceVar(std::string& tvar, Core::Serialization::ObjectMap* obj, Core::Serialization::TraceBuffer* tb)
+Core::Serialization::ObjTreeCont*
+parseTraceVar(std::string& tvar, Core::Serialization::ObjTreeCont* obj)
 {
     // Find and check trace variable
-    Core::Serialization::ObjectMap* map = obj->findVariable(tvar);
+    auto* map = obj->findByName(tvar);
     if ( nullptr == map ) {
         std::cout << "Unknown variable: " << tvar << std::endl;
         return nullptr;
     }
-
-    // Is variable fundamental
-    if ( !map->isFundamental() ) {
-        std::cout << "Traces can only be placed on fundamental types; " << tvar << "is not fundamental\n";
-        return nullptr;
-    }
-    std::string name = obj->getFullName() + "/" + tvar;
-    return map->getObjectBuffer(name, tb->getBufferSize());
+    return map;
 }
 
 // trace <trigger> : <bufsize> <postdelay> : <v1> ... <vN> :  <action>
@@ -3673,17 +4006,20 @@ DebugConsole::cmd_trace_rank_parallel(std::string& cmd_str)
 bool
 DebugConsole::cmd_trace_remote(std::vector<std::string>& tokens)
 {
-    size_t      index = 1;
-    std::string name  = "";
+    size_t            index = 1;
+    std::string       name  = "";
+    std::stringstream ss;
 
     // Get first comparison
-    Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
+    Core::Serialization::ObjTreeComparison* c = parseComparison(tokens, index, curObj_, nullptr);
     if ( c == nullptr ) {
         std::cout << "Invalid argument passed in comparison trigger command" << std::endl;
         return false;
     }
     size_t wpIndex = watch_points_.size();
-    auto*  pt      = new WatchPoint(wpIndex, name, c);
+    c->print(ss, 0, c->operators.size() * 2);
+    name     = ss.str();
+    auto* pt = new WatchPoint(wpIndex, name, c);
 
     // Add additional comparisons and logical ops
     while ( index < tokens.size() ) {
@@ -3707,17 +4043,16 @@ DebugConsole::cmd_trace_remote(std::vector<std::string>& tokens)
         }
 
         // Get next comparison
-        Core::Serialization::ObjectMapComparison* c = parseComparison(tokens, index, obj_, name);
+        c = parseComparison(tokens, index, curObj_, c);
         if ( c == nullptr ) {
             std::cout << "Invalid argument in comparison of trace command\n";
             return false;
         }
-        pt->addComparison(c);
 
     } // while index < tokens.size(), add another logic op and test comparision
 
     try {
-        auto* tb = parseTraceBuffer(tokens, index, obj_);
+        auto* tb = parseTraceBuffer(tokens, index);
         if ( tb == nullptr ) {
             std::cout << "Invalid trace buffer argument in trace command\n";
             return false;
@@ -3732,18 +4067,19 @@ DebugConsole::cmd_trace_remote(std::vector<std::string>& tokens)
                 break;
             }
 
-            auto* objBuf = parseTraceVar(tvar, obj_, tb);
+            auto* objBuf = parseTraceVar(tvar, curObj_);
             if ( objBuf == nullptr ) {
                 std::cout << "Invalid trace variable argument passed to trace command\n";
                 return false;
             }
-            pt->addObjectBuffer(objBuf);
+            std::unique_ptr<Core::Serialization::ObjTreeCont> obj_uniq(objBuf->clone());
+            pt->addObjectBuffer(std::move(obj_uniq));
         } // end while get trace vars
 
         // Parse action
         std::string action = tokens[index];
 
-        WatchPoint::WPAction* actionObj = parseAction(tokens, index, obj_);
+        WatchPoint::WPAction* actionObj = parseAction(tokens, index, curObj_);
         if ( actionObj == nullptr ) {
             std::cout << "Error in action: " << action << std::endl;
             return false;
@@ -3759,7 +4095,13 @@ DebugConsole::cmd_trace_remote(std::vector<std::string>& tokens)
         }
 
         // Get the top level component to set the watch point
-        BaseComponent* comp = static_cast<BaseComponent*>(base_comp_->getAddr());
+        BaseComponent*                    comp   = nullptr;
+        Core::Serialization::ObjTreeCont* parent = curObj_;
+        while ( !parent->isComponent() && !parent->isRoot() ) {
+            parent = parent->getParent();
+        }
+
+        comp = static_cast<Core::Serialization::ComponentObj*>(parent)->getVal();
         if ( comp ) {
             comp->addWatchPoint(pt);
             watch_points_.emplace_back(pt, comp);
@@ -3803,7 +4145,7 @@ DebugConsole::cmd_exit_thread(std::string& UNUSED(cmd_str))
         std::cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
     else {
-        std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
+        std::cout << "Exiting ObjectExplorer without clearing watchpoints\n";
     }
     exit_console = true;
     return true;
@@ -3823,7 +4165,7 @@ DebugConsole::cmd_exit_rank_serial(std::string& cmd_str)
         std::cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
     else {
-        std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
+        std::cout << "Exiting ObjectExplorer without clearing watchpoints\n";
     }
     exit_console = true;
     return true;
@@ -3843,7 +4185,7 @@ DebugConsole::cmd_exit_rank_parallel(std::string& cmd_str)
         std::cout << "Removing all watchpoints and exiting ObjectExplorer\n";
     }
     else {
-        std::cout << "Exiting ObjectExplorer without clearning watchpoints\n";
+        std::cout << "Exiting ObjectExplorer without clearing watchpoints\n";
     }
     exit_console = true;
     return true;
@@ -4095,13 +4437,43 @@ CommandRegistry::seek(std::string token, SEARCH_TYPE search_type)
 }
 
 bool
-CommandRegistry::beginUserCommand(std::string name)
+CommandRegistry::replace_user_cmd(std::string token)
+{
+    for ( auto consoleCommand : user_registry ) {
+        if ( consoleCommand.match(token) ) {
+            consoleCommand = ConsoleCommand(token);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool
+CommandRegistry::beginUserCommand(std::string name, bool confirm)
 {
     // Make sure not a built-in command
     auto res = seek(name, CommandRegistry::SEARCH_TYPE::BUILTIN);
     if ( res.second ) {
         std::cout << "Cannot overwrite built-in command \"" << name << "\"" << std::endl;
         return false;
+    }
+    // Make sure it is not already user defined
+    auto res2 = seek(name, CommandRegistry::SEARCH_TYPE::USER);
+    if ( res2.second ) {
+        if ( !confirm ) {
+            std::cout << "Re-defining user command \"" << name << "\"" << std::endl;
+        }
+        else {
+            std::string line;
+            std::cout << "User-defined command \"" << name << "\" already exists\n";
+            std::cout << "--Type r to re-define \"" << name << "\" or a to abort define" << std::endl;
+            std::getline(std::cin, line);
+            if ( line.size() == 0 || !(line == "r") ) {
+                std::cout << "Ignoring command to define \"" << name << "\"" << std::endl;
+                return false;
+            }
+        }
     }
     user_command_wip                        = name;
     // Create or overwrite existing user defined command
@@ -4139,6 +4511,19 @@ CommandRegistry::appendUserCommand(std::string token0, std::string line)
 void
 CommandRegistry::commitUserCommand()
 {
+    // Check if empty command
+    if ( user_defined_commands[user_command_wip].size() == 0 ) {
+        std::cout << "Ignore empty user-defined command\n";
+        return;
+    }
+
+    // Replace if it already exists
+    bool res = replace_user_cmd(user_command_wip);
+    if ( res ) {
+        std::cout << "Committing re-defined command \"" << user_command_wip << "\"" << std::endl;
+        return;
+    }
+
     std::cout << "Committing definition for " << user_command_wip << std::endl;
     user_registry.emplace_back(ConsoleCommand(user_command_wip));
     user_command_wip = "";
@@ -4229,11 +4614,14 @@ DebugConsole::handleCommand()
     else if ( !done ) {
         // If I am target thread, handle the incoming command
         if ( current_thread == rank_.thread ) {
-            if ( obj_ == nullptr ) {
-                // Create a new ObjectMap
-                obj_ = getComponentObjectMap();
-                // Descend into the name_stack
+            // if(curObj_== nullptr || objTree_->isEmpty()){
+            if ( objTree_->isEmpty() ) {
+                objTree_->BuildTree(getComponentInfoMap());
+                curObj_ = objTree_;
                 cd_name_stack();
+            }
+            if ( curObj_ == nullptr ) {
+                curObj_ = objTree_;
             }
             auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
             succeed             = consoleCommand.first.exec_remote(tokens);
@@ -4376,6 +4764,7 @@ DebugConsole::receiveCommandRankSerial()
 
     // Set done for all threads
     if ( tokens[0] == "done" ) {
+        save_name_stack();
         done = true;
     }
     else if ( tokens[0] == "summary" ) {
@@ -4396,11 +4785,14 @@ DebugConsole::receiveCommandRankSerial()
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
             // Execute in target thread
-            if ( obj_ == nullptr ) {
-                // Create a new ObjectMap
-                obj_ = getComponentObjectMap();
-                // Descend into the name_stack
+            // if(curObj_ == nullptr || objTree_->isEmpty()){
+            if ( objTree_->isEmpty() ) {
+                objTree_->BuildTree(getComponentInfoMap());
+                curObj_ = objTree_;
                 cd_name_stack();
+            }
+            if ( curObj_ == nullptr ) {
+                curObj_ = objTree_;
             }
             succeed = consoleCommand.first.exec_remote(tokens);
             // Output::getDefaultObject().output("ReceiveCmdRankSerial: succeed %d\n", succeed);
@@ -4476,6 +4868,7 @@ DebugConsole::receiveCommandRankParallel()
     // Set done for all threads
     if ( tokens[0] == "done" ) {
         handleCommand();
+        save_name_stack();
     }
     else if ( tokens[0] == "summary" ) {
         handleCommandAll();
@@ -4655,12 +5048,15 @@ DebugConsole::executeThread(const std::string& msg)
         handleCommand();
     }
     else {
-        // Init object map
-        if ( obj_ == nullptr ) {
-            // Create a new ObjectMap
-            obj_ = getComponentObjectMap();
-            // Descend into the name_stack
+        // Init object tree
+        // if( curObj_ == nullptr || objTree_->isEmpty() ){
+        if ( objTree_->isEmpty() ) {
+            objTree_->BuildTree(getComponentInfoMap());
+            curObj_ = objTree_;
             cd_name_stack();
+        }
+        if ( curObj_ == nullptr ) {
+            curObj_ = objTree_;
         }
 
         // Enter done loop
@@ -4680,6 +5076,9 @@ DebugConsole::executeRankSerial(const std::string& UNUSED_WO_MPI(msg))
     // -- Rank 0
     // Executes the console and sends commands to other threads/ranks as needed
     if ( rank_.rank == 0 ) {
+        // Set autoCompleteEnable = false for MPI runs
+        autoCompleteEnable = false;
+
         // Clear R0 result string
         result.str("");
         result.clear();
@@ -4730,9 +5129,13 @@ DebugConsole::executeRankParallel(const std::string& UNUSED_WO_MPI(msg))
     // -- Rank 0, Thread 0
     // Executes the console and sends commands to other threads/ranks as needed
     if ( rank_.rank == 0 && rank_.thread == 0 ) {
+        // Set autoCompleteEnable = false for MPI runs
+        autoCompleteEnable = false;
+
         // Clear R0 result string
         result.str("");
         result.clear();
+
         // Print Summary
         std::cout << "\nINTERACTIVE CONSOLE" << std::endl;
         const std::string& str = "summary";
@@ -4753,7 +5156,12 @@ DebugConsole::executeRankParallel(const std::string& UNUSED_WO_MPI(msg))
 
         // Set done in local rank threads
         tokens.clear();
-        tokens[0] = "done";
+        if ( tokens.size() == 0 ) {
+            tokens.push_back("done");
+        }
+        else {
+            tokens[0] = "done";
+        }
         handleCommand();
 
         // Send done to remote ranks

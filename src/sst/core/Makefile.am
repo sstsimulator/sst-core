@@ -96,6 +96,9 @@ nobase_dist_sst_HEADERS = \
 	serialization/serialize_impl_fwd.h \
 	serialization/objectMap.h \
 	serialization/objectMapDeferred.h \
+	serialization/objectMapTreeBuilder.h \
+	serialization/ObjTree.h \
+	serialization/ObjTreeLeaves.h \
 	serialization/impl/serialize_adapter.h \
 	serialization/impl/serialize_aggregate.h \
 	serialization/impl/serialize_array.h \

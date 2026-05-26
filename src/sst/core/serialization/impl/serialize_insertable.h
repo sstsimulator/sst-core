@@ -90,7 +90,6 @@ constexpr bool is_simple_map_v<MAP<KEY, REST...>> =
     (is_same_template_v<MAP, std::map> || is_same_template_v<MAP, std::unordered_map>) &&
     (std::is_arithmetic_v<KEY> || std::is_enum_v<KEY> || std::is_convertible_v<KEY, std::string>);
 
-
 // Whether it is a simple set (not a multiset and has integral, floating-point, enum, or convertible to string keys)
 template <typename>
 constexpr bool is_simple_set_v = false;
@@ -159,18 +158,6 @@ class serialize_impl<OBJ, std::enable_if_t<is_insertable_v<OBJ>>>
                 // For std::vector<bool>, iterate over bool values instead of references to elements.
                 for ( bool e : obj )
                     SST_SER(e); // as_ptr_elem not valid for bool
-            }
-            else if constexpr ( is_same_type_template_v<OBJ, std::map> ||
-                                is_same_type_template_v<OBJ, std::unordered_map> ||
-                                is_same_type_template_v<OBJ, std::multimap> ||
-                                is_same_type_template_v<OBJ, std::unordered_multimap> ) {
-
-                // Maps have to be treated differently in the case of the as_ptr_elem option
-                for ( auto& e : obj ) {
-                    auto& cast_e = const_cast<value_type&>(reinterpret_cast<const value_type&>(e));
-                    SST_SER_NAME(cast_e.first, "key");
-                    SST_SER_NAME(cast_e.second, "value", opts);
-                }
             }
             else {
                 // Iterate over references to elements, casting away any const in keys

@@ -1,6 +1,6 @@
 ---- Rank0:Thread0: Entering interactive mode at time 1
 Interactive start at 1
-> replay /home/skuntz/sanity/sst-core/tests/cmd_DebugConsole_serial1.cmd
+> replay cmd_DebugConsole_serial1.cmd
 
 > confirm false
 > # 0 watch
@@ -9,10 +9,10 @@ Interactive start at 1
 Added watchpoint #0
 > run
 ---- Rank0:Thread0: Entering interactive mode at time 1000
-  Last Trigger: WP0: AE : component0/message_count_ ...
+  Last Trigger: WP0: AE : /component0/message_count_ CHANGED  ...
 > wl
 R0,T0: Current watch points:
-0: TriggerCount 1 : ALL : component0/message_count_ CHANGED  : interactive
+0: TriggerCount 1 : ALL : /component0/message_count_ CHANGED  : interactive
 > unwatch 0
 > cd ..
 > # 1 trace printStatus
@@ -20,7 +20,7 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 0 : message_count_ : printStatus
 Added watchpoint #1
 > setHandler 1 ae
-WP 1 - component2/message_count_
+WP 1 - /component2/message_count_ CHANGED 
 > run 1ps
 	CurrentSimCycle:  1000
   N3SST8CoreTest11MessageMesh12MessageEventE to be delivered at time: 1000, priority: 50, order tag: 10, queue order: 17
@@ -302,7 +302,7 @@ WP 1 - component2/message_count_
 Ran clock for 1 sim cycles
 > wl
 R0,T0: Current watch points:
-1: TriggerCount 1 : AE : component2/message_count_ CHANGED  : bufsize = 16 postDelay = 0 : component2/message_count_  : printStatus
+1: TriggerCount 1 : AE : /component2/message_count_ CHANGED  : bufsize = 16 postDelay = 0 : message_count_  : printStatus
 > unwatch 1
 > # 2 trace printTrace
 > cd ..
@@ -310,13 +310,13 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 4 : message_count_ : printTrace
 Added watchpoint #2
 > setHandler 2 ae
-WP 2 - component5/message_count_
+WP 2 - /component5/message_count_ CHANGED 
 > run 1000ps
 ---- Rank0:Thread0: Entering interactive mode at time 2001
 Ran clock for 1000 sim cycles
 > wl
 R0,T0: Current watch points:
-2: TriggerCount 4 : AE : component5/message_count_ CHANGED  : bufsize = 16 postDelay = 4 : component5/message_count_  : printTrace
+2: TriggerCount 4 : AE : /component5/message_count_ CHANGED  : bufsize = 16 postDelay = 4 : message_count_  : printTrace
 > unwatch 2
 > # 3 trace set
 > cd ..
@@ -324,15 +324,15 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 2 : message_count_ : set my_id_ 50
 Added watchpoint #3
 > setHandler 3 ae
-WP 3 - component6/message_count_
+WP 3 - /component6/message_count_ CHANGED 
 > run 1000ps
-LastTriggerRecord:@cycle3000: SamplesLost=0: component6/message_count_=13 
+LastTriggerRecord:@cycle3000: SamplesLost=0: message_count_ = 13 
 set component6/my_id_ 50
 ---- Rank0:Thread0: Entering interactive mode at time 3001
 Ran clock for 1000 sim cycles
 > wl
 R0,T0: Current watch points:
-3: TriggerCount 3 : AE : component6/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component6/message_count_  : set component6/my_id_ 50
+3: TriggerCount 3 : AE : /component6/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : message_count_  : set component6/my_id_ 50
 > #print my_id_
 > unwatch 3
 > # 4 trace interactive
@@ -341,13 +341,13 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 2 : message_count_ : interactive
 Added watchpoint #4
 > setHandler 4 ae
-WP 4 - component10/message_count_
+WP 4 - /component10/message_count_ CHANGED 
 > run
 ---- Rank0:Thread0: Entering interactive mode at time 4000
-  Last Trigger: WP4: AE : component10/message_count_ ...
+  Last Trigger: WP4: AE : /component10/message_count_ CHANGED  ...
 > wl
 R0,T0: Current watch points:
-4: TriggerCount 3 : AE : component10/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : component10/message_count_  : interactive
+4: TriggerCount 3 : AE : /component10/message_count_ CHANGED  : bufsize = 16 postDelay = 2 : message_count_  : interactive
 > unwatch 4
 > # 5 trace shutdown
 > cd ..
@@ -355,7 +355,7 @@ R0,T0: Current watch points:
 > trace message_count_ changed : 16 2 : message_count_ : shutdown
 Added watchpoint #5
 > run
-LastTriggerRecord:@cycle4000: SamplesLost=0: component12/message_count_=14 
+LastTriggerRecord:@cycle4000: SamplesLost=0: message_count_ = 14 
   Trigger action shutting down simulation
 wp simulation shutdown
 15 received 16 messages

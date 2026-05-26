@@ -55,7 +55,8 @@ public:
         paginate_(true),
         quit_(false),
         charsPerLine_(charsPerLine),
-        curChars_(0)
+        curChars_(0),
+        confirm_(true)
     {}
 
     void reset()

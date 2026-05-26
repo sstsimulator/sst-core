@@ -112,6 +112,12 @@ InteractiveConsole::getComponentObjectMap()
     return Simulation::getSimulation()->getComponentObjectMap();
 }
 
+const ComponentInfoMap&
+InteractiveConsole::getComponentInfoMap()
+{
+    return Simulation::getSimulation()->getComponentInfoMap();
+}
+
 void
 InteractiveConsole::simulationShutdown()
 {

@@ -56,6 +56,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <ostream>
 #include <set>
 #include <string>
@@ -572,9 +573,9 @@ Simulation::getLocalMinimumNextActivityTime()
 void
 Simulation::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part)
 {
+    // Set minPartTC (only thread 0 will do this)
+    Simulation::minPart = min_part;
     if ( my_rank.thread == 0 ) {
-        // Set minPartTC (only thread 0 will do this)
-        minPart   = min_part;
         minPartTC = minPartToTC(min_part);
     }
     // Get the minimum latencies for links between the various threads
@@ -635,6 +636,7 @@ Simulation::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myRank),
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
+    minPartTC   = minPartToTC(min_part);
     syncManager = new SyncManager(my_rank, num_ranks, min_part, interThreadLatencies, real_time_);
 
     // Check to see if the SyncManager profile tool is installed

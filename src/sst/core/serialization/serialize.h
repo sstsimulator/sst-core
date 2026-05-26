@@ -13,7 +13,6 @@
 #define SST_CORE_SERIALIZATION_SERIALIZE_H
 
 #include "sst/core/from_string.h"
-#include "sst/core/output.h"
 #include "sst/core/serialization/objectMap.h"
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
@@ -208,12 +207,7 @@ class serialize
             // data needs to be serialized before any of the pointers
             // that point to it.
             if ( ser.sizer().check_pointer_sizer(ptr) ) {
-                Output::getDefaultObject().output(
-                    "WARNING: Serializaion of object of type %s using as_ptr option detected that a pointer to this "
-                    "object was "
-                    "already serialized.  Serialization of the object should happen before serialization of any "
-                    "pointers to the object.\n",
-                    ObjectMap::demangle_name(typeid(T).name()).c_str());
+                // TODO Error
             }
 
             // Always put the pointer in
