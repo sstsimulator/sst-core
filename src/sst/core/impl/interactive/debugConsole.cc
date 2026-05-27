@@ -327,8 +327,10 @@ DebugConsole::DebugConsole(Params& params) :
                                          "\tA mask is used to select which features to enable verbosity.\n"
                                          "\tTo turn on all features set the mask to 0xffffffff\n"
                                          "\t\t0x10: Show trigger details" },
-        { "print", "[-r N] <obj>: print objects in the current level of the object tree\n"
-                   "\tif -r N is provided print recursive N levels" },
+        { "print", "[-r R] [-v V] [-f F] [<obj>][[idx][idx]]\n"
+                   "\t-r R prints recursively to R levels\n"
+                   "\t-v V prints with increasing verbosity\n"
+                   "\t-f F formatted print (hex oct dec(default))" },
         { "set", "<obj> <value>: sets an object in the current scope to the provided value\n"
                  "\t Example: set mystring hello world" },
         { "watchpoints",
@@ -1866,6 +1868,10 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     std::string tok     = tokens[1];
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
         // Got a -r
+        if ( tokens.size() < (pos + 2) ) {
+            printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+            return false;
+        }
         std::string num = tokens[pos + 1];
         if ( num.size() != 0 ) {
             try {
@@ -1897,6 +1903,10 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     pos               = containsArg(tokens, "-v");
     if ( std::string::npos != pos ) {
         // Got a -v
+        if ( tokens.size() < (pos + 2) ) {
+            printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+            return false;
+        }
         std::string num = tokens[pos + 1];
         if ( num.size() != 0 ) {
             try {
