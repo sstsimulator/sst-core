@@ -163,16 +163,3 @@ jobs:
             })
       if: ${{ success() }}
       continue-on-error: true
-
-    - name: ADD COMMENT ABOUT SUCCESS
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '**CLANG-FORMAT TEST - PASSED**'
-            })
-      if: ${{ success() }}
