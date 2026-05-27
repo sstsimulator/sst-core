@@ -12,7 +12,6 @@
 #include "sst_config.h"
 
 #include "sst/core/serialization/objectMap.h"
-// #include "sst/core/impl/interactive/ObjTree.h"
 
 #include "sst/core/stringize.h"
 

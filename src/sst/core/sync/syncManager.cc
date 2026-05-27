@@ -379,6 +379,7 @@ RankSync::findSyncInterval(uint32_t UNUSED_WO_MPI(my_rank))
 void
 SyncManager::setupSyncObjects()
 {
+    ic_barrier_.resize(num_ranks_.thread);
     if ( rank_.thread == 0 ) {
         for ( auto& b : RankExecBarrier_ ) {
             b.resize(num_ranks_.thread);
@@ -438,7 +439,6 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTim
 
     exit_       = sim_->getExit();
     checkpoint_ = sim_->getCheckpointAction();
-    ic_barrier_.resize(num_ranks_.thread);
 
     setPriority(SYNCPRIORITY);
 }

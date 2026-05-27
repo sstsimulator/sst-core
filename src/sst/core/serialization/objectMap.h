@@ -235,8 +235,6 @@ protected:
      */
     virtual void deactivate_callback() {}
 
-    virtual void* getActualAddr() { return nullptr; }
-
 private:
     /**
        Reference counter so the object knows when to delete itself.
@@ -1302,8 +1300,6 @@ public:
      */
     void* getAddr() const override { return addr_; }
 
-    void* getActualAddr() override { return addr_; }
-
     explicit ObjectMapFundamental(REF* addr) :
         addr_(addr)
     {}
@@ -1466,7 +1462,6 @@ public:
     }
     ~ObjectMapContainer() override = default;
 };
-
 
 // ObjectMap for reference proxy types such as std::bitset<N>::reference, std::vector<bool>::reference,
 // atomic_reference, whose referenced types cannot be copied or pointed to with pointers, but whose
