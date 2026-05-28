@@ -2863,8 +2863,13 @@ DebugConsole::cmd_logging(std::string& UNUSED(cmd_str))
         return false;
     }
     if ( tokens.size() > 1 ) {
+        if ( tokens[1] == replayFilePath ) {
+            std::cout << "Logging file path and replay file path cannot be the same" << std::endl;
+            return false;
+        }
         loggingFilePath = tokens[1];
     }
+
     // Attempt to open an SST output file
     loggingFile.open(loggingFilePath);
     if ( !loggingFile.is_open() ) {
@@ -2884,6 +2889,10 @@ DebugConsole::cmd_replay(std::string& UNUSED(cmd_str))
         return false;
     }
     if ( tokens.size() > 1 ) {
+        if ( tokens[1] == loggingFilePath ) {
+            std::cout << "Replay file path and logging file path cannot be the same" << std::endl;
+            return false;
+        }
         replayFilePath = tokens[1];
     }
 
