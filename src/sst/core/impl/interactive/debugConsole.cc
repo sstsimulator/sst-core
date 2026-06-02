@@ -487,17 +487,11 @@ DebugConsole::consoleExecute(const std::string& msg)
               << getCurrentSimCycle() << std::endl;
     std::cout << msg << std::endl;
 
-    // Try and serialize the entire map
-    // auto totalMap = SST::Core::Serialization::ObjectMapToTree::convertAndSerialize("root", obj_);
-    // printf("---- total map:\n ----");
-    // totalMap->Dump(2);
-
-    // if(curObj_ == nullptr || objTree_->isEmpty()){
     if ( objTree_->isEmpty() ) {
         objTree_->BuildTree(getComponentInfoMap());
         curObj_ = objTree_;
     }
-    if ( curObj_ == nullptr ) {
+    else if ( curObj_ == nullptr ) {
         curObj_ = objTree_;
     }
 
@@ -582,7 +576,7 @@ DebugConsole::consoleExecute(const std::string& msg)
     return retState;
 }
 
-// Save the name stack of the current position, and clear objTree and curObj_
+// Save the name stack of the current position, and clear objTree_ and curObj_
 void
 DebugConsole::save_name_stack()
 {
@@ -806,9 +800,6 @@ DebugConsole::cmd_show(std::string& UNUSED(cmd_str))
         if ( cmdRegistry.getUserRegistryVector().size() > 0 ) {
             std::cout << "--- User-Defined Commands ---" << std::endl;
             for ( const auto& cmd : cmdRegistry.getUserRegistryVector() ) {
-                // if ( g.first == c.group() ) {
-                //     std::cout << c << std::endl;
-                // }
                 std::string c = cmd.str_long();
                 std::cout << "User command \"" << c << "\":\n";
                 auto insts = cmdRegistry.userCommandInsts(c);
@@ -3096,6 +3087,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         if ( index >= tokens.size() ) {
             std::cout << "Invalid format for trigger test. Valid formats are <var> changed and <var> <op> <val>"
                       << std::endl;
+            delete op;
             return nullptr;
         }
         v2 = tokens[index++];
@@ -3104,6 +3096,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
     // Is operator valid
     if ( op->operators.back() == Core::Serialization::ObjTreeComparison::Op::INVALID ) {
         std::cout << "Unknown comparison operation specified in trigger test" << std::endl;
+        delete op;
         return nullptr;
     }
 
@@ -3124,11 +3117,11 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         op->objectsToCompare.emplace_back(
             std::move(path), Core::Serialization::ObjTreeComparison::valType::OBJ, opObj->clone());
 
-        // In changed mode, we do not use v2, but add a "placeholder" object to the compairson list. This is a touch
+        // In changed mode, we do not use v2, but add a "placeholder" object to the comparison list. This is a touch
         // wasteful, but makes our life a lot easier later
         if ( op->operators.back() == Core::Serialization::ObjTreeComparison::Op::CHANGED ) {
             std::deque<std::string> tmpPath;
-            tmpPath.push_front("unnit");
+            tmpPath.push_front("uninit");
             op->objectsToCompare.emplace_back(
                 std::move(tmpPath), Core::Serialization::ObjTreeComparison::valType::UNKNOWN, opObj->clone());
             return op;
@@ -3138,19 +3131,33 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
         // Convert the string value to an Integer or FloatObj
         try {
-            int64_t v = std::stoll(var);
-            constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point) so 
+                // it is probably an integer
+            size_t pos = 0;
+            int64_t v = std::stoll(var, &pos);
+            if(var.size() == pos){ 
+                constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+            }
         }
+        // stoll will only throw if input is out of range, or completely invalid. The catch all is a bit overkill.
+            // If we do throw, constnode will be null and we will likely fall through the next conversion 
+            // attempt, print an error message and return 
         catch ( ... ) {
         }
-        try {
-            double v  = std::stod(var);
-            constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
-        }
-        catch ( ... ) {
+        if(!constNode){
+            try {
+            // We attempted to convert to an integer, it is eithier a float or some invalid input
+                // No need to do the pos check as we did before. Note that an input like "42.16randomtext"
+                // will still likely parse OK (as 42.16) since we are not doing the size check.
+                double v  = std::stod(var);   
+                constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
+            }
+            catch ( ... ) {
+            }
         }
         if ( constNode == nullptr ) {
             std::cout << "Unknown Constant in expression" << std::endl;
+            delete op;
             return nullptr;
         }
         std::deque<std::string> const_arg;
@@ -3182,19 +3189,34 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
         // Convert the string value to an Integer or FloatObj
         try {
-            int64_t v = std::stoll(v2);
-            constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point) so 
+                // it is probably an integer
+            size_t pos = 0;
+            int64_t v = std::stoll(v2, &pos);
+            if(v2.size() == pos){ 
+                constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
+            }
         }
+        // stoll will only throw if input is out of range, or completely invalid. The catch all is a bit overkill.
+            // If we do throw, constnode will be null and we will likely fall through the next conversion 
+            // attempt, print an error message and return 
         catch ( ... ) {
         }
-        try {
-            double v  = std::stod(v2);
-            constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
+        if(!constNode){
+          try {
+            // We attempted to convert to an integer, it is eithier a float or some invalid input
+                // No need to do the pos check as we did before. Note that an input like "42.16randomtext"
+                // will still likely parse OK (as 42.16) since we are not doing the size check.
+                double v  = std::stod(v2);
+                constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
+            }
+            catch ( ... ) {
+            }
         }
-        catch ( ... ) {
-        }
+        //If we got here we failed to parse the argument
         if ( constNode == nullptr ) {
             std::cout << "Unknown Constant in expression" << std::endl;
+            delete op;
             return nullptr;
         }
         std::deque<std::string> const_arg;
@@ -3338,24 +3360,6 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
             return nullptr;
         }
 
-        // Is variable fundamental
-        //  if ( !map->isFundamental() ) {
-        //     std::cout << "Can only set fundamental variable, " << tvar << " is not fundamental" << std::endl;
-        //     return nullptr;
-        // }
-
-        // Is variable read-only
-        //  if ( map->isReadOnly() ) {
-        //     std::cout << "Object specified in set command is read-only: " << tvar << std::endl;
-        //      return nullptr;
-        //  }
-
-        // Check for valid value
-        // if ( !map->checkValue(tval) ) {
-        //      return nullptr;
-        //  }
-
-
         std::string                       name;
         Core::Serialization::ObjTreeCont* parent = obj->getParent();
         name.append("/" + tvar);
@@ -3368,7 +3372,8 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 
         return new WatchPoint::SetVarWPAction(name, map->clone(), tval);
     }
-#if 0 // Do users want a heartbeat action?
+#if 0 
+    // Do users want a heartbeat action?
     else if (action == "heartbeat") {
         return new WatchPoint::HeartbeatWPAction();
     }
@@ -3499,7 +3504,8 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
         name     = ss.str();
         auto* pt = new WatchPoint(wpIndex, name, c);
 
-#if 0 // watch variables currently don't trace, but they could automatically
+#if 0 
+      // watch variables currently don't trace, but they could automatically
       // trace test vars
         auto* tb = map->getTraceBuffer(obj_, 32, 4);
         pt->addTraceBuffer(tb);
@@ -4337,11 +4343,9 @@ CommandHistoryBuffer::findEvent(const std::string& s, std::string& newcmd)
         event = (int)SST::Core::from_string<int>(s);
     }
     catch ( const std::invalid_argument& e ) {
-        // std::cout << "history: invalid event: " << s << std::endl;
         return false;
     }
     if ( event < 0 ) {
-        // std::cout << "history: invalid event: " << event << std::endl;
         return false;
     }
     // search backwards (most recent first)
@@ -4633,13 +4637,12 @@ DebugConsole::handleCommand()
     else if ( !done ) {
         // If I am target thread, handle the incoming command
         if ( current_thread == rank_.thread ) {
-            // if(curObj_== nullptr || objTree_->isEmpty()){
             if ( objTree_->isEmpty() ) {
                 objTree_->BuildTree(getComponentInfoMap());
                 curObj_ = objTree_;
                 cd_name_stack();
             }
-            if ( curObj_ == nullptr ) {
+            else if ( curObj_ == nullptr ) {
                 curObj_ = objTree_;
             }
             auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
@@ -4804,7 +4807,6 @@ DebugConsole::receiveCommandRankSerial()
         auto consoleCommand = cmdRegistry.seek(tokens[0], CommandRegistry::SEARCH_TYPE::BUILTIN);
         if ( consoleCommand.second ) {
             // Execute in target thread
-            // if(curObj_ == nullptr || objTree_->isEmpty()){
             if ( objTree_->isEmpty() ) {
                 objTree_->BuildTree(getComponentInfoMap());
                 curObj_ = objTree_;
@@ -4814,7 +4816,6 @@ DebugConsole::receiveCommandRankSerial()
                 curObj_ = objTree_;
             }
             succeed = consoleCommand.first.exec_remote(tokens);
-            // Output::getDefaultObject().output("ReceiveCmdRankSerial: succeed %d\n", succeed);
         }
         else {
             std::cout << "Error: Command not found in remote rank: " << tokens[0] << std::endl;
