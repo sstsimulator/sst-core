@@ -1732,7 +1732,16 @@ DebugConsole::parseBracketIndices(std::string& token)
         if ( pos2 == std::string::npos ) break;
 
         std::string key = token.substr(pos + 1, (pos2 - pos) - 1);
-        indices.push_back(std::atoi(key.c_str()));
+        bool        allDigits =
+            !key.empty(); // check that we don't have empty brackets and that all characters are positive numbers
+        for ( size_t i = 0; i < key.size(); ++i ) {
+            if ( !std::isdigit(static_cast<unsigned char>(key[i])) ) {
+                allDigits = false;
+                break;
+            }
+        }
+        if ( !allDigits ) break;
+        indices.push_back(std::stoi(key));
         token.erase(pos, (pos2 - pos) + 1);
 
         // Search again from the same position since we erased

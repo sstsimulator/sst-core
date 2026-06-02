@@ -35,26 +35,25 @@ class ObjTreeCont
 public:
     enum class NodeKind { Generic, Integer, Float, String, Bool, Component, Container, FRef, GenericVal };
 
-    ObjTreeCont() :
-        parent_(nullptr),
-        children_(),
-        name_("uninit"),
-        type_("uninit"),
-        kind_(NodeKind::Generic),
-        readOnly_(false) {};
+protected:
+    ObjTreeCont*                              parent_ = nullptr;
+    std::vector<std::unique_ptr<ObjTreeCont>> children_;
+    std::string                               name_     = "uninit";
+    std::string                               type_     = "uninit";
+    NodeKind                                  kind_     = NodeKind::Generic;
+    bool                                      readOnly_ = false;
+
+public:
+
+    ObjTreeCont() = default;
     ObjTreeCont(const std::string& name, const std::string& type, NodeKind kind = NodeKind::Generic) :
-        parent_(nullptr),
-        children_(),
         name_(name),
         type_(type),
-        kind_(kind),
-        readOnly_(false)
+        kind_(kind)
     {}
     virtual ~ObjTreeCont() = default;
 
     ObjTreeCont(const ObjTreeCont& rhs) :
-        parent_(nullptr),
-        children_(),
         name_(rhs.name_),
         type_(rhs.type_),
         kind_(rhs.kind_),
@@ -170,12 +169,6 @@ public:
     virtual void clear() { children_.clear(); }
 
 protected:
-    ObjTreeCont*                              parent_;
-    std::vector<std::unique_ptr<ObjTreeCont>> children_;
-    std::string                               name_;
-    std::string                               type_;
-    NodeKind                                  kind_;
-    bool                                      readOnly_;
 
     static void replaceAll(std::string& s, std::string_view from, std::string_view to)
     {
@@ -440,7 +433,7 @@ public:
 
 private:
     FloatVariant                     val_;
-    void*                            addr_;
+    void*                            addr_ = nullptr;
     std::function<long double()>     getter_; // accessor-callback mode
     std::function<void(long double)> setter_;
     bool                             useAccessor_ = false;
@@ -735,7 +728,7 @@ public:
 class StringObj : public ObjTree<StringObj>
 {
     std::string val_;
-    void*       addr_;
+    void*       addr_ = nullptr;
 
 public:
     StringObj(const std::string& v, void* addr) :

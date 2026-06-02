@@ -266,9 +266,6 @@ public:
                 if ( std::find(subCompAddrs.begin(), subCompAddrs.end(), objMap->getAddr()) != subCompAddrs.end() )
                     continue;
 
-                // ObjTreeCont* child = recursive
-                //     ? convert(name, objMap)
-                //     : convertNode(name, objMap);
                 ObjTreeCont* child = convert(name, objMap, recursive);
                 if ( child ) compNode->addChildObj(child);
             }
@@ -358,9 +355,6 @@ private:
                     if ( std::find(nestedAddrs.begin(), nestedAddrs.end(), objMap->getAddr()) != nestedAddrs.end() )
                         continue;
 
-                    // ObjTreeCont* child = recursive
-                    //     ? convert(name, objMap)
-                    //     : convertNode(name, objMap);
                     ObjTreeCont* child = convert(name, objMap, recursive);
                     if ( child ) subObj->addChildObj(child);
                 }
