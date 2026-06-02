@@ -1689,7 +1689,7 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
             curObj_ = parent;
         }
         else {
-            printf("Already at top of object hierarchy\n");
+            std::cout << "Already at top of object hierarchy" << std::endl;;
             return false;
         }
         return true;
@@ -1698,7 +1698,7 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
     // Search children by name
     SST::Core::Serialization::ObjTreeCont* target = curObj_->findByName(selection);
     if ( !target ) {
-        printf("Unknown object in cd command: %s\n", selection.c_str());
+        std::cout << "Unknown object in cd command: " << selection << std::endl;
         return false;
     }
 
@@ -1711,7 +1711,7 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
 
     // Only descend if the target has children (or is a component that just got serialized)
     if ( target->getChildren().empty() ) {
-        printf("Cannot cd into %s: no children\n", selection.c_str());
+        std::cout << "Cannot cd into "<<  selection << ": no children" << std::endl;
         return false;
     }
 
@@ -1849,7 +1849,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     size_t var_index = 1;
 
     if ( tokens.size() < 2 ) {
-        printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
         return false;
     }
 
@@ -1860,7 +1860,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
         // Got a -r
         if ( tokens.size() < (pos + 2) ) {
-            printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+            std::cout  << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
             return false;
         }
         std::string num = tokens[pos + 1];
@@ -1869,7 +1869,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
                 recurse = SST::Core::from_string<int>(num);
             }
             catch ( const std::invalid_argument& e ) {
-                result << "Invalid number format specified with -r: " << tok << std::endl;
+                std::cout << "Invalid number format specified with -r: " << tok << std::endl;
                 return false;
             }
         }
@@ -1880,7 +1880,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
                     recurse = SST::Core::from_string<int>(num);
                 }
                 catch ( std::invalid_argument& e ) {
-                    result << "Invalid number format specified with -r: " << tok << std::endl;
+                    std::cout << "Invalid number format specified with -r: " << tok << std::endl;
                     return false;
                 }
             }
@@ -1895,7 +1895,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     if ( std::string::npos != pos ) {
         // Got a -v
         if ( tokens.size() < (pos + 2) ) {
-            printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+            std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
             return false;
         }
         std::string num = tokens[pos + 1];
@@ -1904,7 +1904,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
                 print_verbose = std::stoi(num, nullptr, 10);
             }
             catch ( const std::invalid_argument& e ) {
-                printf("Invalid number format specified with -v: %s\n", num.c_str());
+                std::cout << "Invalid number format specified with -v: " << num << std::endl;
                 return false;
             }
         }
@@ -1937,7 +1937,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     }
 
     if ( tokens.size() != (var_index + 1) ) {
-        printf("Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])\n");
+        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
         return false;
     }
 
@@ -1975,8 +1975,7 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
         }
     }
     else {
-        result << "Unknown object in print command: " << tokens[var_index] << std::endl;
-        // result << "Invalid format for print command (print [-rN] [<obj>])" << std::endl;
+        std::cout << "Unknown object in print command: " << tokens[var_index] << std::endl;
         return false;
     }
     return true;
@@ -2129,26 +2128,26 @@ DebugConsole::cmd_set_remote(std::vector<std::string>& tokens)
                     return true;
                 }
                 else {
-                    result << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType()
+                    std::cout << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType()
                            << ")" << std::endl;
                     return false;
                 }
             }
             else {
-                result << "ERROR: Unable to set value - object not indexable" << std::endl;
+                std::cout << "ERROR: Unable to set value - object not indexable" << std::endl;
                 return false;
             }
         }
         else {
             if ( !target->setFromString(tokens[2]) ) {
-                result << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType() << ")"
+                std::cout << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType() << ")"
                        << std::endl;
                 return false;
             }
         }
     }
     else {
-        result << "Unknown object in set command: " << tokens[1] << std::endl;
+        std::cout << "Unknown object in set command: " << tokens[1] << std::endl;
         return false;
     }
 
@@ -2290,21 +2289,21 @@ DebugConsole::cmd_setHandler_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        result << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
     result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
@@ -2434,21 +2433,21 @@ DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        result << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        result << " Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        result << " Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
     result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
@@ -2461,13 +2460,13 @@ DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
         // Find and check trace variable
         auto* map = curObj_->findByName(tvar);
         if ( nullptr == map ) {
-            result << "Unknown variable: " << tvar << std::endl;
+            std::cout << "Unknown variable: " << tvar << std::endl;
             return false;
         }
 
         size_t bufsize = wp->getBufferSize();
         if ( bufsize == 0 ) {
-            result << "Watchpoint " << wpIndex << " does not have tracing enabled" << std::endl;
+            std::cout << "Watchpoint " << wpIndex << " does not have tracing enabled" << std::endl;
             return false;
         }
         std::unique_ptr<Core::Serialization::ObjTreeCont> map_uniq(map->clone());
@@ -2574,21 +2573,21 @@ DebugConsole::cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        result << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
     wp->resetTraceBuffer();
@@ -2699,21 +2698,21 @@ DebugConsole::cmd_printTrace_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        result << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
@@ -2820,21 +2819,21 @@ DebugConsole::cmd_printWatchpoint_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        result << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        result << "Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
     else {
@@ -3496,7 +3495,7 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
         // allocate ObjTreeCompairson
         Core::Serialization::ObjTreeComparison* c = parseComparison(tokens, index, curObj_, nullptr);
         if ( c == nullptr ) {
-            result << "Invalid comparison argument passed to watch command" << std::endl;
+            std::cout << "Invalid comparison argument passed to watch command" << std::endl;
             return false;
         }
         size_t wpIndex = watch_points_.size();
@@ -3520,21 +3519,21 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
             // Get Logical Operator
             WatchPoint::LogicOp logicOp = getLogicOpFromString(tokens[index++]);
             if ( logicOp == WatchPoint::LogicOp::UNDEFINED ) {
-                result << "Invalid logic operator: " << tokens[index - 1] << std::endl;
+                std::cout << "Invalid logic operator: " << tokens[index - 1] << std::endl;
                 return false;
             }
             else {
                 pt->addLogicOp(logicOp);
             }
             if ( index == tokens.size() ) {
-                result << "Invalid format for watch command" << std::endl;
+                std::cout << "Invalid format for watch command" << std::endl;
                 return false;
             }
 
             // Get next comparison
             c = parseComparison(tokens, index, curObj_, c);
             if ( c == nullptr ) {
-                result << "Invalid comparison argument passed to watch command" << std::endl;
+                std::cout << "Invalid comparison argument passed to watch command" << std::endl;
                 return false;
             }
         } // while index < tokens.size(), add another logic op and test comparision
@@ -3543,7 +3542,7 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
         std::string           action    = "interactive";
         WatchPoint::WPAction* actionObj = new WatchPoint::InteractiveWPAction();
         if ( actionObj == nullptr ) {
-            result << "Error in action: " << action << std::endl;
+            std::cout << "Error in action: " << action << std::endl;
             return false;
         }
         else {
@@ -3565,18 +3564,18 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
             result << "Added watchpoint #" << wpIndex << std::endl;
         }
         else {
-            result << "Not a component" << std::endl;
+            std::cout << "Not a component" << std::endl;
             return false;
         }
     } // try/catch  TODO: need to revisit what can actually throw an exception
     catch ( const std::exception& e ) {
-        result << "Invalid format for watch command" << std::endl;
+        std::cout << "Invalid format for watch command" << std::endl;
         return false;
     }
 
     // Check for extra arguments
     if ( index != tokens.size() ) {
-        result << "Invalid format for watch command: too many arguments" << std::endl;
+        std::cout << "Invalid format for watch command: too many arguments" << std::endl;
         return false;
     }
 
@@ -3835,14 +3834,14 @@ DebugConsole::cmd_unwatch_remote(std::vector<std::string>& tokens)
         index = (long unsigned int)SST::Core::from_string<int>(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        result << "Invalid index format specified. The unwatch command requires"
+        std::cout << "Invalid index format specified. The unwatch command requires"
                   "a watchpoint index from the \"watchlist\" command"
                << std::endl;
         return false;
     }
 
     if ( watch_points_.size() <= index ) {
-        result << "Watch point " << tokens[1]
+        std::cout << "Watch point " << tokens[1]
                << " not found. The unwatch command "
                   "requires a watchpoint index from the \"watchlist\" command"
                << std::endl;
