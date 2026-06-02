@@ -1689,7 +1689,8 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
             curObj_ = parent;
         }
         else {
-            std::cout << "Already at top of object hierarchy" << std::endl;;
+            std::cout << "Already at top of object hierarchy" << std::endl;
+            ;
             return false;
         }
         return true;
@@ -1711,7 +1712,7 @@ DebugConsole::cmd_cd_remote(std::vector<std::string>& tokens)
 
     // Only descend if the target has children (or is a component that just got serialized)
     if ( target->getChildren().empty() ) {
-        std::cout << "Cannot cd into "<<  selection << ": no children" << std::endl;
+        std::cout << "Cannot cd into " << selection << ": no children" << std::endl;
         return false;
     }
 
@@ -1849,7 +1850,8 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     size_t var_index = 1;
 
     if ( tokens.size() < 2 ) {
-        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
+        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])"
+                  << std::endl;
         return false;
     }
 
@@ -1860,7 +1862,8 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     if ( (tok.size() >= 2) && (tok[0] == '-') && (tok[1] == 'r') ) {
         // Got a -r
         if ( tokens.size() < (pos + 2) ) {
-            std::cout  << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
+            std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])"
+                      << std::endl;
             return false;
         }
         std::string num = tokens[pos + 1];
@@ -1895,7 +1898,8 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     if ( std::string::npos != pos ) {
         // Got a -v
         if ( tokens.size() < (pos + 2) ) {
-            std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
+            std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])"
+                      << std::endl;
             return false;
         }
         std::string num = tokens[pos + 1];
@@ -1937,7 +1941,8 @@ DebugConsole::cmd_print_remote(std::vector<std::string>& tokens)
     }
 
     if ( tokens.size() != (var_index + 1) ) {
-        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])" << std::endl;
+        std::cout << "Invalid format for print command (print [-r N] [-v N] [-f <base>] [<obj>][[idx][idx]])"
+                  << std::endl;
         return false;
     }
 
@@ -2129,7 +2134,7 @@ DebugConsole::cmd_set_remote(std::vector<std::string>& tokens)
                 }
                 else {
                     std::cout << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType()
-                           << ")" << std::endl;
+                              << ")" << std::endl;
                     return false;
                 }
             }
@@ -2140,8 +2145,8 @@ DebugConsole::cmd_set_remote(std::vector<std::string>& tokens)
         }
         else {
             if ( !target->setFromString(tokens[2]) ) {
-                std::cout << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType() << ")"
-                       << std::endl;
+                std::cout << "Failed to set " << tokens[1] << " to " << tokens[2] << " (type: " << target->getType()
+                          << ")" << std::endl;
                 return false;
             }
         }
@@ -3130,25 +3135,25 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
         // Convert the string value to an Integer or FloatObj
         try {
-            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point) so 
-                // it is probably an integer
-            size_t pos = 0;
-            int64_t v = std::stoll(var, &pos);
-            if(var.size() == pos){ 
+            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point)
+            // so it is probably an integer
+            size_t  pos = 0;
+            int64_t v   = std::stoll(var, &pos);
+            if ( var.size() == pos ) {
                 constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
             }
         }
         // stoll will only throw if input is out of range, or completely invalid. The catch all is a bit overkill.
-            // If we do throw, constnode will be null and we will likely fall through the next conversion 
-            // attempt, print an error message and return 
+        // If we do throw, constnode will be null and we will likely fall through the next conversion
+        // attempt, print an error message and return
         catch ( ... ) {
         }
-        if(!constNode){
+        if ( !constNode ) {
             try {
-            // We attempted to convert to an integer, it is eithier a float or some invalid input
+                // We attempted to convert to an integer, it is eithier a float or some invalid input
                 // No need to do the pos check as we did before. Note that an input like "42.16randomtext"
                 // will still likely parse OK (as 42.16) since we are not doing the size check.
-                double v  = std::stod(var);   
+                double v  = std::stod(var);
                 constNode = std::make_unique<Core::Serialization::FloatObj>(v, nullptr);
             }
             catch ( ... ) {
@@ -3188,22 +3193,22 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
         std::unique_ptr<Core::Serialization::ObjTreeCont> constNode = nullptr;
         // Convert the string value to an Integer or FloatObj
         try {
-            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point) so 
-                // it is probably an integer
-            size_t pos = 0;
-            int64_t v = std::stoll(v2, &pos);
-            if(v2.size() == pos){ 
+            // First try integer - if pos == size then we know there are no trailing characters (i.e. a decimal point)
+            // so it is probably an integer
+            size_t  pos = 0;
+            int64_t v   = std::stoll(v2, &pos);
+            if ( v2.size() == pos ) {
                 constNode = std::make_unique<Core::Serialization::IntegerObj>(v, nullptr);
             }
         }
         // stoll will only throw if input is out of range, or completely invalid. The catch all is a bit overkill.
-            // If we do throw, constnode will be null and we will likely fall through the next conversion 
-            // attempt, print an error message and return 
+        // If we do throw, constnode will be null and we will likely fall through the next conversion
+        // attempt, print an error message and return
         catch ( ... ) {
         }
-        if(!constNode){
-          try {
-            // We attempted to convert to an integer, it is eithier a float or some invalid input
+        if ( !constNode ) {
+            try {
+                // We attempted to convert to an integer, it is eithier a float or some invalid input
                 // No need to do the pos check as we did before. Note that an input like "42.16randomtext"
                 // will still likely parse OK (as 42.16) since we are not doing the size check.
                 double v  = std::stod(v2);
@@ -3212,7 +3217,7 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
             catch ( ... ) {
             }
         }
-        //If we got here we failed to parse the argument
+        // If we got here we failed to parse the argument
         if ( constNode == nullptr ) {
             std::cout << "Unknown Constant in expression" << std::endl;
             delete op;
@@ -3371,7 +3376,7 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
 
         return new WatchPoint::SetVarWPAction(name, map->clone(), tval);
     }
-#if 0 
+#if 0
     // Do users want a heartbeat action?
     else if (action == "heartbeat") {
         return new WatchPoint::HeartbeatWPAction();
@@ -3503,7 +3508,7 @@ DebugConsole::cmd_watch_remote(std::vector<std::string>& tokens)
         name     = ss.str();
         auto* pt = new WatchPoint(wpIndex, name, c);
 
-#if 0 
+#if 0
       // watch variables currently don't trace, but they could automatically
       // trace test vars
         auto* tb = map->getTraceBuffer(obj_, 32, 4);
@@ -3835,16 +3840,16 @@ DebugConsole::cmd_unwatch_remote(std::vector<std::string>& tokens)
     }
     catch ( const std::invalid_argument& e ) {
         std::cout << "Invalid index format specified. The unwatch command requires"
-                  "a watchpoint index from the \"watchlist\" command"
-               << std::endl;
+                     "a watchpoint index from the \"watchlist\" command"
+                  << std::endl;
         return false;
     }
 
     if ( watch_points_.size() <= index ) {
         std::cout << "Watch point " << tokens[1]
-               << " not found. The unwatch command "
-                  "requires a watchpoint index from the \"watchlist\" command"
-               << std::endl;
+                  << " not found. The unwatch command "
+                     "requires a watchpoint index from the \"watchlist\" command"
+                  << std::endl;
         return false;
     }
 
