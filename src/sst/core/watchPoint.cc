@@ -204,12 +204,14 @@ void
 WatchPoint::printTrace(std::ostream& os)
 {
     if ( tb_ != nullptr ) {
-        std::cout << "TriggerCount=" << triggerCount << "\n";
-        tb_->dumpTriggerRecord(os);
-        tb_->dumpTraceBufferT(os);
+        std::stringstream ss; // Buffer in a stream so it doesn't get split in parallel execution
+        ss << "TriggerCount=" << triggerCount << "\n";
+        tb_->dumpTriggerRecord(ss);
+        tb_->dumpTraceBufferT(ss);
+        os << ss.str(); // Print everything at once to avoid splitting
     }
     else {
-        printf("  No tracing enabled\n");
+        os << "  No tracing enabled\n";
     }
 }
 
