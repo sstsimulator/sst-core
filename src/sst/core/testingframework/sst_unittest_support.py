@@ -40,7 +40,6 @@ from typing import (Any, Callable, List, Mapping, Optional, Sequence, Tuple,
 from warnings import warn
 
 import test_engine_globals
-from test_engine_support import check_param_type
 
 if TYPE_CHECKING:
     from sst_unittest import SSTTestCase
@@ -249,7 +248,6 @@ def _testing_check_is_scenario_filtering_enabled(scenario_name: str) -> bool:
         Returns:
            (bool) True if the scenario filter name is enabled
     """
-    check_param_type("scenario_name", scenario_name, str)
     return scenario_name in test_engine_globals.TESTENGINE_SCENARIOSLIST
 
 ###
@@ -265,8 +263,6 @@ def skip_on_scenario(scenario_name: str, reason: str) -> Callable[[_FT], _FT]:
             scenario_name (str): The scenario filter name to check
             reason (str): The reason for the skip
     """
-    check_param_type("scenario_name", scenario_name, str)
-    check_param_type("reason", reason, str)
     if not _testing_check_is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)
@@ -339,9 +335,6 @@ def skip_on_sstsimulator_conf_empty_str(section: str, key: str, reason: str) -> 
             key (str): The key in the sstsimulator.conf to check
             reason (str): The reason for the skip
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    check_param_type("reason", reason, str)
     rtn_str = sstsimulator_conf_get_value(section, key, str, "")
     if rtn_str != "":
         return lambda func: func
@@ -469,7 +462,6 @@ def sstsimulator_conf_get_section_keys(section: str) -> List[str]:
         Raises:
             SSTTestCaseException: If an error occurs
     """
-    check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.options(section)
@@ -491,7 +483,6 @@ def sstsimulator_conf_get_all_keys_values_from_section(section: str) -> List[Tup
         Raises:
             SSTTestCaseException: If an error occurs
     """
-    check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.items(section)
@@ -513,7 +504,6 @@ def sstsimulator_conf_does_have_section(section: str) -> bool:
         Raises:
             SSTTestCaseException: If an error occurs
     """
-    check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.has_section(section)
@@ -535,8 +525,6 @@ def sstsimulator_conf_does_have_key(section: str, key: str) -> bool:
         Raises:
             SSTTestCaseException: If an error occurs
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.has_option(section, key)
@@ -555,7 +543,6 @@ def log(logstr: str) -> None:
         Args:
             logstr (str): string to be logged
     """
-    check_param_type("logstr", logstr, str)
     if test_engine_globals.TESTENGINE_VERBOSITY >= test_engine_globals.VERBOSE_NORMAL:
         log_forced(logstr)
 
@@ -570,7 +557,6 @@ def log_forced(logstr: str) -> None:
         Args:
             logstr (str): string to be logged
     """
-    check_param_type("logstr", logstr, str)
     extra_lf = ""
     if test_engine_globals.TESTRUN_TESTRUNNINGFLAG:
         extra_lf = "\n"
@@ -619,7 +605,6 @@ def log_info(logstr: str, forced: bool = True) -> None:
             forced (bool): If true Always force the logging regardless of verbosity;
                            otherwise, perform a normal log.
     """
-    check_param_type("logstr", logstr, str)
     finalstr = "INFO: {0}".format(logstr)
     if forced:
         log_forced(finalstr)
@@ -635,7 +620,6 @@ def log_error(logstr: str) -> None:
         Args:
             logstr (str): string to be logged
     """
-    check_param_type("logstr", logstr, str)
     finalstr = "ERROR: {0}".format(logstr)
     log_forced(finalstr)
     test_engine_globals.TESTENGINE_ERRORCOUNT += 1
@@ -650,7 +634,6 @@ def log_warning(logstr: str) -> None:
         Args:
             logstr (str): string to be logged
     """
-    check_param_type("logstr", logstr, str)
     finalstr = "WARNING: {0}".format(logstr)
     log_forced(finalstr)
 
@@ -665,7 +648,6 @@ def log_fatal(errstr: str) -> None:
         Args:
             errstr (str): string to be logged
     """
-    check_param_type("errstr", errstr, str)
     finalstr = "FATAL: {0}".format(errstr)
     log_forced(finalstr)
     sys.exit(2)
@@ -686,7 +668,6 @@ def log_testing_note(note_str: str) -> None:
         Args:
             note_str (str): string to be added to notes list
     """
-    check_param_type("note_str", note_str, str)
     final_note = "NOTE: {0}".format(note_str)
     test_engine_globals.TESTENGINE_TESTNOTESLIST.append(final_note)
     log_debug(final_note)
@@ -738,10 +719,6 @@ def combine_per_rank_files(
             No return value
 
     """
-    check_param_type("filename", filename, str)
-    check_param_type("header_lines_to_remove", header_lines_to_remove, int)
-    check_param_type("remove_header_from_first_file", remove_header_from_first_file, bool)
-
     # Get the number of MPI ranks
     ranks = testing_check_get_num_ranks()
 
@@ -1168,12 +1145,8 @@ def testing_compare_filtered_diff(
 
     """
 
-    check_param_type("test_name", test_name, str)
-    check_param_type("outfile", outfile, str)
-    check_param_type("reffile", reffile, str)
     if isinstance(filters, LineFilter):
         filters = [filters]
-    check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
         log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
@@ -1221,10 +1194,6 @@ def testing_compare_diff(
         Returns:
             (bool) True if the 2 files match.
     """
-    check_param_type("test_name", test_name, str)
-    check_param_type("outfile", outfile, str)
-    check_param_type("reffile", reffile, str)
-    check_param_type("ignore_ws", ignore_ws, bool)
 
     if ignore_ws:
         return testing_compare_filtered_diff(test_name, outfile, reffile, False, [IgnoreWhiteSpaceFilter()])
@@ -1246,9 +1215,6 @@ def testing_compare_sorted_diff(test_name: str, outfile: str, reffile: str) -> b
             (bool) True if the 2 sorted files match
 
     """
-    check_param_type("test_name", test_name, str)
-    check_param_type("outfile", outfile, str)
-    check_param_type("reffile", reffile, str)
     return testing_compare_filtered_diff(test_name, outfile, reffile, True)
 
 
@@ -1274,11 +1240,8 @@ def testing_compare_filtered_subset(
 
     """
 
-    check_param_type("outfile", outfile, str)
-    check_param_type("reffile", reffile, str)
     if isinstance(filters, LineFilter):
         filters = [filters]
-    check_param_type("filters", filters, list)
 
     if not os.path.isfile(outfile):
         log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
@@ -1313,7 +1276,6 @@ def testing_get_diff_data(test_name: str) -> str:
             (str) The diff data file if it exists; otherwise an empty string
 
     """
-    check_param_type("test_name", test_name, str)
 
     diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
 
@@ -1344,10 +1306,6 @@ def testing_merge_mpi_files(
             outputfilepath (str): The output file path for stdout
             errorfilepath (str): The output file path for stderr. If none, stderr redirects to stdout.
     """
-
-    check_param_type("filepath_wildcard", filepath_wildcard, str)
-    check_param_type("mpiout_filename", mpiout_filename, str)
-    check_param_type("outputfilepath", outputfilepath, str)
 
     # Delete any output files that might exist
     cmd = "rm -rf {0}".format(outputfilepath)
@@ -1396,7 +1354,6 @@ def testing_remove_component_warning_from_file(input_filepath: str) -> None:
         Args:
             input_filepath (str): Path to the file to have warnings removed from
     """
-    check_param_type("input_filepath", input_filepath, str)
 
     bad_string = 'WARNING: No components are'
     _remove_lines_with_string_from_file(bad_string, input_filepath)
@@ -1469,7 +1426,6 @@ class os_command:
                                    will be terminated and a timeout error will occur.
                 kwargs: Extra parameters e.g., timeout_sec to override the default timeout
         """
-        check_param_type("timeout_sec", timeout_sec, int)
 
         self._timeout_sec = timeout_sec
         self._signal = send_signal
@@ -1654,7 +1610,6 @@ def os_ls(directory: str = ".", echo_out: bool = True, **kwargs: Any) -> str:
         Returns:
             (str) Output from ls command
     """
-    check_param_type("directory", directory, str)
     cmd = "ls -lia {0}".format(directory)
     rtn = os_command(cmd).run(**kwargs)
     if echo_out:
@@ -1685,7 +1640,6 @@ def os_cat(filepath: str, echo_out: bool = True, **kwargs: Any) -> str:
         Returns:
             (str) Output from cat command
     """
-    check_param_type("filepath", filepath, str)
     cmd = "cat {0}".format(filepath)
     rtn = os_command(cmd).run(**kwargs)
     if echo_out:
@@ -1700,9 +1654,7 @@ def os_symlink_file(srcdir: str, destdir: str, filename: str) -> None:
             destdir (str): Path to destination dir of the file
             filename (str): Name of the file
     """
-    check_param_type("srcdir", srcdir, str)
-    check_param_type("destdir", destdir, str)
-    check_param_type("filename", filename, str)
+
     srcfilepath = "{0}/{1}".format(srcdir, filename)
     dstfilepath = "{0}/{1}".format(destdir, filename)
     os.symlink(srcfilepath, dstfilepath)
@@ -1714,8 +1666,7 @@ def os_symlink_dir(srcdir: str, destdir: str) -> None:
             srcdir (str): Path to source dir
             destdir (str): Path to destination dir
     """
-    check_param_type("srcdir", srcdir, str)
-    check_param_type("destdir", destdir, str)
+
     os.symlink(srcdir, destdir)
 
 def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
@@ -1736,12 +1687,7 @@ def os_awk_print(in_str: str, fields_index_list: List[int]) -> str:
             DeprecationWarning,
             stacklevel=2,
         )
-        check_param_type("in_str", in_str, bytes)
-    else:
-        check_param_type("in_str", in_str, str)
-    check_param_type("fields_index_list", fields_index_list, list)
-    for index, field_index in enumerate(fields_index_list):
-        check_param_type("field_index - {0}".format(index), field_index, int)
+
     finalstrdata = ""
     split_list = in_str.split()
     for field_index in fields_index_list:
@@ -1760,10 +1706,6 @@ def os_wc(in_file: str, fields_index_list: List[int] = [], **kwargs: Any) -> str
         Returns:
             (str) Space separated string of extracted fields.
     """
-    check_param_type("in_file", in_file, str)
-    check_param_type("fields_index_list", fields_index_list, list)
-    for index, field_index in enumerate(fields_index_list):
-        check_param_type("field_index - {0}".format(index), field_index, int)
     cmd = "wc {0}".format(in_file)
     rtn = os_command(cmd).run(**kwargs)
     wc_out = rtn.output()
@@ -1781,8 +1723,6 @@ def os_test_file(file_path: str, expression: str = "-e", **kwargs: Any) -> bool:
         Returns:
             (bool) True if test is successful.
     """
-    check_param_type("file_path", file_path, str)
-    check_param_type("expression", expression, str)
     if os.path.exists(file_path):
         cmd = "test {0} {1}".format(expression, file_path)
         rtn = os_command(cmd).run(**kwargs)
@@ -1811,12 +1751,6 @@ def os_wget(
         Returns:
             (bool) True if wget is successful.
     """
-    check_param_type("fileurl", fileurl, str)
-    check_param_type("targetdir", targetdir, str)
-    check_param_type("num_tries", num_tries, int)
-    check_param_type("secsbetweentries", secsbetweentries, int)
-    check_param_type("wgetparams", wgetparams, str)
-
     wget_success = False
 
     wget_loc = which("wget")
@@ -1973,10 +1907,6 @@ def _get_sst_config_include_file_value(
     """
     if data_type not in (int, str):
         raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
-    check_param_type("include_source", include_source, str)
-    check_param_type("define", define, str)
-    if default is not None:
-        check_param_type("default", default, data_type)
     try:
         rtn_data = include_dict[define]
     except KeyError as exc_e:
@@ -2006,10 +1936,6 @@ def _get_sstsimulator_conf_value(
     """
     if data_type not in (int, str, float, bool):
         raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    if default is not None:
-        check_param_type("default", default, data_type)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         if data_type is str:

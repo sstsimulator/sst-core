@@ -15,27 +15,7 @@
     functions
 """
 
-import inspect
 from typing import Any, Type
-
-
-def check_param_type(varname: str, vardata: Any, datatype: Type[Any]) -> None:
-    """ Validate a parameter to ensure it is of the correct type.
-
-        Args:
-            varname (str) = The string name of the variable
-            vardata (???) = The actual variable of any type
-            datatype (???) = The type that we want to confirm
-
-        Raises:
-            ValueErr: variable is not of the correct type.
-    """
-    caller = inspect.stack()[1][3]
-    if not isinstance(vardata, datatype):
-        err_str = (("TEST-ERROR: {0}() param {1} = {2} is a not a {3}; it is a ") +
-                   ("{4}")).format(caller, varname, vardata, datatype, type(vardata))
-        print(err_str)
-        raise ValueError(err_str)
 
 
 ################################################################################
