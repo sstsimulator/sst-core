@@ -30,6 +30,13 @@ class ComponentInfoMap;
 }
 
 namespace SST::Core::Serialization {
+/**
+ *  The Object Tree (ObjTree) is intended to be a developer friendly interface
+ *  to SST’s existing serialization infrastructure - ObjectMap. This is the
+ *  base class container from which the type-specific nodes derive. All nodes
+ * stored in a std::vector of std::unique_ptr
+ */
+
 class ObjTreeCont
 {
 public:
@@ -86,6 +93,13 @@ public:
 
     virtual ObjTreeCont* clone() const { return new ObjTreeCont(*this); }
 
+    /**
+       Adds a child node to the current node. obj ownership managed by
+       std::unique_ptr. Sets the parent of obj to the current node (this)
+
+       @param obj node to insert
+
+    */
     void addChildObj(ObjTreeCont* obj)
     {
         children_.push_back(std::unique_ptr<ObjTreeCont>(obj));
@@ -99,11 +113,42 @@ public:
     const std::string& getObjName() const { return name_; }
     const std::string& getType() const { return type_; }
     void               setName(const std::string& name) { name_ = name; }
-    void               setType(const std::string& type) { type_ = prettifyType(type); }
-    bool               isRoot() { return parent_ == nullptr; }
-    void               makeReadOnly() { readOnly_ = true; }
-    bool               isReadOnly() { return readOnly_; }
+    /**
+      * Set the type of the node - this comes from ObjectMap/Serialization. The type
+      * will be slightly demangled by the prettifyType() function in that
+      * std::__1:: and std::__cxx11:: are replaced with just std::
 
+       @param type - a string representing te C++ type of the node
+
+    */
+    void               setType(const std::string& type) { type_ = prettifyType(type); }
+
+    /**
+      Returns true if this is the top of the tree - determined by the
+      parent pointer being nullptr
+
+
+      @return true if parent == null, false otherwise
+   */
+
+    bool isRoot() { return parent_ == nullptr; }
+
+    /**
+     * Function that will be called if during conversion from ObjectMap
+     * the node has been marked as ReadOnly. Once a node is marked ReadOnly
+     * it cannont be made writeable.
+     */
+    void makeReadOnly() { readOnly_ = true; }
+    bool isReadOnly() { return readOnly_; }
+
+    /**
+      Apply a function to all children of this node regardless of type, etc.
+      Depending on the nature of func, it may descend to the next level (children's
+      children) of the tree. An example being the Dump() in ContainerObj
+
+       @param func - callable function (function pointer, lambda, etc)
+
+    */
     template <typename Func>
     void applyRecursive(Func&& func)
     {
@@ -111,7 +156,15 @@ public:
             func(child.get());
         }
     }
+    /**
+      Apply a function to all children of this node of a specific type. Type
+      is determined through a successful dynamic_cast to ObjectType
+      Depending on the nature of func, it may descend to the next level (children's
+      children) of the tree. An example being the Dump() in ContainerObj
 
+       @param func - callable function (function pointer, lambda, etc)
+
+    */
     template <typename ObjectType, typename Func>
     void applyRecursiveByType(Func&& func)
     {
@@ -122,6 +175,32 @@ public:
         }
     }
 
+    /**
+   Find the *first* instance of a particular type in this node's children_ that
+   matches criteria set by predicate. Examples:
+   // Find a ComponentObj whose BaseComponent has a specific name
+   auto* router = root->findByType<ComponentObj>([](ComponentObj* c) {
+       return c->getVal()->getName() == "router";
+   });
+
+   // Find the first IntegerObj with value greater than 100
+   auto* big = root->findByType<IntegerObj>([](IntegerObj* i) {
+       return i->visit([](auto val) { return static_cast<int64_t>(val) > 100; });
+   });
+
+   // Find any StringObj (predicate always returns true)
+   auto* anyStr = root->findByType<StringObj>([](StringObj*) {
+       return true;
+   });
+
+   // Find a ContainerObj that's a vector
+   auto* vec = root->findByType<ContainerObj>([](ContainerObj* c) {
+       return c->getContainerType().find("vector") != std::string::npos;
+   });
+      @param predicate - callable function (function ptr, lambda, etc)
+
+      @return pointer to matched node, nullptr if not found
+   */
     template <typename ObjectType, typename Func>
     ObjectType* findByType(Func&& predicate)
     {
@@ -133,6 +212,14 @@ public:
         return nullptr;
     }
 
+    /**
+     * Find the *first* instance of a child with name_ matching name. Does
+     * not descend into the tree.
+
+       @param name - name of the node you are searching for
+
+       @return pointer to node, if found, nullptr otherwise
+    */
     ObjTreeCont* findByName(const std::string name)
     {
         for ( size_t i = 0; i < children_.size(); i++ ) {
@@ -145,8 +232,21 @@ public:
 
     virtual void        apply() {};
     virtual std::string getTypeName() const { return type_; };
-    virtual void        Dump(
-               const int verbosity, std::ios_base::fmtflags base = std::ios_base::dec, std::ostream& os = std::cout)
+
+    /**
+   * Print the contents of the node to the stream specified by os. Verbosity
+   * Level 0 will only print "/" - applicable to the root node only. Any higher
+   * Verbosity will trigger a call to Dump() to all children.
+
+     @param verbosity - Level 0: Print this node only, which for the base class is "/"
+                        Level > 0: Call Dump on all children_
+     @param base - Control the base (dec, hex, oct) to print numerical values in. Default dec.
+     @param os - Stream to send the output. Default std::cout
+
+     @return pointer to node, if found, nullptr otherwise
+  */
+    virtual void Dump(
+        const int verbosity, std::ios_base::fmtflags base = std::ios_base::dec, std::ostream& os = std::cout)
     {
         os << name_ << "/ " << std::endl; //(" << type_ << ")" << std::endl;
         if ( verbosity > 0 ) {
@@ -154,8 +254,29 @@ public:
         }
     }
 
+    /**
+     * Set the value stored in the node from a string. This function will be
+     * called when the user wants to update the live value in the SST simulation.
+     * The function will convert value into the correct type based on the tree node
+     * type.
+     * @param value - string representing the value you want to wrtie to the live sim
+     * @return - true if successful, false otherwise
+     */
     virtual bool setFromString([[maybe_unused]] const std::string& value) { return false; }
+
+    /**
+     * This function will update the local stored node value with the live value
+     * in the sst simulation.
+     */
     virtual void syncFromSim() {};
+
+    /**
+     * This function will compare the stored the node value with the live simulation
+     * value. This function will NOT modify the stored value - an independent call
+     * to syncFromSim() is required.
+     * @return true if the value in the live simulation differs from the stored
+     * node value. false otherwise
+     */
     virtual bool hasChanged() { return false; }
 
     NodeKind getKind() const { return kind_; }
@@ -166,6 +287,9 @@ public:
                kind_ == NodeKind::Bool || kind_ == NodeKind::GenericVal;
     }
 
+    /**
+     * Clears the entire Object Tree and frees all nodes
+     */
     virtual void clear() { children_.clear(); }
 
 protected:
@@ -223,7 +347,21 @@ public:
         }
         return *this;
     }
+    /**
+     * Each time we break into the debugger we rebuild the ObjectTree based
+     * on the current ComponentInfoMap.  A helper class is employed,
+     * ObjectMapToTree, which performs the conversion. The initial conversion
+     * of the component map will strictly be the top level components - the
+     * remainder of the tree is built dynamically through cd or through a call
+     * to print with a -r (recursive) option. When a user cd’s into a component
+     * for the first time all elements in that component *except* Sub Components are
+     * serialized and converted into ObjTree node types by the ObjectMapToTree
+     * class.
 
+       @param compMap - The current Component Info Map supplied by the SST simulation
+
+       @return none
+    */
     void BuildTree(const ComponentInfoMap& compMap);
 
     Obj_T&       getObj() { return static_cast<Obj_T&>(*this); }
@@ -249,6 +387,10 @@ public:
     {
         os << "Root/" << std::endl;
     }
+
+    /**
+     * Clears the entire Object Tree and frees all nodes
+     */
     void clear() override
     {
         ObjTreeCont::clear();

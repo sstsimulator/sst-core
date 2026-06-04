@@ -182,13 +182,11 @@ public:
             if ( start_state == CLEAR ) { // Not previously triggered
                 state_ = TRIGGER;         // State becomes trigger record
             }
-            // printf("    Sample: trigger\n");
 
         } // if trigger
 
         if ( start_state == TRIGGER || start_state == POSTTRIGGER ) { // trigger record or post trigger
             state_ = POSTTRIGGER;                                     // State becomes post trigger
-            // printf("    Sample: post trigger\n");
         }
 
         // Circular buffer
@@ -210,7 +208,6 @@ public:
             for ( size_t obj = 0; obj < objBuffers_.size(); obj++ ) {
                 auto& [bufVec, storedTriggerIdx] = objBuffers_[obj];
                 varBuffer_                       = bufVec.back().get();
-                // varBuffer_->sample(cur_, trigger);
                 if ( storedTriggerIdx != INT_MAX ) {
                     std::unique_ptr<ObjTreeCont> updatedBuf(varBuffer_->clone());
                     updatedBuf->syncFromSim();
@@ -234,7 +231,6 @@ public:
             else { // Buffer full
                 // Check to see if we are overwriting trigger
                 if ( tagBuffer_[cur_] == TRIGGER ) {
-                    // printf("    Sample Overrun\n");
                     isOverrun_ = true;
                 }
                 tagBuffer_[cur_] = state_;
@@ -296,7 +292,6 @@ public:
                 ObjTreeCont* varBuffer_ =
                     std::get<std::vector<std::unique_ptr<ObjTreeCont>>>(objBuffers_[obj])[buf].get(); // DDD: Maybe?
                 varBuffer_->Dump(1, std::ios_base::dec, tmpBuf);
-                // std::cout << varBuffer_->getObjName() << "=" << varBuffer_->get() << " ";
                 objNames.append(tmpBuf.str());
                 if ( !objNames.empty() && objNames.back() == '\n' ) {
                     objNames.pop_back();
@@ -357,7 +352,6 @@ public:
         for ( size_t obj = 0; obj < objBuffers_.size(); obj++ ) {
             ObjTreeCont* varBuffer_ =
                 std::get<std::vector<std::unique_ptr<ObjTreeCont>>>(objBuffers_[obj]).back().get();
-            // ss << SST::Core::to_string(varBuffer_->getName()) << " ";
             ss << varBuffer_->getObjName() << " ";
         }
     }
