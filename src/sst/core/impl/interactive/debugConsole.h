@@ -284,8 +284,12 @@ private:
     bool                containsArg(const std::string tok, const char arg);
     size_t              containsArg(const std::vector<std::string> tokens, const std::string& arg);
     std::vector<size_t> parseBracketIndices(std::string& token);
+    bool checkValue(Core::Serialization::ObjTreeCont::NodeKind expectedType, const std::string& valToCheck);
+    WatchPoint::WPAction* parseAction(
+        std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjTreeCont* obj);
+
     // Pagination support
-    DebuggerStream      dout;
+    DebuggerStream dout;
 
     // Support for serial, threaded, rank serial, rank parallel execution
     static uint32_t                 current_thread;
