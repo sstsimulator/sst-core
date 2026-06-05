@@ -2303,11 +2303,11 @@ DebugConsole::cmd_setHandler_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
@@ -2320,7 +2320,6 @@ DebugConsole::cmd_setHandler_remote(std::vector<std::string>& tokens)
         std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
-    result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
 
     // Get handlerTypes and add associated objectBuffers
     size_t   tindex  = 2;
@@ -2339,9 +2338,10 @@ DebugConsole::cmd_setHandler_remote(std::vector<std::string>& tokens)
         else if ( type == "all" )
             handler = handler | (unsigned)WatchPoint::ALL;
         else
-            result << " Invalid handler type: " << type << std::endl;
+            result << "Invalid handler type: " << type << std::endl;
     }
     if ( handler ) {
+        result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
         wp->setHandler(handler);
         return true;
     }
@@ -2447,24 +2447,23 @@ DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
-        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
 
     WatchPoint* wp = watch_points_.at(wpIndex).first;
     if ( wp == nullptr ) {
-        std::cout << " Invalid watchpoint index: " << wpIndex << std::endl;
+        std::cout << "Invalid watchpoint index: " << wpIndex << std::endl;
         return false;
     }
-    result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
 
     // Get trace vars and add associated objectBuffers
     size_t tindex = 2;
@@ -2483,6 +2482,7 @@ DebugConsole::cmd_addTraceVar_remote(std::vector<std::string>& tokens)
             std::cout << "Watchpoint " << wpIndex << " does not have tracing enabled" << std::endl;
             return false;
         }
+        result << "WP " << wpIndex << " - " << wp->getName() << std::endl;
         std::unique_ptr<Core::Serialization::ObjTreeCont> map_uniq(map->clone());
         wp->addObjectBuffer(std::move(map_uniq));
     }
@@ -2587,11 +2587,11 @@ DebugConsole::cmd_resetTraceBuffer_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
@@ -2712,11 +2712,11 @@ DebugConsole::cmd_printTrace_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
@@ -2833,11 +2833,11 @@ DebugConsole::cmd_printWatchpoint_remote(std::vector<std::string>& tokens)
         wpIndex = std::stoi(tokens[1]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cout << "Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     catch ( const std::out_of_range& e ) {
-        std::cout << "Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid watchpoint index: " << tokens[1] << std::endl;
         return false;
     }
     if ( wpIndex >= watch_points_.size() ) {
@@ -3849,11 +3849,11 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index)
         bufsize = std::stoi(tokens[index++]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Invalid argument for buffer size: " << tokens[index - 1] << std::endl;
         return nullptr;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for buffer size: " << tokens[5] << std::endl;
+        std::cout << "Out of range for buffer size: " << tokens[index - 1] << std::endl;
         return nullptr;
     }
 
@@ -3862,11 +3862,11 @@ parseTraceBuffer(std::vector<std::string>& tokens, size_t& index)
         pdelay = std::stoi(tokens[index++]);
     }
     catch ( const std::invalid_argument& e ) {
-        std::cerr << "Error: Invalid argument for post trigger delay: " << tokens[6] << std::endl;
+        std::cout << "Invalid argument for post trigger delay: " << tokens[index - 1] << std::endl;
         return nullptr;
     }
     catch ( const std::out_of_range& e ) {
-        std::cerr << "Error: Out of range for post trigger delay: " << tokens[6] << std::endl;
+        std::cout << "Out of range for post trigger delay: " << tokens[index - 1] << std::endl;
         return nullptr;
     }
 
