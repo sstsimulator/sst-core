@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <ios>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -69,10 +70,13 @@ void
 WatchPoint::SetVarWPAction::invokeAction(WatchPoint* wp)
 {
     try {
-        obj_->set(valStr_);
+        if ( !obj_->setFromString(valStr_) ) {
+            printf("Invalid set var action: %s\n", valStr_.c_str());
+            return;
+        }
     }
     catch ( const std::exception& e ) {
-        printf("Invalid set var: %s\n", valStr_.c_str());
+        printf("Invalid set var action: %s\n", valStr_.c_str());
         return;
     }
 
@@ -92,14 +96,13 @@ WatchPoint::ShutdownWPAction::invokeAction(WatchPoint* wp)
     return;
 }
 
-WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjectMapComparison* obj) :
+WatchPoint::WatchPoint(size_t index, const std::string& name, Core::Serialization::ObjTreeComparison* obj) :
     Clock::HandlerBase::AttachPoint(),
     Event::HandlerBase::AttachPoint(),
+    cmpObjects_(obj),
     name_(name),
     wpIndex(index)
-{
-    addComparison(obj);
-}
+{}
 
 void
 WatchPoint::genericHandler(HANDLER h)
@@ -201,15 +204,17 @@ WatchPoint::printTriggerRecord()
 }
 
 void
-WatchPoint::printTrace()
+WatchPoint::printTrace(std::ostream& os)
 {
     if ( tb_ != nullptr ) {
-        std::cout << "TriggerCount=" << triggerCount << "\n";
-        tb_->dumpTriggerRecord();
-        tb_->dumpTraceBufferT();
+        std::stringstream ss; // Buffer in a stream so it doesn't get split in parallel execution
+        ss << "TriggerCount=" << triggerCount << "\n";
+        tb_->dumpTriggerRecord(ss);
+        tb_->dumpTraceBufferT(ss);
+        os << ss.str(); // Print everything at once to avoid splitting
     }
     else {
-        printf("  No tracing enabled\n");
+        os << "  No tracing enabled\n";
     }
 }
 
@@ -274,9 +279,7 @@ WatchPoint::printWatchpoint(std::stringstream& ss)
     ss << "TriggerCount " << triggerCount << " : ";
     printHandler(ss);
     // TODO: print the logic values
-    for ( size_t i = 0; i < numCmpObj_; i++ ) { // Print trigger tests
-        cmpObjects_[i]->print(ss);
-    }
+    cmpObjects_->print(ss, 0, cmpObjects_->operators.size() * 2);
     ss << " : ";
 
     if ( tb_ != nullptr ) { // print trace buffer config
@@ -361,22 +364,15 @@ WatchPoint::printAction(std::stringstream& ss)
 }
 
 void
-WatchPoint::addTraceBuffer(Core::Serialization::TraceBuffer* tb)
+WatchPoint::addTraceBuffer(Core::Serialization::ObjTreeTraceBuffer* tb)
 {
     tb_ = tb;
 }
 
 void
-WatchPoint::addObjectBuffer(Core::Serialization::ObjectBuffer* ob)
+WatchPoint::addObjectBuffer(std::unique_ptr<Core::Serialization::ObjTreeCont> ob)
 {
-    tb_->addObjectBuffer(ob);
-}
-
-void
-WatchPoint::addComparison(Core::Serialization::ObjectMapComparison* cmp)
-{
-    cmpObjects_.push_back(cmp);
-    numCmpObj_++;
+    tb_->addObjectBuffer(std::move(ob));
 }
 
 void
@@ -393,23 +389,25 @@ WatchPoint::check()
 {
     bool result = false;
 
-    if ( cmpObjects_[0]->compare() ) {
+    if ( cmpObjects_->evaluateComparison(0, nullptr) ) {
+
         result = true;
     }
     std::stringstream s;
     s << std::boolalpha;
     s << "    WatchPoint " << name_.c_str() << " tests:\n";
     s << "      ";
-    cmpObjects_[0]->print(s);
+    cmpObjects_->print(s, 0, 1);
     s << " -> " << result << std::endl;
 
-    for ( size_t i = 1; i < numCmpObj_; i++ ) {
+    for ( size_t i = 1; i < cmpObjects_->operators.size(); i++ ) {
         bool result2 = false;
-        if ( cmpObjects_[i]->compare() ) {
+        if ( cmpObjects_->evaluateComparison(i, nullptr) ) {
             result2 = true;
         }
+        //   printf("      comparison%ld = %d\n", i, result2);
         s << "      ";
-        cmpObjects_[i]->print(s);
+        cmpObjects_->print(s, i * 2, i * 2 + 1);
         s << " -> " << result2 << std::endl;
 
         if ( logicOps_[i - 1] == LogicOp::AND ) {

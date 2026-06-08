@@ -15,6 +15,7 @@ EXTRA_DIST += \
     tests/cmd_DebugConsole_serial1.cmd \
     tests/cmd_DebugConsole_thread0.cmd \
     tests/cmd_DebugConsole_thread1.cmd \
+    tests/cmd_DebugConsole_tracebuf.cmd \
     tests/testsuite_default_Checkpoint.py \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_ComponentExtension.py \
@@ -88,12 +89,11 @@ EXTRA_DIST += \
     tests/refFiles/test_DebugConsole_r4_rankserial1.out \
     tests/refFiles/test_DebugConsole_rankparallel0.out \
     tests/refFiles/test_DebugConsole_rankparallel1.out \
-    tests/refFiles/test_DebugConsole_rankserial0.out \
-    tests/refFiles/test_DebugConsole_rankserial1.out \
     tests/refFiles/test_DebugConsole_serial0.out \
     tests/refFiles/test_DebugConsole_serial1.out \
     tests/refFiles/test_DebugConsole_thread0.out \
     tests/refFiles/test_DebugConsole_thread1.out \
+    tests/refFiles/test_DebugConsole_tracebuf.out \
     tests/refFiles/test_PerfComponent.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \

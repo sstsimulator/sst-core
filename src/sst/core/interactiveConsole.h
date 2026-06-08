@@ -13,6 +13,7 @@
 #define SST_CORE_INTERACTIVE_CONSOLE_H
 
 #include "sst/core/action.h"
+#include "sst/core/componentInfo.h"
 #include "sst/core/cputimer.h"
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/output.h"
@@ -127,6 +128,8 @@ protected:
     void schedule_interactive(SimTime_t time_offset, const std::string& msg);
 
     SST::Core::Serialization::ObjectMap* getComponentObjectMap();
+
+    const SST::ComponentInfoMap& getComponentInfoMap();
 
     void simulationShutdown();
 

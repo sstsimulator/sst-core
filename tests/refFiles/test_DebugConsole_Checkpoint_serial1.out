@@ -8,7 +8,7 @@ c1, setup()
 c0, setup()
 ---- Rank0:Thread0: Entering interactive mode at time 1000000
 Interactive start at 1000000
-> replay /home/skuntz/sanity/sst-core/tests/cmd_DebugConsole_Checkpoint_serial1.cmd
+> replay cmd_DebugConsole_Checkpoint_serial1.cmd
 
 > confirm false
 > # 0 watch
@@ -31,7 +31,7 @@ c1 talkingc1, bounce 991, t=9000000
 c0 talkingClock cycle count = 1
 c0 talkingRNG: 4074790800, 774252441, 24684
 c0 talkingDistributions: 1.500000, 5.000000, 0.721430, 0.919625, 0.000000, 1.000000
-# Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.03792 seconds)
+# Simulation Checkpoint: Simulated Time 10 us (Real CPU time since last checkpoint 0.00859 seconds)
 c1 talkingClock cycle count = 1
 c1 talkingRNG: 4074790800, 774252441, 24684
 c1 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
@@ -42,11 +42,11 @@ c3 talkingClock cycle count = 1
 c3 talkingRNG: 4074790800, 774252441, 24684
 c3 talkingDistributions: 1.500000, 1.000000, 0.721430, 0.919625, 0.000000, 1.000000
 ---- Rank0:Thread0: Entering interactive mode at time 10000000
-  Last Trigger: WP0: AC : c0/xorshift/w ...
+  Last Trigger: WP0: AC : /c0/xorshift/w CHANGED  ...
 > wl
 R0,T0: Current watch points:
-0: TriggerCount 1 : ALL : c0/xorshift/w CHANGED  : interactive
-1: TriggerCount 1 : ALL : c0/xorshift/w CHANGED  : bufsize = 16 postDelay = 0 : c0/xorshift/w  : checkpoint
+0: TriggerCount 1 : ALL : /c0/xorshift/w CHANGED  : interactive
+1: TriggerCount 1 : ALL : /c0/xorshift/w CHANGED  : bufsize = 16 postDelay = 0 : w  : checkpoint
 > unwatch 0
 > unwatch 1
 > shutd

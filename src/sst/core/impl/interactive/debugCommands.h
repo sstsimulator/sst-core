@@ -196,8 +196,9 @@ public:
     std::vector<ConsoleCommand>& getUserRegistryVector() { return user_registry; }
     enum SEARCH_TYPE { ALL, BUILTIN, USER };
     std::pair<ConsoleCommand, bool> const seek(std::string token, SEARCH_TYPE search_type);
+    bool                                  replace_user_cmd(std::string token);
     // User defined command entry
-    bool                                  beginUserCommand(std::string name);
+    bool                                  beginUserCommand(std::string name, bool confirm);
     void                                  appendUserCommand(std::string token0, std::string line);
     void                                  commitUserCommand();
     std::vector<std::string>*             userCommandInsts(std::string key)
