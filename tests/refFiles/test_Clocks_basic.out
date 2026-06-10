@@ -1,0 +1,727 @@
+# Creating simulation checkpoint at simulated time period of 20ns.
+0: starting test sequence at 0
+0: Clock 1 will restart at cycle 6
+0: Clock 1 at cycle 6
+0: Clock 1 at cycle 7
+0: Clock 1 at cycle 8
+0: Clock 1 at cycle 9
+0: Clock 1 at cycle 10
+0: Clock 0 will restart at cycle 11
+0: Clock 1 at cycle 11
+0: Clock 0 at cycle 11
+1: Starting test sequence at 11000
+0: Clock 1 at cycle 12
+0: Clock 0 at cycle 12
+0: Clock 1 at cycle 13
+0: Clock 0 at cycle 13
+0: Self stopping Clock 0 at time 13000
+0: Clock 1 at cycle 14
+0: Clock 1 at cycle 15
+0: Clock 3 will restart at cycle 16
+1: Clock 1 will restart at cycle 16
+0: Clock 1 at cycle 16
+0: Clock 3 at cycle 16
+1: Clock 1 at cycle 16
+0: Clock 1 at cycle 17
+0: Clock 3 at cycle 17
+1: Clock 1 at cycle 17
+2: Starting test sequence at 17000
+0: Clock 1 at cycle 18
+0: Clock 3 at cycle 18
+1: Clock 1 at cycle 18
+0: Clock 1 at cycle 19
+0: Clock 3 at cycle 19
+1: Clock 1 at cycle 19
+# Simulation Checkpoint: Simulated Time 20 ns (Real CPU time since last checkpoint 0.00132 seconds)
+0: Clock 1 at cycle 20
+0: Clock 3 at cycle 20
+1: Clock 1 at cycle 20
+0: Stopping Clock 1 at time 20000
+1: Clock 0 will restart at cycle 21
+2: Clock 1 will restart at cycle 21
+0: Clock 3 at cycle 21
+1: Clock 1 at cycle 21
+1: Clock 0 at cycle 21
+2: Clock 1 at cycle 21
+0: Clock 3 at cycle 22
+1: Clock 1 at cycle 22
+1: Clock 0 at cycle 22
+2: Clock 1 at cycle 22
+0: Clock 3 at cycle 23
+1: Clock 1 at cycle 23
+1: Clock 0 at cycle 23
+1: Self stopping Clock 0 at time 23000
+2: Clock 1 at cycle 23
+3: Starting test sequence at 23000
+0: Clock 3 at cycle 24
+1: Clock 1 at cycle 24
+2: Clock 1 at cycle 24
+0: Clock 3 at cycle 25
+1: Clock 1 at cycle 25
+2: Clock 1 at cycle 25
+0: Clock 2 will restart at cycle 26
+1: Clock 3 will restart at cycle 26
+2: Clock 0 will restart at cycle 26
+3: Clock 1 will restart at cycle 26
+0: Clock 3 at cycle 26
+1: Clock 1 at cycle 26
+2: Clock 1 at cycle 26
+0: Clock 2 at cycle 26
+1: Clock 3 at cycle 26
+2: Clock 0 at cycle 26
+3: Clock 1 at cycle 26
+0: Clock 3 at cycle 27
+1: Clock 1 at cycle 27
+2: Clock 1 at cycle 27
+0: Clock 2 at cycle 27
+1: Clock 3 at cycle 27
+2: Clock 0 at cycle 27
+3: Clock 1 at cycle 27
+0: Clock 3 at cycle 28
+1: Clock 1 at cycle 28
+2: Clock 1 at cycle 28
+0: Clock 2 at cycle 28
+0: Self stopping Clock 2 at time 28000
+1: Clock 3 at cycle 28
+2: Clock 0 at cycle 28
+2: Self stopping Clock 0 at time 28000
+3: Clock 1 at cycle 28
+0: Clock 3 at cycle 29
+1: Clock 1 at cycle 29
+2: Clock 1 at cycle 29
+1: Clock 3 at cycle 29
+3: Clock 1 at cycle 29
+4: Starting test sequence at 29000
+0: Clock 3 at cycle 30
+1: Clock 1 at cycle 30
+2: Clock 1 at cycle 30
+1: Clock 3 at cycle 30
+3: Clock 1 at cycle 30
+0: Stopping Clock 3 at time 30000
+1: Stopping Clock 1 at time 30000
+2: Clock 3 will restart at cycle 31
+3: Clock 0 will restart at cycle 31
+4: Clock 1 will restart at cycle 31
+2: Clock 1 at cycle 31
+1: Clock 3 at cycle 31
+3: Clock 1 at cycle 31
+2: Clock 3 at cycle 31
+3: Clock 0 at cycle 31
+4: Clock 1 at cycle 31
+2: Clock 1 at cycle 32
+1: Clock 3 at cycle 32
+3: Clock 1 at cycle 32
+2: Clock 3 at cycle 32
+3: Clock 0 at cycle 32
+4: Clock 1 at cycle 32
+2: Clock 1 at cycle 33
+1: Clock 3 at cycle 33
+3: Clock 1 at cycle 33
+2: Clock 3 at cycle 33
+3: Clock 0 at cycle 33
+3: Self stopping Clock 0 at time 33000
+4: Clock 1 at cycle 33
+2: Clock 1 at cycle 34
+1: Clock 3 at cycle 34
+3: Clock 1 at cycle 34
+2: Clock 3 at cycle 34
+4: Clock 1 at cycle 34
+2: Clock 1 at cycle 35
+1: Clock 3 at cycle 35
+3: Clock 1 at cycle 35
+2: Clock 3 at cycle 35
+4: Clock 1 at cycle 35
+5: Starting test sequence at 35000
+0: Clock 1 will restart at cycle 36
+1: Clock 2 will restart at cycle 36
+2: Stopping Clock 1 at time 35000
+3: Clock 3 will restart at cycle 36
+4: Clock 0 will restart at cycle 36
+1: Clock 3 at cycle 36
+3: Clock 1 at cycle 36
+2: Clock 3 at cycle 36
+4: Clock 1 at cycle 36
+0: Clock 1 at cycle 36
+1: Clock 2 at cycle 36
+3: Clock 3 at cycle 36
+4: Clock 0 at cycle 36
+1: Clock 3 at cycle 37
+3: Clock 1 at cycle 37
+2: Clock 3 at cycle 37
+4: Clock 1 at cycle 37
+0: Clock 1 at cycle 37
+1: Clock 2 at cycle 37
+3: Clock 3 at cycle 37
+4: Clock 0 at cycle 37
+1: Clock 3 at cycle 38
+3: Clock 1 at cycle 38
+2: Clock 3 at cycle 38
+4: Clock 1 at cycle 38
+0: Clock 1 at cycle 38
+1: Clock 2 at cycle 38
+1: Self stopping Clock 2 at time 38000
+3: Clock 3 at cycle 38
+4: Clock 0 at cycle 38
+4: Self stopping Clock 0 at time 38000
+1: Clock 3 at cycle 39
+3: Clock 1 at cycle 39
+2: Clock 3 at cycle 39
+4: Clock 1 at cycle 39
+0: Clock 1 at cycle 39
+3: Clock 3 at cycle 39
+# Simulation Checkpoint: Simulated Time 40 ns (Real CPU time since last checkpoint 0.00564 seconds)
+1: Clock 3 at cycle 40
+3: Clock 1 at cycle 40
+2: Clock 3 at cycle 40
+4: Clock 1 at cycle 40
+0: Clock 1 at cycle 40
+3: Clock 3 at cycle 40
+0: Clock 0 will restart at cycle 41
+1: Stopping Clock 3 at time 40000
+2: Clock 2 will restart at cycle 41
+3: Stopping Clock 1 at time 40000
+4: Clock 3 will restart at cycle 41
+5: Clock 1 will restart at cycle 41
+2: Clock 3 at cycle 41
+4: Clock 1 at cycle 41
+0: Clock 1 at cycle 41
+3: Clock 3 at cycle 41
+0: Clock 0 at cycle 41
+2: Clock 2 at cycle 41
+4: Clock 3 at cycle 41
+5: Clock 1 at cycle 41
+6: Starting test sequence at 41000
+2: Clock 3 at cycle 42
+4: Clock 1 at cycle 42
+0: Clock 1 at cycle 42
+3: Clock 3 at cycle 42
+0: Clock 0 at cycle 42
+2: Clock 2 at cycle 42
+4: Clock 3 at cycle 42
+5: Clock 1 at cycle 42
+2: Clock 3 at cycle 43
+4: Clock 1 at cycle 43
+0: Clock 1 at cycle 43
+3: Clock 3 at cycle 43
+0: Clock 0 at cycle 43
+0: Self stopping Clock 0 at time 43000
+2: Clock 2 at cycle 43
+2: Self stopping Clock 2 at time 43000
+4: Clock 3 at cycle 43
+5: Clock 1 at cycle 43
+2: Clock 3 at cycle 44
+4: Clock 1 at cycle 44
+0: Clock 1 at cycle 44
+3: Clock 3 at cycle 44
+4: Clock 3 at cycle 44
+5: Clock 1 at cycle 44
+2: Clock 3 at cycle 45
+4: Clock 1 at cycle 45
+0: Clock 1 at cycle 45
+3: Clock 3 at cycle 45
+4: Clock 3 at cycle 45
+5: Clock 1 at cycle 45
+0: Clock 3 will restart at cycle 46
+1: Clock 1 will restart at cycle 46
+2: Stopping Clock 3 at time 45000
+3: Clock 2 will restart at cycle 46
+4: Stopping Clock 1 at time 45000
+5: Clock 0 will restart at cycle 46
+6: Clock 1 will restart at cycle 46
+0: Clock 1 at cycle 46
+3: Clock 3 at cycle 46
+4: Clock 3 at cycle 46
+5: Clock 1 at cycle 46
+0: Clock 3 at cycle 46
+1: Clock 1 at cycle 46
+3: Clock 2 at cycle 46
+5: Clock 0 at cycle 46
+6: Clock 1 at cycle 46
+0: Clock 1 at cycle 47
+3: Clock 3 at cycle 47
+4: Clock 3 at cycle 47
+5: Clock 1 at cycle 47
+0: Clock 3 at cycle 47
+1: Clock 1 at cycle 47
+3: Clock 2 at cycle 47
+5: Clock 0 at cycle 47
+6: Clock 1 at cycle 47
+7: Starting test sequence at 47000
+0: Clock 1 at cycle 48
+3: Clock 3 at cycle 48
+4: Clock 3 at cycle 48
+5: Clock 1 at cycle 48
+0: Clock 3 at cycle 48
+1: Clock 1 at cycle 48
+3: Clock 2 at cycle 48
+3: Self stopping Clock 2 at time 48000
+5: Clock 0 at cycle 48
+5: Self stopping Clock 0 at time 48000
+6: Clock 1 at cycle 48
+0: Clock 1 at cycle 49
+3: Clock 3 at cycle 49
+4: Clock 3 at cycle 49
+5: Clock 1 at cycle 49
+0: Clock 3 at cycle 49
+1: Clock 1 at cycle 49
+6: Clock 1 at cycle 49
+0: Clock 1 at cycle 50
+3: Clock 3 at cycle 50
+4: Clock 3 at cycle 50
+5: Clock 1 at cycle 50
+0: Clock 3 at cycle 50
+1: Clock 1 at cycle 50
+6: Clock 1 at cycle 50
+0: Stopping Clock 1 at time 50000
+1: Clock 0 will restart at cycle 51
+2: Clock 1 will restart at cycle 51
+3: Stopping Clock 3 at time 50000
+4: Clock 2 will restart at cycle 51
+5: Clock 3 will restart at cycle 51
+6: Clock 0 will restart at cycle 51
+7: Clock 1 will restart at cycle 51
+4: Clock 3 at cycle 51
+5: Clock 1 at cycle 51
+0: Clock 3 at cycle 51
+1: Clock 1 at cycle 51
+6: Clock 1 at cycle 51
+1: Clock 0 at cycle 51
+2: Clock 1 at cycle 51
+4: Clock 2 at cycle 51
+5: Clock 3 at cycle 51
+6: Clock 0 at cycle 51
+7: Clock 1 at cycle 51
+4: Clock 3 at cycle 52
+5: Clock 1 at cycle 52
+0: Clock 3 at cycle 52
+1: Clock 1 at cycle 52
+6: Clock 1 at cycle 52
+1: Clock 0 at cycle 52
+2: Clock 1 at cycle 52
+4: Clock 2 at cycle 52
+5: Clock 3 at cycle 52
+6: Clock 0 at cycle 52
+7: Clock 1 at cycle 52
+4: Clock 3 at cycle 53
+5: Clock 1 at cycle 53
+0: Clock 3 at cycle 53
+1: Clock 1 at cycle 53
+6: Clock 1 at cycle 53
+1: Clock 0 at cycle 53
+1: Self stopping Clock 0 at time 53000
+2: Clock 1 at cycle 53
+4: Clock 2 at cycle 53
+4: Self stopping Clock 2 at time 53000
+5: Clock 3 at cycle 53
+6: Clock 0 at cycle 53
+6: Self stopping Clock 0 at time 53000
+7: Clock 1 at cycle 53
+4: Clock 3 at cycle 54
+5: Clock 1 at cycle 54
+0: Clock 3 at cycle 54
+1: Clock 1 at cycle 54
+6: Clock 1 at cycle 54
+2: Clock 1 at cycle 54
+5: Clock 3 at cycle 54
+7: Clock 1 at cycle 54
+4: Clock 3 at cycle 55
+5: Clock 1 at cycle 55
+0: Clock 3 at cycle 55
+1: Clock 1 at cycle 55
+6: Clock 1 at cycle 55
+2: Clock 1 at cycle 55
+5: Clock 3 at cycle 55
+7: Clock 1 at cycle 55
+0: Clock 2 will restart at cycle 56
+1: Clock 3 will restart at cycle 56
+2: Clock 0 will restart at cycle 56
+3: Clock 1 will restart at cycle 56
+4: Stopping Clock 3 at time 55000
+5: Stopping Clock 1 at time 55000
+6: Clock 3 will restart at cycle 56
+7: Clock 0 will restart at cycle 56
+0: Clock 3 at cycle 56
+1: Clock 1 at cycle 56
+6: Clock 1 at cycle 56
+2: Clock 1 at cycle 56
+5: Clock 3 at cycle 56
+7: Clock 1 at cycle 56
+0: Clock 2 at cycle 56
+1: Clock 3 at cycle 56
+2: Clock 0 at cycle 56
+3: Clock 1 at cycle 56
+6: Clock 3 at cycle 56
+7: Clock 0 at cycle 56
+0: Clock 3 at cycle 57
+1: Clock 1 at cycle 57
+6: Clock 1 at cycle 57
+2: Clock 1 at cycle 57
+5: Clock 3 at cycle 57
+7: Clock 1 at cycle 57
+0: Clock 2 at cycle 57
+1: Clock 3 at cycle 57
+2: Clock 0 at cycle 57
+3: Clock 1 at cycle 57
+6: Clock 3 at cycle 57
+7: Clock 0 at cycle 57
+0: Clock 3 at cycle 58
+1: Clock 1 at cycle 58
+6: Clock 1 at cycle 58
+2: Clock 1 at cycle 58
+5: Clock 3 at cycle 58
+7: Clock 1 at cycle 58
+0: Clock 2 at cycle 58
+0: Self stopping Clock 2 at time 58000
+1: Clock 3 at cycle 58
+2: Clock 0 at cycle 58
+2: Self stopping Clock 0 at time 58000
+3: Clock 1 at cycle 58
+6: Clock 3 at cycle 58
+7: Clock 0 at cycle 58
+7: Self stopping Clock 0 at time 58000
+0: Clock 3 at cycle 59
+1: Clock 1 at cycle 59
+6: Clock 1 at cycle 59
+2: Clock 1 at cycle 59
+5: Clock 3 at cycle 59
+7: Clock 1 at cycle 59
+1: Clock 3 at cycle 59
+3: Clock 1 at cycle 59
+6: Clock 3 at cycle 59
+# Simulation Checkpoint: Simulated Time 60 ns (Real CPU time since last checkpoint 0.01103 seconds)
+0: Clock 3 at cycle 60
+1: Clock 1 at cycle 60
+6: Clock 1 at cycle 60
+2: Clock 1 at cycle 60
+5: Clock 3 at cycle 60
+7: Clock 1 at cycle 60
+1: Clock 3 at cycle 60
+3: Clock 1 at cycle 60
+6: Clock 3 at cycle 60
+0: Stopping Clock 3 at time 60000
+1: Stopping Clock 1 at time 60000
+2: Clock 3 will restart at cycle 61
+3: Clock 0 will restart at cycle 61
+4: Clock 1 will restart at cycle 61
+5: Clock 2 will restart at cycle 61
+6: Stopping Clock 1 at time 60000
+7: Clock 3 will restart at cycle 61
+2: Clock 1 at cycle 61
+5: Clock 3 at cycle 61
+7: Clock 1 at cycle 61
+1: Clock 3 at cycle 61
+3: Clock 1 at cycle 61
+6: Clock 3 at cycle 61
+2: Clock 3 at cycle 61
+3: Clock 0 at cycle 61
+4: Clock 1 at cycle 61
+5: Clock 2 at cycle 61
+7: Clock 3 at cycle 61
+2: Clock 1 at cycle 62
+5: Clock 3 at cycle 62
+7: Clock 1 at cycle 62
+1: Clock 3 at cycle 62
+3: Clock 1 at cycle 62
+6: Clock 3 at cycle 62
+2: Clock 3 at cycle 62
+3: Clock 0 at cycle 62
+4: Clock 1 at cycle 62
+5: Clock 2 at cycle 62
+7: Clock 3 at cycle 62
+2: Clock 1 at cycle 63
+5: Clock 3 at cycle 63
+7: Clock 1 at cycle 63
+1: Clock 3 at cycle 63
+3: Clock 1 at cycle 63
+6: Clock 3 at cycle 63
+2: Clock 3 at cycle 63
+3: Clock 0 at cycle 63
+3: Self stopping Clock 0 at time 63000
+4: Clock 1 at cycle 63
+5: Clock 2 at cycle 63
+5: Self stopping Clock 2 at time 63000
+7: Clock 3 at cycle 63
+2: Clock 1 at cycle 64
+5: Clock 3 at cycle 64
+7: Clock 1 at cycle 64
+1: Clock 3 at cycle 64
+3: Clock 1 at cycle 64
+6: Clock 3 at cycle 64
+2: Clock 3 at cycle 64
+4: Clock 1 at cycle 64
+7: Clock 3 at cycle 64
+2: Clock 1 at cycle 65
+5: Clock 3 at cycle 65
+7: Clock 1 at cycle 65
+1: Clock 3 at cycle 65
+3: Clock 1 at cycle 65
+6: Clock 3 at cycle 65
+2: Clock 3 at cycle 65
+4: Clock 1 at cycle 65
+7: Clock 3 at cycle 65
+0: Terminating test sequence at 65000
+1: Clock 2 will restart at cycle 66
+2: Stopping Clock 1 at time 65000
+3: Clock 3 will restart at cycle 66
+4: Clock 0 will restart at cycle 66
+5: Stopping Clock 3 at time 65000
+6: Clock 2 will restart at cycle 66
+7: Stopping Clock 1 at time 65000
+1: Clock 3 at cycle 66
+3: Clock 1 at cycle 66
+6: Clock 3 at cycle 66
+2: Clock 3 at cycle 66
+4: Clock 1 at cycle 66
+7: Clock 3 at cycle 66
+1: Clock 2 at cycle 66
+3: Clock 3 at cycle 66
+4: Clock 0 at cycle 66
+6: Clock 2 at cycle 66
+1: Clock 3 at cycle 67
+3: Clock 1 at cycle 67
+6: Clock 3 at cycle 67
+2: Clock 3 at cycle 67
+4: Clock 1 at cycle 67
+7: Clock 3 at cycle 67
+1: Clock 2 at cycle 67
+3: Clock 3 at cycle 67
+4: Clock 0 at cycle 67
+6: Clock 2 at cycle 67
+1: Clock 3 at cycle 68
+3: Clock 1 at cycle 68
+6: Clock 3 at cycle 68
+2: Clock 3 at cycle 68
+4: Clock 1 at cycle 68
+7: Clock 3 at cycle 68
+1: Clock 2 at cycle 68
+1: Self stopping Clock 2 at time 68000
+3: Clock 3 at cycle 68
+4: Clock 0 at cycle 68
+4: Self stopping Clock 0 at time 68000
+6: Clock 2 at cycle 68
+6: Self stopping Clock 2 at time 68000
+1: Clock 3 at cycle 69
+3: Clock 1 at cycle 69
+6: Clock 3 at cycle 69
+2: Clock 3 at cycle 69
+4: Clock 1 at cycle 69
+7: Clock 3 at cycle 69
+3: Clock 3 at cycle 69
+1: Clock 3 at cycle 70
+3: Clock 1 at cycle 70
+6: Clock 3 at cycle 70
+2: Clock 3 at cycle 70
+4: Clock 1 at cycle 70
+7: Clock 3 at cycle 70
+3: Clock 3 at cycle 70
+1: Stopping Clock 3 at time 70000
+2: Clock 2 will restart at cycle 71
+3: Stopping Clock 1 at time 70000
+4: Clock 3 will restart at cycle 71
+5: Clock 1 will restart at cycle 71
+6: Stopping Clock 3 at time 70000
+7: Clock 2 will restart at cycle 71
+2: Clock 3 at cycle 71
+4: Clock 1 at cycle 71
+7: Clock 3 at cycle 71
+3: Clock 3 at cycle 71
+2: Clock 2 at cycle 71
+4: Clock 3 at cycle 71
+5: Clock 1 at cycle 71
+7: Clock 2 at cycle 71
+2: Clock 3 at cycle 72
+4: Clock 1 at cycle 72
+7: Clock 3 at cycle 72
+3: Clock 3 at cycle 72
+2: Clock 2 at cycle 72
+4: Clock 3 at cycle 72
+5: Clock 1 at cycle 72
+7: Clock 2 at cycle 72
+2: Clock 3 at cycle 73
+4: Clock 1 at cycle 73
+7: Clock 3 at cycle 73
+3: Clock 3 at cycle 73
+2: Clock 2 at cycle 73
+2: Self stopping Clock 2 at time 73000
+4: Clock 3 at cycle 73
+5: Clock 1 at cycle 73
+7: Clock 2 at cycle 73
+7: Self stopping Clock 2 at time 73000
+2: Clock 3 at cycle 74
+4: Clock 1 at cycle 74
+7: Clock 3 at cycle 74
+3: Clock 3 at cycle 74
+4: Clock 3 at cycle 74
+5: Clock 1 at cycle 74
+2: Clock 3 at cycle 75
+4: Clock 1 at cycle 75
+7: Clock 3 at cycle 75
+3: Clock 3 at cycle 75
+4: Clock 3 at cycle 75
+5: Clock 1 at cycle 75
+1: Terminating test sequence at 75000
+2: Stopping Clock 3 at time 75000
+3: Clock 2 will restart at cycle 76
+4: Stopping Clock 1 at time 75000
+5: Clock 0 will restart at cycle 76
+6: Clock 1 will restart at cycle 76
+7: Stopping Clock 3 at time 75000
+3: Clock 3 at cycle 76
+4: Clock 3 at cycle 76
+5: Clock 1 at cycle 76
+3: Clock 2 at cycle 76
+5: Clock 0 at cycle 76
+6: Clock 1 at cycle 76
+3: Clock 3 at cycle 77
+4: Clock 3 at cycle 77
+5: Clock 1 at cycle 77
+3: Clock 2 at cycle 77
+5: Clock 0 at cycle 77
+6: Clock 1 at cycle 77
+3: Clock 3 at cycle 78
+4: Clock 3 at cycle 78
+5: Clock 1 at cycle 78
+3: Clock 2 at cycle 78
+3: Self stopping Clock 2 at time 78000
+5: Clock 0 at cycle 78
+5: Self stopping Clock 0 at time 78000
+6: Clock 1 at cycle 78
+3: Clock 3 at cycle 79
+4: Clock 3 at cycle 79
+5: Clock 1 at cycle 79
+6: Clock 1 at cycle 79
+# Simulation Checkpoint: Simulated Time 80 ns (Real CPU time since last checkpoint 0.00493 seconds)
+3: Clock 3 at cycle 80
+4: Clock 3 at cycle 80
+5: Clock 1 at cycle 80
+6: Clock 1 at cycle 80
+2: Terminating test sequence at 80000
+3: Stopping Clock 3 at time 80000
+4: Clock 2 will restart at cycle 81
+5: Clock 3 will restart at cycle 81
+6: Clock 0 will restart at cycle 81
+7: Clock 1 will restart at cycle 81
+4: Clock 3 at cycle 81
+5: Clock 1 at cycle 81
+6: Clock 1 at cycle 81
+4: Clock 2 at cycle 81
+5: Clock 3 at cycle 81
+6: Clock 0 at cycle 81
+7: Clock 1 at cycle 81
+4: Clock 3 at cycle 82
+5: Clock 1 at cycle 82
+6: Clock 1 at cycle 82
+4: Clock 2 at cycle 82
+5: Clock 3 at cycle 82
+6: Clock 0 at cycle 82
+7: Clock 1 at cycle 82
+4: Clock 3 at cycle 83
+5: Clock 1 at cycle 83
+6: Clock 1 at cycle 83
+4: Clock 2 at cycle 83
+4: Self stopping Clock 2 at time 83000
+5: Clock 3 at cycle 83
+6: Clock 0 at cycle 83
+6: Self stopping Clock 0 at time 83000
+7: Clock 1 at cycle 83
+4: Clock 3 at cycle 84
+5: Clock 1 at cycle 84
+6: Clock 1 at cycle 84
+5: Clock 3 at cycle 84
+7: Clock 1 at cycle 84
+4: Clock 3 at cycle 85
+5: Clock 1 at cycle 85
+6: Clock 1 at cycle 85
+5: Clock 3 at cycle 85
+7: Clock 1 at cycle 85
+3: Terminating test sequence at 85000
+4: Stopping Clock 3 at time 85000
+5: Stopping Clock 1 at time 85000
+6: Clock 3 will restart at cycle 86
+7: Clock 0 will restart at cycle 86
+6: Clock 1 at cycle 86
+5: Clock 3 at cycle 86
+7: Clock 1 at cycle 86
+6: Clock 3 at cycle 86
+7: Clock 0 at cycle 86
+6: Clock 1 at cycle 87
+5: Clock 3 at cycle 87
+7: Clock 1 at cycle 87
+6: Clock 3 at cycle 87
+7: Clock 0 at cycle 87
+6: Clock 1 at cycle 88
+5: Clock 3 at cycle 88
+7: Clock 1 at cycle 88
+6: Clock 3 at cycle 88
+7: Clock 0 at cycle 88
+7: Self stopping Clock 0 at time 88000
+6: Clock 1 at cycle 89
+5: Clock 3 at cycle 89
+7: Clock 1 at cycle 89
+6: Clock 3 at cycle 89
+6: Clock 1 at cycle 90
+5: Clock 3 at cycle 90
+7: Clock 1 at cycle 90
+6: Clock 3 at cycle 90
+4: Terminating test sequence at 90000
+5: Clock 2 will restart at cycle 91
+6: Stopping Clock 1 at time 90000
+7: Clock 3 will restart at cycle 91
+5: Clock 3 at cycle 91
+7: Clock 1 at cycle 91
+6: Clock 3 at cycle 91
+5: Clock 2 at cycle 91
+7: Clock 3 at cycle 91
+5: Clock 3 at cycle 92
+7: Clock 1 at cycle 92
+6: Clock 3 at cycle 92
+5: Clock 2 at cycle 92
+7: Clock 3 at cycle 92
+5: Clock 3 at cycle 93
+7: Clock 1 at cycle 93
+6: Clock 3 at cycle 93
+5: Clock 2 at cycle 93
+5: Self stopping Clock 2 at time 93000
+7: Clock 3 at cycle 93
+5: Clock 3 at cycle 94
+7: Clock 1 at cycle 94
+6: Clock 3 at cycle 94
+7: Clock 3 at cycle 94
+5: Clock 3 at cycle 95
+7: Clock 1 at cycle 95
+6: Clock 3 at cycle 95
+7: Clock 3 at cycle 95
+5: Stopping Clock 3 at time 95000
+6: Clock 2 will restart at cycle 96
+7: Stopping Clock 1 at time 95000
+6: Clock 3 at cycle 96
+7: Clock 3 at cycle 96
+6: Clock 2 at cycle 96
+6: Clock 3 at cycle 97
+7: Clock 3 at cycle 97
+6: Clock 2 at cycle 97
+6: Clock 3 at cycle 98
+7: Clock 3 at cycle 98
+6: Clock 2 at cycle 98
+6: Self stopping Clock 2 at time 98000
+6: Clock 3 at cycle 99
+7: Clock 3 at cycle 99
+# Simulation Checkpoint: Simulated Time 100 ns (Real CPU time since last checkpoint 0.00550 seconds)
+6: Clock 3 at cycle 100
+7: Clock 3 at cycle 100
+5: Terminating test sequence at 100000
+6: Stopping Clock 3 at time 100000
+7: Clock 2 will restart at cycle 101
+7: Clock 3 at cycle 101
+7: Clock 2 at cycle 101
+7: Clock 3 at cycle 102
+7: Clock 2 at cycle 102
+7: Clock 3 at cycle 103
+7: Clock 2 at cycle 103
+7: Self stopping Clock 2 at time 103000
+7: Clock 3 at cycle 104
+7: Clock 3 at cycle 105
+6: Terminating test sequence at 105000
+7: Stopping Clock 3 at time 105000
+7: Terminating test sequence at 110000
+Simulation is complete, simulated time: 110 ns

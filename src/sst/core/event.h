@@ -288,6 +288,40 @@ public:
     ~EventHandlerMetaData() {}
 };
 
+/**
+   Basic Event that can hold on data item.
+*/
+template <class dataT>
+class BasicEvent : public SST::Event
+{
+public:
+    BasicEvent()  = default; // For serialization only
+    ~BasicEvent() = default;
+
+    /** Create a new BasicEvent
+        @param data Contents of this event
+     */
+    explicit BasicEvent(const dataT& data) :
+        SST::Event(),
+        data(data)
+    {}
+
+    /** Clone a BasicEvent */
+    Event* clone() override { return new BasicEvent(*this); }
+
+
+    dataT data;
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        Event::serialize_order(ser);
+        SST_SER(data);
+    }
+
+    ImplementSerializable(BasicEvent);
+};
+
+
 namespace pvt {
 
 /**

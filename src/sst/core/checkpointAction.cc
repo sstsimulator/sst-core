@@ -276,10 +276,17 @@ CheckpointAction::getCheckpoint()
 {
     return generate_;
 }
+
 void
 CheckpointAction::setCheckpoint()
 {
     generate_ = true;
+}
+
+TimeConverter
+CheckpointAction::getPeriod()
+{
+    return period_;
 }
 
 SimTime_t

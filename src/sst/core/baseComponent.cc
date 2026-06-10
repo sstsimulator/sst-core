@@ -381,9 +381,8 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
 TimeConverter
 BaseComponent::registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all)
 {
-    TimeConverter tcRet = sim_->registerClock(tc, handler, CLOCKPRIORITY);
-    registerClock_impl(tcRet, handler, reg_all);
-    return tcRet;
+    registerClock_impl(tc, handler, reg_all);
+    return tc;
 }
 
 void
@@ -451,18 +450,13 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     case SST::Core::Serialization::serializer::SIZER:
     case SST::Core::Serialization::serializer::PACK:
     {
-        // Serialize our registered_clocks_
-        SST_SER(registered_clocks_);
-
         // Need to serialize each handler
-        std::pair<Clock::HandlerBase*, SimTime_t> p;
-        size_t                                    num_handlers = clock_handlers_.size();
+        size_t num_handlers = clock_handlers_.size();
         SST_SER(num_handlers);
         for ( auto* handler : clock_handlers_ ) {
-            p.first  = handler;
-            // See if it's currently registered with a clock
-            p.second = sim_->getClockForHandler(handler);
-            SST_SER(p);
+            SimTime_t clock_period = handler->getClockPeriod().getFactor();
+            SST_SER(clock_period);
+            SST_SER(handler);
         }
         break;
     }
@@ -477,22 +471,16 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
             primaryComponentDoNotEndSim();
         }
 
-        SST_SER(registered_clocks_);
-        for ( auto x : registered_clocks_ ) {
-            sim_->reportClock(x, CLOCKPRIORITY);
-        }
-
-        std::pair<Clock::HandlerBase*, SimTime_t> p;
-        size_t                                    num_handlers;
+        size_t num_handlers;
         SST_SER(num_handlers);
         for ( size_t i = 0; i < num_handlers; ++i ) {
-            SST_SER(p);
-            // Add handler to clock_handlers list
-            clock_handlers_.push_back(p.first);
-            // If it was previously registered, register it now
-            if ( p.second ) {
-                sim_->registerClock(p.second, p.first, CLOCKPRIORITY);
-            }
+            SimTime_t clock_period = 0;
+            SST_SER(clock_period);
+            Clock::HandlerBase* handler = nullptr;
+            SST_SER(handler);
+            clock_handlers_.push_back(handler);
+
+            sim_->registerClock_restart(clock_period, handler, CLOCKPRIORITY);
         }
         break;
     }
@@ -507,8 +495,8 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 void
 BaseComponent::registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all)
 {
-    // Add this clock to our registered_clocks_ set
-    registered_clocks_.insert(tc.getFactor());
+
+    sim_->registerClock(tc, handler, CLOCKPRIORITY);
 
     // Need to see if I already know about this clock handler
     bool found = false;

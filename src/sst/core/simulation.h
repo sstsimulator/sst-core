@@ -353,7 +353,7 @@ public:
     void registerClock(SimTime_t factor, Clock::HandlerBase* handler, int priority);
 
     // Reports that a clock should be present, but doesn't register anything with it
-    void reportClock(SimTime_t factor, int priority);
+    Clock* reportClock(SimTime_t factor, int priority);
 
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority);
@@ -362,6 +362,11 @@ public:
      * @return time when handler will next fire
      */
     Cycle_t reregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int priority);
+
+    /**
+       Register a clock on a restart
+    */
+    void registerClock_restart(SimTime_t factor, Clock::HandlerBase* handler, int priority);
 
     /** Returns the next Cycle that the TimeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter tc, int priority = CLOCKPRIORITY);
