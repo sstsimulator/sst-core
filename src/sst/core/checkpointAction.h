@@ -88,6 +88,9 @@ public:
     /** Generate a checkpoint next time check() is called */
     void setCheckpoint();
 
+    /** Get simtime checkpoint period */
+    TimeConverter getPeriod();
+
     /** Called by TimeVortex to trigger checkpoint on simulation clock interval - not used in parallel simulation */
     void execute() override;
 

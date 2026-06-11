@@ -125,6 +125,29 @@ class testcase_Checkpoint(SSTTestCase):
 
 
 
+    ### Clocks tests, including repartitioned restart tests
+    def test_Checkpoint_Clocks_basic(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic")
+
+    def test_Checkpoint_Clocks_basic_n2one(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic", n_to_one=True, cpt_suffix="_n2one")
+
+    ##@unittest.skipIf(testing_check_get_num_threads() > 1 and testing_check_get_num_ranks() > 1, "This test requires specific partitioning to work in multi-rank/multi-thread configurations")
+    def test_Checkpoint_Clocks_basic_start_serial(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic", start_serial=True, cpt_suffix="_start_serial")
+
+    def test_Checkpoint_Clocks_basic_restart_smaller(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic", restart_smaller=True, cpt_suffix="_restart_smaller")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Checkpoint_Clocks_basic_remap(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic", swap_rank_thread=True, cpt_suffix="_remap")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Checkpoint_Clocks_basic_swap_restart_smaller(self) -> None:
+        self.checkpoint_test_template("Clocks", 1, 2, out_suffix="_basic", swap_rank_thread=True, restart_smaller=True, cpt_suffix="_swap_restart_smaller")
+
+
     ### sc_2u2u tests, including repartitioned restart tests
     def test_Checkpoint_sc_2u2u(self) -> None:
         self.checkpoint_test_template("sc_2u2u", 1, 2, subcomp=True, modelparams="1")

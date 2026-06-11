@@ -15,109 +15,175 @@
 
 #include "sst/core/testElements/coreTest_ClockerComponent.h"
 
+#include "sst/core/warnmacros.h"
+
 #include <cstdint>
 #include <iostream>
 #include <ostream>
 
 namespace SST::CoreTestClockerComponent {
 
-coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& params) :
+void
+coreTestClockerComponent::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST::Component::serialize_order(ser);
+    SST_SER(id_);
+    SST_SER(inst_count_);
+    SST_SER(done_);
+    SST_SER(left_);
+    SST_SER(right_);
+    SST_SER(inst_link_);
+    SST_SER(master_);
+    SST_SER(clocks_);
+}
+
+
+coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNUSED(params)) :
     Component(id)
 {
-    clock_frequency_str = params.find<std::string>("clock", "1GHz");
-    clock_count         = params.find<int64_t>("clockcount", 1000);
-
-    std::cout << "Clock is configured for: " << clock_frequency_str << std::endl;
+    test_tc = TimeConverter(test_period);
 
     // tell the simulator not to end without us
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 
-    // set our Main Clock
-    registerClock(
-        clock_frequency_str, new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::tick>(this));
+    // Setup the links and set my id_ if I am ID 0
+    left_ = configureLink(
+        "left", new Event::Handler<coreTestClockerComponent, &coreTestClockerComponent::handle_left>(this));
+    right_ = configureLink("right");
 
-    // Set some other clocks
-    // Second Clock (5ns)
-    std::cout << "REGISTER CLOCK #2 at 5 ns" << std::endl;
-    registerClock("5 ns",
-        new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::Clock2Tick, uint32_t>(this, 222));
+    if ( nullptr == left_ ) id_ = 0;
 
-    // Third Clock (15ns)
-    std::cout << "REGISTER CLOCK #3 at 15 ns" << std::endl;
-    Clock3Handler =
-        new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::Clock3Tick, uint32_t>(this, 333);
-    tc = registerClock("15 ns", Clock3Handler);
+    inst_link_ = configureSelfLink(
+        "inst_link", new Event::Handler<coreTestClockerComponent, &coreTestClockerComponent::inst_handler>(this));
+
+    // Register the master clock to fire every 50ns, but immediately remove it if I'm not ID 0
+    master_ = registerClock<coreTestClockerComponent, &coreTestClockerComponent::master_handler>(master_period, this);
+    if ( id_ != 0 ) {
+        master_->deactivate();
+    }
+
+    // Register the "test" handlers
+
+
+    // Old style clock registration
+    Clock::HandlerBase* handler =
+        new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>(this, 0);
+    registerClock(test_tc, handler);
+    clocks_.push_back({ handler, test_tc, total_count, false });
+
+    handler = new Clock::Handler<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>(this, 1);
+    registerClock(test_tc, handler);
+    clocks_.push_back({ handler, test_tc, total_count, false });
+
+    // New style clock registration
+    handler = registerClock<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>("1ns", this, 2);
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    handler = registerClock<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>("1ns", this, 3);
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    // Unregister all the clocks for now
+    unregisterClock(test_tc, clocks_[0].handler);
+    unregisterClock(test_tc, clocks_[1].handler);
+    clocks_[2].handler->deactivate();
+    clocks_[3].handler->deactivate();
 }
 
-coreTestClockerComponent::coreTestClockerComponent() :
-    Component(-1)
+void
+coreTestClockerComponent::setup()
 {
-    // for serialization only
+    if ( id_ != 0 ) return;
+    getSimulationOutput().output("%d: starting test sequence at %" PRIu64 "\n", id_, getCurrentSimCycle());
+    if ( right_ == nullptr ) return;
+    IntEvent* ev = new IntEvent(1);
+    // Delay this first one by a clock period to line up starting times
+    right_->send(1, master_period, ev);
 }
+
+void
+coreTestClockerComponent::handle_left(Event* ev)
+{
+    IntEvent* int_ev = static_cast<IntEvent*>(ev);
+    id_              = int_ev->data++;
+    if ( right_ ) right_->send(int_ev);
+    master_->activate();
+    getSimulationOutput().output("%d: Starting test sequence at %" PRIu64 "\n", id_, getCurrentSimCycle());
+}
+
 
 bool
-coreTestClockerComponent::tick(Cycle_t)
+coreTestClockerComponent::master_handler(Cycle_t UNUSED(cycle))
 {
-    clock_count--;
+    if ( done_ ) return true;
+    OpEvent* ev = new OpEvent(instructions[inst_count_++]);
+    inst_link_->send(ev);
+    return false;
+}
 
-    // return false so we keep going
-    if ( clock_count == 0 ) {
+void
+coreTestClockerComponent::inst_handler(Event* ev)
+{
+    OpEvent* op_ev = static_cast<OpEvent*>(ev);
+
+    OpBundle op = op_ev->data;
+    delete op_ev;
+
+    ClockInfo& info = clocks_[op.clock];
+    Cycle_t    next = 0;
+
+    switch ( op.op ) {
+    case Op::nop:
+        break;
+    case Op::start:
+        if ( info.new_style ) {
+            next = info.handler->activate();
+        }
+        else {
+            next = reregisterClock(info.period, info.handler);
+        }
+        getSimulationOutput().output("%d: Clock %d will restart at cycle %" PRIu64 "\n", id_, op.clock, next);
+        break;
+    case Op::stop:
+        if ( info.new_style ) {
+            info.handler->deactivate();
+        }
+        else {
+            unregisterClock(info.period, info.handler);
+        }
+        getSimulationOutput().output(
+            "%d: Stopping Clock %d at time %" PRIu64 "\n", id_, op.clock, getCurrentSimCycle());
+        break;
+    case Op::term:
         primaryComponentOKToEndSim();
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool
-coreTestClockerComponent::Clock2Tick(SST::Cycle_t CycleNum, uint32_t Param)
-{
-    // NOTE: THIS IS THE 5NS CLOCK
-    std::cout << "  CLOCK #2 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
-
-    // return false so we keep going or true to stop
-    if ( CycleNum == 15 ) {
-        return true;
-    }
-    else {
-        return false;
+        done_ = true;
+        getSimulationOutput().output("%d: Terminating test sequence at %" PRIu64 "\n", id_, getCurrentSimCycle());
+        break;
     }
 }
 
 bool
-coreTestClockerComponent::Clock3Tick(SST::Cycle_t CycleNum, uint32_t Param)
+coreTestClockerComponent::test_handler(Cycle_t cycle, int clock_index)
 {
-    // NOTE: THIS IS THE 15NS CLOCK
-    std::cout << "  CLOCK #3 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
-
-    //    if ((CycleNum == 1) || (CycleNum == 4))  {
-    //        std::cout << "*** REGISTERING ONESHOTS " << std::endl ;
-    //        registerOneShot("10ns", callback1Handler);
-    //        registerOneShot("18ns", callback2Handler);
-    //    }
-
-    // return false so we keep going or true to stop
-    if ( CycleNum == 15 ) {
-        return true;
+    getSimulationOutput().output("%d: Clock %d at cycle %" PRIu64 "\n", id_, clock_index, cycle);
+    int64_t& counter = clocks_[clock_index].counter;
+    switch ( clock_index ) {
+    case 0:
+    case 2:
+        counter--;
+        if ( counter == 0 ) {
+            getSimulationOutput().output(
+                "%d: Self stopping Clock %d at time %" PRIu64 "\n", id_, clock_index, getCurrentSimCycle());
+            counter = total_count;
+            return true;
+        }
+        break;
+    case 1:
+    case 3:
+    default:
+        break;
     }
-    else {
-        return false;
-    }
+    return false;
 }
 
-void
-coreTestClockerComponent::Oneshot1Callback(uint32_t Param)
-{
-    std::cout << "-------- ONESHOT #1 CALLBACK; Param = " << Param << std::endl;
-}
-
-void
-coreTestClockerComponent::Oneshot2Callback()
-{
-    std::cout << "-------- ONESHOT #2 CALLBACK" << std::endl;
-}
-
-// Serialization
 } // namespace SST::CoreTestClockerComponent

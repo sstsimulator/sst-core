@@ -17,6 +17,7 @@ EXTRA_DIST += \
     tests/cmd_DebugConsole_thread1.cmd \
     tests/cmd_DebugConsole_tracebuf.cmd \
     tests/testsuite_default_Checkpoint.py \
+    tests/testsuite_default_Clocks.py \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_ComponentExtension.py \
     tests/testsuite_default_DebugConsole_Checkpoint.py \
@@ -43,7 +44,7 @@ EXTRA_DIST += \
     tests/test_Component.py \
     tests/test_Component_time_overflow.py \
     tests/test_ComponentExtension.py \
-    tests/test_ClockerComponent.py \
+    tests/test_Clocks.py \
     tests/test_DistribComponent_discrete.py \
     tests/test_DistribComponent_expon.py \
     tests/test_DistribComponent_gaussian.py \
@@ -76,6 +77,7 @@ EXTRA_DIST += \
     tests/test_PerfComponent.py \
     tests/test_setnonlocal0.py \
     tests/test_setnonlocal1.py \
+    tests/refFiles/test_Clocks_basic.out \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_Component_time_overflow.out \
     tests/refFiles/test_ComponentExtension.out \
