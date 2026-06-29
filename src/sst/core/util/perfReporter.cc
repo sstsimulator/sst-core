@@ -327,8 +327,9 @@ PerfReporter::output(int rank, int num_ranks)
             // Get record name
             int length = 0;
             SST_MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            char* name = new char[length];
-            SST_MPI_Bcast(name, length, MPI_CHAR, 0, MPI_COMM_WORLD);
+            std::string name;
+            name.resize(length);
+            SST_MPI_Bcast(&name[0], length, MPI_CHAR, 0, MPI_COMM_WORLD);
 
             // Lookup record
             auto record = records_.find(name);
@@ -382,7 +383,6 @@ PerfReporter::output(int rank, int num_ranks)
                     SST_MPI_Send(send_str.data(), length, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
                 }
             }
-            delete[] name;
         }
     }
 }

@@ -648,7 +648,6 @@ Factory::getSearchPaths()
 bool
 Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
 {
-
     std::scoped_lock lock(factoryMutex);
     if ( loaded_libraries.count(elemlib) == 1 ) return true;
 

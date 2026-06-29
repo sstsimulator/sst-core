@@ -176,12 +176,12 @@ TimeLord::getFactorForTime(const UnitAlgebra& time)
 
 TimeConverter::TimeConverter(const std::string& time)
 {
-    factor = Simulation::getSimulation()->timeLord.getFactorForTime(time);
+    factor = Simulation::getTimeLord()->getFactorForTime(time);
 }
 
 TimeConverter::TimeConverter(const UnitAlgebra& time)
 {
-    factor = Simulation::getSimulation()->timeLord.getFactorForTime(time);
+    factor = Simulation::getTimeLord()->getFactorForTime(time);
 }
 
 namespace Core::Serialization {

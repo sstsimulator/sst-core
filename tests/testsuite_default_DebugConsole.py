@@ -32,6 +32,7 @@ class testcase_DebugConsole(SSTTestCase):
 
     parallelism = testing_check_get_num_ranks() * testing_check_get_num_threads()
 
+    # Test interactive start and watch/trace actions
     # Serial
     #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports serial execution")
@@ -97,6 +98,13 @@ class testcase_DebugConsole(SSTTestCase):
     def test_rankparallel1(self):
         self.debugconsole_test_template("rankparallel1", "1ps")
 
+    # Test trace buffer output
+    #@unittest.skipIf(parallelism > 16, "Test does not support greater than 16-way parallelism")
+    @unittest.skipIf(testing_check_get_num_ranks() > 1, "Test only supports serial execution")
+    @unittest.skipIf(testing_check_get_num_threads() > 1, "Test only supports serial execution")
+    def test_tracebuf(self):
+        self.debugconsole_test_template("tracebuf", "0")
+
 #####
 
     def debugconsole_test_template(self, testtype, starttime):
@@ -121,10 +129,14 @@ class testcase_DebugConsole(SSTTestCase):
         # Filter out printstatus queue order due to differences across architectures
         filter2 = LineFilter();
         filter2 = RemoveRegexFromLineFilter(r"queue order:.*")
+        # Filter out variable types due to differences across architectures
+        filter3 = LineFilter();
+        filter3 = RemoveRegexFromLineFilter(r"std::.*")
+
 
         # Perform the test comparison with refFile
         #cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, sort=True, filters=[filter1, filter2])
+        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, sort=True, filters=[filter1, filter2, filter3])
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)

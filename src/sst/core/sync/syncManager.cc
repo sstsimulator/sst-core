@@ -435,10 +435,16 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, SimTim
 {
     sim_ = Simulation::getSimulation();
 
-    setupSyncObjects();
-
     exit_       = sim_->getExit();
     checkpoint_ = sim_->getCheckpointAction();
+
+    // If there are no cross thread ranks, but a checkpoint-sim-period was specified, set the min_part_ to the
+    // checkpoint period.  Otherwise, we won't get a sync object and therefore no checkpoints will be written.
+    if ( min_part_ == MAX_SIMTIME_T && num_ranks_.rank > 1 && checkpoint_->getPeriod().isInitialized() ) {
+        min_part_ = checkpoint_->getPeriod().getFactor();
+    }
+
+    setupSyncObjects();
 
     setPriority(SYNCPRIORITY);
 }
@@ -485,7 +491,10 @@ SyncManager::findRankSyncInterval()
 {
     SimTime_t interval = rankSync_->findSyncInterval(rank_.rank);
     // If there are no cross-rank links, then interval will be MAX_SIMTIME_T.  If this happens, we need to change over
-    // to an EmptyRankSync
+    // to an EmptyRankSync, unless there is a checkpoint-sim-period specified, in which case need to set the min_part_
+    // to the checkpoint period.  Otherwise, we won't get a sync object and therefore no checkpoints will be written.
+    if ( interval == MAX_SIMTIME_T && num_ranks_.rank > 1 && checkpoint_->getPeriod().isInitialized() )
+        interval = checkpoint_->getPeriod().getFactor();
     if ( interval == MAX_SIMTIME_T ) {
         delete rankSync_;
         rankSync_ = new EmptyRankSync(num_ranks_);

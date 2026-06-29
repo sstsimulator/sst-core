@@ -363,7 +363,7 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
         else if ( c == ctrl_d ) {
             int position = curpos - prompt.size() - 1;
             if ( position == 0 && history[index].size() == 0 ) {
-                // if the line is empty then quit (tactcomplabs/sst-core #32)
+                // if the line is empty then shutdown (tactcomplabs/sst-core #32)
                 end_of_file = true;
                 break;
             }
@@ -425,7 +425,7 @@ CmdLineEditor::getline(const std::vector<std::string>& cmdHistory, std::string& 
 
     // set the new line info
     if ( end_of_file )
-        newcmd = "quit";
+        newcmd = "shutdown";
     else
         newcmd = history[index];
 

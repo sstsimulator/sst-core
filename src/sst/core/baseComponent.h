@@ -491,6 +491,56 @@ protected:
     */
     Cycle_t reregisterClock(TimeConverter freq, Clock::HandlerBase* handler);
 
+
+    /**
+       Registers a clock handler for this component.
+
+       @tparam classT Class that the callback function lives in
+
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
+       &<classT>::<name_of_function>.
+
+       @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
+       or UnitAlgebra
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return The Clock::Handler object that encapsulates the function and object pointer
+    */
+    template <typename classT, auto funcT>
+    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    {
+        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        registerClock_impl(tc, handler, reg_all);
+        return handler;
+    }
+
+    /**
+       Registers a clock handler with metadata for this component.
+
+       @tparam classT Class that the callback function lives in
+
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
+       &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
+       or UnitAlgebra
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return The Clock::Handler object that encapsulates the function and object pointer
+    */
+    template <typename classT, auto funcT, typename dataT>
+    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    {
+        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        registerClock_impl(tc, handler, reg_all);
+        return handler;
+    }
+
+
     /**
        Returns the next Cycle that the TimeConverter would fire. If called prior to the simulation run loop, next Cycle
        is 0.  If called after the simulation run loop completes (e.g., during complete() or finish()), next Cycle is one
@@ -1260,10 +1310,9 @@ private:
     ComponentState component_state_ = ComponentState::None;
     // bool             isExtension = false;
 
-    // Need to track clock handlers for checkpointing.  We need to
-    // know what clock handlers we have registered with the core
+    // Need to track clock handlers for checkpointing.  We need to know what clock handlers we have registered with the
+    // core
     std::vector<Clock::HandlerBase*> clock_handlers_;
-    std::set<SimTime_t>              registered_clocks_;
 
     void  addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port, std::vector<ConfigPortModule>& port_modules);

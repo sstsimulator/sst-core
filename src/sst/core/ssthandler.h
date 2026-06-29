@@ -56,9 +56,40 @@ class Params;
 
 // new Class::Handler<Class, &Class::callback_function, int>(this, 1)
 
+// If it is necessary to add to the API for HandlerBase, it is possible to create a new class for HandlerBase instead of
+// just relying on the using statement.  In this case, the new HandlerBase will inherit from SSTHandlerBase with the
+// proper template parameters.  This new class can add to the API, while still inheriting all the functionality found in
+// SSTHandlerBase.  The final classes are then defined with a slightly modified using statement.
+
+// New HandlerBase:
+
+// class HandlerBase : public SSTHandlerBase<return_type_of_callback, arg_type_of_callback>
+// {
+// public:
+//     HandlerBase() = default;
+//
+//    void serialize_order(SST::Core::Serialization::serializer& ser) override
+//    {
+//        SSTHandlerBase<bool, Cycle_t>::serialize_order(ser);
+//        // Serialize any extra data here
+//    }
+//
+//    ImplementVirtualSerializable(HandlerBase);
+//
+//    // Any other class members/functions
+// };
+
+// This is the final class that allows the user to specify the class and function for the callback. Note that you must
+// include the new HandlerBase base class as a template parameter
+
+// template <typename classT, auto funcT, typename dataT = void>
+// using Handler = SSTHandler<return_type_of_callback, arg_type_of_callback, classT, dataT, funcT, HandlerBase>;
+
+// The handlers are instanced the same as above
+
 
 /**********************************************************************
- * Base class templates for handlers.  The base functionlity includes
+ * Base class templates for handlers.  The base functionality includes
  * the common API for all handlers.  It also includes management of
  * attach points.
  *
@@ -80,7 +111,7 @@ class SSTHandlerBase : public SST::Core::Serialization::serializable
 public:
     /**
        Attach Point to get notified when a handler starts and stops.
-       This class is used in conjuction with a Tool type base class to
+       This class is used in conjunction with a Tool type base class to
        create various tool types to attach to the handler.
     */
     class AttachPoint
@@ -184,9 +215,8 @@ protected:
             size_t tool_count = tools.size();
             SST_SER(tool_count);
             if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
@@ -301,7 +331,7 @@ class SSTHandlerBase<void, argT> : public SST::Core::Serialization::serializable
 public:
     /**
        Attach Point to get notified when a handler starts and stops.
-       This class is used in conjuction with a Tool type base class to
+       This class is used in conjunction with a Tool type base class to
        create various tool types to attach to the handler.
     */
     class AttachPoint
@@ -411,7 +441,7 @@ public:
            @param data Data that is to be passed to the handler
 
            @param[out] cancel Set to true if the handler delivery
-           should be cancelled.
+           should be canceled.
         */
         virtual void interceptHandler(uintptr_t key, argT& data, bool& cancel) = 0;
 
@@ -478,9 +508,8 @@ protected:
             size_t tool_count = tools.attach_tools.size();
             SST_SER(tool_count);
             if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
                 for ( auto x : tools.attach_tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
@@ -492,9 +521,8 @@ protected:
             tool_count = tools.intercept_tools.size();
             SST_SER(tool_count);
             if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
                 for ( auto x : tools.intercept_tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
@@ -561,9 +589,8 @@ public:
         for ( auto& x : attached_tools->intercept_tools ) {
             x.first->interceptHandler(x.second, arg, cancel);
             if ( cancel ) {
-                // Handler cancelled; need to break since arg may
-                // no longer be valid and no other intercepts
-                // should be called
+                // Handler canceled; need to break since arg may no longer be valid and no other intercepts should be
+                // called
                 break;
             }
         }
@@ -671,7 +698,7 @@ class SSTHandlerBase<returnT, void> : public SST::Core::Serialization::serializa
 public:
     /**
        Attach Point to get notified when a handler starts and stops.
-       This class is used in conjuction with a Tool type base class to
+       This class is used in conjunction with a Tool type base class to
        create various tool types to attach to the handler.
     */
     class AttachPoint
@@ -770,9 +797,8 @@ protected:
             size_t tool_count = tools.size();
             SST_SER(tool_count);
             if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
@@ -889,7 +915,7 @@ class SSTHandlerBase<void, void> : public SST::Core::Serialization::serializable
 public:
     /**
        Attach Point to get notified when a handler starts and stops.
-       This class is used in conjuction with a Tool type base class to
+       This class is used in conjunction with a Tool type base class to
        create various tool types to attach to the handler.
     */
     class AttachPoint
@@ -982,9 +1008,8 @@ protected:
             size_t tool_count = tools.size();
             SST_SER(tool_count);
             if ( tool_count > 0 ) {
-                // Serialize each tool, then call
-                // serializeEventAttachPointKey() to serialize any
-                // data associated with the key
+                // Serialize each tool, then call serializeEventAttachPointKey() to serialize any data associated with
+                // the key
                 for ( auto x : tools ) {
                     SST::Core::Serialization::serializable* obj =
                         dynamic_cast<SST::Core::Serialization::serializable*>(x.first);
@@ -1097,8 +1122,9 @@ private:
    Base template for the class.  If this one gets chosen, then there
    is a mismatch somewhere, so it will just static_assert
  */
-template <typename returnT, typename argT, typename classT, typename dataT, auto funcT>
-class SSTHandler : public SSTHandlerBase<returnT, argT>
+template <typename returnT, typename argT, typename classT, typename dataT, auto funcT,
+    typename parentT = SSTHandlerBase<returnT, argT>>
+class SSTHandler : public parentT
 {
     // This has to be dependent on a template parameter, otherwise it always asserts.
     static_assert((funcT, false), "Mismatched handler templates.");
@@ -1108,9 +1134,13 @@ class SSTHandler : public SSTHandlerBase<returnT, argT>
 /**
  * Handler class with user-data argument
  */
-template <typename returnT, typename argT, typename classT, typename dataT, returnT (classT::*funcT)(argT, dataT)>
-class SSTHandler<returnT, argT, classT, dataT, funcT> : public SSTHandlerBase<returnT, argT>
+template <typename returnT, typename argT, typename classT, typename dataT, returnT (classT::*funcT)(argT, dataT),
+    typename parentT>
+class SSTHandler<returnT, argT, classT, dataT, funcT, parentT> : public parentT
 {
+    static_assert(std::is_base_of_v<SSTHandlerBase<returnT, argT>, parentT>,
+        "Base class of SSTHandler must inherit from SSTBaseHandler<returnT,argT>");
+
 private:
     classT* object = nullptr;
     dataT   data;
@@ -1121,7 +1151,7 @@ public:
      * @param data - Additional argument to pass to handler
      */
     SSTHandler(classT* const object, dataT data) :
-        SSTHandlerBase<returnT, argT>(),
+        parentT(),
         object(object),
         data(data)
     {}
@@ -1135,7 +1165,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        parentT::serialize_order(ser);
         SST_SER(object);
         SST_SER(data);
     }
@@ -1147,9 +1177,12 @@ public:
 /**
  * Event Handler class with no user-data.
  */
-template <typename returnT, typename argT, typename classT, returnT (classT::*funcT)(argT)>
-class SSTHandler<returnT, argT, classT, void, funcT> : public SSTHandlerBase<returnT, argT>
+template <typename returnT, typename argT, typename classT, returnT (classT::*funcT)(argT), typename parentT>
+class SSTHandler<returnT, argT, classT, void, funcT, parentT> : public parentT
 {
+    static_assert(std::is_base_of_v<SSTHandlerBase<returnT, argT>, parentT>,
+        "Base class of SSTHandler must inherit from SSTBaseHandler<returnT,argT>");
+
 private:
     classT* object = nullptr;
 
@@ -1159,7 +1192,7 @@ public:
      * @param member - Member function to call as the handler
      */
     explicit SSTHandler(classT* const object) :
-        SSTHandlerBase<returnT, argT>(),
+        parentT(),
         object(object)
     {}
     SSTHandler() {}
@@ -1171,7 +1204,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        SSTHandlerBase<returnT, argT>::serialize_order(ser);
+        parentT::serialize_order(ser);
         SST_SER(object);
     }
 
@@ -1182,9 +1215,12 @@ public:
 /**
  * Event Handler class with user-data argument
  */
-template <typename returnT, typename classT, typename dataT, returnT (classT::*funcT)(dataT)>
-class SSTHandler<returnT, void, classT, dataT, funcT> : public SSTHandlerBase<returnT, void>
+template <typename returnT, typename classT, typename dataT, returnT (classT::*funcT)(dataT), typename parentT>
+class SSTHandler<returnT, void, classT, dataT, funcT, parentT> : public parentT
 {
+    static_assert(std::is_base_of_v<SSTHandlerBase<returnT, void>, parentT>,
+        "Base class of SSTHandler must inherit from SSTBaseHandler<returnT,argT>");
+
 private:
     classT* object = nullptr;
     dataT   data;
@@ -1195,7 +1231,7 @@ public:
      * @param data - Additional argument to pass to handler
      */
     SSTHandler(classT* const object, dataT data) :
-        SSTHandlerBase<returnT, void>(),
+        parentT(),
         object(object),
         data(data)
     {}
@@ -1208,7 +1244,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        SSTHandlerBase<returnT, void>::serialize_order(ser);
+        parentT::serialize_order(ser);
         SST_SER(object);
         SST_SER(data);
     }
@@ -1220,9 +1256,12 @@ public:
 /**
  * Event Handler class with user-data argument
  */
-template <typename returnT, typename classT, returnT (classT::*funcT)()>
-class SSTHandler<returnT, void, classT, void, funcT> : public SSTHandlerBase<returnT, void>
+template <typename returnT, typename classT, returnT (classT::*funcT)(), typename parentT>
+class SSTHandler<returnT, void, classT, void, funcT, parentT> : public parentT
 {
+    static_assert(std::is_base_of_v<SSTHandlerBase<returnT, void>, parentT>,
+        "Base class of SSTHandler must inherit from SSTBaseHandler<returnT,argT>");
+
 private:
     classT* object = nullptr;
 
@@ -1232,7 +1271,7 @@ public:
      * @param data - Additional argument to pass to handler
      */
     explicit SSTHandler(classT* const object) :
-        SSTHandlerBase<returnT, void>(),
+        parentT(),
         object(object)
     {}
     SSTHandler() {}
@@ -1244,7 +1283,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        SSTHandlerBase<returnT, void>::serialize_order(ser);
+        parentT::serialize_order(ser);
         SST_SER(object);
     }
 

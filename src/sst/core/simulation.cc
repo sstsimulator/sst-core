@@ -1426,7 +1426,7 @@ Simulation::registerClock(SimTime_t factor, Clock::HandlerBase* handler, int pri
     clockMap[mapKey]->registerHandler(handler);
 }
 
-void
+Clock*
 Simulation::reportClock(SimTime_t factor, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(factor, priority);
@@ -1434,6 +1434,7 @@ Simulation::reportClock(SimTime_t factor, int priority)
         Clock* ce        = new Clock(timeLord.getTimeConverter(factor), priority);
         clockMap[mapKey] = ce;
     }
+    return clockMap[mapKey];
 }
 
 Cycle_t
@@ -1446,6 +1447,13 @@ Simulation::reregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int p
     }
     clockMap[mapKey]->registerHandler(handler);
     return clockMap[mapKey]->getNextCycle();
+}
+
+void
+Simulation::registerClock_restart(SimTime_t factor, Clock::HandlerBase* handler, int priority)
+{
+    Clock* clock = reportClock(factor, priority);
+    clock->registerHandler_restart(handler);
 }
 
 Cycle_t
