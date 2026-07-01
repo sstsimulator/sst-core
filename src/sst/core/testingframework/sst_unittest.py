@@ -33,7 +33,7 @@ from typing import Optional
 import test_engine_globals
 from sst_unittest_support import *
 from test_engine_junit import JUnitTestSuite, junit_to_xml_report_file
-from test_engine_support import check_param_type, strclass, strqual
+from test_engine_support import strclass, strqual
 
 if not sys.warnoptions:
     import warnings
@@ -273,25 +273,6 @@ class SSTTestCase(unittest.TestCase):
             num_threads = test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
         if global_args is None:
             global_args = test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS
-
-        # Make sure arguments are of valid types
-        check_param_type("sdl_file", sdl_file, str)
-        check_param_type("out_file", out_file, str)
-        if err_file is not None:
-            check_param_type("err_file", err_file, str)
-        if set_cwd is not None:
-            check_param_type("set_cwd", set_cwd, str)
-        check_param_type("mpi_out_files", mpi_out_files, str)
-        check_param_type("other_args", other_args, str)
-        if num_ranks is not None:
-            check_param_type("num_ranks", num_ranks, int)
-        if num_threads is not None:
-            check_param_type("num_threads", num_threads, int)
-        if global_args is not None:
-            check_param_type("global_args", global_args, str)
-        check_param_type("timeout_sec", timeout_sec, int)
-        if expected_rc is not None:
-            check_param_type("expected_rc", expected_rc, int)
 
         # Make sure sdl file is exists and is a file, if check_sdl_file flag is True
         if check_sdl_file:
