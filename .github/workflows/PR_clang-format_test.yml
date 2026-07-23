@@ -61,6 +61,8 @@ jobs:
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
       uses: actions/checkout@v4
+      env:
+        ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       with:
         path: ./sst-core_source
         ref: ${{ github.event.pull_request.head.sha }}
