@@ -15,7 +15,10 @@ comp_list = []
 
 # Define the simulation components
 for x in range(total_components):
-    comp_list.append(sst.Component("clocker{0}".format(x), "coreTestElement.coreTestClockerComponent"))
+    comp = sst.Component("clocker{0}".format(x), "coreTestElement.coreTestClockerComponent")
+    comp.setSubComponent("user_slot", "coreTestElement.ClockSubComponent", 0)
+    comp_list.append(comp)
+
 
 # Links
 count = 0;

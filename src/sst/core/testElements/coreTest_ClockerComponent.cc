@@ -23,6 +23,38 @@
 
 namespace SST::CoreTestClockerComponent {
 
+/********** ClockSubComponentAPI functions **********/
+void
+ClockSubComponentAPI::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST::SubComponent::serialize_order(ser);
+    SST_SER(handler_);
+}
+
+/********** ClockSubComponent functions **********/
+ClockSubComponent::ClockSubComponent(
+    ComponentId_t id, Params& UNUSED(p), coreTestClockerComponent* comp, TimeConverter period, int clock) :
+    ClockSubComponentAPI(id),
+    comp_(comp)
+{
+    handler_ = registerOrderedClock<ClockSubComponent, &ClockSubComponent::clock_handler, int>(period, this, clock);
+}
+
+bool
+ClockSubComponent::clock_handler(Cycle_t cycle, int clock)
+{
+    return comp_->test_ordered_handler(cycle, clock);
+}
+
+void
+ClockSubComponent::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    ClockSubComponentAPI::serialize_order(ser);
+    SST_SER(comp_);
+}
+
+
+/********** coreTestClockerComponent functions **********/
 void
 coreTestClockerComponent::serialize_order(SST::Core::Serialization::serializer& ser)
 {
@@ -35,6 +67,8 @@ coreTestClockerComponent::serialize_order(SST::Core::Serialization::serializer& 
     SST_SER(inst_link_);
     SST_SER(master_);
     SST_SER(clocks_);
+    SST_SER(ordered_var_test_);
+    SST_SER(ordered_handler_remove_);
 }
 
 
@@ -57,7 +91,7 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     inst_link_ = configureSelfLink(
         "inst_link", new Event::Handler<coreTestClockerComponent, &coreTestClockerComponent::inst_handler>(this));
 
-    // Register the master clock to fire every 50ns, but immediately remove it if I'm not ID 0
+    // Register the master clock, but immediately remove it if I'm not ID 0
     master_ = registerClock<coreTestClockerComponent, &coreTestClockerComponent::master_handler>(master_period, this);
     if ( id_ != 0 ) {
         master_->deactivate();
@@ -88,6 +122,40 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     unregisterClock(test_tc, clocks_[1].handler);
     clocks_[2].handler->deactivate();
     clocks_[3].handler->deactivate();
+
+
+    // Ordered clock testing
+    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
+        "1ns", this, 4);
+    handler->deactivate();
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
+        "1ns", this, 5);
+    handler->deactivate();
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    // Register some clocks in subcomponents
+    Params empty_params;
+
+    // Anonymous subcomponent
+    ClockSubComponentAPI* sub = loadAnonymousSubComponent<ClockSubComponentAPI>(
+        "coreTestElement.ClockSubComponent", "anon_slot", 0, ComponentInfo::SHARE_NONE, empty_params, this, test_tc, 6);
+    handler = sub->getClockHandler();
+    handler->deactivate();
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    // User subcomponent
+    sub     = loadUserSubComponent<ClockSubComponentAPI>("user_slot", ComponentInfo::SHARE_NONE, this, test_tc, 7);
+    handler = sub->getClockHandler();
+    handler->deactivate();
+    clocks_.push_back({ handler, test_tc, total_count, true });
+
+    // Back to registering clock here
+    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
+        "1ns", this, 8);
+    handler->deactivate();
+    clocks_.push_back({ handler, test_tc, total_count, true });
 }
 
 void
@@ -116,8 +184,11 @@ bool
 coreTestClockerComponent::master_handler(Cycle_t UNUSED(cycle))
 {
     if ( done_ ) return true;
-    OpEvent* ev = new OpEvent(instructions[inst_count_++]);
-    inst_link_->send(ev);
+    const std::vector<OpBundle>& insts = instructions[inst_count_++];
+    for ( auto& x : insts ) {
+        OpEvent* ev = new OpEvent(x);
+        inst_link_->send(ev);
+    }
     return false;
 }
 
@@ -185,5 +256,39 @@ coreTestClockerComponent::test_handler(Cycle_t cycle, int clock_index)
     }
     return false;
 }
+
+bool
+coreTestClockerComponent::test_ordered_handler(Cycle_t cycle, int clock_index)
+{
+    // int64_t& counter = clocks_[clock_index].counter;
+    switch ( clock_index ) {
+    case 4:
+        // Clock 4 turns on ordered handler remove
+        ordered_handler_remove_ = true;
+        break;
+    case 5:
+        // Clock 5 will set the variable to 36
+        ordered_var_test_ = 36;
+        break;
+    case 6:
+        // Clock 6 will divide by 2
+        ordered_var_test_ /= 2;
+        break;
+    case 7:
+        // Clock 7 will subtract 6
+        ordered_var_test_ -= 6;
+        break;
+    case 8:
+        // Clock 8 will print the result
+        getSimulationOutput().output(
+            "%d: ordered clock result = %d (cycle = %" PRIu64 ")\n", id_, ordered_var_test_, cycle);
+        break;
+    default:
+        break;
+    }
+    if ( ordered_handler_remove_ ) return true;
+    return false;
+}
+
 
 } // namespace SST::CoreTestClockerComponent

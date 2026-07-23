@@ -54,11 +54,21 @@ public:
 
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
+
     ImplementSerializable(SST::Component)
 
 protected:
     friend class SubComponent;
     Component() = default; // For Serialization only
+
+private:
+    friend class BaseComponent;
+    std::map<SimTime_t, Clock::Group*> clock_groups_;
+
+    Clock::Group* getClockGroup(TimeConverter tc) override;
+
+    // This is for serializing anything that needs to happen after all the SubComponents are serialized
+    void serialize_final(SST::Core::Serialization::serializer& ser) override;
 };
 
 } // namespace SST
