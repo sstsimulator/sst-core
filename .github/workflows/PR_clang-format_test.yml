@@ -60,10 +60,13 @@ jobs:
 
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: ./sst-core_source
         ref: ${{ github.event.pull_request.head.sha }}
+        # This is safe in a pull_request_target workflow because we are not
+        # executing the code in any way.
+        allow-unsafe-pr-checkout: true
 
 #   Running the github action for clang format
     - name: Run Action clang-format-lint
