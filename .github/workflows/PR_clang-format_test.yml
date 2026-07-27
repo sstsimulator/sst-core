@@ -63,9 +63,13 @@ jobs:
       uses: actions/checkout@v7
       with:
         path: ./sst-core_source
+        # When running in pull_request_target and checking out a fork's head,
+        # the checkout action must be given the fork repository and a token.
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.event.pull_request.head.sha }}
         # This is safe in a pull_request_target workflow because we are not
         # executing the code in any way.
+        token: ${{ secrets.GITHUB_TOKEN }}
         allow-unsafe-pr-checkout: true
 
 #   Running the github action for clang format
