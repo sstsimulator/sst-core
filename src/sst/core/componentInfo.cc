@@ -200,6 +200,10 @@ ComponentInfo::serialize_comp(SST::Core::Serialization::serializer& ser)
     for ( auto it = subComponents.begin(); it != subComponents.end(); ++it ) {
         it->second.serialize_comp(ser);
     }
+
+    // For the component, call serialize_final() to get anything that needs to serialize after the subcomponents.  Need
+    // to check for nullptr for the independent ComponentInfo serialization test.
+    if ( component != nullptr ) component->serialize_final(ser);
 }
 
 void
@@ -277,9 +281,9 @@ ComponentInfo::serialize_order(SST::Core::Serialization::serializer& ser)
 
     // For SubComponents map, need to serialize map by hand since we
     // we will need to use the track non-pointer as pointer feature in
-    // the serializer. This is becaues the SubComponent's ComponentInfo
+    // the serializer. This is because the SubComponent's ComponentInfo
     // object is actually stored in the map and they may have their
-    // own SubCompenents that will need to point to the data location
+    // own SubComponents that will need to point to the data location
     // in the map.
 
     SST_SER(subComponents, SerOption::as_ptr_elem);

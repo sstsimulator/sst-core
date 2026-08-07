@@ -381,6 +381,9 @@ public:
      */
     SimTime_t getClockForHandler(Clock::HandlerBase* handler);
 
+    void registerClockGroup(TimeConverter tc, Clock::Group* group);
+    void registerClockGroup(SimTime_t factor, Clock::Group* group);
+
     /** Return the Statistic Processing Engine associated with this Simulation */
     Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine();
 
@@ -436,7 +439,7 @@ public:
 
     /**
        Function used to get the rank for a link on restart.  A rank of
-       -1 on the return means that the paritioning stayed the same
+       -1 on the return means that the partitioning stayed the same
        between checkpoint and restart and the original rank info
        stored in the checkpoint should be used.
      */
@@ -620,7 +623,7 @@ public:
                     // This shouldn't happen.  If it does, then something
                     // didn't get initialized correctly.
                     Output::getDefaultObject().fatal(CALL_INFO_LONG, 1,
-                        "INTERNAL ERROR: ProfileTool refered to in profiler_map not found in profile_tools map\n");
+                        "INTERNAL ERROR: ProfileTool referred to in profiler_map not found in profile_tools map\n");
                     return ret;
                 }
             }

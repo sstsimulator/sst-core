@@ -18,6 +18,7 @@
 
 #include <cinttypes>
 #include <string>
+#include <utility>
 #include <vector>
 
 #define _CLE_DBG(fmt, args...) __DBG(DBG_CLOCK, Clock, fmt, ##args)
@@ -25,6 +26,7 @@
 namespace SST {
 
 class BaseComponent;
+class Component;
 class Simulation;
 class TimeConverter;
 
@@ -36,33 +38,24 @@ class TimeConverter;
 class Clock : public Action
 {
 public:
-    /** Create a new clock with a specified period */
-    Clock(TimeConverter period, int priority = CLOCKPRIORITY);
-    ~Clock() = default; // Handlers are owned by BaseComponent and are deleted there
+    class HandlerBase;
 
-
-    /**
-       Base handler for clock functions.
-     */
-
-    /**
-       Base Class for Clock::Handlers.  We need to implement HandlerBase as a class because we need a base class with
-       more functionality than SSTHandlerBase provides. BaseHandler will track the clock that is associated with,
-       whether or not it is active, and an index the Clock object can use to more efficiently remove handlers.
-    */
-    class HandlerBase : public SSTHandlerBase<bool, Cycle_t>
+private:
+    friend class BaseComponent;
+    friend class Component;
+    friend class Simulation;
+    // Clock Group for handling ordered clocks
+    class Group
     {
+        friend class Clock;
+
+        std::vector<HandlerBase*> handlers_;
+        int32_t                   inactive_start_ = 0;
+        int32_t                   handler_count_  = 0;
+        Clock*                    clock_          = nullptr;
+        int32_t                   index_;
+
     public:
-        HandlerBase() = default;
-
-        void serialize_order(SST::Core::Serialization::serializer& ser) override
-        {
-            SSTHandlerBase<bool, Cycle_t>::serialize_order(ser);
-            SST_SER(active_);
-            // No need to serialize clock_ or index_ as they will be initialized on register on restart
-        }
-
-        ImplementVirtualSerializable(HandlerBase);
 
         /**
            Get the period of the associated clock as a SimTime_t in units of the core atomic timebase
@@ -75,9 +68,109 @@ public:
         int getClockPriority() { return clock_->getPriority(); }
 
         /**
+           Get the next cycle for the clock associated with this group
+        */
+        SimTime_t getNextCycle() { return clock_->getNextCycle(); }
+
+        /**
+           Registers a handler with this group and marks it as active.  This function should only be called once when
+           the handler is registered.  To activate or deactivate, call activateHandler()/deactivateHandler().
+        */
+        void registerHandler(HandlerBase* handler);
+
+        /**
+           Activates a handler.
+        */
+        void activateHandler(HandlerBase* handler);
+
+        /**
+           Deactivates a Handler
+        */
+        void deactivateHandler(HandlerBase* handler);
+
+        /**
+           Activates the Group if there are any active handlers
+        */
+        void activateOnRestart();
+
+        /**
+           Call all active handlers
+        */
+        bool execute(Cycle_t current_cycle);
+
+        void serialize_order(SST::Core::Serialization::serializer& ser);
+
+    private:
+
+        /**
+           Swaps locations of an active handler with an inactive handler.  It will also swap the index state of the two
+           handlers. No checks will be done to ensure the active state
+        */
+        static void swapActiveWithInactive(HandlerBase*& active, HandlerBase*& inactive)
+        {
+            // First swap the indices, then do the actual pointer swap
+            int32_t tmp      = -1 - inactive->index_;
+            inactive->index_ = -1 - active->index_;
+            active->index_   = tmp;
+
+            std::swap(active, inactive);
+        }
+
+        /**
+           Swaps locations of two handlers with the same active state.  It will also swap the index state of the two
+           handlers. No checks will be done to ensure the active states are the same
+        */
+        static void swapSameActiveState(HandlerBase*& h1, HandlerBase*& h2)
+        {
+            // First swap the indices, then do the actual pointer swap
+            std::swap(h1->index_, h2->index_);
+            std::swap(h1, h2);
+        }
+    };
+
+public:
+    /** Create a new clock with a specified period */
+    Clock(TimeConverter period, int priority = CLOCKPRIORITY);
+    ~Clock() = default; // Handlers are owned by BaseComponent and are deleted there
+
+
+    /**
+       Base classes for clock handlers.  There are three classes:
+
+       HandlerBase: This is a publicly available class that is the base class that contains the API used by elements,
+       including checking active status and starting and stopping the handler.
+     */
+
+    class HandlerBase : public SSTHandlerBase<bool, Cycle_t>
+    {
+    public:
+        HandlerBase()  = default;
+        ~HandlerBase() = default;
+
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            SSTHandlerBase<bool, Cycle_t>::serialize_order(ser);
+            SST_SER(index_);
+            SST_SER(order_);
+            // No need to serialize clock_ or group_ as they get reset on restart
+        }
+
+        ImplementVirtualSerializable(HandlerBase);
+
+        /**
+           Get the period of the associated clock as a SimTime_t in units of the core atomic timebase
+        */
+        TimeConverter getClockPeriod() { return (order_ < 0) ? clock_->getPeriod() : group_->getClockPeriod(); }
+
+        /**
+           Get the priority of the associated clock as a SimTime_t in units of the core atomic timebase
+        */
+        int getClockPriority() { return (order_ < 0) ? clock_->getPriority() : group_->getClockPriority(); }
+
+        /**
            Query whether handler is currently active
         */
-        bool isActive() { return active_; }
+        bool isActive() { return index_ >= 0; }
 
         /**
            Activate this Clock Handler
@@ -86,8 +179,14 @@ public:
         */
         Cycle_t activate()
         {
-            clock_->registerHandler(this);
-            return clock_->getNextCycle();
+            if ( order_ < 0 ) {
+                clock_->registerHandler(this);
+                return clock_->getNextCycle();
+            }
+            else {
+                group_->activateHandler(this);
+                return group_->getNextCycle();
+            }
         }
 
         /**
@@ -95,8 +194,13 @@ public:
         */
         void deactivate()
         {
-            bool empty = false;
-            clock_->unregisterHandler(this, empty);
+            if ( order_ < 0 ) {
+                bool empty = false;
+                clock_->unregisterHandler(this, empty);
+            }
+            else {
+                group_->deactivateHandler(this);
+            }
         }
 
     private:
@@ -110,38 +214,51 @@ public:
            NOTE: Registering with two different clocks will continue to "work", though it may have unintended
            results. For now, a warning will be issued, but starting at SST 17, this will become an error condition.
         */
-        Clock* clock_ = nullptr;
+        union {
+            Clock* clock_ = nullptr;
+            Group* group_;
+        };
+
 
         /**
-           Whether or not the handler is currently active on a clock list.  The state is set by Clock whenever a
-           handler is registered, reregistered, or unregistered (either by calling unregisterHandler() or by returning
-           true from the handler execution)
-         */
-        bool active_ = false;
-
-        /**
-           Variable used by Clock to record the index where this handler is stored in the handler vector.  It will be
-           set to -1 if not currently in the vector.
+           Tracks the order for this handler.  If it is less than 0, then the handler is not ordered. If it is ordered,
+           then it's contained in a Clock::Group rather than a Clock
         */
-        int index_ = -1;
+        int32_t order_ = -1;
 
         /**
-           Mark the handler as active
+           Dual purpose variable.  Because adding a bool to this class would require 8-bytes due to padding, the index_
+           variable will also be used to indicate if the handler is active or not.  If < 0, then then it is not
+           active. The other purpose of the variable is to hold the index where the handler currently resides in the
+           handler list of either the Clock or Clock::Group object.  The index for inactive handlers will be stored
+           starting at -1 (i.e. -1 means inactive at index 0, -2 means inactive at index 1, etc). If an implementation
+           of either Clock or Clock::Group does not store inactive handers in the array, then any negative number can be
+           used to indicate that the handler is inactive.
         */
-        void markAsActive(int index)
+        int32_t index_ = -1;
+
+        /**
+           Mark the handler as active.
+        */
+        void markAsActive()
         {
-            active_ = true;
-            index_  = index;
+            if ( index_ >= 0 ) return;
+            index_ = -1 - index_;
         }
 
         /**
-           Mark the handler as inactive
+           Mark the handler as inactive.
         */
         void markAsInactive()
         {
-            active_ = false;
-            index_  = -1;
+            if ( index_ < 0 ) return;
+            index_ = -1 - index_;
         }
+
+        /**
+           Toggle the active state of the handler.
+        */
+        void toggleActiveState() { index_ = -1 - index_; }
     };
 
     /**
@@ -177,6 +294,7 @@ public:
     using Handler2 [[deprecated(
         "The name Handler2 has been deprecated and will be removed in SST 17. Please rename Handler2 to Handler.")]]
     = SSTHandler<bool, Cycle_t, classT, dataT, funcT, HandlerBase>;
+
 
     /**
      * Activates this clock object, by inserting into the simulation's
@@ -214,6 +332,17 @@ public:
     */
     bool isHandlerRegistered(Clock::HandlerBase* handler);
 
+    /**
+       Register a group with this Clock object
+    */
+    void registerGroup(Group* group);
+
+    /**
+       Activates a group that is inactive.  If group is already active, nothing is done.  There is no need for a
+       deactivateGroup() call as deactivation is only done based on return value during execute()
+    */
+    void activateGroup(Group* group);
+
     std::string toString() const override;
 
     /**
@@ -222,20 +351,23 @@ public:
     TimeConverter getPeriod() { return period_; }
 
 private:
-    using StaticHandlerMap_t = std::vector<Clock::HandlerBase*>;
 
-    Clock() {}
-
+    Clock();
     Clock(const Clock&)            = delete;
     Clock& operator=(const Clock&) = delete;
 
     void execute() override;
 
-    Cycle_t            current_cycle_;
-    TimeConverter      period_;
-    StaticHandlerMap_t static_handler_map_;
-    SimTime_t          next_;
-    bool               scheduled_;
+    // Vectors to hold the handlers and groups
+    std::vector<HandlerBase*> handlers_;
+    std::vector<Group*>       groups_;
+    int32_t                   groups_inactive_start_ = 0;
+
+    Cycle_t       current_cycle_ = 0;
+    TimeConverter period_;
+    SimTime_t     next_      = 0;
+    bool          scheduled_ = false;
+    Simulation*   sim_       = nullptr;
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Clock)

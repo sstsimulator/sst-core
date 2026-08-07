@@ -381,7 +381,7 @@ BaseComponent::configureSelfLink(const std::string& name, Event::HandlerBase* ha
 TimeConverter
 BaseComponent::registerClock(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all)
 {
-    registerClock_impl(tc, handler, reg_all);
+    registerClock_impl(tc, handler, reg_all, false);
     return tc;
 }
 
@@ -491,22 +491,33 @@ BaseComponent::serialize_order(SST::Core::Serialization::serializer& ser)
     }
 }
 
+void
+BaseComponent::serialize_final(SST::Core::Serialization::serializer& UNUSED(ser))
+{
+    // Nothing to do in the default case
+}
 
 void
-BaseComponent::registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all)
+BaseComponent::registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group)
 {
 
-    sim_->registerClock(tc, handler, CLOCKPRIORITY);
-
-    // Need to see if I already know about this clock handler
-    bool found = false;
-    for ( auto* x : clock_handlers_ ) {
-        if ( handler == x ) {
-            found = true;
-            break;
-        }
+    if ( group ) {
+        Clock::Group* group = getClockGroup(tc);
+        group->registerHandler(handler);
     }
-    if ( !found ) clock_handlers_.push_back(handler);
+    else {
+        sim_->registerClock(tc, handler, CLOCKPRIORITY);
+
+        // Need to see if I already know about this clock handler
+        bool found = false;
+        for ( auto* x : clock_handlers_ ) {
+            if ( handler == x ) {
+                found = true;
+                break;
+            }
+        }
+        if ( !found ) clock_handlers_.push_back(handler);
+    }
 
     // Check to see if there is a profile tool installed
     auto tools = sim_->getProfileTool<Profile::ClockHandlerProfileTool>("clock");
@@ -862,7 +873,7 @@ BaseComponent::registerAsPrimaryComponent()
     if ( sim_->isWireUpFinished() ) {
         // Error, called after construct phase
         sim_->getSimulationOutput().fatal(
-            CALL_INFO, 1, "ERROR: registerAsPrimaryComponent() must be called during ComponentConstruction\n");
+            CALL_INFO, 1, "ERROR: registerAsPrimaryComponent() must be called during Component construction\n");
     }
     else if ( !isStatePrimary() ) {
         setStateAsPrimary();

@@ -13,11 +13,76 @@
 #define SST_CORE_CORETEST_CLOCKERCOMPONENT_H
 
 #include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
 
 #include <cstdint>
 #include <string>
 
 namespace SST::CoreTestClockerComponent {
+
+class coreTestClockerComponent;
+
+/**
+   API for SubComponents that will register a clock handler and return the handler to the parent
+*/
+class ClockSubComponentAPI : public SST::SubComponent
+{
+public:
+
+    /**
+       Constructor parameters are: parent, clock frequency, clock_index
+     */
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestClockerComponent::ClockSubComponentAPI, coreTestClockerComponent*, TimeConverter, int)
+
+    ClockSubComponentAPI(ComponentId_t id) :
+        SST::SubComponent(id)
+    {}
+
+    ClockSubComponentAPI()  = default;
+    ~ClockSubComponentAPI() = default;
+
+    /**
+       Return registered clock handler
+    */
+    Clock::HandlerBase* getClockHandler() { return handler_; }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(ClockSubComponentAPI);
+
+protected:
+    // Handler that was registered
+    Clock::HandlerBase* handler_ = nullptr;
+};
+
+class ClockSubComponent : public ClockSubComponentAPI
+{
+public:
+    SST_ELI_REGISTER_SUBCOMPONENT(
+        ClockSubComponent,
+        "coreTestElement",
+        "ClockSubComponent",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "SubComponent which registers an ordered clock that can be returned to the parent",
+        SST::CoreTestClockerComponent::ClockSubComponentAPI
+    )
+
+    SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+        {"anon_slot", "Slot for anonymous subcomponent", "SST::CoreTestClockerComponent::ClockSubComponentAPI" },
+        {"user_slot", "Slot for user subcomponent", "SST::CoreTestClockerComponent::ClockSubComponentAPI" }
+    )
+
+    ClockSubComponent(ComponentId_t id, Params& p, coreTestClockerComponent* comp, TimeConverter period, int clock);
+    ClockSubComponent()  = default;
+    ~ClockSubComponent() = default;
+
+    bool clock_handler(Cycle_t cycle, int clock);
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(ClockSubComponent);
+
+private:
+    coreTestClockerComponent* comp_ = nullptr;
+};
 
 class coreTestClockerComponent : public SST::Component
 {
@@ -32,6 +97,7 @@ public:
         COMPONENT_CATEGORY_UNCATEGORIZED
     )
 
+    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PARAMS(
     )
 
@@ -39,7 +105,6 @@ public:
     SST_ELI_DOCUMENT_STATISTICS(
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PORTS(
         {"left", "Left port", { "" } },
         {"right", "Right port", { "" } },
@@ -50,8 +115,9 @@ public:
     )
 
     coreTestClockerComponent(SST::ComponentId_t id, SST::Params& params);
+
+    // setup() is the only untimed stage used
     void setup() override;
-    void finish() override {}
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(coreTestClockerComponent);
@@ -96,11 +162,18 @@ private:
     */
     void inst_handler(Event* ev);
 
-    /*
-      Handler for the "tsst" clocks
+public:
+    /**
+      Handler for the "test" clocks.  Needs to be public so that subcomponents can call it.
     */
     bool test_handler(Cycle_t cycle, int clock_index);
 
+    /**
+       Handler function for ordered clocks
+    */
+    bool test_ordered_handler(Cycle_t cycle, int clock_index);
+
+private:
     /*
       There are multiple clocks to test out the various clock APIs in the core:
 
@@ -116,7 +189,7 @@ private:
 
       Clock 1:
         Period: 1ns
-        - This clock will run until removed from the clock list by the master clock using unregsterClock().
+        - This clock will run until removed from the clock list by the master clock using unregisterClock().
           The master clock will then restart it later using reregisterClock().
 
       ** Clocks using the new API
@@ -129,7 +202,34 @@ private:
         Period: 1ns
         - This clock will run until removed from the clock list by the master clock using deactivate(),
           The master clock will then restart it later using activate().
-     */
+
+      Clock 4:
+        Period: 1ns
+        - This clock will set ordered_handler_remove_ to true, which causes the ordered clock handlers to remove
+          themselves after completing their operation
+
+          ** Clocks 5-8 will wait to be stopped by the master clock by default.  When ordered_handler_remove_ is
+             set to true, they will remove themselves after completing their operation
+
+      Clock 5:
+        Period: 1ns
+        - This clock will initialize ordered_var_test_ to 36
+
+      Clock 6:
+        Period: 1ns
+        - This clock will divide ordered_var_test_ by 2
+        - This clock will be registered by an anonymous subcomponent
+
+      Clock 7:
+        Period: 1ns
+        - This clock will add 6 to ordered_var_test_
+        - This clock will be registered by a user subcomponent
+
+      Clock 8:
+        Period: 1ns
+        - This clock will print ordered_var_test_
+
+    */
 
     // Struct to hold the data needed to manage the clocks
     struct ClockInfo
@@ -156,8 +256,11 @@ private:
 
 private:
 
-    // Operations that the master handler can peform
+    // Operations that the master handler can perform
     enum class Op { nop, start, stop, term };
+
+    int  ordered_var_test_       = -1;
+    bool ordered_handler_remove_ = false;
 
     struct OpBundle
     {
@@ -166,9 +269,16 @@ private:
     };
 
     // Everyone does the same program, so make it static
-    inline static const std::vector<OpBundle> instructions = { { Op::start, 1 }, { Op::start, 0 }, { Op::start, 3 },
-        { Op::stop, 1 }, { Op::start, 2 }, { Op::stop, 3 }, { Op::start, 1 }, { Op::start, 0 }, { Op::start, 3 },
-        { Op::stop, 1 }, { Op::start, 2 }, { Op::stop, 3 }, { Op::term, -1 } };
+    inline static const std::vector<std::vector<OpBundle>> instructions = {
+        { { Op::start, 1 }, { Op::start, 5 }, { Op::start, 6 }, { Op::start, 7 }, { Op::start, 8 } },
+        { { Op::start, 0 }, { Op::stop, 6 } }, { { Op::start, 3 }, { Op::stop, 7 } },
+        { { Op::stop, 1 }, { Op::start, 6 } },
+        { { Op::start, 2 }, { Op::start, 4 } }, // causes ordered clock handlers to remove themselves
+        { { Op::stop, 3 }, { Op::start, 5 }, { Op::start, 6 }, { Op::start, 8 } },
+        { { Op::start, 1 }, { Op::start, 6 }, { Op::start, 5 }, { Op::start, 8 }, { Op::start, 7 } },
+        { { Op::start, 0 } }, { { Op::start, 3 } }, { { Op::stop, 1 } }, { { Op::start, 2 } }, { { Op::stop, 3 } },
+        { { Op::term, -1 } }
+    };
 
     using OpEvent  = BasicEvent<OpBundle>;
     using IntEvent = BasicEvent<int>;
