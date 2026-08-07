@@ -60,6 +60,7 @@ namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
 }
 
+
 /**
  * Main component object for the simulation.
  */
