@@ -1126,7 +1126,7 @@ def testing_compare_filtered_diff(
     outfile: str,
     reffile: str,
     sort: bool = False,
-    filters: Union[LineFilter, List[LineFilter]] = list(),
+    filters: Union[None, LineFilter, List[LineFilter]] = None,
     do_statistics_comparison: bool = False,
 ) -> bool:
     """Filter, optionally sort and then compare 2 files for a difference.
@@ -1144,6 +1144,8 @@ def testing_compare_filtered_diff(
             (bool) True if the 2 sorted files match
 
     """
+    if filters is None:
+        filters = []
 
     if isinstance(filters, LineFilter):
         filters = [filters]
