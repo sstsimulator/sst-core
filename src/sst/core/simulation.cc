@@ -1490,6 +1490,33 @@ Simulation::unregisterClock(TimeConverter tc, Clock::HandlerBase* handler, int p
     }
 }
 
+void
+Simulation::registerClockGroup(TimeConverter tc, Clock::Group* group)
+{
+    // Clock groups are only available to BaseComponents, so we just use CLOCKPRIORITY
+    clockMap_t::key_type mapKey = std::make_pair(tc.getFactor(), CLOCKPRIORITY);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Clock* ce        = new Clock(tc, CLOCKPRIORITY);
+        clockMap[mapKey] = ce;
+
+        ce->schedule();
+    }
+    clockMap[mapKey]->registerGroup(group);
+}
+
+void
+Simulation::registerClockGroup(SimTime_t factor, Clock::Group* group)
+{
+    // Clock groups are only available to BaseComponents, so we just use CLOCKPRIORITY
+    clockMap_t::key_type mapKey = std::make_pair(factor, CLOCKPRIORITY);
+    if ( clockMap.find(mapKey) == clockMap.end() ) {
+        Clock* ce        = new Clock(timeLord.getTimeConverter(factor), CLOCKPRIORITY);
+        clockMap[mapKey] = ce;
+
+        ce->schedule();
+    }
+    clockMap[mapKey]->registerGroup(group);
+}
 
 void
 Simulation::insertActivity(SimTime_t time, Activity* ev)
@@ -1756,7 +1783,7 @@ Simulation::writeCheckpointConfigGraph(ConfigGraph* graph)
     //  copy to original one.  We can do the check by looking at cpt_repartition and cpt_orig_configgraph.
     if ( !graph->cpt_orig_configgraph.empty() && !graph->cpt_repartition ) {
         // We are restarting (known because we have an original configgraph), but are not repartitioning, so the main
-        // ConfigGraph datastructure will be empty.  We will just copy the file
+        // ConfigGraph data structure will be empty.  We will just copy the file
         std::filesystem::copy_file(graph->cpt_orig_configgraph, checkpoint_directory_ + "/" + checkpoint_configgraph_);
         return;
     }

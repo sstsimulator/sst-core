@@ -1,68 +1,126 @@
 # Creating simulation checkpoint at simulated time period of 20ns.
 0: starting test sequence at 0
 0: Clock 1 will restart at cycle 6
+0: Clock 5 will restart at cycle 6
+0: Clock 6 will restart at cycle 6
+0: Clock 7 will restart at cycle 6
+0: Clock 8 will restart at cycle 6
 0: Clock 1 at cycle 6
+0: ordered clock result = 12 (cycle = 6)
 0: Clock 1 at cycle 7
+0: ordered clock result = 12 (cycle = 7)
 0: Clock 1 at cycle 8
+0: ordered clock result = 12 (cycle = 8)
 0: Clock 1 at cycle 9
+0: ordered clock result = 12 (cycle = 9)
 0: Clock 1 at cycle 10
+0: ordered clock result = 12 (cycle = 10)
 0: Clock 0 will restart at cycle 11
+0: Stopping Clock 6 at time 10000
 0: Clock 1 at cycle 11
 0: Clock 0 at cycle 11
+0: ordered clock result = 30 (cycle = 11)
 1: Starting test sequence at 11000
 0: Clock 1 at cycle 12
 0: Clock 0 at cycle 12
+0: ordered clock result = 30 (cycle = 12)
 0: Clock 1 at cycle 13
 0: Clock 0 at cycle 13
 0: Self stopping Clock 0 at time 13000
+0: ordered clock result = 30 (cycle = 13)
 0: Clock 1 at cycle 14
+0: ordered clock result = 30 (cycle = 14)
 0: Clock 1 at cycle 15
+0: ordered clock result = 30 (cycle = 15)
 0: Clock 3 will restart at cycle 16
+0: Stopping Clock 7 at time 15000
 1: Clock 1 will restart at cycle 16
+1: Clock 5 will restart at cycle 16
+1: Clock 6 will restart at cycle 16
+1: Clock 7 will restart at cycle 16
+1: Clock 8 will restart at cycle 16
 0: Clock 1 at cycle 16
 0: Clock 3 at cycle 16
 1: Clock 1 at cycle 16
+0: ordered clock result = 36 (cycle = 16)
+1: ordered clock result = 12 (cycle = 16)
 0: Clock 1 at cycle 17
 0: Clock 3 at cycle 17
 1: Clock 1 at cycle 17
+0: ordered clock result = 36 (cycle = 17)
+1: ordered clock result = 12 (cycle = 17)
 2: Starting test sequence at 17000
 0: Clock 1 at cycle 18
 0: Clock 3 at cycle 18
 1: Clock 1 at cycle 18
+0: ordered clock result = 36 (cycle = 18)
+1: ordered clock result = 12 (cycle = 18)
 0: Clock 1 at cycle 19
 0: Clock 3 at cycle 19
 1: Clock 1 at cycle 19
-# Simulation Checkpoint: Simulated Time 20 ns (Real CPU time since last checkpoint 0.00132 seconds)
+0: ordered clock result = 36 (cycle = 19)
+1: ordered clock result = 12 (cycle = 19)
+# Simulation Checkpoint: Simulated Time 20 ns (Real CPU time since last checkpoint 0.00106 seconds)
 0: Clock 1 at cycle 20
 0: Clock 3 at cycle 20
 1: Clock 1 at cycle 20
+0: ordered clock result = 36 (cycle = 20)
+1: ordered clock result = 12 (cycle = 20)
 0: Stopping Clock 1 at time 20000
+0: Clock 6 will restart at cycle 21
 1: Clock 0 will restart at cycle 21
+1: Stopping Clock 6 at time 20000
 2: Clock 1 will restart at cycle 21
+2: Clock 5 will restart at cycle 21
+2: Clock 6 will restart at cycle 21
+2: Clock 7 will restart at cycle 21
+2: Clock 8 will restart at cycle 21
 0: Clock 3 at cycle 21
 1: Clock 1 at cycle 21
 1: Clock 0 at cycle 21
 2: Clock 1 at cycle 21
+0: ordered clock result = 18 (cycle = 21)
+1: ordered clock result = 30 (cycle = 21)
+2: ordered clock result = 12 (cycle = 21)
 0: Clock 3 at cycle 22
 1: Clock 1 at cycle 22
 1: Clock 0 at cycle 22
 2: Clock 1 at cycle 22
+0: ordered clock result = 18 (cycle = 22)
+1: ordered clock result = 30 (cycle = 22)
+2: ordered clock result = 12 (cycle = 22)
 0: Clock 3 at cycle 23
 1: Clock 1 at cycle 23
 1: Clock 0 at cycle 23
 1: Self stopping Clock 0 at time 23000
 2: Clock 1 at cycle 23
+0: ordered clock result = 18 (cycle = 23)
+1: ordered clock result = 30 (cycle = 23)
+2: ordered clock result = 12 (cycle = 23)
 3: Starting test sequence at 23000
 0: Clock 3 at cycle 24
 1: Clock 1 at cycle 24
 2: Clock 1 at cycle 24
+0: ordered clock result = 18 (cycle = 24)
+1: ordered clock result = 30 (cycle = 24)
+2: ordered clock result = 12 (cycle = 24)
 0: Clock 3 at cycle 25
 1: Clock 1 at cycle 25
 2: Clock 1 at cycle 25
+0: ordered clock result = 18 (cycle = 25)
+1: ordered clock result = 30 (cycle = 25)
+2: ordered clock result = 12 (cycle = 25)
 0: Clock 2 will restart at cycle 26
+0: Clock 4 will restart at cycle 26
 1: Clock 3 will restart at cycle 26
+1: Stopping Clock 7 at time 25000
 2: Clock 0 will restart at cycle 26
+2: Stopping Clock 6 at time 25000
 3: Clock 1 will restart at cycle 26
+3: Clock 5 will restart at cycle 26
+3: Clock 6 will restart at cycle 26
+3: Clock 7 will restart at cycle 26
+3: Clock 8 will restart at cycle 26
 0: Clock 3 at cycle 26
 1: Clock 1 at cycle 26
 2: Clock 1 at cycle 26
@@ -70,6 +128,10 @@
 1: Clock 3 at cycle 26
 2: Clock 0 at cycle 26
 3: Clock 1 at cycle 26
+0: ordered clock result = 18 (cycle = 26)
+3: ordered clock result = 12 (cycle = 26)
+1: ordered clock result = 36 (cycle = 26)
+2: ordered clock result = 30 (cycle = 26)
 0: Clock 3 at cycle 27
 1: Clock 1 at cycle 27
 2: Clock 1 at cycle 27
@@ -77,6 +139,9 @@
 1: Clock 3 at cycle 27
 2: Clock 0 at cycle 27
 3: Clock 1 at cycle 27
+3: ordered clock result = 12 (cycle = 27)
+1: ordered clock result = 36 (cycle = 27)
+2: ordered clock result = 30 (cycle = 27)
 0: Clock 3 at cycle 28
 1: Clock 1 at cycle 28
 2: Clock 1 at cycle 28
@@ -86,34 +151,62 @@
 2: Clock 0 at cycle 28
 2: Self stopping Clock 0 at time 28000
 3: Clock 1 at cycle 28
+3: ordered clock result = 12 (cycle = 28)
+1: ordered clock result = 36 (cycle = 28)
+2: ordered clock result = 30 (cycle = 28)
 0: Clock 3 at cycle 29
 1: Clock 1 at cycle 29
 2: Clock 1 at cycle 29
 1: Clock 3 at cycle 29
 3: Clock 1 at cycle 29
+3: ordered clock result = 12 (cycle = 29)
+1: ordered clock result = 36 (cycle = 29)
+2: ordered clock result = 30 (cycle = 29)
 4: Starting test sequence at 29000
 0: Clock 3 at cycle 30
 1: Clock 1 at cycle 30
 2: Clock 1 at cycle 30
 1: Clock 3 at cycle 30
 3: Clock 1 at cycle 30
+3: ordered clock result = 12 (cycle = 30)
+1: ordered clock result = 36 (cycle = 30)
+2: ordered clock result = 30 (cycle = 30)
 0: Stopping Clock 3 at time 30000
+0: Clock 5 will restart at cycle 31
+0: Clock 6 will restart at cycle 31
+0: Clock 8 will restart at cycle 31
 1: Stopping Clock 1 at time 30000
+1: Clock 6 will restart at cycle 31
 2: Clock 3 will restart at cycle 31
+2: Stopping Clock 7 at time 30000
 3: Clock 0 will restart at cycle 31
+3: Stopping Clock 6 at time 30000
 4: Clock 1 will restart at cycle 31
+4: Clock 5 will restart at cycle 31
+4: Clock 6 will restart at cycle 31
+4: Clock 7 will restart at cycle 31
+4: Clock 8 will restart at cycle 31
 2: Clock 1 at cycle 31
 1: Clock 3 at cycle 31
 3: Clock 1 at cycle 31
 2: Clock 3 at cycle 31
 3: Clock 0 at cycle 31
 4: Clock 1 at cycle 31
+3: ordered clock result = 30 (cycle = 31)
+1: ordered clock result = 18 (cycle = 31)
+2: ordered clock result = 36 (cycle = 31)
+0: ordered clock result = 18 (cycle = 31)
+4: ordered clock result = 12 (cycle = 31)
 2: Clock 1 at cycle 32
 1: Clock 3 at cycle 32
 3: Clock 1 at cycle 32
 2: Clock 3 at cycle 32
 3: Clock 0 at cycle 32
 4: Clock 1 at cycle 32
+3: ordered clock result = 30 (cycle = 32)
+1: ordered clock result = 18 (cycle = 32)
+2: ordered clock result = 36 (cycle = 32)
+4: ordered clock result = 12 (cycle = 32)
 2: Clock 1 at cycle 33
 1: Clock 3 at cycle 33
 3: Clock 1 at cycle 33
@@ -121,22 +214,42 @@
 3: Clock 0 at cycle 33
 3: Self stopping Clock 0 at time 33000
 4: Clock 1 at cycle 33
+3: ordered clock result = 30 (cycle = 33)
+1: ordered clock result = 18 (cycle = 33)
+2: ordered clock result = 36 (cycle = 33)
+4: ordered clock result = 12 (cycle = 33)
 2: Clock 1 at cycle 34
 1: Clock 3 at cycle 34
 3: Clock 1 at cycle 34
 2: Clock 3 at cycle 34
 4: Clock 1 at cycle 34
+3: ordered clock result = 30 (cycle = 34)
+1: ordered clock result = 18 (cycle = 34)
+2: ordered clock result = 36 (cycle = 34)
+4: ordered clock result = 12 (cycle = 34)
 2: Clock 1 at cycle 35
 1: Clock 3 at cycle 35
 3: Clock 1 at cycle 35
 2: Clock 3 at cycle 35
 4: Clock 1 at cycle 35
+3: ordered clock result = 30 (cycle = 35)
+1: ordered clock result = 18 (cycle = 35)
+2: ordered clock result = 36 (cycle = 35)
+4: ordered clock result = 12 (cycle = 35)
 5: Starting test sequence at 35000
 0: Clock 1 will restart at cycle 36
+0: Clock 6 will restart at cycle 36
+0: Clock 5 will restart at cycle 36
+0: Clock 8 will restart at cycle 36
+0: Clock 7 will restart at cycle 36
 1: Clock 2 will restart at cycle 36
+1: Clock 4 will restart at cycle 36
 2: Stopping Clock 1 at time 35000
+2: Clock 6 will restart at cycle 36
 3: Clock 3 will restart at cycle 36
+3: Stopping Clock 7 at time 35000
 4: Clock 0 will restart at cycle 36
+4: Stopping Clock 6 at time 35000
 1: Clock 3 at cycle 36
 3: Clock 1 at cycle 36
 2: Clock 3 at cycle 36
@@ -145,6 +258,11 @@
 1: Clock 2 at cycle 36
 3: Clock 3 at cycle 36
 4: Clock 0 at cycle 36
+3: ordered clock result = 36 (cycle = 36)
+1: ordered clock result = 18 (cycle = 36)
+0: ordered clock result = 12 (cycle = 36)
+4: ordered clock result = 30 (cycle = 36)
+2: ordered clock result = 18 (cycle = 36)
 1: Clock 3 at cycle 37
 3: Clock 1 at cycle 37
 2: Clock 3 at cycle 37
@@ -153,6 +271,9 @@
 1: Clock 2 at cycle 37
 3: Clock 3 at cycle 37
 4: Clock 0 at cycle 37
+3: ordered clock result = 36 (cycle = 37)
+4: ordered clock result = 30 (cycle = 37)
+2: ordered clock result = 18 (cycle = 37)
 1: Clock 3 at cycle 38
 3: Clock 1 at cycle 38
 2: Clock 3 at cycle 38
@@ -163,25 +284,44 @@
 3: Clock 3 at cycle 38
 4: Clock 0 at cycle 38
 4: Self stopping Clock 0 at time 38000
+3: ordered clock result = 36 (cycle = 38)
+4: ordered clock result = 30 (cycle = 38)
+2: ordered clock result = 18 (cycle = 38)
 1: Clock 3 at cycle 39
 3: Clock 1 at cycle 39
 2: Clock 3 at cycle 39
 4: Clock 1 at cycle 39
 0: Clock 1 at cycle 39
 3: Clock 3 at cycle 39
-# Simulation Checkpoint: Simulated Time 40 ns (Real CPU time since last checkpoint 0.00564 seconds)
+3: ordered clock result = 36 (cycle = 39)
+4: ordered clock result = 30 (cycle = 39)
+2: ordered clock result = 18 (cycle = 39)
+# Simulation Checkpoint: Simulated Time 40 ns (Real CPU time since last checkpoint 0.00461 seconds)
 1: Clock 3 at cycle 40
 3: Clock 1 at cycle 40
 2: Clock 3 at cycle 40
 4: Clock 1 at cycle 40
 0: Clock 1 at cycle 40
 3: Clock 3 at cycle 40
+3: ordered clock result = 36 (cycle = 40)
+4: ordered clock result = 30 (cycle = 40)
+2: ordered clock result = 18 (cycle = 40)
 0: Clock 0 will restart at cycle 41
 1: Stopping Clock 3 at time 40000
+1: Clock 5 will restart at cycle 41
+1: Clock 6 will restart at cycle 41
+1: Clock 8 will restart at cycle 41
 2: Clock 2 will restart at cycle 41
+2: Clock 4 will restart at cycle 41
 3: Stopping Clock 1 at time 40000
+3: Clock 6 will restart at cycle 41
 4: Clock 3 will restart at cycle 41
+4: Stopping Clock 7 at time 40000
 5: Clock 1 will restart at cycle 41
+5: Clock 5 will restart at cycle 41
+5: Clock 6 will restart at cycle 41
+5: Clock 7 will restart at cycle 41
+5: Clock 8 will restart at cycle 41
 2: Clock 3 at cycle 41
 4: Clock 1 at cycle 41
 0: Clock 1 at cycle 41
@@ -190,6 +330,11 @@
 2: Clock 2 at cycle 41
 4: Clock 3 at cycle 41
 5: Clock 1 at cycle 41
+3: ordered clock result = 18 (cycle = 41)
+4: ordered clock result = 36 (cycle = 41)
+2: ordered clock result = 18 (cycle = 41)
+5: ordered clock result = 12 (cycle = 41)
+1: ordered clock result = 18 (cycle = 41)
 6: Starting test sequence at 41000
 2: Clock 3 at cycle 42
 4: Clock 1 at cycle 42
@@ -199,6 +344,9 @@
 2: Clock 2 at cycle 42
 4: Clock 3 at cycle 42
 5: Clock 1 at cycle 42
+3: ordered clock result = 18 (cycle = 42)
+4: ordered clock result = 36 (cycle = 42)
+5: ordered clock result = 12 (cycle = 42)
 2: Clock 3 at cycle 43
 4: Clock 1 at cycle 43
 0: Clock 1 at cycle 43
@@ -209,25 +357,48 @@
 2: Self stopping Clock 2 at time 43000
 4: Clock 3 at cycle 43
 5: Clock 1 at cycle 43
+3: ordered clock result = 18 (cycle = 43)
+4: ordered clock result = 36 (cycle = 43)
+5: ordered clock result = 12 (cycle = 43)
 2: Clock 3 at cycle 44
 4: Clock 1 at cycle 44
 0: Clock 1 at cycle 44
 3: Clock 3 at cycle 44
 4: Clock 3 at cycle 44
 5: Clock 1 at cycle 44
+3: ordered clock result = 18 (cycle = 44)
+4: ordered clock result = 36 (cycle = 44)
+5: ordered clock result = 12 (cycle = 44)
 2: Clock 3 at cycle 45
 4: Clock 1 at cycle 45
 0: Clock 1 at cycle 45
 3: Clock 3 at cycle 45
 4: Clock 3 at cycle 45
 5: Clock 1 at cycle 45
+3: ordered clock result = 18 (cycle = 45)
+4: ordered clock result = 36 (cycle = 45)
+5: ordered clock result = 12 (cycle = 45)
 0: Clock 3 will restart at cycle 46
 1: Clock 1 will restart at cycle 46
+1: Clock 6 will restart at cycle 46
+1: Clock 5 will restart at cycle 46
+1: Clock 8 will restart at cycle 46
+1: Clock 7 will restart at cycle 46
 2: Stopping Clock 3 at time 45000
+2: Clock 5 will restart at cycle 46
+2: Clock 6 will restart at cycle 46
+2: Clock 8 will restart at cycle 46
 3: Clock 2 will restart at cycle 46
+3: Clock 4 will restart at cycle 46
 4: Stopping Clock 1 at time 45000
+4: Clock 6 will restart at cycle 46
 5: Clock 0 will restart at cycle 46
+5: Stopping Clock 6 at time 45000
 6: Clock 1 will restart at cycle 46
+6: Clock 5 will restart at cycle 46
+6: Clock 6 will restart at cycle 46
+6: Clock 7 will restart at cycle 46
+6: Clock 8 will restart at cycle 46
 0: Clock 1 at cycle 46
 3: Clock 3 at cycle 46
 4: Clock 3 at cycle 46
@@ -237,6 +408,12 @@
 3: Clock 2 at cycle 46
 5: Clock 0 at cycle 46
 6: Clock 1 at cycle 46
+3: ordered clock result = 18 (cycle = 46)
+6: ordered clock result = 12 (cycle = 46)
+4: ordered clock result = 18 (cycle = 46)
+5: ordered clock result = 30 (cycle = 46)
+1: ordered clock result = 12 (cycle = 46)
+2: ordered clock result = 18 (cycle = 46)
 0: Clock 1 at cycle 47
 3: Clock 3 at cycle 47
 4: Clock 3 at cycle 47
@@ -246,6 +423,9 @@
 3: Clock 2 at cycle 47
 5: Clock 0 at cycle 47
 6: Clock 1 at cycle 47
+6: ordered clock result = 12 (cycle = 47)
+4: ordered clock result = 18 (cycle = 47)
+5: ordered clock result = 30 (cycle = 47)
 7: Starting test sequence at 47000
 0: Clock 1 at cycle 48
 3: Clock 3 at cycle 48
@@ -258,6 +438,9 @@
 5: Clock 0 at cycle 48
 5: Self stopping Clock 0 at time 48000
 6: Clock 1 at cycle 48
+6: ordered clock result = 12 (cycle = 48)
+4: ordered clock result = 18 (cycle = 48)
+5: ordered clock result = 30 (cycle = 48)
 0: Clock 1 at cycle 49
 3: Clock 3 at cycle 49
 4: Clock 3 at cycle 49
@@ -265,6 +448,9 @@
 0: Clock 3 at cycle 49
 1: Clock 1 at cycle 49
 6: Clock 1 at cycle 49
+6: ordered clock result = 12 (cycle = 49)
+4: ordered clock result = 18 (cycle = 49)
+5: ordered clock result = 30 (cycle = 49)
 0: Clock 1 at cycle 50
 3: Clock 3 at cycle 50
 4: Clock 3 at cycle 50
@@ -272,14 +458,31 @@
 0: Clock 3 at cycle 50
 1: Clock 1 at cycle 50
 6: Clock 1 at cycle 50
+6: ordered clock result = 12 (cycle = 50)
+4: ordered clock result = 18 (cycle = 50)
+5: ordered clock result = 30 (cycle = 50)
 0: Stopping Clock 1 at time 50000
 1: Clock 0 will restart at cycle 51
 2: Clock 1 will restart at cycle 51
+2: Clock 6 will restart at cycle 51
+2: Clock 5 will restart at cycle 51
+2: Clock 8 will restart at cycle 51
+2: Clock 7 will restart at cycle 51
 3: Stopping Clock 3 at time 50000
+3: Clock 5 will restart at cycle 51
+3: Clock 6 will restart at cycle 51
+3: Clock 8 will restart at cycle 51
 4: Clock 2 will restart at cycle 51
+4: Clock 4 will restart at cycle 51
 5: Clock 3 will restart at cycle 51
+5: Stopping Clock 7 at time 50000
 6: Clock 0 will restart at cycle 51
+6: Stopping Clock 6 at time 50000
 7: Clock 1 will restart at cycle 51
+7: Clock 5 will restart at cycle 51
+7: Clock 6 will restart at cycle 51
+7: Clock 7 will restart at cycle 51
+7: Clock 8 will restart at cycle 51
 4: Clock 3 at cycle 51
 5: Clock 1 at cycle 51
 0: Clock 3 at cycle 51
@@ -291,6 +494,12 @@
 5: Clock 3 at cycle 51
 6: Clock 0 at cycle 51
 7: Clock 1 at cycle 51
+6: ordered clock result = 30 (cycle = 51)
+4: ordered clock result = 18 (cycle = 51)
+7: ordered clock result = 12 (cycle = 51)
+5: ordered clock result = 36 (cycle = 51)
+2: ordered clock result = 12 (cycle = 51)
+3: ordered clock result = 18 (cycle = 51)
 4: Clock 3 at cycle 52
 5: Clock 1 at cycle 52
 0: Clock 3 at cycle 52
@@ -302,6 +511,9 @@
 5: Clock 3 at cycle 52
 6: Clock 0 at cycle 52
 7: Clock 1 at cycle 52
+6: ordered clock result = 30 (cycle = 52)
+7: ordered clock result = 12 (cycle = 52)
+5: ordered clock result = 36 (cycle = 52)
 4: Clock 3 at cycle 53
 5: Clock 1 at cycle 53
 0: Clock 3 at cycle 53
@@ -316,6 +528,9 @@
 6: Clock 0 at cycle 53
 6: Self stopping Clock 0 at time 53000
 7: Clock 1 at cycle 53
+6: ordered clock result = 30 (cycle = 53)
+7: ordered clock result = 12 (cycle = 53)
+5: ordered clock result = 36 (cycle = 53)
 4: Clock 3 at cycle 54
 5: Clock 1 at cycle 54
 0: Clock 3 at cycle 54
@@ -324,6 +539,9 @@
 2: Clock 1 at cycle 54
 5: Clock 3 at cycle 54
 7: Clock 1 at cycle 54
+6: ordered clock result = 30 (cycle = 54)
+7: ordered clock result = 12 (cycle = 54)
+5: ordered clock result = 36 (cycle = 54)
 4: Clock 3 at cycle 55
 5: Clock 1 at cycle 55
 0: Clock 3 at cycle 55
@@ -332,14 +550,27 @@
 2: Clock 1 at cycle 55
 5: Clock 3 at cycle 55
 7: Clock 1 at cycle 55
+6: ordered clock result = 30 (cycle = 55)
+7: ordered clock result = 12 (cycle = 55)
+5: ordered clock result = 36 (cycle = 55)
 0: Clock 2 will restart at cycle 56
 1: Clock 3 will restart at cycle 56
 2: Clock 0 will restart at cycle 56
 3: Clock 1 will restart at cycle 56
+3: Clock 6 will restart at cycle 56
+3: Clock 5 will restart at cycle 56
+3: Clock 8 will restart at cycle 56
+3: Clock 7 will restart at cycle 56
 4: Stopping Clock 3 at time 55000
+4: Clock 5 will restart at cycle 56
+4: Clock 6 will restart at cycle 56
+4: Clock 8 will restart at cycle 56
 5: Stopping Clock 1 at time 55000
+5: Clock 6 will restart at cycle 56
 6: Clock 3 will restart at cycle 56
+6: Stopping Clock 7 at time 55000
 7: Clock 0 will restart at cycle 56
+7: Stopping Clock 6 at time 55000
 0: Clock 3 at cycle 56
 1: Clock 1 at cycle 56
 6: Clock 1 at cycle 56
@@ -352,6 +583,11 @@
 3: Clock 1 at cycle 56
 6: Clock 3 at cycle 56
 7: Clock 0 at cycle 56
+6: ordered clock result = 36 (cycle = 56)
+7: ordered clock result = 30 (cycle = 56)
+5: ordered clock result = 18 (cycle = 56)
+3: ordered clock result = 12 (cycle = 56)
+4: ordered clock result = 18 (cycle = 56)
 0: Clock 3 at cycle 57
 1: Clock 1 at cycle 57
 6: Clock 1 at cycle 57
@@ -364,6 +600,9 @@
 3: Clock 1 at cycle 57
 6: Clock 3 at cycle 57
 7: Clock 0 at cycle 57
+6: ordered clock result = 36 (cycle = 57)
+7: ordered clock result = 30 (cycle = 57)
+5: ordered clock result = 18 (cycle = 57)
 0: Clock 3 at cycle 58
 1: Clock 1 at cycle 58
 6: Clock 1 at cycle 58
@@ -379,6 +618,9 @@
 6: Clock 3 at cycle 58
 7: Clock 0 at cycle 58
 7: Self stopping Clock 0 at time 58000
+6: ordered clock result = 36 (cycle = 58)
+7: ordered clock result = 30 (cycle = 58)
+5: ordered clock result = 18 (cycle = 58)
 0: Clock 3 at cycle 59
 1: Clock 1 at cycle 59
 6: Clock 1 at cycle 59
@@ -388,7 +630,10 @@
 1: Clock 3 at cycle 59
 3: Clock 1 at cycle 59
 6: Clock 3 at cycle 59
-# Simulation Checkpoint: Simulated Time 60 ns (Real CPU time since last checkpoint 0.01103 seconds)
+6: ordered clock result = 36 (cycle = 59)
+7: ordered clock result = 30 (cycle = 59)
+5: ordered clock result = 18 (cycle = 59)
+# Simulation Checkpoint: Simulated Time 60 ns (Real CPU time since last checkpoint 0.00624 seconds)
 0: Clock 3 at cycle 60
 1: Clock 1 at cycle 60
 6: Clock 1 at cycle 60
@@ -398,14 +643,24 @@
 1: Clock 3 at cycle 60
 3: Clock 1 at cycle 60
 6: Clock 3 at cycle 60
+6: ordered clock result = 36 (cycle = 60)
+7: ordered clock result = 30 (cycle = 60)
+5: ordered clock result = 18 (cycle = 60)
 0: Stopping Clock 3 at time 60000
 1: Stopping Clock 1 at time 60000
 2: Clock 3 will restart at cycle 61
 3: Clock 0 will restart at cycle 61
 4: Clock 1 will restart at cycle 61
+4: Clock 6 will restart at cycle 61
+4: Clock 5 will restart at cycle 61
+4: Clock 8 will restart at cycle 61
+4: Clock 7 will restart at cycle 61
 5: Clock 2 will restart at cycle 61
+5: Clock 4 will restart at cycle 61
 6: Stopping Clock 1 at time 60000
+6: Clock 6 will restart at cycle 61
 7: Clock 3 will restart at cycle 61
+7: Stopping Clock 7 at time 60000
 2: Clock 1 at cycle 61
 5: Clock 3 at cycle 61
 7: Clock 1 at cycle 61
@@ -417,6 +672,10 @@
 4: Clock 1 at cycle 61
 5: Clock 2 at cycle 61
 7: Clock 3 at cycle 61
+6: ordered clock result = 18 (cycle = 61)
+7: ordered clock result = 36 (cycle = 61)
+5: ordered clock result = 18 (cycle = 61)
+4: ordered clock result = 12 (cycle = 61)
 2: Clock 1 at cycle 62
 5: Clock 3 at cycle 62
 7: Clock 1 at cycle 62
@@ -428,6 +687,8 @@
 4: Clock 1 at cycle 62
 5: Clock 2 at cycle 62
 7: Clock 3 at cycle 62
+6: ordered clock result = 18 (cycle = 62)
+7: ordered clock result = 36 (cycle = 62)
 2: Clock 1 at cycle 63
 5: Clock 3 at cycle 63
 7: Clock 1 at cycle 63
@@ -441,6 +702,8 @@
 5: Clock 2 at cycle 63
 5: Self stopping Clock 2 at time 63000
 7: Clock 3 at cycle 63
+6: ordered clock result = 18 (cycle = 63)
+7: ordered clock result = 36 (cycle = 63)
 2: Clock 1 at cycle 64
 5: Clock 3 at cycle 64
 7: Clock 1 at cycle 64
@@ -450,6 +713,8 @@
 2: Clock 3 at cycle 64
 4: Clock 1 at cycle 64
 7: Clock 3 at cycle 64
+6: ordered clock result = 18 (cycle = 64)
+7: ordered clock result = 36 (cycle = 64)
 2: Clock 1 at cycle 65
 5: Clock 3 at cycle 65
 7: Clock 1 at cycle 65
@@ -459,14 +724,21 @@
 2: Clock 3 at cycle 65
 4: Clock 1 at cycle 65
 7: Clock 3 at cycle 65
+6: ordered clock result = 18 (cycle = 65)
+7: ordered clock result = 36 (cycle = 65)
 0: Terminating test sequence at 65000
 1: Clock 2 will restart at cycle 66
 2: Stopping Clock 1 at time 65000
 3: Clock 3 will restart at cycle 66
 4: Clock 0 will restart at cycle 66
 5: Stopping Clock 3 at time 65000
+5: Clock 5 will restart at cycle 66
+5: Clock 6 will restart at cycle 66
+5: Clock 8 will restart at cycle 66
 6: Clock 2 will restart at cycle 66
+6: Clock 4 will restart at cycle 66
 7: Stopping Clock 1 at time 65000
+7: Clock 6 will restart at cycle 66
 1: Clock 3 at cycle 66
 3: Clock 1 at cycle 66
 6: Clock 3 at cycle 66
@@ -477,6 +749,9 @@
 3: Clock 3 at cycle 66
 4: Clock 0 at cycle 66
 6: Clock 2 at cycle 66
+6: ordered clock result = 18 (cycle = 66)
+5: ordered clock result = 18 (cycle = 66)
+7: ordered clock result = 18 (cycle = 66)
 1: Clock 3 at cycle 67
 3: Clock 1 at cycle 67
 6: Clock 3 at cycle 67
@@ -487,6 +762,7 @@
 3: Clock 3 at cycle 67
 4: Clock 0 at cycle 67
 6: Clock 2 at cycle 67
+7: ordered clock result = 18 (cycle = 67)
 1: Clock 3 at cycle 68
 3: Clock 1 at cycle 68
 6: Clock 3 at cycle 68
@@ -500,6 +776,7 @@
 4: Self stopping Clock 0 at time 68000
 6: Clock 2 at cycle 68
 6: Self stopping Clock 2 at time 68000
+7: ordered clock result = 18 (cycle = 68)
 1: Clock 3 at cycle 69
 3: Clock 1 at cycle 69
 6: Clock 3 at cycle 69
@@ -507,6 +784,7 @@
 4: Clock 1 at cycle 69
 7: Clock 3 at cycle 69
 3: Clock 3 at cycle 69
+7: ordered clock result = 18 (cycle = 69)
 1: Clock 3 at cycle 70
 3: Clock 1 at cycle 70
 6: Clock 3 at cycle 70
@@ -514,13 +792,22 @@
 4: Clock 1 at cycle 70
 7: Clock 3 at cycle 70
 3: Clock 3 at cycle 70
+7: ordered clock result = 18 (cycle = 70)
 1: Stopping Clock 3 at time 70000
 2: Clock 2 will restart at cycle 71
 3: Stopping Clock 1 at time 70000
 4: Clock 3 will restart at cycle 71
 5: Clock 1 will restart at cycle 71
+5: Clock 6 will restart at cycle 71
+5: Clock 5 will restart at cycle 71
+5: Clock 8 will restart at cycle 71
+5: Clock 7 will restart at cycle 71
 6: Stopping Clock 3 at time 70000
+6: Clock 5 will restart at cycle 71
+6: Clock 6 will restart at cycle 71
+6: Clock 8 will restart at cycle 71
 7: Clock 2 will restart at cycle 71
+7: Clock 4 will restart at cycle 71
 2: Clock 3 at cycle 71
 4: Clock 1 at cycle 71
 7: Clock 3 at cycle 71
@@ -529,6 +816,9 @@
 4: Clock 3 at cycle 71
 5: Clock 1 at cycle 71
 7: Clock 2 at cycle 71
+7: ordered clock result = 18 (cycle = 71)
+6: ordered clock result = 18 (cycle = 71)
+5: ordered clock result = 12 (cycle = 71)
 2: Clock 3 at cycle 72
 4: Clock 1 at cycle 72
 7: Clock 3 at cycle 72
@@ -565,13 +855,22 @@
 4: Stopping Clock 1 at time 75000
 5: Clock 0 will restart at cycle 76
 6: Clock 1 will restart at cycle 76
+6: Clock 6 will restart at cycle 76
+6: Clock 5 will restart at cycle 76
+6: Clock 8 will restart at cycle 76
+6: Clock 7 will restart at cycle 76
 7: Stopping Clock 3 at time 75000
+7: Clock 5 will restart at cycle 76
+7: Clock 6 will restart at cycle 76
+7: Clock 8 will restart at cycle 76
 3: Clock 3 at cycle 76
 4: Clock 3 at cycle 76
 5: Clock 1 at cycle 76
 3: Clock 2 at cycle 76
 5: Clock 0 at cycle 76
 6: Clock 1 at cycle 76
+6: ordered clock result = 12 (cycle = 76)
+7: ordered clock result = 18 (cycle = 76)
 3: Clock 3 at cycle 77
 4: Clock 3 at cycle 77
 5: Clock 1 at cycle 77
@@ -590,7 +889,7 @@
 4: Clock 3 at cycle 79
 5: Clock 1 at cycle 79
 6: Clock 1 at cycle 79
-# Simulation Checkpoint: Simulated Time 80 ns (Real CPU time since last checkpoint 0.00493 seconds)
+# Simulation Checkpoint: Simulated Time 80 ns (Real CPU time since last checkpoint 0.01280 seconds)
 3: Clock 3 at cycle 80
 4: Clock 3 at cycle 80
 5: Clock 1 at cycle 80
@@ -601,6 +900,10 @@
 5: Clock 3 will restart at cycle 81
 6: Clock 0 will restart at cycle 81
 7: Clock 1 will restart at cycle 81
+7: Clock 6 will restart at cycle 81
+7: Clock 5 will restart at cycle 81
+7: Clock 8 will restart at cycle 81
+7: Clock 7 will restart at cycle 81
 4: Clock 3 at cycle 81
 5: Clock 1 at cycle 81
 6: Clock 1 at cycle 81
@@ -608,6 +911,7 @@
 5: Clock 3 at cycle 81
 6: Clock 0 at cycle 81
 7: Clock 1 at cycle 81
+7: ordered clock result = 12 (cycle = 81)
 4: Clock 3 at cycle 82
 5: Clock 1 at cycle 82
 6: Clock 1 at cycle 82
@@ -706,7 +1010,7 @@
 6: Self stopping Clock 2 at time 98000
 6: Clock 3 at cycle 99
 7: Clock 3 at cycle 99
-# Simulation Checkpoint: Simulated Time 100 ns (Real CPU time since last checkpoint 0.00550 seconds)
+# Simulation Checkpoint: Simulated Time 100 ns (Real CPU time since last checkpoint 0.00341 seconds)
 6: Clock 3 at cycle 100
 7: Clock 3 at cycle 100
 5: Terminating test sequence at 100000

@@ -31,11 +31,40 @@ Component::Component(ComponentId_t id) :
     // currentlyLoadingSubComponent = my_info;
 }
 
+Clock::Group*
+Component::getClockGroup(TimeConverter tc)
+{
+    auto it = clock_groups_.find(tc.getFactor());
+    if ( it != clock_groups_.end() ) return it->second;
+
+    // Need to create a clock group and register it with the Clock object
+    Clock::Group* group = new Clock::Group();
+    sim_->registerClockGroup(tc, group);
+    clock_groups_[tc.getFactor()] = group;
+    return group;
+}
+
 
 void
 Component::serialize_order(SST::Core::Serialization::serializer& ser)
 {
     BaseComponent::serialize_order(ser);
 }
+
+void
+Component::serialize_final(SST::Core::Serialization::serializer& ser)
+{
+    // Need to serialize the ordered clock handlers
+    SST_SER(clock_groups_);
+
+    if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        // Need to reregister the groups with their clocks
+        for ( auto& [period, group] : clock_groups_ ) {
+            sim_->registerClockGroup(period, group);
+            group->activateOnRestart();
+        }
+    }
+}
+
 
 } // namespace SST

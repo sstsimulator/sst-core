@@ -21,11 +21,170 @@
 
 namespace SST {
 
+void
+Clock::Group::registerHandler(HandlerBase* handler)
+{
+    bool currently_inactive = (inactive_start_ == 0);
+    handler->order_         = handler_count_++;
+    handler->group_         = this;
+
+    // Put handler at end of list, then swap to active region if necessary
+    int32_t end_index = (int32_t)handlers_.size();
+    handler->index_   = end_index;
+    handlers_.push_back(handler);
+
+    if ( inactive_start_ != end_index ) {
+        // Need to swap this to the active region (i.e. to inactive_start_)
+        swapActiveWithInactive(handlers_[end_index], handlers_[inactive_start_]);
+    }
+
+    // Increment inactive_start_
+    ++inactive_start_;
+
+    if ( currently_inactive ) clock_->activateGroup(this);
+}
+
+void
+Clock::Group::activateHandler(HandlerBase* handler)
+{
+    // Check to see if it's already active
+    if ( handler->index_ >= 0 ) return;
+
+    bool currently_inactive = (inactive_start_ == 0);
+
+    // Get the actual index of the inactive handler
+    int32_t index = -1 - handler->index_;
+
+    // We will just swap the handler at inactive_start_ with this handler, then we don't need to move as much stuff
+    // around
+    if ( index != inactive_start_ ) {
+        swapSameActiveState(handlers_[index], handlers_[inactive_start_]);
+    }
+
+    // Mark this as active
+    handler->toggleActiveState();
+
+    // Now we need to move down all the active handlers until we find where we belong based on order
+    index = inactive_start_;
+
+    // Increment inactive_start_ since we have another active handler
+    ++inactive_start_;
+
+    while ( index > 0 ) {
+        if ( handlers_[index - 1]->order_ < handler->order_ ) {
+            // Found where this goes
+            break;
+        }
+        handlers_[index]         = handlers_[index - 1];
+        handlers_[index]->index_ = index;
+        --index;
+    }
+
+    handlers_[index] = handler;
+    handler->index_  = index;
+
+    if ( currently_inactive ) clock_->activateGroup(this);
+}
+
+void
+Clock::Group::deactivateHandler(HandlerBase* handler)
+{
+    // Check to see if this is currently inactive
+    if ( handler->index_ < 0 ) return;
+
+    // We need to move the handler below inactive_start_ and move everything up to that point up one space
+    --inactive_start_;
+    for ( int i = handler->index_; i < inactive_start_; ++i ) {
+        handlers_[i]         = handlers_[i + 1];
+        handlers_[i]->index_ = i;
+    }
+    handler->index_ = inactive_start_;
+    handler->toggleActiveState();
+    handlers_[inactive_start_] = handler;
+
+    // No need to check to deactivate group as it will do it automatically on the next call to execute(). The only
+    // oddity would be if a handler gets reactivated before the next call to execute(), in which case it will activate
+    // the group even though it is already active.  This will end up being a no-op
+}
+
+bool
+Clock::Group::execute(Cycle_t current_cycle)
+{
+    int32_t call_index = 0;
+    for ( ; call_index < inactive_start_; ++call_index ) {
+        HandlerBase* handler = handlers_[call_index];
+        if ( (*handler)(current_cycle) ) {
+            handler->toggleActiveState();
+            // Just break here. This will break us into the compacting version of the iteration in the loop below
+            break;
+        }
+    }
+
+    // Check to see if it finished all the handlers without any of them removing themselves.  As soon as the first
+    // handler removes itself, we drop out of the original loop and enter this one that will compact the rest of the
+    // entries then, then reset inactive_start_ to the appropriate place. This gets rid of the need to constantly delete
+    // individual elements, doing multiple memcpy's of all entries below. This also allows us to update the index for
+    // each handler.
+
+    int32_t copy_index = call_index;
+
+    // Need to increment call_index for the case where we broke out of the upper loop before completing.  If it did
+    // complete, then incrementing it won't hurt anything and the next loop will just be skipped.  It will also be
+    // skipped if the break was on the last entry in the vector
+    for ( ++call_index; call_index < inactive_start_; ++call_index ) {
+        HandlerBase* handler = handlers_[call_index];
+        if ( (*handler)(current_cycle) ) {
+            // Just mark it as inactive and continue on
+            handler->toggleActiveState();
+        }
+        else {
+            // Need to swap this with the handler at copy_index and increment copy_index.  For the swap, the current
+            // handler is active and the one at copy_index is inactive, by construction
+            swapActiveWithInactive(handlers_[call_index], handlers_[copy_index]);
+            ++copy_index;
+        }
+    }
+
+    // inactive_start_ is now at copy_index
+    inactive_start_ = copy_index;
+
+    if ( inactive_start_ == 0 ) {
+        return true; // No active handlers
+    }
+    return false;
+}
+
+void
+Clock::Group::activateOnRestart()
+{
+    // Reset all the pointers to the group
+    for ( size_t x = 0; x < handlers_.size(); ++x ) {
+        handlers_[x]->group_ = this;
+    }
+    if ( inactive_start_ == 0 ) return;
+    clock_->activateGroup(this);
+}
+
+void
+Clock::Group::serialize_order(SST::Core::Serialization::serializer& ser)
+{
+    SST_SER(handlers_);
+    SST_SER(inactive_start_);
+    SST_SER(handler_count_);
+    SST_SER(index_);
+    // clock_ gets set after deserialzation when reregistered with the clock
+}
+
+Clock::Clock() :
+    sim_(Simulation::getSimulation())
+{}
+
 Clock::Clock(TimeConverter period, int priority) :
     Action(),
     current_cycle_(0),
     period_(period),
-    scheduled_(false)
+    scheduled_(false),
+    sim_(Simulation::getSimulation())
 {
     setPriority(priority);
 }
@@ -62,8 +221,9 @@ Clock::registerHandler(Clock::HandlerBase* handler)
             "WARNING: Register Clock::Handler that is already active.  Handler will not be registered again.\n");
         return;
     }
-    handler->markAsActive(static_handler_map_.size());
-    static_handler_map_.push_back(handler);
+    handler->markAsActive();
+    handler->index_ = handlers_.size();
+    handlers_.push_back(handler);
 
     if ( !scheduled_ ) {
         schedule();
@@ -73,20 +233,19 @@ Clock::registerHandler(Clock::HandlerBase* handler)
 bool
 Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
 {
-    if ( handler->active_ ) {
+    if ( handler->isActive() ) {
         // Need to get index before marking it as inactive, which sets index to -1
         int  index = handler->index_;
-        auto iter  = static_handler_map_.begin() + index;
-        iter       = static_handler_map_.erase(iter);
+        auto iter  = handlers_.begin() + index;
+        iter       = handlers_.erase(iter);
         handler->markAsInactive();
 
         // Need to update the index for every handler below this one
-        for ( ; iter != static_handler_map_.end(); ++iter ) {
+        for ( ; iter != handlers_.end(); ++iter ) {
             (*iter)->index_ = index++;
         }
     }
-
-    empty = static_handler_map_.empty();
+    empty = handlers_.empty();
 
     return 0;
 }
@@ -95,10 +254,10 @@ void
 Clock::registerHandler_restart(Clock::HandlerBase* handler)
 {
     handler->clock_ = this;
-    if ( !handler->active_ ) return;
+    if ( !handler->isActive() ) return;
 
-    handler->index_ = static_handler_map_.size();
-    static_handler_map_.push_back(handler);
+    handler->index_ = handlers_.size();
+    handlers_.push_back(handler);
 
     if ( !scheduled_ ) {
         schedule();
@@ -108,13 +267,40 @@ Clock::registerHandler_restart(Clock::HandlerBase* handler)
 bool
 Clock::isHandlerRegistered(Clock::HandlerBase* handler)
 {
-    for ( auto* h : static_handler_map_ ) {
+    for ( auto* h : handlers_ ) {
         if ( h == handler ) return true;
     }
 
     return false;
 }
 
+void
+Clock::registerGroup(Clock::Group* group)
+{
+    group->clock_ = this;
+    group->index_ = groups_.size();
+
+    // Groups start life inactive, so just put at the end of the vector
+    groups_.push_back(group);
+}
+
+void
+Clock::activateGroup(Clock::Group* group)
+{
+    // Check to see if it's already active
+    if ( group->index_ < groups_inactive_start_ ) return;
+
+    // Just swap it with the group at groups_inactive_start_, if necessary, and increment groups_inactive_start_
+    if ( group->index_ != groups_inactive_start_ ) {
+        // Not in the right place, do the swap
+        int32_t index = group->index_;
+        std::swap(groups_[index], groups_[groups_inactive_start_]);
+        groups_[index]->index_                  = index;
+        groups_[groups_inactive_start_]->index_ = groups_inactive_start_;
+    }
+    ++groups_inactive_start_;
+    if ( !scheduled_ ) schedule();
+}
 
 Cycle_t
 Clock::getNextCycle()
@@ -127,9 +313,7 @@ Clock::getNextCycle()
 void
 Clock::execute()
 {
-    Simulation* sim = Simulation::getSimulation();
-
-    if ( static_handler_map_.empty() ) {
+    if ( handlers_.empty() && groups_inactive_start_ == 0 ) {
         scheduled_ = false;
         return;
     }
@@ -137,8 +321,8 @@ Clock::execute()
     // Derive the current cycle from the core time
     current_cycle_++;
 
-    auto sop_iter = static_handler_map_.begin();
-    for ( ; sop_iter != static_handler_map_.end(); ++sop_iter ) {
+    auto sop_iter = handlers_.begin();
+    for ( ; sop_iter != handlers_.end(); ++sop_iter ) {
         Clock::HandlerBase* handler = *sop_iter;
 
         if ( (*handler)(current_cycle_) ) {
@@ -154,13 +338,13 @@ Clock::execute()
     // handler removes itself, we drop out of the original loop and enter this one that will compact the rest of the
     // entries then delete any empty spaces at the end. This gets rid of the need to constantly delete individual
     // elements, doing multiple memcpy's of all entries below. This also allows us to update the index for each handler.
-    if ( sop_iter != static_handler_map_.end() ) {
+    if ( sop_iter != handlers_.end() ) {
         // sop_iter becomes the location to copy to and we will start one past this calling the handler.  Then, we will
         // copy the handler to the copy_iter and update its index.
         auto   copy_iter = sop_iter; // Rename for clarity
-        size_t index     = copy_iter - static_handler_map_.begin();
+        size_t index     = copy_iter - handlers_.begin();
 
-        for ( auto call_iter = sop_iter + 1; call_iter != static_handler_map_.end(); ++call_iter ) {
+        for ( auto call_iter = sop_iter + 1; call_iter != handlers_.end(); ++call_iter ) {
             Clock::HandlerBase* handler = *call_iter;
 
             if ( (*handler)(current_cycle_) ) {
@@ -178,13 +362,36 @@ Clock::execute()
             }
         }
 
-        // Need to remove an empty locations in the vector
-        static_handler_map_.erase(copy_iter, static_handler_map_.end());
+        // Need to remove any empty locations in the vector
+        handlers_.erase(copy_iter, handlers_.end());
+    }
+
+
+    // Now we need to go through all the active groups.  This loop is a bit weird because each iteration through the
+    // loop can do one of too things to the control variables:
+
+    // 1 - increment i if the group does not ask to be removed
+
+    // 2 - decrement groups_inactive_start_ if the group asks to be removed.  This is because the removed group gets
+    // moved to groups_inactive_start_ (after decrementing it) and we need to execute the group that just got moved to
+    // that index
+    for ( int i = 0; i < groups_inactive_start_; /* incremented in loop */ ) {
+        if ( groups_[i]->execute(current_cycle_) ) {
+            // Need to deactivate this group by swapping it below groups_inactive_start_
+            --groups_inactive_start_;
+            if ( i != groups_inactive_start_ ) std::swap(groups_[i], groups_[groups_inactive_start_]);
+            groups_[i]->index_                      = i;
+            groups_[groups_inactive_start_]->index_ = groups_inactive_start_;
+            // Don't increment i because we need to execute the one we just swapped into this position
+        }
+        else {
+            ++i;
+        }
     }
 
     // Compute the next time to fire
-    next_ = sim->getCurrentSimCycle() + period_.getFactor();
-    sim->insertActivity(next_, this);
+    next_ = sim_->getCurrentSimCycle() + period_.getFactor();
+    sim_->insertActivity(next_, this);
 
     return;
 }
@@ -192,9 +399,8 @@ Clock::execute()
 void
 Clock::schedule()
 {
-    Simulation* sim = Simulation::getSimulation();
-    current_cycle_  = sim->getCurrentSimCycle() / period_.getFactor();
-    SimTime_t next  = (current_cycle_ * period_.getFactor()) + period_.getFactor();
+    current_cycle_ = sim_->getCurrentSimCycle() / period_.getFactor();
+    SimTime_t next = (current_cycle_ * period_.getFactor()) + period_.getFactor();
 
     // Check to see if we need to insert clock into queue at current
     // simtime.  This happens if the clock would have fired at this
@@ -202,22 +408,21 @@ Clock::schedule()
     // However, if we are at time = 0, then we always go out to the
     // next cycle. Also, if the call happens during complete() or
     // finish(), then we don't adjust either.
-    if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 && !sim->endSim ) {
-        if ( sim->getCurrentSimCycle() % period_.getFactor() == 0 ) {
-            next = sim->getCurrentSimCycle();
+    if ( sim_->getCurrentPriority() < getPriority() && sim_->getCurrentSimCycle() != 0 && !sim_->endSim ) {
+        if ( sim_->getCurrentSimCycle() % period_.getFactor() == 0 ) {
+            next = sim_->getCurrentSimCycle();
             current_cycle_--; // First thing execute does in increment current_cycle_
         }
     }
 
-    sim->insertActivity(next, this);
+    sim_->insertActivity(next, this);
     scheduled_ = true;
 }
 
 void
 Clock::updateCurrentCycle()
 {
-    Simulation* sim = Simulation::getSimulation();
-    current_cycle_  = sim->getCurrentSimCycle() / period_.getFactor();
+    current_cycle_ = sim_->getCurrentSimCycle() / period_.getFactor();
     return;
 }
 
@@ -226,7 +431,7 @@ Clock::toString() const
 {
     std::stringstream buf;
     buf << "Clock Activity with period " << period_.getFactor() << " to be delivered at " << getDeliveryTime()
-        << " with priority " << getPriority() << " with " << static_handler_map_.size() << " items on clock list";
+        << " with priority " << getPriority() << " with " << handlers_.size() << " items on clock list";
     return buf.str();
 }
 

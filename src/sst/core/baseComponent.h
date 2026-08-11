@@ -60,6 +60,7 @@ namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
 }
 
+
 /**
  * Main component object for the simulation.
  */
@@ -339,6 +340,13 @@ private:
     */
     void removeWatchPointRecursive(WatchPoint* pt);
 
+    /**
+       This function is called by ComponentInfo after all SubComponents have been serialized.  Currently only Component
+       uses this functionality to make sure SubComponents are serialized before serializing any ordered clock handlers.
+    */
+    virtual void serialize_final(SST::Core::Serialization::serializer& ser);
+
+
 protected:
     /**
        Check to see if the run mode was set to INIT
@@ -505,13 +513,16 @@ protected:
 
        @param obj Pointer to object that the handler function should be called on
 
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
+       component
+
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
     template <typename classT, auto funcT>
     Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, void>(obj);
-        registerClock_impl(tc, handler, reg_all);
+        registerClock_impl(tc, handler, reg_all, false);
         return handler;
     }
 
@@ -530,13 +541,77 @@ protected:
 
        @param obj Pointer to object that the handler function should be called on
 
+       @param metadata Metadata to associate with the handler
+
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
+       component
+
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
     template <typename classT, auto funcT, typename dataT>
     Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
-        registerClock_impl(tc, handler, reg_all);
+        registerClock_impl(tc, handler, reg_all, false);
+        return handler;
+    }
+
+
+    /**
+       Registers an ordered clock handler for this component. Active handlers registered with this function are
+       guaranteed to always fire in the order they were registered, for a given clock frequency.
+
+       @tparam classT Class that the callback function lives in
+
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
+       &<classT>::<name_of_function>.
+
+       @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
+       or UnitAlgebra
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
+       component
+
+       @return The Clock::Handler object that encapsulates the function and object pointer
+    */
+    template <typename classT, auto funcT>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    {
+        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        registerClock_impl(tc, handler, reg_all, true);
+        return handler;
+    }
+
+    /**
+       Registers an ordered clock handler for this component. Active handlers registered with this function are
+       guaranteed to always fire in the order they were registered, for a given clock frequency.
+
+       @tparam classT Class that the callback function lives in
+
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
+       &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
+       or UnitAlgebra
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param metadata Metadata to associate with the handler
+
+       @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
+       component
+
+       @return The Clock::Handler object that encapsulates the function and object pointer
+    */
+    template <typename classT, auto funcT, typename dataT>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    {
+        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        registerClock_impl(tc, handler, reg_all, true);
         return handler;
     }
 
@@ -605,8 +680,10 @@ private:
 
        @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
        component
+
+       @param group Whether or not this clock is being registered with a group (i.e. is an ordered clock)
     */
-    void registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all);
+    void registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group = false);
 
     /**
         Handles default timebase setup
@@ -1345,6 +1422,8 @@ private:
         }
         return base_info->component;
     }
+
+    virtual Clock::Group* getClockGroup(TimeConverter tc) { return getParentComponent()->getClockGroup(tc); }
 };
 
 /**
