@@ -16,6 +16,8 @@
 #include "sst/core/testElements/coreTest_Serialization.h"
 
 #include "sst/core/componentInfo.h"
+#include "sst/core/interfaces/simpleNetwork.h"
+#include "sst/core/interfaces/stringEvent.h"
 #include "sst/core/link.h"
 #include "sst/core/objectSerialization.h"
 #include "sst/core/rng/mersenne.h"
@@ -597,6 +599,101 @@ public:
     ImplementSerializable(SST::CoreTestSerialization::shell);
 };
 
+class SimpleNetworkServiceTestData : public SST::Interfaces::SimpleNetwork::NetworkServiceData
+{
+public:
+    static constexpr SST::Interfaces::SimpleNetwork::NetworkServiceID        SERVICE_ID         = 42;
+    static constexpr SST::Interfaces::SimpleNetwork::NetworkServiceDataToken DATA_TOKEN         = 7;
+    static constexpr SST::Interfaces::SimpleNetwork::NetworkServiceVersion   MIN_SCHEMA_VERSION = 3;
+    static constexpr auto                                                    MAX_SCHEMA_VERSION = MIN_SCHEMA_VERSION;
+    explicit SimpleNetworkServiceTestData(uint32_t value = 0) :
+        value_(value)
+    {}
+    SST::Interfaces::SimpleNetwork::NetworkServiceID        serviceID() const override { return SERVICE_ID; }
+    SST::Interfaces::SimpleNetwork::NetworkServiceDataToken dataToken() const override { return DATA_TOKEN; }
+    SST::Interfaces::SimpleNetwork::NetworkServiceVersion schemaVersion() const override { return MIN_SCHEMA_VERSION; }
+    SimpleNetworkServiceTestData* clone() const override { return new SimpleNetworkServiceTestData(*this); }
+    uint32_t                      value() const { return value_; }
+    void                          serialize_order(SST::Core::Serialization::serializer& ser) override { SST_SER(value_); }
+
+private:
+    uint32_t value_ = 0;
+    ImplementSerializable(SST::CoreTestSerialization::SimpleNetworkServiceTestData);
+};
+
+class LayeredNetworkServiceTestData : public SimpleNetworkServiceTestData
+{
+public:
+    using SimpleNetworkServiceTestData::SimpleNetworkServiceTestData;
+    LayeredNetworkServiceTestData* clone() const override { return new LayeredNetworkServiceTestData(*this); }
+    ImplementSerializable(SST::CoreTestSerialization::LayeredNetworkServiceTestData);
+};
+
+// A state-free subclass can retain its parent's registered wire representation.
+class InheritedNetworkServiceTestData : public SimpleNetworkServiceTestData
+{
+public:
+    using SimpleNetworkServiceTestData::SimpleNetworkServiceTestData;
+};
+
+class CollidingNetworkServiceTestData final : public SST::Interfaces::SimpleNetwork::NetworkServiceData
+{
+public:
+    static constexpr auto SERVICE_ID         = SimpleNetworkServiceTestData::SERVICE_ID;
+    static constexpr auto DATA_TOKEN         = SimpleNetworkServiceTestData::DATA_TOKEN;
+    static constexpr auto MIN_SCHEMA_VERSION = SimpleNetworkServiceTestData::MIN_SCHEMA_VERSION;
+    static constexpr auto MAX_SCHEMA_VERSION = MIN_SCHEMA_VERSION;
+    auto serviceID() const -> SST::Interfaces::SimpleNetwork::NetworkServiceID override { return SERVICE_ID; }
+    auto dataToken() const -> SST::Interfaces::SimpleNetwork::NetworkServiceDataToken override { return DATA_TOKEN; }
+    auto schemaVersion() const -> SST::Interfaces::SimpleNetwork::NetworkServiceVersion override
+    {
+        return MIN_SCHEMA_VERSION;
+    }
+    CollidingNetworkServiceTestData* clone() const override { return new CollidingNetworkServiceTestData(*this); }
+    void                             serialize_order(SST::Core::Serialization::serializer&) override {}
+
+private:
+    ImplementSerializable(SST::CoreTestSerialization::CollidingNetworkServiceTestData);
+};
+
+class ZeroTokenNetworkServiceTestData : public SimpleNetworkServiceTestData
+{
+public:
+    SST::Interfaces::SimpleNetwork::NetworkServiceDataToken dataToken() const override { return 0; }
+    ZeroTokenNetworkServiceTestData* clone() const override { return new ZeroTokenNetworkServiceTestData(*this); }
+    ImplementSerializable(SST::CoreTestSerialization::ZeroTokenNetworkServiceTestData);
+};
+
+class CloneGuardServiceData : public SimpleNetworkServiceTestData
+{
+public:
+    inline static int live_objects = 0;
+    explicit CloneGuardServiceData(bool return_self = false) :
+        return_self_(return_self)
+    {
+        ++live_objects;
+    }
+    ~CloneGuardServiceData() override { --live_objects; }
+    CloneGuardServiceData* clone() const override
+    {
+        return return_self_ ? const_cast<CloneGuardServiceData*>(this) : nullptr;
+    }
+
+private:
+    bool return_self_ = false;
+    ImplementSerializable(SST::CoreTestSerialization::CloneGuardServiceData);
+};
+
+class NativePayloadLifetime : public SST::Event
+{
+public:
+    inline static std::set<const SST::Event*> live_objects;
+    NativePayloadLifetime() { live_objects.insert(this); }
+    ~NativePayloadLifetime() override { live_objects.erase(this); }
+    Event* clone() override { return new NativePayloadLifetime; }
+    void   serialize_order(SST::Core::Serialization::serializer& ser) override { Event::serialize_order(ser); }
+    ImplementSerializable(SST::CoreTestSerialization::NativePayloadLifetime);
+};
 
 // Class used to test serialization of handlers
 struct HandlerTest : public SST::Core::Serialization::serializable
@@ -1753,6 +1850,294 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         SST_SER(info2, SerOption::as_ptr);
 
         info2.test_printComponentInfoHierarchy();
+    }
+    else if ( test == "simple_network_request" ) {
+        using SimpleNetwork = SST::Interfaces::SimpleNetwork;
+        using Request       = SimpleNetwork::Request;
+        auto check          = [&out](bool condition, const char* message) {
+            if ( !condition ) out.output("ERROR: SimpleNetwork service Request %s\n", message);
+        };
+
+        Request ordinary;
+        check(ordinary.getServiceID() == SimpleNetwork::NETWORK_SERVICE_NONE && !ordinary.hasService() &&
+                  ordinary.inspectPayload() == nullptr && ordinary.inspectServiceData() == nullptr,
+            "does not initialize empty ownership slots");
+
+        SimpleNetwork::NetworkServiceCapability capability { SimpleNetworkServiceTestData::SERVICE_ID, 1, 1,
+            SimpleNetwork::SERVICE_FEATURE_SIDECAR_PRESERVATION |
+                SimpleNetwork::SERVICE_FEATURE_TRANSACTIONAL_TIMED_SEND,
+            SimpleNetworkServiceTestData::DATA_TOKEN, SimpleNetworkServiceTestData::MIN_SCHEMA_VERSION,
+            SimpleNetworkServiceTestData::MAX_SCHEMA_VERSION, { 0, 4096 } };
+        check(capability.isValidFor(SimpleNetworkServiceTestData::SERVICE_ID), "valid capability rejected");
+        SimpleNetwork::NetworkServiceCapability capability_round_trip;
+        serializeDeserialize(capability, capability_round_trip);
+        check(capability_round_trip.service_id == capability.service_id &&
+                  capability_round_trip.features == capability.features &&
+                  capability_round_trip.request_data_token == capability.request_data_token &&
+                  capability_round_trip.max_request_schema_version == capability.max_request_schema_version &&
+                  capability_round_trip.max_atomic_request_bits_by_vn == capability.max_atomic_request_bits_by_vn,
+            "capability does not serialize losslessly");
+        capability.max_atomic_request_bits_by_vn.resize(SimpleNetwork::NETWORK_SERVICE_MAX_VNS + 1);
+        check(!capability.isValidFor(SimpleNetworkServiceTestData::SERVICE_ID),
+            "capability accepts an oversized VN vector");
+        auto oversized_capability_wire = [](SST::Core::Serialization::serializer& ser) {
+            SimpleNetwork::NetworkServiceID          id       = 42;
+            SimpleNetwork::NetworkServiceVersion     version  = 1;
+            SimpleNetwork::NetworkServiceFeatureMask features = 0;
+            SimpleNetwork::NetworkServiceDataToken   token    = 7;
+            size_t                                   vn_count = SimpleNetwork::NETWORK_SERVICE_MAX_VNS + 1;
+            auto fields = std::tie(id, version, version, features, token, version, version, vn_count);
+            std::apply([&](auto&... field) { (SST_SER(field), ...); }, fields);
+        };
+        SST::Core::Serialization::serializer capability_ser;
+        capability_ser.start_sizing();
+        oversized_capability_wire(capability_ser);
+        const size_t capability_size = capability_ser.size();
+        auto         capability_wire = std::make_unique<char[]>(capability_size);
+        capability_ser.start_packing(capability_wire.get(), capability_size);
+        oversized_capability_wire(capability_ser);
+        capability_ser.start_unpacking(capability_wire.get(), capability_size);
+        try {
+            capability.serialize_order(capability_ser);
+            check(false, "deserializes oversized VN vector");
+        }
+        catch ( const std::length_error& ) {
+        }
+
+        Request original(11, 12, 128, true, false, new SST::Interfaces::StringEvent("native-payload"));
+        original.vn = 3;
+        original.giveServiceData(new SimpleNetworkServiceTestData(0x12345678u));
+        check(original.serviceDataMatches(
+                  SimpleNetworkServiceTestData::SERVICE_ID, SimpleNetworkServiceTestData::DATA_TOKEN, 3, 3) &&
+                  original.inspectServiceDataAs<SimpleNetworkServiceTestData>()->value() == 0x12345678u,
+            "checked accessor rejected valid service data");
+        {
+            Request overwrite;
+            auto*   replaced_payload = new SST::Interfaces::StringEvent("replaced");
+            auto*   replacement      = new SST::Interfaces::StringEvent("replacement");
+            overwrite.givePayload(replaced_payload);
+            overwrite.givePayload(replacement);
+            check(
+                overwrite.inspectPayload() == replacement, "does not preserve released givePayload overwrite behavior");
+            delete replaced_payload;
+        }
+
+        Request copy(original);
+        Request assigned;
+        assigned = original;
+        check(copy.inspectPayload() == original.inspectPayload() &&
+                  copy.inspectServiceData() != original.inspectServiceData() &&
+                  assigned.inspectPayload() == original.inspectPayload() &&
+                  assigned.inspectServiceData() != original.inspectServiceData(),
+            "copy construction/assignment changed legacy payload aliasing or service ownership");
+        copy.takePayload();
+        assigned.takePayload();
+
+        std::unique_ptr<Request> cloned(original.clone());
+        check(cloned->inspectPayload() != original.inspectPayload() &&
+                  cloned->inspectServiceData() != original.inspectServiceData(),
+            "virtual clone does not deep-copy owned objects");
+
+        for ( bool same_payload : { false, true } ) {
+            auto*   old_payload = new NativePayloadLifetime;
+            auto*   incoming    = same_payload ? old_payload : new NativePayloadLifetime;
+            Request other_owner, destination, source;
+            other_owner.givePayload(old_payload);
+            destination.givePayload(old_payload);
+            destination.giveServiceData(new CloneGuardServiceData);
+            source.givePayload(incoming);
+            source.giveServiceData(new SimpleNetworkServiceTestData(73));
+            const auto* incoming_service = source.inspectServiceData();
+            destination                  = std::move(source);
+            check(NativePayloadLifetime::live_objects.count(old_payload) == 1 &&
+                      NativePayloadLifetime::live_objects.count(incoming) == 1 &&
+                      destination.inspectPayload() == incoming && source.inspectPayload() == nullptr,
+                "move assignment deleted an old/shared native payload");
+            check(CloneGuardServiceData::live_objects == 0 && !source.hasService() &&
+                      destination.inspectServiceData() == incoming_service,
+                "move assignment did not replace exclusive sidecar ownership");
+            other_owner.takePayload();
+            destination.takePayload();
+            source.takePayload();
+            for ( auto* pointer : std::set<NativePayloadLifetime*> { old_payload, incoming } ) {
+                if ( NativePayloadLifetime::live_objects.count(pointer) ) delete pointer;
+            }
+        }
+
+        for ( bool return_self : { false, true } ) {
+            Request source, destination;
+            source.givePayload(new NativePayloadLifetime);
+            source.giveServiceData(new CloneGuardServiceData(return_self));
+            destination.givePayload(new NativePayloadLifetime);
+            destination.giveServiceData(new SimpleNetworkServiceTestData(91));
+            const auto* source_payload = source.inspectPayload();
+            const auto* source_service = source.inspectServiceData();
+            const auto* old_payload    = destination.inspectPayload();
+            const auto* old_service    = destination.inspectServiceData();
+            for ( int operation : { 0, 1, 2 } ) {
+                bool threw = false;
+                try {
+                    if ( operation == 0 ) {
+                        Request copy(source);
+                        copy.takePayload();
+                    }
+                    else if ( operation == 1 )
+                        destination = source;
+                    else {
+                        std::unique_ptr<Request> copy(source.clone());
+                    }
+                }
+                catch ( const std::runtime_error& ) {
+                    threw = true;
+                }
+                check(threw && CloneGuardServiceData::live_objects == 1 && source.inspectPayload() == source_payload &&
+                          source.inspectServiceData() == source_service &&
+                          destination.inspectPayload() == old_payload &&
+                          destination.inspectServiceData() == old_service &&
+                          NativePayloadLifetime::live_objects.count(source_payload) == 1 &&
+                          NativePayloadLifetime::live_objects.count(old_payload) == 1,
+                    "null/self sidecar clone rejection damaged source or assignment destination");
+            }
+        }
+
+        for ( bool tracked : { false, true } ) {
+            auto*   old_payload = new NativePayloadLifetime;
+            auto*   old_service = new CloneGuardServiceData;
+            Request restored;
+            restored.givePayload(old_payload);
+            restored.giveServiceData(old_service);
+            serializeDeserialize(original, restored, tracked);
+            const auto* data    = restored.inspectServiceDataAs<SimpleNetworkServiceTestData>();
+            auto*       payload = dynamic_cast<SST::Interfaces::StringEvent*>(restored.inspectPayload());
+            check(data && data->value() == 0x12345678u && data != original.inspectServiceData() && payload &&
+                      payload->getString() == "native-payload" && payload != original.inspectPayload() &&
+                      restored.dest == original.dest && restored.src == original.src && restored.vn == original.vn &&
+                      restored.size_in_bits == original.size_in_bits && restored.head == original.head &&
+                      restored.tail == original.tail,
+                "tracked/untracked round trip lost request fields or polymorphic data");
+            // Standard pointer unpack replaces slots; callers retain ownership
+            // of the previous objects and release them explicitly.
+            check(
+                NativePayloadLifetime::live_objects.count(old_payload) == 1 && CloneGuardServiceData::live_objects == 1,
+                "unpack deleted caller-retained prior objects");
+            if ( NativePayloadLifetime::live_objects.count(old_payload) ) delete old_payload;
+            if ( CloneGuardServiceData::live_objects ) delete old_service;
+        }
+        check(NativePayloadLifetime::live_objects.empty() && CloneGuardServiceData::live_objects == 0,
+            "ownership fixtures leaked objects");
+
+        {
+            Request source, restored;
+            auto*   data = new SimpleNetworkServiceTestData(73);
+            source.giveServiceData(data);
+            SimpleNetwork::NetworkServiceData*   observer = data;
+            SST::Core::Serialization::serializer ser;
+            ser.enable_pointer_tracking();
+            auto fields = [&]() {
+                SST_SER(observer);
+                source.serialize_order(ser);
+            };
+            ser.start_sizing();
+            fields();
+            std::vector<char> wire(ser.size());
+            ser.start_packing(wire.data(), wire.size());
+            fields();
+            ser.start_unpacking(wire.data(), wire.size());
+            SimpleNetwork::NetworkServiceData* restored_observer = nullptr;
+            SST_SER(restored_observer);
+            restored.serialize_order(ser);
+            const auto* restored_data = restored.inspectServiceDataAs<SimpleNetworkServiceTestData>();
+            check(restored_data && restored_data->value() == 73 && restored_observer != observer &&
+                      restored_observer == restored.inspectServiceData(),
+                "standard pointer tracking lost a sidecar alias published before the Request");
+            // The observer is non-owning; restored alone deletes the shared object.
+        }
+
+        Request collision;
+        collision.giveServiceData(new CollidingNetworkServiceTestData);
+        check(collision.inspectServiceDataAs<SimpleNetworkServiceTestData>() == nullptr,
+            "typed accessor trusts colliding semantic identity");
+
+        Request layered;
+        layered.giveServiceData(new LayeredNetworkServiceTestData(0x456789abu));
+        Request layered_restored;
+        serializeDeserialize(layered, layered_restored, true);
+        const auto* child = layered_restored.inspectServiceDataAs<LayeredNetworkServiceTestData>();
+        check(child != nullptr && child->value() == 0x456789abu &&
+                  layered_restored.inspectServiceDataAs<SimpleNetworkServiceTestData>() == nullptr,
+            "layered registration lost its own concrete identity");
+        std::unique_ptr<Request> layered_clone(layered.clone());
+        check(layered_clone->inspectServiceDataAs<LayeredNetworkServiceTestData>() != nullptr,
+            "layered clone lost its registered type");
+
+        Request inherited;
+        inherited.giveServiceData<SimpleNetworkServiceTestData>(new InheritedNetworkServiceTestData(0x6789abcdu));
+        check(inherited.inspectServiceDataAs<SimpleNetworkServiceTestData>()->value() == 0x6789abcdu,
+            "parent inspection rejected an inherited wire representation");
+        Request inherited_restored;
+        serializeDeserialize(inherited, inherited_restored);
+        const auto* parent = inherited_restored.inspectServiceDataAs<SimpleNetworkServiceTestData>();
+        check(parent != nullptr && parent->value() == 0x6789abcdu,
+            "inherited wire representation did not round trip as its registered parent");
+
+        auto rejects_malformed = [](SimpleNetwork::NetworkServiceID                     service_id,
+                                     std::unique_ptr<SimpleNetwork::NetworkServiceData> owned_service, bool tracked) {
+            auto serialize_wire = [&](SST::Core::Serialization::serializer& ser) {
+                SimpleNetwork::nid_t nid = 0;
+                int                  vn = 0, trace_id = 0;
+                size_t               bits = 0;
+                bool                 flag = false, adaptive = true;
+                Event*               payload = nullptr;
+                Request::TraceType   trace   = Request::NONE;
+                auto*                service = owned_service.get();
+                auto                 fields =
+                    std::tie(nid, nid, vn, bits, flag, flag, payload, trace, trace_id, adaptive, service_id, service);
+                std::apply([&](auto&... field) { (SST_SER(field), ...); }, fields);
+            };
+            SST::Core::Serialization::serializer ser;
+            if ( tracked ) ser.enable_pointer_tracking();
+            ser.start_sizing();
+            serialize_wire(ser);
+            std::vector<char> wire(ser.size());
+            ser.start_packing(wire.data(), wire.size());
+            serialize_wire(ser);
+            Request output;
+            ser.start_unpacking(wire.data(), wire.size());
+            try {
+                output.serialize_order(ser);
+            }
+            catch ( const std::logic_error& ) {
+                // Validation follows standard unpack. The Request still owns
+                // the decoded sidecar, including when the envelope is invalid.
+                const auto* decoded = output.inspectServiceData();
+                return output.getServiceID() == service_id &&
+                       (owned_service ? decoded && decoded != owned_service.get() &&
+                                            decoded->cls_id() == owned_service->cls_id()
+                                      : decoded == nullptr);
+            }
+            return false;
+        };
+        for ( bool tracked : { false, true } ) {
+            check(rejects_malformed(
+                      SimpleNetwork::NETWORK_SERVICE_NONE, std::make_unique<SimpleNetworkServiceTestData>(), tracked),
+                "accepts sidecar with reserved service ID");
+            check(rejects_malformed(SimpleNetworkServiceTestData::SERVICE_ID + 1,
+                      std::make_unique<SimpleNetworkServiceTestData>(), tracked),
+                "accepts sidecar with mismatched service ID");
+            check(rejects_malformed(SimpleNetworkServiceTestData::SERVICE_ID, {}, tracked),
+                "accepts service ID without sidecar");
+            check(rejects_malformed(SimpleNetworkServiceTestData::SERVICE_ID,
+                      std::make_unique<ZeroTokenNetworkServiceTestData>(), tracked),
+                "accepts sidecar with reserved zero data token");
+        }
+
+        auto* map = SST::Core::Serialization::ObjectMapSerialization(&original);
+        auto* id  = map == nullptr ? nullptr : map->findVariable("service_id");
+        check(id != nullptr && id->get() == "42", "ObjectMap does not expose live service state");
+        auto* mapped_data = static_cast<SimpleNetworkServiceTestData*>(original.takeServiceData());
+        check(id != nullptr && id->get() == "0", "ObjectMap retained a temporary service ID address");
+        original.giveServiceData(mapped_data);
+        if ( map != nullptr ) map->decRefCount();
     }
     else if ( test == "atomic" ) {
         std::atomic<int32_t> atom(12);
