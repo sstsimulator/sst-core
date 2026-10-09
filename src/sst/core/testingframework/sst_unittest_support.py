@@ -1097,6 +1097,7 @@ class CheckpointRefFileFilter(IgnoreAllBeforeFilter):
 
 
 
+
 def _read_and_filter(fileloc: str, filters: Sequence[LineFilter], sort: bool, is_ref: bool) -> List[str]:
     lines = list()
 
@@ -1178,6 +1179,99 @@ def testing_compare_filtered_diff(
 
     # Files are the same if there were no lines of diff output
     return count == 0
+
+###
+
+_FLOAT_STAT_PATTERN = re.compile(r'\.(f32|f64) = ([\d.]+)')
+
+def _extract_float_key_and_values(line: str) -> Tuple[str, List[float]]:
+    values: List[float] = []
+    def replace(m: re.Match[str]) -> str:
+        values.append(float(m.group(2)))
+        return ".{0} = <F>".format(m.group(1))
+    key = _FLOAT_STAT_PATTERN.sub(replace, line)
+    return key, values
+
+def testing_compare_filtered_diff_with_fp_tolerance(
+    test_name: str,
+    outfile: str,
+    reffile: str,
+    sort: bool = False,
+    filters: Union[LineFilter, List[LineFilter]] = list(),
+    rel_tol: float = 1e-5,
+    abs_tol: float = 1e-9,
+) -> bool:
+    """Filter, optionally sort, then compare 2 files with numeric tolerance
+       for floating-point statistic fields (.f32 and .f64).
+
+       Non-float lines and the non-float portions of float lines are compared
+       exactly. Float values are compared with: abs(out - ref) <= max(rel_tol * abs(ref), abs_tol).
+
+        Args:
+            test_name (str): Unique name to prefix the diff file.
+            outfile (str): Path to the output file
+            reffile (str): Path to the reference file
+            sort (bool): If True, lines from files will be sorted before comparison
+            filters (list): List of LineFilters to apply to both files
+            rel_tol (float): Relative tolerance for float comparison (default 1e-5 = 0.001%)
+            abs_tol (float): Absolute tolerance floor for near-zero values (default 1e-9)
+
+        Returns:
+            (bool) True if the files match within tolerance
+    """
+
+    if isinstance(filters, LineFilter):
+        filters = [filters]
+
+    if not os.path.isfile(outfile):
+        log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+        return False
+
+    if not os.path.isfile(reffile):
+        log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+        return False
+
+    out_lines = _read_and_filter(outfile, filters, sort, False)
+    ref_lines = _read_and_filter(reffile, filters, sort, True)
+
+    diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
+    diffs: List[str] = []
+
+    if len(out_lines) != len(ref_lines):
+        diffs.append("Line count mismatch: output has {0} lines, reference has {1}\n".format(
+            len(out_lines), len(ref_lines)))
+
+    for i, (out_line, ref_line) in enumerate(zip(out_lines, ref_lines)):
+        if out_line == ref_line:
+            continue
+
+        out_key, out_vals = _extract_float_key_and_values(out_line)
+        ref_key, ref_vals = _extract_float_key_and_values(ref_line)
+
+        if out_key != ref_key or len(out_vals) != len(ref_vals):
+            diffs.append("< {0}> {1}".format(ref_line, out_line))
+            continue
+
+        if not out_vals:
+            diffs.append("< {0}> {1}".format(ref_line, out_line))
+            continue
+
+        for j, (ov, rv) in enumerate(zip(out_vals, ref_vals)):
+            threshold = max(rel_tol * abs(rv), abs_tol)
+            if abs(ov - rv) > threshold:
+                diffs.append("< {0}> {1}  [float field {2}: ref={3}, out={4}, diff={5}, threshold={6}]\n".format(
+                    ref_line, out_line, j, rv, ov, abs(ov - rv), threshold))
+                break
+
+    for line in out_lines[len(ref_lines):]:
+        diffs.append("> {0}".format(line))
+    for line in ref_lines[len(out_lines):]:
+        diffs.append("< {0}".format(line))
+
+    with open(diff_file, "w") as fp:
+        fp.writelines(diffs)
+
+    return len(diffs) == 0
 
 ###
 
