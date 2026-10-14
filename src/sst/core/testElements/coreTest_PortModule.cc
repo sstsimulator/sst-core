@@ -248,6 +248,6 @@ PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) :
     SubComponent(id)
 {
     // Need to connect to the right and left ports
-    left_  = configureLink("left", new Event::Handler<PortSubComponent, &PortSubComponent::dummy_handler>(this));
+    left_  = configureLink<&PortSubComponent::dummy_handler>("left", this);
     right_ = configureLink("right", "1ns");
 }
