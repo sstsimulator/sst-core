@@ -60,6 +60,27 @@ namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
 }
 
+namespace pvt {
+
+/**
+   Extracts the owning class from a pointer-to-member-function type.
+   Used to infer classT for the registerClock()/registerOrderedClock()
+   overloads that only require funcT to be specified explicitly.
+*/
+template <typename T>
+struct member_function_class;
+
+template <typename classT, typename returnT, typename... Args>
+struct member_function_class<returnT (classT::*)(Args...)>
+{
+    using type = classT;
+};
+
+template <auto funcT>
+using member_function_class_t = typename member_function_class<decltype(funcT)>::type;
+
+} // namespace pvt
+
 
 /**
  * Main component object for the simulation.
@@ -503,10 +524,8 @@ protected:
     /**
        Registers a clock handler for this component.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
@@ -518,7 +537,7 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT>
+    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
     Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, void>(obj);
@@ -529,10 +548,8 @@ protected:
     /**
        Registers a clock handler with metadata for this component.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @tparam dataT Type of metadata to be passed to the handler function
 
@@ -548,7 +565,7 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT, typename dataT>
+    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
     Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
@@ -561,10 +578,8 @@ protected:
        Registers an ordered clock handler for this component. Active handlers registered with this function are
        guaranteed to always fire in the order they were registered, for a given clock frequency.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
@@ -576,7 +591,7 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT>
+    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
     Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, void>(obj);
@@ -585,13 +600,11 @@ protected:
     }
 
     /**
-       Registers an ordered clock handler for this component. Active handlers registered with this function are
-       guaranteed to always fire in the order they were registered, for a given clock frequency.
+       Registers an ordered clock handler with metadata for this component. Active handlers registered with this
+       function are guaranteed to always fire in the order they were registered, for a given clock frequency.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @tparam dataT Type of metadata to be passed to the handler function
 
@@ -607,7 +620,7 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT, typename dataT>
+    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
     Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
