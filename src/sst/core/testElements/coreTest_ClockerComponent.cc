@@ -91,8 +91,11 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     inst_link_ = configureSelfLink(
         "inst_link", new Event::Handler<coreTestClockerComponent, &coreTestClockerComponent::inst_handler>(this));
 
-    // Register the master clock, but immediately remove it if I'm not ID 0
-    master_ = registerClock<&coreTestClockerComponent::master_handler>(master_period, this);
+    // Register the master clock, but immediately remove it if I'm not ID 0.
+    // NOTE: "5ns" duplicates master_period (see coreTest_ClockerComponent.h) and must be kept in sync. A string
+    // literal is used deliberately to test the corner case of passing a quoted timebase to the templated
+    // registerClock() overload without metadata.
+    master_ = registerClock<&coreTestClockerComponent::master_handler>("5ns", this);
     if ( id_ != 0 ) {
         master_->deactivate();
     }

@@ -80,6 +80,14 @@ struct member_function_class<returnT (classT::*)(Args...)>
 template <auto funcT>
 using member_function_class_t = typename member_function_class<decltype(funcT)>::type;
 
+/**
+   Restricts the handler-building overloads to calls where obj points to the class that owns funcT (or a class derived
+   from it). This keeps a string-literal timebase from being deduced as obj in the metadata overloads, and allows
+   handlers inherited from a base class.
+*/
+template <auto funcT, typename objT>
+using enable_if_handler_obj_t = std::enable_if_t<std::is_base_of_v<member_function_class_t<funcT>, objT>, int>;
+
 } // namespace pvt
 
 
@@ -452,8 +460,8 @@ protected:
     Link* configureLink(const std::string& name, Event::HandlerBase* handler = nullptr);
 
     /**
-       Configure a Link. This version builds the Event::Handler internally, so only funcT (and dataT, if used) need
-       to be specified explicitly.
+       Configure a Link. This version builds the Event::Handler internally, so only funcT needs to be specified
+       explicitly.
 
        @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
        inferred) and specified as &<classT>::<name_of_function>.
@@ -467,10 +475,13 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureLink(const std::string& name, TimeConverter timebase, classT* obj)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, TimeConverter timebase, objT* obj)
     {
-        return configureLink(name, timebase, new Event::Handler<classT, funcT, void>(obj));
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
+        Link* link    = configureLink(name, timebase, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
     }
 
     /**
@@ -493,10 +504,13 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureLink(const std::string& name, TimeConverter timebase, classT* obj, dataT data)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, TimeConverter timebase, objT* obj, dataT data)
     {
-        return configureLink(name, timebase, new Event::Handler<classT, funcT, dataT>(obj, data));
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, data);
+        Link* link    = configureLink(name, timebase, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
     }
 
     /**
@@ -512,10 +526,13 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureLink(const std::string& name, classT* obj)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, objT* obj)
     {
-        return configureLink(name, new Event::Handler<classT, funcT, void>(obj));
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
+        Link* link    = configureLink(name, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
     }
 
     /**
@@ -535,10 +552,13 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureLink(const std::string& name, classT* obj, dataT data)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, objT* obj, dataT data)
     {
-        return configureLink(name, new Event::Handler<classT, funcT, dataT>(obj, data));
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, data);
+        Link* link    = configureLink(name, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
     }
 
     /**
@@ -585,8 +605,8 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureSelfLink(const std::string& name, TimeConverter timebase, classT* obj)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, TimeConverter timebase, objT* obj)
     {
         addSelfLink(name);
         return configureLink<funcT>(name, timebase, obj);
@@ -611,8 +631,8 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureSelfLink(const std::string& name, TimeConverter timebase, classT* obj, dataT data)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, TimeConverter timebase, objT* obj, dataT data)
     {
         addSelfLink(name);
         return configureLink<funcT, dataT>(name, timebase, obj, data);
@@ -631,8 +651,8 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureSelfLink(const std::string& name, classT* obj)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, objT* obj)
     {
         addSelfLink(name);
         return configureLink<funcT>(name, obj);
@@ -655,8 +675,8 @@ protected:
 
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Link* configureSelfLink(const std::string& name, classT* obj, dataT data)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, objT* obj, dataT data)
     {
         addSelfLink(name);
         return configureLink<funcT, dataT>(name, obj, data);
@@ -720,10 +740,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerClock(TimeConverter tc, objT* obj, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
         registerClock_impl(tc, handler, reg_all, false);
         return handler;
     }
@@ -748,10 +768,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerClock(TimeConverter tc, objT* obj, dataT metadata, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, metadata);
         registerClock_impl(tc, handler, reg_all, false);
         return handler;
     }
@@ -774,10 +794,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <auto funcT, typename classT = pvt::member_function_class_t<funcT>>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
         registerClock_impl(tc, handler, reg_all, true);
         return handler;
     }
@@ -803,10 +823,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <auto funcT, typename dataT, typename classT = pvt::member_function_class_t<funcT>>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, dataT metadata, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, metadata);
         registerClock_impl(tc, handler, reg_all, true);
         return handler;
     }

@@ -130,6 +130,7 @@ private:
 
     // Variables to control the simulation
     static constexpr int            total_count   = 3;
+    // NOTE: "5ns" is also passed as a string literal to registerClock() in the constructor; keep the two in sync
     inline static const std::string master_period = "5ns";
     inline static const std::string test_period   = "1ns";
 
