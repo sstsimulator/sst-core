@@ -560,7 +560,7 @@ def log_forced(logstr: str) -> None:
     extra_lf = ""
     if test_engine_globals.TESTRUN_TESTRUNNINGFLAG:
         extra_lf = "\n"
-    print(("{0}{1}".format(extra_lf, logstr)))
+    print(("{0}{1}".format(extra_lf, logstr)), flush=True)
 
 ###
 
