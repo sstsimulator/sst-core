@@ -54,10 +54,10 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     primaryComponentDoNotEndSim();
 
     // configure out links
-    N = configureLink("Nlink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    S = configureLink("Slink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    E = configureLink("Elink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
-    W = configureLink("Wlink", new Event::Handler<coreTestComponent, &coreTestComponent::handleEvent>(this));
+    N = configureLink<&coreTestComponent::handleEvent>("Nlink", this);
+    S = configureLink<&coreTestComponent::handleEvent>("Slink", this);
+    E = configureLink<&coreTestComponent::handleEvent>("Elink", this);
+    W = configureLink<&coreTestComponent::handleEvent>("Wlink", this);
 
     countN = registerStatistic<int>("N");
     countS = registerStatistic<int>("S");

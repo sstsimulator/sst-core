@@ -42,12 +42,10 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 
-    link_left =
-        configureLink("port_left", new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+    link_left = configureLink<&coreTestCheckpoint::handleEvent>("port_left", this);
     sst_assert(link_left, CALL_INFO, -1, "Could not configure left link");
 
-    link_right =
-        configureLink("port_right", new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::handleEvent>(this));
+    link_right = configureLink<&coreTestCheckpoint::handleEvent>("port_right", this);
     sst_assert(link_right, CALL_INFO, -1, "Could not configure right link");
 
     test_string = params.find<std::string>("test_string", "");
@@ -66,8 +64,7 @@ coreTestCheckpoint::coreTestCheckpoint(ComponentId_t id, Params& params) :
     duty_cycle       = params.find<int>("clock_duty_cycle", 10);
     duty_cycle_count = duty_cycle;
 
-    self_link = configureSelfLink(
-        "clock_restart", clock_tc, new Event::Handler<coreTestCheckpoint, &coreTestCheckpoint::restartClock>(this));
+    self_link = configureSelfLink<&coreTestCheckpoint::restartClock>("clock_restart", clock_tc, this);
 
     // Output
     output = new Output(params.find<std::string>("output_prefix", ""), params.find<uint32_t>("output_verbose", 0), 0,

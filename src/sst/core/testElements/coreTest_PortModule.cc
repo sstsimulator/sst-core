@@ -248,6 +248,8 @@ PortSubComponent::PortSubComponent(ComponentId_t id, Params& UNUSED(params)) :
     SubComponent(id)
 {
     // Need to connect to the right and left ports
-    left_  = configureLink("left", new Event::Handler<PortSubComponent, &PortSubComponent::dummy_handler>(this));
+    // A string literal timebase is used deliberately to test the corner case of passing a quoted timebase to the
+    // templated configureLink() overload without metadata.
+    left_  = configureLink<&PortSubComponent::dummy_handler>("left", "1ns", this);
     right_ = configureLink("right", "1ns");
 }

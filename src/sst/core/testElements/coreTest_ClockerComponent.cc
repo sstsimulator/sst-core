@@ -37,7 +37,7 @@ ClockSubComponent::ClockSubComponent(
     ClockSubComponentAPI(id),
     comp_(comp)
 {
-    handler_ = registerOrderedClock<ClockSubComponent, &ClockSubComponent::clock_handler, int>(period, this, clock);
+    handler_ = registerOrderedClock<&ClockSubComponent::clock_handler, int>(period, this, clock);
 }
 
 bool
@@ -91,8 +91,11 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     inst_link_ = configureSelfLink(
         "inst_link", new Event::Handler<coreTestClockerComponent, &coreTestClockerComponent::inst_handler>(this));
 
-    // Register the master clock, but immediately remove it if I'm not ID 0
-    master_ = registerClock<coreTestClockerComponent, &coreTestClockerComponent::master_handler>(master_period, this);
+    // Register the master clock, but immediately remove it if I'm not ID 0.
+    // NOTE: "5ns" duplicates master_period (see coreTest_ClockerComponent.h) and must be kept in sync. A string
+    // literal is used deliberately to test the corner case of passing a quoted timebase to the templated
+    // registerClock() overload without metadata.
+    master_ = registerClock<&coreTestClockerComponent::master_handler>("5ns", this);
     if ( id_ != 0 ) {
         master_->deactivate();
     }
@@ -111,10 +114,10 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     clocks_.push_back({ handler, test_tc, total_count, false });
 
     // New style clock registration
-    handler = registerClock<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>("1ns", this, 2);
+    handler = registerClock<&coreTestClockerComponent::test_handler, int>("1ns", this, 2);
     clocks_.push_back({ handler, test_tc, total_count, true });
 
-    handler = registerClock<coreTestClockerComponent, &coreTestClockerComponent::test_handler, int>("1ns", this, 3);
+    handler = registerClock<&coreTestClockerComponent::test_handler, int>("1ns", this, 3);
     clocks_.push_back({ handler, test_tc, total_count, true });
 
     // Unregister all the clocks for now
@@ -125,13 +128,11 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
 
 
     // Ordered clock testing
-    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
-        "1ns", this, 4);
+    handler = registerOrderedClock<&coreTestClockerComponent::test_ordered_handler, int>("1ns", this, 4);
     handler->deactivate();
     clocks_.push_back({ handler, test_tc, total_count, true });
 
-    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
-        "1ns", this, 5);
+    handler = registerOrderedClock<&coreTestClockerComponent::test_ordered_handler, int>("1ns", this, 5);
     handler->deactivate();
     clocks_.push_back({ handler, test_tc, total_count, true });
 
@@ -152,8 +153,7 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& UNU
     clocks_.push_back({ handler, test_tc, total_count, true });
 
     // Back to registering clock here
-    handler = registerOrderedClock<coreTestClockerComponent, &coreTestClockerComponent::test_ordered_handler, int>(
-        "1ns", this, 8);
+    handler = registerOrderedClock<&coreTestClockerComponent::test_ordered_handler, int>("1ns", this, 8);
     handler->deactivate();
     clocks_.push_back({ handler, test_tc, total_count, true });
 }

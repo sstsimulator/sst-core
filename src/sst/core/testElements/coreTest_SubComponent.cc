@@ -176,7 +176,7 @@ SubCompReceiver::SubCompReceiver(ComponentId_t id, Params& params) :
     else
         port_name = params.find<std::string>("port_name");
 
-    link = configureLink(port_name, new Event::Handler<SubCompReceiver, &SubCompReceiver::handleEvent>(this));
+    link = configureLink<&SubCompReceiver::handleEvent>(port_name, this);
     if ( !link ) {
         Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to configure port 'recvPort'\n");
     }

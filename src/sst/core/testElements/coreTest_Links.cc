@@ -38,10 +38,8 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
     UnitAlgebra recv_lat = params.find<UnitAlgebra>("added_recv_latency", found_recvlat);
 
     // configure out links
-    E = configureLink("Elink", link_tb.toString(),
-        new Event::Handler<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "East"));
-    W = configureLink("Wlink", link_tb.toString(),
-        new Event::Handler<coreTestLinks, &coreTestLinks::handleEvent, std::string>(this, "West"));
+    E = configureLink<&coreTestLinks::handleEvent, std::string>("Elink", link_tb.toString(), this, "East");
+    W = configureLink<&coreTestLinks::handleEvent, std::string>("Wlink", link_tb.toString(), this, "West");
 
     if ( found_sendlat ) {
         E->addSendLatency(1, send_lat.toString());

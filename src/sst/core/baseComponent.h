@@ -60,6 +60,36 @@ namespace Core::Serialization::pvt {
 class SerializeBaseComponentHelper;
 }
 
+namespace pvt {
+
+/**
+   Extracts the owning class from a pointer-to-member-function type.
+   Used to infer classT for the registerClock()/registerOrderedClock()
+   and configureLink()/configureSelfLink() overloads that only require
+   funcT to be specified explicitly.
+*/
+template <typename T>
+struct member_function_class;
+
+template <typename classT, typename returnT, typename... Args>
+struct member_function_class<returnT (classT::*)(Args...)>
+{
+    using type = classT;
+};
+
+template <auto funcT>
+using member_function_class_t = typename member_function_class<decltype(funcT)>::type;
+
+/**
+   Restricts the handler-building overloads to calls where obj points to the class that owns funcT (or a class derived
+   from it). This keeps a string-literal timebase from being deduced as obj in the metadata overloads, and allows
+   handlers inherited from a base class.
+*/
+template <auto funcT, typename objT>
+using enable_if_handler_obj_t = std::enable_if_t<std::is_base_of_v<member_function_class_t<funcT>, objT>, int>;
+
+} // namespace pvt
+
 
 /**
  * Main component object for the simulation.
@@ -430,6 +460,108 @@ protected:
     Link* configureLink(const std::string& name, Event::HandlerBase* handler = nullptr);
 
     /**
+       Configure a Link. This version builds the Event::Handler internally, so only funcT needs to be specified
+       explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @param name Port Name on which the link to configure is attached.
+
+       @param timebase Timebase of the link provided as either a std::string, SST::UnitAlgebra, or
+       SST::TimeConverter
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, TimeConverter timebase, objT* obj)
+    {
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
+        Link* link    = configureLink(name, timebase, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
+    }
+
+    /**
+       Configure a Link with metadata. This version builds the Event::Handler internally, so only funcT and dataT
+       need to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param name Port Name on which the link to configure is attached.
+
+       @param timebase Timebase of the link provided as either a std::string, SST::UnitAlgebra, or
+       SST::TimeConverter
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param data Metadata to associate with the handler
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, TimeConverter timebase, objT* obj, dataT data)
+    {
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, data);
+        Link* link    = configureLink(name, timebase, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
+    }
+
+    /**
+       Configure a Link using the component's default timebase. This version builds the Event::Handler internally,
+       so only funcT needs to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @param name Port Name on which the link to configure is attached.
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, objT* obj)
+    {
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
+        Link* link    = configureLink(name, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
+    }
+
+    /**
+       Configure a Link with metadata, using the component's default timebase. This version builds the
+       Event::Handler internally, so only funcT and dataT need to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param name Port Name on which the link to configure is attached.
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param data Metadata to associate with the handler
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureLink(const std::string& name, objT* obj, dataT data)
+    {
+        auto* handler = new Event::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, data);
+        Link* link    = configureLink(name, handler);
+        if ( nullptr == link ) delete handler;
+        return link;
+    }
+
+    /**
        Configure a SelfLink  (Loopback link)
 
        @param name Name of the self-link port
@@ -457,6 +589,98 @@ protected:
        @return A pointer to the configured link, or nullptr if an error occurred.
     */
     Link* configureSelfLink(const std::string& name, Event::HandlerBase* handler = nullptr);
+
+    /**
+       Configure a SelfLink (Loopback link). This version builds the Event::Handler internally, so only funcT needs
+       to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @param name Name of the self-link port
+
+       @param timebase Timebase of the link.  Timebase can be a std::string, SST::UnitAlgebra or SST::TimeConverter
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, TimeConverter timebase, objT* obj)
+    {
+        addSelfLink(name);
+        return configureLink<funcT>(name, timebase, obj);
+    }
+
+    /**
+       Configure a SelfLink (Loopback link) with metadata. This version builds the Event::Handler internally, so
+       only funcT and dataT need to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param name Name of the self-link port
+
+       @param timebase Timebase of the link.  Timebase can be a std::string, SST::UnitAlgebra or SST::TimeConverter
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param data Metadata to associate with the handler
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, TimeConverter timebase, objT* obj, dataT data)
+    {
+        addSelfLink(name);
+        return configureLink<funcT, dataT>(name, timebase, obj, data);
+    }
+
+    /**
+       Configure a SelfLink (Loopback link) that uses the (Sub)Component's defaultTimeBase. This version builds the
+       Event::Handler internally, so only funcT needs to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @param name Name of the self-link port
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, objT* obj)
+    {
+        addSelfLink(name);
+        return configureLink<funcT>(name, obj);
+    }
+
+    /**
+       Configure a SelfLink (Loopback link) with metadata, that uses the (Sub)Component's defaultTimeBase. This
+       version builds the Event::Handler internally, so only funcT and dataT need to be specified explicitly.
+
+       @tparam funcT Function that should be called by the Event::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
+
+       @tparam dataT Type of metadata to be passed to the handler function
+
+       @param name Name of the self-link port
+
+       @param obj Pointer to object that the handler function should be called on
+
+       @param data Metadata to associate with the handler
+
+       @return A pointer to the configured link, or nullptr if an error occurred.
+    */
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Link* configureSelfLink(const std::string& name, objT* obj, dataT data)
+    {
+        addSelfLink(name);
+        return configureLink<funcT, dataT>(name, obj, data);
+    }
 
 
     /**
@@ -503,10 +727,8 @@ protected:
     /**
        Registers a clock handler for this component.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
@@ -518,10 +740,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT>
-    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerClock(TimeConverter tc, objT* obj, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
         registerClock_impl(tc, handler, reg_all, false);
         return handler;
     }
@@ -529,10 +751,8 @@ protected:
     /**
        Registers a clock handler with metadata for this component.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @tparam dataT Type of metadata to be passed to the handler function
 
@@ -548,10 +768,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT, typename dataT>
-    Clock::HandlerBase* registerClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerClock(TimeConverter tc, objT* obj, dataT metadata, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, metadata);
         registerClock_impl(tc, handler, reg_all, false);
         return handler;
     }
@@ -561,10 +781,8 @@ protected:
        Registers an ordered clock handler for this component. Active handlers registered with this function are
        guaranteed to always fire in the order they were registered, for a given clock frequency.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
@@ -576,22 +794,20 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, bool reg_all = true)
+    template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, void>(obj);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
         registerClock_impl(tc, handler, reg_all, true);
         return handler;
     }
 
     /**
-       Registers an ordered clock handler for this component. Active handlers registered with this function are
-       guaranteed to always fire in the order they were registered, for a given clock frequency.
+       Registers an ordered clock handler with metadata for this component. Active handlers registered with this
+       function are guaranteed to always fire in the order they were registered, for a given clock frequency.
 
-       @tparam classT Class that the callback function lives in
-
-       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT and specified as
-       &<classT>::<name_of_function>.
+       @tparam funcT Function that should be called by the Clock::Handler. Must be a member of classT (automatically
+       inferred) and specified as &<classT>::<name_of_function>.
 
        @tparam dataT Type of metadata to be passed to the handler function
 
@@ -607,10 +823,10 @@ protected:
 
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
-    template <typename classT, auto funcT, typename dataT>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, classT* obj, dataT metadata, bool reg_all = true)
+    template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, dataT metadata, bool reg_all = true)
     {
-        auto* handler = new Clock::Handler<classT, funcT, dataT>(obj, metadata);
+        auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, metadata);
         registerClock_impl(tc, handler, reg_all, true);
         return handler;
     }
