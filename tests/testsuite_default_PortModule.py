@@ -29,6 +29,27 @@ class testcase_PortModule(SSTTestCase):
         super(type(self), self).tearDown()
 
 
+    def test_PortModule_handles(self) -> None:
+        # The handle returned by addPortModule() must refer to the port
+        # module it was returned for: two modules on one port, and one on
+        # another port of the same component.  Only the second module on
+        # the first port modifies events, so the receiver sees modified
+        # events only if that setting reached the right module.
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_PortModule_handles.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_PortModule_handles.out".format(testsuitedir)
+        outfile = "{0}/test_PortModule_handles.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile)
+
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, StartsWithFilter("#"))
+        if not cmp_result:
+            diffdata = testing_get_diff_data("PortModule_handles")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
     ### Non-checkpoint tests
     #### Non-SubCopmponent tests
     ##### Receive side tests

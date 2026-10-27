@@ -17,6 +17,7 @@
 
 #include "sst/core/componentInfo.h"
 #include "sst/core/link.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/objectSerialization.h"
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/rng.h"
@@ -1532,6 +1533,17 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         if ( vec_out[2] != vec_out[3] ) {
             out.output("ERROR: serializing two pointers to the same object did not work properly\n");
         }
+    }
+    else if ( test == "unknown_stat_params" ) {
+        // Setting parameters on a statistic that was never enabled must
+        // give a fatal error, not dereference a null pointer
+        ConfigGraph      graph;
+        ComponentId_t    id   = graph.addComponent("unknown_stat_comp", "coreTestElement.coreTestComponent");
+        ConfigComponent* comp = graph.findComponent(id);
+        Params           p;
+        p.insert("rate", "10ns");
+        comp->setStatisticParameters("not_enabled", p);
+        out.output("ERROR: unknown_stat_params: setStatisticParameters() on an unknown statistic returned\n");
     }
     else if ( test == "handler" ) {
 
