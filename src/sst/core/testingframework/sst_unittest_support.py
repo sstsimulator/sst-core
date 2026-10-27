@@ -1229,31 +1229,32 @@ def testing_compare_filtered_diff_with_fp_tolerance(
         log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
         return False
 
+    # Preprocess (filter and sort) output and ref files
     out_lines = _read_and_filter(outfile, filters, sort, False)
     ref_lines = _read_and_filter(reffile, filters, sort, True)
 
     diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
     diffs: List[str] = []
 
+    # Detect line count mismatch - automatic diff
     if len(out_lines) != len(ref_lines):
         diffs.append("Line count mismatch: output has {0} lines, reference has {1}\n".format(
             len(out_lines), len(ref_lines)))
 
+    # Diff pre-processed files
     for i, (out_line, ref_line) in enumerate(zip(out_lines, ref_lines)):
+        # Lines match exactly
         if out_line == ref_line:
             continue
 
         out_key, out_vals = _extract_float_key_and_values(out_line)
         ref_key, ref_vals = _extract_float_key_and_values(ref_line)
-
+        
+        # Lines diff because keys diff or because there are more values in one line than the other
         if out_key != ref_key or len(out_vals) != len(ref_vals):
             diffs.append("< {0}> {1}".format(ref_line, out_line))
             continue
-
-        if not out_vals:
-            diffs.append("< {0}> {1}".format(ref_line, out_line))
-            continue
-
+        
         for j, (ov, rv) in enumerate(zip(out_vals, ref_vals)):
             threshold = max(rel_tol * abs(rv), abs_tol)
             if abs(ov - rv) > threshold:
@@ -1261,14 +1262,17 @@ def testing_compare_filtered_diff_with_fp_tolerance(
                     ref_line, out_line, j, rv, ov, abs(ov - rv), threshold))
                 break
 
+    # Add the tail of the longer file to the diff
     for line in out_lines[len(ref_lines):]:
         diffs.append("> {0}".format(line))
     for line in ref_lines[len(out_lines):]:
         diffs.append("< {0}".format(line))
 
+    # Generate diff file
     with open(diff_file, "w") as fp:
         fp.writelines(diffs)
 
+    # Return pass (True) or not
     return len(diffs) == 0
 
 ###
