@@ -19,16 +19,6 @@ repos:
               external/|
               tests/refFiles/
           )
-  - repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: "v0.6.13"
-    hooks:
-      - id: cmake-format
-        args: [--config-files, experimental/.cmake-format.yaml, --in-place]
-        additional_dependencies:
-          - pyyaml
-      - id: cmake-lint
-        additional_dependencies:
-          - pyyaml
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: "v20.1.8"
     hooks:
@@ -40,12 +30,16 @@ repos:
               src/sst/core/libltdl/|
               external/
           )
-  - repo: https://github.com/kjanat/actionlint
-    rev: "v1.17.0"
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: "v0.6.13"
     hooks:
-      - id: actionlint
+      - id: cmake-format
+        args: [--config-files, experimental/.cmake-format.yaml, --in-place]
         additional_dependencies:
-          - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.11.1"
+          - pyyaml
+      - id: cmake-lint
+        additional_dependencies:
+          - pyyaml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.15.22"
     hooks:
@@ -66,6 +60,12 @@ repos:
         # for the idea.
         args: [.]
         pass_filenames: false
+  - repo: https://github.com/kjanat/actionlint
+    rev: "v1.17.0"
+    hooks:
+      - id: actionlint
+        additional_dependencies:
+          - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.11.1"
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: v1.31.0
     hooks:
