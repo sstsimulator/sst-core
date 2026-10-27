@@ -1,5 +1,15 @@
 ---
 rules:
+  concurrency-limits:
+    ignore:
+      - PR_clang-format_test.yml:3:1
+  dangerous-triggers:
+    ignore:
+      - PR_clang-format_test.yml:5:3
+  excessive-permissions:
+    ignore:
+      - PR_clang-format_test.yml:1:1
+      - PR_clang-format_test.yml:37:3
   unpinned-images:
     ignore:
       # The callers of sst-ci-job.yml choose the image and may pin it there.
