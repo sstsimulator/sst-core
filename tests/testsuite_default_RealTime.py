@@ -141,7 +141,7 @@ class testcase_Signals(SSTTestCase):
         # Run test
         sdlfile = "{0}/test_RealTime.py".format(testsuitedir)
         outfile = "{0}/test_RealTime_SIGTERM.out".format(outdir)
-        self.run_sst(sdlfile, outfile, other_args="--exit-after=10", send_signal=signal.SIGTERM, signal_sec=5)
+        self.run_sst(sdlfile, outfile, other_args="--exit-after=20", send_signal=signal.SIGTERM, signal_sec=10)
 
         line_count = 0
         exit_count = 0
