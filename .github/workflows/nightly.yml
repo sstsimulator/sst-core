@@ -1,0 +1,28 @@
+---
+# Run the tests in the "pr" and "nightly" categories on devel, with more
+# jobs than PR CI (see test-matrix-github.yml).  Like a push to devel, it saves
+# the ccache.
+name: nightly
+
+# yamllint disable-line rule:truthy
+on:
+  # Scheduled runs use the default branch, devel.
+  #
+  # Disabled for our fork
+  # schedule:
+  #   - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  tests:
+    uses: $/.github/workflows/test-matrix-github.yml
+    permissions:
+      packages: write # to save ccache in ghcr.io
+    with:
+      test-categories: pr nightly

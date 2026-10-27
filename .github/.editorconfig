@@ -1,0 +1,24 @@
+# We currently only attempt to enforce shell/bash style within the .github
+# directory.
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{sh,bash}]
+indent_style = space
+indent_size = 4
+# Read by shfmt.
+language_dialect = bash
+space_redirects = true
+switch_case_indent = true
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
