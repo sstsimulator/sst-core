@@ -165,6 +165,26 @@ class testcase_PortModule(SSTTestCase):
         self.port_module_test_template("randomdrop", True, True, True)
 
 
+    def test_PortModule_allstats_params(self) -> None:
+        # Parameters passed to PortModule.enableAllStatistics() must be
+        # used.  The model asks for sst.HistogramStatistic; if the
+        # parameters are dropped, the output shows an Accumulator instead.
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_PortModule_allstats_params.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_PortModule_allstats_params.out".format(testsuitedir)
+        outfile = "{0}/test_PortModule_allstats_params.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile)
+
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, StartsWithFilter("#"))
+        if not cmp_result:
+            diffdata = testing_get_diff_data("PortModule_allstats_params")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
+
 #####
     # testtype: which test to run
     # bind_on_send: Use send PortModules if set to True, recv PortModules, otherwise

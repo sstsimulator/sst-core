@@ -192,7 +192,7 @@ portModEnableAllStatistics(PyObject* self, PyObject* args)
     PyErr_Clear();
 
     // Parse the Python Args and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "|O", &PyDict_Type, &stat_param_dict);
+    argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &stat_param_dict);
 
     if ( argOK ) {
         SST::ConfigPortModule* pm = getPortModule(self);
