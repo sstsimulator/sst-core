@@ -1,0 +1,162 @@
+{
+  "program_options": {
+    "stop-at": "20ns"
+  },
+  "statistics_options": {
+    "statisticLoadLevel": 4,
+    "statisticOutput": "sst.statOutputConsole",
+    "params": {
+      "outputrank": "False",
+      "outputsimtime": "True"
+    }
+  },
+  "components": [
+    {
+      "name": "loader",
+      "type": "coreTestElement.SubComponentLoader",
+      "statistics_options": {
+        "enable_all_statistics": true,
+        "params": {
+          "binwidth": "1",
+          "minvalue": "0",
+          "numbins": "4",
+          "type": "sst.HistogramStatistic"
+        }
+      },
+      "params": {
+        "clock": "1GHz"
+      },
+      "subcomponents": [
+        {
+          "slot_name": "mySubComp",
+          "slot_number": 0,
+          "type": "coreTestElement.SubCompSlot",
+          "statistics_options": {
+            "enable_all_statistics": true,
+            "params": {
+              "binwidth": "1",
+              "minvalue": "0",
+              "numbins": "4",
+              "type": "sst.HistogramStatistic"
+            }
+          },
+          "subcomponents": [
+            {
+              "slot_name": "mySubCompSlot",
+              "slot_number": 0,
+              "type": "coreTestElement.SubCompSender",
+              "statistics_options": {
+                "enable_all_statistics": true,
+                "params": {
+                  "binwidth": "1",
+                  "minvalue": "0",
+                  "numbins": "4",
+                  "type": "sst.HistogramStatistic"
+                }
+              },
+              "params": {
+                "sendCount": "5"
+              }
+            },
+            {
+              "slot_name": "mySubCompSlot",
+              "slot_number": 1,
+              "type": "coreTestElement.SubCompReceiver",
+              "statistics_options": {
+                "enable_all_statistics": true,
+                "params": {
+                  "binwidth": "1",
+                  "minvalue": "0",
+                  "numbins": "4",
+                  "type": "sst.HistogramStatistic"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a",
+      "type": "coreTestElement.coreTestPortModuleComponent",
+      "params": {
+        "sendcount": "5"
+      }
+    },
+    {
+      "name": "b",
+      "type": "coreTestElement.coreTestPortModuleComponent",
+      "port_modules": [
+        {
+          "port": "right",
+          "type": "coreTestElement.portmodules.test",
+          "statistics_options": {
+            "statistic_load_level": 4,
+            "enable_all_statistics": true,
+            "params": {
+              "type": "sst.HistogramStatistic",
+              "minvalue": "0",
+              "binwidth": "1",
+              "numbins": "4"
+            }
+          },
+          "params": {
+            "install_on_send": "True"
+          }
+        }
+      ]
+    },
+    {
+      "name": "c",
+      "type": "coreTestElement.coreTestPortModuleComponent"
+    }
+  ],
+  "statistics_group": null,
+  "links": [
+    {
+      "name": "loader_link",
+      "noCut": false,
+      "nonlocal": false,
+      "left": {
+        "component": "loader:mySubComp[0]:mySubCompSlot[0]",
+        "port": "sendPort",
+        "latency": "1 ns"
+      },
+      "right": {
+        "component": "loader:mySubComp[0]:mySubCompSlot[1]",
+        "port": "recvPort",
+        "latency": "1 ns"
+      }
+    },
+    {
+      "name": "l1",
+      "noCut": false,
+      "nonlocal": false,
+      "left": {
+        "component": "a",
+        "port": "right",
+        "latency": "1 ns"
+      },
+      "right": {
+        "component": "b",
+        "port": "left",
+        "latency": "1 ns"
+      }
+    },
+    {
+      "name": "l2",
+      "noCut": false,
+      "nonlocal": false,
+      "left": {
+        "component": "b",
+        "port": "right",
+        "latency": "1 ns"
+      },
+      "right": {
+        "component": "c",
+        "port": "left",
+        "latency": "1 ns"
+      }
+    }
+  ]
+}

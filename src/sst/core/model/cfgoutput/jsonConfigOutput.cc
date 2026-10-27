@@ -104,6 +104,10 @@ JSONConfigGraphOutput::outputComponents(const Config* cfg, ConfigGraph* graph, s
             // statistics options
             if ( comp_itr->enabledAllStats ) {
                 comp_record["statistics_options"]["enable_all_statistics"] = true;
+                for ( auto const& param_itr : comp_itr->allStatConfig.params.getKeys() ) {
+                    comp_record["statistics_options"]["params"][param_itr] =
+                        comp_itr->allStatConfig.params.find<std::string>(param_itr);
+                }
             }
             if ( comp_itr->statLoadLevel != STATISTICLOADLEVELUNINITIALIZED ) {
                 comp_record["statistics_options"]["statistic_load_level"] = comp_itr->statLoadLevel;
@@ -174,6 +178,15 @@ JSONConfigGraphOutput::outputComponents(const Config* cfg, ConfigGraph* graph, s
                             pm_record["statistics_options"]["statistic_load_level"]  = port_vec_itr.stat_load_level;
                             pm_record["statistics_options"]["enable_all_statistics"] = true;
                         }
+                        // For port modules, enable_all_statistics only stores the params; the load level
+                        // controls which statistics are enabled.  Write it so the params are read back in.
+                        if ( !port_vec_itr.all_stat_config.empty() ) {
+                            pm_record["statistics_options"]["enable_all_statistics"] = true;
+                        }
+                        for ( auto const& param_itr : port_vec_itr.all_stat_config.getKeys() ) {
+                            pm_record["statistics_options"]["params"][param_itr] =
+                                port_vec_itr.all_stat_config.find<std::string>(param_itr);
+                        }
                         for ( auto const& param : port_vec_itr.params.getKeys() ) {
                             pm_record["params"][param] = port_vec_itr.params.find<std::string>(param);
                         }
@@ -220,6 +233,9 @@ JSONConfigGraphOutput::outputSubComponent(ConfigComponent* sub, std::ofstream& o
     // general statistics options
     if ( sub->enabledAllStats ) {
         record["statistics_options"]["enable_all_statistics"] = sub->enabledAllStats;
+        for ( auto const& param_itr : sub->allStatConfig.params.getKeys() ) {
+            record["statistics_options"]["params"][param_itr] = sub->allStatConfig.params.find<std::string>(param_itr);
+        }
     }
     if ( sub->statLoadLevel != STATISTICLOADLEVELUNINITIALIZED ) {
         record["statistics_options"]["statistic_load_level"] = sub->statLoadLevel;
@@ -283,6 +299,15 @@ JSONConfigGraphOutput::outputSubComponent(ConfigComponent* sub, std::ofstream& o
                 if ( port_vec_itr.stat_load_level != STATISTICLOADLEVELUNINITIALIZED ) {
                     pm_record["statistics_options"]["statistic_load_level"]  = port_vec_itr.stat_load_level;
                     pm_record["statistics_options"]["enable_all_statistics"] = true;
+                }
+                // For port modules, enable_all_statistics only stores the params; the load level
+                // controls which statistics are enabled.  Write it so the params are read back in.
+                if ( !port_vec_itr.all_stat_config.empty() ) {
+                    pm_record["statistics_options"]["enable_all_statistics"] = true;
+                }
+                for ( auto const& param_itr : port_vec_itr.all_stat_config.getKeys() ) {
+                    pm_record["statistics_options"]["params"][param_itr] =
+                        port_vec_itr.all_stat_config.find<std::string>(param_itr);
                 }
                 for ( auto const& param : port_vec_itr.params.getKeys() ) {
                     pm_record["params"][param] = port_vec_itr.params.find<std::string>(param);
