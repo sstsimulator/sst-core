@@ -30,16 +30,6 @@ repos:
               src/sst/core/libltdl/|
               external/
           )
-  - repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: "v0.6.13"
-    hooks:
-      - id: cmake-format
-        args: [--config-files, experimental/.cmake-format.yaml, --in-place]
-        additional_dependencies:
-          - pyyaml
-      - id: cmake-lint
-        additional_dependencies:
-          - pyyaml
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.15.22"
     hooks:
