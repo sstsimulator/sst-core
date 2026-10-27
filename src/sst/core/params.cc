@@ -201,6 +201,8 @@ Params::getKeys() const
     std::set<std::string> ret;
     for ( auto map : data ) {
         for ( auto value : *map ) {
+            // Key ID 0 in a shared set holds the set's name, not a parameter
+            if ( value.first == 0 ) continue;
             ret.insert(keyMapReverse[value.first]);
         }
     }
@@ -217,6 +219,8 @@ Params::get_scoped_params(const std::string& scope) const
     std::string prefix = scope + ".";
     for ( auto map : data ) {
         for ( auto value : *map ) {
+            // Key ID 0 in a shared set holds the set's name, not a parameter
+            if ( value.first == 0 ) continue;
             std::string key = keyMapReverse[value.first].substr(0, prefix.length());
             if ( key == prefix ) {
                 ret.insert(keyMapReverse[value.first].substr(prefix.length()), value.second);
@@ -335,6 +339,10 @@ Params::serialize_order(SST::Core::Serialization::serializer& ser)
             // exists will be ignored.
             for ( auto& map : data ) {
                 for ( auto& kvp : *map ) {
+                    // Key ID 0 in a shared set holds the set's name, not a
+                    // parameter.  Copying it would add a local parameter
+                    // named "<set_name>" on restore.
+                    if ( kvp.first == 0 ) continue;
                     tmp_map.insert(std::make_pair(getParamName(kvp.first), kvp.second));
                 }
             }

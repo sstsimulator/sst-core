@@ -60,6 +60,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_component_info(self):
         self.serialization_test_template("componentinfo", False)
 
+    def test_Serialization_params_shared_set(self):
+        self.serialization_test_template("params_shared_set")
+
     def test_Serialization_atomic(self):
         self.serialization_test_template("atomic")
 
