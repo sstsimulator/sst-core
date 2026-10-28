@@ -69,7 +69,7 @@ EXTRA_DIST += \
     tests/test_Module.py \
     tests/test_OverheadMeasure.py \
     tests/test_PortModule.py \
-‎    tests/test_PortModule_allstats_params.py‎ \
+    tests/test_PortModule_allstats_params.py‎ \
     tests/test_RealTime.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
