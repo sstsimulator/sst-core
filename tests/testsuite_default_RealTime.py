@@ -44,6 +44,9 @@ class testcase_Signals(SSTTestCase):
 #####
 
     # Test default SIGUSR1 action
+
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     def test_RealTime_SIGUSR1_default(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -74,6 +77,8 @@ class testcase_Signals(SSTTestCase):
 
 
     # Test default SIGUSR2 action
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     def test_RealTime_SIGUSR2_default(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -103,6 +108,8 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(line_count >= num_lines, "Line count incorrect, should be at least {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
     # Test SIGINT
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGINT(self):
         testsuitedir = self.get_testsuite_dir()
@@ -133,6 +140,8 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(line_count == num_lines, "Line count incorrect, should be {0}, found {1} in {2}".format(num_lines,line_count,outfile))
 
     # Test SIGTERM
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     @unittest.skipIf(testing_check_get_num_ranks() > 1, "This test does not run reliably with mpirun")
     def test_RealTime_SIGTERM(self):
         testsuitedir = self.get_testsuite_dir()
@@ -216,6 +225,8 @@ class testcase_Signals(SSTTestCase):
         self.assertTrue(os.path.exists(cptfile), "Checkpoint file does not exist, file='{0}'".format(cptfile))
 
     # Test SIGUSR1 + heartbeat action via --sigusr1=
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     def test_RealTime_SIGUSR1_heartbeat(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -246,6 +257,8 @@ class testcase_Signals(SSTTestCase):
 
 
     # Test SIGUSR2 + heartbeat action via --sigusr2=
+    # Temporary due to test machine instability
+    @unittest.skipIf(not testing_check_is_nightly(), "Only run during nightly testing")
     def test_RealTime_SIGUSR2_heartbeat(self):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()

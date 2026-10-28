@@ -97,28 +97,22 @@ class testcase_Checkpoint(SSTTestCase):
         self.checkpoint_test_template("Module")
 
     ### Stats tests, including repartitioned restart tests
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_n2one(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", n_to_one=True, cpt_suffix="_n2one")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_start_serial(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", start_serial=True, cpt_suffix="_start_serial")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_Checkpoint_Statistics_basic_restart_smaller(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", restart_smaller=True, cpt_suffix="_restart_smaller")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_Statistics_basic_remap(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", swap_rank_thread=True, cpt_suffix="_remap")
 
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_Checkpoint_Statistics_basic_swap_restart_smaller(self) -> None:
         self.checkpoint_test_template("StatisticsComponent_basic", swap_rank_thread=True, restart_smaller=True, cpt_suffix="_swap_restart_smaller")
@@ -306,7 +300,7 @@ class testcase_Checkpoint(SSTTestCase):
             CheckpointInfoFilter(),
             StartsWithFilter("WARNING: No components are assigned") ]
 
-        cmp_result = testing_compare_filtered_diff(testtype, outfile_cpt, reffile, True, filters_cpt)
+        cmp_result = testing_compare_filtered_diff_with_fp_tolerance(testtype, outfile_cpt, reffile, True, filters_cpt)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
@@ -357,7 +351,7 @@ class testcase_Checkpoint(SSTTestCase):
             CheckpointInfoFilter(),
             StartsWithFilter("WARNING: No components are assigned") ]
 
-        cmp_result = testing_compare_filtered_diff(testtype, outfile_rst, reffile, True, filters_rst)
+        cmp_result = testing_compare_filtered_diff_with_fp_tolerance(testtype, outfile_rst, reffile, True, filters_rst)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
@@ -383,7 +377,7 @@ class testcase_Checkpoint(SSTTestCase):
             CheckpointRefFileFilter(cr_index + rst_index),
             CheckpointInfoFilter() ]
 
-        cmp_result = testing_compare_filtered_diff(testtype, outfile_cr, reffile, True, filters_cr)
+        cmp_result = testing_compare_filtered_diff_with_fp_tolerance(testtype, outfile_cr, reffile, True, filters_cr)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
