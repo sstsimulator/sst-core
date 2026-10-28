@@ -1249,12 +1249,12 @@ def testing_compare_filtered_diff_with_fp_tolerance(
 
         out_key, out_vals = _extract_float_key_and_values(out_line)
         ref_key, ref_vals = _extract_float_key_and_values(ref_line)
-        
+
         # Lines diff because keys diff or because there are more values in one line than the other
         if out_key != ref_key or len(out_vals) != len(ref_vals):
             diffs.append("< {0}> {1}".format(ref_line, out_line))
             continue
-        
+
         for j, (ov, rv) in enumerate(zip(out_vals, ref_vals)):
             threshold = max(rel_tol * abs(rv), abs_tol)
             if abs(ov - rv) > threshold:
