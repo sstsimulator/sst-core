@@ -126,7 +126,8 @@ ComponentCodeSegmentProfileToolTime<T>::outputData(SST::Util::DataRecord* record
         record->addData("count", x.second.count);
         record->addData("time", UnitAlgebra(std::to_string(((double)x.second.time) / 1000000000) + "s"));
         if ( x.second.count != 0 )
-            record->addData("time", UnitAlgebra(std::to_string((x.second.time) / x.second.count) + "ns"));
+            record->addData("avg_time", UnitAlgebra(std::to_string((x.second.time) / x.second.count) + "ns"));
+        record->changeLevelUp();
     }
 }
 

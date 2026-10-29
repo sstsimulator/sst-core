@@ -149,7 +149,6 @@ set(SSTHeaders
     simulation.h
     sparseVectorMap.h
     ssthandler.h
-    sstinfo.h
     sstpart.h
     sst_types.h
     stopAction.h

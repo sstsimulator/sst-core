@@ -58,9 +58,6 @@ public:
         return res;
     }
 
-    /** Clears the current filter map */
-    void clearFilterMap() { m_filters.clear(); }
-
     /** @return Filter map */
     FilterMap_t& getFilterMap() { return m_filters; }
 
@@ -78,8 +75,6 @@ protected:
     std::string getUsagePrelude() override;
 
 private:
-    void outputUsage();
-
     int setPositionalArg(int UNUSED(num), const std::string& arg)
     {
         addFilter(arg);
@@ -152,10 +147,8 @@ private:
 
 
 private:
-    char*                    m_AppName;
-    std::vector<std::string> m_elementsToProcess;
-    unsigned int             m_optionBits;
-    FilterMap_t              m_filters;
+    unsigned int m_optionBits;
+    FilterMap_t  m_filters;
 };
 
 /**
@@ -215,11 +208,6 @@ public:
     /** Clear highlight characters from info strings */
     void clearHighlights();
 
-    /** Filter output from info map
-     * @return True if the library filter is defined, otherwise False
-     */
-    bool getFilter() { return m_libraryFilter; }
-
     /**
      * Clears the component filter and sets the internal library filter status
      * @param libFilter
@@ -261,7 +249,6 @@ public:
 private:
     // Stores all component info, keyed by their "BaseTypes" (component, subcomponent, module, etc.)
     std::map<std::string, std::vector<ComponentInfo>> m_components;
-    std::vector<std::string>                          m_componentNames;
     bool                                              m_libraryFilter = false;
     std::vector<std::string>                          m_componentFilters;
     std::string                                       m_name;
@@ -284,9 +271,6 @@ public:
     /* Draw/redraw info and console windows */
     void draw(bool drawConsole = true);
 
-    /* Toggle display of the autofill box */
-    void toggleAutofillBox();
-
     /* Start up the interactive window */
     void start();
 
@@ -308,8 +292,6 @@ public:
 private:
     WINDOW* info;
     WINDOW* console;
-    WINDOW* autofillBox;
-    bool    autofillEnabled;
 };
 #endif
 
