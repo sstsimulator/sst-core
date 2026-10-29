@@ -127,12 +127,29 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
     // The component is first if there is nothing connected to the
     // left port and is last if nothing is connected to the right
     // port.
+    bool first;
+    bool last;
 
-    // We can check the ports at the component level even though they
-    // may actually be connected in a subcompoment becuase they will
-    // be connected via shared ports.
-    bool first = !isPortConnected("left");
-    bool last  = !isPortConnected("right");
+    if ( use_subcomponent_ ) {
+        // If a SubComponent was put in port_slot in the input file,
+        // the links (and any PortModules) are connected directly to
+        // the SubComponent's ports.  Otherwise, load an anonymous
+        // SubComponent that shares the ports of this component.
+        sub_ = loadUserSubComponent<PortSubComponent>("port_slot");
+        if ( nullptr == sub_ ) {
+            sub_ = loadAnonymousSubComponent<PortSubComponent>(
+                "coreTestElement.PortSubComponent", "port_slot", 0, ComponentInfo::SHARE_PORTS, params);
+        }
+
+        left_  = sub_->getLeft();
+        right_ = sub_->getRight();
+        first  = (nullptr == left_);
+        last   = (nullptr == right_);
+    }
+    else {
+        first = !isPortConnected("left");
+        last  = !isPortConnected("right");
+    }
 
     // Set up ports
     Event::HandlerBase* handler;
@@ -144,10 +161,6 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
     }
 
     if ( use_subcomponent_ ) {
-        sub_ = loadAnonymousSubComponent<PortSubComponent>(
-            "coreTestElement.PortSubComponent", "port_slot", 0, ComponentInfo::SHARE_PORTS, params);
-
-        left_ = sub_->getLeft();
         // Replace the function. This will test the transfering of
         // AttachPoints on the handler when a PortModule is installed
         // on the receive handler
@@ -155,7 +168,6 @@ coreTestPortModuleComponent::coreTestPortModuleComponent(ComponentId_t id, Param
             left_->replaceFunctor(handler); // Link on left port
         else
             delete handler; // No link on left port
-        right_ = sub_->getRight();
     }
     else {
         left_ = configureLink("left", handler);
