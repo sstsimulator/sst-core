@@ -44,6 +44,7 @@ EXTRA_DIST += \
     tests/test_Component.py \
     tests/test_Component_time_overflow.py \
     tests/test_ComponentExtension.py \
+    tests/test_ConfigIO_allstats_params.json \
     tests/test_Clocks.py \
     tests/test_DistribComponent_discrete.py \
     tests/test_DistribComponent_expon.py \
@@ -81,6 +82,7 @@ EXTRA_DIST += \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_Component_time_overflow.out \
     tests/refFiles/test_ComponentExtension.out \
+    tests/refFiles/test_ConfigIO_allstats_params.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial0.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial0_restart.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial1.out \
