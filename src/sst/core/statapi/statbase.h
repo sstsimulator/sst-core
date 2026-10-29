@@ -225,7 +225,10 @@ protected:
      */
     [[deprecated("setStatisticTypeName() has been deprecated and will be removed in SST 17.0.  Override "
                  "getStatTypeName() instead.")]]
-    void setStatisticTypeName(const char* type_name) { stat_type_name_ = type_name; }
+    void setStatisticTypeName(const char* type_name)
+    {
+        stat_type_name_ = type_name;
+    }
 
 private:
     friend class SST::BaseComponent;
