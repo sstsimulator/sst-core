@@ -195,8 +195,8 @@ ComponentInfo::~ComponentInfo()
     }
 
     if ( all_stat_config_ ) delete all_stat_config_;
-    delete stat_configs_;
-    delete enabled_stat_names_;
+    if ( stat_configs_ ) delete stat_configs_;
+    if ( enabled_stat_names_ ) delete enabled_stat_names_;
 }
 
 void
