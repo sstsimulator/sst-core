@@ -15,6 +15,7 @@
 #include "sst/core/action.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/timeConverter.h"
+#include "sst/core/util/bit_util.h"
 
 #include <cinttypes>
 #include <string>
@@ -51,7 +52,7 @@ private:
 
         std::vector<HandlerBase*> handlers_;
         int32_t                   inactive_start_ = 0;
-        int32_t                   handler_count_  = 0;
+        uint16_t                  handler_count_  = 0;
         Clock*                    clock_          = nullptr;
         int32_t                   index_;
 
@@ -76,7 +77,7 @@ private:
            Registers a handler with this group and marks it as active.  This function should only be called once when
            the handler is registered.  To activate or deactivate, call activateHandler()/deactivateHandler().
         */
-        void registerHandler(HandlerBase* handler);
+        void registerHandler(HandlerBase* handler, uint16_t order = 0);
 
         /**
            Activates a handler.
@@ -160,12 +161,18 @@ public:
         /**
            Get the period of the associated clock as a SimTime_t in units of the core atomic timebase
         */
-        TimeConverter getClockPeriod() { return (order_ < 0) ? clock_->getPeriod() : group_->getClockPeriod(); }
+        TimeConverter getClockPeriod()
+        {
+            return (order_ == bit_util::type_max<uint32_t>) ? clock_->getPeriod() : group_->getClockPeriod();
+        }
 
         /**
            Get the priority of the associated clock as a SimTime_t in units of the core atomic timebase
         */
-        int getClockPriority() { return (order_ < 0) ? clock_->getPriority() : group_->getClockPriority(); }
+        int getClockPriority()
+        {
+            return (order_ == bit_util::type_max<uint32_t>) ? clock_->getPriority() : group_->getClockPriority();
+        }
 
         /**
            Query whether handler is currently active
@@ -179,7 +186,7 @@ public:
         */
         Cycle_t activate()
         {
-            if ( order_ < 0 ) {
+            if ( order_ == bit_util::type_max<uint32_t> ) {
                 clock_->registerHandler(this);
                 return clock_->getNextCycle();
             }
@@ -194,7 +201,7 @@ public:
         */
         void deactivate()
         {
-            if ( order_ < 0 ) {
+            if ( order_ == bit_util::type_max<uint32_t> ) {
                 bool empty = false;
                 clock_->unregisterHandler(this, empty);
             }
@@ -221,10 +228,10 @@ public:
 
 
         /**
-           Tracks the order for this handler.  If it is less than 0, then the handler is not ordered. If it is ordered,
-           then it's contained in a Clock::Group rather than a Clock
+           Tracks the order for this handler.  If it is type_max<uint32_t>, then the handler is not ordered. If it is
+           ordered, then it's contained in a Clock::Group rather than a Clock
         */
-        int32_t order_ = -1;
+        uint32_t order_ = bit_util::type_max<uint32_t>;
 
         /**
            Dual purpose variable.  Because adding a bool to this class would require 8-bytes due to padding, the index_
