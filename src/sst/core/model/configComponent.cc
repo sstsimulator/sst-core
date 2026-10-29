@@ -399,13 +399,18 @@ ConfigComponent::setStatisticParameters(const std::string& statisticName, const 
         }
     }
 
+    ConfigStatistic* cs = nullptr;
     if ( statisticName == STATALLFLAG ) {
-        allStatConfig.params.insert(params);
-        ;
+        cs = &allStatConfig;
     }
     else {
-        findStatistic(statisticName)->params.insert(params);
+        cs = findStatistic(statisticName);
     }
+    if ( !cs ) {
+        Output::getDefaultObject().fatal(
+            CALL_INFO, 1, "cannot set parameters on unknown statistic '%s'\n", statisticName.c_str());
+    }
+    cs->params.insert(params);
 }
 
 void
@@ -539,8 +544,10 @@ ConfigComponent::findStatistic(StatisticId_t sid) const
 size_t
 ConfigComponent::addPortModule(const std::string& port, const std::string& type, const Params& params)
 {
-    port_modules[port].emplace_back(type, params);
-    return port_modules.size() - 1;
+    auto& modules = port_modules[port];
+    modules.emplace_back(type, params);
+    // Index of the new module within this port's list
+    return modules.size() - 1;
 }
 
 std::vector<LinkId_t>

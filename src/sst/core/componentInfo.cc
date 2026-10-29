@@ -166,6 +166,8 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     defaultTimeBase(o.defaultTimeBase),
     port_modules_(o.port_modules_),
     stat_configs_(o.stat_configs_),
+    enabled_stat_names_(o.enabled_stat_names_),
+    enabled_all_stats_(o.enabled_all_stats_),
     all_stat_config_(o.all_stat_config_),
     statLoadLevel(o.statLoadLevel),
     coordinates(std::move(o.coordinates)),
@@ -178,6 +180,10 @@ ComponentInfo::ComponentInfo(ComponentInfo&& o) :
     o.link_map    = nullptr;
     o.component   = nullptr;
     o.defaultTimeBase.reset();
+    // These are owned (and deleted) by this object now
+    o.stat_configs_       = nullptr;
+    o.enabled_stat_names_ = nullptr;
+    o.all_stat_config_    = nullptr;
 }
 
 ComponentInfo::~ComponentInfo()
@@ -189,7 +195,8 @@ ComponentInfo::~ComponentInfo()
     }
 
     if ( all_stat_config_ ) delete all_stat_config_;
-    delete stat_configs_;
+    if ( stat_configs_ ) delete stat_configs_;
+    if ( enabled_stat_names_ ) delete enabled_stat_names_;
 }
 
 void

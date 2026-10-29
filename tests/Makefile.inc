@@ -55,6 +55,7 @@ EXTRA_DIST += \
     tests/test_Output.py \
     tests/test_ParamComponent.py \
     tests/test_ParallelLoad.py \
+    tests/test_PortModule_handles.py \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
     tests/test_RNGComponent_xorshift.py \
@@ -108,6 +109,7 @@ EXTRA_DIST += \
     tests/refFiles/test_PortModule_allstats_params.out \
     tests/refFiles/test_PortModule_drop_recv.out \
     tests/refFiles/test_PortModule_drop_send.out \
+    tests/refFiles/test_PortModule_handles.out \
     tests/refFiles/test_PortModule_modify_recv.out \
     tests/refFiles/test_PortModule_modify_send.out \
     tests/refFiles/test_PortModule_pass_recv.out \
@@ -127,6 +129,7 @@ EXTRA_DIST += \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \
+    tests/refFiles/test_Serialization_unknown_stat_params.out \
     tests/refFiles/test_StatisticsComponent_basic.out \
     tests/refFiles/test_StatisticsComponent_basic_h5.out \
     tests/refFiles/test_StatisticsComponent_basic_group_stats.csv \
