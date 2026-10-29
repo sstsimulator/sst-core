@@ -69,6 +69,7 @@ EXTRA_DIST += \
     tests/test_Module.py \
     tests/test_OverheadMeasure.py \
     tests/test_PortModule.py \
+    tests/test_PortModule_allstats_params.py \
     tests/test_RealTime.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
@@ -104,6 +105,7 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction.out \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
+    tests/refFiles/test_PortModule_allstats_params.out \
     tests/refFiles/test_PortModule_drop_recv.out \
     tests/refFiles/test_PortModule_drop_send.out \
     tests/refFiles/test_PortModule_modify_recv.out \
