@@ -787,6 +787,9 @@ protected:
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
 
+       @param order Order clock should fire in relative to other clocks in the Component tree.  Lower orders fire before
+       higher orders. Handlers with the same order will fire in the order they were registered,
+
        @param obj Pointer to object that the handler function should be called on
 
        @param reg_all Should this clock period be used as the default timebase for all of the links connected to this
@@ -795,10 +798,10 @@ protected:
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
     template <auto funcT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, bool reg_all = true)
+    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, uint16_t order, objT* obj, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, void>(obj);
-        registerClock_impl(tc, handler, reg_all, true);
+        registerClock_impl(tc, handler, reg_all, true, order);
         return handler;
     }
 
@@ -814,6 +817,9 @@ protected:
        @param tc TimeConverter object specifying the clock frequency.  May be specified as a TimeConverter, std::string
        or UnitAlgebra
 
+       @param order Order clock should fire in relative to other clocks in the Component tree.  Lower orders fire before
+       higher orders. Handlers with the same order will fire in the order they were registered,
+
        @param obj Pointer to object that the handler function should be called on
 
        @param metadata Metadata to associate with the handler
@@ -824,10 +830,11 @@ protected:
        @return The Clock::Handler object that encapsulates the function and object pointer
     */
     template <auto funcT, typename dataT, typename objT, pvt::enable_if_handler_obj_t<funcT, objT> = 0>
-    Clock::HandlerBase* registerOrderedClock(TimeConverter tc, objT* obj, dataT metadata, bool reg_all = true)
+    Clock::HandlerBase* registerOrderedClock(
+        TimeConverter tc, uint16_t order, objT* obj, dataT metadata, bool reg_all = true)
     {
         auto* handler = new Clock::Handler<pvt::member_function_class_t<funcT>, funcT, dataT>(obj, metadata);
-        registerClock_impl(tc, handler, reg_all, true);
+        registerClock_impl(tc, handler, reg_all, true, order);
         return handler;
     }
 
@@ -899,7 +906,8 @@ private:
 
        @param group Whether or not this clock is being registered with a group (i.e. is an ordered clock)
     */
-    void registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group = false);
+    void registerClock_impl(
+        TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group = false, uint16_t order = 0);
 
     /**
         Handles default timebase setup

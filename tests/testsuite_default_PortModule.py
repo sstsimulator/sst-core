@@ -44,7 +44,9 @@ class testcase_PortModule(SSTTestCase):
 
         self.run_sst(sdlfile, outfile)
 
-        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, StartsWithFilter("#"))
+        filters = [ StartsWithFilter("#"), StartsWithFilter("WARNING: No components") ]
+
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filters)
         if not cmp_result:
             diffdata = testing_get_diff_data("PortModule_handles")
             log_failure(diffdata)
@@ -199,7 +201,8 @@ class testcase_PortModule(SSTTestCase):
 
         self.run_sst(sdlfile, outfile)
 
-        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, StartsWithFilter("#"))
+        filters = [ StartsWithFilter("#"), StartsWithFilter("WARNING: No components") ]
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filters )
         if not cmp_result:
             diffdata = testing_get_diff_data("PortModule_allstats_params")
             log_failure(diffdata)
