@@ -129,7 +129,7 @@ public:
 
     SST_ELI_DOCUMENT_PARAMS(
         { "sendcount", "Events to send if send is set to true", "20"},
-        { "use_subcomponent", "Set to true to use a subcomponent to hook up the ports", "false"},
+        { "use_subcomponent", "Set to true to use a subcomponent to hook up the ports. If a subcomponent is put in port_slot in the input file, links are expected to be connected to the subcomponent's ports, otherwise an anonymous subcomponent sharing this component's ports is loaded", "false"},
         { "repeat_last",  "When set to true, will keep sending \"last\" events until the simulation terminates.  This is to support test of the RandomDropPortModule which doesn't check event types or values so will not automatically pass through the event marked last.", "false" },
     )
 
@@ -196,6 +196,11 @@ public:
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Subcomponent used to test putting PortModules on shared ports",
         SST::CoreTestPortModule::PortSubComponent
+    )
+
+    SST_ELI_DOCUMENT_PORTS(
+        {"left", "Link to the left. Only used if the SubComponent is not sharing ports with its parent.", { "" } },
+        {"right", "Link to the right. Only used if the SubComponent is not sharing ports with its parent.", { "" } }
     )
 
     SST_ELI_IS_CHECKPOINTABLE()
