@@ -1,0 +1,11 @@
+---
+self-hosted-runner:
+  labels:
+    - sst-rocky8
+    - sst-rocky9
+    - sst-ubuntu2404
+    - sst-ubuntu2604
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      - 'at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref" nor "./path/to/workflow.yml"'

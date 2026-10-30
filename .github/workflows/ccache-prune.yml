@@ -1,0 +1,32 @@
+---
+# Each devel build pushes its ccache to ghcr.io/<owner>/ccache:<key> (see
+# sst-ci-job.yml).  The version that held the tag before stays in the
+# package without a tag.  Delete those weekly.
+name: Prune ccache package
+
+# yamllint disable-line rule:truthy
+on:
+  schedule:
+    - cron: '17 4 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: ccache-prune-${{github.workflow}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  prune:
+    name: Delete untagged ccache versions
+    runs-on: ubuntu-26.04
+    permissions:
+      # The package must also give this repository the Admin role.
+      packages: write # to delete package versions
+    steps:
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
+        with:
+          package-name: ccache
+          package-type: container
+          delete-only-untagged-versions: 'true'
+          min-versions-to-keep: 0
