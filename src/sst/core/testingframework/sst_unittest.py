@@ -28,7 +28,7 @@ import signal
 import sys
 import time
 import unittest
-from typing import Optional
+from typing import Mapping, Optional
 
 import test_engine_globals
 from sst_unittest_support import *
@@ -237,7 +237,8 @@ class SSTTestCase(unittest.TestCase):
         expected_rc: int = 0,
         check_sdl_file: bool = True,
         send_signal: int = signal.NSIG,
-        signal_sec: int = 3
+        signal_sec: int = 3,
+        env: Optional[Mapping[str, str]] = None
     ) -> str:
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
@@ -262,6 +263,11 @@ class SSTTestCase(unittest.TestCase):
                 check_sdl_file (bool): If True, will check to make sure sdl file exists
                 send_signal (signal): If not signal.NSIG, this signal will be sent to the SST process after signal_sec seconds
                 signal_sec  (int): The number of seconds to wait before sending a signal to SST
+                env (dict): Extra environment variables for this SST run only.
+                            They are added to os.environ.  Use this instead of
+                            changing os.environ: in concurrent mode, all tests
+                            run as threads in one process and share
+                            os.environ.
             Returns:
                 (str) The command string used to launch sst
         """
@@ -338,9 +344,15 @@ class SSTTestCase(unittest.TestCase):
             log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
 
         # Launch SST
+        run_kwargs = {}
+        if env is not None:
+            run_kwargs["env"] = {**os.environ, **env}
         rtn = os_command(oscmd, output_file_path = out_file,
                         error_file_path = err_file,
-                        set_cwd = set_cwd).run(timeout_sec=timeout_sec, send_signal=send_signal, signal_sec=signal_sec)
+                        set_cwd = set_cwd).run(timeout_sec=timeout_sec,
+                                               send_signal=send_signal,
+                                               signal_sec=signal_sec,
+                                               **run_kwargs)
         if num_ranks > 1:
             testing_merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file, errorfilepath=err_file)
 
