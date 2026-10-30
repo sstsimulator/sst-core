@@ -238,7 +238,7 @@ class SSTTestCase(unittest.TestCase):
         check_sdl_file: bool = True,
         send_signal: int = signal.NSIG,
         signal_sec: int = 3,
-        env: Optional[Mapping[str, str]] = None
+        env: Optional[Mapping[str, Optional[str]]] = None
     ) -> str:
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
@@ -264,7 +264,8 @@ class SSTTestCase(unittest.TestCase):
                 send_signal (signal): If not signal.NSIG, this signal will be sent to the SST process after signal_sec seconds
                 signal_sec  (int): The number of seconds to wait before sending a signal to SST
                 env (dict): Extra environment variables for this SST run only.
-                            They are added to os.environ.  Use this instead of
+                            They are added to os.environ.  A value of None
+                            removes that variable.  Use this instead of
                             changing os.environ: in concurrent mode, all tests
                             run as threads in one process and share
                             os.environ.
@@ -346,7 +347,13 @@ class SSTTestCase(unittest.TestCase):
         # Launch SST
         run_kwargs = {}
         if env is not None:
-            run_kwargs["env"] = {**os.environ, **env}
+            run_env = dict(os.environ)
+            for key, value in env.items():
+                if value is None:
+                    run_env.pop(key, None)
+                else:
+                    run_env[key] = value
+            run_kwargs["env"] = run_env
         rtn = os_command(oscmd, output_file_path = out_file,
                         error_file_path = err_file,
                         set_cwd = set_cwd).run(timeout_sec=timeout_sec,
