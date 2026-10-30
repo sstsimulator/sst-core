@@ -220,8 +220,15 @@ protected:
     /** Set the Statistic Data Type */
     void setStatisticDataType(const StatisticFieldInfo::fieldType_t data_type) { stat_data_type_ = data_type; }
 
-    /** Set an optional Statistic Type Name (for output) */
-    void setStatisticTypeName(const char* type_name) { stat_type_name_ = type_name; }
+    /** Set an optional Statistic Type Name (for output)
+     *  DEPRECATED: will be removed in SST 17.0. Override getStatTypeName() instead.
+     */
+    [[deprecated("setStatisticTypeName() has been deprecated and will be removed in SST 17.0.  Override "
+                 "getStatTypeName() instead.")]]
+    void setStatisticTypeName(const char* type_name)
+    {
+        stat_type_name_ = type_name;
+    }
 
 private:
     friend class SST::BaseComponent;
@@ -276,7 +283,7 @@ private:
 
     std::string stat_name_      = ""; // Name of stat, matches ELI
     std::string stat_sub_id_    = ""; // Sub ID for this instance of the stat (default="")
-    std::string stat_type_name_ = ""; // DEPRECATED (remove SST 16.0) - override 'getStatTypeName()' instead
+    std::string stat_type_name_ = ""; // DEPRECATED (remove SST 17.0) - override 'getStatTypeName()' instead
     std::string stat_mod_name_ =
         ""; // Modifier for component name, temporary until we figure out a nameable base class for elements
 
