@@ -31,17 +31,16 @@ class testcase_Output(SSTTestCase):
 #####
 
     def test_Output_TraceFunction(self):
-        os.unsetenv("SST_TRACEFUNCTION_INDENT_MARKER");
-        self.tracefunction_test_template("TraceFunction")
+        self.tracefunction_test_template("TraceFunction", None)
 
     def test_Output_TraceFunction_IndentMarker(self):
-        os.environ["SST_TRACEFUNCTION_INDENT_MARKER"] = "";
-        self.tracefunction_test_template("TraceFunction_IndentMarker")
+        self.tracefunction_test_template("TraceFunction_IndentMarker", "")
 
 #####
-    def tracefunction_test_template(self, testtype):
+    def tracefunction_test_template(self, testtype, indent_marker):
 
-        os.environ["SST_TRACEFUNCTION_ACTIVATE"] = "";
+        env = {"SST_TRACEFUNCTION_ACTIVATE": "",
+               "SST_TRACEFUNCTION_INDENT_MARKER": indent_marker}
 
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -55,7 +54,7 @@ class testcase_Output(SSTTestCase):
         # how the environment variables are set
         options = "--model-options=\"TraceFunction\""
         # Run the simulation
-        self.run_sst(sdlfile, outfile, other_args=options)
+        self.run_sst(sdlfile, outfile, other_args=options, env=env)
 
         # Check the results.  We will need to do a separate test for
         # each partition in the simulation.  We do this by filtering
