@@ -1,0 +1,45 @@
+# Default checks for SST Core: reasonable for SST, but not too picky.
+# scripts/clang-tidy.sh uses this file, and so do clangd and editors.
+#
+# scripts/clang-tidy.sh --picky uses .clang-tidy-picky instead.  The checks
+# up to -clang-analyzer-cplusplus.NewDeleteLeaks are the same in both files;
+# the checks after it are the ones that only --picky enables.
+Checks: >
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-redundant-*,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -modernize-use-override,
+  -modernize-use-nodiscard,
+  -modernize-macro-to-enum,
+  -performance-enum-size,
+  -modernize-use-auto,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,
+  google-explicit-constructor,
+  misc-static-assert,
+  misc-header-include-cycle,
+  misc-definitions-in-headers,
+  -modernize-return-braced-init-list,
+  -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -readability-redundant-inline-specifier,
+  -modernize-use-equals-default,
+  -performance-avoid-endl,
+  -modernize-pass-by-value,
+  -modernize-use-default-member-init,
+  -readability-redundant-string-init,
+  -modernize-use-equals-delete,
+  -performance-unnecessary-copy-initialization,
+  -readability-redundant-access-specifiers,
+  -modernize-use-bool-literals,
+  -readability-redundant-member-init,
+  -performance-unnecessary-value-param,
+  -bugprone-narrowing-conversions
+FormatStyle: file
+SystemHeaders: false
+
+# Local Variables:
+# mode: yaml-ts
+# End:

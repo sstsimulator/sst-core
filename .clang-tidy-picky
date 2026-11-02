@@ -1,0 +1,33 @@
+# Picky checks for SST Core: scripts/clang-tidy.sh --picky, or
+# clang-tidy --config-file=.clang-tidy-picky.  Even here, many checks are
+# disabled.
+#
+# clang-tidy cannot include one config file in another, so this file repeats
+# the checks of .clang-tidy up to -clang-analyzer-cplusplus.NewDeleteLeaks.
+# Keep that part the same in both files.
+Checks: >
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-redundant-*,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -modernize-use-override,
+  -modernize-use-nodiscard,
+  -modernize-macro-to-enum,
+  -performance-enum-size,
+  -modernize-use-auto,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,
+  google-explicit-constructor,
+  misc-static-assert,
+  misc-header-include-cycle,
+  misc-definitions-in-headers,
+  -modernize-return-braced-init-list,
+  -clang-analyzer-cplusplus.NewDeleteLeaks
+FormatStyle: file
+SystemHeaders: false
+
+# Local Variables:
+# mode: yaml-ts
+# End:
