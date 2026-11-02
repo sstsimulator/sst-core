@@ -1,0 +1,7 @@
+ b.left.0.events_intercepted : Accumulator : SimTime = 602000; Sum.u64 = 6; SumSQ.u64 = 6; Count.u64 = 6; Min.u64 = 1; Max.u64 = 1; 
+ b.left.1.events_intercepted : Accumulator : SimTime = 602000; Sum.u64 = 6; SumSQ.u64 = 6; Count.u64 = 6; Min.u64 = 1; Max.u64 = 1; 
+ b.right.0.events_intercepted : Accumulator : SimTime = 602000; Sum.u64 = 6; SumSQ.u64 = 6; Count.u64 = 6; Min.u64 = 1; Max.u64 = 1; 
+ c.handle_modified_event : Accumulator : SimTime = 602000; Sum.u32 = 5; SumSQ.u32 = 5; Count.u64 = 5; Min.u32 = 1; Max.u32 = 1; 
+ c.handle_unmodified_event : Accumulator : SimTime = 602000; Sum.u32 = 1; SumSQ.u32 = 1; Count.u64 = 1; Min.u32 = 1; Max.u32 = 1; 
+ c.handle_ack_event : Accumulator : SimTime = 602000; Sum.u32 = 0; SumSQ.u32 = 0; Count.u64 = 0; Min.u32 = 0; Max.u32 = 0; 
+Simulation is complete, simulated time: 602 ns

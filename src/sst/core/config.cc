@@ -175,7 +175,8 @@ Config::ext_help_signals()
                "   - sst.rt.checkpoint: Creates a checkpoint.\n"
                "   - sst.rt.heartbeat: Reports state of SST core and some profiling state (e.g., memory usage).\n"
                "   - sst.rt.interactive: Breaks into interactive console to explore simulation state.\n"
-               "     Ignored if --interactive-console not set. (Valid for SIGUSR1/2 only, invalid for SIGALRM)\n");
+               "     Uses the console set by --interactive-console, or sst.interactive.debugger if not set. (Valid "
+               "for SIGUSR1/2 only, invalid for SIGALRM)\n");
     msg.append("  An action can be attached to SIGUSR1 using '--sigusr1=<handler>' and SIGUSR2 using "
                "'--sigusr2=<handler>'\n"
                "  If not specified SST uses the defaults: --sigusr1=sst.rt.status.core and "

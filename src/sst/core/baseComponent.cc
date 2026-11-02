@@ -498,12 +498,13 @@ BaseComponent::serialize_final(SST::Core::Serialization::serializer& UNUSED(ser)
 }
 
 void
-BaseComponent::registerClock_impl(TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group)
+BaseComponent::registerClock_impl(
+    TimeConverter tc, Clock::HandlerBase* handler, bool reg_all, bool group, uint16_t order)
 {
 
     if ( group ) {
         Clock::Group* group = getClockGroup(tc);
-        group->registerHandler(handler);
+        group->registerHandler(handler, order);
     }
     else {
         sim_->registerClock(tc, handler, CLOCKPRIORITY);

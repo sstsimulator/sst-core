@@ -22,10 +22,10 @@
 namespace SST {
 
 void
-Clock::Group::registerHandler(HandlerBase* handler)
+Clock::Group::registerHandler(HandlerBase* handler, uint16_t order)
 {
     bool currently_inactive = (inactive_start_ == 0);
-    handler->order_         = handler_count_++;
+    handler->order_         = (((uint32_t)order) << 16) | handler_count_++;
     handler->group_         = this;
 
     // Put handler at end of list, then swap to active region if necessary

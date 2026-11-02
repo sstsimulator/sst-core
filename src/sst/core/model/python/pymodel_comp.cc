@@ -685,6 +685,7 @@ static PyMethodDef subComponentMethods[] = { { "addParam", compAddParam, METH_VA
                                                  "Adds a parameter(name, value)" },
     { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
     { "addLink", compAddLink, METH_VARARGS, "Connects this subComponent to a Link" },
+    { "addPortModule", compAddPortModule, METH_VARARGS, "Connect Port Module to this subComponent" },
     { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name, after any prefix, of the component." },
     { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
     { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,

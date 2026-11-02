@@ -673,6 +673,9 @@ SSTConfigSaxHandler::end_object()
     case State::Comp_Stat_Params:
     case State::SubComp_Stat_Params:
     case State::PortMod_Stat_Params:
+    case State::Comp_StatOptions_Params:
+    case State::SubComp_StatOptions_Params:
+    case State::PortMod_StatOptions_Params:
     case State::Link_Left:
     case State::Link_Right:
         break;

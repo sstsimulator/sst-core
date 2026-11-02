@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -z $LIBTOOLIZE ] ; then
     LIBTOOLIZE=$(type -P libtoolize)

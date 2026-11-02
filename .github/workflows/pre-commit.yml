@@ -6,15 +6,19 @@ on:
   workflow_call:
 
 concurrency:
-  group: style-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  group: pre-commit-${{github.workflow}}-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
   cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    name: Run pre-commit on current ref
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - name: Checkout the current ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: "3.9"
-      - uses: pre-commit/action@v3.0.1
+          persist-credentials: false
+      - name: Run pre-commit checks
+        uses: j178/prek-action@1382ad72dea72f9d53832f2bcb65b3e87a947204  # v3.0.1

@@ -44,6 +44,7 @@ EXTRA_DIST += \
     tests/test_Component.py \
     tests/test_Component_time_overflow.py \
     tests/test_ComponentExtension.py \
+    tests/test_ConfigIO_allstats_params.json \
     tests/test_Clocks.py \
     tests/test_DistribComponent_discrete.py \
     tests/test_DistribComponent_expon.py \
@@ -55,6 +56,7 @@ EXTRA_DIST += \
     tests/test_Output.py \
     tests/test_ParamComponent.py \
     tests/test_ParallelLoad.py \
+    tests/test_PortModule_handles.py \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
     tests/test_RNGComponent_xorshift.py \
@@ -69,6 +71,7 @@ EXTRA_DIST += \
     tests/test_Module.py \
     tests/test_OverheadMeasure.py \
     tests/test_PortModule.py \
+    tests/test_PortModule_allstats_params.py \
     tests/test_RealTime.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
@@ -81,6 +84,7 @@ EXTRA_DIST += \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_Component_time_overflow.out \
     tests/refFiles/test_ComponentExtension.out \
+    tests/refFiles/test_ConfigIO_allstats_params.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial0.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial0_restart.out \
     tests/refFiles/test_DebugConsole_Checkpoint_serial1.out \
@@ -104,8 +108,10 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction.out \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
+    tests/refFiles/test_PortModule_allstats_params.out \
     tests/refFiles/test_PortModule_drop_recv.out \
     tests/refFiles/test_PortModule_drop_send.out \
+    tests/refFiles/test_PortModule_handles.out \
     tests/refFiles/test_PortModule_modify_recv.out \
     tests/refFiles/test_PortModule_modify_send.out \
     tests/refFiles/test_PortModule_pass_recv.out \
@@ -125,6 +131,7 @@ EXTRA_DIST += \
     tests/refFiles/test_RNGComponent_marsaglia.out \
     tests/refFiles/test_RNGComponent_mersenne.out \
     tests/refFiles/test_RNGComponent_xorshift.out \
+    tests/refFiles/test_Serialization_unknown_stat_params.out \
     tests/refFiles/test_StatisticsComponent_basic.out \
     tests/refFiles/test_StatisticsComponent_basic_h5.out \
     tests/refFiles/test_StatisticsComponent_basic_group_stats.csv \

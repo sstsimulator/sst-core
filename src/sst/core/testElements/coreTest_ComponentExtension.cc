@@ -168,7 +168,7 @@ coreTestComponentExt::clockTic(Cycle_t)
 
         6 instructions.
     */
-    volatile int v = 0;
+    volatile int UNUSED(v) = 0;
     for ( int i = 0; i < work_per_cycle_; ++i ) {
         v += 1;
     }

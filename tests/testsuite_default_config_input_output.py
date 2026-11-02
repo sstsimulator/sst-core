@@ -54,6 +54,33 @@ class testcase_Config_input_output(SSTTestCase):
         self.configio_test_template("json_io_parallel", "6 6", "json", True, "MULTI")
 
 
+    def test_json_io_allstats_params(self):
+        # Parameters given when enabling all statistics (on a component,
+        # subcomponents and a port module) must survive --output-json and
+        # loading the JSON back in.  The model uses sst.HistogramStatistic,
+        # so lost parameters show up as Accumulator in the output.
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_ConfigIO_allstats_params.json".format(testsuitedir)
+        reffile = "{0}/refFiles/test_ConfigIO_allstats_params.out".format(testsuitedir)
+        output_json = "{0}/testsuite_configio/test_configio_allstats_params.json".format(outdir)
+        outfile_ref = "{0}/test_configio_allstats_params_ref.out".format(outdir)
+        outfile_check = "{0}/test_configio_allstats_params_check.out".format(outdir)
+
+        # Load the JSON model and write it out again
+        options = "--output-json=test_configio_allstats_params.json --output-directory=testsuite_configio"
+        self.run_sst(sdlfile, outfile_ref, other_args=options, num_ranks=1, num_threads=1)
+        # Load the written JSON
+        self.run_sst(output_json, outfile_check, num_ranks=1, num_threads=1, check_sdl_file=False)
+
+        for outfile in (outfile_ref, outfile_check):
+            cmp_result = testing_compare_sorted_diff("json_io_allstats_params", outfile, reffile)
+            if not cmp_result:
+                diffdata = testing_get_diff_data("json_io_allstats_params")
+                log_failure(diffdata)
+            self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
     @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_python_single_parallel_load(self):
         self.configio_test_template("python_single_parallel_load", "6 6", "py", False, "SINGLE")

@@ -37,8 +37,6 @@ class testcase_StatisticComponent(SSTTestCase):
 
     num_threads = test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
 
-    # This test has floating point statistics in it and on certain platforms, minor rounding leads to floating point diffs
-    @unittest.skipIf(host_os_get_distribution_type() == OS_DIST_ROCKY and host_os_get_distribution_version().split('.')[0] == "10", "This test fails on Rocky 10")
     def test_StatisticsBasic(self):
         self.Statistics_test_template("basic")
 
@@ -73,7 +71,7 @@ class testcase_StatisticComponent(SSTTestCase):
         combine_per_rank_files(out_group_stat_file_csv)
 
         filters = [ StartsWithFilter("WARNING: No components are"), StartsWithFilter("#") ]
-        cmp_result = testing_compare_filtered_diff(testtype, outfile, reffile, True, filters)
+        cmp_result = testing_compare_filtered_diff_with_fp_tolerance(testtype, outfile, reffile, True, filters)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)
@@ -86,7 +84,7 @@ class testcase_StatisticComponent(SSTTestCase):
             log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(out_group_stat_file_csv, ref_group_stat_file_csv))
 
-        cmp_result = testing_compare_filtered_diff(testtype, out_group_stat_file_txt, ref_group_stat_file_txt, True)
+        cmp_result = testing_compare_filtered_diff_with_fp_tolerance(testtype, out_group_stat_file_txt, ref_group_stat_file_txt, True)
         if not cmp_result:
             diffdata = testing_get_diff_data(testtype)
             log_failure(diffdata)

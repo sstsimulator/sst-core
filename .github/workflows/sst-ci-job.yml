@@ -1,0 +1,261 @@
+---
+# One CI job of SST: build and test sst-core and sst-elements together, in
+# one configuration.  The repository that calls it is tested at the current
+# ref, and the other one at devel.  The job matrices (test-matrix-*.yml)
+# call it once per configuration.  sst-elements calls this file from
+# sst-core devel, so only one copy exists.
+#
+# Keep this a reusable workflow.  Do not make it a composite action:
+#
+# - The job sets runs-on, container (with --shm-size) and permissions.  A
+#   composite action runs as steps in the job of the caller, so each of the
+#   jobs in test-matrix-github.yml would have to set them again.
+# - Each step shows as its own step in the run log.  The steps of a
+#   composite action show as one step of the caller, which makes a failure
+#   in one of them harder to find.
+# - A composite action in this repository can run only after a checkout.
+#   This workflow does the checkouts itself, at the paths that the CI
+#   scripts expect.
+name: SST build and test
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+    inputs:
+      # An input cannot be a list, so give a list of labels as JSON.  A
+      # single label needs no JSON quotes:
+      #   runs-on: ubuntu-26.04                     (test-matrix-github.yml)
+      #   runs-on: '["self-hosted", "sst-rocky8"]'  (test-matrix-at2.yml)
+      runs-on:
+        description: Runner label, or a JSON list of labels
+        required: true
+        type: string
+      image:
+        description: Container image; empty runs on the runner itself
+        default: ''
+        type: string
+      mpi:
+        description: Build with MPI
+        default: true
+        type: boolean
+      toolchain:
+        description: Compiler family from the system, gcc or clang
+        default: gcc
+        type: string
+      test-ranks:
+        description: MPI ranks for sst-test-core/elements (-r)
+        default: 1
+        type: number
+      test-threads:
+        description: Threads for sst-test-core/elements (-t)
+        default: 1
+        type: number
+      test-categories:
+        description: >-
+          Space-separated test categories for sst-test-core/elements (-m)
+        default: pr
+        type: string
+      test-oversubscribe:
+        description: >-
+          Let OpenMPI place more PEs than the runner has hardware threads
+        default: false
+        type: boolean
+      make-dist:
+        description: Build and test from the "make dist" tarballs
+        default: false
+        type: boolean
+      install-deps:
+        description: Install system packages; false if the runner has them
+        default: true
+        type: boolean
+      ccache-key:
+        description: Tag of ghcr.io/<owner>/ccache to restore and save
+        required: true
+        type: string
+      ccache-save:
+        description: >-
+          Push the cache after devel builds.  Set it on one job per
+          ccache-key only.
+        default: false
+        type: boolean
+      python-version:
+        description: Python version on macOS runners
+        default: '3.13'
+        type: string
+      artifact-name:
+        description: >-
+          Suffix for the uploaded artifacts and the job name, unique per
+          caller
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  build-test:
+    name: Build/test SST (${{ inputs.artifact-name }})
+    permissions:
+      packages: write # to save ccache in ghcr.io
+    runs-on: ${{ startsWith(inputs.runs-on, '[') && fromJSON(inputs.runs-on) || inputs.runs-on }}
+    container:
+      # The callers choose the image and may pin it there.
+      image: ${{ inputs.image }}
+      # Some images (rockylinux:9 and :10) do not set PATH, so an entry in
+      # GITHUB_PATH would become the whole PATH.
+      env:
+        PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      # Docker's default 64 MiB /dev/shm is too small for the OpenMPI 5
+      # shared-memory segment, which then warns on stderr.
+      options: --shm-size=1g
+    steps:
+
+      - name: Install git
+        if: ${{ inputs.image != '' }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          if command -v dnf; then
+              dnf -y install git
+          elif command -v apt-get; then
+              apt-get -y update
+              apt-get -y install ca-certificates git
+          fi
+
+      - name: Clone core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sst-core
+          persist-credentials: false
+          repository: ${{ endsWith(github.repository, '/sst-core') && github.repository || format('{0}/sst-core', github.repository_owner) }}
+          ref: ${{ !endsWith(github.repository, '/sst-core') && 'devel' || '' }}
+
+      - name: Clone elements
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sst-elements
+          persist-credentials: false
+          repository: ${{ endsWith(github.repository, '/sst-elements') && github.repository || format('{0}/sst-elements', github.repository_owner) }}
+          ref: ${{ !endsWith(github.repository, '/sst-elements') && 'devel' || '' }}
+
+      # make-dist.sh deletes sst-core/, and the tarball has no CI scripts.
+      - name: Copy CI scripts
+        run: |
+          cp -R sst-core/.github/scripts sst-ci-scripts
+
+      - name: Pin Python version
+        if: ${{ runner.os == 'macOS' }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install system-level dependencies
+        if: ${{ inputs.install-deps }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          SST_INSTALL_CLANG: ${{ inputs.toolchain == 'clang' && '1' || '0' }}
+        run: |
+          sst-ci-scripts/install-os-level-dependencies.sh
+
+      - name: Install ORAS
+        uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2.0.2
+
+      - name: Configure ccache
+        run: |
+          sst-ci-scripts/ccache-ghcr.sh setup
+
+      - name: Restore ccache
+        env:
+          CCACHE_KEY: ${{ inputs.ccache-key }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          sst-ci-scripts/ccache-ghcr.sh restore "${CCACHE_KEY}"
+
+      - name: Create unprivileged build user
+        if: ${{ inputs.image != '' }}
+        run: |
+          sst-ci-scripts/run-as-ci-user.sh --setup
+
+      - name: Set environment variables
+        env:
+          SST_MPI: ${{ inputs.mpi }}
+          SST_TOOLCHAIN: ${{ inputs.toolchain }}
+          SST_TEST_RANKS: ${{ inputs.test-ranks }}
+          SST_TEST_THREADS: ${{ inputs.test-threads }}
+          SST_TEST_CATEGORIES: ${{ inputs.test-categories }}
+          SST_TEST_OVERSUBSCRIBE: ${{ inputs.test-oversubscribe }}
+        run: |
+          sst-ci-scripts/set-env.sh
+
+      - name: Replace the sources with the make dist tarballs
+        if: ${{ inputs.make-dist }}
+        shell: bash sst-ci-scripts/run-as-ci-user.sh {0}
+        run: |
+          sst-ci-scripts/make-dist.sh "${SST_TOOLCHAIN}"
+
+      - name: Save make dist tarballs
+        if: ${{ inputs.make-dist && !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: dist_${{ inputs.artifact-name }}
+          path: dist
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 5
+
+      - name: Compile core
+        shell: bash sst-ci-scripts/run-as-ci-user.sh {0}
+        run: |
+          "sst-ci-scripts/build/build-core-autotools-noflags-nodeps${SST_MPI_SUFFIX}.sh" "${SST_TOOLCHAIN}"
+
+      - name: Test core
+        shell: bash sst-ci-scripts/run-as-ci-user.sh {0}
+        run: |
+          read -r -a categories <<<"${SST_TEST_CATEGORIES}"
+          "${SST_INSTALL_DIR}"/bin/sst-test-core -r "${SST_TEST_RANKS}" -t "${SST_TEST_THREADS}" -m "${categories[@]}"
+
+      - name: Save sst_test_outputs after core tests
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: sst_test_outputs_core_${{ inputs.artifact-name }}
+          path: sst_test_outputs
+          compression-level: 9
+          if-no-files-found: error
+          retention-days: 5
+        if: ${{ !cancelled() }}
+
+      - name: Compile elements
+        shell: bash sst-ci-scripts/run-as-ci-user.sh {0}
+        run: |
+          "sst-ci-scripts/build/build-elements-autotools-noflags-nodeps${SST_MPI_SUFFIX}.sh" "${SST_TOOLCHAIN}"
+
+      - name: Test elements
+        shell: bash sst-ci-scripts/run-as-ci-user.sh {0}
+        run: |
+          read -r -a categories <<<"${SST_TEST_CATEGORIES}"
+          "${SST_INSTALL_DIR}"/bin/sst-test-elements -r "${SST_TEST_RANKS}" -t "${SST_TEST_THREADS}" -m "${categories[@]}"
+
+      - name: Save sst_test_outputs after elements tests
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: sst_test_outputs_elements_${{ inputs.artifact-name }}
+          path: sst_test_outputs
+          compression-level: 9
+          if-no-files-found: error
+          retention-days: 5
+        if: ${{ !cancelled() }}
+
+      - name: Show ccache statistics
+        if: ${{ !cancelled() }}
+        run: |
+          ccache --show-stats || true
+
+      # Only devel saves (on push, and in the nightly run): builds of other
+      # refs would replace the devel cache with objects that devel does not
+      # use.
+      - name: Save ccache
+        if: ${{ !cancelled() && inputs.ccache-save && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/devel' }}
+        env:
+          CCACHE_KEY: ${{ inputs.ccache-key }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          sst-ci-scripts/ccache-ghcr.sh save "${CCACHE_KEY}"

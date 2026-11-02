@@ -47,11 +47,10 @@ using namespace SST;
 using namespace SST::Core;
 
 // General Global Variables
-static int                                                g_fileProcessedCount;
-static std::string                                        g_searchPath;
-static std::vector<SSTLibraryInfo>                        g_libInfoArray;
-static SSTInfoConfig                                      g_configuration(false);
-static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
+static int                         g_fileProcessedCount;
+static std::string                 g_searchPath;
+static std::vector<SSTLibraryInfo> g_libInfoArray;
+static SSTInfoConfig               g_configuration(false);
 
 // Interactive Global Variables
 #ifdef HAVE_CURSES
@@ -59,7 +58,6 @@ static std::map<std::string, const ElementInfoGenerator*> g_foundGenerators;
 static InteractiveWindow        g_window;
 static std::vector<std::string> g_infoText;
 static std::deque<std::string>  g_prevInput;
-static std::vector<std::string> g_libraryNames;
 static unsigned int             g_textPos;
 #endif
 
@@ -127,8 +125,6 @@ struct SearchableData
 } g_searchData;
 
 // Forward Declarations
-void        initLTDL(const std::string& searchPath);
-void        shutdownLTDL();
 static void processSSTElementFiles();
 void        outputSSTElementInfo();
 void        generateXMLOutputFile();
@@ -614,7 +610,6 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
 static void
 processSSTElementFiles()
 {
-    std::vector<bool>        EntryProcessedArray;
     ElemLoader               loader(g_searchPath);
     std::vector<std::string> potentialLibs;
     loader.getPotentialElements(potentialLibs);
@@ -785,24 +780,6 @@ SSTInfoConfig::getUsagePrelude()
 }
 
 void
-SSTInfoConfig::outputUsage()
-{
-    using std::cout;
-    using std::endl;
-    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "
-         << " [options]" << endl;
-    cout << "  -h, --help               Print Help Message\n";
-    cout << "  -v, --version            Print SST Package Release Version\n";
-    cout << "  -d, --debug              Enabled debugging messages\n";
-    cout << "  -n, --nodisplay          Do not display output - default is off\n";
-    cout << "  -x, --xml                Generate XML data - default is off\n";
-    cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
-    cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library(s) to process\n";
-    cout << "  -q, --quiet              Quiet/print summary only\n";
-    cout << endl;
-}
-
-void
 SSTInfoConfig::addFilter(const std::string& name_str)
 {
     std::string name(name_str);
@@ -871,7 +848,6 @@ SSTLibraryInfo::setLibraryInfo(std::string baseName, std::string componentName, 
     componentInfo.infoMap       = infoMap;
 
     // Add to component lists
-    m_componentNames.push_back(componentName);
     m_components[baseName].push_back(componentInfo);
 }
 

@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# compilers.bash: Common logic for compiling SST, specifically setting up
+# compilers.sh: Common logic for compiling SST, specifically setting up
 # compiler environment variables.
 #
 # Note: some variables appear unused because this file is sourced, not
@@ -21,8 +21,16 @@ source_compilers_nompi() {
     # compiler_paths="$(spack python "${SCRIPTDIR}"/spack_get_compilers.py --spec "${spack_compiler_spec}")"
     # CC="$(echo "${compiler_paths}" | jq -r .c)"
     # CXX="$(echo "${compiler_paths}" | jq -r .cxx)"
-    CC="$(command -v gcc)"
-    CXX="$(command -v g++)"
+    case "${spack_compiler_spec}" in
+        clang*)
+            CC="$(command -v clang)"
+            CXX="$(command -v clang++)"
+            ;;
+        *)
+            CC="$(command -v gcc)"
+            CXX="$(command -v g++)"
+            ;;
+    esac
     export CC
     export CXX
 
@@ -51,6 +59,11 @@ source_compilers_mpi() {
     MPICXX="$(command -v mpicxx)"
     export MPICC
     export MPICXX
+
+    # The MPI compiler wrappers call the compiler they were built with
+    # (GCC) unless told otherwise.
+    export OMPI_CC="${CC}"
+    export OMPI_CXX="${CXX}"
 }
 
 # delete '@' and '=' characters if present
@@ -71,10 +84,45 @@ clean_suffix() {
 #     fi
 # fi
 
-bear_make_install() {
-    if command -v bear >& /dev/null; then
-        "$(command -v bear)" -- make install
+if [ -n "${CUDA_INSTALL_PATH}" ]; then
+    CUDA_TEXT="--with-cuda=${CUDA_INSTALL_PATH}"
+elif [ -n "${CUDA_HOME}" ]; then
+    export CUDA_INSTALL_PATH="${CUDA_HOME}"
+    CUDA_TEXT="--with-cuda=${CUDA_INSTALL_PATH}"
+else
+    # shellcheck disable=SC2034
+    CUDA_TEXT=""
+fi
+
+if [ -n "${GPGPUSIM_ROOT}" ]; then
+    GPGPUSIM_TEXT="--with-gpgpusim=${GPGPUSIM_ROOT}"
+else
+    # shellcheck disable=SC2034
+    GPGPUSIM_TEXT=""
+fi
+
+max_cpus() {
+    # Optimistic max build parallelism for elements
+    local max=${1:-16}
+    local cpu_count
+    cpu_count="$(nproc)"
+
+    if ((cpu_count > max)); then
+        echo "${max}"
     else
-        make install
+        echo "${cpu_count}"
     fi
+}
+
+bear_make() {
+    if command -v bear >&/dev/null; then
+        "$(command -v bear)" -- make -j"$(max_cpus)"
+    else
+        make -j"$(max_cpus)"
+    fi
+}
+
+bear_make_install() {
+    bear_make
+    make install -j"$(max_cpus)"
 }

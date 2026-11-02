@@ -29,6 +29,29 @@ class testcase_PortModule(SSTTestCase):
         super(type(self), self).tearDown()
 
 
+    def test_PortModule_handles(self) -> None:
+        # The handle returned by addPortModule() must refer to the port
+        # module it was returned for: two modules on one port, and one on
+        # another port of the same component.  Only the second module on
+        # the first port modifies events, so the receiver sees modified
+        # events only if that setting reached the right module.
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_PortModule_handles.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_PortModule_handles.out".format(testsuitedir)
+        outfile = "{0}/test_PortModule_handles.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile)
+
+        filters = [ StartsWithFilter("#"), StartsWithFilter("WARNING: No components") ]
+
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filters)
+        if not cmp_result:
+            diffdata = testing_get_diff_data("PortModule_handles")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
     ### Non-checkpoint tests
     #### Non-SubCopmponent tests
     ##### Receive side tests
@@ -95,6 +118,15 @@ class testcase_PortModule(SSTTestCase):
 
     def test_PortModule_randomdrop_send_sub(self) -> None:
         self.port_module_test_template("randomdrop", True, True)
+
+    #### User SubComponent test
+    # Only need to verify that PortModules can be added to a
+    # SubComponent's port, so test one send and one receive case
+    def test_PortModule_modify_recv_usersub(self) -> None:
+        self.port_module_test_template("modify", False, False, False, True)
+
+    def test_PortModule_modify_send_usersub(self) -> None:
+        self.port_module_test_template("modify", True, False, False, True)
 
 
     ### Checkpoint tests
@@ -165,12 +197,34 @@ class testcase_PortModule(SSTTestCase):
         self.port_module_test_template("randomdrop", True, True, True)
 
 
+    def test_PortModule_allstats_params(self) -> None:
+        # Parameters passed to PortModule.enableAllStatistics() must be
+        # used.  The model asks for sst.HistogramStatistic; if the
+        # parameters are dropped, the output shows an Accumulator instead.
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_PortModule_allstats_params.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_PortModule_allstats_params.out".format(testsuitedir)
+        outfile = "{0}/test_PortModule_allstats_params.out".format(outdir)
+
+        self.run_sst(sdlfile, outfile)
+
+        filters = [ StartsWithFilter("#"), StartsWithFilter("WARNING: No components") ]
+        cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filters )
+        if not cmp_result:
+            diffdata = testing_get_diff_data("PortModule_allstats_params")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
+
+
 #####
     # testtype: which test to run
     # bind_on_send: Use send PortModules if set to True, recv PortModules, otherwise
     # use_subcomp: When set to True, will use subcomponent to configure links to test PortModules on shared ports
     # checkpoint: test checkpointing
-    def port_module_test_template(self, testtype: str, bind_on_send: bool, use_subcomp: bool, checkpoint: bool = False) -> None:
+    # use_user_subcomp: When set to True, will use a user subcomponent to configure links and install the PortModules on the subcomponent's ports
+    def port_module_test_template(self, testtype: str, bind_on_send: bool, use_subcomp: bool, checkpoint: bool = False, use_user_subcomp: bool = False) -> None:
 
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -186,6 +240,9 @@ class testcase_PortModule(SSTTestCase):
         if use_subcomp:
             suffix = "{1}_{2}_subcomp".format(outdir,testtype,bind_at)
             subcomp_str = " --subcomp"
+        elif use_user_subcomp:
+            suffix = "{1}_{2}_usersubcomp".format(outdir,testtype,bind_at)
+            subcomp_str = " --usersubcomp"
         else:
             suffix = "{1}_{2}".format(outdir,testtype,bind_at)
             subcomp_str = ""
@@ -199,12 +256,19 @@ class testcase_PortModule(SSTTestCase):
             outfile = "{0}/test_PortModule_{1}.out".format(outdir,suffix)
 
 
+        # When the PortModule is installed on a user subcomponent, the
+        # PortModule names include the subcomponent slot name.  Remove
+        # it so the same reference files can be used.
+        filters = []
+        if use_user_subcomp:
+            filters.append(RemoveRegexFromLineFilter(":port_slot"))
+
         self.run_sst(sdlfile, outfile, other_args=options)
 
         if not checkpoint:
             filter1 = StartsWithFilter("#")
 
-            cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filter1)
+            cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, [filter1] + filters)
             if not cmp_result:
                 diffdata = testing_get_diff_data(testtype)
                 log_failure(diffdata)
@@ -220,7 +284,7 @@ class testcase_PortModule(SSTTestCase):
             filter1 = IgnoreAllBeforeFilter("# Simulation Checkpoint:")
             filter1.apply_to_out_file = False
 
-            cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, filter1)
+            cmp_result = testing_compare_filtered_diff("PortModule", outfile, reffile, True, [filter1] + filters)
             if not cmp_result:
                 diffdata = testing_get_diff_data(testtype)
                 log_failure(diffdata)

@@ -17,6 +17,7 @@
 
 #include "sst/core/componentInfo.h"
 #include "sst/core/link.h"
+#include "sst/core/model/configGraph.h"
 #include "sst/core/objectSerialization.h"
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/rng.h"
@@ -1533,6 +1534,17 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             out.output("ERROR: serializing two pointers to the same object did not work properly\n");
         }
     }
+    else if ( test == "unknown_stat_params" ) {
+        // Setting parameters on a statistic that was never enabled must
+        // give a fatal error, not dereference a null pointer
+        ConfigGraph      graph;
+        ComponentId_t    id   = graph.addComponent("unknown_stat_comp", "coreTestElement.coreTestComponent");
+        ConfigComponent* comp = graph.findComponent(id);
+        Params           p;
+        p.insert("rate", "10ns");
+        comp->setStatisticParameters("not_enabled", p);
+        out.output("ERROR: unknown_stat_params: setStatisticParameters() on an unknown statistic returned\n");
+    }
     else if ( test == "handler" ) {
 
         // Test serialization of handlers
@@ -1762,6 +1774,61 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         SST::Comms::deserialize(buffer, result);
         passed = (atom.load() == result.load()) ? true : false;
         if ( !passed ) out.output("ERROR: std::atomic<int32_t> did not serialize/deserialize properly\n");
+    }
+    else if ( test == "params_shared_set" ) {
+        // A Params subscribed to a shared param set must come back from
+        // checkpoint-mode serialization (pointer tracking on) with the same
+        // keys and values, and no others.  Key ID 0 of a shared set holds
+        // the set's own name and is not a parameter.
+        //
+        // Shared sets can only be created and subscribed to through the
+        // ConfigGraph/ConfigComponent interface, as models do.
+        ConfigGraph graph;
+        graph.addSharedParam("test_params_shared_set", "rate", "10ns");
+        graph.addSharedParam("test_params_shared_set", "resetOnOutput", "true");
+        ComponentId_t    id   = graph.addComponent("shared_set_comp", "coreTestElement.coreTestComponent");
+        ConfigComponent* comp = graph.findComponent(id);
+        comp->addParameter("type", "sst.AccumulatorStatistic", true);
+        comp->addParameter("rate", "5ns", true); // local value takes precedence over the shared set
+        comp->addSharedParamSet("test_params_shared_set");
+        const Params& in = comp->params;
+
+        // Expected: what the Params resolves to before serialization
+        std::map<std::string, std::string> expected = { { "type", "sst.AccumulatorStatistic" }, { "rate", "5ns" },
+            { "resetOnOutput", "true" } };
+
+        auto check_keys = [&](const Params& p, const char* where) {
+            std::set<std::string> keys = p.getKeys();
+            for ( const auto& k : keys ) {
+                if ( expected.count(k) == 0 ) {
+                    out.output("ERROR: params_shared_set %s: unexpected key '%s' = '%s'\n", where, k.c_str(),
+                        p.find<std::string>(k).c_str());
+                }
+            }
+            for ( const auto& [k, v] : expected ) {
+                if ( !p.contains(k) || p.find<std::string>(k) != v ) {
+                    out.output("ERROR: params_shared_set %s: key '%s' should be '%s', got '%s'\n", where, k.c_str(),
+                        v.c_str(), p.find<std::string>(k).c_str());
+                }
+            }
+        };
+
+        check_keys(in, "before serialization");
+
+        Params                               copy(in);
+        SST::Core::Serialization::serializer ser;
+        ser.enable_pointer_tracking();
+        ser.start_sizing();
+        SST_SER(copy);
+        size_t            size = ser.size();
+        std::vector<char> buffer(size);
+        ser.start_packing(buffer.data(), size);
+        SST_SER(copy);
+
+        Params restored;
+        ser.start_unpacking(buffer.data(), size);
+        SST_SER(restored);
+        check_keys(restored, "after checkpoint serialization");
     }
     else if ( test == "complexcontainer" ) {
         // Need to test more complex combinations of containers

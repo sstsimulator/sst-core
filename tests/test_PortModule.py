@@ -31,6 +31,7 @@ def main() -> None:
     parser.add_argument('--send', action='store_true', help="Install PortModule on send")
     parser.add_argument('--recv', action='store_true', help="Install PortModule on receive")
     parser.add_argument('--subcomp', action='store_true', help="Use SubComponent to configure ports")
+    parser.add_argument('--usersubcomp', action='store_true', help="Use user SubComponent to configure ports and install PortModule on the SubComponent's port")
     parser.add_argument('--pass', action='store_true', dest="my_pass", help="Pass event through unchanged")
     parser.add_argument('--drop', action='store_true', help="Drop event")
     parser.add_argument('--modify', action='store_true', help="Modify event")
@@ -52,24 +53,35 @@ def main() -> None:
         print("ERROR: Must enable one, and only one, of --pass, --drop, --modify, --replace or --randomdrop")
         sys.exit()
 
+    if args.subcomp and args.usersubcomp:
+        print("ERROR: Only one of --subcomp or --usersubcomp can be enabled")
+        sys.exit()
+
     num_comps = 12
 
-    params = { "use_subcomponent" : args.subcomp,
+    params = { "use_subcomponent" : args.subcomp or args.usersubcomp,
                "repeat_last" : args.randomdrop }
 
-    comp = sst.Component("comp0", "coreTestElement.coreTestPortModuleComponent")
-    comp.addParams(params)
+    # Creates a component and returns the element whose ports links
+    # and PortModules should be attached to: the component itself, or
+    # its user SubComponent if --usersubcomp is set
+    def create_comp(name):
+        c = sst.Component(name, "coreTestElement.coreTestPortModuleComponent")
+        c.addParams(params)
+        if args.usersubcomp:
+            return c, c.setSubComponent("port_slot", "coreTestElement.PortSubComponent")
+        return c, c
+
+    _, comp = create_comp("comp0")
     for x in range(num_comps - 2):
-        comp2 = sst.Component("comp{0}".format(x+1),"coreTestElement.coreTestPortModuleComponent")
-        comp2.addParams(params)
+        _, comp2 = create_comp("comp{0}".format(x+1))
         link = sst.Link("link_{0}".format(x))
         link.connect((comp,"right","1ns"),(comp2,"left","1ns"))
         comp = comp2
 
-    comp2 = sst.Component("comp{0}".format(num_comps-1),"coreTestElement.coreTestPortModuleComponent")
-    comp2.addParams(params)
-    comp2.enableAllStatistics() # Only the last component counts stats
-    comp2.setStatisticLoadLevel(1)
+    last_comp, comp2 = create_comp("comp{0}".format(num_comps-1))
+    last_comp.enableAllStatistics() # Only the last component counts stats
+    last_comp.setStatisticLoadLevel(1)
     link = sst.Link("link_{0}".format(num_comps-1))
     link.connect((comp,"right","1ns"),(comp2,"left","1ns"))
 

@@ -54,11 +54,35 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_pointer_tracking(self):
         self.serialization_test_template("pointer_tracking")
 
+    def test_Serialization_unknown_stat_params(self):
+        # setStatisticParameters() on a statistic that was never enabled
+        # must give a fatal error (exit code 1), not crash
+        testsuitedir = self.get_testsuite_dir()
+        outdir = test_output_get_run_dir()
+
+        sdlfile = "{0}/test_Serialization.py".format(testsuitedir)
+        reffile = "{0}/refFiles/test_Serialization_unknown_stat_params.out".format(testsuitedir)
+        outfile = "{0}/test_Serialization_unknown_stat_params.out".format(outdir)
+        errfile = "{0}/test_Serialization_unknown_stat_params.err".format(outdir)
+
+        options = "--run-mode=init --model-options=\"unknown_stat_params\""
+        self.run_sst(sdlfile, outfile, errfile, num_ranks=1, num_threads=1, other_args=options, expected_rc=1)
+
+        filters = [IgnoreAllAfterFilter("SST Fatal"), RemoveRegexFromLineFilter(r"FATAL: #(\[[0-9]+:[0-9]+\])* ")]
+        cmp_result = testing_compare_filtered_diff("unknown_stat_params", errfile, reffile, False, filters)
+        if not cmp_result:
+            diffdata = testing_get_diff_data("unknown_stat_params")
+            log_failure(diffdata)
+        self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(errfile, reffile))
+
     def test_Serialization_handler(self):
         self.serialization_test_template("handler", False)
 
     def test_Serialization_component_info(self):
         self.serialization_test_template("componentinfo", False)
+
+    def test_Serialization_params_shared_set(self):
+        self.serialization_test_template("params_shared_set")
 
     def test_Serialization_atomic(self):
         self.serialization_test_template("atomic")

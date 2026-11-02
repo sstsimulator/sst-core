@@ -1784,7 +1784,9 @@ Simulation::writeCheckpointConfigGraph(ConfigGraph* graph)
     if ( !graph->cpt_orig_configgraph.empty() && !graph->cpt_repartition ) {
         // We are restarting (known because we have an original configgraph), but are not repartitioning, so the main
         // ConfigGraph data structure will be empty.  We will just copy the file
-        std::filesystem::copy_file(graph->cpt_orig_configgraph, checkpoint_directory_ + "/" + checkpoint_configgraph_);
+        std::ifstream src(graph->cpt_orig_configgraph, std::ios::binary);
+        std::ofstream dst(checkpoint_directory_ + "/" + checkpoint_configgraph_, std::ios::binary);
+        dst << src.rdbuf();
         return;
     }
 
