@@ -102,6 +102,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_aggregate(self):
         self.serialization_test_template("aggregate")
 
+    def test_Serialization_stdmem(self):
+        self.serialization_test_template("stdmem")
+
 #####
     def serialization_test_template(self, testtype, default_reffile = True):
 
