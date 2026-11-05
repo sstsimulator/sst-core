@@ -8,6 +8,13 @@ target_include_directories(sst-config-headers
 install(FILES ${sst-core_BINARY_DIR}/src/sst/core/sst_config.h
         DESTINATION include/sst/core)
 
+# Tell sst-elements (via sst-config DEBUG_SYMBOLS) whether full debug symbols are used
+if(CMAKE_BUILD_TYPE MATCHES "^(Debug|RelWithDebInfo)$")
+  set(SST_DEBUG_SYMBOLS_STR "yes")
+else()
+  set(SST_DEBUG_SYMBOLS_STR "no")
+endif()
+
 configure_file(sstsimulator.conf.in
                ${sst-core_BINARY_DIR}/src/sst/sstsimulator.conf)
 install(FILES ${sst-core_BINARY_DIR}/src/sst/sstsimulator.conf
