@@ -15,7 +15,7 @@ SST 16.1 has been tested in the following environments.
 | Ubuntu 24.04 | gcc 13.3  | 3.12   | 4.1.6   |
 | Ubuntu 26.04 | gcc 15.2  | 3.14   | 5.0.10* |
 
-\* When using the OpenMPI 5.0.10 package on Ubuntu 26.04, SST 16.0 sometimes produces garbled output although it appears to simulate correctly otherwise.
+\* When using the OpenMPI 5.0.10 package on Ubuntu 26.04, SST 16.1 sometimes produces garbled output although it appears to simulate correctly otherwise.
 
 
 Additional SST platform information can be found at:
