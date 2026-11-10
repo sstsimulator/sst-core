@@ -22,6 +22,7 @@
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/rng.h"
 #include "sst/core/serialization/impl/serialize_utility.h"
+#include "sst/core/sparseVectorMap.h"
 #include "sst/core/warnmacros.h"
 
 #include <array>
@@ -962,6 +963,135 @@ testSharedPtr(Output& output, const std::unique_ptr<SST::RNG::Random>& rng)
     });
 }
 
+// SparseVectorMap element types used by the serialization round-trip test.
+struct SvmTestRecord
+{
+    uint64_t id_;
+    uint64_t payload;
+    uint64_t key() const { return id_; }
+};
+
+struct SvmNoKeyRecord
+{
+    uint64_t recordId;
+    uint64_t payload;
+};
+
+struct SvmNoKeyExtract
+{
+    static uint64_t get(const SvmNoKeyRecord& r) { return r.recordId; }
+};
+
+// Round-trips `in` into `restored` and checks that restored holds exactly
+// `keys` with payload == key * 10.  Lookups are checked before anything
+// forces a merge on the restored copy, then iteration must be sorted.
+template <typename MapT, typename KeyFn, typename PayloadFn>
+void
+checkSvmRoundTrip(Output& out, const char* name, MapT& in, MapT& restored, const std::vector<uint64_t>& keys,
+    KeyFn keyOf, PayloadFn payloadOf)
+{
+    serializeDeserialize(in, restored);
+
+    if ( restored.size() != keys.size() )
+        out.output("ERROR: SparseVectorMap<%s> size incorrect after serialize/deserialize\n", name);
+    for ( uint64_t k : keys ) {
+        if ( !restored.contains(k) || payloadOf(restored[k]) != k * 10 )
+            out.output("ERROR: SparseVectorMap<%s> lookup incorrect after serialize/deserialize for key %llu\n", name,
+                (unsigned long long)k);
+    }
+    if ( restored.contains(1000) )
+        out.output("ERROR: SparseVectorMap<%s> found absent key after serialize/deserialize\n", name);
+
+    uint64_t prev  = 0;
+    bool     first = true;
+    size_t   count = 0;
+    for ( auto it = restored.begin(); it != restored.end(); ++it ) {
+        uint64_t k = keyOf(*it);
+        if ( !first && !(prev < k) )
+            out.output("ERROR: SparseVectorMap<%s> not sorted after serialize/deserialize\n", name);
+        prev  = k;
+        first = false;
+        ++count;
+    }
+    if ( count != keys.size() )
+        out.output("ERROR: SparseVectorMap<%s> iteration count incorrect after serialize/deserialize\n", name);
+}
+
+// Serialization of SST::SparseVectorMap.  keys is a permutation of
+// 0..79, out of order and comfortably past SparseVectorMap's
+// 64-element no-tail threshold, so maps built from it (inserted one
+// at a time) hold a genuine unmerged sorted tail and the round trip
+// covers the two-run internal state.  (Below that threshold every
+// insert goes directly to its sorted position and no tail is ever
+// created -- see sparseVectorMap.h.)  Non-serialization behavior is
+// tested by the coreTestUtility component.
+void
+testSparseVectorMapSerialization(Output& out)
+{
+    using SST::SparseVectorMap;
+    std::vector<uint64_t> keys;
+    keys.reserve(80);
+    for ( uint64_t i = 0; i < 80; ++i )
+        keys.push_back((i * 7919) % 80); // 7919 is coprime with 80, so this is a permutation
+    const std::vector<uint64_t> sorted = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+
+    auto recKey     = [](const SvmTestRecord& r) { return r.id_; };
+    auto recPayload = [](const SvmTestRecord& r) { return r.payload; };
+
+    {
+        SparseVectorMap<uint64_t, SvmTestRecord> in, restored;
+        for ( uint64_t k : keys )
+            in.insert(SvmTestRecord { k, k * 10 });
+        checkSvmRoundTrip(out, "value", in, restored, keys, recKey, recPayload);
+    }
+    {
+        SparseVectorMap<uint64_t, SvmTestRecord> in, restored;
+        for ( uint64_t k : sorted )
+            in.insert(SvmTestRecord { k, k * 10 });
+        checkSvmRoundTrip(out, "value, sorted", in, restored, sorted, recKey, recPayload);
+    }
+    {
+        SparseVectorMap<uint64_t, SvmTestRecord> in, restored;
+        checkSvmRoundTrip(out, "value, empty", in, restored, {}, recKey, recPayload);
+    }
+    {
+        SparseVectorMap<uint64_t, SvmTestRecord*> in, restored;
+        for ( uint64_t k : keys )
+            in.insert(new SvmTestRecord { k, k * 10 });
+        checkSvmRoundTrip(
+            out, "pointer", in, restored, keys, [](const SvmTestRecord* r) { return r->id_; },
+            [](const SvmTestRecord* r) { return r->payload; });
+        for ( auto* r : in )
+            delete r;
+        for ( auto* r : restored )
+            delete r;
+    }
+    {
+        SparseVectorMap<uint64_t> in, restored;
+        for ( uint64_t k : keys )
+            in.insert(k);
+        checkSvmRoundTrip(
+            out, "set", in, restored, keys, [](uint64_t k) { return k; }, [](uint64_t k) { return k * 10; });
+    }
+    {
+        SparseVectorMap<uint64_t, SvmNoKeyRecord, SvmNoKeyExtract> in, restored;
+        for ( uint64_t k : keys )
+            in.insert(SvmNoKeyRecord { k, k * 10 });
+        checkSvmRoundTrip(
+            out, "custom KeyExtract", in, restored, keys, [](const SvmNoKeyRecord& r) { return r.recordId; },
+            [](const SvmNoKeyRecord& r) { return r.payload; });
+    }
+    {
+        using Entry = std::pair<uint64_t, std::string>;
+        SparseVectorMap<uint64_t, Entry> in, restored;
+        for ( uint64_t k : keys )
+            in.insert(Entry { k, std::to_string(k * 10) });
+        checkSvmRoundTrip(
+            out, "pair", in, restored, keys, [](const Entry& e) { return e.first; },
+            [](const Entry& e) { return static_cast<uint64_t>(std::stoull(e.second)); });
+    }
+}
+
 coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     Component(id)
 {
@@ -1869,6 +1999,9 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
             out.output("ERROR: std::map<unsigned,std::pair<unsigned,std::vector<unsigned>>> dir not "
                        "serialize/deserialize properly\n");
         }
+    }
+    else if ( test == "sparsevectormap" ) {
+        testSparseVectorMapSerialization(out);
     }
     else {
         out.fatal(CALL_INFO_LONG, 1, "ERROR: Unknown serialization test specified: %s\n", test.c_str());

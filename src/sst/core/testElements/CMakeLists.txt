@@ -30,7 +30,8 @@ add_library(
   coreTest_Serialization.cc
   coreTest_SharedObjectComponent.cc
   coreTest_StatisticsComponent.cc
-  coreTest_SubComponent.cc)
+  coreTest_SubComponent.cc
+  coreTest_Utility.cc)
 
 add_subdirectory(message_mesh)
 

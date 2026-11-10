@@ -35,6 +35,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_SharedObjectComponent.cc \
 	testElements/coreTest_SubComponent.h \
 	testElements/coreTest_SubComponent.cc \
+	testElements/coreTest_Utility.h \
+	testElements/coreTest_Utility.cc \
 	testElements/coreTest_Module.h \
 	testElements/coreTest_Module.cc \
 	testElements/coreTest_ParamComponent.h \
