@@ -22,6 +22,11 @@ AH_BOTTOM([
 ])
 AC_CONFIG_HEADERS([src/sst/core/sst_config.h])
 
+# Record whether the user set CFLAGS/CXXFLAGS before AC_PROG_CC/AC_PROG_CXX
+# supply their defaults (used by SST_ENABLE_DEBUG_SYMBOLS)
+sst_user_cflags_set="${CFLAGS+set}"
+sst_user_cxxflags_set="${CXXFLAGS+set}"
+
 # Lets check for the standard compilers and basic options
 AC_PROG_CC
 AM_PROG_CC_C_O
@@ -30,6 +35,10 @@ AC_C_INLINE
 AC_PROG_MAKE_SET
 
 AC_PROG_CXX
+
+# Debug options (--enable-debug, --enable-debug-output, --enable-debug-symbols)
+SST_ENABLE_DEBUG_OUTPUT()
+SST_ENABLE_DEBUG_SYMBOLS()
 AC_CACHE_SAVE
 
 AC_PROG_CPP
@@ -92,7 +101,6 @@ SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 
-SST_ENABLE_DEBUG_OUTPUT()
 SST_ENABLE_DEBUG_EVENT_TRACKING()
 SST_ENABLE_PERF_TRACKING()
 
@@ -232,10 +240,15 @@ if test "x$use_mempool" = "xyes" ; then
 else
     printf "%38s : No\n" "Mempool enabled"
 fi
-if test "x$enable_debug" = "xyes" ; then
+if test "x$enable_debug_output" = "xyes" ; then
     printf "%38s : Yes\n" "Debug output enabled"
 else
     printf "%38s : No\n" "Debug output enabled"
+fi
+if test "x$enable_debug_symbols" = "xyes" ; then
+    printf "%38s : Yes\n" "Full debug symbols enabled"
+else
+    printf "%38s : No\n" "Full debug symbols enabled"
 fi
 if test "x$enable_debug_event_tracking" = "xyes" ; then
     printf "%38s : Yes\n" "Event tracking enabled"
