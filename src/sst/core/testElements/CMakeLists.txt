@@ -25,6 +25,7 @@ add_library(
   coreTest_MessageGeneratorComponent.cc
   coreTest_Module.cc
   coreTest_ParamComponent.cc
+  coreTest_Payload.cc
   coreTest_PerfComponent.cc
   coreTest_RNGComponent.cc
   coreTest_Serialization.cc

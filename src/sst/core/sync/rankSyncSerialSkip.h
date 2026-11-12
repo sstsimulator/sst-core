@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
 #include <atomic>
@@ -82,10 +83,9 @@ private:
 
     struct comm_pair : public SST::Core::Serialization::serializable
     {
-        RankSyncQueue* squeue; // RankSyncQueue
-        char*          rbuf;   // receive buffer
-        uint32_t       local_size;
-        uint32_t       remote_size;
+        RankSyncQueue*     squeue;      // RankSyncQueue
+        RankSyncRecvBuffer rbuf;        // receive buffer
+        size_t             remote_size; // size of the first message the remote rank can receive
 
         void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
         ImplementSerializable(comm_pair)

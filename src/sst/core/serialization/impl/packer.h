@@ -17,10 +17,12 @@
     "The header file sst/core/serialization/impl/packer.h should not be directly included as it is not part of the stable public API.  The file is included in sst/core/serialization/serializer.h"
 #endif
 
+#include "sst/core/serialization/chunked_buffer.h"
 #include "sst/core/serialization/impl/get_array_size.h"
 #include "sst/core/serialization/impl/ser_buffer_accessor.h"
 #include "sst/core/serialization/impl/ser_shared_ptr_tracker.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <set>
@@ -29,18 +31,27 @@
 
 namespace SST::Core::Serialization::pvt {
 
-class ser_packer : public ser_buffer_accessor, public ser_shared_ptr_packer
+// Pointer tracking state used when packing, common to ser_packer and ser_packer_growable
+class ser_pack_tracker : public ser_shared_ptr_packer
 {
     std::set<uintptr_t> pointer_set;
 
 public:
-    // inherit ser_buffer_accessor constructors
-    using ser_buffer_accessor::ser_buffer_accessor;
+    bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
+}; // class ser_pack_tracker
 
+// Packing operations, implemented in terms of PACKER::write(const void* data, size_t size) and
+// PACKER::write_value(const T& t)
+template <typename PACKER>
+class ser_pack_ops
+{
+    PACKER& packer() { return static_cast<PACKER&>(*this); }
+
+public:
     template <typename T>
     void pack(const T& t)
     {
-        memcpy(buf_next(sizeof(t)), &t, sizeof(t));
+        packer().write_value(t);
     }
 
     template <typename T, typename SIZE_T>
@@ -53,12 +64,85 @@ public:
             size = 0;
         using ELEM_T = std::conditional_t<std::is_void_v<T>, char, T>; // Use char if T == void
         pack(size);
-        memcpy(buf_next(size * sizeof(ELEM_T)), buffer, size * sizeof(ELEM_T));
+        packer().write(buffer, size * sizeof(ELEM_T));
     }
 
-    void pack_string(const std::string& str) { pack_buffer(str.data(), str.size()); }
-    bool check_pointer_pack(uintptr_t ptr) { return !pointer_set.insert(ptr).second; }
+    // Defined in packer.cc, so that it is not inlined into serializer::string()
+    void pack_string(const std::string& str);
+}; // class ser_pack_ops
+
+// Packer which writes to a single caller supplied buffer, which must be large enough to hold all of the data
+class ser_packer : public ser_buffer_accessor, public ser_pack_tracker, public ser_pack_ops<ser_packer>
+{
+public:
+    // inherit ser_buffer_accessor constructors
+    using ser_buffer_accessor::ser_buffer_accessor;
+
+    void write(const void* data, size_t size) { memcpy(buf_next(size), data, size); }
+
+    template <typename T>
+    void write_value(const T& t)
+    {
+        write(&t, sizeof(t));
+    }
 }; // class ser_packer
+
+// Packer which writes to a chunked_buffer, allocating chunks as needed
+class ser_packer_growable : public ser_pack_tracker, public ser_pack_ops<ser_packer_growable>
+{
+    chunked_buffer& buf_;
+    char*           cur_ = nullptr; // next byte to write in the current chunk
+    char*           end_ = nullptr; // end of the current chunk
+
+    // Write data which does not fit in the current chunk
+    void write_slow(const char* data, size_t size);
+
+    // Write the first size bytes of word, which does not fit in the current chunk. Small values are passed in a
+    // register instead of by address, so that callers' local variables do not need stack frames to hold them.
+    void write_slow_word(uint64_t word, size_t size);
+
+public:
+    // Packing starts with an empty buffer. No chunk is allocated until data is written.
+    explicit ser_packer_growable(chunked_buffer& buf) :
+        buf_(buf)
+    {
+        buf_.clear();
+    }
+
+    ser_packer_growable(const ser_packer_growable&)            = delete;
+    ser_packer_growable& operator=(const ser_packer_growable&) = delete;
+    ~ser_packer_growable()                                     = default;
+
+    void write(const void* data, size_t size)
+    {
+        if ( size <= static_cast<size_t>(end_ - cur_) ) {
+            memcpy(cur_, data, size);
+            cur_ += size;
+            buf_.size_ += size;
+        }
+        else
+            write_slow(static_cast<const char*>(data), size);
+    }
+
+    template <typename T>
+    void write_value(const T& t)
+    {
+        if ( sizeof(T) <= static_cast<size_t>(end_ - cur_) ) {
+            memcpy(cur_, &t, sizeof(T));
+            cur_ += sizeof(T);
+            buf_.size_ += sizeof(T);
+        }
+        else if constexpr ( sizeof(T) <= sizeof(uint64_t) ) {
+            uint64_t word = 0;
+            memcpy(&word, &t, sizeof(T));
+            write_slow_word(word, sizeof(T));
+        }
+        else
+            write_slow(reinterpret_cast<const char*>(&t), sizeof(T));
+    }
+
+    size_t size() const { return buf_.size(); }
+}; // class ser_packer_growable
 
 } // namespace SST::Core::Serialization::pvt
 

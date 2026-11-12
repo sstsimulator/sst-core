@@ -105,8 +105,40 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_sparsevectormap(self):
         self.serialization_test_template("sparsevectormap")
 
+    def test_Serialization_chunked(self):
+        self.serialization_test_template("chunked")
+
+    # Repeat tests which use the serializeDeserialize() helper, also packing and unpacking with a chunked_buffer.
+    # A small odd chunk size makes most writes cross chunk boundaries.
+    def test_Serialization_pod_chunked(self):
+        self.serialization_test_template("pod", chunk_size=3)
+
+    def test_Serialization_pod_ptr_chunked(self):
+        self.serialization_test_template("pod_ptr", chunk_size=3)
+
+    def test_Serialization_array_chunked(self):
+        self.serialization_test_template("array", chunk_size=3)
+
+    def test_Serialization_ordered_containers_chunked(self):
+        self.serialization_test_template("ordered_containers", chunk_size=3)
+
+    def test_Serialization_optional_chunked(self):
+        self.serialization_test_template("optional", chunk_size=3)
+
+    def test_Serialization_unique_ptr_chunked(self):
+        self.serialization_test_template("unique_ptr", chunk_size=3)
+
+    def test_Serialization_variant_chunked(self):
+        self.serialization_test_template("variant", chunk_size=3)
+
+    def test_Serialization_shared_ptr_chunked(self):
+        self.serialization_test_template("shared_ptr", chunk_size=3)
+
+    def test_Serialization_aggregate_chunked(self):
+        self.serialization_test_template("aggregate", chunk_size=3)
+
 #####
-    def serialization_test_template(self, testtype, default_reffile = True):
+    def serialization_test_template(self, testtype, default_reffile = True, chunk_size = 0):
 
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
@@ -117,9 +149,12 @@ class testcase_Serialization(SSTTestCase):
         else:
             reffile = "{0}/refFiles/test_Serialization_{1}.out".format(testsuitedir,testtype)
 
-        outfile = "{0}/test_Serialization_{1}.out".format(outdir,testtype)
-
-        options = "--run-mode=init --model-options=\"{0}\"".format(testtype)
+        if chunk_size:
+            outfile = "{0}/test_Serialization_{1}_chunked.out".format(outdir,testtype)
+            options = "--run-mode=init --model-options=\"{0} {1}\"".format(testtype, chunk_size)
+        else:
+            outfile = "{0}/test_Serialization_{1}.out".format(outdir,testtype)
+            options = "--run-mode=init --model-options=\"{0}\"".format(testtype)
         # Force serial run since the serialization is all done in-situ
         self.run_sst(sdlfile, outfile, num_ranks=1, num_threads=1, other_args=options)
 

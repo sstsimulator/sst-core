@@ -90,6 +90,7 @@ nobase_dist_sst_HEADERS = \
 	eli/simpleInfo.h \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
+	serialization/chunked_buffer.h \
 	serialization/serializable.h \
 	serialization/serializable_base.h \
 	serialization/serialize.h \
@@ -231,6 +232,8 @@ sst_core_sources = \
 	serialization/serializable_base.cc \
 	serialization/serializable.cc \
 	serialization/serializer.cc \
+	serialization/chunked_buffer.cc \
+	serialization/impl/packer.cc \
 	serialization/impl/unpacker.cc \
 	serialization/impl/ser_shared_ptr_tracker.cc \
 	serialization/statics.cc \

@@ -15,6 +15,7 @@
 #include "sst/core/sst_mpi.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
 #include <atomic>
@@ -85,15 +86,13 @@ private:
     struct comm_send_pair : public SST::Core::Serialization::serializable
     {
         RankInfo       to_rank;
-        RankSyncQueue* squeue; // RankSyncQueue
-        char*          sbuf;
-        uint32_t       remote_size;
+        RankSyncQueue* squeue;      // RankSyncQueue
+        size_t         remote_size; // size of the first message the remote rank can receive
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             SST_SER(to_rank);
             // squeue - empty so recreate on restart
-            // sbuf - empty so recreate on restart
             // remote_size - don't need
         }
         ImplementSerializable(comm_send_pair)
@@ -103,9 +102,8 @@ private:
     {
         uint32_t               remote_rank;
         uint32_t               local_thread;
-        char*                  rbuf; // receive buffer
+        RankSyncRecvBuffer     rbuf; // receive buffer
         std::vector<Activity*> activity_vec;
-        uint32_t               local_size;
         bool                   recv_done;
 #ifdef SST_CONFIG_HAVE_MPI
         MPI_Request req;

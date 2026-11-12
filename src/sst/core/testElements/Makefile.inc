@@ -51,6 +51,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_Checkpoint.cc \
 	testElements/coreTest_OverheadMeasure.h \
 	testElements/coreTest_OverheadMeasure.cc \
+	testElements/coreTest_Payload.h \
+	testElements/coreTest_Payload.cc \
         testElements/message_mesh/messageEvent.h \
 	testElements/message_mesh/enclosingComponent.h \
 	testElements/message_mesh/enclosingComponent.cc

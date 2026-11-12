@@ -17,18 +17,38 @@
 
 namespace SST::Core::Serialization {
 
+pvt::ser_pack_tracker&
+serializer::packer()
+{
+    if ( ser_.index() == PACK_GROWABLE ) return std::get<PACK_GROWABLE>(ser_);
+    return std::get<PACK>(ser_);
+}
+
+pvt::ser_unpack_tracker&
+serializer::unpacker()
+{
+    if ( ser_.index() == UNPACK_GROWABLE ) return std::get<UNPACK_GROWABLE>(ser_);
+    return std::get<UNPACK>(ser_);
+}
+
 void
 serializer::raw(void* data, size_t size)
 {
     switch ( mode() ) {
     case SIZER:
-        sizer().add(size);
+        active<SIZER>().add(size);
         break;
     case PACK:
-        memcpy(packer().buf_next(size), data, size);
+        if ( ser_.index() == PACK_GROWABLE )
+            active<PACK_GROWABLE>().write(data, size);
+        else
+            active<PACK>().write(data, size);
         break;
     case UNPACK:
-        memcpy(data, unpacker().buf_next(size), size);
+        if ( ser_.index() == UNPACK_GROWABLE )
+            active<UNPACK_GROWABLE>().read(data, size);
+        else
+            active<UNPACK>().read(data, size);
         break;
     case MAP:
         break;
@@ -40,11 +60,11 @@ serializer::size()
 {
     switch ( mode() ) {
     case SIZER:
-        return sizer().size();
+        return active<SIZER>().size();
     case PACK:
-        return packer().size();
+        return ser_.index() == PACK_GROWABLE ? active<PACK_GROWABLE>().size() : active<PACK>().size();
     case UNPACK:
-        return unpacker().size();
+        return ser_.index() == UNPACK_GROWABLE ? active<UNPACK_GROWABLE>().size() : active<UNPACK>().size();
     default:
         return 0;
     }
@@ -55,13 +75,19 @@ serializer::string(std::string& str)
 {
     switch ( mode() ) {
     case SIZER:
-        sizer().size_string(str);
+        active<SIZER>().size_string(str);
         break;
     case PACK:
-        packer().pack_string(str);
+        if ( ser_.index() == PACK_GROWABLE )
+            active<PACK_GROWABLE>().pack_string(str);
+        else
+            active<PACK>().pack_string(str);
         break;
     case UNPACK:
-        unpacker().unpack_string(str);
+        if ( ser_.index() == UNPACK_GROWABLE )
+            active<UNPACK_GROWABLE>().unpack_string(str);
+        else
+            active<UNPACK>().unpack_string(str);
         break;
     case MAP:
         break;
