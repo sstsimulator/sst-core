@@ -1904,7 +1904,7 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         // Every built-in request type must deserialize as the same type through a base class pointer
         {
             std::vector<StandardMem::Request*> reqs;
-            auto* read = new StandardMem::Read(0x1000, 64, 0, 0x2000, 0x10, 3);
+            auto*                              read = new StandardMem::Read(0x1000, 64, 0, 0x2000, 0x10, 3);
             reqs.push_back(read);
             reqs.push_back(new StandardMem::ReadResp(read, std::vector<uint8_t>(64, 7)));
             auto* write = new StandardMem::Write(0x1040, 4, std::vector<uint8_t> { 1, 2, 3, 4 });
