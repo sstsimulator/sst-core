@@ -17,6 +17,7 @@
 #include "sst/core/link.h"
 #include "sst/core/params.h"
 #include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
@@ -28,6 +29,7 @@
 #include <iomanip>
 #include <ios>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -54,6 +56,12 @@ namespace SST::Interfaces {
  *  - req.makeResponse() should be used to generate a correctly populated response event.
  *      - Any additional fields that need to be set manually are noted in function comments
  *  - req.needsResponse() should be used to determine whether a response should be sent.
+ *
+ * Ownership:
+ *  - send() and sendUntimedData() transfer ownership of the Request to the interface.
+ *  - Requests delivered to the handler or returned by recvUntimedData() or poll() are owned by
+ *    the receiver, which is responsible for deleting them.
+ *  - CustomReq and CustomResp own the CustomData object they hold. See CustomData for details.
  *
  * Built-in commands
  * Basic:
@@ -98,6 +106,9 @@ public:
        and the class is created with:
 
          new stdMem::Handler<classname, &classname::function_name, dataT>(this, data)
+
+       The callback function takes ownership of the Request passed to it and is
+       responsible for deleting it.
      */
     template <typename classT, auto funcT, typename dataT = void>
     using Handler = SSTHandler<void, Request*, classT, dataT, funcT>;
@@ -420,11 +431,12 @@ public:
             SST_SER(pAddr);
             SST_SER(vAddr);
             SST_SER(size);
+            SST_SER(data);
             SST_SER(iPtr);
             SST_SER(tid);
         }
 
-        ImplementSerializable(SST::Interfaces::StandardMem::Read);
+        ImplementSerializable(SST::Interfaces::StandardMem::ReadResp);
     };
 
     /** Request to write data.
@@ -1175,8 +1187,22 @@ public:
         ImplementSerializable(SST::Interfaces::StandardMem::InvNotify);
     };
 
-    /* This class can be inherited to create custom events that can be handled in a limited fashion by existing
-     * interfaces Child class must be serializable
+    /**
+     * Base class for the data carried by CustomReq and CustomResp.
+     * This class can be inherited to create custom events that can be handled in a limited fashion by existing
+     * interfaces.
+     *
+     * Child classes must be serializable (implement serialize_order() and use ImplementSerializable()) so
+     * that the data can be sent across rank boundaries and checkpointed.
+     *
+     * Ownership: a CustomData object should have exactly one owner at a time. A CustomReq or CustomResp owns
+     * the CustomData object it holds. Ownership is transferred into a request/response through its
+     * constructors, setData(), and resetData() and out of it through releaseData() and takeData().
+     *
+     * NOTE: Starting in SST 17, the CustomReq and CustomResp destructors will delete the CustomData object
+     * they hold. To write code that is correct both before and after this change, take ownership of the data
+     * with releaseData() or takeData() before deleting a request or response if the data is still needed, and
+     * do not keep or delete a pointer to data that a request or response still holds.
      */
     class CustomData : public SST::Core::Serialization::serializable
     {
@@ -1185,9 +1211,39 @@ public:
         virtual ~CustomData() {}
         virtual Addr     getRoutingAddress() = 0; /* Return address to use for routing this event to its destination */
         virtual uint64_t getSize()           = 0; /* Return size to use when accounting for bandwidth used is needed */
-        virtual CustomData* makeResponse()   = 0; /* Return a CustomData* object formatted as a response */
+        /**
+         * Return a new CustomData object formatted as a response.
+         * Ownership of the returned object is transferred to the caller.
+         */
+        virtual CustomData* makeResponse()   = 0;
         virtual bool        needsResponse()  = 0; /* Return whether a response is needed */
         virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
+
+        /**
+         * Return a deep copy of this object.
+         * Ownership of the returned object is transferred to the caller.
+         *
+         * The default implementation copies the object by serializing and then deserializing it, so it
+         * requires serialize_order() to capture all of the object's state. Child classes may override this
+         * function to provide a more efficient copy.
+         */
+        virtual CustomData* clone() const
+        {
+            // Serialization does not modify the object but serialize_order() is not const
+            CustomData*                          self = const_cast<CustomData*>(this);
+            SST::Core::Serialization::serializer ser;
+            ser.start_sizing();
+            SST_SER(self);
+            size_t            size = ser.size();
+            std::vector<char> buffer(size);
+            ser.start_packing(buffer.data(), size);
+            SST_SER(self);
+
+            CustomData* copy = nullptr;
+            ser.start_unpacking(buffer.data(), size);
+            SST_SER(copy);
+            return copy;
+        }
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override = 0;
@@ -1195,20 +1251,55 @@ public:
         ImplementVirtualSerializable(CustomData);
     };
 
+    /* CustomReq and CustomResp use their own deprecated data members internally */
+    DISABLE_WARN_DEPRECATED_DECLARATION
+
+    /**
+     * Request that encapsulates a CustomData object defining some request type.
+     * The request owns its CustomData object. See CustomData for ownership details.
+     */
     class CustomReq : public Request
     {
     public:
+        /**
+         * Construct a CustomReq.
+         * This request takes ownership of the CustomData object.
+         */
         explicit CustomReq(CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
             Request(flags),
             data(data),
             iPtr(iPtr),
             tid(tid)
         {}
+
+        /**
+         * Construct a CustomReq.
+         * This request takes ownership of the CustomData object.
+         */
+        explicit CustomReq(std::unique_ptr<CustomData> data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
+            CustomReq(data.release(), flags, iPtr, tid)
+        {}
+
+        /**
+         * Destructor.
+         * NOTE: The CustomData object is not currently deleted. Starting in SST 17, the destructor will delete
+         * the CustomData object held by this request.
+         */
         virtual ~CustomReq() {}
 
+        /**
+         * Create a CustomResp for this request.
+         * The response's CustomData object is created with CustomData::makeResponse(). If this request holds no
+         * CustomData object, the response will not hold one either.
+         */
         virtual Request* makeResponse() override { return new CustomResp(this); }
 
-        virtual bool needsResponse() override { return data->needsResponse(); }
+        /**
+         * Return whether this request needs a response, as determined by its CustomData object.
+         * Returns false if this request holds no CustomData object (e.g., after releaseData()), so query this
+         * before transferring the data elsewhere if the answer is needed.
+         */
+        virtual bool needsResponse() override { return data ? data->needsResponse() : false; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
 
@@ -1217,14 +1308,21 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID: " << id << ", Type: CustomReq, Flags: [" << getFlagString() << "], " << data->getString();
+            str << "ID: " << id << ", Type: CustomReq, Flags: [" << getFlagString() << "], "
+                << (data ? data->getString() : "Data: None");
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
             return str.str();
         }
 
         /**
+         * Return whether this request holds a CustomData object.
+         */
+        bool hasData() const { return data != nullptr; }
+
+        /**
          * Get the CustomData object associated with this request.
          * Ownership of the CustomData object is retained by this request.
+         * This request must hold a CustomData object (see hasData()).
          */
         CustomData& getData() { return *data; }
 
@@ -1232,6 +1330,7 @@ public:
          * Get the CustomData object associated with this request.
          * Ownership of the CustomData object is retained by this request.
          * The returned data cannot be modified.
+         * This request must hold a CustomData object (see hasData()).
          */
         const CustomData& getData() const { return *data; }
 
@@ -1243,9 +1342,17 @@ public:
          */
         void setData(CustomData* d)
         {
-            delete data;
+            if ( d != data ) delete data;
             data = d;
         }
+
+        /**
+         * Set the CustomData object associated with this request to a new
+         * value.
+         * This request takes ownership of the CustomData object.
+         * The previous CustomData object is deleted.
+         */
+        void setData(std::unique_ptr<CustomData> d) { setData(d.release()); }
 
         /**
          * Reset the CustomData object associated with this request to a new
@@ -1264,13 +1371,24 @@ public:
          */
         CustomData* releaseData() { return resetData(); }
 
+        /**
+         * Obtain the CustomData object associated with this request.
+         * Ownership of the CustomData object is transferred to the caller.
+         * This request no longer holds a CustomData object afterwards.
+         */
+        std::unique_ptr<CustomData> takeData() { return std::unique_ptr<CustomData>(releaseData()); }
+
+        [[deprecated("Direct access to CustomReq::data is deprecated and the member will become private in SST 17, "
+                     "when the CustomReq destructor will also begin deleting the CustomData object. Use getData(), "
+                     "setData(), releaseData(), or takeData() instead.")]]
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
 
         /* Serialization */
         CustomReq() :
-            Request(0, 0)
+            Request(0, 0),
+            data(nullptr)
         {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -1284,21 +1402,62 @@ public:
         ImplementSerializable(SST::Interfaces::StandardMem::CustomReq);
     };
 
+    /**
+     * Response that encapsulates a CustomData object defining some response type.
+     * The response owns its CustomData object. See CustomData for ownership details.
+     */
     class CustomResp : public Request
     {
     public:
+        /**
+         * Construct a CustomResp.
+         * This response takes ownership of the CustomData object.
+         */
         CustomResp(id_t id, CustomData* data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
             Request(id, flags),
             data(data),
             iPtr(iPtr),
             tid(tid)
         {}
+
+        /**
+         * Construct a CustomResp.
+         * This response takes ownership of the CustomData object.
+         */
+        CustomResp(id_t id, std::unique_ptr<CustomData> data, flags_t flags = 0, Addr iPtr = 0, uint32_t tid = 0) :
+            CustomResp(id, data.release(), flags, iPtr, tid)
+        {}
+
+        /**
+         * Construct a response to req.
+         * The response's CustomData object is created with req's CustomData::makeResponse(). If req holds no
+         * CustomData object, this response will not hold one either.
+         */
         explicit CustomResp(CustomReq* req) :
             Request(req->getID(), req->getAllFlags()),
-            data(req->getData().makeResponse()),
+            data(req->data ? req->data->makeResponse() : nullptr),
             iPtr(req->iPtr),
             tid(req->tid)
         {}
+
+        /**
+         * Construct a response to req that holds the given CustomData object instead of one created by
+         * CustomData::makeResponse(). For example, this allows an interface to return the request's
+         * (possibly modified) CustomData object to the requestor.
+         * This response takes ownership of the CustomData object.
+         */
+        CustomResp(CustomReq* req, std::unique_ptr<CustomData> data) :
+            Request(req->getID(), req->getAllFlags()),
+            data(data.release()),
+            iPtr(req->iPtr),
+            tid(req->tid)
+        {}
+
+        /**
+         * Destructor.
+         * NOTE: The CustomData object is not currently deleted. Starting in SST 17, the destructor will delete
+         * the CustomData object held by this response.
+         */
         virtual ~CustomResp() {}
 
         virtual Request* makeResponse() override { return nullptr; }
@@ -1312,14 +1471,21 @@ public:
         std::string getString() override
         {
             std::ostringstream str;
-            str << "ID: " << id << ", Type: CustomResp, Flags: [" << getFlagString() << "], " << data->getString();
+            str << "ID: " << id << ", Type: CustomResp, Flags: [" << getFlagString() << "], "
+                << (data ? data->getString() : "Data: None");
             str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
             return str.str();
         }
 
         /**
+         * Return whether this response holds a CustomData object.
+         */
+        bool hasData() const { return data != nullptr; }
+
+        /**
          * Get the CustomData object associated with this response.
          * Ownership of the CustomData object is retained by this response.
+         * This response must hold a CustomData object (see hasData()).
          */
         CustomData& getData() { return *data; }
 
@@ -1327,6 +1493,7 @@ public:
          * Get the CustomData object associated with this response.
          * Ownership of the CustomData object is retained by this response.
          * The returned data cannot be modified.
+         * This response must hold a CustomData object (see hasData()).
          */
         const CustomData& getData() const { return *data; }
 
@@ -1338,9 +1505,17 @@ public:
          */
         void setData(CustomData* d)
         {
-            delete data;
+            if ( d != data ) delete data;
             data = d;
         }
+
+        /**
+         * Set the CustomData object associated with this response to a new
+         * value.
+         * This response takes ownership of the CustomData object.
+         * The previous CustomData object is deleted.
+         */
+        void setData(std::unique_ptr<CustomData> d) { setData(d.release()); }
 
         /**
          * Reset the CustomData object associated with this response to a new
@@ -1359,13 +1534,24 @@ public:
          */
         CustomData* releaseData() { return resetData(); }
 
+        /**
+         * Obtain the CustomData object associated with this response.
+         * Ownership of the CustomData object is transferred to the caller.
+         * This response no longer holds a CustomData object afterwards.
+         */
+        std::unique_ptr<CustomData> takeData() { return std::unique_ptr<CustomData>(releaseData()); }
+
+        [[deprecated("Direct access to CustomResp::data is deprecated and the member will become private in SST 17, "
+                     "when the CustomResp destructor will also begin deleting the CustomData object. Use getData(), "
+                     "setData(), releaseData(), or takeData() instead.")]]
         CustomData* data; /* Custom class that holds data for this event */
         Addr        iPtr; /* Instruction pointer */
         uint32_t    tid;  /* Thread ID */
 
         /* Serialization */
         CustomResp() :
-            Request(0, 0)
+            Request(0, 0),
+            data(nullptr)
         {}
 
         virtual void serialize_order(SST::Core::Serialization::serializer& ser) override
@@ -1378,6 +1564,8 @@ public:
 
         ImplementSerializable(SST::Interfaces::StandardMem::CustomResp);
     };
+
+    REENABLE_WARNING
 
     /* Class for implementation-specific converter functions */
     class RequestConverter : public SST::Core::Serialization::serializable
@@ -1513,7 +1701,7 @@ public:
 
     /**
      * Sends a memory-based request during the init()/complete() phases
-     * @param req Request to send
+     * @param req Request to send. Ownership of req is transferred to the interface.
      */
     virtual void sendUntimedData(Request* req) = 0;
 
@@ -1523,14 +1711,15 @@ public:
      * Handler is not used during init()/complete(), parent must
      * poll this interface to get received events.
      *
-     * @return Event if one was received, otherwise nullptr
+     * @return Event if one was received, otherwise nullptr.
+     *          Ownership of the returned Request is transferred to the caller.
      */
     virtual Request* recvUntimedData() = 0;
 
     /**
      * Send a Request through the interface
      *
-     * @param req Request to send
+     * @param req Request to send. Ownership of req is transferred to the interface.
      */
     virtual void send(Request* req) = 0;
 

@@ -16,6 +16,7 @@
 #include "sst/core/testElements/coreTest_Serialization.h"
 
 #include "sst/core/componentInfo.h"
+#include "sst/core/interfaces/stdMem.h"
 #include "sst/core/link.h"
 #include "sst/core/model/configGraph.h"
 #include "sst/core/objectSerialization.h"
@@ -39,6 +40,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -551,6 +553,64 @@ checkUContainerSerializeDeserialize(T*& data)
     }
     return true;
 };
+
+// CustomData used to test StandardMem::CustomReq and StandardMem::CustomResp
+class StdMemTestData : public SST::Interfaces::StandardMem::CustomData
+{
+public:
+    StdMemTestData(uint64_t addr, std::vector<uint32_t> payload, bool response) :
+        addr(addr),
+        payload(std::move(payload)),
+        response(response)
+    {}
+    StdMemTestData() = default;
+
+    uint64_t    getRoutingAddress() override { return addr; }
+    uint64_t    getSize() override { return payload.size() * sizeof(uint32_t); }
+    CustomData* makeResponse() override { return new StdMemTestData(addr, payload, false); }
+    bool        needsResponse() override { return response; }
+    std::string getString() override
+    {
+        return "Addr: " + std::to_string(addr) + ", Words: " + std::to_string(payload.size()) +
+               ", Response: " + (response ? "true" : "false");
+    }
+
+    bool operator==(const StdMemTestData& o) const
+    {
+        return addr == o.addr && payload == o.payload && response == o.response;
+    }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        SST_SER(addr);
+        SST_SER(payload);
+        SST_SER(response);
+    }
+
+    ImplementSerializable(SST::CoreTestSerialization::StdMemTestData);
+
+private:
+    uint64_t              addr = 0;
+    std::vector<uint32_t> payload;
+    bool                  response = false;
+};
+
+// Serialize and deserialize an object through a pointer
+template <typename T>
+T*
+serializeRoundTrip(T* in)
+{
+    std::vector<char> buffer = SST::Comms::serialize(in);
+    return SST::Comms::deserialize<T>(buffer);
+}
+
+// Return true if data is a StdMemTestData that is a distinct copy equal to expected
+bool
+isStdMemTestDataCopy(SST::Interfaces::StandardMem::CustomData& data, StdMemTestData* expected)
+{
+    auto* copy = dynamic_cast<StdMemTestData*>(&data);
+    return copy != nullptr && copy != expected && *copy == *expected;
+}
 
 // Classes to test pointer tracking
 class pointed_to_class : public SST::Core::Serialization::serializable
@@ -1829,6 +1889,132 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
         ser.start_unpacking(buffer.data(), size);
         SST_SER(restored);
         check_keys(restored, "after checkpoint serialization");
+    }
+    else if ( test == "stdmem" ) {
+        using StandardMem = SST::Interfaces::StandardMem;
+        using CustomData  = StandardMem::CustomData;
+
+        auto randomPayload = [&](size_t n) {
+            std::vector<uint32_t> v(n);
+            for ( auto& x : v )
+                x = rng->generateNextUInt32();
+            return v;
+        };
+
+        // Every built-in request type must deserialize as the same type through a base class pointer
+        {
+            std::vector<StandardMem::Request*> reqs;
+            auto*                              read = new StandardMem::Read(0x1000, 64, 0, 0x2000, 0x10, 3);
+            reqs.push_back(read);
+            reqs.push_back(new StandardMem::ReadResp(read, std::vector<uint8_t>(64, 7)));
+            auto* write = new StandardMem::Write(0x1040, 4, std::vector<uint8_t> { 1, 2, 3, 4 });
+            reqs.push_back(write);
+            reqs.push_back(new StandardMem::WriteResp(write));
+            auto* flush = new StandardMem::FlushAddr(0x1080, 64, true, 2);
+            reqs.push_back(flush);
+            reqs.push_back(new StandardMem::FlushResp(flush));
+            reqs.push_back(new StandardMem::FlushCache());
+            reqs.push_back(new StandardMem::ReadLock(0x10c0, 8));
+            reqs.push_back(new StandardMem::WriteUnlock(0x10c0, 8, std::vector<uint8_t>(8, 1)));
+            reqs.push_back(new StandardMem::LoadLink(0x1100, 8));
+            reqs.push_back(new StandardMem::StoreConditional(0x1100, 8, std::vector<uint8_t>(8, 2)));
+            reqs.push_back(new StandardMem::MoveData(0x1140, 0x2140, 64));
+            reqs.push_back(new StandardMem::InvNotify(0x1180, 64));
+
+            for ( auto* req : reqs ) {
+                StandardMem::Request* copy = serializeRoundTrip(req);
+                if ( copy == nullptr || typeid(*copy) != typeid(*req) || copy->getString() != req->getString() ) {
+                    out.output("ERROR: StandardMem request did not serialize/deserialize properly: %s\n",
+                        req->getString().c_str());
+                }
+                delete copy;
+            }
+            for ( auto* req : reqs )
+                delete req;
+        }
+
+        // CustomReq and CustomResp serialization makes a deep copy of the CustomData object
+        auto* data = new StdMemTestData(rng->generateNextUInt64(), randomPayload(16), true);
+        auto* req  = new StandardMem::CustomReq(std::unique_ptr<CustomData>(data), 0, 0x40, 2);
+        if ( !req->hasData() || &req->getData() != data || !req->needsResponse() ) {
+            out.output("ERROR: CustomReq does not hold the CustomData object it was constructed with\n");
+        }
+        {
+            auto* copy = dynamic_cast<StandardMem::CustomReq*>(serializeRoundTrip<StandardMem::Request>(req));
+            if ( copy == nullptr || !copy->hasData() || !isStdMemTestDataCopy(copy->getData(), data) ||
+                 copy->getID() != req->getID() || copy->iPtr != req->iPtr || copy->tid != req->tid ) {
+                out.output("ERROR: CustomReq did not serialize/deserialize properly\n");
+            }
+            if ( copy ) delete copy->releaseData();
+            delete copy;
+        }
+
+        // makeResponse() creates the response's CustomData object with CustomData::makeResponse()
+        {
+            auto* resp = dynamic_cast<StandardMem::CustomResp*>(req->makeResponse());
+            if ( resp == nullptr || !resp->hasData() || &resp->getData() == data || resp->getData().needsResponse() ||
+                 resp->getID() != req->getID() || resp->iPtr != req->iPtr || resp->tid != req->tid ) {
+                out.output("ERROR: CustomReq::makeResponse() did not create a proper CustomResp\n");
+            }
+            if ( resp ) {
+                auto* resp_data = static_cast<StdMemTestData*>(&resp->getData());
+                auto* copy = dynamic_cast<StandardMem::CustomResp*>(serializeRoundTrip<StandardMem::Request>(resp));
+                if ( copy == nullptr || !copy->hasData() || !isStdMemTestDataCopy(copy->getData(), resp_data) ||
+                     copy->getID() != resp->getID() ) {
+                    out.output("ERROR: CustomResp did not serialize/deserialize properly\n");
+                }
+                if ( copy ) delete copy->releaseData();
+                delete copy;
+                delete resp->releaseData();
+            }
+            delete resp;
+        }
+
+        // takeData() transfers ownership out of the request and leaves it without data
+        std::unique_ptr<CustomData> taken = req->takeData();
+        if ( taken.get() != data || req->hasData() || req->needsResponse() ) {
+            out.output("ERROR: CustomReq::takeData() did not transfer ownership of the CustomData object\n");
+        }
+        req->getString(); // Must not require data
+
+        // A request without data creates a response without data and serializes without data
+        {
+            auto* resp = dynamic_cast<StandardMem::CustomResp*>(req->makeResponse());
+            if ( resp == nullptr || resp->hasData() ) {
+                out.output("ERROR: CustomReq::makeResponse() without data created a response with data\n");
+            }
+            delete resp;
+
+            auto* copy = dynamic_cast<StandardMem::CustomReq*>(serializeRoundTrip<StandardMem::Request>(req));
+            if ( copy == nullptr || copy->hasData() ) {
+                out.output("ERROR: CustomReq without data did not serialize/deserialize properly\n");
+            }
+            delete copy;
+        }
+
+        // CustomResp(req, data) takes ownership of the supplied CustomData object instead of making a new one
+        StandardMem::CustomResp resp(req, std::move(taken));
+        if ( !resp.hasData() || &resp.getData() != data || resp.getID() != req->getID() || resp.iPtr != req->iPtr ||
+             resp.tid != req->tid ) {
+            out.output("ERROR: CustomResp(CustomReq*, std::unique_ptr<CustomData>) did not take ownership of the "
+                       "CustomData object\n");
+        }
+        delete req;
+
+        // clone() makes a deep copy that preserves the dynamic type
+        std::unique_ptr<CustomData> clone(resp.getData().clone());
+        if ( !clone || !isStdMemTestDataCopy(*clone, data) ) {
+            out.output("ERROR: CustomData::clone() did not make a proper copy\n");
+        }
+
+        // setData() takes ownership of the new CustomData object and deletes the old one
+        CustomData* clone_ptr = clone.get();
+        resp.setData(std::move(clone));
+        if ( !resp.hasData() || &resp.getData() != clone_ptr ) {
+            out.output("ERROR: CustomResp::setData(std::unique_ptr<CustomData>) did not take ownership of the "
+                       "CustomData object\n");
+        }
+        delete resp.releaseData();
     }
     else if ( test == "complexcontainer" ) {
         // Need to test more complex combinations of containers
