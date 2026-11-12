@@ -11,7 +11,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/testElements/coreTest_Utility.h"
+#include "sst/core/testElements/coreTest_SparseVectorMap.h"
 
 #include "sst/core/output.h"
 #include "sst/core/sparseVectorMap.h"
@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace SST::CoreTestUtility {
+namespace SST::CoreTestSparseVectorMap {
 
 namespace {
 
@@ -470,7 +470,7 @@ using TestFn = void (*)(Output&);
 
 // Test name (the component's "test" parameter) -> test function
 const std::map<std::string, TestFn>&
-utilityTests()
+sparseVectorMapTests()
 {
     static const std::map<std::string, TestFn> tests = {
         { "sparsevectormap_lookup", testSvmLookup },
@@ -490,7 +490,7 @@ utilityTests()
 
 } // namespace
 
-coreTestUtility::coreTestUtility(ComponentId_t id, Params& params) :
+coreTestSparseVectorMap::coreTestSparseVectorMap(ComponentId_t id, Params& params) :
     Component(id)
 {
     Output& out = getSimulationOutput();
@@ -498,10 +498,10 @@ coreTestUtility::coreTestUtility(ComponentId_t id, Params& params) :
     std::string test = params.find<std::string>("test");
     if ( test == "" ) out.fatal(CALL_INFO_LONG, 1, "ERROR: Must specify test type\n");
 
-    auto it = utilityTests().find(test);
-    if ( it == utilityTests().end() )
-        out.fatal(CALL_INFO_LONG, 1, "ERROR: Unknown utility test specified: %s\n", test.c_str());
+    auto it = sparseVectorMapTests().find(test);
+    if ( it == sparseVectorMapTests().end() )
+        out.fatal(CALL_INFO_LONG, 1, "ERROR: Unknown SparseVectorMap test specified: %s\n", test.c_str());
     it->second(out);
 }
 
-} // namespace SST::CoreTestUtility
+} // namespace SST::CoreTestSparseVectorMap

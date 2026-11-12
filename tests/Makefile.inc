@@ -35,7 +35,7 @@ EXTRA_DIST += \
     tests/testsuite_default_Serialization.py \
     tests/testsuite_default_SubComponent.py \
     tests/testsuite_default_UnitAlgebra.py \
-    tests/testsuite_default_Utility.py \
+    tests/testsuite_default_SparseVectorMap.py \
     tests/testsuite_default_config_input_output.py \
     tests/testsuite_default_partitioner.py \
     tests/testsuite_default_PortModule.py \
@@ -77,7 +77,7 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
-    tests/test_Utility.py \
+    tests/test_SparseVectorMap.py \
     tests/test_PythonUnitAlgebra.py \
     tests/test_PerfComponent.py \
     tests/test_setnonlocal0.py \
@@ -151,7 +151,7 @@ EXTRA_DIST += \
     tests/refFiles/test_SubComponent_2.out \
     tests/refFiles/test_SubComponent.out \
     tests/refFiles/test_UnitAlgebra.out \
-    tests/refFiles/test_Utility_default.out \
+    tests/refFiles/test_SparseVectorMap_default.out \
     tests/refFiles/test_PythonUnitAlgebra.out \
     tests/refFiles/test_Checkpoint.out \
     tests/refFiles/test_SharedObject_array.out	\

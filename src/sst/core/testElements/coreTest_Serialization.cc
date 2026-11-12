@@ -1024,7 +1024,7 @@ checkSvmRoundTrip(Output& out, const char* name, MapT& in, MapT& restored, const
 // covers the two-run internal state.  (Below that threshold every
 // insert goes directly to its sorted position and no tail is ever
 // created -- see sparseVectorMap.h.)  Non-serialization behavior is
-// tested by the coreTestUtility component.
+// tested by the coreTestSparseVectorMap component.
 void
 testSparseVectorMapSerialization(Output& out)
 {

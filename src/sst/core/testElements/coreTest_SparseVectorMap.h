@@ -9,28 +9,28 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_CORETEST_UTILITY_H
-#define SST_CORE_CORETEST_UTILITY_H
+#ifndef SST_CORE_CORETEST_SPARSEVECTORMAP_H
+#define SST_CORE_CORETEST_SPARSEVECTORMAP_H
 
 #include "sst/core/component.h"
 
-namespace SST::CoreTestUtility {
+namespace SST::CoreTestSparseVectorMap {
 
-class coreTestUtility : public SST::Component
+class coreTestSparseVectorMap : public SST::Component
 {
 public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
-        coreTestUtility,
+        coreTestSparseVectorMap,
         "coreTestElement",
-        "coreTestUtility",
+        "coreTestSparseVectorMap",
         SST_ELI_ELEMENT_VERSION(1,0,0),
-        "Runs self-checking tests of core utility classes during construction",
+        "Runs self-checking tests of SparseVectorMap during construction",
         COMPONENT_CATEGORY_UNCATEGORIZED
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "test", "Name of the utility test to run (e.g. sparsevectormap_lookup)", NULL}
+        { "test", "Name of the SparseVectorMap test to run (e.g. sparsevectormap_lookup)", NULL}
     )
 
     // Optional since there is nothing to document
@@ -45,10 +45,10 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
-    coreTestUtility(SST::ComponentId_t id, SST::Params& params);
-    ~coreTestUtility() {}
+    coreTestSparseVectorMap(SST::ComponentId_t id, SST::Params& params);
+    ~coreTestSparseVectorMap() {}
 };
 
-} // namespace SST::CoreTestUtility
+} // namespace SST::CoreTestSparseVectorMap
 
-#endif // SST_CORE_CORETEST_UTILITY_H
+#endif // SST_CORE_CORETEST_SPARSEVECTORMAP_H

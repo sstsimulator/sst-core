@@ -15,5 +15,5 @@ sst.setProgramOption("stop-at", "1us");
 
 test = sys.argv[1]
 
-comp = sst.Component("Component0", "coreTestElement.coreTestUtility")
+comp = sst.Component("Component0", "coreTestElement.coreTestSparseVectorMap")
 comp.addParam("test", test)
