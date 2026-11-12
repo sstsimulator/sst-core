@@ -1215,9 +1215,9 @@ public:
          * Return a new CustomData object formatted as a response.
          * Ownership of the returned object is transferred to the caller.
          */
-        virtual CustomData* makeResponse()  = 0;
-        virtual bool        needsResponse() = 0; /* Return whether a response is needed */
-        virtual std::string getString()     = 0; /* String representation for debug/output/etc. */
+        virtual CustomData* makeResponse()   = 0;
+        virtual bool        needsResponse()  = 0; /* Return whether a response is needed */
+        virtual std::string getString()      = 0; /* String representation for debug/output/etc. */
 
         /**
          * Return a deep copy of this object.
