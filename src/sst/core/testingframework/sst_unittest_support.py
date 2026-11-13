@@ -154,30 +154,17 @@ def testing_is_PIN_Compiled() -> bool:
     pin_exec_path = pin_exec
     return pin_exec != ""
 
-def testing_is_PIN2_used() -> bool:
-    warn("testing_is_PIN2_used() is deprecated and will be removed in future versions of SST.",
-        DeprecationWarning, stacklevel=2)
-
-    global pin_exec_path
-    if testing_is_PIN_Compiled():
-        return "/pin.sh" in pin_exec_path
-    else:
-        return False
-
 def testing_is_PIN3_used() -> bool:
     global pin_exec_path
     if testing_is_PIN_Compiled():
-        if testing_is_PIN2_used():
+        # Make sure pin is at the end of the string
+        pinstr = "/pin"
+        idx = pin_exec_path.rfind(pinstr)
+        if idx == -1:
             return False
         else:
-            # Make sure pin is at the end of the string
-            pinstr = "/pin"
-            idx = pin_exec_path.rfind(pinstr)
-            if idx == -1:
-                return False
-            else:
-                found_pin = (idx + len(pinstr)) == len(pin_exec_path)
-                return found_pin
+            found_pin = (idx + len(pinstr)) == len(pin_exec_path)
+            return found_pin
     else:
         return False
 
