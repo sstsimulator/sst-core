@@ -102,6 +102,9 @@ class testcase_Serialization(SSTTestCase):
     def test_Serialization_aggregate(self):
         self.serialization_test_template("aggregate")
 
+    def test_Serialization_sparsevectormap(self):
+        self.serialization_test_template("sparsevectormap")
+
 #####
     def serialization_test_template(self, testtype, default_reffile = True):
 

@@ -95,7 +95,7 @@ public:
     ConfigGraph();
     ~ConfigGraph();
 
-    size_t getNumComponents() { return comps_.data.size(); }
+    size_t getNumComponents() { return comps_.size(); }
 
     size_t getNumComponentsInMPIRank(uint32_t rank);
 

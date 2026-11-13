@@ -29,6 +29,7 @@ add_library(
   coreTest_RNGComponent.cc
   coreTest_Serialization.cc
   coreTest_SharedObjectComponent.cc
+  coreTest_SparseVectorMap.cc
   coreTest_StatisticsComponent.cc
   coreTest_SubComponent.cc)
 
