@@ -32,8 +32,9 @@ Options:
 
     --checks <checks>   Set the checks to use, similar to clang-tidy --checks
 
-    --picky             Enable more picky checks; ignored if --checks is used
-                        Default checks are reasonable for SST but not too picky
+    --picky             Use the more picky checks of .clang-tidy-picky; ignored if
+                        --checks is used.  The default checks are in .clang-tidy,
+                        and are reasonable for SST but not too picky
 
     --fix               Make clang-tidy automatically fix found warnings
                         (disables parallelism because it can corrupt files)
@@ -77,25 +78,28 @@ else
 fi
 
 if [[ -n ${checks} ]]; then
+    # --checks replaces the checks of .clang-tidy: -* disables them, and the defaults of clang-tidy
+    # (clang-diagnostic-*,clang-analyzer-*) come back.
     # Many clang-analyzer-* checks have to be individually disabled. If wildcard -clang-analyzer-*
     # is used, clang-tidy will fail with "no checks" even if additional checks appear after them.
-    clang_tidy_checks="-clang-analyzer-apiModeling.*,-clang-analyzer-cplusplus.*,-clang-analyzer-deadcode.*,-clang-analyzer-fuchsia.*,-clang-analyzer-nullability.*,-clang-analyzer-optin.*,-clang-analyzer-osx.*,-clang-analyzer-security.*,-clang-analyzer-unix.*,-clang-analyzer-valist.*,-clang-analyzer-webkit.*,${checks}"
+    clang_tidy_args="--checks='-*,clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-apiModeling.*,-clang-analyzer-cplusplus.*,-clang-analyzer-deadcode.*,-clang-analyzer-fuchsia.*,-clang-analyzer-nullability.*,-clang-analyzer-optin.*,-clang-analyzer-osx.*,-clang-analyzer-security.*,-clang-analyzer-unix.*,-clang-analyzer-valist.*,-clang-analyzer-webkit.*,${checks}'"
+elif [[ ${picky} -ne 0 ]]; then
+    clang_tidy_args="--config-file='${root}/.clang-tidy-picky'"
 else
-    # These are the default checks for --picky. Even for --picky, many of them are disabled.
-    clang_tidy_checks="bugprone-*,performance-*,modernize-*,readability-redundant-*,-modernize-use-trailing-return-type,-modernize-avoid-c-arrays,-modernize-use-override,-modernize-use-nodiscard,-modernize-macro-to-enum,-performance-enum-size,-modernize-use-auto,-bugprone-easily-swappable-parameters,-bugprone-reserved-identifier,google-explicit-constructor,misc-static-assert,misc-header-include-cycle,misc-definitions-in-headers,-modernize-return-braced-init-list,-clang-analyzer-cplusplus.NewDeleteLeaks"
-
-    if [[ ${picky} -eq 0 ]]; then
-        # This disables more checks when --picky is not used.
-        clang_tidy_checks="${clang_tidy_checks},-readability-redundant-inline-specifier,-modernize-use-equals-default,-performance-avoid-endl,-modernize-pass-by-value,-modernize-use-default-member-init,-readability-redundant-string-init,-modernize-use-equals-delete,-performance-unnecessary-copy-initialization,-readability-redundant-access-specifiers,-modernize-use-bool-literals,-readability-redundant-member-init,-performance-unnecessary-value-param,-bugprone-narrowing-conversions"
-    fi
+    # clang-tidy finds .clang-tidy itself.
+    clang_tidy_args=""
 fi
 
 cd build
 output=$(realpath clang-tidy.out)
 
-echo "Using clang-tidy --checks=${clang_tidy_checks}"
+if [[ -n ${clang_tidy_args} ]]; then
+    echo "Using clang-tidy ${clang_tidy_args}"
+else
+    echo "Using clang-tidy with ${root}/.clang-tidy"
+fi
 
 perl -ne 'print "$1\0" if /"file":\s*"([^"]+)"/ && !m:/external/:' compile_commands.json | \
-    xargs -0 -P "${njobs}" -I {} timeout 30 sh -c 'echo "Checking {}"; clang-tidy '"${clang_tidy_fix}"' --quiet --format-style=file -p . --system-headers=0 --checks="'"${clang_tidy_checks}"'" "{}"' | tee "${output}" || true
+    xargs -0 -P "${njobs}" -I {} timeout 30 sh -c 'echo "Checking {}"; clang-tidy '"${clang_tidy_fix}"' --quiet -p . '"${clang_tidy_args}"' "{}"' | tee "${output}" || true
 
 echo "Results are in ${output}"
