@@ -322,8 +322,9 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
 
     for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
         // Post all the receives for the first messages
-        int tag             = 2 * i->second.local_thread;
-        i->second.recv_done = false;
+        int tag                  = 2 * i->second.local_thread;
+        i->second.first_received = false;
+        i->second.recv_done      = false;
         i->second.rbuf.postFirstRecv(i->second.remote_rank, tag, &i->second.req);
     }
 
@@ -357,25 +358,33 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
         }
     }
 
-    // Do all the receives as they arrive
+    // Do all the receives as they arrive. The remaining messages of each transfer are received without blocking, so
+    // that the transfers from different ranks overlap, and each transfer is handed off to be deserialized as soon as
+    // all of its messages have arrived.
     int receives_to_process = comm_recv_map.size();
     while ( receives_to_process != 0 ) {
         for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-            if ( !i->second.recv_done ) {
-                int flag;
-                MPI_Test(&i->second.req, &flag, MPI_STATUS_IGNORE);
-                if ( flag ) {
-                    receives_to_process--;
-                    i->second.recv_done = true;
+            comm_recv_pair& recv = i->second;
+            if ( recv.recv_done ) continue;
 
-                    // Receive any remaining messages, then hand the data off to be deserialized
-                    std::vector<MPI_Request> rreqs;
-                    i->second.rbuf.postRemainingRecvs(i->second.remote_rank, 2 * i->second.local_thread + 1, rreqs);
-                    MPI_Waitall(rreqs.size(), rreqs.data(), MPI_STATUSES_IGNORE);
+            int flag;
+            if ( !recv.first_received ) {
+                MPI_Test(&recv.req, &flag, MPI_STATUS_IGNORE);
+                if ( !flag ) continue;
 
-                    deserialize_queue.try_insert(&(i->second));
-                }
+                // The first message has arrived, so post the receives for any remaining messages
+                recv.first_received = true;
+                recv.rest_reqs.clear();
+                recv.rbuf.postRemainingRecvs(recv.remote_rank, 2 * recv.local_thread + 1, recv.rest_reqs);
             }
+
+            // This is immediately true if there are no remaining messages
+            MPI_Testall(recv.rest_reqs.size(), recv.rest_reqs.data(), &flag, MPI_STATUSES_IGNORE);
+            if ( !flag ) continue;
+
+            recv.recv_done = true;
+            receives_to_process--;
+            deserialize_queue.try_insert(&recv);
         }
     }
 

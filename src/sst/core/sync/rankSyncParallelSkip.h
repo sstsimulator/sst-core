@@ -104,9 +104,11 @@ private:
         uint32_t               local_thread;
         RankSyncRecvBuffer     rbuf; // receive buffer
         std::vector<Activity*> activity_vec;
-        bool                   recv_done;
+        bool                   first_received; // first message has arrived and the rest have been posted
+        bool                   recv_done;      // all messages have arrived
 #ifdef SST_CONFIG_HAVE_MPI
-        MPI_Request req;
+        MPI_Request              req;       // receive of the first message
+        std::vector<MPI_Request> rest_reqs; // receives of the remaining messages, reused between syncs
 #endif
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -114,8 +116,8 @@ private:
             SST_SER(local_thread);
             // activity_vec - empty so recreate on restart
             // rbuf - empty so recreate on restart
-            // recv_done - don't need
-            // req - don't need
+            // first_received, recv_done - don't need
+            // req, rest_reqs - don't need
         }
         ImplementSerializable(comm_recv_pair)
     };

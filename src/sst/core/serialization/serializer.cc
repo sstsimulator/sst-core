@@ -94,6 +94,12 @@ serializer::string(std::string& str)
     }
 }
 
+void
+serializer::modeMismatch()
+{
+    throw std::logic_error("Internal error: serializer mode does not match its active tracking object");
+}
+
 const char*
 serializer::getMapName() const
 {

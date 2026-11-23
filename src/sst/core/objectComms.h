@@ -30,9 +30,13 @@ inline size_t max_message_size = 256 * 1024 * 1024;
 } // namespace pvt
 
 /**
-   Set the maximum size of a single MPI message used by broadcast(), send() and recv(). Larger data is transferred as
-   several messages, one per chunk of a chunked_buffer. This is set from the mpi-max-message-size option. The size used
-   by the sending rank is sent along with the data, so the ranks do not need to agree on it.
+   Set the maximum size of a single MPI message used by broadcast(), send() and recv(), and by the rank sync
+   (RankSyncQueue and RankSyncRecvBuffer). Larger data is transferred as several messages, one per chunk of a
+   chunked_buffer. This is set from the mpi-max-message-size option.
+
+   broadcast(), send() and recv() send the sender's size along with the data, so they work even if the ranks do not
+   agree on it. This is needed to broadcast the Config itself, before the other ranks know the option's value. The rank
+   sync requires every rank to use the same size, which is ensured by setting it after the Config has been broadcast.
 */
 inline void
 setMaxMessageSize(size_t size)
@@ -120,6 +124,14 @@ recv(int src, int tag, dataType& data)
     Comms::deserialize(buffer, data);
 }
 
+/**
+   Gather data from every rank to every rank.
+
+   Unlike broadcast(), send() and recv(), this is deliberately not chunked. MPI_Allgatherv gathers the data of all the
+   ranks into a single contiguous buffer with int displacements, so the total size of the gathered data is limited to
+   INT_MAX bytes, and std::length_error is thrown if it is larger. It is only used during init and setup, by
+   SharedObject, where the data is small.
+*/
 template <typename dataType>
 void
 all_gather(dataType& data, std::vector<dataType>& out_data)
@@ -142,11 +154,14 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
     // MPI_Allgatherv gathers all of the data into a single buffer, so its total size must fit in an int
     uint64_t totalBuf = 0;
     for ( int i = 0; i < world; i++ ) {
-        counts[i]        = static_cast<int>(allSizes[i]);
-        displacements[i] = static_cast<int>(totalBuf);
+        uint64_t displacement = totalBuf;
         totalBuf += allSizes[i];
         if ( totalBuf > static_cast<uint64_t>(std::numeric_limits<int>::max()) )
             throw std::length_error("Comms::all_gather: gathered data is too large for a single MPI_Allgatherv");
+
+        // Both values fit in an int, since they are no larger than totalBuf
+        counts[i]        = static_cast<int>(allSizes[i]);
+        displacements[i] = static_cast<int>(displacement);
     }
 
     auto bigBuff = std::unique_ptr<char[]>(new char[totalBuf]);

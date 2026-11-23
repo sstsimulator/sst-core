@@ -193,14 +193,20 @@ private:
         mode_ = MODE;
     }
 
-    // Unchecked access to the alternative at INDEX, which must be active. This is used after mode_ has been checked,
-    // so that the variant index is not checked again in the most frequently used paths.
+    // Access to the alternative at INDEX, which must be active. This is used after mode_ has been checked, in the most
+    // frequently used paths. Since start() keeps mode_ and ser_ consistent, the check here should never fail. It is
+    // kept, rather than being replaced with __builtin_unreachable(), so that an internal error is reported instead of
+    // causing undefined behavior, and its cost is negligible because the failure path is out of line.
     template <size_t INDEX>
     auto& active()
     {
-        if ( ser_.index() != INDEX ) __builtin_unreachable();
+        if ( __builtin_expect(ser_.index() != INDEX, 0) ) modeMismatch();
         return *std::get_if<INDEX>(&ser_);
     }
+
+    // Called if mode_ does not match the active alternative of ser_, which is an internal error
+    [[noreturn]]
+    static void modeMismatch();
 
     bool                    enable_ptr_tracking_ = false;
     const ObjectMapContext* mapContext           = nullptr;

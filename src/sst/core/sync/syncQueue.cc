@@ -174,7 +174,9 @@ RankSyncRecvBuffer::postRemainingRecvs(int src, int follow_tag, std::vector<MPI_
     RankSyncQueue::Header hdr;
     memcpy(&hdr, buffer.chunk_data(0), sizeof(hdr));
 
-    // The chunks must have the same layout on both ranks
+    // The chunks must have the same layout on both ranks. Unlike Comms::recv(), the receive buffer is kept between
+    // transfers and is not rebuilt for the sender's chunk size, so every rank must use the same mpi-max-message-size.
+    // This is ensured by setting it after the Config has been broadcast.
     if ( hdr.chunk_size != buffer.max_chunk_size() )
         Output::getDefaultObject().fatal(CALL_INFO, 1,
             "ERROR: rank %d sends MPI messages of up to %" PRIu64 " bytes, but this rank uses %zu bytes. "
