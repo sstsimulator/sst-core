@@ -833,13 +833,15 @@ main(int argc, char* argv[])
 
     // All ranks parse the command line
     auto ret_value = cfg.parseCmdLine(argc, argv);
-    if ( ret_value == -1 ) {
-        // Error in command line arguments
-        return -1;
-    }
-    else if ( ret_value == 1 ) {
-        // Just asked for info, clean exit
-        return 0;
+    if ( ret_value == -1 || ret_value == 1 ) {
+#ifdef SST_CONFIG_HAVE_MPI
+        // MPI has been initialized, so it must be finalized before exiting. Otherwise mpirun reports that the
+        // processes exited improperly and returns an error.
+        MPI_Finalize();
+#endif
+        // -1 is an error in the command line arguments. 1 means only information (such as the usage or version) was
+        // asked for, so this is a clean exit.
+        return ret_value == -1 ? -1 : 0;
     }
     Simulation::basicPerf.setReportRegionInfo(g_output, cfg.verbose() + 1);
 
