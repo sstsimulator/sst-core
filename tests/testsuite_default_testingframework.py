@@ -9,6 +9,9 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 
+import os
+from typing import List
+
 from sst_unittest import *
 from sst_unittest_support import *
 
@@ -117,3 +120,29 @@ class TestCategorizeDecorator(SSTTestCase):
     @categorize("weekly")
     def test_integration_weekly(self) -> None:
         """Show an example of how to use the decorator for weekly tests."""
+
+
+class TestLineFilter(SSTTestCase):
+    """Tests for the LineFilter classes used when comparing output and reference files."""
+
+    def _write_file(self, name: str, lines: List[str]) -> str:
+        path = os.path.join(test_output_get_tmp_dir(), name)
+        with open(path, "w") as fp:
+            fp.writelines(lines)
+        return path
+
+    def test_base_line_filter_keeps_lines(self) -> None:
+        """The base LineFilter does not change lines, so it can be used where no filtering is needed."""
+        self.assertEqual(LineFilter().filter("some output\n"), "some output\n")
+
+    def test_compare_with_base_line_filter(self) -> None:
+        """A comparison using the base LineFilter still compares the lines of both files."""
+        outfile = self._write_file("linefilter_out.txt", ["first\n", "second\n"])
+        difffile = self._write_file("linefilter_diff.txt", ["first\n", "different\n"])
+        samefile = self._write_file("linefilter_same.txt", ["second\n", "first\n"])
+
+        self.assertFalse(testing_compare_filtered_diff("linefilter_diff", outfile, difffile, sort=True,
+                                                       filters=[LineFilter()]))
+        self.assertTrue(testing_compare_filtered_diff("linefilter_same", outfile, samefile, sort=True,
+                                                      filters=[LineFilter()]))
+

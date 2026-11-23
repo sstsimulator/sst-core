@@ -898,16 +898,17 @@ class LineFilter:
         self.apply_to_ref_file = True
         self.apply_to_out_file = True
 
-    """ Base class for filtering lines in diffs
+    """ Base class for filtering lines in diffs. The base class does not change
+        any lines, so it can be used where no filtering is needed.
 
         Args:
             line (str): Line to check
 
         Returns:
-            (bool) Filtered line or None if line should be removed
+            (str) Filtered line or None if line should be removed
     """
     def filter(self, line: str) -> Optional[str]:
-        pass
+        return line
 
     def reset(self) -> None:
         pass
