@@ -259,7 +259,10 @@ class SSTTestCase(unittest.TestCase):
                 num_threads (int): The number of threads to run SST with.
                 global_args (str): Global Arguments provided from test engine args
                 timeout_sec (int): Allowed runtime in seconds
-                expected_rc (int): The expected return code from the SST run
+                expected_rc (int): The expected return code from the SST run.
+                                   If 0 (the default), the run must succeed
+                                   (return 0). Otherwise, it must fail
+                                   (return any non-zero value).
                 check_sdl_file (bool): If True, will check to make sure sdl file exists
                 send_signal (signal): If not signal.NSIG, this signal will be sent to the SST process after signal_sec seconds
                 signal_sec  (int): The number of seconds to wait before sending a signal to SST
@@ -370,6 +373,10 @@ class SSTTestCase(unittest.TestCase):
         if expected_rc:
             err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
             self.assertNotEqual(rtn.result(), 0, err_str)
+        else:
+            err_str = "SST failed (returned {0}) while running {1}; see {2}".format(
+                rtn.result(), oscmd, err_file if err_file else out_file)
+            self.assertEqual(rtn.result(), 0, err_str)
 
         # Return the command used to launch SST
         return oscmd

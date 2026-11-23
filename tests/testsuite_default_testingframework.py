@@ -10,7 +10,7 @@
 # distribution.
 
 import os
-from typing import List
+from typing import List, Tuple
 
 from sst_unittest import *
 from sst_unittest_support import *
@@ -146,3 +146,22 @@ class TestLineFilter(SSTTestCase):
         self.assertTrue(testing_compare_filtered_diff("linefilter_same", outfile, samefile, sort=True,
                                                       filters=[LineFilter()]))
 
+
+class TestRunSst(SSTTestCase):
+    """Tests for the checks run_sst() makes on the result of an SST run."""
+
+    def _paths(self, name: str) -> Tuple[str, str]:
+        sdlfile = os.path.join(self.get_testsuite_dir(), "test_Component.py")
+        outfile = os.path.join(test_output_get_run_dir(), "testingframework_{0}.out".format(name))
+        return sdlfile, outfile
+
+    def test_run_sst_fails_on_unexpected_error(self) -> None:
+        """run_sst() fails if SST returns an error when no error is expected."""
+        sdlfile, outfile = self._paths("unexpected_error")
+        with self.assertRaises(AssertionError):
+            self.run_sst(sdlfile, outfile, other_args="--num-threads=invalid")
+
+    def test_run_sst_accepts_expected_error(self) -> None:
+        """run_sst() succeeds if SST returns an error when an error is expected."""
+        sdlfile, outfile = self._paths("expected_error")
+        self.run_sst(sdlfile, outfile, other_args="--num-threads=invalid", expected_rc=1)
