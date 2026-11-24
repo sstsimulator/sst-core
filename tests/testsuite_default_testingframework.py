@@ -146,6 +146,22 @@ class TestLineFilter(SSTTestCase):
         self.assertTrue(testing_compare_filtered_diff("linefilter_same", outfile, samefile, sort=True,
                                                       filters=[LineFilter()]))
 
+    def test_compare_functions_accept_no_filters(self) -> None:
+        """The filtered compare functions work with the filters left out or set to None."""
+        outfile = self._write_file("nofilter_out.txt", ["first\n", "second\n"])
+        samefile = self._write_file("nofilter_same.txt", ["second\n", "first\n"])
+        difffile = self._write_file("nofilter_diff.txt", ["first\n", "different\n"])
+
+        for filters in ({}, {"filters": None}):
+            self.assertTrue(testing_compare_filtered_diff("nofilter_same", outfile, samefile, sort=True, **filters))
+            self.assertFalse(testing_compare_filtered_diff("nofilter_diff", outfile, difffile, sort=True, **filters))
+            self.assertTrue(testing_compare_filtered_diff_with_fp_tolerance("nofilter_fp_same", outfile, samefile,
+                                                                            sort=True, **filters))
+            self.assertFalse(testing_compare_filtered_diff_with_fp_tolerance("nofilter_fp_diff", outfile, difffile,
+                                                                             sort=True, **filters))
+            self.assertTrue(testing_compare_filtered_subset(outfile, samefile, **filters))
+            self.assertFalse(testing_compare_filtered_subset(outfile, difffile, **filters))
+
 
 class TestRunSst(SSTTestCase):
     """Tests for the checks run_sst() makes on the result of an SST run."""
@@ -165,3 +181,4 @@ class TestRunSst(SSTTestCase):
         """run_sst() succeeds if SST returns an error when an error is expected."""
         sdlfile, outfile = self._paths("expected_error")
         self.run_sst(sdlfile, outfile, other_args="--num-threads=invalid", expected_rc=1)
+
