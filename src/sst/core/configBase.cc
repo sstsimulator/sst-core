@@ -484,9 +484,11 @@ ConfigBase::parseCmdLine(int argc, char* argv[], bool ignore_unknown)
         // If the character returned from getopt_long is '?', then it
         // is an unknown command
         if ( c == '?' ) {
-            // Unknown option
+            // Unknown option. Print the usage, but return an error rather than the value from printUsage(), which
+            // is used when the usage is requested and would make the program exit successfully.
             if ( !ignore_unknown ) {
-                status = printUsage();
+                printUsage();
+                status = -1;
             }
         }
         else if ( option_index != 0 ) {

@@ -898,16 +898,17 @@ class LineFilter:
         self.apply_to_ref_file = True
         self.apply_to_out_file = True
 
-    """ Base class for filtering lines in diffs
+    """ Base class for filtering lines in diffs. The base class does not change
+        any lines, so it can be used where no filtering is needed.
 
         Args:
             line (str): Line to check
 
         Returns:
-            (bool) Filtered line or None if line should be removed
+            (str) Filtered line or None if line should be removed
     """
     def filter(self, line: str) -> Optional[str]:
-        pass
+        return line
 
     def reset(self) -> None:
         pass
@@ -1184,7 +1185,7 @@ def testing_compare_filtered_diff_with_fp_tolerance(
     outfile: str,
     reffile: str,
     sort: bool = False,
-    filters: Union[LineFilter, List[LineFilter]] = list(),
+    filters: Union[None, LineFilter, List[LineFilter]] = None,
     rel_tol: float = 1e-5,
     abs_tol: float = 1e-9,
 ) -> bool:
@@ -1206,6 +1207,8 @@ def testing_compare_filtered_diff_with_fp_tolerance(
         Returns:
             (bool) True if the files match within tolerance
     """
+    if filters is None:
+        filters = []
 
     if isinstance(filters, LineFilter):
         filters = [filters]
@@ -1311,7 +1314,7 @@ def testing_compare_sorted_diff(test_name: str, outfile: str, reffile: str) -> b
 
 
 def testing_compare_filtered_subset(
-    outfile: str, reffile: str, filters: Union[LineFilter, List[LineFilter]] = list()
+    outfile: str, reffile: str, filters: Union[None, LineFilter, List[LineFilter]] = None
 ) -> bool:
     """Filter, and then determine if outfile is a subset of reffile
 
@@ -1326,6 +1329,8 @@ def testing_compare_filtered_subset(
             (bool) True if outfile is a subset of reffile
 
     """
+    if filters is None:
+        filters = []
 
     if isinstance(filters, LineFilter):
         filters = [filters]

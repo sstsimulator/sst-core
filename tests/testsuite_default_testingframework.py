@@ -9,6 +9,9 @@
 # information, see the LICENSE file in the top level directory of the
 # distribution.
 
+import os
+from typing import List, Tuple
+
 from sst_unittest import *
 from sst_unittest_support import *
 
@@ -117,3 +120,65 @@ class TestCategorizeDecorator(SSTTestCase):
     @categorize("weekly")
     def test_integration_weekly(self) -> None:
         """Show an example of how to use the decorator for weekly tests."""
+
+
+class TestLineFilter(SSTTestCase):
+    """Tests for the LineFilter classes used when comparing output and reference files."""
+
+    def _write_file(self, name: str, lines: List[str]) -> str:
+        path = os.path.join(test_output_get_tmp_dir(), name)
+        with open(path, "w") as fp:
+            fp.writelines(lines)
+        return path
+
+    def test_base_line_filter_keeps_lines(self) -> None:
+        """The base LineFilter does not change lines, so it can be used where no filtering is needed."""
+        self.assertEqual(LineFilter().filter("some output\n"), "some output\n")
+
+    def test_compare_with_base_line_filter(self) -> None:
+        """A comparison using the base LineFilter still compares the lines of both files."""
+        outfile = self._write_file("linefilter_out.txt", ["first\n", "second\n"])
+        difffile = self._write_file("linefilter_diff.txt", ["first\n", "different\n"])
+        samefile = self._write_file("linefilter_same.txt", ["second\n", "first\n"])
+
+        self.assertFalse(testing_compare_filtered_diff("linefilter_diff", outfile, difffile, sort=True,
+                                                       filters=[LineFilter()]))
+        self.assertTrue(testing_compare_filtered_diff("linefilter_same", outfile, samefile, sort=True,
+                                                      filters=[LineFilter()]))
+
+    def test_compare_functions_accept_no_filters(self) -> None:
+        """The filtered compare functions work with the filters left out or set to None."""
+        outfile = self._write_file("nofilter_out.txt", ["first\n", "second\n"])
+        samefile = self._write_file("nofilter_same.txt", ["second\n", "first\n"])
+        difffile = self._write_file("nofilter_diff.txt", ["first\n", "different\n"])
+
+        for filters in ({}, {"filters": None}):
+            self.assertTrue(testing_compare_filtered_diff("nofilter_same", outfile, samefile, sort=True, **filters))
+            self.assertFalse(testing_compare_filtered_diff("nofilter_diff", outfile, difffile, sort=True, **filters))
+            self.assertTrue(testing_compare_filtered_diff_with_fp_tolerance("nofilter_fp_same", outfile, samefile,
+                                                                            sort=True, **filters))
+            self.assertFalse(testing_compare_filtered_diff_with_fp_tolerance("nofilter_fp_diff", outfile, difffile,
+                                                                             sort=True, **filters))
+            self.assertTrue(testing_compare_filtered_subset(outfile, samefile, **filters))
+            self.assertFalse(testing_compare_filtered_subset(outfile, difffile, **filters))
+
+
+class TestRunSst(SSTTestCase):
+    """Tests for the checks run_sst() makes on the result of an SST run."""
+
+    def _paths(self, name: str) -> Tuple[str, str]:
+        sdlfile = os.path.join(self.get_testsuite_dir(), "test_Component.py")
+        outfile = os.path.join(test_output_get_run_dir(), "testingframework_{0}.out".format(name))
+        return sdlfile, outfile
+
+    def test_run_sst_fails_on_unexpected_error(self) -> None:
+        """run_sst() fails if SST returns an error when no error is expected."""
+        sdlfile, outfile = self._paths("unexpected_error")
+        with self.assertRaises(AssertionError):
+            self.run_sst(sdlfile, outfile, other_args="--num-threads=invalid")
+
+    def test_run_sst_accepts_expected_error(self) -> None:
+        """run_sst() succeeds if SST returns an error when an error is expected."""
+        sdlfile, outfile = self._paths("expected_error")
+        self.run_sst(sdlfile, outfile, other_args="--num-threads=invalid", expected_rc=1)
+

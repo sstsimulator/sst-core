@@ -18,6 +18,7 @@ EXTRA_DIST += \
     tests/cmd_DebugConsole_tracebuf.cmd \
     tests/testsuite_default_Checkpoint.py \
     tests/testsuite_default_Clocks.py \
+    tests/testsuite_default_CommandLine.py \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_ComponentExtension.py \
     tests/testsuite_default_DebugConsole_Checkpoint.py \
