@@ -207,6 +207,48 @@ void
 RankSyncSerialSkip::exchange()
 {
 #ifdef SST_CONFIG_HAVE_MPI
+    exchangeEvents();
+
+    // If we have an Exit object, fire it to see if we need end simulation
+    // if ( exit != nullptr ) exit->check();
+
+    // Check to see when the next event is scheduled, then do an
+    // all_reduce with min operator and set next sync time to be
+    // min + max_period.
+
+    // Need to get the local minimum, then do a global minimum
+    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
+    SimTime_t min_time;
+    MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
+
+    myNextSyncTime = min_time + max_period;
+
+    int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
+    int32_t global_signals[3] = { 0, 0, 0 };
+    MPI_Allreduce(&local_signals, &global_signals, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    sig_end_  = global_signals[0];
+    sig_usr_  = global_signals[1];
+    sig_alrm_ = global_signals[2];
+
+    int32_t local_flags[4]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_),
+         static_cast<int32_t>(shutdown_mode_), static_cast<int32_t>(generate_ckpt_) };
+    int32_t global_flags[4] = { 0, 0, 0, 0 };
+    MPI_Allreduce(&local_flags, &global_flags, 4, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
+
+    enter_interactive_ = global_flags[0];
+    enter_shutdown_    = global_flags[1];
+    shutdown_mode_     = global_flags[2];
+    generate_ckpt_     = global_flags[3];
+
+#endif
+}
+
+void
+RankSyncSerialSkip::exchangeEvents()
+{
+#ifdef SST_CONFIG_HAVE_MPI
     // Each send uses one request per chunk, plus one if the remote buffer has to grow
     std::vector<MPI_Request> sreqs;
     std::vector<MPI_Request> rreqs(comm_map.size());
@@ -269,41 +311,30 @@ RankSyncSerialSkip::exchange()
     for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
         i->second.squeue->clear();
     }
-
-    // If we have an Exit object, fire it to see if we need end simulation
-    // if ( exit != nullptr ) exit->check();
-
-    // Check to see when the next event is scheduled, then do an
-    // all_reduce with min operator and set next sync time to be
-    // min + max_period.
-
-    // Need to get the local minimum, then do a global minimum
-    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
-    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
-    SimTime_t min_time;
-    MPI_Allreduce(&input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
-
-    myNextSyncTime = min_time + max_period;
-
-    int32_t local_signals[3]  = { sig_end_, sig_usr_, sig_alrm_ };
-    int32_t global_signals[3] = { 0, 0, 0 };
-    MPI_Allreduce(&local_signals, &global_signals, 3, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    sig_end_  = global_signals[0];
-    sig_usr_  = global_signals[1];
-    sig_alrm_ = global_signals[2];
-
-    int32_t local_flags[4]  = { static_cast<int32_t>(enter_interactive_), static_cast<int32_t>(enter_shutdown_),
-         static_cast<int32_t>(shutdown_mode_), static_cast<int32_t>(generate_ckpt_) };
-    int32_t global_flags[4] = { 0, 0, 0, 0 };
-    MPI_Allreduce(&local_flags, &global_flags, 4, MPI_INT32_T, MPI_MAX, MPI_COMM_WORLD);
-
-    enter_interactive_ = global_flags[0];
-    enter_shutdown_    = global_flags[1];
-    shutdown_mode_     = global_flags[2];
-    generate_ckpt_     = global_flags[3];
-
 #endif
+}
+
+void
+RankSyncSerialSkip::exchangeSetupData(int UNUSED_WO_MPI(thread))
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    if ( thread != 0 ) return;
+
+    // Deliver the events sent during setup(), then free the buffers, which may have grown large during init() and
+    // setup(). Every rank does this at the same time, so the senders' and receivers' buffer sizes stay consistent.
+    exchangeEvents();
+    releaseBuffers();
+#endif
+}
+
+void
+RankSyncSerialSkip::releaseBuffers()
+{
+    for ( comm_map_t::iterator i = comm_map.begin(); i != comm_map.end(); ++i ) {
+        i->second.squeue->releaseBuffer();
+        i->second.rbuf.reset();
+        i->second.remote_size = RankSyncRecvBuffer::initialSize();
+    }
 }
 
 void

@@ -63,6 +63,13 @@ public:
     virtual void finalizeLinkConfigurations()                                     = 0;
     virtual void prepareForComplete()                                             = 0;
 
+    /**
+       Exchange the events sent during setup() and deliver them, then release the memory used by the sync's buffers.
+       The buffers may have grown large during init() and setup(), which can send much more data than each sync of the
+       run phase. This is only called once, between setup() and the run phase, by all threads.
+    */
+    virtual void exchangeSetupData(int thread) = 0;
+
     /** Set signals to exchange during sync */
     virtual void setSignals(int end, int usr, int alrm)    = 0;
     /** Return exchanged signals after sync */
@@ -208,6 +215,8 @@ public:
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkUntimedData(std::atomic<int>& msg_count);
+    /** Exchange the data sent during setup() between ranks and release the memory used by the rank sync's buffers */
+    void exchangeSetupData();
     /** Finish link configuration */
     void finalizeLinkConfigurations();
     void prepareForComplete();

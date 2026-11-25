@@ -45,6 +45,8 @@ public:
 
     /** Cause an exchange of Untimed Data to occur */
     void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override;
+    /** Exchange the events sent during setup() and release the buffers' memory */
+    void exchangeSetupData(int thread) override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
     /** Prepare for the complete() stage */
@@ -80,6 +82,10 @@ private:
 
     // Function that actually does the exchange during run
     void exchange();
+    /** Send, receive and deliver the events in the syncQueues */
+    void exchangeEvents();
+    /** Free the memory used by the send and receive buffers */
+    void releaseBuffers();
 
     struct comm_pair : public SST::Core::Serialization::serializable
     {

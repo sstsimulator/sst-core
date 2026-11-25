@@ -115,6 +115,13 @@ RankSyncQueue::getData()
     return buffer;
 }
 
+void
+RankSyncQueue::releaseBuffer()
+{
+    std::scoped_lock lock(slock);
+    buffer.release();
+}
+
 #ifdef SST_CONFIG_HAVE_MPI
 void
 RankSyncQueue::sendData(int dest, int tag, int follow_tag, size_t& remote_size, std::vector<MPI_Request>& reqs)
@@ -151,6 +158,16 @@ RankSyncRecvBuffer::RankSyncRecvBuffer() :
     first_size(initialSize())
 {
     // Allocate the first chunk, which receives the first message
+    buffer.resize(first_size);
+}
+
+void
+RankSyncRecvBuffer::reset()
+{
+    buffer.release();
+
+    // Allocate the first chunk, which receives the first message, as in the constructor
+    first_size = initialSize();
     buffer.resize(first_size);
 }
 

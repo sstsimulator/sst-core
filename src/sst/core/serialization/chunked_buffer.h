@@ -79,6 +79,9 @@ public:
     // Discard the data, keeping the allocated chunks for reuse
     void clear() { size_ = 0; }
 
+    // Discard the data and free all of the chunks. New chunks are allocated at min_chunk_size() when they are needed.
+    void release();
+
     // Set the size of the data to size bytes, allocating or growing chunks as needed. This is used to fill the chunks
     // from another source (file, network) before unpacking. Chunks which are already large enough for the data they
     // hold after resizing keep their contents. Chunks which have to grow are reallocated without keeping their

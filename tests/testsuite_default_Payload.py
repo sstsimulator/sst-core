@@ -55,19 +55,46 @@ class testcase_Payload(SSTTestCase):
     def test_Payload_r2t2_medium_messages(self):
         self.payload_test_template("r2t2_medium_messages", num_ranks=2, num_threads=2, max_message_size="8Ki")
 
+    # Much larger transfers during init and setup than during the run phase. The sync buffers grow large during init
+    # and setup, and are released after the events sent during setup have been exchanged.
+    def test_Payload_large_setup(self):
+        self.payload_test_template("large_setup", scenario="large_setup")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Payload_large_setup_r2(self):
+        self.payload_test_template("large_setup_r2", num_ranks=2, num_threads=1, scenario="large_setup")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Payload_large_setup_r2_medium_messages(self):
+        self.payload_test_template("large_setup_r2_medium_messages", num_ranks=2, num_threads=1,
+                                   max_message_size="8KiB", scenario="large_setup")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Payload_large_setup_r2t2(self):
+        self.payload_test_template("large_setup_r2t2", num_ranks=2, num_threads=2, scenario="large_setup")
+
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
+    def test_Payload_large_setup_r2t2_medium_messages(self):
+        self.payload_test_template("large_setup_r2t2_medium_messages", num_ranks=2, num_threads=2,
+                                   max_message_size="8KiB", scenario="large_setup")
+
 #####
 
-    def payload_test_template(self, testtype, num_ranks=None, num_threads=None, max_message_size=None):
+    def payload_test_template(self, testtype, num_ranks=None, num_threads=None, max_message_size=None,
+                              scenario="default"):
         testsuitedir = self.get_testsuite_dir()
         outdir = test_output_get_run_dir()
 
         sdlfile = "{0}/test_Payload.py".format(testsuitedir)
-        reffile = "{0}/refFiles/test_Payload.out".format(testsuitedir)
+        if scenario == "default":
+            reffile = "{0}/refFiles/test_Payload.out".format(testsuitedir)
+        else:
+            reffile = "{0}/refFiles/test_Payload_{1}.out".format(testsuitedir, scenario)
         outfile = "{0}/test_Payload_{1}.out".format(outdir, testtype)
 
-        options = ""
+        options = "--model-options=\"{0}\"".format(scenario)
         if max_message_size is not None:
-            options = "--mpi-max-message-size={0}".format(max_message_size)
+            options += " --mpi-max-message-size={0}".format(max_message_size)
 
         self.run_sst(sdlfile, outfile, other_args=options, num_ranks=num_ranks, num_threads=num_threads)
 

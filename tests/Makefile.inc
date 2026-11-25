@@ -113,6 +113,7 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
     tests/refFiles/test_Payload.out \
+    tests/refFiles/test_Payload_large_setup.out \
     tests/refFiles/test_PortModule_allstats_params.out \
     tests/refFiles/test_PortModule_drop_recv.out \
     tests/refFiles/test_PortModule_drop_send.out \

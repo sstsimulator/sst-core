@@ -441,6 +441,48 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
     if ( thread != 0 ) {
         return;
     }
+    exchangeOnThread0(true);
+
+    // Do an allreduce to see if there were any messages sent
+    int input = msg_count;
+
+    int count;
+    MPI_Allreduce(&input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    msg_count = count;
+#endif
+}
+
+void
+RankSyncParallelSkip::exchangeSetupData(int UNUSED_WO_MPI(thread))
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    if ( thread != 0 ) return;
+
+    // Deliver the events sent during setup(), then free the buffers, which may have grown large during init() and
+    // setup(). Every rank does this at the same time, so the senders' and receivers' buffer sizes stay consistent.
+    exchangeOnThread0(false);
+    releaseBuffers();
+#endif
+}
+
+void
+RankSyncParallelSkip::releaseBuffers()
+{
+    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
+        i->second.squeue->releaseBuffer();
+        i->second.remote_size = RankSyncRecvBuffer::initialSize();
+    }
+    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
+        i->second.rbuf.reset();
+    }
+}
+
+#ifdef SST_CONFIG_HAVE_MPI
+void
+RankSyncParallelSkip::exchangeOnThread0(bool untimed)
+{
+    SimTime_t current_cycle = Simulation::getSimulation()->getCurrentSimCycle();
+
     // Each send uses one request per chunk, plus one if the remote buffer has to grow
     std::vector<MPI_Request> sreqs;
     std::vector<MPI_Request> rreqs(comm_recv_map.size());
@@ -478,9 +520,11 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
         i->second.rbuf.unpack(activities);
 
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
-
             Event* ev = static_cast<Event*>(activities[j]);
-            sendUntimedData_sync(getDeliveryLink(ev), ev);
+            if ( untimed )
+                sendUntimedData_sync(getDeliveryLink(ev), ev);
+            else
+                getDeliveryLink(ev)->send(ev->getDeliveryTime() - current_cycle, ev);
         }
     }
 
@@ -490,15 +534,8 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
     for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
         i->second.squeue->clear();
     }
-
-    // Do an allreduce to see if there were any messages sent
-    int input = msg_count;
-
-    int count;
-    MPI_Allreduce(&input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    msg_count = count;
-#endif
 }
+#endif
 
 void
 RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)

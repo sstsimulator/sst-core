@@ -46,6 +46,8 @@ public:
 
     /** Cause an exchange of Untimed Data to occur */
     void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override;
+    /** Exchange the events sent during setup() and release the buffers' memory */
+    void exchangeSetupData(int thread) override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
     /** Prepare for complete() stage */
@@ -82,6 +84,16 @@ private:
     // Function that actually does the exchange during run
     void exchange_master(int thread);
     void exchange_slave(int thread);
+
+#ifdef SST_CONFIG_HAVE_MPI
+    /**
+       Send, receive and deliver the events in the syncQueues, with all of the work done by thread 0 while the other
+       threads wait. Untimed events are delivered as untimed data, and the others are sent on their delivery links.
+    */
+    void exchangeOnThread0(bool untimed);
+#endif
+    /** Free the memory used by the send and receive buffers */
+    void releaseBuffers();
 
     struct comm_send_pair : public SST::Core::Serialization::serializable
     {

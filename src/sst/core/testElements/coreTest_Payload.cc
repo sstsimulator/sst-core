@@ -57,6 +57,8 @@ coreTestPayloadComponent::coreTestPayloadComponent(ComponentId_t id, Params& par
     events_per_cycle = params.find<uint64_t>("events_per_cycle", 4);
     max_payload      = params.find<uint64_t>("max_payload", 4096);
     init_payload     = params.find<uint64_t>("init_payload", 1000);
+    setup_events     = params.find<uint64_t>("setup_events", 0);
+    setup_payload    = params.find<uint64_t>("setup_payload", 4096);
 
     // tell the simulator not to end without us
     registerAsPrimaryComponent();
@@ -75,6 +77,7 @@ coreTestPayloadComponent::coreTestPayloadComponent(ComponentId_t id, Params& par
 size_t
 coreTestPayloadComponent::payloadSize(uint64_t seq) const
 {
+    if ( seq <= setup_events ) return setup_payload;
     return 1 + (seq * seq * 7919) % max_payload;
 }
 
@@ -94,6 +97,17 @@ coreTestPayloadComponent::init(unsigned int phase)
             info.init++;
             delete ev;
         }
+    }
+}
+
+void
+coreTestPayloadComponent::setup()
+{
+    // Events sent during setup are transferred between ranks before the run phase starts
+    for ( uint64_t i = 0; i < setup_events; ++i ) {
+        uint64_t seq = next_seq++;
+        for ( auto& info : links )
+            info.link->send(new coreTestPayloadEvent(seq, payloadSize(seq)));
     }
 }
 
@@ -140,7 +154,7 @@ coreTestPayloadComponent::checkDone()
 {
     if ( ended || sending ) return;
     for ( auto& info : links )
-        if ( info.events != num_cycles * events_per_cycle ) return;
+        if ( info.events != setup_events + num_cycles * events_per_cycle ) return;
 
     ended = true;
     primaryComponentOKToEndSim();

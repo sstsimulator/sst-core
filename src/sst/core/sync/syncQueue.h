@@ -103,6 +103,12 @@ public:
     void sendData(int dest, int tag, int follow_tag, size_t& remote_size, std::vector<MPI_Request>& reqs);
 #endif
 
+    /**
+       Free the memory used by the buffer, which grows to fit the largest transfer. This must only be called when the
+       queue is empty and no sends started by sendData() are still in progress.
+    */
+    void releaseBuffer();
+
     uint64_t getDataSize() { return buffer.capacity() + (activities.capacity() * sizeof(Activity*)); }
 
     void setProfileTools(Profile::SyncProfileToolList* profile_tools) override { profile_tools_ = profile_tools; }
@@ -144,6 +150,13 @@ public:
 
     /** After all messages have arrived, deserialize the activities */
     void unpack(std::vector<Activity*>& activities);
+
+    /**
+       Free the memory used by the buffer and go back to the state of a new RankSyncRecvBuffer, which accepts a first
+       message of initialSize(). The sender's remote_size must be reset to initialSize() at the same time. This must
+       only be called when no receives are in progress.
+    */
+    void reset();
 
     uint64_t getDataSize() const { return buffer.capacity(); }
 

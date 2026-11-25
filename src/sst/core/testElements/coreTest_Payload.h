@@ -77,6 +77,8 @@ public:
         { "events_per_cycle", "Number of events sent on each link each cycle", "4" },
         { "max_payload",      "Maximum payload size of an event, in words and in string bytes", "4096" },
         { "init_payload",     "Payload size of the event sent on each link during init", "1000" },
+        { "setup_events",     "Number of events sent on each link during setup", "0" },
+        { "setup_payload",    "Payload size of the events sent during setup", "4096" },
         { "padding",          "Unused. Makes the configuration graph larger, to test its distribution", "" }
     )
 
@@ -96,7 +98,7 @@ public:
     ~coreTestPayloadComponent() = default;
 
     void init(unsigned int phase) override;
-    void setup() override {}
+    void setup() override;
     void finish() override;
 
 private:
@@ -114,6 +116,8 @@ private:
     uint64_t events_per_cycle;
     uint64_t max_payload;
     uint64_t init_payload;
+    uint64_t setup_events;
+    uint64_t setup_payload;
     uint64_t next_seq    = 1;
     uint64_t cycles_sent = 0;
     bool     sending     = true;
@@ -121,7 +125,8 @@ private:
 
     link_info links[2];
 
-    // Payload size of the event with sequence number seq. Sizes vary so that the transfers between ranks grow and
+    // Payload size of the event with sequence number seq. The events sent during setup have the first sequence numbers
+    // and all have the same size. The sizes of the other events vary, so that the transfers between ranks grow and
     // shrink.
     size_t payloadSize(uint64_t seq) const;
 

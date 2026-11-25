@@ -79,6 +79,13 @@ chunked_buffer::resize(size_t size)
     }
 }
 
+void
+chunked_buffer::release()
+{
+    std::vector<chunk>().swap(chunks_);
+    size_ = 0;
+}
+
 size_t
 chunked_buffer::capacity() const
 {
