@@ -176,9 +176,9 @@ private:
     // an associated tracking object which is constructed when starting the new mode. PACK_GROWABLE=5 and
     // UNPACK_GROWABLE=6 are the PACK and UNPACK modes using a chunked_buffer. finalize() destroys the current mode's
     // tracking object and goes back to UNSTARTED mode.
-    std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper,
-        pvt::ser_packer_growable, pvt::ser_unpacker_growable>
-        ser_;
+    using ser_variant_t = std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker,
+        pvt::ser_mapper, pvt::ser_packer_growable, pvt::ser_unpacker_growable>;
+    ser_variant_t ser_;
 
     // Mode of the active ser_ alternative. It is stored separately since mode() is called very frequently.
     SERIALIZE_MODE mode_ = UNSTARTED;
@@ -196,9 +196,11 @@ private:
     // Access to the alternative at INDEX, which must be active. This is used after mode_ has been checked, in the most
     // frequently used paths. Since start() keeps mode_ and ser_ consistent, the check here should never fail. It is
     // kept, rather than being replaced with __builtin_unreachable(), so that an internal error is reported instead of
-    // causing undefined behavior, and its cost is negligible because the failure path is out of line.
+    // causing undefined behavior, and its cost is negligible because the failure path is out of line. The return type
+    // is explicit, rather than deduced, because active() is used in member templates which appear earlier in the class,
+    // and a function with a deduced return type cannot be used before its definition.
     template <size_t INDEX>
-    auto& active()
+    std::variant_alternative_t<INDEX, ser_variant_t>& active()
     {
         if ( __builtin_expect(ser_.index() != INDEX, 0) ) modeMismatch();
         return *std::get_if<INDEX>(&ser_);
