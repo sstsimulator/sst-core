@@ -25,8 +25,10 @@
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/warnmacros.h"
 
+#include <algorithm>
 #include <array>
 #include <bitset>
+#include <cstring>
 #include <deque>
 #include <forward_list>
 #include <iostream>
@@ -37,6 +39,8 @@
 #include <ostream>
 #include <queue>
 #include <set>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -50,11 +54,50 @@ namespace SST::CoreTestSerialization {
 
 using SST::Core::Serialization::get_size;
 
+// Maximum chunk size used by serializeDeserialize(), set from the chunk_size parameter. When it is 0, the data is
+// packed into and unpacked from a single buffer. Otherwise, the data is also packed into a chunked_buffer, which must
+// hold the same bytes as the single buffer, and is then unpacked from the chunked_buffer. Chunks start at 1 byte, so
+// that they grow as well as continuing in new chunks.
+size_t test_chunk_size = 0;
+
+// Pack with ser_input() and unpack with ser_output()
+template <typename IN_FN, typename OUT_FN>
+void
+serializeDeserializeWith(SST::Core::Serialization::serializer& ser, IN_FN&& ser_input, OUT_FN&& ser_output)
+{
+    ser.start_sizing();
+    ser_input();
+
+    size_t size   = ser.size();
+    auto   buffer = std::make_unique<char[]>(size);
+
+    ser.start_packing(buffer.get(), size);
+    ser_input();
+
+    if ( test_chunk_size == 0 ) {
+        ser.start_unpacking(buffer.get(), size);
+        ser_output();
+    }
+    else {
+        SST::Core::Serialization::chunked_buffer chunks(test_chunk_size, 1);
+        ser.start_packing(chunks);
+        ser_input();
+
+        if ( chunks.size() != size || chunks.to_vector() != std::vector<char>(buffer.get(), buffer.get() + size) )
+            Output::getDefaultObject().output("ERROR: chunked packing did not match packing into a single buffer\n");
+
+        ser.start_unpacking(chunks);
+        ser_output();
+    }
+
+    ser.finalize();
+}
+
 template <typename T>
 void
 serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
 {
-    // Set up serializer and buffers
+    // Set up serializer
     SST::Core::Serialization::serializer ser;
     ser_opt_t                            options = 0;
     if ( with_tracking ) {
@@ -62,49 +105,78 @@ serializeDeserialize(T&& input, T&& output, bool with_tracking = false)
         if ( !std::is_pointer_v<std::remove_reference_t<T>> ) options = SerOption::as_ptr;
     }
 
-    ser.start_sizing();
-    SST_SER(input, options);
-
-    size_t size   = ser.size();
-    auto   buffer = std::make_unique<char[]>(size);
-
-    ser.start_packing(buffer.get(), size);
-    SST_SER(input, options);
-
-    ser.start_unpacking(buffer.get(), size);
-    SST_SER(output, options);
-
-    ser.finalize();
+    serializeDeserializeWith(ser, [&] { SST_SER(input, options); }, [&] { SST_SER(output, options); });
 }
 
 template <typename... Ts>
 void
 serializeDeserialize(std::tuple<Ts...>& input, std::tuple<Ts...>& output, bool with_tracking = false)
 {
-    // Set up serializer and buffers
-    char*                                buffer;
+    // Set up serializer
     SST::Core::Serialization::serializer ser;
     ser_opt_t                            options = 0;
     if ( with_tracking ) {
         ser.enable_pointer_tracking();
     }
 
-    ser.start_sizing();
-    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, input);
-
-    size_t size = ser.size();
-
-    buffer = new char[size];
-
-    ser.start_packing(buffer, size);
-    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, input);
-
-    ser.start_unpacking(buffer, size);
-    std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, output);
-
-    ser.finalize();
-    delete[] buffer;
+    serializeDeserializeWith(
+        ser, [&] { std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, input); },
+        [&] { std::apply([&](auto&&... x) { (SST_SER(x, options), ...); }, output); });
 }
+
+// Data for the chunked test, mixing small writes with trivial, raw, binary and string writes that are much larger
+// than the smallest chunk sizes tested
+struct chunkedTestData
+{
+    int16_t                                         small = 0;
+    std::vector<int32_t>                            ints;
+    std::array<double, 300>                         doubles {};
+    std::string                                     str;
+    std::map<std::string, std::vector<std::string>> strmap;
+    uint8_t*                                        bytes      = nullptr;
+    size_t                                          bytes_size = 0;
+
+    chunkedTestData() = default;
+    chunkedTestData(SST::RNG::Random& rng)
+    {
+        small = rng.generateNextInt32();
+        ints.resize(1000);
+        for ( auto& i : ints )
+            i = rng.generateNextInt32();
+        for ( auto& d : doubles )
+            d = rng.nextUniform();
+        str.resize(5000);
+        for ( auto& c : str )
+            c = 'a' + rng.generateNextUInt32() % 26;
+        for ( int i = 0; i < 20; ++i )
+            strmap[std::to_string(rng.generateNextUInt32())].assign(i, str.substr(i, i * 7));
+        bytes_size = 10000;
+        bytes      = new uint8_t[bytes_size];
+        for ( size_t i = 0; i < bytes_size; ++i )
+            bytes[i] = rng.generateNextUInt32();
+    }
+
+    chunkedTestData(const chunkedTestData&)            = delete;
+    chunkedTestData& operator=(const chunkedTestData&) = delete;
+    ~chunkedTestData() { delete[] bytes; }
+
+    void serialize(SST::Core::Serialization::serializer& ser)
+    {
+        SST_SER(small);
+        SST_SER(ints);
+        SST_SER(doubles);
+        SST_SER(str);
+        SST_SER(strmap);
+        SST_SER(SST::Core::Serialization::array(bytes, bytes_size));
+        SST_SER(small);
+    }
+
+    bool operator==(const chunkedTestData& o) const
+    {
+        return small == o.small && ints == o.ints && doubles == o.doubles && str == o.str && strmap == o.strmap &&
+               bytes_size == o.bytes_size && std::equal(bytes, bytes + bytes_size, o.bytes);
+    }
+};
 
 template <typename T>
 struct checkSimpleSerializeDeserialize
@@ -1110,6 +1182,8 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     std::string test = params.find<std::string>("test");
     if ( test == "" ) out.fatal(CALL_INFO_LONG, 1, "ERROR: Must specify test type\n");
 
+    test_chunk_size = params.find<size_t>("chunk_size", 0);
+
     // Declare here to avoid having to declare it for each test type
     bool passed;
 
@@ -2002,6 +2076,153 @@ coreTestSerialization::coreTestSerialization(ComponentId_t id, Params& params) :
     }
     else if ( test == "sparsevectormap" ) {
         testSparseVectorMapSerialization(out);
+    }
+    else if ( test == "chunked" ) {
+        using SST::Core::Serialization::chunked_buffer;
+        using SST::Core::Serialization::serializer;
+
+        chunkedTestData data(*rng);
+
+        // Reference bytes packed into a single buffer
+        serializer ser;
+        ser.start_sizing();
+        data.serialize(ser);
+        size_t            size = ser.size();
+        std::vector<char> ref(size);
+        ser.start_packing(ref.data(), size);
+        data.serialize(ser);
+
+        // Maximum and minimum chunk sizes, covering chunks which do not grow, chunks which grow by doubling, and data
+        // which fits in a single chunk
+        std::pair<size_t, size_t> sizes[] = { { 1, 1 }, { 2, 1 }, { 3, 1 }, { 7, 2 }, { 64, 64 }, { 100, 3 },
+            { 4096, 16 }, { 4096, 4096 }, { 1 << 20, 1 }, { 1 << 20, 4096 } };
+
+        for ( auto [chunk_size, min_size] : sizes ) {
+            chunked_buffer buf(chunk_size, min_size);
+
+            // Pack into chunks twice: the first time the chunks are allocated and grown, and the second time the grown
+            // chunks are reused. ser.size() must track the bytes written.
+            for ( int pass = 0; pass < 2; ++pass ) {
+                ser.start_packing(buf);
+                data.serialize(ser);
+                if ( ser.size() != size )
+                    out.output("ERROR: chunk size %zu/%zu: ser.size() is %zu, expected %zu\n", chunk_size, min_size,
+                        ser.size(), size);
+                ser.finalize();
+
+                if ( buf.size() != size || buf.to_vector() != ref )
+                    out.output("ERROR: chunk size %zu/%zu pass %d: chunked data does not match single buffer data\n",
+                        chunk_size, min_size, pass);
+            }
+
+            size_t total = 0;
+            for ( size_t i = 0; i < buf.num_chunks(); ++i ) {
+                if ( i + 1 < buf.num_chunks() && buf.chunk_bytes(i) != chunk_size )
+                    out.output("ERROR: chunk size %zu: chunk %zu is not full\n", chunk_size, i);
+                total += buf.chunk_bytes(i);
+            }
+            if ( total != size || buf.num_chunks() != (size + chunk_size - 1) / chunk_size )
+                out.output("ERROR: chunk size %zu: chunk accounting is wrong\n", chunk_size);
+
+            std::ostringstream os;
+            buf.write_to(os);
+            if ( os.str() != std::string(ref.begin(), ref.end()) )
+                out.output("ERROR: chunk size %zu: write_to() does not match single buffer data\n", chunk_size);
+
+            // Unpack from the chunks
+            {
+                chunkedTestData result;
+                ser.start_unpacking(buf);
+                result.serialize(ser);
+                if ( ser.size() != size || !(result == data) )
+                    out.output("ERROR: chunk size %zu: unpacking from chunks failed\n", chunk_size);
+            }
+
+            // Unpack from chunks filled from the single buffer
+            {
+                chunked_buffer filled(chunk_size, min_size);
+                filled.resize(size);
+                for ( size_t i = 0, offset = 0; i < filled.num_chunks(); offset += filled.chunk_bytes(i++) )
+                    memcpy(filled.chunk_data(i), ref.data() + offset, filled.chunk_bytes(i));
+                chunkedTestData result;
+                ser.start_unpacking(filled);
+                result.serialize(ser);
+                if ( !(result == data) )
+                    out.output("ERROR: chunk size %zu: unpacking from resized chunks failed\n", chunk_size);
+            }
+
+            // Unpack from a single buffer copied from the chunks
+            {
+                std::vector<char> flat(buf.size());
+                buf.copy_to(flat.data());
+                chunkedTestData result;
+                ser.start_unpacking(flat.data(), flat.size());
+                result.serialize(ser);
+                if ( !(result == data) )
+                    out.output("ERROR: chunk size %zu: unpacking copied chunks failed\n", chunk_size);
+            }
+
+            // Reading past the end of the chunked data must throw
+            try {
+                chunkedTestData result;
+                int32_t         extra;
+                ser.start_unpacking(buf);
+                result.serialize(ser);
+                SST_SER(extra);
+                out.output("ERROR: chunk size %zu: reading past the end did not throw\n", chunk_size);
+            }
+            catch ( const std::out_of_range& ) {
+            }
+
+            // Reuse the buffer for a smaller serialization
+            int32_t in = rng->generateNextInt32(), outval = 0;
+            ser.start_packing(buf);
+            SST_SER(in);
+            ser.start_unpacking(buf);
+            SST_SER(outval);
+            if ( buf.size() != sizeof(in) || outval != in )
+                out.output("ERROR: chunk size %zu: reusing the chunked_buffer failed\n", chunk_size);
+            ser.finalize();
+        }
+
+        // Empty serialization
+        chunked_buffer empty(16);
+        ser.start_packing(empty);
+        if ( empty.size() != 0 || empty.num_chunks() != 0 ) out.output("ERROR: empty chunked_buffer is not empty\n");
+        try {
+            int32_t extra;
+            ser.start_unpacking(empty);
+            SST_SER(extra);
+            out.output("ERROR: reading from an empty chunked_buffer did not throw\n");
+        }
+        catch ( const std::out_of_range& ) {
+        }
+
+        // Packing past the end of a single buffer must still throw
+        try {
+            std::vector<char> small(size - 1);
+            ser.start_packing(small.data(), small.size());
+            data.serialize(ser);
+            out.output("ERROR: packing past the end of a single buffer did not throw\n");
+        }
+        catch ( const std::out_of_range& ) {
+        }
+
+        // Chunk sizes of 0 are invalid
+        try {
+            chunked_buffer bad(0);
+            out.output("ERROR: chunked_buffer with maximum chunk size 0 did not throw\n");
+        }
+        catch ( const std::invalid_argument& ) {
+        }
+        try {
+            chunked_buffer bad(16, 0);
+            out.output("ERROR: chunked_buffer with minimum chunk size 0 did not throw\n");
+        }
+        catch ( const std::invalid_argument& ) {
+        }
+
+        ser.finalize();
     }
     else {
         out.fatal(CALL_INFO_LONG, 1, "ERROR: Unknown serialization test specified: %s\n", test.c_str());

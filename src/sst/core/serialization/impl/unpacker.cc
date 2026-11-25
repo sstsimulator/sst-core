@@ -13,14 +13,14 @@
 
 #include "sst/core/serialization/serializer.h"
 
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 
 namespace SST::Core::Serialization::pvt {
 
 uintptr_t
-ser_unpacker::check_pointer_unpack(uintptr_t ptr)
+ser_unpack_tracker::check_pointer_unpack(uintptr_t ptr)
 {
     auto it = ser_pointer_map.find(ptr);
     if ( it != ser_pointer_map.end() ) return it->second;
@@ -30,13 +30,17 @@ ser_unpacker::check_pointer_unpack(uintptr_t ptr)
     return 0;
 }
 
+template <typename UNPACKER>
 void
-ser_unpacker::unpack_string(std::string& str)
+ser_unpack_ops<UNPACKER>::unpack_string(std::string& str)
 {
     size_t size;
     unpack(size);
     str.resize(size);
-    memcpy(str.data(), buf_next(size), size);
+    unpacker().read(str.data(), size);
 }
+
+template void ser_unpack_ops<ser_unpacker>::unpack_string(std::string&);
+template void ser_unpack_ops<ser_unpacker_growable>::unpack_string(std::string&);
 
 } // namespace SST::Core::Serialization::pvt

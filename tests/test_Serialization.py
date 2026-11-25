@@ -17,3 +17,7 @@ test = sys.argv[1]
 
 comp = sst.Component("Component0", "coreTestElement.coreTestSerialization")
 comp.addParam("test", test)
+
+# Optional chunk size for packing and unpacking with a chunked_buffer
+if len(sys.argv) > 2:
+    comp.addParam("chunk_size", sys.argv[2])

@@ -17,6 +17,7 @@
 add_subdirectory(impl)
 
 set(SSTSerializationHeaders
+    chunked_buffer.h
     objectMap.h
     objectMapDeferred.h
     objectMapTreeBuilder.h

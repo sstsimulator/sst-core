@@ -12,6 +12,7 @@
 #ifndef SST_CORE_OBJECTSERIALIZATION_H
 #define SST_CORE_OBJECTSERIALIZATION_H
 
+#include "sst/core/serialization/chunked_buffer.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <vector>
@@ -37,6 +38,17 @@ serialize(dataType& data)
     return buffer;
 }
 
+// Serialize data into a chunked_buffer, without a sizing pass
+template <typename dataType>
+void
+serialize(dataType& data, SST::Core::Serialization::chunked_buffer& buffer)
+{
+    SST::Core::Serialization::serializer ser;
+
+    ser.start_packing(buffer);
+    SST_SER(data);
+}
+
 
 template <typename dataType>
 dataType*
@@ -59,6 +71,16 @@ deserialize(std::vector<char>& buffer, dataType& tgt)
     SST::Core::Serialization::serializer ser;
 
     ser.start_unpacking(buffer.data(), buffer.size());
+    SST_SER(tgt);
+}
+
+template <typename dataType>
+void
+deserialize(const SST::Core::Serialization::chunked_buffer& buffer, dataType& tgt)
+{
+    SST::Core::Serialization::serializer ser;
+
+    ser.start_unpacking(buffer);
     SST_SER(tgt);
 }
 

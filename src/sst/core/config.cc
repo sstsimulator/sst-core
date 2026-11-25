@@ -25,6 +25,7 @@
 #include <functional>
 #include <getopt.h>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -297,6 +298,66 @@ Config::print()
     }
 }
 
+int
+Config::parse_mpi_max_message_size(std::string& var, std::string arg)
+{
+    if ( arg.find_first_not_of(" \t\n\r\v\f") == std::string::npos ) {
+        fprintf(stderr, "ERROR: For option \"%s\", a size is required\n", ConfigBase::currently_parsing_option.c_str());
+        return -1;
+    }
+
+    // Sizes without units are in bytes. Units of B are added to them, so that the stored value always has units.
+    std::string size_str = arg;
+    trim(size_str);
+
+    try {
+        UnitAlgebra size;
+        try {
+            size = UnitAlgebra(size_str);
+            if ( size.hasUnits("") ) {
+                size_str += "B";
+                size = UnitAlgebra(size_str);
+            }
+        }
+        catch ( UnitAlgebra::InvalidUnitType const& ) {
+            // An SI prefix without units, such as 64Ki, is not valid by itself, so try it as bytes
+            size_str += "B";
+            size = UnitAlgebra(size_str);
+        }
+
+        if ( size.hasUnits("b") ) {
+            fprintf(stderr, "ERROR: For option \"%s\", size must be in bytes, not bits: \"%s\"\n",
+                ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+            return -1;
+        }
+        if ( !size.hasUnits("B") ) {
+            fprintf(stderr, "ERROR: For option \"%s\", size must have units of bytes (for example 64MiB): \"%s\"\n",
+                ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+            return -1;
+        }
+
+        // Messages must be able to hold the headers used by the transfers, and their sizes must fit in an int for MPI
+        int64_t bytes = size.getRoundedValue();
+        if ( bytes < 64 || bytes > std::numeric_limits<int>::max() ) {
+            fprintf(stderr, "ERROR: For option \"%s\", size must be between 64B and %dB: \"%s\"\n",
+                ConfigBase::currently_parsing_option.c_str(), std::numeric_limits<int>::max(), arg.c_str());
+            return -1;
+        }
+    }
+    catch ( UnitAlgebra::InvalidUnitType const& ) {
+        fprintf(stderr, "ERROR: For option \"%s\", invalid units: \"%s\"\n",
+            ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+        return -1;
+    }
+    catch ( ... ) {
+        fprintf(stderr, "ERROR: For option \"%s\", failed to parse argument: \"%s\"\n",
+            ConfigBase::currently_parsing_option.c_str(), arg.c_str());
+        return -1;
+    }
+    var = size_str;
+    return 0;
+}
+
 void
 Config::serialize_order(SST::Core::Serialization::serializer& ser)
 {
@@ -503,6 +564,13 @@ Config::insertOptions()
         "timeVortex", 0, "MODULE", "Select TimeVortex implementation <lib.timevortex>", timeVortex_, true, true, false);
     DEF_FLAG_OPTVAL("interthread-links", 0, "[EXPERIMENTAL] Set whether or not interthread links should be used",
         interthread_links_, true);
+#ifdef SST_CONFIG_HAVE_MPI
+    DEF_ARG("mpi-max-message-size", 0, "SIZE",
+        "Maximum size of a single MPI message used to transfer serialized data between ranks, in bytes. SI prefixes "
+        "and units of B are allowed (for example 65536, 64Ki or 64KiB, default: 256MiB). Larger transfers are split "
+        "into several messages.",
+        mpi_max_message_size_, false, false, false);
+#endif
 #ifdef USE_MEMPOOL
     DEF_FLAG_OPTVAL("cache-align-mempools", 0, "[EXPERIMENTAL] Set whether mempool allocations are cache aligned",
         cache_align_mempools_, true, true, true);

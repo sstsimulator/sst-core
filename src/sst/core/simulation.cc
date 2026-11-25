@@ -983,6 +983,10 @@ Simulation::setup()
     }
 
     setupBarrier.wait();
+
+    // Deliver the events sent between ranks during setup(), then release the memory used by the rank sync's buffers,
+    // which may have grown much larger during init() and setup() than the run phase needs
+    syncManager->exchangeSetupData();
 }
 
 void

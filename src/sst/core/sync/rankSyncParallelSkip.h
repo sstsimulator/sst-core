@@ -15,6 +15,7 @@
 #include "sst/core/sst_mpi.h"
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
 #include <atomic>
@@ -45,6 +46,8 @@ public:
 
     /** Cause an exchange of Untimed Data to occur */
     void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override;
+    /** Exchange the events sent during setup() and release the buffers' memory */
+    void exchangeSetupData(int thread) override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
     /** Prepare for complete() stage */
@@ -82,18 +85,26 @@ private:
     void exchange_master(int thread);
     void exchange_slave(int thread);
 
+#ifdef SST_CONFIG_HAVE_MPI
+    /**
+       Send, receive and deliver the events in the syncQueues, with all of the work done by thread 0 while the other
+       threads wait. Untimed events are delivered as untimed data, and the others are sent on their delivery links.
+    */
+    void exchangeOnThread0(bool untimed);
+#endif
+    /** Free the memory used by the send and receive buffers */
+    void releaseBuffers();
+
     struct comm_send_pair : public SST::Core::Serialization::serializable
     {
         RankInfo       to_rank;
-        RankSyncQueue* squeue; // RankSyncQueue
-        char*          sbuf;
-        uint32_t       remote_size;
+        RankSyncQueue* squeue;      // RankSyncQueue
+        size_t         remote_size; // size of the first message the remote rank can receive
 
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
             SST_SER(to_rank);
             // squeue - empty so recreate on restart
-            // sbuf - empty so recreate on restart
             // remote_size - don't need
         }
         ImplementSerializable(comm_send_pair)
@@ -103,12 +114,13 @@ private:
     {
         uint32_t               remote_rank;
         uint32_t               local_thread;
-        char*                  rbuf; // receive buffer
+        RankSyncRecvBuffer     rbuf; // receive buffer
         std::vector<Activity*> activity_vec;
-        uint32_t               local_size;
-        bool                   recv_done;
+        bool                   first_received; // first message has arrived and the rest have been posted
+        bool                   recv_done;      // all messages have arrived
 #ifdef SST_CONFIG_HAVE_MPI
-        MPI_Request req;
+        MPI_Request              req;       // receive of the first message
+        std::vector<MPI_Request> rest_reqs; // receives of the remaining messages, reused between syncs
 #endif
         void serialize_order(SST::Core::Serialization::serializer& ser) override
         {
@@ -116,8 +128,8 @@ private:
             SST_SER(local_thread);
             // activity_vec - empty so recreate on restart
             // rbuf - empty so recreate on restart
-            // recv_done - don't need
-            // req - don't need
+            // first_received, recv_done - don't need
+            // req, rest_reqs - don't need
         }
         ImplementSerializable(comm_recv_pair)
     };

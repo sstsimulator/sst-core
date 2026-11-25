@@ -390,6 +390,15 @@ private:
     */
     SST_CONFIG_DECLARE_OPTION(bool, interthread_links, false, &StandardConfigParsers::flag_default_true);
 
+    /**
+       Maximum size of a single MPI message used to transfer serialized data between ranks, as a UnitAlgebra string
+       with units of bytes (e.g. 64MiB). Sizes given without units are stored with units of B added. Larger transfers
+       are split into several messages.
+    */
+    SST_CONFIG_DECLARE_OPTION(std::string, mpi_max_message_size, "256MiB", &Config::parse_mpi_max_message_size);
+
+    static int parse_mpi_max_message_size(std::string& var, std::string arg);
+
 
 #ifdef USE_MEMPOOL
     /**

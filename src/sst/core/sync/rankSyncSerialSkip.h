@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/threadsafe.h"
 
 #include <atomic>
@@ -44,6 +45,8 @@ public:
 
     /** Cause an exchange of Untimed Data to occur */
     void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override;
+    /** Exchange the events sent during setup() and release the buffers' memory */
+    void exchangeSetupData(int thread) override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
     /** Prepare for the complete() stage */
@@ -79,13 +82,16 @@ private:
 
     // Function that actually does the exchange during run
     void exchange();
+    /** Send, receive and deliver the events in the syncQueues */
+    void exchangeEvents();
+    /** Free the memory used by the send and receive buffers */
+    void releaseBuffers();
 
     struct comm_pair : public SST::Core::Serialization::serializable
     {
-        RankSyncQueue* squeue; // RankSyncQueue
-        char*          rbuf;   // receive buffer
-        uint32_t       local_size;
-        uint32_t       remote_size;
+        RankSyncQueue*     squeue;      // RankSyncQueue
+        RankSyncRecvBuffer rbuf;        // receive buffer
+        size_t             remote_size; // size of the first message the remote rank can receive
 
         void serialize_order(SST::Core::Serialization::serializer& UNUSED(ser)) override {}
         ImplementSerializable(comm_pair)

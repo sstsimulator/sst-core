@@ -27,6 +27,7 @@ EXTRA_DIST += \
     tests/testsuite_default_Module.py \
     tests/testsuite_default_Output.py \
     tests/testsuite_default_ParamComponent.py \
+    tests/testsuite_default_Payload.py \
     tests/testsuite_default_PerfComponent.py \
     tests/testsuite_default_profiling.py \
     tests/testsuite_default_RNGComponent.py \
@@ -57,6 +58,7 @@ EXTRA_DIST += \
     tests/test_Output.py \
     tests/test_ParamComponent.py \
     tests/test_ParallelLoad.py \
+    tests/test_Payload.py \
     tests/test_PortModule_handles.py \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
@@ -110,6 +112,8 @@ EXTRA_DIST += \
     tests/refFiles/test_Output_TraceFunction.out \
     tests/refFiles/test_Output_TraceFunction_IndentMarker.out \
     tests/refFiles/test_ParamComponent.out \
+    tests/refFiles/test_Payload.out \
+    tests/refFiles/test_Payload_large_setup.out \
     tests/refFiles/test_PortModule_allstats_params.out \
     tests/refFiles/test_PortModule_drop_recv.out \
     tests/refFiles/test_PortModule_drop_send.out \

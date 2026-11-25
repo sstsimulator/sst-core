@@ -86,6 +86,9 @@ public:
 
     void prepareForComplete() override {}
 
+    // There are no links crossing ranks, so there is nothing to exchange or release
+    void exchangeSetupData(int UNUSED(thread)) override {}
+
     void setSignals(int UNUSED(end), int UNUSED(usr), int UNUSED(alrm)) override {}
 
     bool getSignals(int& end, int& usr, int& alrm) override
@@ -740,6 +743,15 @@ SyncManager::exchangeLinkUntimedData(std::atomic<int>& msg_count)
     LinkUntimedBarrier_[1].wait();
     rankSync_->exchangeLinkUntimedData(rank_.thread, msg_count);
     LinkUntimedBarrier_[2].wait();
+}
+
+void
+SyncManager::exchangeSetupData()
+{
+    // The rank sync does all of its work on thread 0, so the other threads wait while it delivers events to them
+    LinkUntimedBarrier_[0].wait();
+    rankSync_->exchangeSetupData(rank_.thread);
+    LinkUntimedBarrier_[1].wait();
 }
 
 /** Finish link configuration */

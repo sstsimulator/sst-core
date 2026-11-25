@@ -22,12 +22,14 @@
 // Reenble warnings for including the above file independent of this file.
 #undef SST_INCLUDING_SERIALIZER_H
 
+#include "sst/core/serialization/chunked_buffer.h"
 #include "sst/core/warnmacros.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <variant>
 
 namespace SST::Core::Serialization {
@@ -45,28 +47,37 @@ public:
     enum SERIALIZE_MODE : size_t { SIZER = 1, PACK, UNPACK, MAP };
     static constexpr SERIALIZE_MODE UNSTARTED { 0 }; // Defined outside of enum to avoid warnings about switch cases
 
-    // Current mode is the index of the ser_ variant
+    // Current mode. Packing into and unpacking from a chunked_buffer are PACK and UNPACK modes, so serialization code
+    // does not need to know which kind of buffer is being used.
     SERIALIZE_MODE
-    mode() const { return SERIALIZE_MODE(ser_.index()); }
+    mode() const { return mode_; }
 
     // Calling sizer(), packer(), unpacker() or mapper() when the corresponding mode is not active is flagged with a
-    // std::bad_variant_access exception.
-    pvt::ser_sizer&    sizer() { return std::get<SIZER>(ser_); }
-    pvt::ser_packer&   packer() { return std::get<PACK>(ser_); }
-    pvt::ser_unpacker& unpacker() { return std::get<UNPACK>(ser_); }
-    pvt::ser_mapper&   mapper() { return std::get<MAP>(ser_); }
+    // std::bad_variant_access exception. packer() and unpacker() return the pointer tracking state of the active
+    // packer or unpacker, which is the same whether it uses a single buffer or a chunked_buffer.
+    pvt::ser_sizer&          sizer() { return std::get<SIZER>(ser_); }
+    pvt::ser_pack_tracker&   packer();
+    pvt::ser_unpack_tracker& unpacker();
+    pvt::ser_mapper&         mapper() { return std::get<MAP>(ser_); }
 
     // Starting a new mode destroys the tracking object of the current mode and constructs a new tracking object
-    void start_sizing() { ser_.emplace<SIZER>(); }
-    void start_packing(char* buffer, size_t size) { ser_.emplace<PACK>(buffer, size); }
-    void start_unpacking(char* buffer, size_t size) { ser_.emplace<UNPACK>(buffer, size); }
-    void start_mapping(ObjectMap* obj) { ser_.emplace<MAP>(obj); }
+    void start_sizing() { start<SIZER, SIZER>(); }
+    void start_packing(char* buffer, size_t size) { start<PACK, PACK>(buffer, size); }
+    void start_unpacking(char* buffer, size_t size) { start<UNPACK, UNPACK>(buffer, size); }
+    void start_mapping(ObjectMap* obj) { start<MAP, MAP>(obj); }
+
+    // Packing into a chunked_buffer does not require a sizing pass: the chunked_buffer is cleared, and its chunks are
+    // allocated and grown as needed to hold the data. Unpacking from a chunked_buffer reads the data in all of its
+    // chunks. The chunked_buffer is owned by the caller and must remain valid until the serializer changes modes or is
+    // finalized.
+    void start_packing(chunked_buffer& buf) { start<PACK_GROWABLE, PACK>(buf); }
+    void start_unpacking(const chunked_buffer& buf) { start<UNPACK_GROWABLE, UNPACK>(buf); }
 
     // finalize() destroys the tracking object of the current mode and switches to UNSTARTED mode. Functionally,
     // finalize() indicates the end of a serialization sequence, not just the end of the current mode. You do not
     // need to call finalize() if you are simply changing modes. finalize() can perform any final steps at the end
     // of a serialization sequence, such as destroying any std::shared_ptr tracking objects or generating a report.
-    void finalize() { ser_.emplace<UNSTARTED>(); }
+    void finalize() { start<UNSTARTED, UNSTARTED>(); }
 
     // Standard operators are defaulted or deleted
     serializer()                             = default;
@@ -83,13 +94,19 @@ public:
     template <typename T>
     void pack(T& t)
     {
-        packer().pack(t);
+        if ( ser_.index() == PACK_GROWABLE )
+            std::get<PACK_GROWABLE>(ser_).pack(t);
+        else
+            std::get<PACK>(ser_).pack(t);
     }
 
     template <typename T>
     void unpack(T& t)
     {
-        unpacker().unpack(t);
+        if ( ser_.index() == UNPACK_GROWABLE )
+            std::get<UNPACK_GROWABLE>(ser_).unpack(t);
+        else
+            std::get<UNPACK>(ser_).unpack(t);
     }
 
     template <typename T>
@@ -99,13 +116,19 @@ public:
             "Error: ser.primitive() can only be called on trivially copyable, standard layout types.");
         switch ( mode() ) {
         case SIZER:
-            sizer().size(t);
+            active<SIZER>().size(t);
             break;
         case PACK:
-            packer().pack(t);
+            if ( ser_.index() == PACK_GROWABLE )
+                active<PACK_GROWABLE>().pack(t);
+            else
+                active<PACK>().pack(t);
             break;
         case UNPACK:
-            unpacker().unpack(t);
+            if ( ser_.index() == UNPACK_GROWABLE )
+                active<UNPACK_GROWABLE>().unpack(t);
+            else
+                active<UNPACK>().unpack(t);
             break;
         case MAP:
             break;
@@ -117,13 +140,19 @@ public:
     {
         switch ( mode() ) {
         case SIZER:
-            sizer().size_buffer(buffer, size);
+            active<SIZER>().size_buffer(buffer, size);
             break;
         case PACK:
-            packer().pack_buffer(buffer, size);
+            if ( ser_.index() == PACK_GROWABLE )
+                active<PACK_GROWABLE>().pack_buffer(buffer, size);
+            else
+                active<PACK>().pack_buffer(buffer, size);
             break;
         case UNPACK:
-            unpacker().unpack_buffer(buffer, size);
+            if ( ser_.index() == UNPACK_GROWABLE )
+                active<UNPACK_GROWABLE>().unpack_buffer(buffer, size);
+            else
+                active<UNPACK>().unpack_buffer(buffer, size);
             break;
         case MAP:
             break;
@@ -139,10 +168,47 @@ public:
     const char* getMapName() const;
 
 private:
+    // Variant indices of the packer and unpacker for a chunked_buffer, which are in PACK and UNPACK modes
+    static constexpr size_t PACK_GROWABLE   = 5;
+    static constexpr size_t UNPACK_GROWABLE = 6;
+
     // Default mode is UNSTARTED=0 with an empty std::monostate class. SIZER=1, PACK=2, UNPACK=3 and MAP=4 modes have
-    // an associated tracking object which is constructed when starting the new mode. finalize() destroys the current
-    // mode's tracking object and goes back to UNSTARTED mode.
-    std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker, pvt::ser_mapper> ser_;
+    // an associated tracking object which is constructed when starting the new mode. PACK_GROWABLE=5 and
+    // UNPACK_GROWABLE=6 are the PACK and UNPACK modes using a chunked_buffer. finalize() destroys the current mode's
+    // tracking object and goes back to UNSTARTED mode.
+    using ser_variant_t = std::variant<std::monostate, pvt::ser_sizer, pvt::ser_packer, pvt::ser_unpacker,
+        pvt::ser_mapper, pvt::ser_packer_growable, pvt::ser_unpacker_growable>;
+    ser_variant_t ser_;
+
+    // Mode of the active ser_ alternative. It is stored separately since mode() is called very frequently.
+    SERIALIZE_MODE mode_ = UNSTARTED;
+
+    // Construct the tracking object at variant index INDEX, which is in mode MODE. mode_ stays UNSTARTED if the
+    // construction throws, so mode_ always identifies an active alternative of ser_.
+    template <size_t INDEX, SERIALIZE_MODE MODE, typename... ARGS>
+    void start(ARGS&&... args)
+    {
+        mode_ = UNSTARTED;
+        ser_.emplace<INDEX>(std::forward<ARGS>(args)...);
+        mode_ = MODE;
+    }
+
+    // Access to the alternative at INDEX, which must be active. This is used after mode_ has been checked, in the most
+    // frequently used paths. Since start() keeps mode_ and ser_ consistent, the check here should never fail. It is
+    // kept, rather than being replaced with __builtin_unreachable(), so that an internal error is reported instead of
+    // causing undefined behavior, and its cost is negligible because the failure path is out of line. The return type
+    // is explicit, rather than deduced, because active() is used in member templates which appear earlier in the class,
+    // and a function with a deduced return type cannot be used before its definition.
+    template <size_t INDEX>
+    std::variant_alternative_t<INDEX, ser_variant_t>& active()
+    {
+        if ( __builtin_expect(ser_.index() != INDEX, 0) ) modeMismatch();
+        return *std::get_if<INDEX>(&ser_);
+    }
+
+    // Called if mode_ does not match the active alternative of ser_, which is an internal error
+    [[noreturn]]
+    static void modeMismatch();
 
     bool                    enable_ptr_tracking_ = false;
     const ObjectMapContext* mapContext           = nullptr;

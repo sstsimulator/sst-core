@@ -383,6 +383,10 @@ start_graph_creation(ConfigGraph*& graph, const RankInfo& world_size, const Rank
         }
     }
 #endif
+
+    // Every rank now has the final Config, so set the maximum size of the MPI messages used for serialized data. This
+    // must happen after the Config broadcast, since the rank sync requires every rank to use the same size.
+    Comms::setMaxMessageSize(UnitAlgebra(cfg.mpi_max_message_size()).getRoundedValue());
 }
 
 static double

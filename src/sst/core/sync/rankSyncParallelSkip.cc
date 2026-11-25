@@ -71,9 +71,6 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
     }
     comm_send_map.clear();
 
-    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-        delete[] i->second.rbuf;
-    }
     comm_recv_map.clear();
 
     delete[] recv_count;
@@ -95,7 +92,7 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
         send_count++;
         comm_send_map[to_rank].to_rank = to_rank;
         queue = comm_send_map[to_rank].squeue = new RankSyncQueue(to_rank);
-        comm_send_map[to_rank].remote_size    = 4096;
+        comm_send_map[to_rank].remote_size    = RankSyncRecvBuffer::initialSize();
         comm_send_map[to_rank].squeue->setProfileTools(profile_tools_);
     }
     else {
@@ -110,8 +107,6 @@ RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const RankInfo& from
         recv_count[from_rank.thread]++;
         comm_recv_map[remote_rank_local_thread].remote_rank  = to_rank.rank;
         comm_recv_map[remote_rank_local_thread].local_thread = from_rank.thread;
-        comm_recv_map[remote_rank_local_thread].rbuf         = new char[4096];
-        comm_recv_map[remote_rank_local_thread].local_size   = 4096;
     }
 
     link_maps[to_rank.rank].emplace_back(link->getId(), reinterpret_cast<uintptr_t>(link));
@@ -233,7 +228,7 @@ RankSyncParallelSkip::getDataSize() const
     }
 
     for ( auto it = comm_recv_map.begin(); it != comm_recv_map.end(); ++it ) {
-        count += it->second.local_size;
+        count += it->second.rbuf.getDataSize();
     }
     return count;
 }
@@ -266,7 +261,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
         SST_EVENT_PROFILE_START
 
         // Serialize the events
-        ser->sbuf = ser->squeue->getData();
+        ser->squeue->getData();
 
         SST_EVENT_PROFILE_STOP
 
@@ -314,10 +309,8 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
 {
 #ifdef SST_CONFIG_HAVE_MPI
 
-    // Maximum number of outstanding requests is 3 times the number
-    // of ranks I communicate with (1 recv, 2 sends per rank)
-    auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_send_map.size());
-    int  sreq_count = 0;
+    // Each send uses one request per chunk, plus one if the remote buffer has to grow
+    std::vector<MPI_Request> sreqs;
     // First thing to do is fill the serialize_queue.
     for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
         serialize_queue.try_insert(&(i->second));
@@ -328,11 +321,11 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     serializeReadyBarrier.wait(); /* Wait for / release slaves to serialize */
 
     for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-        // Post all the receives
-        int tag             = 2 * i->second.local_thread;
-        i->second.recv_done = false;
-        MPI_Irecv(
-            i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank, tag, MPI_COMM_WORLD, &i->second.req);
+        // Post all the receives for the first messages
+        int tag                  = 2 * i->second.local_thread;
+        i->second.first_received = false;
+        i->second.recv_done      = false;
+        i->second.rbuf.postFirstRecv(i->second.remote_rank, tag, &i->second.req);
     }
 
     // Do all the sends, but if there are no sends to do, then help
@@ -348,29 +341,13 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
         if ( send_queue.try_remove(send) ) {
             my_send_count--;
 
-            char*                  send_buffer = send->sbuf;
-            // Cast to Header so we can get/fill in data
-            RankSyncQueue::Header* hdr         = reinterpret_cast<RankSyncQueue::Header*>(send_buffer);
-            int                    tag         = 2 * send->to_rank.thread;
-            // Check to see if remote queue is big enough for data
-            if ( send->remote_size < hdr->buffer_size ) {
-                // not big enough, send message that will tell remote side to get larger buffer
-                hdr->mode = 1;
-                MPI_Isend(send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, send->to_rank.rank /*dest*/, tag,
-                    MPI_COMM_WORLD, &sreqs[sreq_count++]);
-                send->remote_size = hdr->buffer_size;
-                tag               = 2 * send->to_rank.thread + 1;
-            }
-            else {
-                hdr->mode = 0;
-            }
-            MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, send->to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
-                &sreqs[sreq_count++]);
+            int tag = 2 * send->to_rank.thread;
+            send->squeue->sendData(send->to_rank.rank /*dest*/, tag, tag + 1, send->remote_size, sreqs);
         }
         else if ( serialize_queue.try_remove(send) ) {
             // Serialize the events
             SST_EVENT_PROFILE_START
-            send->sbuf = send->squeue->getData();
+            send->squeue->getData();
             SST_EVENT_PROFILE_STOP
 
             // Send back to master to do MPI send
@@ -381,39 +358,33 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
         }
     }
 
-    // Do all the receives as they arrive
+    // Do all the receives as they arrive. The remaining messages of each transfer are received without blocking, so
+    // that the transfers from different ranks overlap, and each transfer is handed off to be deserialized as soon as
+    // all of its messages have arrived.
     int receives_to_process = comm_recv_map.size();
     while ( receives_to_process != 0 ) {
         for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-            if ( !i->second.recv_done ) {
-                int flag;
-                MPI_Test(&i->second.req, &flag, MPI_STATUS_IGNORE);
-                if ( flag ) {
-                    receives_to_process--;
-                    i->second.recv_done = true;
+            comm_recv_pair& recv = i->second;
+            if ( recv.recv_done ) continue;
 
-                    // Get the buffer and deserialize all the events
-                    char* buffer = i->second.rbuf;
+            int flag;
+            if ( !recv.first_received ) {
+                MPI_Test(&recv.req, &flag, MPI_STATUS_IGNORE);
+                if ( !flag ) continue;
 
-                    RankSyncQueue::Header* hdr  = reinterpret_cast<RankSyncQueue::Header*>(buffer);
-                    unsigned int           size = hdr->buffer_size;
-                    int                    mode = hdr->mode;
-
-                    if ( mode == 1 ) {
-                        // May need to resize the buffer
-                        if ( size > i->second.local_size ) {
-                            delete[] i->second.rbuf;
-                            i->second.rbuf       = new char[size];
-                            i->second.local_size = size;
-                        }
-                        MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank,
-                            2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                        buffer = i->second.rbuf;
-                    }
-
-                    deserialize_queue.try_insert(&(i->second));
-                }
+                // The first message has arrived, so post the receives for any remaining messages
+                recv.first_received = true;
+                recv.rest_reqs.clear();
+                recv.rbuf.postRemainingRecvs(recv.remote_rank, 2 * recv.local_thread + 1, recv.rest_reqs);
             }
+
+            // This is immediately true if there are no remaining messages
+            MPI_Testall(recv.rest_reqs.size(), recv.rest_reqs.data(), &flag, MPI_STATUSES_IGNORE);
+            if ( !flag ) continue;
+
+            recv.recv_done = true;
+            receives_to_process--;
+            deserialize_queue.try_insert(&recv);
         }
     }
 
@@ -422,7 +393,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
 
     // Clear the RankSyncQueues used to send the data after all the sends have completed
     // waitStart = SST::Core::Profile::now();
-    MPI_Waitall(sreq_count, sreqs.get(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(sreqs.size(), sreqs.data(), MPI_STATUSES_IGNORE);
     // mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
 
     for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
@@ -470,88 +441,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
     if ( thread != 0 ) {
         return;
     }
-    // Maximum number of outstanding requests is 3 times the number
-    // of ranks I communicate with (1 recv, 2 sends per rank)
-    auto sreqs      = std::make_unique<MPI_Request[]>(2 * comm_send_map.size());
-    auto rreqs      = std::make_unique<MPI_Request[]>(comm_recv_map.size());
-    int  rreq_count = 0;
-    int  sreq_count = 0;
-
-    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-        // Post all the receives
-        int tag = 2 * i->second.local_thread;
-        MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank, tag, MPI_COMM_WORLD,
-            &rreqs[rreq_count++]);
-    }
-
-    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
-
-        // Do all the sends
-        // Get the buffer from the syncQueue
-        char* send_buffer = i->second.squeue->getData();
-
-        // Cast to Header so we can get/fill in data
-        RankSyncQueue::Header* hdr = reinterpret_cast<RankSyncQueue::Header*>(send_buffer);
-        int                    tag = 2 * i->second.to_rank.thread;
-        // Check to see if remote queue is big enough for data
-        if ( i->second.remote_size < hdr->buffer_size ) {
-            // not big enough, send message that will tell remote side to get larger buffer
-            hdr->mode = 1;
-            MPI_Isend(send_buffer, sizeof(RankSyncQueue::Header), MPI_BYTE, i->second.to_rank.rank /*dest*/, tag,
-                MPI_COMM_WORLD, &sreqs[sreq_count++]);
-            i->second.remote_size = hdr->buffer_size;
-            tag                   = 2 * i->second.to_rank.thread + 1;
-        }
-        else {
-            hdr->mode = 0;
-        }
-        MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, i->second.to_rank.rank /*dest*/, tag, MPI_COMM_WORLD,
-            &sreqs[sreq_count++]);
-    }
-
-    // Wait for all recvs to complete
-    MPI_Waitall(rreq_count, rreqs.get(), MPI_STATUSES_IGNORE);
-
-    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
-
-        // Get the buffer and deserialize all the events
-        char* buffer = i->second.rbuf;
-
-        RankSyncQueue::Header* hdr  = reinterpret_cast<RankSyncQueue::Header*>(buffer);
-        unsigned int           size = hdr->buffer_size;
-        int                    mode = hdr->mode;
-
-        if ( mode == 1 ) {
-            // May need to resize the buffer
-            if ( size > i->second.local_size ) {
-                delete[] i->second.rbuf;
-                i->second.rbuf       = new char[size];
-                i->second.local_size = size;
-            }
-            MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->second.remote_rank,
-                2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            buffer = i->second.rbuf;
-        }
-
-        SST::Core::Serialization::serializer ser;
-        ser.start_unpacking(&buffer[sizeof(RankSyncQueue::Header)], size - sizeof(RankSyncQueue::Header));
-
-        std::vector<Activity*> activities;
-        SST_SER(activities);
-
-        for ( unsigned int j = 0; j < activities.size(); j++ ) {
-
-            Event* ev = static_cast<Event*>(activities[j]);
-            sendUntimedData_sync(getDeliveryLink(ev), ev);
-        }
-    }
-
-    // Clear the RankSyncQueues used to send the data after all the sends have completed
-    MPI_Waitall(sreq_count, sreqs.get(), MPI_STATUSES_IGNORE);
-
-    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
-        i->second.squeue->clear();
-    }
+    exchangeOnThread0(true);
 
     // Do an allreduce to see if there were any messages sent
     int input = msg_count;
@@ -563,18 +453,96 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
 }
 
 void
+RankSyncParallelSkip::exchangeSetupData(int UNUSED_WO_MPI(thread))
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    if ( thread != 0 ) return;
+
+    // Deliver the events sent during setup(), then free the buffers, which may have grown large during init() and
+    // setup(). Every rank does this at the same time, so the senders' and receivers' buffer sizes stay consistent.
+    exchangeOnThread0(false);
+    releaseBuffers();
+#endif
+}
+
+void
+RankSyncParallelSkip::releaseBuffers()
+{
+    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
+        i->second.squeue->releaseBuffer();
+        i->second.remote_size = RankSyncRecvBuffer::initialSize();
+    }
+    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
+        i->second.rbuf.reset();
+    }
+}
+
+#ifdef SST_CONFIG_HAVE_MPI
+void
+RankSyncParallelSkip::exchangeOnThread0(bool untimed)
+{
+    SimTime_t current_cycle = Simulation::getSimulation()->getCurrentSimCycle();
+
+    // Each send uses one request per chunk, plus one if the remote buffer has to grow
+    std::vector<MPI_Request> sreqs;
+    std::vector<MPI_Request> rreqs(comm_recv_map.size());
+    int                      rreq_count = 0;
+
+    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
+        // Post all the receives for the first messages
+        int tag = 2 * i->second.local_thread;
+        i->second.rbuf.postFirstRecv(i->second.remote_rank, tag, &rreqs[rreq_count++]);
+    }
+
+    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
+
+        // Do all the sends
+        // Serialize the data in the syncQueue
+        i->second.squeue->getData();
+
+        int tag = 2 * i->second.to_rank.thread;
+        i->second.squeue->sendData(i->second.to_rank.rank /*dest*/, tag, tag + 1, i->second.remote_size, sreqs);
+    }
+
+    // Wait for all the first messages, then post the receives for the remaining messages and wait for those
+    MPI_Waitall(rreq_count, rreqs.data(), MPI_STATUSES_IGNORE);
+
+    rreqs.clear();
+    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
+        i->second.rbuf.postRemainingRecvs(i->second.remote_rank, 2 * i->second.local_thread + 1, rreqs);
+    }
+    MPI_Waitall(rreqs.size(), rreqs.data(), MPI_STATUSES_IGNORE);
+
+    for ( auto i = comm_recv_map.begin(); i != comm_recv_map.end(); ++i ) {
+
+        // Deserialize all the events
+        std::vector<Activity*> activities;
+        i->second.rbuf.unpack(activities);
+
+        for ( unsigned int j = 0; j < activities.size(); j++ ) {
+            Event* ev = static_cast<Event*>(activities[j]);
+            if ( untimed )
+                sendUntimedData_sync(getDeliveryLink(ev), ev);
+            else
+                getDeliveryLink(ev)->send(ev->getDeliveryTime() - current_cycle, ev);
+        }
+    }
+
+    // Clear the RankSyncQueues used to send the data after all the sends have completed
+    MPI_Waitall(sreqs.size(), sreqs.data(), MPI_STATUSES_IGNORE);
+
+    for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
+        i->second.squeue->clear();
+    }
+}
+#endif
+
+void
 RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
 {
-    char*                  buffer = msg->rbuf;
-    RankSyncQueue::Header* hdr    = reinterpret_cast<RankSyncQueue::Header*>(buffer);
-    unsigned int           size   = hdr->buffer_size;
-
     auto deserialStart = SST::Core::Profile::now();
 
-    SST::Core::Serialization::serializer ser;
-
-    ser.start_unpacking(&buffer[sizeof(RankSyncQueue::Header)], size - sizeof(RankSyncQueue::Header));
-    SST_SER(msg->activity_vec);
+    msg->rbuf.unpack(msg->activity_vec);
 
     deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 }

@@ -15,10 +15,40 @@
 #include "sst/core/objectSerialization.h"
 #include "sst/core/sst_mpi.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <stdexcept>
 #include <typeinfo>
 
 namespace SST::Comms {
+
+namespace pvt {
+// Maximum size of a single MPI message used by broadcast(), send() and recv()
+inline size_t max_message_size = 256 * 1024 * 1024;
+} // namespace pvt
+
+/**
+   Set the maximum size of a single MPI message used by broadcast(), send() and recv(), and by the rank sync
+   (RankSyncQueue and RankSyncRecvBuffer). Larger data is transferred as several messages, one per chunk of a
+   chunked_buffer. This is set from the mpi-max-message-size option.
+
+   broadcast(), send() and recv() send the sender's size along with the data, so they work even if the ranks do not
+   agree on it. This is needed to broadcast the Config itself, before the other ranks know the option's value. The rank
+   sync requires every rank to use the same size, which is ensured by setting it after the Config has been broadcast.
+*/
+inline void
+setMaxMessageSize(size_t size)
+{
+    pvt::max_message_size = size;
+}
+
+inline size_t
+getMaxMessageSize()
+{
+    return pvt::max_message_size;
+}
 
 #ifdef SST_CONFIG_HAVE_MPI
 template <typename dataType>
@@ -29,26 +59,30 @@ broadcast(dataType& data, int root)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if ( root == rank ) {
         // Serialize the data
-        std::vector<char> buffer = Comms::serialize(data);
+        Core::Serialization::chunked_buffer buffer(getMaxMessageSize());
+        Comms::serialize(data, buffer);
 
-        // Now broadcast the size of the data
-        int size = buffer.size();
-        MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+        // Broadcast the size of the data and the chunk size, then broadcast each chunk
+        uint64_t info[2] = { buffer.size(), buffer.max_chunk_size() };
+        MPI_Bcast(info, 2, MPI_UINT64_T, root, MPI_COMM_WORLD);
 
-        // Now broadcast the data
-        MPI_Bcast(buffer.data(), buffer.size(), MPI_BYTE, root, MPI_COMM_WORLD);
+        for ( size_t i = 0; i < buffer.num_chunks(); ++i )
+            MPI_Bcast(buffer.chunk_data(i), static_cast<int>(buffer.chunk_bytes(i)), MPI_BYTE, root, MPI_COMM_WORLD);
     }
     else {
-        // Get the size of the broadcast
-        int size = 0;
-        MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+        // Get the size of the data and the chunk size used by the root
+        uint64_t info[2] = { 0, 0 };
+        MPI_Bcast(info, 2, MPI_UINT64_T, root, MPI_COMM_WORLD);
 
-        // Now get the data
-        auto buffer = std::unique_ptr<char[]>(new char[size]);
-        MPI_Bcast(buffer.get(), size, MPI_BYTE, root, MPI_COMM_WORLD);
+        // Now get each chunk of the data
+        Core::Serialization::chunked_buffer buffer(info[1]);
+        buffer.resize(info[0]);
+
+        for ( size_t i = 0; i < buffer.num_chunks(); ++i )
+            MPI_Bcast(buffer.chunk_data(i), static_cast<int>(buffer.chunk_bytes(i)), MPI_BYTE, root, MPI_COMM_WORLD);
 
         // Now deserialize data
-        Comms::deserialize(buffer.get(), size, data);
+        Comms::deserialize(buffer, data);
     }
 }
 
@@ -57,50 +91,47 @@ void
 send(int dest, int tag, dataType& data)
 {
     // Serialize the data
-    std::vector<char> buffer = Comms::serialize<dataType>(data);
+    Core::Serialization::chunked_buffer buffer(getMaxMessageSize());
+    Comms::serialize(data, buffer);
 
-    // Now send the data.  Send size first, then payload
-    // std::cout<< sizeof(buffer.size()) << std::endl;
-    int64_t size = buffer.size();
-    MPI_Send(&size, 1, MPI_INT64_T, dest, tag, MPI_COMM_WORLD);
+    // Send the size of the data and the chunk size first, then send each chunk as a separate message
+    uint64_t info[2] = { buffer.size(), buffer.max_chunk_size() };
+    MPI_Send(info, 2, MPI_UINT64_T, dest, tag, MPI_COMM_WORLD);
 
-    int32_t fragment_size = 1000000000;
-    int64_t offset        = 0;
-
-    while ( size >= fragment_size ) {
-        MPI_Send(buffer.data() + offset, fragment_size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
-        size -= fragment_size;
-        offset += fragment_size;
-    }
-    MPI_Send(buffer.data() + offset, size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
+    for ( size_t i = 0; i < buffer.num_chunks(); ++i )
+        MPI_Send(buffer.chunk_data(i), static_cast<int>(buffer.chunk_bytes(i)), MPI_BYTE, dest, tag, MPI_COMM_WORLD);
 }
 
 template <typename dataType>
 void
 recv(int src, int tag, dataType& data)
 {
-    // Get the size of the broadcast
-    int64_t    size = 0;
+    // Get the size of the data and the chunk size used by the sender
+    uint64_t   info[2] = { 0, 0 };
     MPI_Status status;
-    MPI_Recv(&size, 1, MPI_INT64_T, src, tag, MPI_COMM_WORLD, &status);
+    MPI_Recv(info, 2, MPI_UINT64_T, src, tag, MPI_COMM_WORLD, &status);
 
-    // Now get the data
-    auto    buffer        = std::unique_ptr<char[]>(new char[size]);
-    int64_t offset        = 0;
-    int32_t fragment_size = 1000000000;
-    int64_t rem_size      = size;
+    // Now get each chunk of the data. The chunks are received from the rank which sent the size, in case src is
+    // MPI_ANY_SOURCE.
+    Core::Serialization::chunked_buffer buffer(info[1]);
+    buffer.resize(info[0]);
 
-    while ( rem_size >= fragment_size ) {
-        MPI_Recv(buffer.get() + offset, fragment_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
-        rem_size -= fragment_size;
-        offset += fragment_size;
-    }
-    MPI_Recv(buffer.get() + offset, rem_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+    for ( size_t i = 0; i < buffer.num_chunks(); ++i )
+        MPI_Recv(buffer.chunk_data(i), static_cast<int>(buffer.chunk_bytes(i)), MPI_BYTE, status.MPI_SOURCE, tag,
+            MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     // Now deserialize data
-    Comms::deserialize(buffer.get(), size, data);
+    Comms::deserialize(buffer, data);
 }
 
+/**
+   Gather data from every rank to every rank.
+
+   Unlike broadcast(), send() and recv(), this is deliberately not chunked. MPI_Allgatherv gathers the data of all the
+   ranks into a single contiguous buffer with int displacements, so the total size of the gathered data is limited to
+   INT_MAX bytes, and std::length_error is thrown if it is larger. It is only used during init and setup, by
+   SharedObject, where the data is small.
+*/
 template <typename dataType>
 void
 all_gather(dataType& data, std::vector<dataType>& out_data)
@@ -112,31 +143,36 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
     // Serialize the data
     std::vector<char> buffer = Comms::serialize(data);
 
-    size_t sendSize = buffer.size();
+    uint64_t sendSize = buffer.size();
 
-    auto allSizes      = std::make_unique<int[]>(world);
+    auto allSizes      = std::make_unique<uint64_t[]>(world);
+    auto counts        = std::make_unique<int[]>(world);
     auto displacements = std::make_unique<int[]>(world);
 
-    memset(allSizes.get(), '\0', world * sizeof(int));
-    memset(displacements.get(), '\0', world * sizeof(int));
+    MPI_Allgather(&sendSize, 1, MPI_UINT64_T, allSizes.get(), 1, MPI_UINT64_T, MPI_COMM_WORLD);
 
-    MPI_Allgather(&sendSize, sizeof(int), MPI_BYTE, allSizes.get(), sizeof(int), MPI_BYTE, MPI_COMM_WORLD);
-
-    int totalBuf = 0;
+    // MPI_Allgatherv gathers all of the data into a single buffer, so its total size must fit in an int
+    uint64_t totalBuf = 0;
     for ( int i = 0; i < world; i++ ) {
+        uint64_t displacement = totalBuf;
         totalBuf += allSizes[i];
-        if ( i > 0 ) displacements[i] = displacements[i - 1] + allSizes[i - 1];
+        if ( totalBuf > static_cast<uint64_t>(std::numeric_limits<int>::max()) )
+            throw std::length_error("Comms::all_gather: gathered data is too large for a single MPI_Allgatherv");
+
+        // Both values fit in an int, since they are no larger than totalBuf
+        counts[i]        = static_cast<int>(allSizes[i]);
+        displacements[i] = static_cast<int>(displacement);
     }
 
     auto bigBuff = std::unique_ptr<char[]>(new char[totalBuf]);
 
-    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes.get(), displacements.get(), MPI_BYTE,
+    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), counts.get(), displacements.get(), MPI_BYTE,
         MPI_COMM_WORLD);
 
     out_data.resize(world);
     for ( int i = 0; i < world; i++ ) {
         auto* bbuf = bigBuff.get();
-        Comms::deserialize(&bbuf[displacements[i]], allSizes[i], out_data[i]);
+        Comms::deserialize(&bbuf[displacements[i]], counts[i], out_data[i]);
     }
 }
 

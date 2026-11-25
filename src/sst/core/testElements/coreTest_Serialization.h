@@ -34,7 +34,8 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "test", "Type of serialization test to perform", NULL}
+        { "test", "Type of serialization test to perform", NULL},
+        { "chunk_size", "If non-zero, also pack and unpack using a chunked_buffer with this chunk size", "0"}
     )
 
     // Optional since there is nothing to document
